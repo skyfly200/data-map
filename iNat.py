@@ -20,7 +20,7 @@ def get_weather(lat, lon, date_str):
         return data.iloc[0].to_dict()
     return {}  # Ensure an empty dictionary is returned if no data is available
 
-def fetch_inat_data(taxon_name='Pleurotus ostreatus', quality_grade='research', lat=40.0, lng=-105.0, radius=50.0, per_page=10):
+def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=50.0, per_page=10):
     results = get_observations(
         taxon_name=taxon_name,
         lat=lat,
@@ -29,7 +29,6 @@ def fetch_inat_data(taxon_name='Pleurotus ostreatus', quality_grade='research', 
         radius=radius,
         geo=True,
         per_page=per_page,
-        fields='observed_on,geojson,place_guess,taxon'
     )
 
     observations = []
