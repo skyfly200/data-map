@@ -1,11 +1,11 @@
-uuid,date,lon,lat,elevation,temp,precipitation,humidity,species,location,num_identification_agreements
-75af5769-4f70-45d8-a926-ac20e1953315,2024-05-17,-105.044181173,39.6693007129,1684.0,19.0,0.0,,Morchella populiphila,"Colorado, US",1
-0114ea8d-1172-4a52-900c-3cb68f3f2c1d,2024-05-11,-105.392333695,39.8111711203,2667.0,,,,Morchella americana,"Colorado, US",2
-cec15c75-78c0-45a5-a1a0-112447bb37cb,2024-05-11,-105.3618407278,39.8520569888,2380.0,,,,Morchella americana,"Colorado, US",2
-7ae6949a-4453-4a51-8ce0-65cb3dfeb3bb,2024-05-07,-105.0697945,39.6594916667,1640.0,8.5,0.0,,Morchella americana,"Bear Valley Park, Denver, CO, US",4
-4bd1a3c3-1bbe-40cf-898c-350a4058d21e,2024-04-26,-105.0578374677,39.5710009136,1664.0,11.5,8.7,,Morchella americana,"Colorado, US",3
-24157608-2e69-4e7b-8592-b681584d8a6f,2024-04-22,-104.9386133333,39.85322,1548.0,15.1,0.0,,Morchella americana,"S Platte River Trail, Thornton, CO, US",2
-e596a35e-72cc-4dbe-9b2f-59e84ad1ba6e,2014-04-30,-105.1956716667,40.0404695,1570.0,6.7,,,Morchella americana,"Boulder, CO, US",2
-484f1d80-56a3-4eae-8bbb-fc47ac01e653,2023-05-01,-105.2672599878,39.8160120566,2021.0,13.4,0.0,,Morchella americana,"Colorado, US",2
-0d4837ff-86cb-4ae5-b697-b8e43fe3a1b0,2022-06-15,-105.5050657471,40.0127505703,2733.0,,,,Morchella angusticeps,"Colorado, US",1
-05688b75-2958-429e-84ec-0633d9dbbe42,2018-05-24,-105.4877104611,39.9924129631,2579.0,,,,Morchella angusticeps,"Arapaho & Roosevelt National Forests Pawnee National Grassland, Boulder, CO, US",1
+uuid,timestamp,timezone,lon,lat,elevation,weather_station_id,tavg,tmin,tmax,precipitation,snow,windspeed,winddirection,presure,humidity,species,location,num_identification_agreements
+75af5769-4f70-45d8-a926-ac20e1953315,2024-05-17 17:22:54-06:00,,-105.044181173,39.6693007129,1684.0,,19.0,11.2,27.2,0.0,,16.8,232.0,1004.1,,Morchella populiphila,"Colorado, US",1
+0114ea8d-1172-4a52-900c-3cb68f3f2c1d,2024-05-11 16:15:31-06:00,,-105.392333695,39.8111711203,2667.0,,11.3,4.0,17.0,1.1,,8.3,314.0,1016.8,,Morchella americana,"Colorado, US",2
+cec15c75-78c0-45a5-a1a0-112447bb37cb,2024-05-11 14:50:23-06:00,,-105.3618407278,39.8520569888,2380.0,,11.3,4.0,17.0,1.1,,8.3,314.0,1016.8,,Morchella americana,"Colorado, US",2
+7ae6949a-4453-4a51-8ce0-65cb3dfeb3bb,2024-05-07 16:19:43-06:00,,-105.0697945,39.6594916667,1640.0,,8.5,3.3,12.8,0.0,,23.8,281.0,1002.4,,Morchella americana,"Bear Valley Park, Denver, CO, US",4
+4bd1a3c3-1bbe-40cf-898c-350a4058d21e,2024-04-26 14:41:34-06:00,,-105.0578374677,39.5710009136,1664.0,,11.5,7.2,17.8,8.7,,13.8,316.0,1000.2,,Morchella americana,"Colorado, US",3
+24157608-2e69-4e7b-8592-b681584d8a6f,2024-04-22 10:41:37-06:00,,-104.9386133333,39.85322,1548.0,,15.1,7.7,22.9,0.0,,19.1,245.0,1008.5,,Morchella americana,"S Platte River Trail, Thornton, CO, US",2
+e596a35e-72cc-4dbe-9b2f-59e84ad1ba6e,2014-04-30 17:52:07-06:00,,-105.1956716667,40.0404695,1570.0,,6.7,2.0,11.0,,,21.6,13.0,,,Morchella americana,"Boulder, CO, US",2
+484f1d80-56a3-4eae-8bbb-fc47ac01e653,2023-05-01 17:33:41-06:00,,-105.2672599878,39.8160120566,2021.0,,13.4,4.0,22.0,0.0,,11.6,2.0,1015.1,,Morchella americana,"Colorado, US",2
+0d4837ff-86cb-4ae5-b697-b8e43fe3a1b0,2022-06-15 14:48:52-06:00,,-105.5050657471,40.0127505703,2733.0,,22.5,13.0,31.0,0.0,,14.9,238.0,1015.8,,Morchella angusticeps,"Colorado, US",1
+05688b75-2958-429e-84ec-0633d9dbbe42,2018-05-24 16:12:25-06:00,,-105.4877104611,39.9924129631,2579.0,,20.1,10.0,28.0,,,6.4,,,,Morchella angusticeps,"Arapaho & Roosevelt National Forests Pawnee National Grassland, Boulder, CO, US",1

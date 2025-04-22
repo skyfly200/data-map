@@ -1,6 +1,6 @@
 from pyinaturalist import get_observations
 import pandas as pd
-from meteostat import Point, Daily
+from meteostat import Stations, Point, Daily
 from datetime import datetime
 import requests
 
@@ -29,12 +29,13 @@ def get_elevation(lat, lon):
 
 def get_weather(lat, lon, date_str):
     date = datetime.strptime(date_str, '%Y-%m-%d')
-    location = Point(lat, lon)
-    data = Daily(location, date, date)
-    data = data.fetch()
-    if not data.empty:
-        return data.iloc[0].to_dict()
-    return {}  # Ensure an empty dictionary is returned if no data is available
+    stations = Stations().nearby(lat,lon).fetch(5)
+
+    for station_id in stations.index:
+        df = Daily(station_id, date, date).fetch()
+        if not df.empty:
+            return df.iloc[0].to_dict() | {'station_used': station_id}
+    return {'station_id': None}
 
 def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=50.0, per_page=10):
     results = get_observations(
@@ -50,10 +51,10 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
 
     observations = []
     for obs in results['results']:
-        date = obs.get('observed_on')
-        if isinstance(date, datetime):
-            date = date.strftime('%Y-%m-%d')
-        elif not date:  # Handle missing or None dates
+        timestamp = obs.get('observed_on')
+        if isinstance(timestamp, datetime):
+            date = timestamp.strftime('%Y-%m-%d')
+        elif not timestamp:  # Handle missing or None dates
             date = None
 
         coords = obs['geojson']['coordinates'] if 'geojson' in obs else [None, None]
@@ -62,20 +63,22 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
         if not isinstance(weather, dict):  # Safeguard against unexpected types
             weather = {}
             print(f"Unexpected weather data type: {type(weather)}")
-        print(weather)
             
         observations.append({
             'uuid': obs.get('uuid'),
-            'date': date,
+            'timestamp': timestamp,
+            'timezone': obs.get('time_zone', None),
             'lon': coords[0],
             'lat': coords[1],
             'elevation': elevation,
+            'weather_station_id': weather.get('station_id', None),
             'tavg': weather.get('tavg', None),
             'tmin': weather.get('tmin', None),
             'tmax': weather.get('tmax', None),
             'precipitation': weather.get('prcp', None),
             'snow': weather.get('snow', None),
             'windspeed': weather.get('wspd', None),
+            'winddirection': weather.get('wdir', None),
             'presure': weather.get('pres', None),
             'humidity': weather.get('rh', None),
             'species': obs.get('taxon', {}).get('name', ''),
