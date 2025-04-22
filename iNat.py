@@ -4,22 +4,6 @@ from meteostat import Stations, Point, Daily
 from datetime import datetime
 import requests
 
-def sample_raster_value(tif_path, lon, lat, scale_factor=1.0, nodata_val=None):
-    import rasterio
-    from rasterio.warp import transform
-
-    with rasterio.open(tif_path) as src:
-        # Reproject coordinates if needed
-        x, y = transform('EPSG:4326', src.crs, [lon], [lat])
-        row, col = src.index(x[0], y[0])
-        try:
-            value = src.read(1)[row, col]
-            if nodata_val is not None and value == nodata_val:
-                return None
-            return value * scale_factor
-        except IndexError:
-            return None
-
 def get_elevation(lat, lon):
     url = f"https://api.open-elevation.com/api/v1/lookup?locations={lat},{lon}"
     r = requests.get(url)
@@ -67,6 +51,7 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
         observations.append({
             'uuid': obs.get('uuid'),
             'timestamp': timestamp,
+            'date': date,
             'timezone': obs.get('time_zone', None),
             'lon': coords[0],
             'lat': coords[1],
