@@ -22,3 +22,10 @@ logs
 .env
 .env.*
 !.env.example
+
+# data files
+world_cover/
+precip/
+soil/
+ndvi/
+treecover/
