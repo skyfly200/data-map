@@ -7,6 +7,7 @@ import numpy as np
 import math
 import os
 import shutil
+import requests
 
 # ─── Raster Data Sources ────────────────────────────────────────────────────────
 # https://worldcover2020.esa.int/downloader
@@ -57,6 +58,42 @@ def get_needed_raster_dates(df, buffer_days=6):
 
 # ─── Precipitation Utilities ──────────────────────────────────────────────────
 
+def fetch_chirps_precip(date_str, output_dir="precip/"):
+    os.makedirs(output_dir, exist_ok=True)
+    out_path = os.path.join(output_dir, f"precip_{date_str}.tif")
+    if os.path.exists(out_path):
+        return out_path
+
+    year, month, day = date_str.split("-")
+    url = f"https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_daily/tifs/p05/{year}/chirps-v2.0.{year}.{month}.{day}.tif.gz"
+    gz_path = out_path + ".gz"
+
+    try:
+        print(f"🔽 Downloading CHIRPS for {date_str}...")
+        r = requests.get(url, stream=True, timeout=30)
+        if r.status_code == 404:
+            print(f"⚠️ CHIRPS not available for {date_str}. Skipping.")
+            return None
+        r.raise_for_status()
+
+        with open(gz_path, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        # Unzip the file
+        import gzip, shutil
+        with gzip.open(gz_path, 'rb') as f_in, open(out_path, 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
+        os.remove(gz_path)
+        print(f"✅ CHIRPS saved to {out_path}")
+        return out_path
+
+    except Exception as e:
+        print(f"[!] Error fetching CHIRPS for {date_str}: {e}")
+        return None
+
+    
 def enrich_with_precip(df, precip_dir="precip/"):
     print("Adding 7-day precipitation history...")
     for d in range(7):
@@ -238,7 +275,10 @@ if __name__ == "__main__":
     print("Total dates needed (for raster):", len(core_dates))
     print("Total dates needed (for precip):", len(precip_dates))
     # print(precip_dates)
-    
+
+    for date in precip_dates:
+        fetch_chirps_precip(date)
+
     print("Starting raster-based enrichment...")
     df = enrich_df_with_rasters(df, ndvi_dir="ndvi/", soil_dir="soil/")
     df = enrich_with_precip(df, precip_dir="precip/")
