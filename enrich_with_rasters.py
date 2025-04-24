@@ -7,6 +7,13 @@ import numpy as np
 import os
 import shutil
 
+# ─── Raster Data Sources ────────────────────────────────────────────────────────
+# https://worldcover2020.esa.int/downloader
+# https://viewer.terrascope.be/?language=en&bbox=-105.28106099415182,40.204737550661235,-105.23939445065368,40.219963411726525&overlay=true&bgLayer=MapBox_Satellite&date=2025-04-23&layer=WORLDCOVER_2021_MAP
+# https://wiki.openstreetmap.org/wiki/Overpass_API
+# 
+# https://msc.fema.gov/portal/search?AddressQuery=-105.0%2C%2040.0
+
 # ─── Utility Function to Sample Raster Value ──────────────────────────────────
 
 def sample_raster_value(tif_path, lon, lat):

@@ -4,6 +4,8 @@ from meteostat import Stations, Point, Daily
 from datetime import datetime
 import requests
 
+# https://www.inaturalist.org/observations?subview=map
+
 def get_elevation(lat, lon):
     url = f"https://api.open-elevation.com/api/v1/lookup?locations={lat},{lon}"
     r = requests.get(url)
