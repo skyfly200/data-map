@@ -4,6 +4,7 @@ import rasterio
 from rasterio.warp import transform
 import xarray as xr
 import numpy as np
+import math
 import os
 import shutil
 
@@ -16,20 +17,33 @@ import shutil
 
 # ─── Utility Function to Sample Raster Value ──────────────────────────────────
 
-def sample_raster_value(tif_path, lon, lat):
+def sample_raster_value(tif_path, lon, lat, scale_factor=1.0, nodata_val=None):
     """
     Samples a raster file at the given longitude and latitude.
+    Optionally applies a scale factor and respects a nodata value.
     """
     try:
         with rasterio.open(tif_path) as src:
             x, y = transform('EPSG:4326', src.crs, [lon], [lat])
             row, col = src.index(x[0], y[0])
+
+            if not (0 <= row < src.height and 0 <= col < src.width):
+                print(f"[!] Point ({lat}, {lon}) is outside raster bounds of {tif_path}")
+                return None
+
             value = src.read(1)[row, col]
-            if value != src.nodata:
-                return value
+
+            # Apply nodata masking if defined
+            if nodata_val is not None and value == nodata_val:
+                return None
+            if src.nodata is not None and value == src.nodata:
+                return None
+
+            return value * scale_factor
     except Exception as e:
         print(f"[!] Error sampling raster at ({lon}, {lat}) in {tif_path}: {e}")
-    return None
+        return None
+
 
 # ─── Precipitation Utilities ──────────────────────────────────────────────────
 
@@ -56,6 +70,53 @@ def enrich_with_precip(df, precip_dir="precip/"):
                 val = sample_raster_value(tif_path, row.lon, row.lat)
                 df.at[idx, f'prcp_d{d}'] = val
 
+    return df
+
+# ─── Land Cover Utilities ──────────────────────────────────────────────────
+def get_worldcover_tile_name(lat, lon):
+    # These tiles start at whole degrees divisible by 3
+    lat_deg = math.floor(lat / 3) * 3
+    lon_deg = math.floor(lon / 3) * 3
+
+    lat_prefix = "N" if lat_deg >= 0 else "S"
+    lon_prefix = "E" if lon_deg >= 0 else "W"
+    lat_str = f"{abs(lat_deg):02d}"
+    lon_str = f"{abs(lon_deg):03d}"
+    return f"ESA_WorldCover_10m_2020_v100_{lat_prefix}{lat_str}{lon_prefix}{lon_str}_Map.tif"
+
+def enrich_with_worldcover(df, base_dir="./world_cover/"):
+    print("Adding WorldCover land class...")
+    df['land_cover'] = None
+
+    for idx, row in df.iterrows():
+        tile_name = get_worldcover_tile_name(row.lat, row.lon)
+        tile_path = os.path.join(base_dir, tile_name)
+
+        if not os.path.exists(tile_path):
+            print(f"[!] Tile not found: {tile_path}")
+            continue
+
+        val = sample_raster_value(tile_path, row.lon, row.lat, scale_factor=1, nodata_val=255)
+        df.at[idx, 'land_cover'] = val
+
+    return df
+
+ESA_WORLDCOVER_CLASSES = {
+    10: "Tree cover",
+    20: "Shrubland",
+    30: "Grassland",
+    40: "Cropland",
+    50: "Built-up",
+    60: "Bare / sparse vegetation",
+    70: "Snow and ice",
+    80: "Water",
+    90: "Wetland",
+    95: "Mangroves",
+    100: "Moss and lichen"
+}
+
+def add_worldcover_labels(df):
+    df['land_cover_label'] = df['land_cover'].map(ESA_WORLDCOVER_CLASSES)
     return df
 
 # ─── Tree Cover Utilities ──────────────────────────────────────────────────
@@ -163,9 +224,11 @@ if __name__ == "__main__":
     df = pd.read_csv(input_file)
     
     print("Starting raster-based enrichment...")
-    df = enrich_df_with_rasters(df, ndvi_dir="ndvi/", soil_dir="soil/")
-    df = enrich_with_precip(df, precip_dir="precip/")
-    df = enrich_with_tree_cover(df, tree_path="treecover/tree_cover.tif")
+    # df = enrich_df_with_rasters(df, ndvi_dir="ndvi/", soil_dir="soil/")
+    # df = enrich_with_precip(df, precip_dir="precip/")
+    # df = enrich_with_tree_cover(df, tree_path="treecover/tree_cover.tif")
+    df = enrich_with_worldcover(df)
+    df = add_worldcover_labels(df)
 
 
     print(f"Saving enriched data to {output_file}...")
