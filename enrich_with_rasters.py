@@ -1,5 +1,5 @@
 import pandas as pd
-from datetime import timedelta
+from datetime import datetime, timedelta
 import rasterio
 from rasterio.warp import transform
 import xarray as xr
@@ -44,6 +44,16 @@ def sample_raster_value(tif_path, lon, lat, scale_factor=1.0, nodata_val=None):
         print(f"[!] Error sampling raster at ({lon}, {lat}) in {tif_path}: {e}")
         return None
 
+def get_needed_raster_dates(df, buffer_days=6):
+    if 'date' not in df.columns:
+        raise ValueError("CSV must contain a 'date' column in YYYY-MM-DD format.")
+
+    all_dates = set()
+    for d in pd.to_datetime(df['date'].dropna()):
+        for i in range(buffer_days + 1):
+            all_dates.add((d - timedelta(days=i)).strftime('%Y-%m-%d'))
+
+    return sorted(all_dates)
 
 # ─── Precipitation Utilities ──────────────────────────────────────────────────
 
@@ -222,11 +232,17 @@ if __name__ == "__main__":
 
     print(f"Loading {input_file}...")
     df = pd.read_csv(input_file)
+
+    core_dates = get_needed_raster_dates(df, 0)
+    precip_dates = get_needed_raster_dates(df)
+    print("Total dates needed (for raster):", len(core_dates))
+    print("Total dates needed (for precip):", len(precip_dates))
+    # print(precip_dates)
     
     print("Starting raster-based enrichment...")
-    # df = enrich_df_with_rasters(df, ndvi_dir="ndvi/", soil_dir="soil/")
-    # df = enrich_with_precip(df, precip_dir="precip/")
-    # df = enrich_with_tree_cover(df, tree_path="treecover/tree_cover.tif")
+    df = enrich_df_with_rasters(df, ndvi_dir="ndvi/", soil_dir="soil/")
+    df = enrich_with_precip(df, precip_dir="precip/")
+    df = enrich_with_tree_cover(df, tree_path="treecover/tree_cover.tif")
     df = enrich_with_worldcover(df)
     df = add_worldcover_labels(df)
 
