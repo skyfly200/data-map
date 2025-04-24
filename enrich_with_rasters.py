@@ -105,8 +105,8 @@ def enrich_with_precip(df, precip_dir="precip/"):
     for date in unique_dates:
         for d in range(7):
             target_date = (date - timedelta(days=d)).strftime('%Y-%m-%d')
-            tif_path = os.path.join(precip_dir, f"precip_sample.tif")
-            # tif_path = os.path.join(precip_dir, f"precip_{target_date}.tif")
+            # tif_path = os.path.join(precip_dir, f"precip_sample.tif")
+            tif_path = os.path.join(precip_dir, f"precip_{target_date}.tif")
 
             if not os.path.exists(tif_path):
                 print(f"[!] Precip raster missing: {tif_path}")
