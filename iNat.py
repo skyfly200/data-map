@@ -23,7 +23,7 @@ def get_weather(lat, lon, date_str):
             return df.iloc[0].to_dict() | {'station_used': station_id}
     return {'station_id': None}
 
-def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=50.0, per_page=10):
+def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, per_page=100):
     results = get_observations(
         taxon_name=taxon_name,
         lat=lat,
@@ -58,7 +58,6 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
             'lon': coords[0],
             'lat': coords[1],
             'elevation': elevation,
-            'weather_station_id': weather.get('station_id', None),
             'tavg': weather.get('tavg', None),
             'tmin': weather.get('tmin', None),
             'tmax': weather.get('tmax', None),
