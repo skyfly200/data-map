@@ -274,6 +274,7 @@ if __name__ == "__main__":
     print("Total dates needed (for precip):", len(precip_dates))
     # print(precip_dates)
 
+    # TODO: move to the fetch script
     for date in precip_dates:
         fetch_chirps_precip(date)
 
