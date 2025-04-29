@@ -170,16 +170,23 @@ def add_worldcover_labels(df):
 # ─── Soil Moisture Utilities ──────────────────────────────────────────────────
 
 def load_soil_moisture_dataset(nc_path):
-    return xr.open_dataset(nc_path)
+    return xr.open_dataset(nc_path, engine='netcdf4')
 
 def extract_soil_moisture(ds, lat, lon, date_str):
     try:
         date = np.datetime64(date_str)
-        ds_time = ds.sel(time=date, method="nearest")
+        if 'time' in ds.dims:
+            time_dim = 'time'
+        elif 'valid_time' in ds.dims:
+            time_dim = 'valid_time'
+        else:
+            raise ValueError(f"No recognizable time dimension in dataset: {ds.dims}")
+
+        ds_time = ds.sel({time_dim: date}, method="nearest")
         value = ds_time['swvl1'].interp(latitude=lat, longitude=lon).values.item()
         return value
     except Exception as e:
-        print(f"[!] Soil moisture missing for ({lat}, {lon}) on {date_str}: {e}")
+        print(f"[!] Soil moisture not found for ({lat}, {lon}) on {date_str}: {e}")
         return None
 
 # ─── NDVI Utilities ───────────────────────────────────────────────────────────
