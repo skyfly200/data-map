@@ -112,7 +112,7 @@ def enrich_with_precip(df, precip_dir="precip/"):
                 print(f"[!] Precip raster missing: {tif_path}")
                 continue
 
-            # print(f"  ✓ Using {tif_path} for {d}-day offset")
+            print(f"  ✓ Using {tif_path} for {d}-day offset")
             for idx, row in df[df['date'] == date.strftime('%Y-%m-%d')].iterrows():
                 val = sample_raster_value(tif_path, row.lon, row.lat)
                 df.at[idx, f'prcp_d{d}'] = val
@@ -143,6 +143,7 @@ def enrich_with_worldcover(df, base_dir="./world_cover/"):
             print(f"[!] Tile not found: {tile_path}")
             continue
 
+        print(f"  ✓ Using {tile_path} for ({row.lat}, {row.lon})")
         val = sample_raster_value(tile_path, row.lon, row.lat, scale_factor=1, nodata_val=255)
         df.at[idx, 'land_cover'] = val
 
@@ -164,17 +165,6 @@ ESA_WORLDCOVER_CLASSES = {
 
 def add_worldcover_labels(df):
     df['land_cover_label'] = df['land_cover'].map(ESA_WORLDCOVER_CLASSES)
-    return df
-
-# ─── Tree Cover Utilities ──────────────────────────────────────────────────
-
-def enrich_with_tree_cover(df, tree_path="treecover/tree_cover.tif"):
-    print("Adding tree cover...")
-    if not os.path.exists(tree_path):
-        print(f"[!] Tree cover raster not found: {tree_path}")
-        return df
-
-    df['tree_cover'] = df.apply(lambda row: sample_raster_value(tree_path, row.lon, row.lat), axis=1)
     return df
 
 # ─── Soil Moisture Utilities ──────────────────────────────────────────────────
@@ -229,8 +219,9 @@ def enrich_df_with_rasters(df, ndvi_dir='ndvi/', soil_dir='soil/'):
         print(f"→ Enriching data for {date_str} ({len(date_df)} rows)")
 
         # Construct expected filenames
-        # ndvi_path = os.path.join(ndvi_dir, f"ndvi_{date_str}.tif")
-        ndvi_path = os.path.join(ndvi_dir, f"sample_ndvi.tif")
+        lat = date_df['lat'].iloc[0]
+        lon = date_df['lon'].iloc[0]
+        ndvi_path = os.path.join(ndvi_dir, f"ndvi_{date_str}_{lat:.4f}_{lon:.4f}.tif")
         soil_path = os.path.join(soil_dir, f"soil_{date_str}.nc")
 
         # Check existence
@@ -282,7 +273,6 @@ if __name__ == "__main__":
     print("Starting raster-based enrichment...")
     df = enrich_df_with_rasters(df, ndvi_dir="ndvi/", soil_dir="soil/")
     df = enrich_with_precip(df, precip_dir="precip/")
-    df = enrich_with_tree_cover(df, tree_path="treecover/tree_cover.tif")
     df = enrich_with_worldcover(df)
     df = add_worldcover_labels(df)
 
