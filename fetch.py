@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import timedelta, datetime
 import os
 import cdsapi
+import zipfile
 
 # Initialize the CDS API client to download ERA5-Land data (Soil Moisture)
 def download_era5_soil_moisture(date_str, output_dir="soil/"):
@@ -11,10 +12,12 @@ def download_era5_soil_moisture(date_str, output_dir="soil/"):
 
     c = cdsapi.Client()
 
-    output_path = os.path.join(output_dir, f"soil_{date_str}.nc")
-    if os.path.exists(output_path):
-        print(f"✅ Soil moisture already downloaded: {output_path}")
-        return output_path
+    zip_path = os.path.join(output_dir, f"soil_{date_str}.zip")
+    nc_path = os.path.join(output_dir, f"soil_{date_str}.nc")
+
+    if os.path.exists(nc_path):
+        print(f"✅ Already downloaded: {nc_path}")
+        return nc_path
 
     print(f"🔽 Downloading ERA5-Land soil moisture for {date_str}...")
 
@@ -29,11 +32,20 @@ def download_era5_soil_moisture(date_str, output_dir="soil/"):
             'format': 'netcdf',
             'area': [42, -106, 39, -102],  # North, West, South, East (bounding box around Colorado, you can adjust)
         },
-        output_path
+        zip_path
     )
 
-    print(f"✅ Saved: {output_path}")
-    return output_path
+    # Extract .nc file from the zip
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(output_dir)
+        extracted_files = zip_ref.namelist()
+        extracted_nc = [f for f in extracted_files if f.endswith(".nc")]
+        if extracted_nc:
+            os.rename(os.path.join(output_dir, extracted_nc[0]), nc_path)
+    os.remove(zip_path)
+
+    print(f"✅ Saved NetCDF to {nc_path}")
+    return nc_path
 
 # Initialize Earth Engine
 ee.Initialize()
