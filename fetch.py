@@ -1,9 +1,10 @@
 import ee
 import pandas as pd
-from datetime import timedelta, datetime
+from datetime import timedelta
 import os
 import cdsapi
 import zipfile
+import requests
 
 # Initialize the CDS API client to download ERA5-Land data (Soil Moisture)
 def download_era5_soil_moisture(date_str, output_dir="soil/"):
@@ -81,6 +82,41 @@ def fetch_sentinel2_ndvi(lat, lon, date_str, output_dir="ndvi/"):
     task.start()
 
     print(f"📦 Started NDVI export task for {date_str} at ({lat},{lon})")
+
+def fetch_chirps_precip(date_str, output_dir="precip/"):
+    os.makedirs(output_dir, exist_ok=True)
+    out_path = os.path.join(output_dir, f"precip_{date_str}.tif")
+    if os.path.exists(out_path):
+        return out_path
+
+    year, month, day = date_str.split("-")
+    url = f"https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_daily/tifs/p05/{year}/chirps-v2.0.{year}.{month}.{day}.tif.gz"
+    gz_path = out_path + ".gz"
+
+    try:
+        print(f"🔽 Downloading CHIRPS for {date_str}...")
+        r = requests.get(url, stream=True, timeout=30)
+        if r.status_code == 404:
+            print(f"⚠️ CHIRPS not available for {date_str}. Skipping.")
+            return None
+        r.raise_for_status()
+
+        with open(gz_path, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        # Unzip the file
+        import gzip, shutil
+        with gzip.open(gz_path, 'rb') as f_in, open(out_path, 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
+        os.remove(gz_path)
+        print(f"✅ CHIRPS saved to {out_path}")
+        return out_path
+
+    except Exception as e:
+        print(f"[!] Error fetching CHIRPS for {date_str}: {e}")
+        return None
 
 def get_unique_dates(df):
     return sorted(pd.to_datetime(df['date'].dropna()).dt.strftime('%Y-%m-%d').unique())
