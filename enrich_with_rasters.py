@@ -1,5 +1,5 @@
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import timedelta
 import rasterio
 from rasterio.warp import transform
 import xarray as xr
@@ -7,7 +7,6 @@ import numpy as np
 import math
 import os
 import shutil
-import requests
 
 # ─── Raster Data Sources ────────────────────────────────────────────────────────
 # https://worldcover2020.esa.int/downloader
@@ -57,43 +56,6 @@ def get_needed_raster_dates(df, buffer_days=6):
     return sorted(all_dates)
 
 # ─── Precipitation Utilities ──────────────────────────────────────────────────
-
-def fetch_chirps_precip(date_str, output_dir="precip/"):
-    os.makedirs(output_dir, exist_ok=True)
-    out_path = os.path.join(output_dir, f"precip_{date_str}.tif")
-    if os.path.exists(out_path):
-        return out_path
-
-    year, month, day = date_str.split("-")
-    url = f"https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_daily/tifs/p05/{year}/chirps-v2.0.{year}.{month}.{day}.tif.gz"
-    gz_path = out_path + ".gz"
-
-    try:
-        print(f"🔽 Downloading CHIRPS for {date_str}...")
-        r = requests.get(url, stream=True, timeout=30)
-        if r.status_code == 404:
-            print(f"⚠️ CHIRPS not available for {date_str}. Skipping.")
-            return None
-        r.raise_for_status()
-
-        with open(gz_path, "wb") as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
-
-        # Unzip the file
-        import gzip, shutil
-        with gzip.open(gz_path, 'rb') as f_in, open(out_path, 'wb') as f_out:
-            shutil.copyfileobj(f_in, f_out)
-
-        os.remove(gz_path)
-        print(f"✅ CHIRPS saved to {out_path}")
-        return out_path
-
-    except Exception as e:
-        print(f"[!] Error fetching CHIRPS for {date_str}: {e}")
-        return None
-
-    
 def enrich_with_precip(df, precip_dir="precip/"):
     print("Adding 7-day precipitation history...")
     for d in range(7):
@@ -203,14 +165,37 @@ def get_ndvi_from_raster(tif_path, lon, lat):
         print(f"[!] NDVI missing for ({lat}, {lon}) in {tif_path}: {e}")
     return None
 
-def download_placeholder_ndvi(date_str, ndvi_path):
-    # Placeholder file with mock NDVI values from another day or dummy image
-    placeholder = "sample_ndvi.tif"
-    if not os.path.exists(placeholder):
-        print(f"[!] No sample NDVI to copy for {date_str}. Skipping download.")
-        return
-    shutil.copyfile(placeholder, ndvi_path)
-    print(f"  ↓ Downloaded NDVI placeholder for {date_str} → {ndvi_path}")
+def fill_missing_ndvi(df, max_days_gap=7):
+    filled = 0
+    df['date'] = pd.to_datetime(df['date'])
+    df = df.sort_values('date')
+
+    for idx, row in df[df['ndvi'].isnull()].iterrows():
+        lat = row['lat']
+        lon = row['lon']
+        date = row['date']
+
+        # Look for exact same location
+        candidates = df[
+            (df['ndvi'].notnull()) &
+            (df['lat'] == lat) &
+            (df['lon'] == lon)
+        ].copy()
+
+        if candidates.empty:
+            continue
+
+        # Find nearest date within allowed window
+        candidates['date_diff'] = candidates['date'].apply(lambda d: abs((d - date).days))
+        nearest = candidates[candidates['date_diff'] <= max_days_gap].sort_values('date_diff')
+
+        if not nearest.empty:
+            fill_val = nearest.iloc[0]['ndvi']
+            df.at[idx, 'ndvi'] = fill_val
+            filled += 1
+
+    print(f"✅ Filled {filled} NDVI values using same-location fallback.")
+    return df
 
 # ─── Main Enrichment Script ───────────────────────────────────────────────────
 
@@ -238,12 +223,6 @@ def enrich_df_with_rasters(df, ndvi_dir='ndvi/', soil_dir='soil/'):
         if not has_ndvi and not has_soil:
             print(f"[!] Skipping {date_str}: no NDVI or soil file found")
             continue
-            
-        if not has_ndvi:
-            print(f"  ↓ NDVI missing for {date_str}")
-            download_placeholder_ndvi(date_str, ndvi_path)
-            has_ndvi = os.path.exists(ndvi_path)
-
 
         if has_ndvi:
             print(f"  ✓ NDVI file found: {ndvi_path}")
@@ -274,16 +253,15 @@ if __name__ == "__main__":
     print("Total dates needed (for precip):", len(precip_dates))
     # print(precip_dates)
 
-    # TODO: move to the fetch script
-    for date in precip_dates:
-        fetch_chirps_precip(date)
-
     print("Starting raster-based enrichment...")
     df = enrich_df_with_rasters(df, ndvi_dir="ndvi/", soil_dir="soil/")
     df = enrich_with_precip(df, precip_dir="precip/")
     df = enrich_with_worldcover(df)
     df = add_worldcover_labels(df)
 
+    # 🧠 Fill missing NDVI using same-location fallback
+    print("Filling missing NDVI...")
+    df = fill_missing_ndvi(df, max_days_gap=7)
 
     print(f"Saving enriched data to {output_file}...")
     df.to_csv(output_file, index=False)
