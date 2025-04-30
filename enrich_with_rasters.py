@@ -65,6 +65,7 @@ def enrich_with_precip(df, precip_dir="precip/"):
     unique_dates = pd.to_datetime(df['date'].dropna().unique())
 
     for date in unique_dates:
+        print(f"  → Enriching precip data for {date.strftime('%Y-%m-%d')} ({len(df[df['date'] == date.strftime('%Y-%m-%d')])} rows)")
         for d in range(7):
             target_date = (date - timedelta(days=d)).strftime('%Y-%m-%d')
             # tif_path = os.path.join(precip_dir, f"precip_sample.tif")
@@ -74,7 +75,7 @@ def enrich_with_precip(df, precip_dir="precip/"):
                 print(f"[!] Precip raster missing: {tif_path}")
                 continue
 
-            print(f"  ✓ Using {tif_path} for {d}-day offset")
+            # print(f"  ✓ Using {tif_path} for {d}-day offset")
             for idx, row in df[df['date'] == date.strftime('%Y-%m-%d')].iterrows():
                 val = sample_raster_value(tif_path, row.lon, row.lat)
                 df.at[idx, f'prcp_d{d}'] = val
