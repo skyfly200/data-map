@@ -22,17 +22,22 @@ def download_era5_soil_moisture(date_str, output_dir="soil/"):
 
     print(f"🔽 Downloading ERA5-Land soil moisture for {date_str}...")
 
+    dataset = "reanalysis-era5-land"
+    request = {
+        "variable": ["volumetric_soil_water_layer_1"],
+        "year": year,
+        "month": month,
+        "day": [day],
+        "time": [f"{h:02d}:00" for h in range(24)],  # All 24 hours
+        "data_format": "netcdf",
+        "area": [42, -106, 39, -102],  # North, West, South, East (bounding box around Colorado, you can adjust)
+    }
+    
+    print(request)
+
     c.retrieve(
-        'reanalysis-era5-land',
-        {
-            'variable': ['volumetric_soil_water_layer_1'],
-            'year': year,
-            'month': month,
-            'day': [day],
-            'time': [f"{h:02d}:00" for h in range(24)],  # All 24 hours
-            'format': 'netcdf',
-            'area': [42, -106, 39, -102],  # North, West, South, East (bounding box around Colorado, you can adjust)
-        },
+        dataset,
+        request,
         zip_path
     )
 
