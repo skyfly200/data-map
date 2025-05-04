@@ -50,11 +50,12 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
             weather = {}
             print(f"Unexpected weather data type: {type(weather)}")
             
+        print(weather)
+
         observations.append({
             'uuid': obs.get('uuid'),
             'timestamp': timestamp,
             'date': date,
-            'timezone': obs.get('time_zone', None),
             'lon': coords[0],
             'lat': coords[1],
             'elevation': elevation,
@@ -62,11 +63,9 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
             'tmin': weather.get('tmin', None),
             'tmax': weather.get('tmax', None),
             'precipitation': weather.get('prcp', None),
-            'snow': weather.get('snow', None),
             'windspeed': weather.get('wspd', None),
             'winddirection': weather.get('wdir', None),
             'presure': weather.get('pres', None),
-            'humidity': weather.get('rh', None),
             'species': obs.get('taxon', {}).get('name', ''),
             'location': obs.get('place_guess', ''),
             'num_identification_agreements': obs.get('num_identification_agreements', 0),
