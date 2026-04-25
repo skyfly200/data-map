@@ -1,31 +1,35 @@
-# Nuxt dev/build outputs
-.output
-.data
-.nuxt
-.nitro
-.cache
-dist
+# Vite / build output
+dist/
+.vite/
 
-# Node dependencies
-node_modules
+# Node
+node_modules/
 
-# Logs
-logs
-*.log
-
-# Misc
-.DS_Store
-.fleet
-.idea
-
-# Local env files
+# Env — never commit secrets
 .env
 .env.*
 !.env.example
 
-# data files
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large raster data — download locally via Python pipeline
 world_cover/
 precip/
 soil/
 ndvi/
 treecover/
+
+# CDS API credentials
+.cdsapirc
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
