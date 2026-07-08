@@ -1,5 +1,5 @@
 import { supabase } from './_shared/supabaseAdmin.js'
-import { fetchInatObservations } from './_shared/inat.js'
+import { fetchInatObservations } from '../../lib/sources/inat.js'
 
 export const handler = async (event) => {
   let dataset_id
