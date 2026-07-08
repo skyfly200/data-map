@@ -12,5 +12,11 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  server: {
+    proxy: {
+      // Forward API calls to the local Express server
+      '/api': 'http://localhost:3001'
+    }
   }
 })

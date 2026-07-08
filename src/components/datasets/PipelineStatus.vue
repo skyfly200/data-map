@@ -51,7 +51,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { supabase } from '@/plugins/supabase'
+import { api } from '@/plugins/api'
 
 const props = defineProps({
   dataset: { type: Object, required: true },
@@ -69,25 +69,30 @@ const currentStep = computed(() => String(STAGE_STEP[live.value.stage] || 0))
 const stageLabel = computed(() => STAGE_LABELS[live.value.stage] || live.value.stage)
 const progressPct = computed(() => (STAGE_STEP[live.value.stage] || 0) / 3 * 100)
 
-let channel = null
+let timer = null
+
+async function poll() {
+  try {
+    const updated = await api.getDataset(props.dataset.id)
+    live.value = updated
+    if (updated.status === 'complete' || updated.status === 'error') {
+      stopPolling()
+      emit('complete', updated)
+    }
+  } catch {
+    // transient error — keep polling
+  }
+}
+
+function stopPolling() {
+  if (timer) { clearInterval(timer); timer = null }
+}
 
 onMounted(() => {
-  channel = supabase
-    .channel(`dataset-status-${props.dataset.id}`)
-    .on(
-      'postgres_changes',
-      { event: 'UPDATE', schema: 'public', table: 'datasets', filter: `id=eq.${props.dataset.id}` },
-      ({ new: updated }) => {
-        live.value = updated
-        if (updated.status === 'complete' || updated.status === 'error') {
-          emit('complete', updated)
-        }
-      }
-    )
-    .subscribe()
+  if (live.value.status === 'complete' || live.value.status === 'error') return
+  poll()
+  timer = setInterval(poll, 2000)
 })
 
-onUnmounted(() => {
-  if (channel) supabase.removeChannel(channel)
-})
+onUnmounted(stopPolling)
 </script>

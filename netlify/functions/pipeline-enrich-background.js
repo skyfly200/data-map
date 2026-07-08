@@ -1,7 +1,7 @@
 import { supabase } from './_shared/supabaseAdmin.js'
-import { fetchElevationBatch } from './_shared/openElevation.js'
-import { fetchWeatherAndPrecip } from './_shared/openMeteo.js'
-import { fetchNDVI } from './_shared/ndvi.js'
+import { fetchElevationBatch } from '../../lib/sources/openElevation.js'
+import { fetchWeatherAndPrecip } from '../../lib/sources/openMeteo.js'
+import { fetchNDVI } from '../../lib/sources/ndvi.js'
 import pLimit from 'p-limit'
 
 export const handler = async (event) => {

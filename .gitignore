@@ -2,6 +2,11 @@
 dist/
 .vite/
 
+# SQLite database (local data store)
+server/*.sqlite
+server/*.sqlite-shm
+server/*.sqlite-wal
+
 # Node
 node_modules/
 

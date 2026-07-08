@@ -1,4 +1,4 @@
-import { supabase } from '@/plugins/supabase'
+import { api } from '@/plugins/api'
 
 export default {
   namespaced: true,
@@ -18,14 +18,12 @@ export default {
   actions: {
     async fetchObservations({ commit }, datasetId) {
       commit('setLoading', true)
-      const { data, error } = await supabase
-        .from('observations')
-        .select('id, inat_uuid, taxon_name, lat, lon, observed_on, place_guess, elevation, temp_avg, precip_total, wind_speed, ndvi, soil_moisture, cluster, prcp_d0, prcp_d1, prcp_d2, prcp_d3, prcp_d4, prcp_d5, prcp_d6')
-        .eq('dataset_id', datasetId)
-        .order('observed_on', { ascending: false })
-      if (error) throw error
-      commit('setObservations', { datasetId, observations: data })
-      commit('setLoading', false)
+      try {
+        const data = await api.listObservations(datasetId)
+        commit('setObservations', { datasetId, observations: data })
+      } finally {
+        commit('setLoading', false)
+      }
     }
   },
 
