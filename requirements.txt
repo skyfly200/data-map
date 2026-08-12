@@ -1,0 +1,17 @@
+# Python data pipeline dependencies
+# Observation ingest (iNat.py)
+pyinaturalist
+meteostat
+# Data download (fetch.py)
+earthengine-api
+cdsapi
+requests
+# Raster processing / enrichment (enrich_with_rasters.py, terrain_pipeline.py)
+rasterio
+xarray
+netCDF4
+numpy
+scipy
+pandas
+# Clustering (cluster.py)
+scikit-learn

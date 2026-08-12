@@ -1,4 +1,49 @@
-# Nuxt Minimal Starter
+# data-map
+
+A map of environmental conditions around mushroom observations. iNaturalist
+observations are enriched with remotely-sensed environmental layers and then
+clustered by environmental similarity. The frontend is a Nuxt app.
+
+## Python data pipeline
+
+Install the pipeline dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Stages (run in order):
+
+1. **`iNat.py`** — pull mushroom observations from iNaturalist (+ elevation and
+   weather) → `mushroom_observations.csv`.
+2. **`fetch.py`** — download the environmental rasters for those observations:
+   NDVI (Sentinel-2 via Earth Engine), soil moisture (ERA5-Land), precipitation
+   (CHIRPS), and **topography (SRTM DEM)**. After the DEM downloads it runs
+   `terrain_pipeline.process_dem` to derive the terrain-exposure layers.
+3. **`terrain_pipeline.py`** — turn the raw DEM into terrain-exposure layers
+   (see below). Runs automatically from `fetch.py`, or standalone:
+   `python terrain_pipeline.py --dem dem/dem_SRTMGL3.tif`.
+4. **`enrich_with_rasters.py`** — sample every raster (including the terrain
+   layers) at each observation point → `mushroom_observations_enriched.csv`.
+5. **`cluster.py`** — KMeans-cluster observations by environmental similarity →
+   `mushroom_clusters.csv`.
+
+### Topographic exposure layers
+
+`terrain_pipeline.py` reads the DEM and writes these GeoTIFFs to
+`dem/derived/`, which `enrich_with_rasters.py` samples as columns:
+
+| Layer | Meaning |
+| --- | --- |
+| `slope`, `aspect` | Steepness (degrees) and downhill compass bearing. |
+| `solar_exposure` | Potential incoming solar radiation (0–1), from slope + aspect integrated over sun positions across the seasons. South-facing slopes score high in the northern hemisphere. |
+| `wind_exposure` | Topographic wind exposure (0–1): multi-scale topographic position (ridges exposed, valleys sheltered) combined with how much a slope faces the prevailing wind. Set the wind direction with `--wind-dir` (default 270°/westerly). |
+| `water_retention` | Topographic Wetness Index (0–1): `ln(a / tan(slope))` from D8 flow accumulation. Flat, converging, valley-bottom terrain retains water; steep ridges shed it. |
+
+The DEM download needs a free [OpenTopography](https://portal.opentopography.org/login)
+API key in `OPENTOPOGRAPHY_API_KEY`.
+
+## Nuxt frontend
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
