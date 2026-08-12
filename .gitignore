@@ -29,3 +29,8 @@ precip/
 soil/
 ndvi/
 treecover/
+dem/
+
+# Python
+__pycache__/
+*.pyc

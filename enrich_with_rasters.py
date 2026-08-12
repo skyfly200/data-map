@@ -130,6 +130,41 @@ def add_worldcover_labels(df):
     df['land_cover_label'] = df['land_cover'].map(ESA_WORLDCOVER_CLASSES)
     return df
 
+# ─── Terrain / Topography Utilities ───────────────────────────────────────────
+# Layers produced by terrain_pipeline.process_dem(). Each is a single static
+# GeoTIFF (topography does not change over time), so we sample every point once.
+TERRAIN_LAYERS = ["slope", "aspect", "solar_exposure", "wind_exposure", "water_retention"]
+
+
+def enrich_with_terrain(df, terrain_dir="dem/derived/"):
+    """Sample the DEM-derived terrain layers at each observation point.
+
+    Adds columns: slope, aspect, solar_exposure, wind_exposure, water_retention.
+    Run ``fetch.py`` (or ``terrain_pipeline.py``) first to generate the layers.
+    """
+    print("Adding terrain exposure (solar / wind / water retention)...")
+
+    layer_paths = {}
+    for name in TERRAIN_LAYERS:
+        df[name] = None
+        path = os.path.join(terrain_dir, f"{name}.tif")
+        if os.path.exists(path):
+            layer_paths[name] = path
+        else:
+            print(f"[!] Terrain layer missing: {path}")
+
+    if not layer_paths:
+        print("[!] No terrain layers found — skipping terrain enrichment.")
+        return df
+
+    for idx, row in df.iterrows():
+        if pd.isna(row.get("lat")) or pd.isna(row.get("lon")):
+            continue
+        for name, path in layer_paths.items():
+            df.at[idx, name] = sample_raster_value(path, row.lon, row.lat)
+
+    return df
+
 # ─── Soil Moisture Utilities ──────────────────────────────────────────────────
 
 def load_soil_moisture_dataset(nc_path):
@@ -259,6 +294,7 @@ if __name__ == "__main__":
     df = enrich_with_precip(df, precip_dir="precip/")
     df = enrich_with_worldcover(df)
     df = add_worldcover_labels(df)
+    df = enrich_with_terrain(df)
 
     # 🧠 Fill missing NDVI using same-location fallback
     print("Filling missing NDVI...")

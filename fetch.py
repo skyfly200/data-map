@@ -6,6 +6,67 @@ import cdsapi
 import zipfile
 import requests
 
+# Study-area bounding box, [North, West, South, East]. Shared by the ERA5 soil
+# download and the DEM download so every layer covers the same footprint.
+STUDY_AREA = [42, -106, 39, -102]  # around Colorado
+
+
+# ─── Topography (Digital Elevation Model) ─────────────────────────────────────
+def download_srtm_dem(area=None, output_dir="dem/", dem_type="SRTMGL3", api_key=None):
+    """Download a DEM GeoTIFF for the study area from the OpenTopography API.
+
+    Topography is static, so a single DEM covering the whole study area is
+    fetched once (unlike the date-indexed weather layers). ``terrain_pipeline``
+    then derives slope, aspect, solar/wind exposure and water retention from it.
+
+    ``dem_type`` selects the global DEM: ``SRTMGL3`` (90 m, small & fast) or
+    ``SRTMGL1`` (30 m, higher resolution but much larger). A free OpenTopography
+    API key is required — set ``OPENTOPOGRAPHY_API_KEY`` or pass ``api_key``.
+    See https://portal.opentopography.org/apidocs/ .
+    """
+    area = area or STUDY_AREA
+    north, west, south, east = area
+    os.makedirs(output_dir, exist_ok=True)
+    out_path = os.path.join(output_dir, f"dem_{dem_type}.tif")
+
+    if os.path.exists(out_path):
+        print(f"✅ Already downloaded: {out_path}")
+        return out_path
+
+    api_key = api_key or os.environ.get("OPENTOPOGRAPHY_API_KEY")
+    if not api_key:
+        print(
+            "⚠️  No OpenTopography API key found. Set OPENTOPOGRAPHY_API_KEY "
+            "(free at https://portal.opentopography.org/login) to download the DEM."
+        )
+        return None
+
+    url = "https://portal.opentopography.org/API/globaldem"
+    params = {
+        "demtype": dem_type,
+        "south": south,
+        "north": north,
+        "west": west,
+        "east": east,
+        "outputFormat": "GTiff",
+        "API_Key": api_key,
+    }
+
+    try:
+        print(f"🔽 Downloading {dem_type} DEM for {area}...")
+        r = requests.get(url, params=params, stream=True, timeout=120)
+        r.raise_for_status()
+        with open(out_path, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+        print(f"✅ DEM saved to {out_path}")
+        return out_path
+    except Exception as e:
+        print(f"[!] Error fetching DEM: {e}")
+        if os.path.exists(out_path):
+            os.remove(out_path)
+        return None
+
 # Initialize the CDS API client to download ERA5-Land data (Soil Moisture)
 def download_era5_soil_moisture(date_str, output_dir="soil/"):
     os.makedirs(output_dir, exist_ok=True)
@@ -30,7 +91,7 @@ def download_era5_soil_moisture(date_str, output_dir="soil/"):
         "day": [day],
         "time": [f"{h:02d}:00" for h in range(24)],  # All 24 hours
         "data_format": "netcdf",
-        "area": [42, -106, 39, -102],  # North, West, South, East (bounding box around Colorado, you can adjust)
+        "area": STUDY_AREA,  # North, West, South, East (bounding box around Colorado, you can adjust)
     }
     
     print(request)
@@ -139,3 +200,13 @@ needed_dates = get_unique_dates(df)
 
 for date_str in needed_dates:
     download_era5_soil_moisture(date_str)
+
+# Topography is static — fetch the DEM once, then derive the terrain layers
+# (slope, aspect, solar/wind exposure, water retention) from it.
+dem_path = download_srtm_dem()
+if dem_path:
+    try:
+        from terrain_pipeline import process_dem
+        process_dem(dem_path)
+    except Exception as e:
+        print(f"[!] Terrain processing skipped: {e}")
