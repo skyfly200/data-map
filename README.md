@@ -60,8 +60,26 @@ python validate_wetness.py raster --satellite ndmi.tif --landcover world_cover/<
 ```
 
 ERA5-Land soil moisture (~9 km) is only a coarse sanity check; for a meaningful
-comparison export a fine-resolution satellite moisture layer (10–20 m) over the
-DEM footprint via Earth Engine.
+comparison export a fine-resolution satellite moisture layer over the DEM
+footprint. `fetch.py` can export two, both via Earth Engine to Google Drive
+(folder `EarthEngineMoisture`):
+
+- **`fetch_sentinel1_moisture`** — Sentinel-1 VV backscatter (90 m), the
+  strongest soil-moisture proxy (SAR, all-weather).
+- **`fetch_sentinel2_ndmi`** — Sentinel-2 NDMI `(B8−B11)/(B8+B11)` (20 m),
+  optical vegetation/surface moisture.
+
+These are large exports, so they only run when opted in:
+
+```bash
+EXPORT_SATELLITE_MOISTURE=1 python fetch.py   # queues the exports for the observed date span
+# ...download the GeoTIFF from Drive, then:
+python validate_wetness.py raster --satellite s1_vv_<window>.tif \
+    --landcover world_cover/<tile>.tif --scatter wetness_check.png
+```
+
+Sentinel-1 VV tracks bare/low-vegetation soil moisture best, so masking dense
+vegetation and built-up/water (via `--landcover`) sharpens the comparison.
 
 ## Nuxt frontend
 
