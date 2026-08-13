@@ -43,6 +43,26 @@ Stages (run in order):
 The DEM download needs a free [OpenTopography](https://portal.opentopography.org/login)
 API key in `OPENTOPOGRAPHY_API_KEY`.
 
+### Validating water retention against observed moisture
+
+`water_retention` is a *static* terrain prediction; `validate_wetness.py` checks
+how well it agrees with independently observed moisture. Because TWI is a
+potential (not an instantaneous state) and is log-scaled, agreement is measured
+with **Spearman rank** correlation and is strongest right after rain.
+
+```bash
+# Quick check against the columns already in the enriched CSV
+python validate_wetness.py points
+
+# Rigorous pixel-wise check against a satellite moisture raster you export
+# (Sentinel-1 VV backscatter, Sentinel-2 NDMI, or SMAP), masking water/built-up
+python validate_wetness.py raster --satellite ndmi.tif --landcover world_cover/<tile>.tif
+```
+
+ERA5-Land soil moisture (~9 km) is only a coarse sanity check; for a meaningful
+comparison export a fine-resolution satellite moisture layer (10–20 m) over the
+DEM footprint via Earth Engine.
+
 ## Nuxt frontend
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
