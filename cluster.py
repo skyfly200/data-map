@@ -9,7 +9,9 @@ def cluster_environmental(df, features=None, n_clusters=4):
         features = [
             'ndvi',
             'soil_moisture',
-            'prcp_d0', 'prcp_d1', 'prcp_d2', 'prcp_d3', 'prcp_d4', 'prcp_d5', 'prcp_d6'
+            'prcp_d0', 'prcp_d1', 'prcp_d2', 'prcp_d3', 'prcp_d4', 'prcp_d5', 'prcp_d6',
+            # Terrain exposure derived from the DEM (terrain_pipeline.py)
+            'solar_exposure', 'wind_exposure', 'water_retention'
         ]
 
     # Drop rows with missing values in those features
