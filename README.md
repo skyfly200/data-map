@@ -12,14 +12,25 @@ Install the pipeline dependencies:
 pip install -r requirements.txt
 ```
 
+### Credentials
+
+| For | Set |
+| --- | --- |
+| NDVI / soil / satellite-moisture (Earth Engine) | run `python gauth.py` once; set `EARTHENGINE_PROJECT` to your Google Cloud project id |
+| DEM ([OpenTopography](https://portal.opentopography.org/login)) | `OPENTOPOGRAPHY_API_KEY` |
+| Soil moisture ([Copernicus CDS](https://cds.climate.copernicus.eu)) | `.cdsapirc` (and accept the ERA5-Land license on the CDS site) |
+
 Stages (run in order):
 
 1. **`iNat.py`** — pull mushroom observations from iNaturalist (+ elevation and
    weather) → `mushroom_observations.csv`.
-2. **`fetch.py`** — download the environmental rasters for those observations:
-   NDVI (Sentinel-2 via Earth Engine), soil moisture (ERA5-Land), precipitation
-   (CHIRPS), and **topography (SRTM DEM)**. After the DEM downloads it runs
-   `terrain_pipeline.process_dem` to derive the terrain-exposure layers.
+2. **`fetch.py`** — download *all* the environmental data for those observations,
+   end to end: NDVI (Sentinel-2 via Earth Engine), soil moisture (ERA5-Land),
+   precipitation (CHIRPS, 7-day history), land cover (ESA WorldCover tiles,
+   auto-downloaded), and **topography (SRTM DEM)**. After the DEM downloads it
+   runs `terrain_pipeline.process_dem` to derive the terrain-exposure layers.
+   NDVI is exported asynchronously to Google Drive (folder `EarthEngineNDVI`) —
+   download those GeoTIFFs into `ndvi/` before enriching.
 3. **`terrain_pipeline.py`** — turn the raw DEM into terrain-exposure layers
    (see below). Runs automatically from `fetch.py`, or standalone:
    `python terrain_pipeline.py --dem dem/dem_SRTMGL3.tif`.
