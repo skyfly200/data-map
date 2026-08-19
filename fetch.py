@@ -1,6 +1,7 @@
 import ee
 import pandas as pd
 from datetime import timedelta
+import math
 import os
 import cdsapi
 import zipfile
@@ -114,8 +115,9 @@ def download_era5_soil_moisture(date_str, output_dir="soil/"):
     print(f"✅ Saved NetCDF to {nc_path}")
     return nc_path
 
-# Initialize Earth Engine
-ee.Initialize()
+# Initialize Earth Engine. Current EE requires a registered Cloud project;
+# set EARTHENGINE_PROJECT to your project id (bare Initialize() otherwise).
+ee.Initialize(project=os.environ.get("EARTHENGINE_PROJECT"))
 
 def fetch_sentinel2_ndvi(lat, lon, date_str, output_dir="ndvi/"):
     date = pd.to_datetime(date_str)
@@ -266,18 +268,93 @@ def get_unique_dates(df):
     return sorted(pd.to_datetime(df['date'].dropna()).dt.strftime('%Y-%m-%d').unique())
 
 
+def get_precip_dates(df, buffer_days=6):
+    """Every date needed for a ``buffer_days`` precipitation history: each
+    observation date plus the preceding days (matches enrich_with_precip)."""
+    all_dates = set()
+    for d in pd.to_datetime(df['date'].dropna()):
+        for i in range(buffer_days + 1):
+            all_dates.add((d - timedelta(days=i)).strftime('%Y-%m-%d'))
+    return sorted(all_dates)
+
+
+# ─── Land Cover (ESA WorldCover) ──────────────────────────────────────────────
+def _worldcover_tile_name(lat, lon, year=2020, version="v100"):
+    """WorldCover tiles are 3°×3°, named by their SW corner (mirrors
+    enrich_with_rasters.get_worldcover_tile_name)."""
+    lat_deg = math.floor(lat / 3) * 3
+    lon_deg = math.floor(lon / 3) * 3
+    lat_prefix = "N" if lat_deg >= 0 else "S"
+    lon_prefix = "E" if lon_deg >= 0 else "W"
+    return (f"ESA_WorldCover_10m_{year}_{version}_"
+            f"{lat_prefix}{abs(lat_deg):02d}{lon_prefix}{abs(lon_deg):03d}_Map.tif")
+
+
+def download_worldcover_tiles(df, output_dir="world_cover/", year=2020, version="v100"):
+    """Auto-download the ESA WorldCover tiles covering the observations.
+
+    Tiles are served from the ESA WorldCover open bucket on AWS S3. Only the
+    unique tiles spanned by the observation points are fetched, and existing
+    files are skipped.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    base_url = f"https://esa-worldcover.s3.eu-central-1.amazonaws.com/{version}/{year}/map"
+
+    tiles = set()
+    for _, row in df.iterrows():
+        if pd.isna(row.get('lat')) or pd.isna(row.get('lon')):
+            continue
+        tiles.add(_worldcover_tile_name(row['lat'], row['lon'], year, version))
+
+    print(f"🗺  Ensuring {len(tiles)} WorldCover tile(s)...")
+    for tile in sorted(tiles):
+        out_path = os.path.join(output_dir, tile)
+        if os.path.exists(out_path):
+            print(f"✅ Already downloaded: {out_path}")
+            continue
+        url = f"{base_url}/{tile}"
+        try:
+            print(f"🔽 Downloading {tile}...")
+            r = requests.get(url, stream=True, timeout=120)
+            if r.status_code == 404:
+                print(f"⚠️ WorldCover tile not found (ocean or out of coverage?): {tile}")
+                continue
+            r.raise_for_status()
+            with open(out_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            print(f"✅ WorldCover saved to {out_path}")
+        except Exception as e:
+            print(f"[!] Error fetching WorldCover tile {tile}: {e}")
+            if os.path.exists(out_path):
+                os.remove(out_path)
+
+
 df = pd.read_csv('mushroom_observations.csv')
 
-# for idx, row in df.iterrows():
-#     if pd.isna(row['lat']) or pd.isna(row['lon']) or pd.isna(row['date']):
-#         continue
-#     print(f"Fetching NDVI for {row['date']} at ({row['lat']}, {row['lon']})")
-#     fetch_sentinel2_ndvi(row['lat'], row['lon'], row['date'])
+# ─── NDVI (Sentinel-2) ────────────────────────────────────────────────────────
+# One Earth Engine export task per observation, delivered to Google Drive
+# (folder 'EarthEngineNDVI'). Download those GeoTIFFs into ndvi/ for enrichment.
+print("Fetching Sentinel-2 NDVI exports...")
+for idx, row in df.iterrows():
+    if pd.isna(row['lat']) or pd.isna(row['lon']) or pd.isna(row['date']):
+        continue
+    print(f"  → NDVI for {row['date']} at ({row['lat']}, {row['lon']})")
+    fetch_sentinel2_ndvi(row['lat'], row['lon'], row['date'])
 
+# ─── Soil moisture (ERA5-Land) ────────────────────────────────────────────────
 needed_dates = get_unique_dates(df)
-
 for date_str in needed_dates:
     download_era5_soil_moisture(date_str)
+
+# ─── Precipitation (CHIRPS) ───────────────────────────────────────────────────
+# Each observation date plus the 6 preceding days, for a 7-day rain history.
+print("Fetching CHIRPS precipitation...")
+for date_str in get_precip_dates(df, buffer_days=6):
+    fetch_chirps_precip(date_str)
+
+# ─── Land cover (ESA WorldCover) ──────────────────────────────────────────────
+download_worldcover_tiles(df)
 
 # Topography is static — fetch the DEM once, then derive the terrain layers
 # (slope, aspect, solar/wind exposure, water retention) from it.
