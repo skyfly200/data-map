@@ -115,9 +115,14 @@ def download_era5_soil_moisture(date_str, output_dir="soil/"):
     print(f"✅ Saved NetCDF to {nc_path}")
     return nc_path
 
-# Initialize Earth Engine. Current EE requires a registered Cloud project;
-# set EARTHENGINE_PROJECT to your project id (bare Initialize() otherwise).
-ee.Initialize(project=os.environ.get("EARTHENGINE_PROJECT"))
+def init_earth_engine():
+    """Initialize Earth Engine. Current EE requires a registered Cloud project;
+    set EARTHENGINE_PROJECT to your project id (bare Initialize() otherwise).
+
+    Call this before any Earth Engine function (NDVI / satellite-moisture
+    exports). ``main()`` calls it automatically; in a notebook call it once
+    yourself (or run ``ee.Initialize(...)`` directly)."""
+    ee.Initialize(project=os.environ.get("EARTHENGINE_PROJECT"))
 
 def fetch_sentinel2_ndvi(lat, lon, date_str, output_dir="ndvi/"):
     date = pd.to_datetime(date_str)
@@ -330,53 +335,64 @@ def download_worldcover_tiles(df, output_dir="world_cover/", year=2020, version=
                 os.remove(out_path)
 
 
-df = pd.read_csv('mushroom_observations.csv')
+def main(csv_path='mushroom_observations.csv'):
+    """Download every environmental layer for the observations, end to end.
 
-# ─── NDVI (Sentinel-2) ────────────────────────────────────────────────────────
-# One Earth Engine export task per observation, delivered to Google Drive
-# (folder 'EarthEngineNDVI'). Download those GeoTIFFs into ndvi/ for enrichment.
-print("Fetching Sentinel-2 NDVI exports...")
-for idx, row in df.iterrows():
-    if pd.isna(row['lat']) or pd.isna(row['lon']) or pd.isna(row['date']):
-        continue
-    print(f"  → NDVI for {row['date']} at ({row['lat']}, {row['lon']})")
-    fetch_sentinel2_ndvi(row['lat'], row['lon'], row['date'])
+    Importable so notebooks can call individual fetch functions without
+    triggering the whole download; only running the file (or calling main())
+    kicks off the pipeline.
+    """
+    init_earth_engine()
+    df = pd.read_csv(csv_path)
 
-# ─── Soil moisture (ERA5-Land) ────────────────────────────────────────────────
-needed_dates = get_unique_dates(df)
-for date_str in needed_dates:
-    download_era5_soil_moisture(date_str)
+    # ─── NDVI (Sentinel-2) ────────────────────────────────────────────────────
+    # One Earth Engine export task per observation, delivered to Google Drive
+    # (folder 'EarthEngineNDVI'). Download those GeoTIFFs into ndvi/ to enrich.
+    print("Fetching Sentinel-2 NDVI exports...")
+    for idx, row in df.iterrows():
+        if pd.isna(row['lat']) or pd.isna(row['lon']) or pd.isna(row['date']):
+            continue
+        print(f"  → NDVI for {row['date']} at ({row['lat']}, {row['lon']})")
+        fetch_sentinel2_ndvi(row['lat'], row['lon'], row['date'])
 
-# ─── Precipitation (CHIRPS) ───────────────────────────────────────────────────
-# Each observation date plus the 6 preceding days, for a 7-day rain history.
-print("Fetching CHIRPS precipitation...")
-for date_str in get_precip_dates(df, buffer_days=6):
-    fetch_chirps_precip(date_str)
+    # ─── Soil moisture (ERA5-Land) ────────────────────────────────────────────
+    for date_str in get_unique_dates(df):
+        download_era5_soil_moisture(date_str)
 
-# ─── Land cover (ESA WorldCover) ──────────────────────────────────────────────
-download_worldcover_tiles(df)
+    # ─── Precipitation (CHIRPS) ───────────────────────────────────────────────
+    # Each observation date plus the 6 preceding days, for a 7-day rain history.
+    print("Fetching CHIRPS precipitation...")
+    for date_str in get_precip_dates(df, buffer_days=6):
+        fetch_chirps_precip(date_str)
 
-# Topography is static — fetch the DEM once, then derive the terrain layers
-# (slope, aspect, solar/wind exposure, water retention) from it.
-dem_path = download_srtm_dem()
-if dem_path:
-    try:
-        from terrain_pipeline import process_dem
-        process_dem(dem_path)
-    except Exception as e:
-        print(f"[!] Terrain processing skipped: {e}")
+    # ─── Land cover (ESA WorldCover) ──────────────────────────────────────────
+    download_worldcover_tiles(df)
 
-# Independent satellite moisture layer for validating the wetness index.
-# Opt-in (these are large Earth Engine exports to Drive): set
-# EXPORT_SATELLITE_MOISTURE=1. Download the resulting GeoTIFF from Drive, then:
-#   python validate_wetness.py raster --satellite s1_vv_<window>.tif
-if os.environ.get("EXPORT_SATELLITE_MOISTURE") == "1":
-    # Match the export window to the span of observed dates.
-    obs_dates = pd.to_datetime(df['date'].dropna())
-    win_start = obs_dates.min().strftime('%Y-%m-%d')
-    win_end = obs_dates.max().strftime('%Y-%m-%d')
-    print(f"🛰  Exporting satellite moisture layers for {win_start}→{win_end}...")
-    fetch_sentinel1_moisture(start_date=win_start, end_date=win_end)
-    fetch_sentinel2_ndmi(start_date=win_start, end_date=win_end)
-    print("   Exports queued to Google Drive (folder 'EarthEngineMoisture'). "
-          "Download them, then run validate_wetness.py raster.")
+    # Topography is static — fetch the DEM once, then derive the terrain layers
+    # (slope, aspect, solar/wind exposure, water retention) from it.
+    dem_path = download_srtm_dem()
+    if dem_path:
+        try:
+            from terrain_pipeline import process_dem
+            process_dem(dem_path)
+        except Exception as e:
+            print(f"[!] Terrain processing skipped: {e}")
+
+    # Independent satellite moisture layer for validating the wetness index.
+    # Opt-in (these are large Earth Engine exports to Drive): set
+    # EXPORT_SATELLITE_MOISTURE=1. Download the GeoTIFF from Drive, then:
+    #   python validate_wetness.py raster --satellite s1_vv_<window>.tif
+    if os.environ.get("EXPORT_SATELLITE_MOISTURE") == "1":
+        # Match the export window to the span of observed dates.
+        obs_dates = pd.to_datetime(df['date'].dropna())
+        win_start = obs_dates.min().strftime('%Y-%m-%d')
+        win_end = obs_dates.max().strftime('%Y-%m-%d')
+        print(f"🛰  Exporting satellite moisture layers for {win_start}→{win_end}...")
+        fetch_sentinel1_moisture(start_date=win_start, end_date=win_end)
+        fetch_sentinel2_ndmi(start_date=win_start, end_date=win_end)
+        print("   Exports queued to Google Drive (folder 'EarthEngineMoisture'). "
+              "Download them, then run validate_wetness.py raster.")
+
+
+if __name__ == "__main__":
+    main()
