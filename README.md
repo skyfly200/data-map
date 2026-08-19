@@ -12,14 +12,25 @@ Install the pipeline dependencies:
 pip install -r requirements.txt
 ```
 
+### Credentials
+
+| For | Set |
+| --- | --- |
+| NDVI / soil / satellite-moisture (Earth Engine) | run `python gauth.py` once; set `EARTHENGINE_PROJECT` to your Google Cloud project id |
+| DEM ([OpenTopography](https://portal.opentopography.org/login)) | `OPENTOPOGRAPHY_API_KEY` |
+| Soil moisture ([Copernicus CDS](https://cds.climate.copernicus.eu)) | `.cdsapirc` (and accept the ERA5-Land license on the CDS site) |
+
 Stages (run in order):
 
 1. **`iNat.py`** — pull mushroom observations from iNaturalist (+ elevation and
    weather) → `mushroom_observations.csv`.
-2. **`fetch.py`** — download the environmental rasters for those observations:
-   NDVI (Sentinel-2 via Earth Engine), soil moisture (ERA5-Land), precipitation
-   (CHIRPS), and **topography (SRTM DEM)**. After the DEM downloads it runs
-   `terrain_pipeline.process_dem` to derive the terrain-exposure layers.
+2. **`fetch.py`** — download *all* the environmental data for those observations,
+   end to end: NDVI (Sentinel-2 via Earth Engine), soil moisture (ERA5-Land),
+   precipitation (CHIRPS, 7-day history), land cover (ESA WorldCover tiles,
+   auto-downloaded), and **topography (SRTM DEM)**. After the DEM downloads it
+   runs `terrain_pipeline.process_dem` to derive the terrain-exposure layers.
+   NDVI is exported asynchronously to Google Drive (folder `EarthEngineNDVI`) —
+   download those GeoTIFFs into `ndvi/` before enriching.
 3. **`terrain_pipeline.py`** — turn the raw DEM into terrain-exposure layers
    (see below). Runs automatically from `fetch.py`, or standalone:
    `python terrain_pipeline.py --dem dem/dem_SRTMGL3.tif`.
@@ -27,6 +38,24 @@ Stages (run in order):
    layers) at each observation point → `mushroom_observations_enriched.csv`.
 5. **`cluster.py`** — KMeans-cluster observations by environmental similarity →
    `mushroom_clusters.csv`.
+
+### Running in a notebook / Colab
+
+Every module is import-safe — the run logic lives in functions behind an
+`if __name__ == "__main__"` guard — so you can drive stages cell by cell:
+
+```python
+import ee; ee.Initialize(project="your-gcp-project")   # or fetch.init_earth_engine()
+import fetch, enrich_with_rasters as enrich, terrain_pipeline as terrain
+
+fetch.download_worldcover_tiles(df)          # call individual steps...
+fetch.main()                                  # ...or run the whole download
+terrain.process_dem("dem/dem_SRTMGL3.tif")
+```
+
+In Colab, `pip install rasterio netCDF4 earthengine-api cdsapi`, authenticate
+Earth Engine with `ee.Authenticate()`, and note that NDVI/satellite-moisture
+exports still land in Google Drive (download them before enriching).
 
 ### Topographic exposure layers
 
