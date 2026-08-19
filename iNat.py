@@ -74,12 +74,17 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
     df = pd.DataFrame(observations)
     return df
 
-print("Fetching iNaturalist data...")
-df_inat = fetch_inat_data()
-print("Data fetched successfully.")
-# print(df_inat.head())
-print("Saving data to CSV...")
-df_inat.to_csv('mushroom_observations.csv', index=False)
-print("Saving data to GeoJSON...")
-df_inat.to_json('mushroom_observations.geojson', orient='records')
-print("Data saved successfully.")
+def main():
+    print("Fetching iNaturalist data...")
+    df_inat = fetch_inat_data()
+    print("Data fetched successfully.")
+    # print(df_inat.head())
+    print("Saving data to CSV...")
+    df_inat.to_csv('mushroom_observations.csv', index=False)
+    print("Saving data to GeoJSON...")
+    df_inat.to_json('mushroom_observations.geojson', orient='records')
+    print("Data saved successfully.")
+
+
+if __name__ == "__main__":
+    main()

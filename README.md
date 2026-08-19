@@ -39,6 +39,24 @@ Stages (run in order):
 5. **`cluster.py`** — KMeans-cluster observations by environmental similarity →
    `mushroom_clusters.csv`.
 
+### Running in a notebook / Colab
+
+Every module is import-safe — the run logic lives in functions behind an
+`if __name__ == "__main__"` guard — so you can drive stages cell by cell:
+
+```python
+import ee; ee.Initialize(project="your-gcp-project")   # or fetch.init_earth_engine()
+import fetch, enrich_with_rasters as enrich, terrain_pipeline as terrain
+
+fetch.download_worldcover_tiles(df)          # call individual steps...
+fetch.main()                                  # ...or run the whole download
+terrain.process_dem("dem/dem_SRTMGL3.tif")
+```
+
+In Colab, `pip install rasterio netCDF4 earthengine-api cdsapi`, authenticate
+Earth Engine with `ee.Authenticate()`, and note that NDVI/satellite-moisture
+exports still land in Google Drive (download them before enriching).
+
 ### Topographic exposure layers
 
 `terrain_pipeline.py` reads the DEM and writes these GeoTIFFs to
