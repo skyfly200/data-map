@@ -110,7 +110,68 @@ python validate_wetness.py raster --satellite s1_vv_<window>.tif \
 Sentinel-1 VV tracks bare/low-vegetation soil moisture best, so masking dense
 vegetation and built-up/water (via `--landcover`) sharpens the comparison.
 
-## Nuxt frontend
+## Nuxt frontend & Netlify deploy
+
+The frontend is a Nuxt 3 app that renders the observations on a Leaflet map,
+coloured by environmental cluster, with the enriched attributes in each popup.
+It reads a **static GeoJSON** file — no backend or database.
+
+Data flow: the Python pipeline runs **offline** and produces a small GeoJSON that
+the app serves statically. The heavy raster processing never runs on Netlify.
+
+```
+enrich_with_rasters.py → cluster.py → export_geojson.py
+                                          → public/data/observations.geojson
+                                                → committed → Netlify redeploys
+```
+
+Regenerate the map data after re-running the pipeline:
+
+```bash
+python export_geojson.py          # writes public/data/observations.geojson
+```
+
+Run the site locally:
+
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
+
+**Netlify:** `netlify.toml` pins the build (`npm run build`, publish `dist`,
+Node 20); Nuxt's Nitro auto-selects the Netlify preset. Only the small GeoJSON
+in `public/data/` is served — keep the raster folders (`soil/ ndvi/ dem/ …`)
+out of the deploy (they are gitignored). Do **not** put Earth Engine /
+OpenTopography / CDS credentials in Netlify; those belong only to the offline
+pipeline.
+
+### Keeping the data fresh (automated)
+
+Two schedules refresh the map, split by what each environment can run:
+
+- **GitHub Action** (`.github/workflows/refresh-data.yml`, daily) runs the
+  Python pipeline headless — the parts that need Python (raster download,
+  terrain derivation, enrichment, clustering) — and commits an updated
+  `public/data/observations.geojson`, which triggers a Netlify redeploy. Earth
+  Engine steps are skipped (`SKIP_EARTH_ENGINE=1`, since EE exports to Drive
+  can't run headless). Put `OPENTOPOGRAPHY_API_KEY` (and optionally
+  `CDSAPI_URL` / `CDSAPI_KEY`) in the repo's Actions secrets.
+
+- **Scheduled Netlify Function** (`netlify/functions/refresh-observations.mjs`,
+  every 6 h) does a fast, light refresh in Node: fetches recent iNaturalist
+  sightings, merges any new ones onto the committed baseline, samples the
+  terrain rasters for those points (if `data/terrain/*.tif` are committed), and
+  writes the result to **Netlify Blobs**. The serving function
+  (`netlify/functions/observations.mjs`) returns that fresh copy, or the
+  baseline file if the blob isn't present. The map fetches
+  `/.netlify/functions/observations` and falls back to the static file.
+
+  Netlify functions can't run Python/GDAL/Earth Engine, so the light refresh
+  only adds new sightings with terrain context; the satellite-derived columns
+  (NDVI, soil moisture) are filled in on the next GitHub Action run.
+
+  Configure the iNaturalist query with env vars (`INAT_TAXON`, `INAT_LAT`,
+  `INAT_LNG`, `INAT_RADIUS`) in the Netlify site settings.
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
