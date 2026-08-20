@@ -110,7 +110,40 @@ python validate_wetness.py raster --satellite s1_vv_<window>.tif \
 Sentinel-1 VV tracks bare/low-vegetation soil moisture best, so masking dense
 vegetation and built-up/water (via `--landcover`) sharpens the comparison.
 
-## Nuxt frontend
+## Nuxt frontend & Netlify deploy
+
+The frontend is a Nuxt 3 app that renders the observations on a Leaflet map,
+coloured by environmental cluster, with the enriched attributes in each popup.
+It reads a **static GeoJSON** file — no backend or database.
+
+Data flow: the Python pipeline runs **offline** and produces a small GeoJSON that
+the app serves statically. The heavy raster processing never runs on Netlify.
+
+```
+enrich_with_rasters.py → cluster.py → export_geojson.py
+                                          → public/data/observations.geojson
+                                                → committed → Netlify redeploys
+```
+
+Regenerate the map data after re-running the pipeline:
+
+```bash
+python export_geojson.py          # writes public/data/observations.geojson
+```
+
+Run the site locally:
+
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
+
+**Netlify:** `netlify.toml` pins the build (`npm run build`, publish `dist`,
+Node 20); Nuxt's Nitro auto-selects the Netlify preset. Only the small GeoJSON
+in `public/data/` is served — keep the raster folders (`soil/ ndvi/ dem/ …`)
+out of the deploy (they are gitignored). Do **not** put Earth Engine /
+OpenTopography / CDS credentials in Netlify; those belong only to the offline
+pipeline (e.g. a scheduled GitHub Action that re-runs it and commits fresh data).
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
