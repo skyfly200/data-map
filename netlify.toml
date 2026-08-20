@@ -1,0 +1,12 @@
+# Netlify build config for the Nuxt frontend.
+# Nuxt 3 (Nitro) auto-selects the Netlify preset when building on Netlify and
+# emits static assets + any server routes into `dist`. The Python data pipeline
+# does NOT run here — it runs offline and commits public/data/observations.geojson,
+# which this build serves statically.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
