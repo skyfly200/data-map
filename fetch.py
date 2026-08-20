@@ -342,47 +342,69 @@ def main(csv_path='mushroom_observations.csv'):
     triggering the whole download; only running the file (or calling main())
     kicks off the pipeline.
     """
-    init_earth_engine()
+    # Earth Engine (NDVI + satellite-moisture exports) needs interactive/service
+    # auth and delivers to Google Drive, so it can't run headless. Set
+    # SKIP_EARTH_ENGINE=1 (e.g. in CI) to skip every EE step and still fetch the
+    # DEM/terrain, precipitation, soil moisture, and land-cover layers.
+    skip_ee = os.environ.get("SKIP_EARTH_ENGINE") == "1"
+    if not skip_ee:
+        init_earth_engine()
+
     df = pd.read_csv(csv_path)
 
     # ─── NDVI (Sentinel-2) ────────────────────────────────────────────────────
     # One Earth Engine export task per observation, delivered to Google Drive
     # (folder 'EarthEngineNDVI'). Download those GeoTIFFs into ndvi/ to enrich.
-    print("Fetching Sentinel-2 NDVI exports...")
-    for idx, row in df.iterrows():
-        if pd.isna(row['lat']) or pd.isna(row['lon']) or pd.isna(row['date']):
-            continue
-        print(f"  → NDVI for {row['date']} at ({row['lat']}, {row['lon']})")
-        fetch_sentinel2_ndvi(row['lat'], row['lon'], row['date'])
+    if skip_ee:
+        print("Skipping Sentinel-2 NDVI exports (SKIP_EARTH_ENGINE=1).")
+    else:
+        print("Fetching Sentinel-2 NDVI exports...")
+        for idx, row in df.iterrows():
+            if pd.isna(row['lat']) or pd.isna(row['lon']) or pd.isna(row['date']):
+                continue
+            print(f"  → NDVI for {row['date']} at ({row['lat']}, {row['lon']})")
+            fetch_sentinel2_ndvi(row['lat'], row['lon'], row['date'])
+
+    # Each stage is isolated so one failing data source (e.g. a missing CDS key
+    # in CI) doesn't abort the rest of the pipeline.
 
     # ─── Soil moisture (ERA5-Land) ────────────────────────────────────────────
-    for date_str in get_unique_dates(df):
-        download_era5_soil_moisture(date_str)
+    try:
+        for date_str in get_unique_dates(df):
+            download_era5_soil_moisture(date_str)
+    except Exception as e:
+        print(f"[!] Soil moisture download skipped: {e}")
 
     # ─── Precipitation (CHIRPS) ───────────────────────────────────────────────
     # Each observation date plus the 6 preceding days, for a 7-day rain history.
     print("Fetching CHIRPS precipitation...")
-    for date_str in get_precip_dates(df, buffer_days=6):
-        fetch_chirps_precip(date_str)
+    try:
+        for date_str in get_precip_dates(df, buffer_days=6):
+            fetch_chirps_precip(date_str)
+    except Exception as e:
+        print(f"[!] Precipitation download skipped: {e}")
 
     # ─── Land cover (ESA WorldCover) ──────────────────────────────────────────
-    download_worldcover_tiles(df)
+    try:
+        download_worldcover_tiles(df)
+    except Exception as e:
+        print(f"[!] WorldCover download skipped: {e}")
 
     # Topography is static — fetch the DEM once, then derive the terrain layers
     # (slope, aspect, solar/wind exposure, water retention) from it.
-    dem_path = download_srtm_dem()
-    if dem_path:
-        try:
+    try:
+        dem_path = download_srtm_dem()
+        if dem_path:
             from terrain_pipeline import process_dem
             process_dem(dem_path)
-        except Exception as e:
-            print(f"[!] Terrain processing skipped: {e}")
+    except Exception as e:
+        print(f"[!] Terrain processing skipped: {e}")
 
     # Independent satellite moisture layer for validating the wetness index.
     # Opt-in (these are large Earth Engine exports to Drive): set
     # EXPORT_SATELLITE_MOISTURE=1. Download the GeoTIFF from Drive, then:
     #   python validate_wetness.py raster --satellite s1_vv_<window>.tif
-    if os.environ.get("EXPORT_SATELLITE_MOISTURE") == "1":
+    if os.environ.get("EXPORT_SATELLITE_MOISTURE") == "1" and not skip_ee:
         # Match the export window to the span of observed dates.
         obs_dates = pd.to_datetime(df['date'].dropna())
         win_start = obs_dates.min().strftime('%Y-%m-%d')

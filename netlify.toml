@@ -1,0 +1,26 @@
+# Netlify build + functions config for the Nuxt frontend.
+# Nuxt 3 (Nitro) auto-selects the Netlify preset when building on Netlify and
+# emits static assets + its SSR route into `dist`. The Python data pipeline does
+# NOT run here — it runs offline (locally or in the GitHub Action) and commits
+# public/data/observations.geojson, which this build serves.
+#
+# Two custom functions add a live refresh layer:
+#   refresh-observations  – scheduled; fetches new iNaturalist sightings, merges
+#                           onto the committed baseline, writes to Netlify Blobs.
+#   observations          – serving; returns the blob copy, else the baseline.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+  # Bundle the baseline GeoJSON (and terrain rasters, if committed) so the
+  # functions can read them at runtime.
+  included_files = [
+    "public/data/observations.geojson",
+    "data/terrain/*.tif",
+  ]
