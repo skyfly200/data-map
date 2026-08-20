@@ -48,6 +48,20 @@ const loadError = ref('')
 const legend = ref([])
 let map
 
+// Prefer the live function (blob-backed, includes interim new sightings);
+// fall back to the committed static file if the function isn't available.
+async function loadObservations() {
+  try {
+    const res = await fetch('/.netlify/functions/observations')
+    if (res.ok) return await res.json()
+  } catch {
+    // fall through to the static file
+  }
+  const res = await fetch('/data/observations.geojson')
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return await res.json()
+}
+
 function colorFor(cluster) {
   if (cluster === null || cluster === undefined || Number.isNaN(cluster)) return UNCLUSTERED
   return PALETTE[cluster % PALETTE.length]
@@ -71,9 +85,7 @@ onMounted(async () => {
   }).addTo(map)
 
   try {
-    const res = await fetch('/data/observations.geojson')
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const geo = await res.json()
+    const geo = await loadObservations()
 
     const seen = new Set()
     const layer = L.geoJSON(geo, {

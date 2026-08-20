@@ -1,0 +1,79 @@
+name: Refresh map data
+
+# Runs the Python pipeline (the parts that need Python: raster download, terrain
+# derivation, enrichment, clustering) and commits a fresh GeoJSON for the Nuxt
+# site. Netlify redeploys on the commit. Earth Engine steps are skipped
+# (SKIP_EARTH_ENGINE) since EE exports to Drive can't run headless.
+
+on:
+  schedule:
+    - cron: "0 11 * * *"   # daily at 11:00 UTC
+  workflow_dispatch: {}      # allow manual runs
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-map-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      SKIP_EARTH_ENGINE: "1"
+      OPENTOPOGRAPHY_API_KEY: ${{ secrets.OPENTOPOGRAPHY_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Configure Copernicus CDS credentials (optional)
+        env:
+          CDSAPI_URL: ${{ secrets.CDSAPI_URL }}
+          CDSAPI_KEY: ${{ secrets.CDSAPI_KEY }}
+        run: |
+          if [ -n "$CDSAPI_URL" ] && [ -n "$CDSAPI_KEY" ]; then
+            printf 'url: %s\nkey: %s\n' "$CDSAPI_URL" "$CDSAPI_KEY" > ~/.cdsapirc
+            echo "Wrote ~/.cdsapirc"
+          else
+            echo "No CDS secrets set; using committed .cdsapirc if present."
+          fi
+
+      - name: Fetch observations
+        run: python iNat.py
+
+      - name: Download environmental layers (best effort)
+        continue-on-error: true
+        run: python fetch.py
+
+      - name: Enrich, cluster, export GeoJSON
+        run: |
+          python enrich_with_rasters.py
+          python cluster.py
+          python export_geojson.py
+
+      - name: Publish terrain rasters for the Netlify functions (if produced)
+        run: |
+          if ls dem/derived/*.tif >/dev/null 2>&1; then
+            mkdir -p data/terrain
+            cp dem/derived/*.tif data/terrain/
+          fi
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data/observations.geojson data/terrain 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "chore: refresh map data [skip ci]"
+            git push
+          fi
