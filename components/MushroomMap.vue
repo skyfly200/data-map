@@ -19,8 +19,10 @@
 import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { FIELDS, UNCLUSTERED, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { useUnits } from '~/composables/useUnits'
 
 const { data, load } = useObservations()
+const { elevLabel } = useUnits()
 
 const mapEl = ref(null)
 const loaded = ref(false)
@@ -35,10 +37,14 @@ function escapeHtml(s) {
 }
 
 function popupHtml(p) {
-  const rows = FIELDS
-    .filter(([key]) => hasValue(p[key]))
-    .map(([key, label, fmt]) => `<tr><th>${label}</th><td>${escapeHtml(fmt(p[key]))}</td></tr>`)
-    .join('')
+  const parts = []
+  if (hasValue(p.elevation)) {
+    parts.push(`<tr><th>Elevation</th><td>${escapeHtml(elevLabel(p.elevation))}</td></tr>`)
+  }
+  for (const [key, label, fmt] of FIELDS) {
+    if (hasValue(p[key])) parts.push(`<tr><th>${label}</th><td>${escapeHtml(fmt(p[key]))}</td></tr>`)
+  }
+  const rows = parts.join('')
   const species = p.species ? `<em>${escapeHtml(p.species)}</em>` : 'Observation'
   const url = inatUrl(p)
   const link = url ? `<a href="${url}" target="_blank" rel="noopener">View on iNaturalist ↗</a>` : ''
@@ -75,7 +81,9 @@ onMounted(async () => {
           fillColor: colorFor(c), fillOpacity: 0.85,
         })
       },
-      onEachFeature: (feature, lyr) => lyr.bindPopup(popupHtml(feature.properties)),
+      // Function content is re-evaluated each open, so popups reflect the
+      // current elevation unit without rebuilding the layer.
+      onEachFeature: (feature, lyr) => lyr.bindPopup(() => popupHtml(feature.properties)),
     }).addTo(map)
 
     const bounds = layer.getBounds()

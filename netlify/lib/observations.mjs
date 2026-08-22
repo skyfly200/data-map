@@ -67,6 +67,31 @@ export async function fetchInatFeatures(opts = {}, fetchImpl = fetch) {
   return (data.results || []).map(inatResultToFeature).filter(Boolean)
 }
 
+export function baselineUuidSet(baseline) {
+  return new Set((baseline?.features || []).map((f) => f.properties?.uuid).filter(Boolean))
+}
+
+// Fresh features whose uuid is not already in the (authoritative) baseline.
+export function newFeatures(baseline, fresh) {
+  const seen = baselineUuidSet(baseline)
+  return fresh.filter((f) => {
+    const id = f.properties?.uuid
+    return id && !seen.has(id)
+  })
+}
+
+// Baseline is authoritative: return it plus any extras not already present.
+// This keeps the committed, fully-enriched data (incl. clustering) winning over
+// an older blob — the blob only contributes genuinely-new interim sightings.
+export function overlay(baseline, extras) {
+  const seen = baselineUuidSet(baseline)
+  const add = (extras || []).filter((f) => {
+    const id = f.properties?.uuid
+    return !id || !seen.has(id)
+  })
+  return { type: 'FeatureCollection', features: [...(baseline?.features || []), ...add] }
+}
+
 // Add only the fresh features whose uuid is not already in the baseline.
 export function mergeByUuid(baseline, fresh) {
   const features = [...(baseline?.features || [])]
