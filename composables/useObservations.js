@@ -26,9 +26,9 @@ const num2 = (v) => Number(v).toFixed(2)
 const num3 = (v) => Number(v).toFixed(3)
 
 // Enriched attributes shown in the popup and table. key, label, formatter.
+// Elevation is handled separately so it can follow the reactive unit (useUnits).
 export const FIELDS = [
   ['date', 'Observed', (v) => v],
-  ['elevation', 'Elevation', (v) => `${Math.round(v)} m`],
   ['land_cover_label', 'Land cover', (v) => v],
   ['ndvi', 'NDVI', num3],
   ['soil_moisture', 'Soil moisture', num3],

@@ -29,6 +29,9 @@
               <template v-else-if="col.key === 'species'">
                 <em>{{ row.species || '—' }}</em>
               </template>
+              <template v-else-if="col.key === 'elevation'">
+                {{ hasValue(row.elevation) ? Math.round(elevValue(row.elevation)).toLocaleString() : '—' }}
+              </template>
               <template v-else>
                 {{ display(col, row[col.key]) }}
               </template>
@@ -46,15 +49,17 @@
 
 <script setup>
 import { colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { useUnits } from '~/composables/useUnits'
 
 const { rows, error, pending, load } = useObservations()
+const { unit, elevValue } = useUnits()
 onMounted(load)
 
-const columns = [
+const columns = computed(() => [
   { key: 'species', label: 'Species', sortable: true },
   { key: 'date', label: 'Observed', sortable: true },
   { key: 'location', label: 'Location', sortable: true },
-  { key: 'elevation', label: 'Elev (m)', sortable: true, numeric: true, round: 0 },
+  { key: 'elevation', label: `Elev (${unit.value})`, sortable: true, numeric: true },
   { key: 'land_cover_label', label: 'Land cover', sortable: true },
   { key: 'cluster', label: 'Cluster', sortable: true, numeric: true },
   { key: 'ndvi', label: 'NDVI', sortable: true, numeric: true, round: 3 },
@@ -62,7 +67,7 @@ const columns = [
   { key: 'solar_exposure', label: 'Solar', sortable: true, numeric: true, round: 2 },
   { key: 'wind_exposure', label: 'Wind', sortable: true, numeric: true, round: 2 },
   { key: 'water_retention', label: 'Water ret.', sortable: true, numeric: true, round: 2 },
-]
+])
 
 const query = ref('')
 const sortKey = ref('date')
