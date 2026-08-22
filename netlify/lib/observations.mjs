@@ -50,6 +50,7 @@ export function inatResultToFeature(obs) {
     geometry: { type: 'Point', coordinates: [coords[0], coords[1]] },
     properties: {
       uuid: obs.uuid ?? null,
+      inat_id: obs.id ?? null,
       species: obs.taxon?.name ?? null,
       date: obs.observed_on ?? null,
       location: obs.place_guess ?? null,

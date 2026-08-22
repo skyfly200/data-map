@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.cluster import KMeans
+from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 import argparse
 
@@ -14,20 +15,38 @@ def cluster_environmental(df, features=None, n_clusters=4):
             'solar_exposure', 'wind_exposure', 'water_retention'
         ]
 
-    # Drop rows with missing values in those features
-    df_cluster = df.dropna(subset=features).copy()
+    # Only use features that are actually present and not entirely empty. A layer
+    # that never got downloaded (e.g. NDVI still queued in Drive) would otherwise
+    # drop almost every row via listwise deletion, collapsing the clustering.
+    usable = [f for f in features
+              if f in df.columns and df[f].notna().any()]
+    dropped = [f for f in features if f not in usable]
+    if dropped:
+        print(f"⚠️  Skipping features with no data: {', '.join(dropped)}")
+    if not usable:
+        print("[!] No usable features present — cannot cluster. Run the pipeline first.")
+        df['cluster'] = None
+        return df
 
-    # Normalize the data
+    # Keep any row that has at least one usable feature; impute the rest (column
+    # mean) so a single missing layer no longer excludes the observation.
+    df_cluster = df.dropna(subset=usable, how='all').copy()
+
+    imputer = SimpleImputer(strategy='mean')
+    X = imputer.fit_transform(df_cluster[usable])
+
     scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(df_cluster[features])
+    X_scaled = scaler.fit_transform(X)
 
-    # Fit KMeans
-    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    # Can't form more clusters than we have samples.
+    k = min(n_clusters, len(df_cluster))
+    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
     df_cluster['cluster'] = kmeans.fit_predict(X_scaled)
 
     # Merge back into original DataFrame
     df = df.merge(df_cluster[['uuid', 'cluster']], on='uuid', how='left')
-    print(f"✅ Assigned {df['cluster'].notnull().sum()} rows to {n_clusters} clusters")
+    print(f"✅ Assigned {df['cluster'].notnull().sum()} rows to {k} clusters "
+          f"using {len(usable)} feature(s): {', '.join(usable)}")
     return df
 
 
