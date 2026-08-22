@@ -6,11 +6,17 @@
         <h1>Mushroom Observations</h1>
         <p>iNaturalist finds enriched with terrain &amp; environmental exposure, clustered by similarity.</p>
       </div>
-      <nav class="app-nav">
-        <NuxtLink to="/" class="nav-link">Map</NuxtLink>
-        <NuxtLink to="/table" class="nav-link">Table</NuxtLink>
-        <NuxtLink to="/charts" class="nav-link">Charts</NuxtLink>
-      </nav>
+      <div class="app-controls">
+        <div class="units" role="group" aria-label="Elevation units">
+          <button :class="{ active: unit === 'ft' }" @click="unit = 'ft'">ft</button>
+          <button :class="{ active: unit === 'm' }" @click="unit = 'm'">m</button>
+        </div>
+        <nav class="app-nav">
+          <NuxtLink to="/" class="nav-link">Map</NuxtLink>
+          <NuxtLink to="/table" class="nav-link">Table</NuxtLink>
+          <NuxtLink to="/charts" class="nav-link">Charts</NuxtLink>
+        </nav>
+      </div>
     </header>
     <main class="app-main">
       <NuxtPage />
@@ -19,9 +25,21 @@
 </template>
 
 <script setup>
+import { useUnits } from '~/composables/useUnits'
+
 useHead({
   title: 'data-map · Mushroom Observations',
   meta: [{ name: 'description', content: 'Mushroom observations enriched with terrain and environmental exposure.' }],
+})
+
+// Elevation unit: default feet, remembered per viewer.
+const { unit } = useUnits()
+onMounted(() => {
+  const saved = localStorage.getItem('elev-unit')
+  if (saved === 'm' || saved === 'ft') unit.value = saved
+})
+watch(unit, (v) => {
+  if (import.meta.client) localStorage.setItem('elev-unit', v)
 })
 </script>
 
@@ -37,6 +55,16 @@ body { font-family: system-ui, -apple-system, sans-serif; color: #1f2933; }
 }
 .brand h1 { margin: 0; font-size: 1.15rem; }
 .brand p { margin: 2px 0 0; font-size: 0.82rem; opacity: 0.8; }
+
+.app-controls { display: flex; align-items: center; gap: 14px; }
+
+.units { display: inline-flex; border: 1px solid #52606d; border-radius: 6px; overflow: hidden; }
+.units button {
+  border: 0; background: transparent; color: #cbd2d9; cursor: pointer;
+  padding: 5px 11px; font-size: 0.85rem; font-weight: 600;
+}
+.units button:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.units button.active { background: #3e4c59; color: #fff; }
 
 .app-nav { display: flex; gap: 6px; }
 .nav-link {

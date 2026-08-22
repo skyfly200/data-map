@@ -20,7 +20,7 @@
 
       <section class="card">
         <BarChart title="Elevation distribution" :data="elevationData" :format="int" />
-        <p class="note">Count of observations per elevation band (m).</p>
+        <p class="note">Count of observations per elevation band ({{ unit }}).</p>
       </section>
 
       <section class="card">
@@ -36,8 +36,10 @@
 
 <script setup>
 import { PALETTE, UNCLUSTERED, colorFor, hasValue, useObservations } from '~/composables/useObservations'
+import { useUnits } from '~/composables/useUnits'
 
 const { rows, error, pending, load } = useObservations()
+const { unit, elevValue } = useUnits()
 onMounted(load)
 
 const int = (v) => String(v)
@@ -85,14 +87,19 @@ const monthData = computed(() => {
 })
 
 const elevationData = computed(() => {
-  const vals = rows.value.map((r) => r.elevation).filter(hasValue)
+  const vals = rows.value.map((r) => r.elevation).filter(hasValue).map((m) => elevValue(m))
   if (!vals.length) return []
-  const min = Math.floor(Math.min(...vals) / 500) * 500
-  const max = Math.ceil(Math.max(...vals) / 500) * 500
+  const step = unit.value === 'ft' ? 1000 : 500
+  const min = Math.floor(Math.min(...vals) / step) * step
+  const max = Math.ceil(Math.max(...vals) / step) * step
   const bins = []
-  for (let lo = min; lo < max; lo += 500) {
-    const n = vals.filter((v) => v >= lo && v < lo + 500).length
-    bins.push({ label: `${lo}–${lo + 500} m`, short: `${lo / 1000}k`, value: n })
+  for (let lo = min; lo < max; lo += step) {
+    const n = vals.filter((v) => v >= lo && v < lo + step).length
+    bins.push({
+      label: `${lo.toLocaleString()}–${(lo + step).toLocaleString()} ${unit.value}`,
+      short: `${(lo / 1000)}k`,
+      value: n,
+    })
   }
   return bins
 })
