@@ -58,6 +58,7 @@ onMounted(load)
 const columns = computed(() => [
   { key: 'species', label: 'Species', sortable: true },
   { key: 'date', label: 'Observed', sortable: true },
+  { key: 'day_of_year', label: 'Day of yr', sortable: true, numeric: true },
   { key: 'location', label: 'Location', sortable: true },
   { key: 'elevation', label: `Elev (${unit.value})`, sortable: true, numeric: true },
   { key: 'land_cover_label', label: 'Land cover', sortable: true },

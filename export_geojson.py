@@ -34,6 +34,12 @@ PROPERTY_COLUMNS = [
     "aspect",
     "num_identification_agreements",
     "cluster",
+    # Observation-day weather
+    "tavg", "tmin", "tmax",
+    # 7-day lead-up history (d0 = observation day … d6 = six days before)
+    *(f"prcp_d{i}" for i in range(7)),   # rain (CHIRPS)
+    *(f"tmax_d{i}" for i in range(7)),   # daily high (Open-Meteo)
+    *(f"tmin_d{i}" for i in range(7)),   # daily low (Open-Meteo)
 ]
 
 INT_COLUMNS = {"cluster", "num_identification_agreements"}
@@ -57,6 +63,14 @@ def _clean(value, as_int=False):
     return value
 
 
+def _day_of_year(date_str):
+    """1–366 day-of-year, for sorting/comparing dates across years (phenology)."""
+    try:
+        return int(pd.to_datetime(date_str).dayofyear)
+    except Exception:
+        return None
+
+
 def to_geojson(df):
     features = []
     present = [c for c in PROPERTY_COLUMNS if c in df.columns]
@@ -67,6 +81,8 @@ def to_geojson(df):
             continue  # can't place a point without coordinates
 
         props = {c: _clean(row.get(c), as_int=c in INT_COLUMNS) for c in present}
+        if "date" in df.columns:
+            props["day_of_year"] = _day_of_year(row.get("date"))
         if "uuid" in df.columns:
             props["uuid"] = _clean(row.get("uuid"))
         if "inat_id" in df.columns:
