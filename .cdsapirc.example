@@ -1,0 +1,6 @@
+# Copernicus Climate Data Store (CDS) credentials for cdsapi (ERA5-Land soil
+# moisture in fetch.py). Copy this file to ~/.cdsapirc and fill in your own key
+# from https://cds.climate.copernicus.eu (Your profile → API key). Do NOT commit
+# the real file — it is gitignored.
+url: https://cds.climate.copernicus.eu/api
+key: <your-cds-api-key>
