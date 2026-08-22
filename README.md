@@ -18,7 +18,7 @@ pip install -r requirements.txt
 | --- | --- |
 | NDVI / soil / satellite-moisture (Earth Engine) | run `python gauth.py` once; set `EARTHENGINE_PROJECT` to your Google Cloud project id |
 | DEM ([OpenTopography](https://portal.opentopography.org/login)) | `OPENTOPOGRAPHY_API_KEY` |
-| Soil moisture ([Copernicus CDS](https://cds.climate.copernicus.eu)) | `.cdsapirc` (and accept the ERA5-Land license on the CDS site) |
+| Soil moisture ([Copernicus CDS](https://cds.climate.copernicus.eu)) | copy `.cdsapirc.example` to `~/.cdsapirc` with your key (and accept the ERA5-Land license on the CDS site) |
 
 Stages (run in order):
 
