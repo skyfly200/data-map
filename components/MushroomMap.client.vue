@@ -19,28 +19,9 @@
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { FIELDS, UNCLUSTERED, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
 
-// Qualitative palette (colour-blind friendly), indexed by cluster id.
-const PALETTE = ['#4e79a7', '#f28e2b', '#59a14f', '#e15759',
-                 '#b07aa1', '#76b7b2', '#ff9da7', '#9c755f']
-const UNCLUSTERED = '#9aa0a6'
-
-// property key -> [label, formatter]
-const FIELDS = [
-  ['date', 'Observed', (v) => v],
-  ['elevation', 'Elevation', (v) => `${Math.round(v)} m`],
-  ['land_cover_label', 'Land cover', (v) => v],
-  ['ndvi', 'NDVI', num3],
-  ['soil_moisture', 'Soil moisture', num3],
-  ['solar_exposure', 'Solar exposure', num2],
-  ['wind_exposure', 'Wind exposure', num2],
-  ['water_retention', 'Water retention', num2],
-  ['slope', 'Slope', (v) => `${num1(v)}°`],
-]
-
-function num1(v) { return Number(v).toFixed(1) }
-function num2(v) { return Number(v).toFixed(2) }
-function num3(v) { return Number(v).toFixed(3) }
+const { data, load } = useObservations()
 
 const mapEl = ref(null)
 const loaded = ref(false)
@@ -48,33 +29,24 @@ const loadError = ref('')
 const legend = ref([])
 let map
 
-// Prefer the live function (blob-backed, includes interim new sightings);
-// fall back to the committed static file if the function isn't available.
-async function loadObservations() {
-  try {
-    const res = await fetch('/.netlify/functions/observations')
-    if (res.ok) return await res.json()
-  } catch {
-    // fall through to the static file
-  }
-  const res = await fetch('/data/observations.geojson')
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return await res.json()
-}
-
-function colorFor(cluster) {
-  if (cluster === null || cluster === undefined || Number.isNaN(cluster)) return UNCLUSTERED
-  return PALETTE[cluster % PALETTE.length]
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ))
 }
 
 function popupHtml(p) {
   const rows = FIELDS
-    .filter(([key]) => p[key] !== null && p[key] !== undefined && p[key] !== '')
-    .map(([key, label, fmt]) => `<tr><th>${label}</th><td>${fmt(p[key])}</td></tr>`)
+    .filter(([key]) => hasValue(p[key]))
+    .map(([key, label, fmt]) => `<tr><th>${label}</th><td>${escapeHtml(fmt(p[key]))}</td></tr>`)
     .join('')
-  const species = p.species ? `<em>${p.species}</em>` : 'Observation'
+  const species = p.species ? `<em>${escapeHtml(p.species)}</em>` : 'Observation'
+  const url = inatUrl(p)
+  const link = url ? `<a href="${url}" target="_blank" rel="noopener">View on iNaturalist ↗</a>` : ''
   return `<div class="popup"><strong>${species}</strong>`
-    + (rows ? `<table>${rows}</table>` : '') + '</div>'
+    + (rows ? `<table>${rows}</table>` : '')
+    + (link ? `<div class="popup-link">${link}</div>` : '')
+    + '</div>'
 }
 
 onMounted(async () => {
@@ -85,7 +57,9 @@ onMounted(async () => {
   }).addTo(map)
 
   try {
-    const geo = await loadObservations()
+    await load()
+    const geo = data.value
+    if (!geo) throw new Error('no data')
 
     const seen = new Set()
     const layer = L.geoJSON(geo, {
@@ -141,4 +115,7 @@ onBeforeUnmount(() => { if (map) map.remove() })
 :deep(.popup table) { border-collapse: collapse; margin-top: 6px; }
 :deep(.popup th) { text-align: left; padding: 1px 10px 1px 0; color: #666; font-weight: 500; }
 :deep(.popup td) { text-align: right; }
+:deep(.popup-link) { margin-top: 8px; }
+:deep(.popup-link a) { color: #2b7a3d; font-weight: 600; text-decoration: none; }
+:deep(.popup-link a:hover) { text-decoration: underline; }
 </style>

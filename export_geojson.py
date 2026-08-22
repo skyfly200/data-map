@@ -69,6 +69,8 @@ def to_geojson(df):
         props = {c: _clean(row.get(c), as_int=c in INT_COLUMNS) for c in present}
         if "uuid" in df.columns:
             props["uuid"] = _clean(row.get("uuid"))
+        if "inat_id" in df.columns:
+            props["inat_id"] = _clean(row.get("inat_id"), as_int=True)
 
         features.append({
             "type": "Feature",

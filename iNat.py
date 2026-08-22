@@ -54,6 +54,7 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
 
         observations.append({
             'uuid': obs.get('uuid'),
+            'inat_id': obs.get('id'),  # numeric id for the canonical iNat URL
             'timestamp': timestamp,
             'date': date,
             'lon': coords[0],
