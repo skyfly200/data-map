@@ -5,20 +5,57 @@
     <div v-if="loadError" class="overlay error">{{ loadError }}</div>
     <div v-else-if="!loaded" class="overlay">Loading observations…</div>
 
-    <div v-if="loaded && legend.length" class="legend">
-      <div class="legend-title">Environmental cluster</div>
-      <div v-for="item in legend" :key="item.key" class="legend-row">
-        <span class="swatch" :style="{ background: item.color }"></span>
-        <span>{{ item.label }}</span>
-      </div>
+    <!-- Thematic layer selector -->
+    <div v-if="loaded" class="colorby">
+      <label for="colorby-sel">Color by</label>
+      <select id="colorby-sel" v-model="colorBy">
+        <option value="cluster">Cluster</option>
+        <option value="elevation">Elevation</option>
+        <option value="soil_moisture">Soil moisture</option>
+        <option value="water_retention">Water retention</option>
+        <option value="ndvi">NDVI</option>
+        <option value="land_cover_label">Land cover</option>
+      </select>
     </div>
+
+    <!-- Legend (categorical swatches or a sequential gradient) -->
+    <div v-if="loaded && coloring" class="legend">
+      <div class="legend-title">{{ coloring.title }}</div>
+      <template v-if="coloring.type === 'categorical'">
+        <div v-for="item in coloring.legend" :key="item.label" class="legend-row">
+          <span class="swatch" :style="{ background: item.color }"></span>
+          <span>{{ item.label }}</span>
+        </div>
+      </template>
+      <template v-else>
+        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${RAMP[0]}, ${RAMP[1]})` }"></div>
+        <div class="gradient-scale"><span>{{ fmtNum(coloring.min) }}</span><span>{{ fmtNum(coloring.max) }}</span></div>
+      </template>
+    </div>
+
+    <!-- Detail drawer with the weather lead-up -->
+    <transition name="slide">
+      <aside v-if="selected" class="drawer">
+        <button class="close" aria-label="Close" @click="selected = null">×</button>
+        <h3><em>{{ selected.species || 'Observation' }}</em></h3>
+        <dl class="meta">
+          <div v-if="selected.date"><dt>Observed</dt><dd>{{ selected.date }}</dd></div>
+          <div v-if="selected.location"><dt>Location</dt><dd>{{ selected.location }}</dd></div>
+          <div v-if="hasValue(selected.elevation)"><dt>Elevation</dt><dd>{{ elevLabel(selected.elevation) }}</dd></div>
+          <div v-if="hasValue(selected.land_cover_label)"><dt>Land cover</dt><dd>{{ selected.land_cover_label }}</dd></div>
+          <div v-if="hasValue(selected.cluster)"><dt>Cluster</dt><dd><span class="chip" :style="{ background: colorFor(selected.cluster) }">{{ selected.cluster }}</span></dd></div>
+        </dl>
+        <LeadUpCharts :p="selected" />
+        <a v-if="inatUrl(selected)" :href="inatUrl(selected)" target="_blank" rel="noopener" class="inat">View on iNaturalist ↗</a>
+      </aside>
+    </transition>
   </div>
 </template>
 
 <script setup>
 import 'leaflet/dist/leaflet.css'
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { FIELDS, UNCLUSTERED, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { PALETTE, UNCLUSTERED, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 
 const { data, load } = useObservations()
@@ -27,76 +64,113 @@ const { elevLabel } = useUnits()
 const mapEl = ref(null)
 const loaded = ref(false)
 const loadError = ref('')
-const legend = ref([])
-let map
+const colorBy = ref('cluster')
+const selected = ref(null)
+let map, geoLayer
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (c) => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
-  ))
+const RAMP = ['#e8f1fb', '#0b3d91'] // sequential light → dark blue
+
+const NUMERIC_LABEL = {
+  elevation: 'Elevation (m)', soil_moisture: 'Soil moisture',
+  water_retention: 'Water retention', ndvi: 'NDVI',
 }
 
-function popupHtml(p) {
-  const parts = []
-  if (hasValue(p.elevation)) {
-    parts.push(`<tr><th>Elevation</th><td>${escapeHtml(elevLabel(p.elevation))}</td></tr>`)
-  }
-  for (const [key, label, fmt] of FIELDS) {
-    if (hasValue(p[key])) parts.push(`<tr><th>${label}</th><td>${escapeHtml(fmt(p[key]))}</td></tr>`)
-  }
-  const rows = parts.join('')
-  const species = p.species ? `<em>${escapeHtml(p.species)}</em>` : 'Observation'
-  const url = inatUrl(p)
-  const link = url ? `<a href="${url}" target="_blank" rel="noopener">View on iNaturalist ↗</a>` : ''
-  return `<div class="popup"><strong>${species}</strong>`
-    + (rows ? `<table>${rows}</table>` : '')
-    + (link ? `<div class="popup-link">${link}</div>` : '')
-    + '</div>'
+function fmtNum(v) { return Math.abs(v) >= 100 ? Math.round(v).toLocaleString() : Number(v).toFixed(2) }
+
+function hexLerp(a, b, t) {
+  const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16))
+  const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16))
+  const c = pa.map((v, i) => Math.round(v + (pb[i] - v) * t))
+  return `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`
 }
+
+// Build the colour function + legend for the current "color by" dimension.
+const coloring = computed(() => {
+  const feats = data.value?.features || []
+  const key = colorBy.value
+
+  if (key === 'cluster') {
+    const seen = new Set()
+    let hasNull = false
+    for (const f of feats) {
+      const c = f.properties.cluster
+      if (hasValue(c)) seen.add(c); else hasNull = true
+    }
+    const legend = [...seen].sort((a, b) => a - b).map((c) => ({ label: `Cluster ${c}`, color: colorFor(c) }))
+    if (hasNull) legend.push({ label: 'Unclustered', color: UNCLUSTERED })
+    return { type: 'categorical', title: 'Cluster', colorFn: (p) => colorFor(p.cluster), legend }
+  }
+
+  if (key === 'land_cover_label') {
+    const cats = [...new Set(feats.map((f) => f.properties.land_cover_label).filter(hasValue))]
+    const map2 = new Map(cats.map((v, i) => [v, PALETTE[i % PALETTE.length]]))
+    return {
+      type: 'categorical', title: 'Land cover',
+      colorFn: (p) => (hasValue(p.land_cover_label) ? map2.get(p.land_cover_label) : UNCLUSTERED),
+      legend: cats.map((v) => ({ label: v, color: map2.get(v) })),
+    }
+  }
+
+  const vals = feats.map((f) => f.properties[key]).filter(hasValue).map(Number)
+  const min = vals.length ? Math.min(...vals) : 0
+  const max = vals.length ? Math.max(...vals) : 1
+  return {
+    type: 'sequential', title: NUMERIC_LABEL[key] || key, min, max,
+    colorFn: (p) => {
+      const v = p[key]
+      if (!hasValue(v)) return UNCLUSTERED
+      return hexLerp(RAMP[0], RAMP[1], (Number(v) - min) / ((max - min) || 1))
+    },
+  }
+})
+
+// Re-style markers when the colouring changes.
+watch(coloring, (c) => {
+  if (geoLayer) geoLayer.eachLayer((l) => l.setStyle({ fillColor: c.colorFn(l.feature.properties) }))
+})
 
 onMounted(async () => {
   try {
-    // Wait for the container to be in the DOM, then load Leaflet client-side.
     await nextTick()
     if (!mapEl.value) throw new Error('map container not ready')
     const L = (await import('leaflet')).default
 
-    map = L.map(mapEl.value, { scrollWheelZoom: true }).setView([39.5, -105.7], 7)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 18,
-    }).addTo(map)
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors', maxZoom: 19,
+    })
+    const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17,
+    })
+    const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Imagery © Esri', maxZoom: 19,
+    })
+
+    map = L.map(mapEl.value, { scrollWheelZoom: true, layers: [osm] }).setView([39.5, -105.7], 7)
+    L.control.layers(
+      { 'Street (OSM)': osm, 'Terrain (OpenTopoMap)': topo, 'Satellite (Esri)': sat },
+      {}, { position: 'topright', collapsed: true },
+    ).addTo(map)
 
     await load()
     const geo = data.value
     if (!geo) throw new Error('no data')
 
-    const seen = new Set()
-    const layer = L.geoJSON(geo, {
-      pointToLayer: (feature, latlng) => {
-        const c = feature.properties.cluster
-        if (c !== null && c !== undefined) seen.add(c)
-        return L.circleMarker(latlng, {
-          radius: 6, weight: 1, color: '#222',
-          fillColor: colorFor(c), fillOpacity: 0.85,
-        })
+    geoLayer = L.geoJSON(geo, {
+      pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
+        radius: 6, weight: 1, color: '#222',
+        fillColor: coloring.value.colorFn(feature.properties), fillOpacity: 0.85,
+      }),
+      onEachFeature: (feature, lyr) => {
+        lyr.bindTooltip(feature.properties.species || 'Observation', { direction: 'top' })
+        lyr.on('click', () => { selected.value = feature.properties })
       },
-      // Function content is re-evaluated each open, so popups reflect the
-      // current elevation unit without rebuilding the layer.
-      onEachFeature: (feature, lyr) => lyr.bindPopup(() => popupHtml(feature.properties)),
     }).addTo(map)
 
-    const bounds = layer.getBounds()
+    const bounds = geoLayer.getBounds()
     if (bounds.isValid()) map.fitBounds(bounds.pad(0.1))
-
-    legend.value = [...seen].sort((a, b) => a - b)
-      .map((c) => ({ key: c, color: colorFor(c), label: `Cluster ${c}` }))
-    if (geo.features.some((f) => f.properties.cluster === null || f.properties.cluster === undefined)) {
-      legend.value.push({ key: 'none', color: UNCLUSTERED, label: 'Unclustered' })
-    }
     loaded.value = true
   } catch (err) {
-    loadError.value = `Could not load observations (${err.message}).`
+    loadError.value = `Could not load map (${err.message}).`
   }
 })
 
@@ -114,20 +188,45 @@ onBeforeUnmount(() => { if (map) map.remove() })
 }
 .overlay.error { color: #b00020; }
 
+.colorby {
+  position: absolute; top: 12px; left: 12px; z-index: 500;
+  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
+  padding: 7px 10px; font: 13px system-ui, sans-serif; display: flex; gap: 8px; align-items: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+.colorby label { color: #6b7280; font-weight: 600; }
+.colorby select { border: 1px solid #cbd2d9; border-radius: 6px; padding: 3px 6px; font-size: 13px; }
+
 .legend {
   position: absolute; bottom: 18px; right: 12px; z-index: 500;
-  background: rgba(255, 255, 255, 0.94); border: 1px solid #ddd; border-radius: 8px;
-  padding: 10px 12px; font: 13px/1.4 system-ui, sans-serif; color: #222;
+  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
+  padding: 10px 12px; font: 13px/1.4 system-ui, sans-serif; color: #222; min-width: 120px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 .legend-title { font-weight: 600; margin-bottom: 6px; }
 .legend-row { display: flex; align-items: center; gap: 8px; }
-.swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #222; }
+.swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #222; flex: 0 0 auto; }
+.gradient { height: 12px; border-radius: 3px; border: 1px solid #ccc; }
+.gradient-scale { display: flex; justify-content: space-between; font-size: 11px; color: #6b7280; margin-top: 3px; }
 
-:deep(.popup table) { border-collapse: collapse; margin-top: 6px; }
-:deep(.popup th) { text-align: left; padding: 1px 10px 1px 0; color: #666; font-weight: 500; }
-:deep(.popup td) { text-align: right; }
-:deep(.popup-link) { margin-top: 8px; }
-:deep(.popup-link a) { color: #2b7a3d; font-weight: 600; text-decoration: none; }
-:deep(.popup-link a:hover) { text-decoration: underline; }
+.drawer {
+  position: absolute; top: 0; right: 0; z-index: 600; width: 320px; max-width: 86%;
+  height: 100%; background: #fff; box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2);
+  padding: 16px 18px; overflow-y: auto; font: 14px/1.45 system-ui, sans-serif;
+}
+.drawer h3 { margin: 0 26px 10px 0; font-size: 1.05rem; }
+.close {
+  position: absolute; top: 8px; right: 10px; border: 0; background: transparent;
+  font-size: 1.5rem; line-height: 1; color: #6b7280; cursor: pointer;
+}
+.meta { margin: 0 0 14px; display: grid; gap: 5px; }
+.meta div { display: grid; grid-template-columns: 84px 1fr; gap: 8px; }
+.meta dt { color: #6b7280; }
+.meta dd { margin: 0; }
+.chip { display: inline-block; min-width: 20px; padding: 0 7px; border-radius: 10px; color: #fff; font-weight: 600; text-align: center; }
+.inat { display: inline-block; margin-top: 14px; color: #2b7a3d; font-weight: 600; text-decoration: none; }
+.inat:hover { text-decoration: underline; }
+
+.slide-enter-active, .slide-leave-active { transition: transform 0.2s ease; }
+.slide-enter-from, .slide-leave-to { transform: translateX(100%); }
 </style>

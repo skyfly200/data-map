@@ -165,6 +165,50 @@ def enrich_with_terrain(df, terrain_dir="dem/derived/"):
 
     return df
 
+# ─── Temperature History Utilities ────────────────────────────────────────────
+# Daily high/low for the days leading up to each observation, from the keyless
+# Open-Meteo historical archive. Pairs with the CHIRPS precip history
+# (prcp_d0..d6) to chart the weather run-up to each find. d0 = observation day,
+# d6 = six days before.
+
+def enrich_with_temperature_history(df, days=7):
+    import requests
+
+    print(f"Adding {days}-day temperature history (Open-Meteo)...")
+    for d in range(days):
+        df[f'tmax_d{d}'] = None
+        df[f'tmin_d{d}'] = None
+
+    url = "https://archive-api.open-meteo.com/v1/archive"
+    for idx, row in df.iterrows():
+        if pd.isna(row.get('lat')) or pd.isna(row.get('lon')) or pd.isna(row.get('date')):
+            continue
+        obs_date = pd.to_datetime(row['date'])
+        start = (obs_date - timedelta(days=days - 1)).strftime('%Y-%m-%d')
+        end = obs_date.strftime('%Y-%m-%d')
+        try:
+            r = requests.get(url, params={
+                "latitude": row['lat'], "longitude": row['lon'],
+                "start_date": start, "end_date": end,
+                "daily": "temperature_2m_max,temperature_2m_min",
+                "timezone": "UTC",
+            }, timeout=30)
+            r.raise_for_status()
+            daily = r.json().get('daily', {})
+            highs = daily.get('temperature_2m_max', [])
+            lows = daily.get('temperature_2m_min', [])
+            # API returns ascending dates: index 0 = oldest (d{days-1}), last = d0.
+            n = len(highs)
+            for d in range(days):
+                j = n - 1 - d
+                if 0 <= j < n:
+                    df.at[idx, f'tmax_d{d}'] = highs[j]
+                    df.at[idx, f'tmin_d{d}'] = lows[j]
+        except Exception as e:
+            print(f"[!] Temp history failed for ({row['lat']}, {row['lon']}) {end}: {e}")
+
+    return df
+
 # ─── Soil Moisture Utilities ──────────────────────────────────────────────────
 
 def load_soil_moisture_dataset(nc_path):
@@ -295,6 +339,7 @@ if __name__ == "__main__":
     df = enrich_with_worldcover(df)
     df = add_worldcover_labels(df)
     df = enrich_with_terrain(df)
+    df = enrich_with_temperature_history(df)
 
     # 🧠 Fill missing NDVI using same-location fallback
     print("Filling missing NDVI...")
