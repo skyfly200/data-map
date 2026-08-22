@@ -17,8 +17,7 @@
 
 <script setup>
 import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { FIELDS, UNCLUSTERED, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
 
 const { data, load } = useObservations()
@@ -50,13 +49,18 @@ function popupHtml(p) {
 }
 
 onMounted(async () => {
-  map = L.map(mapEl.value, { scrollWheelZoom: true }).setView([39.5, -105.7], 7)
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 18,
-  }).addTo(map)
-
   try {
+    // Wait for the container to be in the DOM, then load Leaflet client-side.
+    await nextTick()
+    if (!mapEl.value) throw new Error('map container not ready')
+    const L = (await import('leaflet')).default
+
+    map = L.map(mapEl.value, { scrollWheelZoom: true }).setView([39.5, -105.7], 7)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(map)
+
     await load()
     const geo = data.value
     if (!geo) throw new Error('no data')
