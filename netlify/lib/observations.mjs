@@ -42,6 +42,14 @@ export function buildInatUrl({
   return `${INAT_API}?${params.toString()}`
 }
 
+function dayOfYear(dateStr) {
+  if (!dateStr) return null
+  const d = new Date(`${dateStr}T00:00:00Z`)
+  if (Number.isNaN(d.getTime())) return null
+  const start = Date.UTC(d.getUTCFullYear(), 0, 0)
+  return Math.floor((d.getTime() - start) / 86400000)
+}
+
 export function inatResultToFeature(obs) {
   const coords = obs?.geojson?.coordinates
   if (!coords || coords[0] == null || coords[1] == null) return null
@@ -53,6 +61,7 @@ export function inatResultToFeature(obs) {
       inat_id: obs.id ?? null,
       species: obs.taxon?.name ?? null,
       date: obs.observed_on ?? null,
+      day_of_year: dayOfYear(obs.observed_on),
       location: obs.place_guess ?? null,
       num_identification_agreements: obs.num_identification_agreements ?? null,
       ...EMPTY_PROPS,

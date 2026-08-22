@@ -4,32 +4,37 @@
     <p v-else-if="pending && !rows.length" class="msg">Loading…</p>
 
     <div v-else class="grid">
-      <section class="card">
+      <ChartCard>
         <BarChart title="Observations per environmental cluster" :data="clusterData" :format="int" />
         <p class="note">Colours match the map. “Unclustered” = missing every clustering feature.</p>
-      </section>
+      </ChartCard>
 
-      <section class="card">
+      <ChartCard>
+        <BarChart title="Avg. rain in the 7 days before an observation" :data="rainLeadUp" :format="mm" />
+        <p class="note">Mean daily precipitation (mm) across all observations, by days before the find.</p>
+      </ChartCard>
+
+      <ChartCard>
         <BarChart title="Enrichment coverage (values present)" :data="coverageData" :format="cov" horizontal />
         <p class="note">How many of the {{ rows.length }} observations carry each attribute. Gaps fill in as the full pipeline runs.</p>
-      </section>
+      </ChartCard>
 
-      <section class="card">
+      <ChartCard>
         <BarChart title="Observations by month" :data="monthData" :format="int" />
-      </section>
+      </ChartCard>
 
-      <section class="card">
+      <ChartCard>
         <BarChart title="Elevation distribution" :data="elevationData" :format="int" />
         <p class="note">Count of observations per elevation band ({{ unit }}).</p>
-      </section>
+      </ChartCard>
 
-      <section class="card">
+      <ChartCard>
         <BarChart title="Land cover" :data="landCoverData" :format="int" horizontal />
-      </section>
+      </ChartCard>
 
-      <section class="card">
+      <ChartCard>
         <BarChart title="Top species" :data="speciesData" :format="int" horizontal />
-      </section>
+      </ChartCard>
     </div>
   </div>
 </template>
@@ -44,6 +49,13 @@ onMounted(load)
 
 const int = (v) => String(v)
 const cov = (v) => `${v}/${rows.value.length}`
+const mm = (v) => `${v}`
+
+const rainLeadUp = computed(() => [6, 5, 4, 3, 2, 1, 0].map((o) => {
+  const vals = rows.value.map((r) => r[`prcp_d${o}`]).filter(hasValue).map(Number)
+  const mean = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
+  return { label: o === 0 ? 'day of' : `${o}d before`, short: o === 0 ? '0' : `-${o}`, value: Number(mean.toFixed(2)) }
+}))
 
 function countBy(list, keyFn) {
   const m = new Map()
@@ -122,9 +134,6 @@ const speciesData = computed(() => {
 .grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 16px;
-}
-.card {
-  background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px;
 }
 .note { margin: 8px 0 0; font-size: 0.78rem; color: #6b7280; }
 .msg { padding: 16px; color: #555; }
