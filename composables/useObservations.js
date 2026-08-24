@@ -1,6 +1,13 @@
 // Shared observation data + display helpers for every view (map, table, charts).
 // Data is fetched once on the client and cached in Nuxt state across pages.
 
+export const OBSERVATION_DATASETS = [
+  { id: 'latest', label: 'Latest processed', path: '/mushroom_observations.geojson' },
+  { id: 'baseline', label: 'Static baseline', path: '/data/observations.geojson' },
+  { id: 'morchella', label: 'Morchella sample 1', path: '/mushroom_observations_morchella_40.0_-105.0_500.0_20260824T224804Z.geojson' },
+  { id: 'amanita', label: 'Amanita sample', path: '/mushroom_observations_amanita_40.0_-105.0_500.0_20260824T225224Z.geojson' },
+]
+
 // Validated colour-blind-safe categorical palette (worst adjacent CVD ΔE 9.1),
 // indexed by cluster id. Identity is never colour-alone: the map has a legend,
 // popups name the cluster, charts direct-label, and a full table view exists.
@@ -43,35 +50,53 @@ export function hasValue(v) {
   return v !== null && v !== undefined && v !== ''
 }
 
-async function fetchObservations() {
-  // Prefer the live function (blob-backed, includes interim new sightings);
-  // fall back to the committed static file if the function isn't available.
-  try {
-    const res = await fetch('/.netlify/functions/observations')
-    if (res.ok) return await res.json()
-  } catch {
-    // fall through
+async function fetchObservations(datasetPath = '/mushroom_observations.geojson') {
+  // Prefer a direct dataset selection when one is set. If not, use the latest
+  // processed GeoJSON first, then fall back to the Netlify blob and static baseline.
+  for (const candidate of [datasetPath, '/.netlify/functions/observations', '/data/observations.geojson']) {
+    if (!candidate) continue
+    try {
+      const res = await fetch(candidate)
+      if (res.ok) return await res.json()
+    } catch {
+      // fall through to the next candidate
+    }
   }
-  const res = await fetch('/data/observations.geojson')
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return await res.json()
+  throw new Error('No observation dataset was available to load.')
 }
 
 export function useObservations() {
   const data = useState('observations', () => null)
   const error = useState('observations-error', () => '')
   const pending = useState('observations-pending', () => false)
+  const selectedDataset = useState('observations-dataset', () => {
+    if (import.meta.client) {
+      const saved = localStorage.getItem('observations-dataset')
+      if (saved) return saved
+    }
+    return OBSERVATION_DATASETS[0].path
+  })
+  const availableDatasets = OBSERVATION_DATASETS
 
   async function load() {
-    if (data.value || pending.value) return
+    if (pending.value) return
     pending.value = true
     try {
-      data.value = await fetchObservations()
+      data.value = await fetchObservations(selectedDataset.value)
+      error.value = ''
     } catch (e) {
       error.value = e.message
     } finally {
       pending.value = false
     }
+  }
+
+  function setDataset(path) {
+    selectedDataset.value = path
+    if (import.meta.client) localStorage.setItem('observations-dataset', path)
+    data.value = null
+    error.value = ''
+    return load()
   }
 
   // Convenience: a flat array of property objects (with lon/lat attached).
@@ -81,5 +106,5 @@ export function useObservations() {
     lat: f.geometry?.coordinates?.[1],
   })))
 
-  return { data, rows, error, pending, load }
+  return { data, rows, error, pending, load, setDataset, selectedDataset, availableDatasets }
 }

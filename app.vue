@@ -7,6 +7,14 @@
         <p>iNaturalist finds enriched with terrain &amp; environmental exposure, clustered by similarity.</p>
       </div>
       <div class="app-controls">
+        <div class="dataset-picker">
+          <label for="dataset-select">Dataset</label>
+          <select id="dataset-select" :value="selectedDataset" @change="handleDatasetChange">
+            <option v-for="dataset in availableDatasets" :key="dataset.id" :value="dataset.path">
+              {{ dataset.label }}
+            </option>
+          </select>
+        </div>
         <div class="units" role="group" aria-label="Elevation units">
           <button :class="{ active: unit === 'ft' }" @click="unit = 'ft'">ft</button>
           <button :class="{ active: unit === 'm' }" @click="unit = 'm'">m</button>
@@ -25,12 +33,19 @@
 </template>
 
 <script setup>
+import { useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 
 useHead({
   title: 'data-map · Mushroom Observations',
   meta: [{ name: 'description', content: 'Mushroom observations enriched with terrain and environmental exposure.' }],
 })
+
+const { selectedDataset, availableDatasets, setDataset } = useObservations()
+
+function handleDatasetChange(event) {
+  setDataset(event.target.value)
+}
 
 // Elevation unit: default feet, remembered per viewer.
 const { unit } = useUnits()
@@ -57,6 +72,15 @@ body { font-family: system-ui, -apple-system, sans-serif; color: #1f2933; }
 .brand p { margin: 2px 0 0; font-size: 0.82rem; opacity: 0.8; }
 
 .app-controls { display: flex; align-items: center; gap: 14px; }
+
+.dataset-picker {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #dfe4ea;
+}
+.dataset-picker label { font-weight: 600; }
+.dataset-picker select {
+  background: #fff; color: #1f2933; border: 1px solid #d0d7de; border-radius: 6px;
+  padding: 4px 8px; font-size: 0.8rem;
+}
 
 .units { display: inline-flex; border: 1px solid #52606d; border-radius: 6px; overflow: hidden; }
 .units button {
