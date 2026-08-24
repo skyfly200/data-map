@@ -36,3 +36,4 @@ dem/
 # Python
 __pycache__/
 *.pyc
+.env.example
