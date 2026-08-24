@@ -168,6 +168,13 @@ def main():
     df_inat.to_csv(csv_path, index=False)
     print(f"Saving GeoJSON to {geojson_path}...")
     df_inat.to_json(geojson_path, orient='records')
+
+    canonical_csv = os.path.join(output_dir, 'mushroom_observations.csv')
+    canonical_geojson = os.path.join(output_dir, 'mushroom_observations.geojson')
+    print(f"Saving canonical CSV to {canonical_csv}...")
+    df_inat.to_csv(canonical_csv, index=False)
+    print(f"Saving canonical GeoJSON to {canonical_geojson}...")
+    df_inat.to_json(canonical_geojson, orient='records')
     print("Data saved successfully.")
 
 
