@@ -84,9 +84,30 @@ def _slugify(value):
     slug = re.sub(r'[^a-zA-Z0-9]+', '-', str(value).strip().lower()).strip('-')
     return slug or 'mushroom'
 
+
+def parse_species_list(species_value):
+    if species_value is None:
+        return []
+    if isinstance(species_value, (list, tuple, set)):
+        values = species_value
+    else:
+        values = str(species_value).split(',')
+
+    cleaned = []
+    seen = set()
+    for item in values:
+        value = str(item).strip().lower()
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        cleaned.append(value)
+    return cleaned
+
+
 def _unique_output_base(prefix='mushroom_observations', species='morchella', lat=40.0, lng=-105.0, radius=500.0):
     timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
-    slug = _slugify(species)
+    species_list = parse_species_list(species)
+    slug = '-'.join(_slugify(s) for s in species_list) if species_list else 'mushroom'
     return f"{prefix}_{slug}_{lat}_{lng}_{radius}_{timestamp}"
 
 def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, per_page=100):
@@ -141,7 +162,11 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
 
 def main():
     env_file = os.getenv('ENV_FILE') or '.env'
-    species = getenv_with_file('INAT_TAXON_NAME', default=(getenv_with_file('SPECIES', default='morchella', env_file=env_file)), env_file=env_file)
+    species_value = getenv_with_file('INAT_TAXON_NAME', default=(getenv_with_file('SPECIES', default='morchella', env_file=env_file)), env_file=env_file)
+    species_list = parse_species_list(species_value)
+    if not species_list:
+        species_list = ['morchella']
+
     quality_grade = getenv_with_file('INAT_QUALITY_GRADE', default=(getenv_with_file('QUALITY_GRADE', default='research', env_file=env_file)), env_file=env_file)
     lat, lng = _resolve_location_from_env(default_lat=40.0, default_lng=-105.0)
     radius = _read_float_env('INAT_RADIUS', 'RADIUS', default=500.0)
@@ -150,18 +175,27 @@ def main():
     output_dir = getenv_with_file('OUTPUT_DIR', default='.', env_file=env_file)
     os.makedirs(output_dir, exist_ok=True)
 
-    print(f"Fetching iNaturalist data for {species} near {lat}, {lng} within {radius}km...")
-    df_inat = fetch_inat_data(
-        taxon_name=species,
-        quality_grade=quality_grade,
-        lat=lat,
-        lng=lng,
-        radius=radius,
-        per_page=per_page,
-    )
+    print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km...")
+    frames = []
+    for species in species_list:
+        print(f"  - {species}")
+        df_species = fetch_inat_data(
+            taxon_name=species,
+            quality_grade=quality_grade,
+            lat=lat,
+            lng=lng,
+            radius=radius,
+            per_page=per_page,
+        )
+        if not df_species.empty:
+            frames.append(df_species)
+    if not frames:
+        raise ValueError(f"No observations found for species list: {species_list}")
+
+    df_inat = pd.concat(frames, ignore_index=True)
     print("Data fetched successfully.")
 
-    base_name = _unique_output_base(output_prefix, species, lat, lng, radius)
+    base_name = _unique_output_base(output_prefix, species_list, lat, lng, radius)
     csv_path = os.path.join(output_dir, f'{base_name}.csv')
     geojson_path = os.path.join(output_dir, f'{base_name}.geojson')
 
