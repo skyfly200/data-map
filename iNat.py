@@ -41,13 +41,14 @@ def get_weather(lat, lon, date_str):
     if not date_str:
         return {'station_id': None}
 
-    date = datetime.strptime(date_str, '%Y-%m-%d')
+    date = datetime.strptime(date_str, '%Y-%m-%d').date()
     point = Point(lat, lon)
     nearby = stations.nearby(point, radius=50000, limit=5)
 
     for station_id in nearby.index:
-        df = daily(station_id, date, date)
-        if not df.empty:
+        ts = daily(station_id, date, date)
+        df = ts.fetch() if hasattr(ts, 'fetch') else ts
+        if df is not None and not df.empty:
             row = df.iloc[0].to_dict()
             row['station_used'] = station_id
             return row

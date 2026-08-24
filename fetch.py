@@ -116,13 +116,31 @@ def download_era5_soil_moisture(date_str, output_dir="soil/"):
     return nc_path
 
 def init_earth_engine():
-    """Initialize Earth Engine. Current EE requires a registered Cloud project;
-    set EARTHENGINE_PROJECT to your project id (bare Initialize() otherwise).
+    """Initialize Earth Engine and auto-authenticate when needed.
 
-    Call this before any Earth Engine function (NDVI / satellite-moisture
-    exports). ``main()`` calls it automatically; in a notebook call it once
-    yourself (or run ``ee.Initialize(...)`` directly)."""
-    ee.Initialize(project=os.environ.get("EARTHENGINE_PROJECT"))
+    Earth Engine can fail on a fresh machine with the "Please authorize access
+    to your Earth Engine account" exception. When that happens, the SDK can be
+    re-run through ee.Authenticate() once, after which ee.Initialize() succeeds
+    normally.
+
+    If Google blocks the OAuth flow for the current account, we gracefully skip
+    the Earth Engine stages instead of crashing the rest of the data pipeline.
+    """
+    project = os.environ.get("EARTHENGINE_PROJECT")
+    try:
+        ee.Initialize(project=project)
+        return True
+    except Exception as exc:
+        print("Earth Engine is not authenticated yet. Starting the authentication flow...")
+        try:
+            ee.Authenticate(quiet=True)
+            ee.Initialize(project=project)
+            print("Earth Engine authenticated and initialized successfully.")
+            return True
+        except Exception as auth_exc:
+            print("[!] Earth Engine auth failed or was blocked by Google. Skipping EE stages.")
+            print("    Reason:", auth_exc)
+            return False
 
 def fetch_sentinel2_ndvi(lat, lon, date_str, output_dir="ndvi/"):
     date = pd.to_datetime(date_str)
@@ -348,7 +366,10 @@ def main(csv_path='mushroom_observations.csv'):
     # DEM/terrain, precipitation, soil moisture, and land-cover layers.
     skip_ee = os.environ.get("SKIP_EARTH_ENGINE") == "1"
     if not skip_ee:
-        init_earth_engine()
+        skip_ee = not init_earth_engine()
+    if skip_ee:
+        print("Skipping Earth Engine stages because auth is unavailable or blocked by Google.")
+        print("Non-Earth-Engine data sources will continue normally.")
 
     df = pd.read_csv(csv_path)
 
