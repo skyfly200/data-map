@@ -66,12 +66,16 @@ async function fetchObservations(datasetPath = '/mushroom_observations.geojson')
 }
 
 export function useObservations() {
-  const data = useState('observations', () => null)
-  const error = useState('observations-error', () => '')
-  const pending = useState('observations-pending', () => false)
-  const selectedDataset = useState('observations-dataset', () => {
+  const route = useRoute()
+  const routeScope = (route.path || '/').replace(/^\/+|\/+$/g, '') || 'root'
+  const keyPrefix = `observations-${routeScope.replace(/\//g, '-')}`
+
+  const data = useState(`${keyPrefix}-data`, () => null)
+  const error = useState(`${keyPrefix}-error`, () => '')
+  const pending = useState(`${keyPrefix}-pending`, () => false)
+  const selectedDataset = useState(`${keyPrefix}-dataset`, () => {
     if (import.meta.client) {
-      const saved = localStorage.getItem('observations-dataset')
+      const saved = localStorage.getItem(`${keyPrefix}-dataset`)
       if (saved) return saved
     }
     return OBSERVATION_DATASETS[0].path
@@ -93,7 +97,7 @@ export function useObservations() {
 
   function setDataset(path) {
     selectedDataset.value = path
-    if (import.meta.client) localStorage.setItem('observations-dataset', path)
+    if (import.meta.client) localStorage.setItem(`${keyPrefix}-dataset`, path)
     data.value = null
     error.value = ''
     return load()

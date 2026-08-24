@@ -33,6 +33,7 @@
 </template>
 
 <script setup>
+import { useRoute } from '#app'
 import { useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 
@@ -41,11 +42,21 @@ useHead({
   meta: [{ name: 'description', content: 'Mushroom observations enriched with terrain and environmental exposure.' }],
 })
 
+const route = useRoute()
 const { selectedDataset, availableDatasets, setDataset } = useObservations()
 
 function handleDatasetChange(event) {
   setDataset(event.target.value)
 }
+
+watch(() => route.path, () => {
+  // Force a reload when the route changes so each page maintains its own dataset selection.
+  const datasetState = useState(`observations-${(route.path || '/').replace(/^\/+|\/+$/g, '') || 'root'}-dataset`)
+  if (!datasetState.value && import.meta.client) {
+    const saved = localStorage.getItem(`observations-${(route.path || '/').replace(/^\/+|\/+$/g, '') || 'root'}-dataset`)
+    if (saved) datasetState.value = saved
+  }
+}, { immediate: true })
 
 // Elevation unit: default feet, remembered per viewer.
 const { unit } = useUnits()
