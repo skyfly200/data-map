@@ -4,6 +4,26 @@ import sys
 from pathlib import Path
 
 
+def load_env_file(path=None):
+    config_path = Path(path or os.getenv('ENV_FILE') or '.env')
+    if not config_path.exists():
+        return {}
+
+    values = {}
+    for line in config_path.read_text(encoding='utf-8').splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#') or '=' not in stripped:
+            continue
+        key, value = stripped.split('=', 1)
+        values[key.strip()] = value.strip().strip('"\'')
+    return values
+
+
+def load_env_into_os(path=None):
+    for key, value in load_env_file(path).items():
+        os.environ.setdefault(key, value)
+
+
 def _python_candidates():
     candidates = []
     env_python = os.getenv('DATA_MAP_PYTHON') or os.getenv('PYTHON_EXECUTABLE')
@@ -48,6 +68,7 @@ def main():
     env_file = Path(os.getenv('ENV_FILE', '.env'))
     if env_file.exists():
         print(f"Loading env file: {env_file}")
+        load_env_into_os(env_file)
 
     python_executable = _resolve_python()
     print(f"Using Python interpreter: {python_executable}")

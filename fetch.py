@@ -3,9 +3,33 @@ import pandas as pd
 from datetime import timedelta
 import math
 import os
+from pathlib import Path
 import cdsapi
 import zipfile
 import requests
+
+
+def load_env_file(path=None):
+    config_path = Path(path or os.getenv('ENV_FILE') or '.env')
+    if not config_path.exists():
+        return {}
+
+    values = {}
+    for line in config_path.read_text(encoding='utf-8').splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#') or '=' not in stripped:
+            continue
+        key, value = stripped.split('=', 1)
+        values[key.strip()] = value.strip().strip('"\'')
+    return values
+
+
+def load_env_into_os(path=None):
+    for key, value in load_env_file(path).items():
+        os.environ.setdefault(key, value)
+
+
+load_env_into_os()
 
 # Study-area bounding box, [North, West, South, East]. Shared by the ERA5 soil
 # download and the DEM download so every layer covers the same footprint.
