@@ -3,7 +3,11 @@ import tempfile
 import unittest
 from unittest import mock
 
+import numpy as np
+import rasterio
+
 from cluster import stage_output_path
+from compress_rasters import convert_raster_to_cog
 from export_geojson import build_parser
 from fetch import fetch_chirps_precip
 from iNat import (
@@ -16,6 +20,7 @@ from iNat import (
     should_refresh_all,
     filter_new_observations,
 )
+from run_pipeline import should_skip_stage
 from terrain_pipeline import _find_dem
 
 
@@ -67,6 +72,38 @@ class ObservationProgressTests(unittest.TestCase):
     def test_parallel_fetch_workers_are_configurable(self):
         self.assertEqual(get_parallel_fetch_workers({'INAT_PARALLEL_FETCHES': '4'}), 4)
         self.assertEqual(get_parallel_fetch_workers({}), 3)
+
+
+class ResumeAndCompressionTests(unittest.TestCase):
+    def test_should_skip_stage_uses_existing_outputs(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_path = os.path.join(tmpdir, 'ready.tif')
+            with open(out_path, 'wb') as fh:
+                fh.write(b'test')
+            self.assertTrue(should_skip_stage(out_path))
+            self.assertFalse(should_skip_stage(os.path.join(tmpdir, 'missing.tif')))
+
+    def test_convert_raster_to_cog_round_trip_preserves_pixel_values(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = os.path.join(tmpdir, 'sample.tif')
+            arr = np.arange(100, dtype='float32').reshape(10, 10)
+            with rasterio.open(
+                src_path,
+                'w',
+                driver='GTiff',
+                width=10,
+                height=10,
+                count=1,
+                dtype='float32',
+            ) as dst:
+                dst.write(arr, 1)
+
+            converted = convert_raster_to_cog(src_path, delete_original=False, verify=True)
+            with rasterio.open(converted) as src:
+                converted_arr = src.read(1)
+
+            self.assertTrue(np.allclose(converted_arr, arr, equal_nan=True))
+            self.assertTrue(os.path.exists(converted))
 
 
 class IncrementalRefreshTests(unittest.TestCase):
