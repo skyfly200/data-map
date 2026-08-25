@@ -123,6 +123,21 @@ export function useObservations() {
     }
   }
 
+  const showFiltered = useState('observations-show-filtered', () => {
+    if (import.meta.client) {
+      const saved = localStorage.getItem('observations-show-filtered')
+      return saved === 'true'
+    }
+    return false
+  })
+
+  function setShowFiltered(includeFiltered) {
+    showFiltered.value = !!includeFiltered
+    if (import.meta.client) {
+      localStorage.setItem('observations-show-filtered', String(showFiltered.value))
+    }
+  }
+
   async function load() {
     if (data.value || pending.value) return // already loaded (shared across views)
     pending.value = true
@@ -167,9 +182,13 @@ export function useObservations() {
   const filteredData = computed(() => {
     const feats = data.value?.features || []
     const sel = speciesFilter.value
-    if (!sel.length) return data.value || { type: 'FeatureCollection', features: [] }
+    let visible = feats
+    if (!showFiltered.value) {
+      visible = visible.filter((f) => !f.properties?.water_mask)
+    }
+    if (!sel.length) return { type: 'FeatureCollection', features: visible }
     const set = new Set(sel)
-    return { type: 'FeatureCollection', features: feats.filter((f) => set.has(f.properties?.species)) }
+    return { type: 'FeatureCollection', features: visible.filter((f) => set.has(f.properties?.species)) }
   })
 
   // Species present in the loaded dataset with counts (unfiltered), for pickers.
@@ -194,5 +213,6 @@ export function useObservations() {
   return {
     data, filteredData, rows, error, pending, load, loadDatasets, setDataset, addInlineDataset,
     selectedDataset, availableDatasets, speciesFilter, speciesOptions, setSpeciesFilter,
+    showFiltered, setShowFiltered,
   }
 }
