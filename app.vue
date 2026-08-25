@@ -36,6 +36,7 @@
         <ClientOnly>
           <div class="auth-box" v-if="configured">
             <template v-if="isAuthed">
+              <span class="avatar" :title="user?.email || ''">{{ initial }}</span>
               <span class="who" :title="user?.email || ''">{{ shortEmail }}</span>
               <button class="auth-btn" @click="signOut">Sign out</button>
             </template>
@@ -68,6 +69,10 @@ const { user, isAuthed, configured, signOut } = useAuth()
 const shortEmail = computed(() => {
   const e = user.value?.email
   return e ? e.split('@')[0] : 'Account'
+})
+const initial = computed(() => {
+  const e = user.value?.email
+  return (e ? e[0] : '?').toUpperCase()
 })
 
 function handleDatasetChange(event) {
@@ -137,6 +142,11 @@ body { font-family: system-ui, -apple-system, sans-serif; color: #1f2933; }
 .filter-flag:hover { background: #256a34; }
 
 .auth-box { display: inline-flex; align-items: center; gap: 8px; }
+.auth-box .avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%; background: #3e4c59; color: #fff;
+  font-size: 0.72rem; font-weight: 700; flex: 0 0 auto;
+}
 .auth-box .who { font-size: 0.8rem; color: #cbd2d9; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .auth-btn { border: 1px solid #52606d; background: transparent; color: #cbd2d9; border-radius: 6px; padding: 5px 11px; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: none; }
 .auth-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }

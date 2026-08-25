@@ -16,7 +16,7 @@
           <button class="ghost" @click="doSignOut">Sign out</button>
         </div>
         <button class="oauth-btn passkey-add" :disabled="busy" @click="addPasskey">
-          <span class="ico" aria-hidden="true">🔑</span> Add a passkey to this account
+          <IconPasskey class="ico" /> <span>Add a passkey to this account</span>
         </button>
         <p v-if="msg" :class="['msg', ok ? 'ok' : 'err']">{{ msg }}</p>
       </template>
@@ -25,13 +25,13 @@
         <!-- Passkey + OAuth -->
         <div class="oauth">
           <button class="oauth-btn" :disabled="busy" @click="passkey">
-            <span class="ico" aria-hidden="true">🔑</span> Sign in with a passkey
+            <IconPasskey class="ico" /> <span>Sign in with a passkey</span>
           </button>
           <button class="oauth-btn" @click="oauth('github')">
-            <span class="ico" aria-hidden="true">●</span> Continue with GitHub
+            <IconGithub class="ico" /> <span>Continue with GitHub</span>
           </button>
           <button class="oauth-btn" @click="oauth('google')">
-            <span class="ico" aria-hidden="true">●</span> Continue with Google
+            <IconGoogle class="ico" /> <span>Continue with Google</span>
           </button>
         </div>
 
@@ -163,12 +163,17 @@ h2 { margin: 0 0 4px; font-size: 1.2rem; }
 .signed { font-size: 0.9rem; }
 
 .oauth { display: flex; flex-direction: column; gap: 8px; }
-.oauth-btn { display: flex; align-items: center; gap: 8px; border: 1px solid #cbd2d9; background: #fff; border-radius: 8px; padding: 9px 12px; font-size: 0.88rem; cursor: pointer; }
-.oauth-btn:hover:not(.disabled) { background: #f3f4f6; }
-.oauth-btn.disabled { opacity: 0.5; cursor: default; }
-.oauth-btn .ico { font-size: 0.9rem; }
-.oauth-btn em { color: #9aa0a6; font-style: normal; margin-left: auto; font-size: 0.78rem; }
-.passkey-add { margin-top: 12px; width: 100%; justify-content: center; }
+.oauth-btn {
+  display: flex; align-items: center; gap: 10px; border: 1px solid #d5dbe1; background: #fff;
+  border-radius: 8px; padding: 10px 14px; font-size: 0.9rem; font-weight: 500; color: #1f2933;
+  cursor: pointer; transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.oauth-btn:hover:not(:disabled) { background: #f7f8fa; border-color: #c3cbd3; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06); }
+.oauth-btn:active:not(:disabled) { background: #eef1f4; }
+.oauth-btn:disabled { opacity: 0.55; cursor: default; }
+.oauth-btn .ico { flex: 0 0 18px; display: inline-flex; }
+.oauth-btn > span { flex: 1; text-align: center; margin-right: 18px; }
+.passkey-add { margin-top: 12px; }
 
 .divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: #9aa0a6; font-size: 0.75rem; }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
