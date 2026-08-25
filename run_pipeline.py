@@ -100,6 +100,7 @@ def main():
 
     enriched_csv = stage_output_path(observation_csv, '_enriched')
     run_step("Download environmental layers", python_executable, "fetch.py")
+    run_step("Process terrain DEM", python_executable, "terrain_pipeline.py")
     run_step("Enrich observations with rasters", python_executable, "enrich_with_rasters.py", "--input", observation_csv, "--output", enriched_csv)
 
     clustered_csv = stage_output_path(enriched_csv, '_clusters')

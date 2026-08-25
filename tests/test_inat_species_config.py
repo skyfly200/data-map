@@ -14,6 +14,7 @@ from iNat import (
     should_refresh_all,
     filter_new_observations,
 )
+from terrain_pipeline import _find_dem
 
 
 class SpeciesListParsingTests(unittest.TestCase):
@@ -126,6 +127,14 @@ class FetchCacheTests(unittest.TestCase):
             self.assertEqual(get_elevation(40.0, -105.0), 123)
             self.assertEqual(get_elevation(40.0, -105.0), 123)
             self.assertEqual(mock_get.call_count, 1)
+
+    def test_find_dem_falls_back_to_downloaded_file_name(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dem_path = os.path.join(tmpdir, 'dem_srtmgl3.tif')
+            with open(dem_path, 'wb') as fh:
+                fh.write(b'test')
+            found = _find_dem(tmpdir)
+            self.assertEqual(found, dem_path)
 
 
 if __name__ == '__main__':
