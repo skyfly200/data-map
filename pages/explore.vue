@@ -16,6 +16,7 @@
         <label class="ctrl"><span>X</span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Y</span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Colour</span><select v-model="colorField"><option value="">— none —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label v-if="xField === 'day_of_year'" class="ctrl chk"><input type="checkbox" v-model="showToday" /> Today line</label>
       </template>
 
       <template v-else-if="chartType === 'bar'">
@@ -82,12 +83,14 @@ const rowField = ref('species')
 const colField = ref('land_cover_label')
 const bins = ref(10)
 const horizontal = ref(false)
+const showToday = ref(false)
 
 const config = computed(() => ({
   type: chartType.value,
   xField: xField.value, yField: yField.value, colorField: colorField.value,
   groupField: groupField.value, valueField: valueField.value, measure: measure.value,
   rowField: rowField.value, colField: colField.value, bins: bins.value, horizontal: horizontal.value,
+  showToday: showToday.value,
 }))
 
 const justSaved = ref(false)
@@ -101,8 +104,9 @@ function save() {
 <style scoped>
 .explore { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
 .panel {
-  display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center;
-  background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 16px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px 18px; align-items: end; background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 10px; padding: 12px 16px; width: 100%; box-sizing: border-box;
 }
 .ctrl { display: inline-flex; align-items: center; gap: 7px; font-size: 0.85rem; color: #374151; }
 .ctrl > span { color: #6b7280; font-weight: 600; }
@@ -112,15 +116,16 @@ function save() {
 .ctrl input[type="number"] { width: 60px; }
 .ctrl.chk { gap: 5px; }
 .save {
-  margin-left: auto; border: 1px solid #2b7a3d; background: #2b7a3d; color: #fff;
+  justify-self: end; border: 1px solid #2b7a3d; background: #2b7a3d; color: #fff;
   border-radius: 6px; padding: 6px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  min-width: 150px;
 }
-.save:hover { background: #24683380; }
+.save:hover { background: #246833; }
 .save:disabled { opacity: 0.8; cursor: default; }
 
 /* Cap the chart so its width-driven height can't exceed the viewport and spill
    over the controls above. The card keeps its natural height; the page scrolls. */
-.stage { align-self: stretch; }
+.stage { align-self: stretch; min-width: 0; }
 .stage :deep(svg) { max-height: 68vh; }
 .msg { padding: 16px; color: #555; }
 .msg.error { color: #b00020; }

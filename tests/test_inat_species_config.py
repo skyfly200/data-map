@@ -3,17 +3,27 @@ import tempfile
 import unittest
 from unittest import mock
 
+import numpy as np
+import pandas as pd
+import rasterio
+
 from cluster import stage_output_path
+from compress_rasters import convert_raster_to_cog
+from enrich_with_rasters import filter_non_productive_landcover, should_filter_non_productive_landcover
 from export_geojson import build_parser
 from fetch import fetch_chirps_precip
 from iNat import (
     fetch_inat_data,
     format_observation_progress,
     get_elevation,
+    get_parallel_fetch_workers,
     parse_species_list,
+    resolve_inat_page_size,
     should_refresh_all,
     filter_new_observations,
 )
+from run_pipeline import should_skip_stage
+from terrain_pipeline import _find_dem
 
 
 class SpeciesListParsingTests(unittest.TestCase):
@@ -57,6 +67,46 @@ class ObservationProgressTests(unittest.TestCase):
             'morchella [########------------] 2/5',
         )
 
+    def test_default_page_size_is_higher_than_100(self):
+        self.assertEqual(resolve_inat_page_size({}), 200)
+        self.assertEqual(resolve_inat_page_size({'INAT_PER_PAGE': '400'}), 400)
+
+    def test_parallel_fetch_workers_are_configurable(self):
+        self.assertEqual(get_parallel_fetch_workers({'INAT_PARALLEL_FETCHES': '4'}), 4)
+        self.assertEqual(get_parallel_fetch_workers({}), 3)
+
+
+class ResumeAndCompressionTests(unittest.TestCase):
+    def test_should_skip_stage_uses_existing_outputs(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_path = os.path.join(tmpdir, 'ready.tif')
+            with open(out_path, 'wb') as fh:
+                fh.write(b'test')
+            self.assertTrue(should_skip_stage(out_path))
+            self.assertFalse(should_skip_stage(os.path.join(tmpdir, 'missing.tif')))
+
+    def test_convert_raster_to_cog_round_trip_preserves_pixel_values(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = os.path.join(tmpdir, 'sample.tif')
+            arr = np.arange(100, dtype='float32').reshape(10, 10)
+            with rasterio.open(
+                src_path,
+                'w',
+                driver='GTiff',
+                width=10,
+                height=10,
+                count=1,
+                dtype='float32',
+            ) as dst:
+                dst.write(arr, 1)
+
+            converted = convert_raster_to_cog(src_path, delete_original=False, verify=True)
+            with rasterio.open(converted) as src:
+                converted_arr = src.read(1)
+
+            self.assertTrue(np.allclose(converted_arr, arr, equal_nan=True))
+            self.assertTrue(os.path.exists(converted))
+
 
 class IncrementalRefreshTests(unittest.TestCase):
     def test_refresh_all_flag_defaults_to_false(self):
@@ -74,6 +124,18 @@ class IncrementalRefreshTests(unittest.TestCase):
             [item['inat_id'] for item in filter_new_observations(fresh, existing)],
             [3, 4],
         )
+
+    def test_non_productive_landcover_rows_are_filtered(self):
+        df = pd.DataFrame({
+            'land_cover': [10, 50, 70, 80, 90, None],
+            'land_cover_label': ['Tree cover', 'Built-up', 'Snow and ice', 'Water', 'Wetland', 'Unknown'],
+        })
+        filtered = filter_non_productive_landcover(df)
+        self.assertEqual(list(filtered['land_cover'].fillna(-1)), [10.0, 90.0, -1])
+
+    def test_filtering_can_be_disabled_via_env_toggle(self):
+        self.assertFalse(should_filter_non_productive_landcover({'FILTER_NON_PRODUCTIVE_LANDCOVER': '0'}))
+        self.assertTrue(should_filter_non_productive_landcover({'FILTER_NON_PRODUCTIVE_LANDCOVER': '1'}))
 
 
 class ChirpsDownloadCleanupTests(unittest.TestCase):
@@ -126,6 +188,14 @@ class FetchCacheTests(unittest.TestCase):
             self.assertEqual(get_elevation(40.0, -105.0), 123)
             self.assertEqual(get_elevation(40.0, -105.0), 123)
             self.assertEqual(mock_get.call_count, 1)
+
+    def test_find_dem_falls_back_to_downloaded_file_name(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dem_path = os.path.join(tmpdir, 'dem_srtmgl3.tif')
+            with open(dem_path, 'wb') as fh:
+                fh.write(b'test')
+            found = _find_dem(tmpdir)
+            self.assertEqual(found, dem_path)
 
 
 if __name__ == '__main__':

@@ -17,6 +17,11 @@
         <circle v-for="(pt, i) in scaled" :key="i" :cx="pt.cx" :cy="pt.cy" r="4"
                 :fill="pt.color" class="dot" @mouseenter="active = pt" />
 
+        <g v-if="todayX !== null && Number.isFinite(todayX)">
+          <line :x1="sx(todayX)" :y1="padT" :x2="sx(todayX)" :y2="H - padB" class="today-line" />
+          <text :x="sx(todayX) + 4" :y="padT + 12" class="today-label">{{ todayLabel }}</text>
+        </g>
+
         <text :x="(padL + W - padR) / 2" :y="H - 3" class="axis-label">{{ xLabel }}</text>
         <text :x="-(padT + H - padB) / 2" :y="12" transform="rotate(-90)" class="axis-label">{{ yLabel }}</text>
       </svg>
@@ -45,6 +50,8 @@ const props = defineProps({
   xFormat: { type: Function, default: (v) => `${Math.round(v)}` },
   yFormat: { type: Function, default: (v) => `${Math.round(v)}` },
   legend: { type: Array, default: () => [] },
+  todayX: { type: Number, default: null },
+  todayLabel: { type: String, default: 'Today' },
 })
 
 const W = 640
@@ -108,6 +115,8 @@ svg { width: 100%; height: auto; display: block; }
 .axis-label { fill: #6b7280; font-size: 11px; text-anchor: middle; }
 .dot { stroke: #fff; stroke-width: 1; opacity: 0.9; }
 .dot:hover { stroke: #1f2933; stroke-width: 1.5; }
+.today-line { stroke: #b00020; stroke-width: 1.5; stroke-dasharray: 4 4; }
+.today-label { fill: #b00020; font-size: 10px; font-weight: 600; }
 
 .legend { position: absolute; top: 4px; right: 8px; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 0.72rem; color: #4b5563; }
 .legend .lg { display: inline-flex; align-items: center; gap: 4px; }

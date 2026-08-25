@@ -24,6 +24,25 @@ def latest_observation_csv(root):
     return 'mushroom_observations.csv'
 
 
+def should_skip_fetch(root):
+    refresh_all = os.getenv('REFRESH_ALL', '').strip().lower()
+    if refresh_all in {'1', 'true', 'yes', 'y', 'on'}:
+        return False
+    canonical = root / 'mushroom_observations.csv'
+    if canonical.exists():
+        return True
+    return False
+
+
+def should_skip_stage(path):
+    if not path:
+        return False
+    try:
+        return os.path.exists(path) and os.path.getsize(path) > 0
+    except OSError:
+        return False
+
+
 def load_env_file(path=None):
     config_path = Path(path or os.getenv('ENV_FILE') or '.env')
     if not config_path.exists():
@@ -91,22 +110,38 @@ def main():
         print(f"Loading env file: {env_file}")
         load_env_into_os(env_file)
 
+    refresh_all = os.getenv('REFRESH_ALL', '').strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
+
     python_executable = _resolve_python()
     print(f"Using Python interpreter: {python_executable}")
 
-    run_step("Fetch iNaturalist observations", python_executable, "iNat.py")
-    observation_csv = latest_observation_csv(root)
-    print(f"Using observation input: {observation_csv}")
+    if should_skip_fetch(root):
+        print("Using cached iNaturalist observations from mushroom_observations.csv; skipping network fetch.")
+        observation_csv = 'mushroom_observations.csv'
+    else:
+        run_step("Fetch iNaturalist observations", python_executable, "iNat.py")
+        observation_csv = latest_observation_csv(root)
+        print(f"Using observation input: {observation_csv}")
 
     enriched_csv = stage_output_path(observation_csv, '_enriched')
-    run_step("Download environmental layers", python_executable, "fetch.py")
-    run_step("Enrich observations with rasters", python_executable, "enrich_with_rasters.py", "--input", observation_csv, "--output", enriched_csv)
+    if not refresh_all and should_skip_stage(enriched_csv):
+        print(f"Skipping enrichment: {enriched_csv} already exists.")
+    else:
+        run_step("Download environmental layers", python_executable, "fetch.py")
+        run_step("Process terrain DEM", python_executable, "terrain_pipeline.py")
+        run_step("Enrich observations with rasters", python_executable, "enrich_with_rasters.py", "--input", observation_csv, "--output", enriched_csv)
 
     clustered_csv = stage_output_path(enriched_csv, '_clusters')
-    run_step("Cluster observations", python_executable, "cluster.py", "--input", enriched_csv, "--output", clustered_csv)
+    if not refresh_all and should_skip_stage(clustered_csv):
+        print(f"Skipping clustering: {clustered_csv} already exists.")
+    else:
+        run_step("Cluster observations", python_executable, "cluster.py", "--input", enriched_csv, "--output", clustered_csv)
 
     geojson_output = str(Path('public') / 'data' / f"{Path(clustered_csv).stem}.geojson")
-    run_step("Export GeoJSON for map", python_executable, "export_geojson.py", "--input", clustered_csv, "--output", geojson_output)
+    if not refresh_all and should_skip_stage(geojson_output):
+        print(f"Skipping GeoJSON export: {geojson_output} already exists.")
+    else:
+        run_step("Export GeoJSON for map", python_executable, "export_geojson.py", "--input", clustered_csv, "--output", geojson_output)
 
     print("\n✅ Full data pipeline completed successfully.")
 

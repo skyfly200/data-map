@@ -8,6 +8,7 @@ cdsapi
 requests
 # Raster processing / enrichment (enrich_with_rasters.py, terrain_pipeline.py)
 rasterio
+rio-cogeo
 xarray
 netCDF4
 numpy

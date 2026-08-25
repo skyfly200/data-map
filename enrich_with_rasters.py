@@ -137,9 +137,56 @@ ESA_WORLDCOVER_CLASSES = {
     100: "Moss and lichen"
 }
 
+NON_PRODUCTIVE_LANDCOVER_CODES = {50, 70, 80}
+
+
+def should_filter_non_productive_landcover(env=None):
+    values = {**os.environ, **(env or {})}
+    raw = values.get('FILTER_NON_PRODUCTIVE_LANDCOVER', values.get('DISABLE_NON_PRODUCTIVE_FILTER', '1'))
+    if raw is None:
+        return True
+    value = str(raw).strip().lower()
+    if value in {'0', 'false', 'no', 'n', 'off'}:
+        return False
+    if value in {'1', 'true', 'yes', 'y', 'on'}:
+        return True
+    return True
+
+
 def add_worldcover_labels(df):
     df['land_cover_label'] = df['land_cover'].map(ESA_WORLDCOVER_CLASSES)
     return df
+
+
+def filter_non_productive_landcover(df, landcover_col='land_cover', label_col='land_cover_label'):
+    """Flag built-up, snow/ice, and open-water cells before dropping them.
+
+    The boolean flag preserves the information for later analysis while the rows are
+    removed from the canonical terrestrial dataset. This keeps the training/analysis
+    data cleaner without losing the fact that these observations were excluded.
+    """
+    if landcover_col not in df.columns:
+        return df
+
+    before = len(df)
+    df = df.copy()
+    df['water_mask'] = df[landcover_col].apply(
+        lambda value: bool(value is not None and not pd.isna(value) and int(float(value)) in NON_PRODUCTIVE_LANDCOVER_CODES)
+    )
+    df['exclude_reason'] = df[landcover_col].apply(
+        lambda value: (
+            'non_terrestrial' if value is not None and not pd.isna(value) and int(float(value)) in NON_PRODUCTIVE_LANDCOVER_CODES
+            else 'keep'
+        )
+    )
+    valid_mask = ~df['water_mask']
+    filtered = df.loc[valid_mask].copy()
+    if label_col in filtered.columns:
+        filtered[label_col] = filtered[label_col].where(~filtered['water_mask'], 'Filtered out')
+    dropped = before - len(filtered)
+    if dropped:
+        print(f"Filtering out {dropped} non-productive land-cover rows ({sorted(NON_PRODUCTIVE_LANDCOVER_CODES)})")
+    return filtered
 
 # ─── Terrain / Topography Utilities ───────────────────────────────────────────
 # Layers produced by terrain_pipeline.process_dem(). Each is a single static
@@ -407,6 +454,12 @@ if __name__ == "__main__":
     df = enrich_with_precip(df, precip_dir="precip/")
     df = enrich_with_worldcover(df)
     df = add_worldcover_labels(df)
+    if 'water_mask' not in df.columns:
+        df['water_mask'] = False
+    if 'exclude_reason' not in df.columns:
+        df['exclude_reason'] = 'keep'
+    if should_filter_non_productive_landcover():
+        df = filter_non_productive_landcover(df)
     df = enrich_with_terrain(df)
     df = enrich_with_temperature_history(df)
     # NDVI sampled directly from Earth Engine (replaces the Drive-export path).

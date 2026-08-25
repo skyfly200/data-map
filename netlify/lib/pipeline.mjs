@@ -31,7 +31,7 @@ export function getRuntimeConfig(overrides = {}, request = null) {
   const lat = Number(overrides.lat ?? params.get('lat') ?? process.env.INAT_LAT ?? 40.0)
   const lng = Number(overrides.lng ?? params.get('lng') ?? process.env.INAT_LNG ?? -105.0)
   const radius = Number(overrides.radius ?? params.get('radius') ?? process.env.INAT_RADIUS ?? process.env.RADIUS ?? 500)
-  const perPage = Number(overrides.perPage ?? params.get('perPage') ?? process.env.INAT_PER_PAGE ?? process.env.PER_PAGE ?? 100)
+  const perPage = Number(overrides.perPage ?? params.get('perPage') ?? process.env.INAT_PER_PAGE ?? process.env.PER_PAGE ?? 200)
   const qualityGrade = overrides.qualityGrade ?? params.get('qualityGrade') ?? process.env.INAT_QUALITY_GRADE ?? process.env.QUALITY_GRADE ?? 'research'
   const refreshAll = overrides.refreshAll ?? params.get('refreshAll') ?? getRefreshAllFlag()
 
