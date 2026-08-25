@@ -14,9 +14,15 @@
 
     <div class="fetch-new">
       <label>Fetch a new species</label>
-      <input v-model="newSpecies" type="text" placeholder="e.g. Amanita muscaria" :disabled="fetching" @keyup.enter="fetchNew" />
-      <button :disabled="fetching || !newSpecies.trim()" @click="fetchNew">{{ fetching ? 'Fetching…' : 'Fetch' }}</button>
-      <span v-if="fetchMsg && !fetching" :class="['fmsg', fetchOk ? 'ok' : 'err']">{{ fetchMsg }}</span>
+      <template v-if="configured && !isAuthed">
+        <span class="fmsg">Live fetching is rate-protected.</span>
+        <NuxtLink to="/login" class="signin-link">Sign in to fetch</NuxtLink>
+      </template>
+      <template v-else>
+        <input v-model="newSpecies" type="text" placeholder="e.g. Amanita muscaria" :disabled="fetching" @keyup.enter="fetchNew" />
+        <button :disabled="fetching || !newSpecies.trim()" @click="fetchNew">{{ fetching ? 'Fetching…' : 'Fetch' }}</button>
+        <span v-if="fetchMsg && !fetching" :class="['fmsg', fetchOk ? 'ok' : 'err']">{{ fetchMsg }}</span>
+      </template>
     </div>
 
     <div v-if="fetching" class="fetch-progress">
@@ -61,6 +67,7 @@
 import { useObservations } from '~/composables/useObservations'
 
 const { speciesOptions, speciesFilter, setSpeciesFilter, addInlineDataset, error, pending, load } = useObservations()
+const { isAuthed, configured, accessToken } = useAuth()
 onMounted(load)
 
 // ── Fetch a new species on demand (Netlify function → iNaturalist) ────────────
@@ -88,7 +95,10 @@ async function fetchNew() {
   fetchMsg.value = ''
   startTimer()
   try {
-    const res = await fetch(`/.netlify/functions/fetch-species?species=${encodeURIComponent(q)}`)
+    const token = await accessToken()
+    const headers = token ? { authorization: `Bearer ${token}` } : {}
+    const res = await fetch(`/.netlify/functions/fetch-species?species=${encodeURIComponent(q)}`, { headers })
+    if (res.status === 401) throw new Error('Please sign in to fetch new species.')
     const data = await res.json()
     if (!data.ok) throw new Error(data.error || 'fetch failed')
     if (!data.count) { fetchOk.value = false; fetchMsg.value = `No research-grade observations found for “${q}”.`; return }
@@ -172,6 +182,8 @@ tr.off .bar { background: #cbd5e1; }
 .fmsg { font-size: 0.8rem; }
 .fmsg.ok { color: #2b7a3d; }
 .fmsg.err { color: #b00020; }
+.signin-link { font-size: 0.82rem; font-weight: 600; color: #2b7a3d; text-decoration: none; border: 1px solid #2b7a3d; border-radius: 6px; padding: 4px 10px; }
+.signin-link:hover { background: #f0fdf4; }
 
 .fetch-progress { display: flex; align-items: center; gap: 10px; margin: -4px 0 12px; }
 .pbar { position: relative; flex: 0 1 220px; height: 6px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
