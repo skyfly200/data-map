@@ -19,6 +19,10 @@
           <button :class="{ active: unit === 'ft' }" @click="unit = 'ft'">ft</button>
           <button :class="{ active: unit === 'm' }" @click="unit = 'm'">m</button>
         </div>
+        <div class="units" role="group" aria-label="Temperature units">
+          <button :class="{ active: tempUnit === 'F' }" @click="tempUnit = 'F'">°F</button>
+          <button :class="{ active: tempUnit === 'C' }" @click="tempUnit = 'C'">°C</button>
+        </div>
         <nav class="app-nav">
           <NuxtLink to="/" class="nav-link">Map</NuxtLink>
           <NuxtLink to="/table" class="nav-link">Table</NuxtLink>
@@ -58,14 +62,19 @@ watch(() => route.path, () => {
   }
 }, { immediate: true })
 
-// Elevation unit: default feet, remembered per viewer.
-const { unit } = useUnits()
+// Units: default feet + Fahrenheit, remembered per viewer.
+const { unit, tempUnit } = useUnits()
 onMounted(() => {
-  const saved = localStorage.getItem('elev-unit')
-  if (saved === 'm' || saved === 'ft') unit.value = saved
+  const e = localStorage.getItem('elev-unit')
+  if (e === 'm' || e === 'ft') unit.value = e
+  const t = localStorage.getItem('temp-unit')
+  if (t === 'F' || t === 'C') tempUnit.value = t
 })
 watch(unit, (v) => {
   if (import.meta.client) localStorage.setItem('elev-unit', v)
+})
+watch(tempUnit, (v) => {
+  if (import.meta.client) localStorage.setItem('temp-unit', v)
 })
 </script>
 

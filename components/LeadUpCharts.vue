@@ -18,7 +18,7 @@
 
     <!-- Temperature: daily min–max band + high line -->
     <div v-if="hasTempHistory" class="lc">
-      <div class="lc-title">Temp leading up (°C, min–max)</div>
+      <div class="lc-title">Temp leading up (°{{ tempUnit }}, min–max)</div>
       <svg :viewBox="`0 0 ${W} ${Ht}`" class="lc-svg" preserveAspectRatio="none">
         <polygon :points="bandPoints" class="temp-band" />
         <polyline :points="highLine" class="temp-high" />
@@ -27,16 +27,16 @@
           <text :x="x(i)" :y="Ht - 3" class="lc-cat">{{ d.short }}</text>
         </g>
       </svg>
-      <div class="lc-scale">{{ tMin.toFixed(0) }}° – {{ tMax.toFixed(0) }}°</div>
+      <div class="lc-scale">{{ Math.round(tMin) }}° – {{ Math.round(tMax) }}°{{ tempUnit }}</div>
     </div>
 
     <!-- Fallback: observation-day temp only (daily history not yet in the data) -->
     <div v-else-if="hasDayTemp" class="lc">
       <div class="lc-title">Temperature (observation day)</div>
       <div class="day-temp">
-        <span>low {{ fmt(p.tmin) }}°</span>
-        <span class="avg">avg {{ fmt(p.tavg) }}°</span>
-        <span>high {{ fmt(p.tmax) }}°</span>
+        <span>low {{ tempLabel(p.tmin) }}</span>
+        <span class="avg">avg {{ tempLabel(p.tavg) }}</span>
+        <span>high {{ tempLabel(p.tmax) }}</span>
       </div>
       <div class="lc-note">Daily temperature history fills in on the next pipeline run.</div>
     </div>
@@ -44,8 +44,11 @@
 </template>
 
 <script setup>
+import { useUnits } from '~/composables/useUnits'
+
 const props = defineProps({ p: { type: Object, required: true } })
 const p = computed(() => props.p)
+const { tempUnit, tempValue, tempLabel } = useUnits()
 
 const W = 240
 const Hr = 90
@@ -58,7 +61,6 @@ const n = 7
 function x(i) { return 14 + (i * (W - 28)) / (n - 1) }
 
 const has = (v) => v !== null && v !== undefined && v !== ''
-const fmt = (v) => (has(v) ? Number(v).toFixed(0) : '—')
 
 // Rain: prcp_d6 (oldest) … prcp_d0 (observation day)
 const rain = computed(() => Array.from({ length: n }, (_, i) => {
@@ -69,12 +71,14 @@ const rain = computed(() => Array.from({ length: n }, (_, i) => {
 const rainMax = computed(() => Math.max(1, ...rain.value.map((d) => d.value ?? 0)))
 function rainY(v) { return (Hr - axB) - (v / rainMax.value) * (Hr - axB - 6) }
 
-// Temperature history: tmax_d6..d0 / tmin_d6..d0
+// Temperature history: tmax_d6..d0 / tmin_d6..d0, converted to the display unit.
 const temp = computed(() => Array.from({ length: n }, (_, i) => {
   const offset = n - 1 - i
-  const hi = p.value[`tmax_d${offset}`]
-  const lo = p.value[`tmin_d${offset}`]
-  return { hi: has(hi) ? Number(hi) : null, lo: has(lo) ? Number(lo) : null, short: offset === 0 ? '0' : `-${offset}` }
+  return {
+    hi: tempValue(p.value[`tmax_d${offset}`]),
+    lo: tempValue(p.value[`tmin_d${offset}`]),
+    short: offset === 0 ? '0' : `-${offset}`,
+  }
 }))
 const hasTempHistory = computed(() => temp.value.some((d) => d.hi !== null))
 const hasDayTemp = computed(() => has(p.value.tmax) || has(p.value.tavg))
