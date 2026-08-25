@@ -1,6 +1,7 @@
 <template>
   <ScatterChart v-if="config.type === 'scatter'" :title="title" :data="scatterData" :legend="coloring.legend"
-    :xLabel="labelOf(config.xField)" :yLabel="labelOf(config.yField)" :xFormat="fmtOf(config.xField)" :yFormat="fmtOf(config.yField)" />
+    :xLabel="labelOf(config.xField)" :yLabel="labelOf(config.yField)" :xFormat="fmtOf(config.xField)" :yFormat="fmtOf(config.yField)"
+    :todayX="todayX" :todayLabel="todayLabel" />
   <BarChart v-else-if="config.type === 'bar'" :title="title" :data="barData" :horizontal="!!config.horizontal" :format="barFmt" />
   <BoxPlot v-else-if="config.type === 'box'" :title="title" :data="boxData" :xLabel="labelOf(config.valueField)" :format="fmtOf(config.valueField)" />
   <BarChart v-else-if="config.type === 'histogram'" :title="title" :data="histogramData" :format="(v) => String(v)" />
@@ -19,6 +20,19 @@ const props = defineProps({ config: { type: Object, required: true } })
 const { rows } = useObservations()
 const { unit, tempUnit, elevValue, tempValue } = useUnits()
 const c = computed(() => props.config)
+
+function currentDayOfYear() {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), 0, 0)
+  const diff = (now - start) / 86400000
+  return Math.floor(diff) + 1
+}
+
+const todayX = computed(() => {
+  if (!c.value.showToday || c.value.xField !== 'day_of_year') return null
+  return currentDayOfYear()
+})
+const todayLabel = computed(() => 'Today')
 
 function rawNum(r, key) {
   if (key === 'rain7') {

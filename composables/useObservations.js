@@ -102,11 +102,21 @@ export function useObservations() {
       const list = await res.json()
       if (!Array.isArray(list) || !list.length) return
       availableDatasets.value = list
-      // Keep the current selection valid against the (possibly Supabase) paths.
       const paths = list.map((d) => d.path)
       const saved = import.meta.client ? localStorage.getItem(DATASET_KEY) : null
-      if (!paths.includes(selectedDataset.value) && !(saved && paths.includes(saved))) {
-        selectedDataset.value = list[0].path
+      const current = selectedDataset.value
+
+      if (paths.includes(current)) {
+        if (import.meta.client && saved && saved !== current) {
+          localStorage.setItem(DATASET_KEY, current)
+        }
+        return
+      }
+
+      const fallbackPath = saved && paths.includes(saved) ? saved : list[0].path
+      selectedDataset.value = fallbackPath
+      if (import.meta.client) {
+        localStorage.setItem(DATASET_KEY, fallbackPath)
       }
     } catch {
       // keep the fallback list
