@@ -71,6 +71,40 @@
           :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v)" />
         <p class="note">Total precipitation in the 7 days before each find.</p>
       </ChartCard>
+
+      <ChartCard v-if="phenologyBySpecies.length">
+        <BoxPlot title="Fruiting season by species" :data="phenologyBySpecies" xLabel="Day of year"
+          :format="(v) => Math.round(v)" />
+        <p class="note">When each species (≥3 obs) is found through the year — the forager's calendar.</p>
+      </ChartCard>
+
+      <ChartCard v-if="elevationBySpecies.length">
+        <BoxPlot :title="`Elevation range by species (${unit})`" :data="elevationBySpecies" :xLabel="`Elevation (${unit})`"
+          :format="(v) => Math.round(v).toLocaleString()" />
+        <p class="note">Elevation band each species (≥3 obs) prefers.</p>
+      </ChartCard>
+
+      <ChartCard v-if="clusterProfile.rows.length">
+        <HeatmapChart title="Environmental cluster profiles" :rows="clusterProfile.rows"
+          :cols="clusterProfile.cols" :matrix="clusterProfile.matrix" :format="(v) => v.toFixed(2)" />
+        <p class="note">Mean of each feature per cluster, scaled 0–1 across clusters — what defines each group.</p>
+      </ChartCard>
+
+      <ChartCard v-if="speciesLandcover.rows.length">
+        <HeatmapChart title="Species × land cover" :rows="speciesLandcover.rows"
+          :cols="speciesLandcover.cols" :matrix="speciesLandcover.matrix" :format="(v) => `${Math.round(v)}`" />
+        <p class="note">How many observations of each species fall in each land-cover class.</p>
+      </ChartCard>
+
+      <ChartCard v-if="rainBeforeDist.length">
+        <BarChart title="Antecedent rainfall (7-day total before finds)" :data="rainBeforeDist" :format="int" />
+        <p class="note">Distribution of total precipitation (mm) in the week before each observation.</p>
+      </ChartCard>
+
+      <ChartCard>
+        <WindRose title="Slope aspect of finds" :values="aspectValues" />
+        <p class="note">Which compass direction the ground faces at each find (from the DEM).</p>
+      </ChartCard>
     </div>
   </div>
 </template>
@@ -116,6 +150,84 @@ const rainVsDoy = computed(() => rows.value
     const total = [0, 1, 2, 3, 4, 5, 6].reduce((s, o) => s + (hasValue(r[`prcp_d${o}`]) ? Number(r[`prcp_d${o}`]) : 0), 0)
     return { x: Number(r.day_of_year), y: total, color: ptColor(r), label: r.species }
   }))
+
+// ── Distribution charts (box plots, heatmaps, wind-rose) ─────────────────────
+const MIN_PER_SPECIES = 3
+
+function speciesGroups(valueFn) {
+  const groups = new Map()
+  for (const r of rows.value) {
+    const v = valueFn(r)
+    if (!hasValue(r.species) || v === null) continue
+    if (!groups.has(r.species)) groups.set(r.species, [])
+    groups.get(r.species).push(v)
+  }
+  return [...groups.entries()]
+    .filter(([, vals]) => vals.length >= MIN_PER_SPECIES)
+    .sort((a, b) => b[1].length - a[1].length)
+    .map(([label, values], i) => ({ label, values, color: PALETTE[i % PALETTE.length] }))
+}
+
+const phenologyBySpecies = computed(() =>
+  speciesGroups((r) => (hasValue(r.day_of_year) ? Number(r.day_of_year) : null)))
+
+const elevationBySpecies = computed(() =>
+  speciesGroups((r) => (hasValue(r.elevation) ? elevValue(r.elevation) : null)))
+
+// Cluster centroids across the populated features, min-max scaled per feature.
+const clusterProfile = computed(() => {
+  const clusters = [...new Set(rows.value.map((r) => r.cluster).filter(hasValue))].sort((a, b) => a - b)
+  const feats = [
+    ['Elevation', (r) => r.elevation],
+    ['High temp', (r) => r.tmax],
+    ['7-day rain', (r) => [0, 1, 2, 3, 4, 5, 6].reduce((s, o) => s + (hasValue(r[`prcp_d${o}`]) ? Number(r[`prcp_d${o}`]) : 0), 0)],
+    ['Day of year', (r) => r.day_of_year],
+    ['Soil moist.', (r) => r.soil_moisture],
+    ['Water ret.', (r) => r.water_retention],
+  ].filter(([, fn]) => rows.value.some((r) => hasValue(fn(r))))
+  if (!clusters.length || !feats.length) return { rows: [], cols: [], matrix: [] }
+
+  // mean per cluster per feature
+  const means = feats.map(([, fn]) => clusters.map((c) => {
+    const vals = rows.value.filter((r) => r.cluster === c).map(fn).filter((v) => Number.isFinite(Number(v))).map(Number)
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+  }))
+  // scale each feature (row) 0–1 across clusters
+  const matrix = means.map((row) => {
+    const finite = row.filter((v) => Number.isFinite(v))
+    const lo = Math.min(...finite), hi = Math.max(...finite)
+    return row.map((v) => (Number.isFinite(v) ? (hi === lo ? 0.5 : (v - lo) / (hi - lo)) : null))
+  })
+  return { rows: feats.map(([l]) => l), cols: clusters.map((c) => `C${c}`), matrix }
+})
+
+// Species (rows) × land cover (cols) observation counts.
+const speciesLandcover = computed(() => {
+  const sp = [...new Set(rows.value.map((r) => r.species).filter(hasValue))]
+    .map((s) => [s, rows.value.filter((r) => r.species === s).length])
+    .filter(([, n]) => n >= MIN_PER_SPECIES).sort((a, b) => b[1] - a[1]).map(([s]) => s)
+  const lc = [...new Set(rows.value.map((r) => r.land_cover_label).filter(hasValue))]
+  if (!sp.length || !lc.length) return { rows: [], cols: [], matrix: [] }
+  const matrix = sp.map((s) => lc.map((l) =>
+    rows.value.filter((r) => r.species === s && r.land_cover_label === l).length))
+  return { rows: sp, cols: lc, matrix }
+})
+
+const rainBeforeDist = computed(() => {
+  const totals = rows.value
+    .filter((r) => [0, 1, 2, 3, 4, 5, 6].some((o) => hasValue(r[`prcp_d${o}`])))
+    .map((r) => [0, 1, 2, 3, 4, 5, 6].reduce((s, o) => s + (hasValue(r[`prcp_d${o}`]) ? Number(r[`prcp_d${o}`]) : 0), 0))
+  if (!totals.length) return []
+  const step = 10
+  const max = Math.ceil(Math.max(...totals) / step) * step
+  const bins = []
+  for (let lo = 0; lo < Math.max(step, max); lo += step) {
+    bins.push({ label: `${lo}–${lo + step} mm`, short: `${lo}`, value: totals.filter((v) => v >= lo && v < lo + step).length })
+  }
+  return bins
+})
+
+const aspectValues = computed(() => rows.value.map((r) => r.aspect).filter(hasValue).map(Number))
 
 // Seasonal timing regardless of year: bucket day_of_year into ISO-ish weeks.
 const weekData = computed(() => {
