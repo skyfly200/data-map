@@ -111,7 +111,7 @@ def _write_geojson(df, path):
     return len(geojson["features"])
 
 
-def export_all(df, data_dir=os.path.join('public', 'data')):
+def export_all(df, data_dir=os.path.join('public', 'data'), combined_path=None):
     """Write the combined dataset, one GeoJSON per species, and a manifest.
 
     Layout served by the frontend:
@@ -119,10 +119,12 @@ def export_all(df, data_dir=os.path.join('public', 'data')):
         public/data/species/<slug>.geojson       – one per species
         public/data/datasets.json                – manifest the UI reads
     """
+    data_dir = data_dir or os.path.join('public', 'data')
     species_dir = os.path.join(data_dir, 'species')
     os.makedirs(species_dir, exist_ok=True)
 
-    combined_path = os.path.join(data_dir, 'observations.geojson')
+    if combined_path is None:
+        combined_path = os.path.join(data_dir, 'observations.geojson')
     total = _write_geojson(df, combined_path)
     print(f"✅ Wrote {total} features to {combined_path}")
 
@@ -150,14 +152,28 @@ def export_all(df, data_dir=os.path.join('public', 'data')):
     return manifest
 
 
-def main():
+def build_parser():
     parser = argparse.ArgumentParser(description="Export observations to GeoJSON for the map")
     parser.add_argument("--input", default=None,
                         help="Input CSV (default: mushroom_clusters.csv, else "
                              "mushroom_observations_enriched.csv)")
-    parser.add_argument("--data-dir", default=os.path.join('public', 'data'),
-                        help="Output directory served by the frontend")
+    parser.add_argument("--output", default=None,
+                        help="Exact combined GeoJSON output path; also sets the data directory")
+    parser.add_argument("--data-dir", default=None,
+                        help="Output directory served by the frontend (legacy alias)")
+    return parser
+
+
+def main():
+    parser = build_parser()
     args = parser.parse_args()
+
+    data_dir = args.data_dir or os.path.join('public', 'data')
+    combined_path = args.output
+    if combined_path is not None:
+        data_dir = os.path.dirname(combined_path) or data_dir
+        if os.path.splitext(combined_path)[1].lower() != '.geojson':
+            combined_path = os.path.join(data_dir, os.path.basename(combined_path))
 
     input_path = args.input
     if input_path is None:
@@ -170,7 +186,7 @@ def main():
 
     print(f"📂 Loading {input_path}...")
     df = pd.read_csv(input_path)
-    export_all(df, data_dir=args.data_dir)
+    export_all(df, data_dir=data_dir, combined_path=combined_path)
 
 
 if __name__ == "__main__":
