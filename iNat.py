@@ -10,6 +10,9 @@ import requests
 
 # https://www.inaturalist.org/observations?subview=map
 
+_ELEVATION_CACHE = {}
+_WEATHER_CACHE = {}
+
 def load_env_file(path=None):
     config_path = Path(path or os.getenv('ENV_FILE') or '.env')
     if not config_path.exists():
@@ -31,28 +34,49 @@ def getenv_with_file(key, default=None, *, env_file=None):
     return os.getenv(key, default)
 
 def get_elevation(lat, lon):
+    key = (round(float(lat), 4), round(float(lon), 4))
+    if key in _ELEVATION_CACHE:
+        return _ELEVATION_CACHE[key]
+
     url = f"https://api.open-elevation.com/api/v1/lookup?locations={lat},{lon}"
-    r = requests.get(url)
-    if r.ok:
-        return r.json()['results'][0]['elevation']
+    try:
+        r = requests.get(url, timeout=15)
+        if r.ok:
+            value = r.json()['results'][0]['elevation']
+            _ELEVATION_CACHE[key] = value
+            return value
+    except requests.RequestException:
+        pass
+    _ELEVATION_CACHE[key] = None
     return None
 
 def get_weather(lat, lon, date_str):
     if not date_str:
         return {'station_id': None}
 
-    date = datetime.strptime(date_str, '%Y-%m-%d').date()
-    point = Point(lat, lon)
-    nearby = stations.nearby(point, radius=50000, limit=5)
+    key = (round(float(lat), 4), round(float(lon), 4), str(date_str))
+    if key in _WEATHER_CACHE:
+        return _WEATHER_CACHE[key]
 
-    for station_id in nearby.index:
-        ts = daily(station_id, date, date)
-        df = ts.fetch() if hasattr(ts, 'fetch') else ts
-        if df is not None and not df.empty:
-            row = df.iloc[0].to_dict()
-            row['station_used'] = station_id
-            return row
-    return {'station_id': None}
+    try:
+        date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        point = Point(lat, lon)
+        nearby = stations.nearby(point, radius=50000, limit=5)
+
+        for station_id in nearby.index:
+            ts = daily(station_id, date, date)
+            df = ts.fetch() if hasattr(ts, 'fetch') else ts
+            if df is not None and not df.empty:
+                row = df.iloc[0].to_dict()
+                row['station_used'] = station_id
+                _WEATHER_CACHE[key] = row
+                return row
+    except Exception:
+        pass
+
+    result = {'station_id': None}
+    _WEATHER_CACHE[key] = result
+    return result
 
 def _read_float_env(*names, default):
     for name in names:
@@ -206,13 +230,14 @@ def get_species_observation_total(taxon_name='morchella', quality_grade='researc
         return 0
 
 
-def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, per_page=100, max_observations=None, progress_callback=None, total_count=None):
+def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, per_page=100, max_observations=None, progress_callback=None, total_count=None, existing_ids=None):
     observations = []
     page = 1
     max_allowed = max_observations if isinstance(max_observations, int) and max_observations > 0 else None
     target_total = total_count if isinstance(total_count, int) and total_count > 0 else None
     if max_allowed is not None and (target_total is None or target_total > max_allowed):
         target_total = max_allowed
+    seen_ids = set(str(item) for item in (existing_ids or []))
 
     while True:
         results = get_observations(
@@ -235,13 +260,23 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
             if max_allowed is not None and len(observations) >= max_allowed:
                 return pd.DataFrame(observations)
 
+            obs_id = obs.get('id')
+            obs_uuid = obs.get('uuid')
+            key = str(obs_id) if obs_id is not None else str(obs_uuid) if obs_uuid is not None else None
+            if key is not None and key in seen_ids:
+                continue
+            if key is not None:
+                seen_ids.add(key)
+
             if progress_callback:
                 progress_callback(len(observations) + 1, target_total or (len(observations) + 1))
 
             timestamp = obs.get('observed_on')
             if isinstance(timestamp, datetime):
                 date = timestamp.strftime('%Y-%m-%d')
-            elif not timestamp:
+            elif timestamp:
+                date = str(timestamp)
+            else:
                 date = None
 
             coords = obs['geojson']['coordinates'] if 'geojson' in obs else [None, None]
@@ -336,6 +371,7 @@ def main():
             max_observations=max_observations or None,
             progress_callback=progress_callback,
             total_count=species_total,
+            existing_ids=existing_inat_ids,
         )
         print()
         count = len(df_species) if df_species is not None else 0

@@ -6,7 +6,14 @@ from unittest import mock
 from cluster import stage_output_path
 from export_geojson import build_parser
 from fetch import fetch_chirps_precip
-from iNat import format_observation_progress, parse_species_list, should_refresh_all, filter_new_observations
+from iNat import (
+    fetch_inat_data,
+    format_observation_progress,
+    get_elevation,
+    parse_species_list,
+    should_refresh_all,
+    filter_new_observations,
+)
 
 
 class SpeciesListParsingTests(unittest.TestCase):
@@ -86,6 +93,39 @@ class ChirpsDownloadCleanupTests(unittest.TestCase):
             self.assertIsNone(result)
             self.assertFalse(os.path.exists(out_path))
             self.assertFalse(os.path.exists(gz_path))
+
+
+class FetchCacheTests(unittest.TestCase):
+    def test_fetch_inat_data_skips_existing_ids_before_expensive_enrichment(self):
+        payload = {
+            'results': [
+                {'id': 1, 'uuid': 'a', 'observed_on': '2024-05-17', 'geojson': {'coordinates': [-105.0, 40.0]}, 'taxon': {'name': 'Morchella'}, 'place_guess': 'Boulder', 'num_identification_agreements': 2},
+                {'id': 2, 'uuid': 'b', 'observed_on': '2024-05-18', 'geojson': {'coordinates': [-105.1, 40.1]}, 'taxon': {'name': 'Morchella'}, 'place_guess': 'Denver', 'num_identification_agreements': 5},
+            ]
+        }
+
+        with mock.patch('iNat.get_observations', return_value=payload), \
+             mock.patch('iNat.get_elevation', return_value=1500) as mock_elevation, \
+             mock.patch('iNat.get_weather', return_value={'tavg': 18.0}) as mock_weather:
+            df = fetch_inat_data(
+                taxon_name='morchella',
+                lat=40.0,
+                lng=-105.0,
+                radius=500,
+                per_page=100,
+                existing_ids={'1'},
+            )
+
+        self.assertEqual(len(df), 1)
+        self.assertEqual(df.iloc[0]['inat_id'], 2)
+        self.assertEqual(mock_elevation.call_count, 1)
+        self.assertEqual(mock_weather.call_count, 1)
+
+    def test_get_elevation_uses_cache_for_identical_coordinates(self):
+        with mock.patch('requests.get', return_value=mock.Mock(ok=True, json=lambda: {'results': [{'elevation': 123}]})) as mock_get:
+            self.assertEqual(get_elevation(40.0, -105.0), 123)
+            self.assertEqual(get_elevation(40.0, -105.0), 123)
+            self.assertEqual(mock_get.call_count, 1)
 
 
 if __name__ == '__main__':
