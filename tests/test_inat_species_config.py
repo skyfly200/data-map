@@ -1,7 +1,11 @@
+import os
+import tempfile
 import unittest
+from unittest import mock
 
 from cluster import stage_output_path
 from export_geojson import build_parser
+from fetch import fetch_chirps_precip
 from iNat import format_observation_progress, parse_species_list, should_refresh_all, filter_new_observations
 
 
@@ -63,6 +67,25 @@ class IncrementalRefreshTests(unittest.TestCase):
             [item['inat_id'] for item in filter_new_observations(fresh, existing)],
             [3, 4],
         )
+
+
+class ChirpsDownloadCleanupTests(unittest.TestCase):
+    def test_missing_chirps_file_cleans_stale_downloads(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            date_str = '2024-05-17'
+            out_path = os.path.join(tmpdir, f'precip_{date_str}.tif')
+            gz_path = out_path + '.gz'
+
+            with open(gz_path, 'wb') as fh:
+                fh.write(b'stale-data')
+
+            response = mock.Mock(status_code=404)
+            with mock.patch('fetch.requests.get', return_value=response):
+                result = fetch_chirps_precip(date_str, output_dir=tmpdir)
+
+            self.assertIsNone(result)
+            self.assertFalse(os.path.exists(out_path))
+            self.assertFalse(os.path.exists(gz_path))
 
 
 if __name__ == '__main__':

@@ -118,10 +118,20 @@ def parse_species_list(species_value):
 
 def should_refresh_all(env=None):
     values = {**(env or {})}
-    for key in ('REFRESH_ALL', 'INAT_REFRESH_ALL', 'FULL_REFRESH'):
+    keys = ('REFRESH_ALL', 'INAT_REFRESH_ALL', 'FULL_REFRESH')
+
+    for key in keys:
         raw = values.get(key)
         if raw is None:
-            raw = os.getenv(key)
+            continue
+        value = str(raw).strip().lower()
+        if value in ('1', 'true', 'yes', 'y', 'on'):
+            return True
+        if value in ('0', 'false', 'no', 'n', 'off', ''):
+            return False
+
+    for key in keys:
+        raw = os.getenv(key)
         if raw is None:
             continue
         value = str(raw).strip().lower()

@@ -276,6 +276,17 @@ def fetch_sentinel2_ndmi(area=None, start_date="2024-04-01", end_date="2024-06-3
     return task
 
 
+def _remove_stale_chirps_files(*paths):
+    for stale_path in paths:
+        if not stale_path:
+            continue
+        try:
+            if os.path.exists(stale_path):
+                os.remove(stale_path)
+        except OSError:
+            pass
+
+
 def fetch_chirps_precip(date_str, output_dir="precip/"):
     os.makedirs(output_dir, exist_ok=True)
     out_path = os.path.join(output_dir, f"precip_{date_str}.tif")
@@ -291,13 +302,11 @@ def fetch_chirps_precip(date_str, output_dir="precip/"):
         r = requests.get(url, stream=True, timeout=30)
         if r.status_code == 404:
             print(f"⚠️ CHIRPS not available for {date_str}. Skipping.")
+            _remove_stale_chirps_files(gz_path, out_path)
             return None
         r.raise_for_status()
 
-        if os.path.exists(gz_path):
-            os.remove(gz_path)
-        if os.path.exists(out_path):
-            os.remove(out_path)
+        _remove_stale_chirps_files(gz_path, out_path)
 
         with open(gz_path, "wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
@@ -314,12 +323,7 @@ def fetch_chirps_precip(date_str, output_dir="precip/"):
 
     except Exception as e:
         print(f"[!] Error fetching CHIRPS for {date_str}: {e}")
-        for stale_path in (gz_path, out_path):
-            if os.path.exists(stale_path):
-                try:
-                    os.remove(stale_path)
-                except OSError:
-                    pass
+        _remove_stale_chirps_files(gz_path, out_path)
         return None
 
 def get_unique_dates(df):
