@@ -1,0 +1,68 @@
+[
+  {
+    "id": "all",
+    "label": "All species (100)",
+    "path": "/data/observations.geojson",
+    "count": 100
+  },
+  {
+    "id": "boletus-rubriceps",
+    "label": "Boletus rubriceps (68)",
+    "path": "/data/species/boletus-rubriceps.geojson",
+    "count": 68
+  },
+  {
+    "id": "boletus-edulis",
+    "label": "Boletus edulis (12)",
+    "path": "/data/species/boletus-edulis.geojson",
+    "count": 12
+  },
+  {
+    "id": "chalciporus-piperatus",
+    "label": "Chalciporus piperatus (4)",
+    "path": "/data/species/chalciporus-piperatus.geojson",
+    "count": 4
+  },
+  {
+    "id": "cerioporus-squamosus",
+    "label": "Cerioporus squamosus (3)",
+    "path": "/data/species/cerioporus-squamosus.geojson",
+    "count": 3
+  },
+  {
+    "id": "suillus-brevipes",
+    "label": "Suillus brevipes (3)",
+    "path": "/data/species/suillus-brevipes.geojson",
+    "count": 3
+  },
+  {
+    "id": "boletus-barrowsii",
+    "label": "Boletus barrowsii (3)",
+    "path": "/data/species/boletus-barrowsii.geojson",
+    "count": 3
+  },
+  {
+    "id": "suillus-tomentosus",
+    "label": "Suillus tomentosus (2)",
+    "path": "/data/species/suillus-tomentosus.geojson",
+    "count": 2
+  },
+  {
+    "id": "neoboletus-subvelutipes",
+    "label": "Neoboletus subvelutipes (2)",
+    "path": "/data/species/neoboletus-subvelutipes.geojson",
+    "count": 2
+  },
+  {
+    "id": "onnia-tomentosa",
+    "label": "Onnia tomentosa (2)",
+    "path": "/data/species/onnia-tomentosa.geojson",
+    "count": 2
+  },
+  {
+    "id": "boletus-oregonensis",
+    "label": "Boletus oregonensis (1)",
+    "path": "/data/species/boletus-oregonensis.geojson",
+    "count": 1
+  }
+]
