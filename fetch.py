@@ -294,11 +294,16 @@ def fetch_chirps_precip(date_str, output_dir="precip/"):
             return None
         r.raise_for_status()
 
+        if os.path.exists(gz_path):
+            os.remove(gz_path)
+        if os.path.exists(out_path):
+            os.remove(out_path)
+
         with open(gz_path, "wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
+                if chunk:
+                    f.write(chunk)
 
-        # Unzip the file
         import gzip, shutil
         with gzip.open(gz_path, 'rb') as f_in, open(out_path, 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out)
@@ -309,6 +314,12 @@ def fetch_chirps_precip(date_str, output_dir="precip/"):
 
     except Exception as e:
         print(f"[!] Error fetching CHIRPS for {date_str}: {e}")
+        for stale_path in (gz_path, out_path):
+            if os.path.exists(stale_path):
+                try:
+                    os.remove(stale_path)
+                except OSError:
+                    pass
         return None
 
 def get_unique_dates(df):
