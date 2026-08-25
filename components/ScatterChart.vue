@@ -1,30 +1,32 @@
 <template>
   <figure class="chart">
     <figcaption v-if="title" class="chart-title">{{ title }}</figcaption>
-    <div class="chart-area" @mousemove="onMove" @mouseleave="active = null">
-      <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
-        <!-- gridlines + axis ticks -->
-        <g v-for="t in yTicks" :key="`y${t.v}`">
-          <line :x1="padL" :y1="t.p" :x2="W - padR" :y2="t.p" class="grid" />
-          <text :x="padL - 6" :y="t.p + 3" class="tick tick-y">{{ t.label }}</text>
-        </g>
-        <g v-for="t in xTicks" :key="`x${t.v}`">
-          <line :x1="t.p" :y1="padT" :x2="t.p" :y2="H - padB" class="grid" />
-          <text :x="t.p" :y="H - padB + 14" class="tick tick-x">{{ t.label }}</text>
-        </g>
+    <div class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
+      <div class="chart-viewport" :style="viewportStyle">
+        <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
+          <!-- gridlines + axis ticks -->
+          <g v-for="t in yTicks" :key="`y${t.v}`">
+            <line :x1="padL" :y1="t.p" :x2="W - padR" :y2="t.p" class="grid" />
+            <text :x="padL - 6" :y="t.p + 3" class="tick tick-y">{{ t.label }}</text>
+          </g>
+          <g v-for="t in xTicks" :key="`x${t.v}`">
+            <line :x1="t.p" :y1="padT" :x2="t.p" :y2="H - padB" class="grid" />
+            <text :x="t.p" :y="H - padB + 14" class="tick tick-x">{{ t.label }}</text>
+          </g>
 
-        <!-- points -->
-        <circle v-for="(pt, i) in scaled" :key="i" :cx="pt.cx" :cy="pt.cy" r="4"
-                :fill="pt.color" class="dot" @mouseenter="active = pt" />
+          <!-- points -->
+          <circle v-for="(pt, i) in scaled" :key="i" :cx="pt.cx" :cy="pt.cy" r="4"
+                  :fill="pt.color" class="dot" @mouseenter="active = pt" />
 
-        <g v-if="todayX !== null && Number.isFinite(todayX)">
-          <line :x1="sx(todayX)" :y1="padT" :x2="sx(todayX)" :y2="H - padB" class="today-line" />
-          <text :x="sx(todayX) + 4" :y="padT + 12" class="today-label">{{ todayLabel }}</text>
-        </g>
+          <g v-if="todayX !== null && Number.isFinite(todayX)">
+            <line :x1="sx(todayX)" :y1="padT" :x2="sx(todayX)" :y2="H - padB" class="today-line" />
+            <text :x="sx(todayX) + 4" :y="padT + 12" class="today-label">{{ todayLabel }}</text>
+          </g>
 
-        <text :x="(padL + W - padR) / 2" :y="H - 3" class="axis-label">{{ xLabel }}</text>
-        <text :x="-(padT + H - padB) / 2" :y="12" transform="rotate(-90)" class="axis-label">{{ yLabel }}</text>
-      </svg>
+          <text :x="(padL + W - padR) / 2" :y="H - 3" class="axis-label">{{ xLabel }}</text>
+          <text :x="-(padT + H - padB) / 2" :y="12" transform="rotate(-90)" class="axis-label">{{ yLabel }}</text>
+        </svg>
+      </div>
 
       <div v-if="legend && legend.length" class="legend">
         <span v-for="l in legend" :key="l.label" class="lg"><span class="sw" :style="{ background: l.color }"></span>{{ l.label }}</span>
@@ -60,14 +62,39 @@ const padL = 52
 const padR = 16
 const padT = 12
 const padB = 34
+const zoom = ref(1)
+const pan = ref({ x: 0, y: 0 })
+const dragStart = ref(null)
+const viewportStyle = computed(() => ({
+  width: `${W}px`,
+  height: `${H}px`,
+  transform: `translate(${pan.value.x}px, ${pan.value.y}px) scale(${zoom.value})`,
+  transformOrigin: '0 0',
+  transition: dragStart.value ? 'none' : 'transform 0.15s ease-out',
+}))
 
 const active = ref(null)
 const ptr = ref({ x: 0, y: 0 })
 function onMove(e) {
   const r = e.currentTarget.getBoundingClientRect()
-  // Convert to the same coordinate space the tooltip uses (CSS px of the container).
   ptr.value = { x: e.clientX - r.left, y: e.clientY - r.top }
 }
+function clamp(v, min, max) { return Math.min(max, Math.max(min, v)) }
+function onWheel(e) {
+  const delta = e.deltaY > 0 ? 0.9 : 1.1
+  zoom.value = clamp(zoom.value * delta, 0.7, 2.5)
+}
+function onPointerDown(e) {
+  dragStart.value = { x: e.clientX, y: e.clientY, panX: pan.value.x, panY: pan.value.y }
+  e.currentTarget.setPointerCapture?.(e.pointerId)
+}
+function onPointerMove(e) {
+  if (!dragStart.value) return
+  const dx = e.clientX - dragStart.value.x
+  const dy = e.clientY - dragStart.value.y
+  pan.value = { x: dragStart.value.panX + dx / zoom.value, y: dragStart.value.panY + dy / zoom.value }
+}
+function onPointerUp() { dragStart.value = null }
 
 function domain(vals) {
   if (!vals.length) return [0, 1]
