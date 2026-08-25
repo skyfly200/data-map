@@ -50,6 +50,27 @@
       <ChartCard>
         <BarChart title="Top species" :data="speciesData" :format="int" horizontal />
       </ChartCard>
+
+      <ChartCard v-if="elevVsDoy.length">
+        <ScatterChart title="Elevation vs. day of year" :data="elevVsDoy" :legend="clusterLegend"
+          xLabel="Day of year" :yLabel="`Elevation (${unit})`"
+          :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v).toLocaleString()" />
+        <p class="note">Each point is one observation, coloured by cluster — seasonal timing across elevation.</p>
+      </ChartCard>
+
+      <ChartCard v-if="elevVsTemp.length">
+        <ScatterChart title="Elevation vs. observation-day high temp" :data="elevVsTemp" :legend="clusterLegend"
+          :xLabel="`High temp (°${tempUnit})`" :yLabel="`Elevation (${unit})`"
+          :xFormat="(v) => `${Math.round(v)}°`" :yFormat="(v) => Math.round(v).toLocaleString()" />
+        <p class="note">Higher sites tend to be cooler on the day of the find.</p>
+      </ChartCard>
+
+      <ChartCard v-if="rainVsDoy.length">
+        <ScatterChart title="7-day rain total vs. day of year" :data="rainVsDoy" :legend="clusterLegend"
+          xLabel="Day of year" yLabel="Rain total (mm)"
+          :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v)" />
+        <p class="note">Total precipitation in the 7 days before each find.</p>
+      </ChartCard>
     </div>
   </div>
 </template>
@@ -69,6 +90,32 @@ const deg = (v) => `${v}°`
 
 const hasDayTemp = computed(() => rows.value.some((r) => hasValue(r.tmax) || hasValue(r.tmin)))
 const hasTempHistory = computed(() => rows.value.some((r) => hasValue(r.tmax_d0)))
+
+// ── Scatter plots (per-observation granularity, coloured by cluster) ──────────
+const ptColor = (r) => (hasValue(r.cluster) ? colorFor(r.cluster) : UNCLUSTERED)
+const clusterLegend = computed(() => {
+  const seen = new Set()
+  let hasNull = false
+  for (const r of rows.value) { if (hasValue(r.cluster)) seen.add(r.cluster); else hasNull = true }
+  const out = [...seen].sort((a, b) => a - b).map((c) => ({ label: `C${c}`, color: colorFor(c) }))
+  if (hasNull) out.push({ label: '—', color: UNCLUSTERED })
+  return out
+})
+
+const elevVsDoy = computed(() => rows.value
+  .filter((r) => hasValue(r.elevation) && hasValue(r.day_of_year))
+  .map((r) => ({ x: Number(r.day_of_year), y: elevValue(r.elevation), color: ptColor(r), label: r.species })))
+
+const elevVsTemp = computed(() => rows.value
+  .filter((r) => hasValue(r.elevation) && hasValue(r.tmax))
+  .map((r) => ({ x: tempValue(r.tmax), y: elevValue(r.elevation), color: ptColor(r), label: r.species })))
+
+const rainVsDoy = computed(() => rows.value
+  .filter((r) => hasValue(r.day_of_year) && [0, 1, 2, 3, 4, 5, 6].some((o) => hasValue(r[`prcp_d${o}`])))
+  .map((r) => {
+    const total = [0, 1, 2, 3, 4, 5, 6].reduce((s, o) => s + (hasValue(r[`prcp_d${o}`]) ? Number(r[`prcp_d${o}`]) : 0), 0)
+    return { x: Number(r.day_of_year), y: total, color: ptColor(r), label: r.species }
+  }))
 
 // Seasonal timing regardless of year: bucket day_of_year into ISO-ish weeks.
 const weekData = computed(() => {
