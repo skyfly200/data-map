@@ -10,7 +10,9 @@ from iNat import (
     fetch_inat_data,
     format_observation_progress,
     get_elevation,
+    get_parallel_fetch_workers,
     parse_species_list,
+    resolve_inat_page_size,
     should_refresh_all,
     filter_new_observations,
 )
@@ -57,6 +59,14 @@ class ObservationProgressTests(unittest.TestCase):
             format_observation_progress('morchella', 2, 5),
             'morchella [########------------] 2/5',
         )
+
+    def test_default_page_size_is_higher_than_100(self):
+        self.assertEqual(resolve_inat_page_size({}), 200)
+        self.assertEqual(resolve_inat_page_size({'INAT_PER_PAGE': '400'}), 400)
+
+    def test_parallel_fetch_workers_are_configurable(self):
+        self.assertEqual(get_parallel_fetch_workers({'INAT_PARALLEL_FETCHES': '4'}), 4)
+        self.assertEqual(get_parallel_fetch_workers({}), 3)
 
 
 class IncrementalRefreshTests(unittest.TestCase):

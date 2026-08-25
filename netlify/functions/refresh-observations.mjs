@@ -30,7 +30,7 @@ export default async () => {
       lat: Number(process.env.INAT_LAT ?? 40.0),
       lng: Number(process.env.INAT_LNG ?? -105.0),
       radius: Number(process.env.INAT_RADIUS ?? 500),
-      perPage: Number(process.env.INAT_PER_PAGE ?? 100),
+      perPage: Number(process.env.INAT_PER_PAGE ?? 200),
     }
 
     const fresh = await fetchInatFeatures(opts)

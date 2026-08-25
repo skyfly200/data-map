@@ -24,6 +24,16 @@ def latest_observation_csv(root):
     return 'mushroom_observations.csv'
 
 
+def should_skip_fetch(root):
+    refresh_all = os.getenv('REFRESH_ALL', '').strip().lower()
+    if refresh_all in {'1', 'true', 'yes', 'y', 'on'}:
+        return False
+    canonical = root / 'mushroom_observations.csv'
+    if canonical.exists():
+        return True
+    return False
+
+
 def load_env_file(path=None):
     config_path = Path(path or os.getenv('ENV_FILE') or '.env')
     if not config_path.exists():
@@ -94,9 +104,13 @@ def main():
     python_executable = _resolve_python()
     print(f"Using Python interpreter: {python_executable}")
 
-    run_step("Fetch iNaturalist observations", python_executable, "iNat.py")
-    observation_csv = latest_observation_csv(root)
-    print(f"Using observation input: {observation_csv}")
+    if should_skip_fetch(root):
+        print("Using cached iNaturalist observations from mushroom_observations.csv; skipping network fetch.")
+        observation_csv = 'mushroom_observations.csv'
+    else:
+        run_step("Fetch iNaturalist observations", python_executable, "iNat.py")
+        observation_csv = latest_observation_csv(root)
+        print(f"Using observation input: {observation_csv}")
 
     enriched_csv = stage_output_path(observation_csv, '_enriched')
     run_step("Download environmental layers", python_executable, "fetch.py")
