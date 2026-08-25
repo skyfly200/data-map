@@ -131,11 +131,39 @@ export function useObservations() {
   }
 
   // Convenience: a flat array of property objects (with lon/lat attached).
-  const rows = computed(() => (data.value?.features || []).map((f) => ({
+  // Optional species filter (a Set of species names). Empty = show all.
+  // Applied to every view (map/table/charts/explore) via filteredData + rows.
+  const speciesFilter = useState('observations-species-filter', () => [])
+
+  const filteredData = computed(() => {
+    const feats = data.value?.features || []
+    const sel = speciesFilter.value
+    if (!sel.length) return data.value || { type: 'FeatureCollection', features: [] }
+    const set = new Set(sel)
+    return { type: 'FeatureCollection', features: feats.filter((f) => set.has(f.properties?.species)) }
+  })
+
+  // Species present in the loaded dataset with counts (unfiltered), for pickers.
+  const speciesOptions = computed(() => {
+    const counts = new Map()
+    for (const f of data.value?.features || []) {
+      const s = f.properties?.species
+      if (!s) continue
+      counts.set(s, (counts.get(s) || 0) + 1)
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([species, count]) => ({ species, count }))
+  })
+
+  function setSpeciesFilter(list) { speciesFilter.value = [...list] }
+
+  const rows = computed(() => (filteredData.value?.features || []).map((f) => ({
     ...f.properties,
     lon: f.geometry?.coordinates?.[0],
     lat: f.geometry?.coordinates?.[1],
   })))
 
-  return { data, rows, error, pending, load, loadDatasets, setDataset, selectedDataset, availableDatasets }
+  return {
+    data, filteredData, rows, error, pending, load, loadDatasets, setDataset,
+    selectedDataset, availableDatasets, speciesFilter, speciesOptions, setSpeciesFilter,
+  }
 }
