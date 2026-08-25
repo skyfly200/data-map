@@ -57,7 +57,12 @@ async function fetchObservations(datasetPath = '/mushroom_observations.geojson')
     if (!candidate) continue
     try {
       const res = await fetch(candidate)
-      if (res.ok) return await res.json()
+      if (!res.ok) continue
+      const json = await res.json()
+      // Only accept an enriched GeoJSON FeatureCollection. Raw iNaturalist
+      // record arrays (no `.features`) would leave every view empty, so skip
+      // them and fall back to a dataset that actually renders.
+      if (json && Array.isArray(json.features)) return json
     } catch {
       // fall through to the next candidate
     }
