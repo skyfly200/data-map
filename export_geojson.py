@@ -10,6 +10,7 @@ clustered) and commit the result; the commit triggers a Netlify redeploy.
 """
 
 import argparse
+import glob
 import json
 import math
 import os
@@ -113,8 +114,80 @@ def _write_geojson(df, path):
     return len(geojson["features"])
 
 
+def _read_features(path):
+    """Features from a GeoJSON file, or [] if unreadable."""
+    try:
+        with open(path) as f:
+            gj = json.load(f)
+        return gj.get("features", []) if isinstance(gj, dict) else []
+    except (OSError, ValueError):
+        return []
+
+
+def _species_label(features, fallback):
+    for feat in features:
+        s = (feat.get("properties") or {}).get("species")
+        if s:
+            return s
+    return fallback
+
+
+def rebuild_from_species_dir(data_dir=os.path.join('public', 'data')):
+    """Rebuild the canonical combined dataset + manifest from EVERY per-species
+    file on disk.
+
+    ``export_all`` overwrites the combined file and manifest on each run but
+    never clears ``species/``. A later, smaller run (or an on-demand fetch)
+    would otherwise shrink "All species" to just that run's species while the
+    other per-species files lingered — leaving the manifest listing a fraction
+    of what was actually processed. Deriving both artifacts from the union of
+    the species directory makes every export self-healing: partial runs add to,
+    and never subtract from, what the frontend can see.
+    """
+    data_dir = data_dir or os.path.join('public', 'data')
+    species_dir = os.path.join(data_dir, 'species')
+    files = sorted(glob.glob(os.path.join(species_dir, '*.geojson')))
+
+    all_features = []
+    entries = []
+    for path in files:
+        feats = _read_features(path)
+        if not feats:
+            continue
+        all_features.extend(feats)
+        slug = os.path.splitext(os.path.basename(path))[0]
+        label = _species_label(feats, slug)
+        entries.append({
+            "id": slug,
+            "label": f"{label} ({len(feats)})",
+            "path": f"/data/species/{slug}.geojson",
+            "count": len(feats),
+        })
+
+    combined_path = os.path.join(data_dir, 'observations.geojson')
+    with open(combined_path, "w") as f:
+        json.dump({"type": "FeatureCollection", "features": all_features}, f)
+
+    entries.sort(key=lambda e: e["count"], reverse=True)
+    manifest = [{
+        "id": "all",
+        "label": f"All species ({len(all_features)})",
+        "path": "/data/observations.geojson",
+        "count": len(all_features),
+    }] + entries
+
+    manifest_path = os.path.join(data_dir, 'datasets.json')
+    with open(manifest_path, "w") as f:
+        json.dump(manifest, f, indent=2)
+
+    print(f"✅ Rebuilt combined ({len(all_features)} features) + manifest "
+          f"({len(manifest)} datasets) from {len(entries)} species files")
+    return manifest
+
+
 def export_all(df, data_dir=os.path.join('public', 'data'), combined_path=None):
-    """Write the combined dataset, one GeoJSON per species, and a manifest.
+    """Write one GeoJSON per species, then rebuild the combined dataset and
+    manifest from the union of everything on disk.
 
     Layout served by the frontend:
         public/data/observations.geojson        – all species combined
@@ -125,18 +198,6 @@ def export_all(df, data_dir=os.path.join('public', 'data'), combined_path=None):
     species_dir = os.path.join(data_dir, 'species')
     os.makedirs(species_dir, exist_ok=True)
 
-    if combined_path is None:
-        combined_path = os.path.join(data_dir, 'observations.geojson')
-    total = _write_geojson(df, combined_path)
-    print(f"✅ Wrote {total} features to {combined_path}")
-
-    manifest = [{
-        "id": "all",
-        "label": f"All species ({total})",
-        "path": "/data/observations.geojson",
-        "count": total,
-    }]
-
     if "species" in df.columns:
         counts = df["species"].fillna("Unknown").value_counts()
         for species, count in counts.items():
@@ -144,14 +205,20 @@ def export_all(df, data_dir=os.path.join('public', 'data'), combined_path=None):
             rel = f"/data/species/{slug}.geojson"
             n = _write_geojson(df[df["species"].fillna("Unknown") == species],
                                os.path.join(species_dir, f"{slug}.geojson"))
-            manifest.append({"id": slug, "label": f"{species} ({n})", "path": rel, "count": n})
             print(f"   ✓ {species}: {n} → {rel}")
+    else:
+        # No species column — write the whole frame as a single species file so
+        # the union rebuild still has something to combine.
+        _write_geojson(df, os.path.join(species_dir, 'unknown.geojson'))
 
-    manifest_path = os.path.join(data_dir, 'datasets.json')
-    with open(manifest_path, "w") as f:
-        json.dump(manifest, f, indent=2)
-    print(f"✅ Wrote manifest ({len(manifest)} datasets) to {manifest_path}")
-    return manifest
+    # A caller-requested combined path (run_pipeline's CSV-derived name) still
+    # gets a copy, but the manifest always points at the canonical union file.
+    if combined_path and os.path.abspath(combined_path) != os.path.abspath(
+            os.path.join(data_dir, 'observations.geojson')):
+        total = _write_geojson(df, combined_path)
+        print(f"✅ Wrote {total} features to {combined_path}")
+
+    return rebuild_from_species_dir(data_dir)
 
 
 def build_parser():
@@ -163,6 +230,9 @@ def build_parser():
                         help="Exact combined GeoJSON output path; also sets the data directory")
     parser.add_argument("--data-dir", default=None,
                         help="Output directory served by the frontend (legacy alias)")
+    parser.add_argument("--reconcile-only", action="store_true",
+                        help="Skip the CSV; just rebuild observations.geojson + "
+                             "datasets.json from the existing species/ files.")
     return parser
 
 
@@ -171,6 +241,11 @@ def main():
     args = parser.parse_args()
 
     data_dir = args.data_dir or os.path.join('public', 'data')
+
+    if args.reconcile_only:
+        rebuild_from_species_dir(data_dir)
+        return
+
     combined_path = args.output
     if combined_path is not None:
         data_dir = os.path.dirname(combined_path) or data_dir

@@ -116,6 +116,15 @@ The frontend is a Nuxt 3 app that renders the observations on a Leaflet map,
 coloured by environmental cluster, with the enriched attributes in each popup.
 It reads a **static GeoJSON** file — no backend or database.
 
+**Filtering.** The **Data** tab is the control centre: pick species, and narrow
+by **location** (country / state / county — parsed from each record's place
+string — or a lat/lng centre + radius in km) and **time** (year, month, ISO
+week, or a from/to date range). Filters live in shared state, so they apply
+everywhere at once (map, table, charts, explore); a "Filters: N" chip in the
+header links back to the Data tab from any view. When you fetch a *new* species
+while location/time filters are set, the fetch is scoped to match (iNaturalist
+radius + observed-date range) instead of pulling the whole history.
+
 Data flow: the Python pipeline runs **offline** and produces a small GeoJSON that
 the app serves statically. The heavy raster processing never runs on Netlify.
 
@@ -202,6 +211,37 @@ Data flow: Python pipeline → `public/data/` → `upload_datasets.mjs` → Supa
 Storage → frontend + `observations` function read from Supabase; the scheduled
 `refresh-observations` function writes `new-observations.geojson` to the same
 bucket.
+
+### Sign-in to protect the live-fetch endpoints (Supabase Auth)
+
+Browsing (map, table, charts, explore) is fully open. The endpoints that make
+**on-demand outbound API calls** — `fetch-species` (Data tab) and
+`run-data-pipeline` — are gated behind **Supabase Auth** so they can't be
+hammered anonymously.
+
+- **Server side:** `netlify/lib/auth.mjs` validates the caller's Supabase
+  access token (`Authorization: Bearer <jwt>`) via `auth.getUser`. Enforcement
+  turns on automatically whenever Supabase is configured (`SUPABASE_URL` +
+  `SUPABASE_ANON_KEY` in the Netlify env). Overrides: `AUTH_DISABLED=true`
+  forces the endpoints open even when configured; `AUTH_REQUIRED=true` fails
+  closed and refuses traffic until Supabase is configured.
+- **Browser side:** set the public keys so the login UI works and fetches send
+  the token:
+  - Netlify / `.env`: `NUXT_PUBLIC_SUPABASE_URL`,
+    `NUXT_PUBLIC_SUPABASE_ANON_KEY` (the anon key is public by design; the
+    service-role key stays server-only).
+- **Enable sign-in methods** in the Supabase dashboard (Authentication →
+  Providers): Email (password + magic link) is on by default; enable **GitHub**
+  and **Google** OAuth and add your site URL + `…/login` to the redirect
+  allow-list. Turn on **Passkeys / WebAuthn** there too. The `/login` page
+  surfaces all of these — "Sign in with a passkey" for returning users, and
+  "Add a passkey to this account" once you're signed in (the client enables the
+  experimental passkey API automatically).
+
+When Supabase public keys are **not** set, the login UI shows a
+“not configured” notice and fetches run unauthenticated (which the functions
+allow only because the server is likewise unconfigured) — so local dev works
+with zero credentials.
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 

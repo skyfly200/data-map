@@ -25,7 +25,7 @@ const EMPTY_PROPS = {
 
 export function buildInatUrl({
   taxonName = 'morchella', lat = 40.0, lng = -105.0, radius = 500,
-  perPage = 100, qualityGrade = 'research',
+  perPage = 100, qualityGrade = 'research', d1 = null, d2 = null,
 } = {}) {
   const params = new URLSearchParams({
     taxon_name: taxonName,
@@ -39,6 +39,10 @@ export function buildInatUrl({
     order: 'desc',
     order_by: 'created_at',
   })
+  // Optional observed-date range (YYYY-MM-DD), so a scoped fetch matches the
+  // active time filter instead of pulling the full history.
+  if (d1) params.set('d1', String(d1))
+  if (d2) params.set('d2', String(d2))
   return `${INAT_API}?${params.toString()}`
 }
 
