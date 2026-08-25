@@ -56,6 +56,11 @@ const viewportStyle = computed(() => ({
 
 const active = ref(null)
 const ptr = ref({ x: 0, y: 0 })
+function compactLabel(label, maxLen = 18) {
+  const value = String(label ?? '')
+  if (value.length <= maxLen) return value
+  return `${value.slice(0, Math.max(0, maxLen - 1)).trimEnd()}…`
+}
 function onMove(e) {
   const r = e.currentTarget.getBoundingClientRect()
   ptr.value = { x: e.clientX - r.left, y: e.clientY - r.top }
@@ -117,7 +122,7 @@ const scaled = computed(() => {
         color: d.color || SERIES_1,
         path: roundedRectPath(padL.value, y, Math.max(0.5, w), barH, 4, 'right'),
         valueLabel: props.format(d.value),
-        short: d.short || d.label,
+        short: compactLabel(d.short || d.label, 18),
         valuePos: { x: padL.value + w + 6, y: y + barH / 2 + 4, 'text-anchor': 'start' },
         catPos: { x: padL.value - 8, y: y + barH / 2 + 4, 'text-anchor': 'end' },
       }

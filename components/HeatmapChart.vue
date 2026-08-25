@@ -1,21 +1,23 @@
 <template>
   <figure class="chart">
     <figcaption v-if="title" class="chart-title">{{ title }}</figcaption>
-    <div class="chart-area" @mousemove="onMove" @mouseleave="active = null">
-      <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
-        <text v-for="(c, j) in cols" :key="`c${j}`" :x="cx(j) + cw / 2" :y="padT - 4" class="lbl lbl-col">{{ c }}</text>
-        <text v-for="(r, i) in rows" :key="`r${i}`" :x="padL - 6" :y="cy(i) + ch / 2 + 3" class="lbl lbl-row">{{ r }}</text>
+    <div class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
+      <div class="chart-viewport" :style="viewportStyle">
+        <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
+          <text v-for="(c, j) in cols" :key="`c${j}`" :x="cx(j) + cw / 2" :y="padT - 4" class="lbl lbl-col">{{ compactLabel(c, 12) }}</text>
+          <text v-for="(r, i) in rows" :key="`r${i}`" :x="padL - 6" :y="cy(i) + ch / 2 + 3" class="lbl lbl-row">{{ compactLabel(r, 16) }}</text>
 
-        <template v-for="(r, i) in rows">
-          <g v-for="(c, j) in cols" :key="`${i}-${j}`">
-            <rect :x="cx(j)" :y="cy(i)" :width="cw - 2" :height="ch - 2" rx="2"
-                  :fill="cellColor(matrix[i][j])" class="cell"
-                  @mouseenter="active = { r, c, v: matrix[i][j] }" />
-            <text v-if="showValues" :x="cx(j) + cw / 2" :y="cy(i) + ch / 2 + 3"
-                  class="cell-val" :fill="textColor(matrix[i][j])">{{ cellText(matrix[i][j]) }}</text>
-          </g>
-        </template>
-      </svg>
+          <template v-for="(r, i) in rows">
+            <g v-for="(c, j) in cols" :key="`${i}-${j}`">
+              <rect :x="cx(j)" :y="cy(i)" :width="cw - 2" :height="ch - 2" rx="2"
+                    :fill="cellColor(matrix[i][j])" class="cell"
+                    @mouseenter="active = { r, c, v: matrix[i][j] }" />
+              <text v-if="showValues" :x="cx(j) + cw / 2" :y="cy(i) + ch / 2 + 3"
+                    class="cell-val" :fill="textColor(matrix[i][j])">{{ cellText(matrix[i][j]) }}</text>
+            </g>
+          </template>
+        </svg>
+      </div>
 
       <div v-if="active" class="tooltip" :style="{ left: `${ptr.x + 12}px`, top: `${ptr.y + 8}px` }">
         <strong>{{ active.r }} · {{ active.c }}</strong>
@@ -35,7 +37,13 @@ const props = defineProps({
   showValues: { type: Boolean, default: true },
 })
 
-const W = 640
+function compactLabel(label, maxLen = 16) {
+  const value = String(label ?? '')
+  if (value.length <= maxLen) return value
+  return `${value.slice(0, Math.max(0, maxLen - 1)).trimEnd()}…`
+}
+
+const W = computed(() => Math.max(640, (props.cols.length || 1) * 90 + 180))
 const padL = 130
 const padR = 12
 const padT = 26
@@ -43,7 +51,17 @@ const padB = 8
 const ch = 30
 
 const H = computed(() => padT + padB + props.rows.length * ch)
-const cw = computed(() => (W - padL - padR) / Math.max(1, props.cols.length))
+const cw = computed(() => (W.value - padL - padR) / Math.max(1, props.cols.length))
+const zoom = ref(1)
+const pan = ref({ x: 0, y: 0 })
+const dragStart = ref(null)
+const viewportStyle = computed(() => ({
+  width: `${W.value}px`,
+  height: `${H.value}px`,
+  transform: `translate(${pan.value.x}px, ${pan.value.y}px) scale(${zoom.value})`,
+  transformOrigin: '0 0',
+  transition: dragStart.value ? 'none' : 'transform 0.15s ease-out',
+}))
 
 const cx = (j) => padL + j * cw.value
 const cy = (i) => padT + i * ch
@@ -73,13 +91,37 @@ function onMove(e) {
   const r = e.currentTarget.getBoundingClientRect()
   ptr.value = { x: e.clientX - r.left, y: e.clientY - r.top }
 }
+function clamp(v, min, max) { return Math.min(max, Math.max(min, v)) }
+function onWheel(e) {
+  const delta = e.deltaY > 0 ? 0.9 : 1.1
+  zoom.value = clamp(zoom.value * delta, 0.7, 2.5)
+}
+function onPointerDown(e) {
+  dragStart.value = { x: e.clientX, y: e.clientY, panX: pan.value.x, panY: pan.value.y }
+  e.currentTarget.setPointerCapture?.(e.pointerId)
+}
+function onPointerMove(e) {
+  if (!dragStart.value) return
+  const dx = e.clientX - dragStart.value.x
+  const dy = e.clientY - dragStart.value.y
+  pan.value = { x: dragStart.value.panX + dx / zoom.value, y: dragStart.value.panY + dy / zoom.value }
+}
+function onPointerUp() { dragStart.value = null }
 </script>
 
 <style scoped>
 .chart { margin: 0; }
 .chart-title { font-size: 0.95rem; font-weight: 600; color: #1f2933; margin-bottom: 6px; }
-.chart-area { position: relative; }
-svg { width: 100%; height: auto; display: block; }
+.chart-area {
+  position: relative; overflow: auto; max-width: 100%; border-radius: 8px;
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.03), rgba(148, 163, 184, 0.01));
+  cursor: grab; user-select: none; touch-action: none;
+}
+.chart-area:active { cursor: grabbing; }
+.chart-viewport {
+  position: relative; display: block; min-width: 100%; min-height: 100%;
+}
+svg { width: 100%; height: 100%; display: block; }
 .lbl { fill: #4b5563; font-size: 10px; }
 .lbl-col { text-anchor: middle; }
 .lbl-row { text-anchor: end; }
