@@ -26,6 +26,8 @@ PROPERTY_COLUMNS = [
     "location",
     "elevation",
     "land_cover_label",
+    "water_mask",
+    "exclude_reason",
     "ndvi",
     "soil_moisture",
     "solar_exposure",

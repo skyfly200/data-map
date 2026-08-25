@@ -4,10 +4,12 @@ import unittest
 from unittest import mock
 
 import numpy as np
+import pandas as pd
 import rasterio
 
 from cluster import stage_output_path
 from compress_rasters import convert_raster_to_cog
+from enrich_with_rasters import filter_non_productive_landcover, should_filter_non_productive_landcover
 from export_geojson import build_parser
 from fetch import fetch_chirps_precip
 from iNat import (
@@ -122,6 +124,18 @@ class IncrementalRefreshTests(unittest.TestCase):
             [item['inat_id'] for item in filter_new_observations(fresh, existing)],
             [3, 4],
         )
+
+    def test_non_productive_landcover_rows_are_filtered(self):
+        df = pd.DataFrame({
+            'land_cover': [10, 50, 70, 80, 90, None],
+            'land_cover_label': ['Tree cover', 'Built-up', 'Snow and ice', 'Water', 'Wetland', 'Unknown'],
+        })
+        filtered = filter_non_productive_landcover(df)
+        self.assertEqual(list(filtered['land_cover'].fillna(-1)), [10.0, 90.0, -1])
+
+    def test_filtering_can_be_disabled_via_env_toggle(self):
+        self.assertFalse(should_filter_non_productive_landcover({'FILTER_NON_PRODUCTIVE_LANDCOVER': '0'}))
+        self.assertTrue(should_filter_non_productive_landcover({'FILTER_NON_PRODUCTIVE_LANDCOVER': '1'}))
 
 
 class ChirpsDownloadCleanupTests(unittest.TestCase):
