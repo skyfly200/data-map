@@ -173,6 +173,36 @@ Two schedules refresh the map, split by what each environment can run:
   Configure the iNaturalist query with env vars (`INAT_TAXON`, `INAT_LAT`,
   `INAT_LNG`, `INAT_RADIUS`) in the Netlify site settings.
 
+### Serving datasets from Supabase Storage (optional)
+
+By default the datasets live in `public/data/` (committed) and the interim
+refresh uses Netlify Blobs. You can instead store them in **Supabase Storage**,
+which becomes the source of truth the frontend and functions read from. It's
+entirely opt-in — with no `SUPABASE_*` env set, everything falls back to the
+committed files / Blobs.
+
+Setup:
+
+1. Pick (or create) a Supabase project and a **public** Storage bucket, e.g.
+   `datasets`.
+2. Set env vars:
+   - GitHub Actions secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+     (and optionally `SUPABASE_DATASETS_BUCKET`). The `refresh-data` workflow
+     runs `node scripts/upload_datasets.mjs` after export to push
+     `observations.geojson`, `species/*.geojson`, and a rewritten
+     `datasets.json` (with Supabase public URLs) to the bucket.
+   - Netlify env: `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (so the
+     functions read/write Storage instead of Blobs), and
+     `NUXT_PUBLIC_DATASETS_MANIFEST_URL` = the bucket's public
+     `datasets.json` URL (so the frontend loads datasets from Supabase).
+3. The service-role key is **write-only server-side** — it lives in Actions /
+   Netlify env, never in the browser bundle.
+
+Data flow: Python pipeline → `public/data/` → `upload_datasets.mjs` → Supabase
+Storage → frontend + `observations` function read from Supabase; the scheduled
+`refresh-observations` function writes `new-observations.geojson` to the same
+bucket.
+
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 ## Setup

@@ -9,17 +9,28 @@
 import { getStore } from '@netlify/blobs'
 import { overlay } from '../lib/observations.mjs'
 import { loadBaseline } from '../lib/baseline.mjs'
+import { supabaseConfigured } from '../lib/supabase-storage.mjs'
+import { readJson } from '../lib/datasets-store.mjs'
 
 export default async () => {
-  const baseline = await loadBaseline()
+  // Baseline: Supabase Storage when configured, else the committed file.
+  let baseline = null
+  if (supabaseConfigured()) baseline = await readJson('observations.geojson')
+  if (!baseline) baseline = await loadBaseline()
 
+  // Interim-new sightings: Supabase object when configured, else Netlify Blob.
   let extras = []
-  try {
-    const store = getStore('observations')
-    const blob = await store.get('new-observations', { type: 'json' })
-    extras = blob?.features || []
-  } catch {
-    // Blobs unavailable — serve the baseline alone.
+  if (supabaseConfigured()) {
+    const fc = await readJson('new-observations.geojson')
+    extras = fc?.features || []
+  } else {
+    try {
+      const store = getStore('observations')
+      const blob = await store.get('new-observations', { type: 'json' })
+      extras = blob?.features || []
+    } catch {
+      // Blobs unavailable — serve the baseline alone.
+    }
   }
 
   const collection = overlay(baseline, extras)

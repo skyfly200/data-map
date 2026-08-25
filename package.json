@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@netlify/blobs": "^8.1.0",
+    "@supabase/supabase-js": "^2.112.4",
     "geotiff": "^2.1.3",
     "leaflet": "^1.9.4",
     "nuxt": "^3.16.2",
