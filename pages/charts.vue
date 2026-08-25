@@ -34,8 +34,8 @@
       </ChartCard>
 
       <ChartCard v-if="hasDayTemp">
-        <BarChart :title="`Observation-day high temperature (°${tempUnit})`" :data="tempHighDist" :format="int" />
-        <p class="note">Count of observations per high-temperature band.</p>
+        <BarChart :title="`Observation-day temperature (°${tempUnit})`" :data="tempHighLowDist" :format="int" />
+        <p class="note">Count of observations per 2° band, split into low and high day temperatures.</p>
       </ChartCard>
 
       <ChartCard>
@@ -67,7 +67,7 @@ const cov = (v) => `${v}/${rows.value.length}`
 const mm = (v) => `${v}`
 const deg = (v) => `${v}°`
 
-const hasDayTemp = computed(() => rows.value.some((r) => hasValue(r.tmax)))
+const hasDayTemp = computed(() => rows.value.some((r) => hasValue(r.tmax) || hasValue(r.tmin)))
 const hasTempHistory = computed(() => rows.value.some((r) => hasValue(r.tmax_d0)))
 
 // Seasonal timing regardless of year: bucket day_of_year into ISO-ish weeks.
@@ -89,18 +89,35 @@ const tempLeadUp = computed(() => [6, 5, 4, 3, 2, 1, 0].map((o) => {
   return { label: o === 0 ? 'day of' : `${o}d before`, short: o === 0 ? '0' : `-${o}`, value: Math.round(mean) }
 }))
 
-// Distribution of the observation-day high temperature, in the display unit.
-const tempHighDist = computed(() => {
-  const vals = rows.value.map((r) => r.tmax).filter(hasValue).map((c) => tempValue(c))
-  if (!vals.length) return []
-  const step = tempUnit.value === 'F' ? 10 : 5
-  const min = Math.floor(Math.min(...vals) / step) * step
-  const max = Math.ceil(Math.max(...vals) / step) * step
+// Distribution of the observation-day high and low temperatures, in 2° bands.
+const tempHighLowDist = computed(() => {
+  const highVals = rows.value.map((r) => r.tmax).filter(hasValue).map((c) => tempValue(c))
+  const lowVals = rows.value.map((r) => r.tmin).filter(hasValue).map((c) => tempValue(c))
+  const combined = [...highVals, ...lowVals]
+  if (!combined.length) return []
+
+  const step = 2
+  const min = Math.floor(Math.min(...combined) / step) * step
+  const max = Math.ceil(Math.max(...combined) / step) * step
   const bins = []
+
   for (let lo = min; lo < max; lo += step) {
-    const n = vals.filter((v) => v >= lo && v < lo + step).length
-    bins.push({ label: `${lo}–${lo + step}°${tempUnit.value}`, short: `${lo}°`, value: n })
+    const highCount = highVals.filter((v) => v >= lo && v < lo + step).length
+    const lowCount = lowVals.filter((v) => v >= lo && v < lo + step).length
+    bins.push({
+      label: `Low ${lo}–${lo + step}°${tempUnit.value}`,
+      short: `L ${lo}`,
+      value: lowCount,
+      color: '#1baf7a',
+    })
+    bins.push({
+      label: `High ${lo}–${lo + step}°${tempUnit.value}`,
+      short: `H ${lo}`,
+      value: highCount,
+      color: '#2a78d6',
+    })
   }
+
   return bins
 })
 
