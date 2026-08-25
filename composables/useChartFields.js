@@ -15,7 +15,6 @@ export const ALL_NUMERIC = [
   { key: 'water_retention', label: 'Water retention' },
   { key: 'slope', label: 'Slope (°)' },
   { key: 'aspect', label: 'Aspect (°)' },
-  { key: 'num_identification_agreements', label: 'ID agreements' },
 ]
 
 export const ALL_CATEGORY = [

@@ -7,6 +7,8 @@
   <BarChart v-else-if="config.type === 'histogram'" :title="title" :data="histogramData" :format="(v) => String(v)" />
   <HeatmapChart v-else-if="config.type === 'heatmap'" :title="title" :rows="heatmap.rows" :cols="heatmap.cols"
     :matrix="heatmap.matrix" :format="heatFmt" />
+  <BarChart v-else-if="config.type === 'line' || config.type === 'area'" :title="title" :data="lineData" :format="lineFmt" :horizontal="false" />
+  <BarChart v-else-if="config.type === 'radar' || config.type === 'donut'" :title="title" :data="radarData" :format="(v) => String(v)" :horizontal="false" />
   <p v-if="isEmpty" class="cr-empty">No data for this combination.</p>
 </template>
 
@@ -119,6 +121,47 @@ const barData = computed(() => {
 })
 const barFmt = computed(() => (c.value.measure === 'count' ? (v) => String(v) : (v) => Number(v).toFixed(1)))
 
+const lineData = computed(() => {
+  const grouped = new Map()
+  for (const r of rows.value) {
+    const x = numVal(r, c.value.xField)
+    const y = numVal(r, c.value.yField)
+    if (x === null || y === null) continue
+    const key = c.value.groupField ? catVal(r, c.value.groupField) || 'Unassigned' : 'All'
+    if (!grouped.has(key)) grouped.set(key, [])
+    grouped.get(key).push({ x, y })
+  }
+
+  const out = []
+  for (const [key, pts] of grouped.entries()) {
+    const ordered = [...pts].sort((a, b) => a.x - b.x)
+    const total = ordered.reduce((sum, p) => sum + p.y, 0)
+    out.push({
+      label: key,
+      short: key,
+      value: total / Math.max(1, ordered.length),
+      color: c.value.groupField === 'cluster' ? clusterColor(key) : PALETTE[(out.length) % PALETTE.length],
+    })
+  }
+  return out.slice(0, 12)
+})
+const lineFmt = computed(() => (v) => Number(v).toFixed(1))
+
+const radarData = computed(() => {
+  const groups = groupBy(c.value.groupField)
+  const out = []
+  for (const [label, rs] of groups) {
+    let value
+    if (c.value.measure === 'count') value = rs.length
+    else {
+      const vals = rs.map((r) => numVal(r, c.value.measure)).filter((v) => v !== null)
+      value = vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0
+    }
+    out.push({ label, short: label, value, color: c.value.groupField === 'cluster' ? clusterColor(label) : SERIES_1 })
+  }
+  return out.sort((a, b) => b.value - a.value).slice(0, 12)
+})
+
 const histogramData = computed(() => {
   const vals = rows.value.map((r) => numVal(r, c.value.valueField)).filter((v) => v !== null)
   if (!vals.length) return []
@@ -165,9 +208,11 @@ const title = computed(() => {
   const t = c.value.type
   if (t === 'scatter') return `${labelOf(c.value.yField)} vs. ${labelOf(c.value.xField)}`
   if (t === 'bar') return c.value.measure === 'count' ? `Count by ${catLabel(c.value.groupField)}` : `Mean ${labelOf(c.value.measure)} by ${catLabel(c.value.groupField)}`
+  if (t === 'line' || t === 'area') return c.value.groupField ? `${labelOf(c.value.yField)} by ${catLabel(c.value.groupField)}` : `${labelOf(c.value.yField)} over ${labelOf(c.value.xField)}`
   if (t === 'box') return `${labelOf(c.value.valueField)} by ${catLabel(c.value.groupField)}`
   if (t === 'histogram') return `Distribution of ${labelOf(c.value.valueField)}`
   if (t === 'heatmap') return `${catLabel(c.value.rowField)} × ${catLabel(c.value.colField)}`
+  if (t === 'radar' || t === 'donut') return `${c.value.measure === 'count' ? 'Count' : labelOf(c.value.measure)} by ${catLabel(c.value.groupField)}`
   return ''
 })
 defineExpose({ title })
@@ -175,7 +220,7 @@ defineExpose({ title })
 const isEmpty = computed(() => {
   const t = c.value.type
   if (t === 'scatter') return scatterData.value.length === 0
-  if (t === 'bar') return barData.value.length === 0
+  if (t === 'bar' || t === 'line' || t === 'area' || t === 'radar' || t === 'donut') return (lineData.value.length === 0 && radarData.value.length === 0 && barData.value.length === 0)
   if (t === 'box') return boxData.value.length === 0
   if (t === 'histogram') return histogramData.value.length === 0
   if (t === 'heatmap') return heatmap.value.rows.length === 0
