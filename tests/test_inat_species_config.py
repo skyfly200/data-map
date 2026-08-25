@@ -2,7 +2,7 @@ import unittest
 
 from cluster import stage_output_path
 from export_geojson import build_parser
-from iNat import parse_species_list
+from iNat import format_observation_progress, parse_species_list
 
 
 class SpeciesListParsingTests(unittest.TestCase):
@@ -37,6 +37,14 @@ class GeojsonCliCompatibilityTests(unittest.TestCase):
         parser = build_parser()
         args = parser.parse_args(['--input', 'mushroom_observations.csv', '--data-dir', 'public/data'])
         self.assertEqual(args.data_dir, 'public/data')
+
+
+class ObservationProgressTests(unittest.TestCase):
+    def test_format_observation_progress_includes_species_and_counts(self):
+        self.assertEqual(
+            format_observation_progress('morchella', 2, 5),
+            'morchella [########------------] 2/5',
+        )
 
 
 if __name__ == '__main__':

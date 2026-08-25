@@ -85,12 +85,16 @@ def _slugify(value):
     return slug or 'mushroom'
 
 
-def render_progress_bar(current, total, width=30):
+def render_progress_bar(current, total, width=20):
     if total <= 0:
         return '[' + ('=' * width) + '] 0/0'
     filled = max(0, min(width, int(round((current / total) * width))))
     bar = '#' * filled + '-' * (width - filled)
     return f'[{bar}] {current}/{total}'
+
+
+def format_observation_progress(species, current, total, width=20):
+    return f'{species} {render_progress_bar(current, total, width=width)}'
 
 
 def parse_species_list(species_value):
@@ -118,55 +122,99 @@ def _unique_output_base(prefix='mushroom_observations', species='morchella', lat
     slug = '-'.join(_slugify(s) for s in species_list) if species_list else 'mushroom'
     return f"{prefix}_{slug}_{lat}_{lng}_{radius}_{timestamp}"
 
-def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, per_page=100):
-    results = get_observations(
-        taxon_name=taxon_name,
-        lat=lat,
-        lng=lng,
-        quality_grade=quality_grade,
-        radius=radius,
-        captive=False,
-        geo=True,
-        per_page=per_page,
-    )
+def get_species_observation_total(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0):
+    try:
+        response = get_observations(
+            taxon_name=taxon_name,
+            lat=lat,
+            lng=lng,
+            quality_grade=quality_grade,
+            radius=radius,
+            captive=False,
+            geo=True,
+            per_page=1,
+            page=1,
+        )
+        if not isinstance(response, dict):
+            return 0
+        total = response.get('total_results')
+        return int(total) if total is not None else 0
+    except Exception:
+        return 0
 
+
+def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, per_page=100, max_observations=None, progress_callback=None, total_count=None):
     observations = []
-    for obs in results['results']:
-        timestamp = obs.get('observed_on')
-        if isinstance(timestamp, datetime):
-            date = timestamp.strftime('%Y-%m-%d')
-        elif not timestamp:  # Handle missing or None dates
-            date = None
+    page = 1
+    max_allowed = max_observations if isinstance(max_observations, int) and max_observations > 0 else None
+    target_total = total_count if isinstance(total_count, int) and total_count > 0 else None
+    if max_allowed is not None and (target_total is None or target_total > max_allowed):
+        target_total = max_allowed
 
-        coords = obs['geojson']['coordinates'] if 'geojson' in obs else [None, None]
-        elevation = get_elevation(coords[1], coords[0])
-        weather = get_weather(coords[1], coords[0], date) if coords[0] and coords[1] and date else {}
-        if not isinstance(weather, dict):  # Safeguard against unexpected types
-            weather = {}
-            print(f"Unexpected weather data type: {type(weather)}")
+    while True:
+        results = get_observations(
+            taxon_name=taxon_name,
+            lat=lat,
+            lng=lng,
+            quality_grade=quality_grade,
+            radius=radius,
+            captive=False,
+            geo=True,
+            per_page=per_page,
+            page=page,
+        )
 
-        observations.append({
-            'uuid': obs.get('uuid'),
-            'inat_id': obs.get('id'),  # numeric id for the canonical iNat URL
-            'timestamp': timestamp,
-            'date': date,
-            'lon': coords[0],
-            'lat': coords[1],
-            'elevation': elevation,
-            'tavg': weather.get('tavg', None),
-            'tmin': weather.get('tmin', None),
-            'tmax': weather.get('tmax', None),
-            'precipitation': weather.get('prcp', None),
-            'windspeed': weather.get('wspd', None),
-            'winddirection': weather.get('wdir', None),
-            'presure': weather.get('pres', None),
-            'species': obs.get('taxon', {}).get('name', ''),
-            'location': obs.get('place_guess', ''),
-            'num_identification_agreements': obs.get('num_identification_agreements', 0),
-        })
+        raw_results = results.get('results', []) if isinstance(results, dict) else []
+        if not raw_results:
+            break
 
-    df = pd.DataFrame(observations)
-    return df
+        for obs in raw_results:
+            if max_allowed is not None and len(observations) >= max_allowed:
+                return pd.DataFrame(observations)
+
+            if progress_callback:
+                progress_callback(len(observations) + 1, target_total or (len(observations) + 1))
+
+            timestamp = obs.get('observed_on')
+            if isinstance(timestamp, datetime):
+                date = timestamp.strftime('%Y-%m-%d')
+            elif not timestamp:
+                date = None
+
+            coords = obs['geojson']['coordinates'] if 'geojson' in obs else [None, None]
+            elevation = get_elevation(coords[1], coords[0])
+            weather = get_weather(coords[1], coords[0], date) if coords[0] and coords[1] and date else {}
+            if not isinstance(weather, dict):
+                weather = {}
+                print(f"Unexpected weather data type: {type(weather)}")
+
+            observations.append({
+                'uuid': obs.get('uuid'),
+                'inat_id': obs.get('id'),
+                'timestamp': timestamp,
+                'date': date,
+                'lon': coords[0],
+                'lat': coords[1],
+                'elevation': elevation,
+                'tavg': weather.get('tavg', None),
+                'tmin': weather.get('tmin', None),
+                'tmax': weather.get('tmax', None),
+                'precipitation': weather.get('prcp', None),
+                'windspeed': weather.get('wspd', None),
+                'winddirection': weather.get('wdir', None),
+                'presure': weather.get('pres', None),
+                'species': obs.get('taxon', {}).get('name', ''),
+                'location': obs.get('place_guess', ''),
+                'num_identification_agreements': obs.get('num_identification_agreements', 0),
+            })
+
+        if max_allowed is not None and len(observations) >= max_allowed:
+            break
+        if len(raw_results) < per_page:
+            break
+        page += 1
+
+    return pd.DataFrame(observations)
 
 def main():
     env_file = os.getenv('ENV_FILE') or '.env'
@@ -179,15 +227,32 @@ def main():
     lat, lng = _resolve_location_from_env(default_lat=40.0, default_lng=-105.0)
     radius = _read_float_env('INAT_RADIUS', 'RADIUS', default=500.0)
     per_page = int(getenv_with_file('INAT_PER_PAGE', default=(getenv_with_file('PER_PAGE', default='100', env_file=env_file)), env_file=env_file) or 100)
+    max_observations = int(getenv_with_file('INAT_MAX_OBSERVATIONS_PER_SPECIES', default=(getenv_with_file('MAX_OBSERVATIONS_PER_SPECIES', default='0', env_file=env_file)), env_file=env_file) or 0)
     output_prefix = getenv_with_file('OUTPUT_PREFIX', default='mushroom_observations', env_file=env_file)
     output_dir = getenv_with_file('OUTPUT_DIR', default='.', env_file=env_file)
     os.makedirs(output_dir, exist_ok=True)
 
-    print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km...")
+    print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km (per_page={per_page}, max_per_species={max_observations or 'unlimited'})...")
     frames = []
     total_species = len(species_list)
     for index, species in enumerate(species_list, start=1):
         print(f"\n[{index}/{total_species}] {species} {render_progress_bar(index, total_species)}")
+
+        species_total = get_species_observation_total(
+            taxon_name=species,
+            quality_grade=quality_grade,
+            lat=lat,
+            lng=lng,
+            radius=radius,
+        )
+        if max_observations and species_total > max_observations:
+            species_total = max_observations
+
+        def progress_callback(current, total, species_name=species):
+            if total <= 0:
+                return
+            print(f"\r  {format_observation_progress(species_name, current, total, width=20)}", end='', flush=True)
+
         df_species = fetch_inat_data(
             taxon_name=species,
             quality_grade=quality_grade,
@@ -195,7 +260,11 @@ def main():
             lng=lng,
             radius=radius,
             per_page=per_page,
+            max_observations=max_observations or None,
+            progress_callback=progress_callback,
+            total_count=species_total,
         )
+        print()
         count = len(df_species) if df_species is not None else 0
         print(f"  -> {species}: {count} observations fetched")
         if not df_species.empty:
