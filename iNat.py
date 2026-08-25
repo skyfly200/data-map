@@ -85,6 +85,14 @@ def _slugify(value):
     return slug or 'mushroom'
 
 
+def render_progress_bar(current, total, width=30):
+    if total <= 0:
+        return '[' + ('=' * width) + '] 0/0'
+    filled = max(0, min(width, int(round((current / total) * width))))
+    bar = '#' * filled + '-' * (width - filled)
+    return f'[{bar}] {current}/{total}'
+
+
 def parse_species_list(species_value):
     if species_value is None:
         return []
@@ -177,8 +185,9 @@ def main():
 
     print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km...")
     frames = []
-    for species in species_list:
-        print(f"  - {species}")
+    total_species = len(species_list)
+    for index, species in enumerate(species_list, start=1):
+        print(f"\n[{index}/{total_species}] {species} {render_progress_bar(index, total_species)}")
         df_species = fetch_inat_data(
             taxon_name=species,
             quality_grade=quality_grade,
@@ -187,6 +196,8 @@ def main():
             radius=radius,
             per_page=per_page,
         )
+        count = len(df_species) if df_species is not None else 0
+        print(f"  -> {species}: {count} observations fetched")
         if not df_species.empty:
             frames.append(df_species)
     if not frames:
