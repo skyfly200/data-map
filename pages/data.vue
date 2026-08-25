@@ -14,9 +14,15 @@
 
     <div class="fetch-new">
       <label>Fetch a new species</label>
-      <input v-model="newSpecies" type="text" placeholder="e.g. Amanita muscaria" @keyup.enter="fetchNew" />
+      <input v-model="newSpecies" type="text" placeholder="e.g. Amanita muscaria" :disabled="fetching" @keyup.enter="fetchNew" />
       <button :disabled="fetching || !newSpecies.trim()" @click="fetchNew">{{ fetching ? 'Fetching…' : 'Fetch' }}</button>
-      <span v-if="fetchMsg" :class="['fmsg', fetchOk ? 'ok' : 'err']">{{ fetchMsg }}</span>
+      <span v-if="fetchMsg && !fetching" :class="['fmsg', fetchOk ? 'ok' : 'err']">{{ fetchMsg }}</span>
+    </div>
+
+    <div v-if="fetching" class="fetch-progress">
+      <div class="pbar"><span class="pfill"></span></div>
+      <span class="ptext">Fetching &amp; clustering “{{ fetchingName }}”… {{ elapsed }}s
+        <em>(large species can take up to a minute)</em></span>
     </div>
 
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
@@ -62,12 +68,25 @@ const newSpecies = ref('')
 const fetching = ref(false)
 const fetchMsg = ref('')
 const fetchOk = ref(false)
+const fetchingName = ref('')
+const elapsed = ref(0)
+let timer = null
+
+function startTimer() {
+  elapsed.value = 0
+  const t0 = Date.now()
+  timer = setInterval(() => { elapsed.value = Math.round((Date.now() - t0) / 1000) }, 250)
+}
+function stopTimer() { if (timer) { clearInterval(timer); timer = null } }
+onBeforeUnmount(stopTimer)
 
 async function fetchNew() {
   const q = newSpecies.value.trim()
   if (!q || fetching.value) return
   fetching.value = true
+  fetchingName.value = q
   fetchMsg.value = ''
+  startTimer()
   try {
     const res = await fetch(`/.netlify/functions/fetch-species?species=${encodeURIComponent(q)}`)
     const data = await res.json()
@@ -82,6 +101,7 @@ async function fetchNew() {
     fetchOk.value = false
     fetchMsg.value = `Couldn’t fetch — this needs the deployed function (and Supabase to persist). ${e.message}`
   } finally {
+    stopTimer()
     fetching.value = false
   }
 }
@@ -152,6 +172,14 @@ tr.off .bar { background: #cbd5e1; }
 .fmsg { font-size: 0.8rem; }
 .fmsg.ok { color: #2b7a3d; }
 .fmsg.err { color: #b00020; }
+
+.fetch-progress { display: flex; align-items: center; gap: 10px; margin: -4px 0 12px; }
+.pbar { position: relative; flex: 0 1 220px; height: 6px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+.pfill { position: absolute; top: 0; left: 0; height: 100%; width: 40%; background: #2a78d6; border-radius: 4px; animation: indeterminate 1.1s ease-in-out infinite; }
+@keyframes indeterminate { 0% { left: -40%; } 100% { left: 100%; } }
+.ptext { font-size: 0.8rem; color: #374151; }
+.ptext em { color: #9aa0a6; font-style: normal; }
+@media (prefers-reduced-motion: reduce) { .pfill { animation: none; width: 100%; opacity: 0.6; } }
 
 .hint { margin-top: 12px; font-size: 0.8rem; color: #6b7280; }
 .hint code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; }
