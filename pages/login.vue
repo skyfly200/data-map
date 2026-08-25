@@ -59,6 +59,10 @@
 
         <p v-if="msg" :class="['msg', ok ? 'ok' : 'err']">{{ msg }}</p>
       </template>
+
+      <p class="policy-link">
+        By signing in you agree to our <NuxtLink to="/privacy">Privacy Policy</NuxtLink>.
+      </p>
     </div>
   </div>
 </template>
@@ -185,4 +189,7 @@ input { border: 1px solid #cbd2d9; border-radius: 8px; padding: 8px 10px; font-s
 .msg { margin: 12px 0 0; font-size: 0.82rem; }
 .msg.ok { color: #2b7a3d; }
 .msg.err { color: #b00020; }
+
+.policy-link { margin: 16px 0 0; font-size: 0.76rem; color: #9aa0a6; text-align: center; }
+.policy-link a { color: #6b7280; }
 </style>
