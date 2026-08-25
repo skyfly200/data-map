@@ -58,7 +58,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { PALETTE, UNCLUSTERED, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 
-const { data, load } = useObservations()
+const { data, filteredData, load } = useObservations()
 const { elevLabel } = useUnits()
 
 const mapEl = ref(null)
@@ -86,7 +86,7 @@ function hexLerp(a, b, t) {
 
 // Build the colour function + legend for the current "color by" dimension.
 const coloring = computed(() => {
-  const feats = data.value?.features || []
+  const feats = filteredData.value?.features || []
   const key = colorBy.value
 
   if (key === 'cluster') {
@@ -150,7 +150,7 @@ function renderPoints(geo) {
   if (bounds.isValid()) map.fitBounds(bounds.pad(0.1))
 }
 
-watch(data, (geo) => renderPoints(geo))
+watch(filteredData, (geo) => renderPoints(geo))
 
 onMounted(async () => {
   try {
@@ -176,7 +176,7 @@ onMounted(async () => {
 
     await load()
     if (!data.value) throw new Error('no data')
-    renderPoints(data.value)
+    renderPoints(filteredData.value)
     loaded.value = true
   } catch (err) {
     loadError.value = `Could not load map (${err.message}).`

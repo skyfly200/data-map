@@ -27,6 +27,8 @@
           <NuxtLink to="/" class="nav-link">Map</NuxtLink>
           <NuxtLink to="/table" class="nav-link">Table</NuxtLink>
           <NuxtLink to="/charts" class="nav-link">Charts</NuxtLink>
+          <NuxtLink to="/explore" class="nav-link">Explore</NuxtLink>
+          <NuxtLink to="/data" class="nav-link">Data</NuxtLink>
         </nav>
       </div>
     </header>
