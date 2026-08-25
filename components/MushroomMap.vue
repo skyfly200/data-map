@@ -66,7 +66,7 @@ const loaded = ref(false)
 const loadError = ref('')
 const colorBy = ref('cluster')
 const selected = ref(null)
-let map, geoLayer
+let map, geoLayer, L
 
 const RAMP = ['#e8f1fb', '#0b3d91'] // sequential light → dark blue
 
@@ -129,11 +129,34 @@ watch(coloring, (c) => {
   if (geoLayer) geoLayer.eachLayer((l) => l.setStyle({ fillColor: c.colorFn(l.feature.properties) }))
 })
 
+// Rebuild the point layer whenever the dataset changes (e.g. species switch).
+function renderPoints(geo) {
+  if (!map || !L || !geo) return
+  if (geoLayer) { geoLayer.remove(); geoLayer = null }
+  selected.value = null
+
+  geoLayer = L.geoJSON(geo, {
+    pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
+      radius: 6, weight: 1, color: '#222',
+      fillColor: coloring.value.colorFn(feature.properties), fillOpacity: 0.85,
+    }),
+    onEachFeature: (feature, lyr) => {
+      lyr.bindTooltip(feature.properties.species || 'Observation', { direction: 'top' })
+      lyr.on('click', () => { selected.value = feature.properties })
+    },
+  }).addTo(map)
+
+  const bounds = geoLayer.getBounds()
+  if (bounds.isValid()) map.fitBounds(bounds.pad(0.1))
+}
+
+watch(data, (geo) => renderPoints(geo))
+
 onMounted(async () => {
   try {
     await nextTick()
     if (!mapEl.value) throw new Error('map container not ready')
-    const L = (await import('leaflet')).default
+    L = (await import('leaflet')).default
 
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors', maxZoom: 19,
@@ -152,22 +175,8 @@ onMounted(async () => {
     ).addTo(map)
 
     await load()
-    const geo = data.value
-    if (!geo) throw new Error('no data')
-
-    geoLayer = L.geoJSON(geo, {
-      pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
-        radius: 6, weight: 1, color: '#222',
-        fillColor: coloring.value.colorFn(feature.properties), fillOpacity: 0.85,
-      }),
-      onEachFeature: (feature, lyr) => {
-        lyr.bindTooltip(feature.properties.species || 'Observation', { direction: 'top' })
-        lyr.on('click', () => { selected.value = feature.properties })
-      },
-    }).addTo(map)
-
-    const bounds = geoLayer.getBounds()
-    if (bounds.isValid()) map.fitBounds(bounds.pad(0.1))
+    if (!data.value) throw new Error('no data')
+    renderPoints(data.value)
     loaded.value = true
   } catch (err) {
     loadError.value = `Could not load map (${err.message}).`

@@ -37,7 +37,6 @@
 </template>
 
 <script setup>
-import { useRoute } from '#app'
 import { useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 
@@ -46,21 +45,12 @@ useHead({
   meta: [{ name: 'description', content: 'Mushroom observations enriched with terrain and environmental exposure.' }],
 })
 
-const route = useRoute()
-const { selectedDataset, availableDatasets, setDataset } = useObservations()
+const { selectedDataset, availableDatasets, setDataset, loadDatasets } = useObservations()
+onMounted(loadDatasets)
 
 function handleDatasetChange(event) {
   setDataset(event.target.value)
 }
-
-watch(() => route.path, () => {
-  // Force a reload when the route changes so each page maintains its own dataset selection.
-  const datasetState = useState(`observations-${(route.path || '/').replace(/^\/+|\/+$/g, '') || 'root'}-dataset`)
-  if (!datasetState.value && import.meta.client) {
-    const saved = localStorage.getItem(`observations-${(route.path || '/').replace(/^\/+|\/+$/g, '') || 'root'}-dataset`)
-    if (saved) datasetState.value = saved
-  }
-}, { immediate: true })
 
 // Units: default feet + Fahrenheit, remembered per viewer.
 const { unit, tempUnit } = useUnits()
@@ -69,6 +59,9 @@ onMounted(() => {
   if (e === 'm' || e === 'ft') unit.value = e
   const t = localStorage.getItem('temp-unit')
   if (t === 'F' || t === 'C') tempUnit.value = t
+  // Restore the dataset choice after a hard reload (SSR can't read localStorage).
+  const ds = localStorage.getItem('observations-dataset')
+  if (ds && ds !== selectedDataset.value) setDataset(ds)
 })
 watch(unit, (v) => {
   if (import.meta.client) localStorage.setItem('elev-unit', v)
