@@ -3,7 +3,23 @@
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
     <p v-else-if="pending && !rows.length" class="msg">Loading…</p>
 
-    <div v-else class="grid">
+    <template v-else>
+      <!-- Saved custom charts (from Explore), reorderable -->
+      <section v-if="saved.charts.value.length" class="saved">
+        <h2 class="saved-title">My charts</h2>
+        <div class="grid">
+          <ChartCard v-for="(chart, i) in saved.charts.value" :key="chart.id">
+            <div class="saved-tools">
+              <button title="Move left" :disabled="i === 0" @click="saved.move(chart.id, -1)">‹</button>
+              <button title="Move right" :disabled="i === saved.charts.value.length - 1" @click="saved.move(chart.id, 1)">›</button>
+              <button title="Remove" class="rm" @click="saved.remove(chart.id)">✕</button>
+            </div>
+            <ChartRenderer :config="chart" />
+          </ChartCard>
+        </div>
+      </section>
+
+    <div class="grid">
       <ChartCard>
         <BarChart title="Observations per environmental cluster" :data="clusterData" :format="int" />
         <p class="note">Colours match the map. “Unclustered” = missing every clustering feature.</p>
@@ -106,16 +122,19 @@
         <p class="note">Which compass direction the ground faces at each find (from the DEM).</p>
       </ChartCard>
     </div>
+    </template>
   </div>
 </template>
 
 <script setup>
 import { PALETTE, UNCLUSTERED, colorFor, hasValue, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
+import { useSavedCharts } from '~/composables/useSavedCharts'
 
+const saved = useSavedCharts()
 const { rows, error, pending, load } = useObservations()
 const { unit, elevValue, tempUnit, tempValue } = useUnits()
-onMounted(load)
+onMounted(() => { load(); saved.loadFromStorage() })
 
 const int = (v) => String(v)
 const cov = (v) => `${v}/${rows.value.length}`
@@ -367,4 +386,15 @@ const speciesData = computed(() => {
 .note { margin: 8px 0 0; font-size: 0.78rem; color: #6b7280; }
 .msg { padding: 16px; color: #555; }
 .msg.error { color: #b00020; }
+
+.saved { margin-bottom: 22px; }
+.saved-title { margin: 0 0 10px; font-size: 1rem; color: #1f2933; }
+.saved-tools { position: absolute; top: 8px; right: 34px; display: flex; gap: 2px; z-index: 3; }
+.saved-tools button {
+  border: 1px solid #e5e7eb; background: #fff; color: #6b7280; cursor: pointer;
+  width: 22px; height: 22px; border-radius: 5px; font-size: 0.85rem; line-height: 1; padding: 0;
+}
+.saved-tools button:hover:not(:disabled) { background: #f3f4f6; color: #1f2933; }
+.saved-tools button:disabled { opacity: 0.35; cursor: default; }
+.saved-tools .rm:hover { background: #fdecec; color: #b00020; border-color: #f5c2c2; }
 </style>
