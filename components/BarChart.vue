@@ -1,20 +1,22 @@
 <template>
   <figure class="chart">
     <figcaption v-if="title" class="chart-title">{{ title }}</figcaption>
-    <div class="chart-area" @mousemove="onMove" @mouseleave="active = null">
-      <svg :viewBox="`0 0 ${W} ${H}`" preserveAspectRatio="none" role="img" :aria-label="title">
-        <!-- baseline / axis (recessive) -->
-        <line v-if="horizontal" :x1="padL" :y1="padT" :x2="padL" :y2="H - padB" class="axis" />
-        <line v-else :x1="padL" :y1="H - padB" :x2="W - padR" :y2="H - padB" class="axis" />
+    <div class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
+      <div class="chart-viewport" :style="viewportStyle">
+        <svg :viewBox="`0 0 ${W} ${H}`" preserveAspectRatio="xMidYMid meet" role="img" :aria-label="title">
+          <!-- baseline / axis (recessive) -->
+          <line v-if="horizontal" :x1="padL" :y1="padT" :x2="padL" :y2="H - padB" class="axis" />
+          <line v-else :x1="padL" :y1="H - padB" :x2="W - padR" :y2="H - padB" class="axis" />
 
-        <template v-for="(d, i) in scaled" :key="i">
-          <path :d="d.path" :fill="d.color" class="bar" @mouseenter="active = d" />
-          <!-- direct value label at the data end -->
-          <text v-bind="d.valuePos" class="value">{{ d.valueLabel }}</text>
-          <!-- category label -->
-          <text v-bind="d.catPos" class="cat">{{ d.short }}</text>
-        </template>
-      </svg>
+          <template v-for="(d, i) in scaled" :key="i">
+            <path :d="d.path" :fill="d.color" class="bar" @mouseenter="active = d" />
+            <!-- direct value label at the data end -->
+            <text v-bind="d.valuePos" class="value">{{ d.valueLabel }}</text>
+            <!-- category label -->
+            <text v-bind="d.catPos" class="cat">{{ d.short }}</text>
+          </template>
+        </svg>
+      </div>
 
       <div v-if="active" class="tooltip" :style="{ left: `${ptr.x + 12}px`, top: `${ptr.y + 8}px` }">
         <strong>{{ active.label }}</strong><span>{{ active.valueLabel }}</span>
@@ -34,18 +36,56 @@ const props = defineProps({
   format: { type: Function, default: (v) => String(v) },
 })
 
-const W = 640
+const W = computed(() => props.horizontal ? Math.max(640, (props.data.length || 1) * 120 + 180) : 640)
 const H = computed(() => props.horizontal ? Math.max(120, props.data.length * 30 + 24) : 260)
 const padL = computed(() => props.horizontal ? 128 : 34)
 const padR = 44
 const padT = 20  // headroom so the tallest bar's value label isn't clipped
 const padB = computed(() => props.horizontal ? 8 : 40)
 
+const zoom = ref(1)
+const pan = ref({ x: 0, y: 0 })
+const dragStart = ref(null)
+const viewportStyle = computed(() => ({
+  width: `${W.value}px`,
+  height: `${H.value}px`,
+  transform: `translate(${pan.value.x}px, ${pan.value.y}px) scale(${zoom.value})`,
+  transformOrigin: '0 0',
+  transition: dragStart.value ? 'none' : 'transform 0.15s ease-out',
+}))
+
 const active = ref(null)
 const ptr = ref({ x: 0, y: 0 })
 function onMove(e) {
   const r = e.currentTarget.getBoundingClientRect()
   ptr.value = { x: e.clientX - r.left, y: e.clientY - r.top }
+}
+
+function clamp(v, min, max) { return Math.min(max, Math.max(min, v)) }
+
+function onWheel(e) {
+  const delta = e.deltaY > 0 ? 0.9 : 1.1
+  const next = clamp(zoom.value * delta, 0.7, 2.5)
+  zoom.value = next
+}
+
+function onPointerDown(e) {
+  dragStart.value = { x: e.clientX, y: e.clientY, panX: pan.value.x, panY: pan.value.y }
+  e.currentTarget.setPointerCapture?.(e.pointerId)
+}
+
+function onPointerMove(e) {
+  if (!dragStart.value) return
+  const dx = e.clientX - dragStart.value.x
+  const dy = e.clientY - dragStart.value.y
+  pan.value = {
+    x: dragStart.value.panX + dx / zoom.value,
+    y: dragStart.value.panY + dy / zoom.value,
+  }
+}
+
+function onPointerUp() {
+  dragStart.value = null
 }
 
 function roundedRectPath(x, y, w, h, r, corner) {
@@ -68,7 +108,7 @@ const scaled = computed(() => {
   if (props.horizontal) {
     const band = (hh - padT - padB.value) / n
     const barH = Math.min(18, band - 8)
-    const trackW = W - padL.value - padR
+    const trackW = W.value - padL.value - padR
     return props.data.map((d, i) => {
       const y = padT + i * band + (band - barH) / 2
       const w = (d.value / maxV) * trackW
@@ -84,7 +124,7 @@ const scaled = computed(() => {
     })
   }
 
-  const band = (W - padL.value - padR) / n
+  const band = (W.value - padL.value - padR) / n
   const barW = Math.min(46, band - 8)
   const trackH = hh - padT - padB.value
   return props.data.map((d, i) => {
@@ -107,8 +147,16 @@ const scaled = computed(() => {
 <style scoped>
 .chart { margin: 0; }
 .chart-title { font-size: 0.95rem; font-weight: 600; color: #1f2933; margin-bottom: 6px; }
-.chart-area { position: relative; }
-svg { width: 100%; height: auto; display: block; }
+.chart-area {
+  position: relative; overflow: auto; max-width: 100%; border-radius: 8px;
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.03), rgba(148, 163, 184, 0.01));
+  cursor: grab; user-select: none; touch-action: none;
+}
+.chart-area:active { cursor: grabbing; }
+.chart-viewport {
+  position: relative; display: block; min-width: 100%; min-height: 100%;
+}
+svg { width: 100%; height: 100%; display: block; }
 
 .axis { stroke: #d1d5db; stroke-width: 1; }
 .bar { transition: opacity 0.1s; }
