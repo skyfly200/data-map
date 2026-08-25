@@ -37,6 +37,8 @@ export default async (request) => {
       lat: Number(url.searchParams.get('lat') ?? process.env.INAT_LAT ?? 40.0),
       lng: Number(url.searchParams.get('lng') ?? process.env.INAT_LNG ?? -105.0),
       radius: Number(url.searchParams.get('radius') ?? process.env.INAT_RADIUS ?? 500),
+      d1: url.searchParams.get('d1') || null,
+      d2: url.searchParams.get('d2') || null,
       perPage: 200,
       qualityGrade: 'research',
     }

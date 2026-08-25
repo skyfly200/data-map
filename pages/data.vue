@@ -1,5 +1,7 @@
 <template>
   <div class="data-page">
+    <FilterPanel />
+
     <div class="head">
       <div>
         <h2>Species</h2>
@@ -68,7 +70,33 @@ import { useObservations } from '~/composables/useObservations'
 
 const { speciesOptions, speciesFilter, setSpeciesFilter, addInlineDataset, error, pending, load } = useObservations()
 const { isAuthed, configured, accessToken } = useAuth()
+const { filters } = useFilters()
 onMounted(load)
+
+// Turn the active location/time filters into iNaturalist query params so a
+// scoped fetch pulls only what matches, instead of the whole history.
+function fetchScopeParams() {
+  const f = filters.value
+  const p = new URLSearchParams()
+  if (f.center && f.radiusKm) {
+    p.set('lat', String(f.center.lat))
+    p.set('lng', String(f.center.lng))
+    p.set('radius', String(f.radiusKm))
+  }
+  if (f.dateFrom) p.set('d1', f.dateFrom)
+  if (f.dateTo) p.set('d2', f.dateTo)
+  // Whole-year / month shortcuts become a date range for iNaturalist.
+  if (f.year && !f.dateFrom && !f.dateTo) {
+    const mm = f.month ? String(f.month).padStart(2, '0') : null
+    if (mm) {
+      const last = new Date(Number(f.year), Number(f.month), 0).getDate()
+      p.set('d1', `${f.year}-${mm}-01`); p.set('d2', `${f.year}-${mm}-${String(last).padStart(2, '0')}`)
+    } else {
+      p.set('d1', `${f.year}-01-01`); p.set('d2', `${f.year}-12-31`)
+    }
+  }
+  return p
+}
 
 // ── Fetch a new species on demand (Netlify function → iNaturalist) ────────────
 const newSpecies = ref('')
@@ -97,7 +125,9 @@ async function fetchNew() {
   try {
     const token = await accessToken()
     const headers = token ? { authorization: `Bearer ${token}` } : {}
-    const res = await fetch(`/.netlify/functions/fetch-species?species=${encodeURIComponent(q)}`, { headers })
+    const scope = fetchScopeParams()
+    scope.set('species', q)
+    const res = await fetch(`/.netlify/functions/fetch-species?${scope.toString()}`, { headers })
     if (res.status === 401) throw new Error('Please sign in to fetch new species.')
     const data = await res.json()
     if (!data.ok) throw new Error(data.error || 'fetch failed')
@@ -148,7 +178,7 @@ function barWidth(n) { return `${(n / maxCount.value) * 100}%` }
 </script>
 
 <style scoped>
-.data-page { padding: 16px 18px; max-width: 720px; }
+.data-page { padding: 16px 18px; max-width: 900px; }
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
 .head h2 { margin: 0; font-size: 1.1rem; }
 .sub { margin: 2px 0 0; color: #6b7280; font-size: 0.82rem; }

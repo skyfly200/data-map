@@ -116,6 +116,15 @@ The frontend is a Nuxt 3 app that renders the observations on a Leaflet map,
 coloured by environmental cluster, with the enriched attributes in each popup.
 It reads a **static GeoJSON** file — no backend or database.
 
+**Filtering.** The **Data** tab is the control centre: pick species, and narrow
+by **location** (country / state / county — parsed from each record's place
+string — or a lat/lng centre + radius in km) and **time** (year, month, ISO
+week, or a from/to date range). Filters live in shared state, so they apply
+everywhere at once (map, table, charts, explore); a "Filters: N" chip in the
+header links back to the Data tab from any view. When you fetch a *new* species
+while location/time filters are set, the fetch is scoped to match (iNaturalist
+radius + observed-date range) instead of pulling the whole history.
+
 Data flow: the Python pipeline runs **offline** and produces a small GeoJSON that
 the app serves statically. The heavy raster processing never runs on Netlify.
 

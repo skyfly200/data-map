@@ -154,12 +154,20 @@ export function useObservations() {
   // Applied to every view (map/table/charts/explore) via filteredData + rows.
   const speciesFilter = useState('observations-species-filter', () => [])
 
+  const { filters } = useFilters()
+
   const filteredData = computed(() => {
     const feats = data.value?.features || []
     const sel = speciesFilter.value
-    if (!sel.length) return data.value || { type: 'FeatureCollection', features: [] }
-    const set = new Set(sel)
-    return { type: 'FeatureCollection', features: feats.filter((f) => set.has(f.properties?.species)) }
+    const set = sel.length ? new Set(sel) : null
+    const f = filters.value
+    const out = feats.filter((feat) => {
+      if (set && !set.has(feat.properties?.species)) return false
+      return matchesFilters(feat, f)
+    })
+    // Fast path: nothing filtered → return the original object identity.
+    if (out.length === feats.length && !set) return data.value || { type: 'FeatureCollection', features: [] }
+    return { type: 'FeatureCollection', features: out }
   })
 
   // Species present in the loaded dataset with counts (unfiltered), for pickers.
@@ -175,6 +183,26 @@ export function useObservations() {
 
   function setSpeciesFilter(list) { speciesFilter.value = [...list] }
 
+  // Distinct location + time values present in the loaded data, for the filter
+  // dropdowns. Species filter is intentionally ignored here so the options
+  // reflect the whole dataset, not the current narrowing.
+  const filterOptions = computed(() => {
+    const countries = new Set(), states = new Set(), counties = new Set(), years = new Set()
+    for (const feat of data.value?.features || []) {
+      const p = feat.properties || {}
+      const place = parsePlace(p.location)
+      if (place.country) countries.add(place.country)
+      if (place.state) states.add(place.state)
+      if (place.county) counties.add(place.county)
+      if (p.date) years.add(p.date.slice(0, 4))
+    }
+    const sort = (s) => [...s].sort()
+    return {
+      countries: sort(countries), states: sort(states), counties: sort(counties),
+      years: sort(years).reverse(),
+    }
+  })
+
   const rows = computed(() => (filteredData.value?.features || []).map((f) => ({
     ...f.properties,
     lon: f.geometry?.coordinates?.[0],
@@ -183,6 +211,6 @@ export function useObservations() {
 
   return {
     data, filteredData, rows, error, pending, load, loadDatasets, setDataset, addInlineDataset,
-    selectedDataset, availableDatasets, speciesFilter, speciesOptions, setSpeciesFilter,
+    selectedDataset, availableDatasets, speciesFilter, speciesOptions, setSpeciesFilter, filterOptions,
   }
 }
