@@ -297,6 +297,14 @@ def _write_raster(path, data, profile):
     with rasterio.open(path, "w", **profile) as dst:
         dst.write(data.astype("float32"), 1)
 
+    try:
+        from compress_rasters import convert_raster_to_cog
+        converted = convert_raster_to_cog(path, delete_original=True, verify=True)
+        if converted and os.path.exists(converted):
+            print(f"   ↳ compressed to {converted}")
+    except Exception as exc:
+        print(f"   [!] Raster compression failed for {path}: {exc}")
+
 
 def process_dem(dem_path, out_dir="dem/derived/", prevailing_wind_deg=270.0):
     """Read a DEM GeoTIFF, derive every terrain layer, write them as GeoTIFFs.
