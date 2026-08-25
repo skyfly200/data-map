@@ -1,5 +1,6 @@
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from pyinaturalist import get_observations
@@ -140,6 +141,38 @@ def parse_species_list(species_value):
     return cleaned
 
 
+def _coerce_int(value, default, *, minimum=1):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+    return parsed if parsed >= minimum else default
+
+
+def resolve_inat_page_size(env=None):
+    values = {**os.environ, **(env or {})}
+    for key in ('INAT_PER_PAGE', 'PER_PAGE'):
+        raw = values.get(key)
+        if raw is None or str(raw).strip() == '':
+            continue
+        parsed = _coerce_int(raw, 200)
+        if parsed > 0:
+            return parsed
+    return 200
+
+
+def get_parallel_fetch_workers(env=None):
+    values = {**os.environ, **(env or {})}
+    for key in ('INAT_PARALLEL_FETCHES', 'PARALLEL_FETCHES', 'FETCH_WORKERS'):
+        raw = values.get(key)
+        if raw is None or str(raw).strip() == '':
+            continue
+        parsed = _coerce_int(raw, 3, minimum=1)
+        if parsed > 0:
+            return parsed
+    return 3
+
+
 def should_refresh_all(env=None):
     values = {**(env or {})}
     keys = ('REFRESH_ALL', 'INAT_REFRESH_ALL', 'FULL_REFRESH')
@@ -230,9 +263,10 @@ def get_species_observation_total(taxon_name='morchella', quality_grade='researc
         return 0
 
 
-def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, per_page=100, max_observations=None, progress_callback=None, total_count=None, existing_ids=None):
+def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, per_page=200, max_observations=None, progress_callback=None, total_count=None, existing_ids=None):
     observations = []
     page = 1
+    per_page = max(1, int(per_page or resolve_inat_page_size()))
     max_allowed = max_observations if isinstance(max_observations, int) and max_observations > 0 else None
     target_total = total_count if isinstance(total_count, int) and total_count > 0 else None
     if max_allowed is not None and (target_total is None or target_total > max_allowed):
@@ -324,8 +358,9 @@ def main():
     quality_grade = getenv_with_file('INAT_QUALITY_GRADE', default=(getenv_with_file('QUALITY_GRADE', default='research', env_file=env_file)), env_file=env_file)
     lat, lng = _resolve_location_from_env(default_lat=40.0, default_lng=-105.0)
     radius = _read_float_env('INAT_RADIUS', 'RADIUS', default=500.0)
-    per_page = int(getenv_with_file('INAT_PER_PAGE', default=(getenv_with_file('PER_PAGE', default='100', env_file=env_file)), env_file=env_file) or 100)
+    per_page = resolve_inat_page_size({**load_env_file(env_file), **os.environ})
     max_observations = int(getenv_with_file('INAT_MAX_OBSERVATIONS_PER_SPECIES', default=(getenv_with_file('MAX_OBSERVATIONS_PER_SPECIES', default='0', env_file=env_file)), env_file=env_file) or 0)
+    parallel_fetches = get_parallel_fetch_workers({**load_env_file(env_file), **os.environ})
     refresh_all = should_refresh_all()
     output_prefix = getenv_with_file('OUTPUT_PREFIX', default='mushroom_observations', env_file=env_file)
     output_dir = getenv_with_file('OUTPUT_DIR', default='.', env_file=env_file)
@@ -340,14 +375,15 @@ def main():
     else:
         print('Full refresh enabled: REFRESH_ALL=1, reloading all observations.')
 
-    print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km (per_page={per_page}, max_per_species={max_observations or 'unlimited'}, refresh_all={refresh_all})...")
+    print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km (per_page={per_page}, max_per_species={max_observations or 'unlimited'}, parallel_workers={parallel_fetches}, refresh_all={refresh_all})...")
     frames = []
     total_species = len(species_list)
-    for index, species in enumerate(species_list, start=1):
-        print(f"\n[{index}/{total_species}] {species} {render_progress_bar(index, total_species)}")
+
+    def fetch_single_species(species_name, species_index):
+        print(f"\n[{species_index}/{total_species}] {species_name} {render_progress_bar(species_index, total_species)}")
 
         species_total = get_species_observation_total(
-            taxon_name=species,
+            taxon_name=species_name,
             quality_grade=quality_grade,
             lat=lat,
             lng=lng,
@@ -356,13 +392,13 @@ def main():
         if max_observations and species_total > max_observations:
             species_total = max_observations
 
-        def progress_callback(current, total, species_name=species):
+        def progress_callback(current, total, species_name=species_name):
             if total <= 0:
                 return
             print(f"\r  {format_observation_progress(species_name, current, total, width=20)}", end='', flush=True)
 
         df_species = fetch_inat_data(
-            taxon_name=species,
+            taxon_name=species_name,
             quality_grade=quality_grade,
             lat=lat,
             lng=lng,
@@ -378,9 +414,19 @@ def main():
         if not refresh_all and df_species is not None and not df_species.empty:
             df_species = df_species[~df_species['inat_id'].astype(str).isin(existing_inat_ids)] if 'inat_id' in df_species.columns else df_species
             count = len(df_species)
-        print(f"  -> {species}: {count} new observations fetched")
-        if df_species is not None and not df_species.empty:
-            frames.append(df_species)
+        print(f"  -> {species_name}: {count} new observations fetched")
+        return df_species
+
+    with ThreadPoolExecutor(max_workers=max(1, parallel_fetches)) as executor:
+        future_map = {
+            executor.submit(fetch_single_species, species, index): species
+            for index, species in enumerate(species_list, start=1)
+        }
+        for future in as_completed(future_map):
+            df_species = future.result()
+            if df_species is not None and not df_species.empty:
+                frames.append(df_species)
+
     if not frames:
         print('No new observations found; leaving the existing canonical dataset unchanged.')
         return
