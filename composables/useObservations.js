@@ -102,14 +102,39 @@ export function useObservations() {
       const list = await res.json()
       if (!Array.isArray(list) || !list.length) return
       availableDatasets.value = list
-      // Keep the current selection valid against the (possibly Supabase) paths.
       const paths = list.map((d) => d.path)
       const saved = import.meta.client ? localStorage.getItem(DATASET_KEY) : null
-      if (!paths.includes(selectedDataset.value) && !(saved && paths.includes(saved))) {
-        selectedDataset.value = list[0].path
+      const current = selectedDataset.value
+
+      if (paths.includes(current)) {
+        if (import.meta.client && saved && saved !== current) {
+          localStorage.setItem(DATASET_KEY, current)
+        }
+        return
+      }
+
+      const fallbackPath = saved && paths.includes(saved) ? saved : list[0].path
+      selectedDataset.value = fallbackPath
+      if (import.meta.client) {
+        localStorage.setItem(DATASET_KEY, fallbackPath)
       }
     } catch {
       // keep the fallback list
+    }
+  }
+
+  const showFiltered = useState('observations-show-filtered', () => {
+    if (import.meta.client) {
+      const saved = localStorage.getItem('observations-show-filtered')
+      return saved === 'true'
+    }
+    return false
+  })
+
+  function setShowFiltered(includeFiltered) {
+    showFiltered.value = !!includeFiltered
+    if (import.meta.client) {
+      localStorage.setItem('observations-show-filtered', String(showFiltered.value))
     }
   }
 
@@ -161,12 +186,13 @@ export function useObservations() {
     const sel = speciesFilter.value
     const set = sel.length ? new Set(sel) : null
     const f = filters.value
+    const hideFiltered = !showFiltered.value
     const out = feats.filter((feat) => {
+      // Non-productive land cover (water) is hidden unless the user opts in.
+      if (hideFiltered && feat.properties?.water_mask) return false
       if (set && !set.has(feat.properties?.species)) return false
       return matchesFilters(feat, f)
     })
-    // Fast path: nothing filtered → return the original object identity.
-    if (out.length === feats.length && !set) return data.value || { type: 'FeatureCollection', features: [] }
     return { type: 'FeatureCollection', features: out }
   })
 
@@ -212,5 +238,6 @@ export function useObservations() {
   return {
     data, filteredData, rows, error, pending, load, loadDatasets, setDataset, addInlineDataset,
     selectedDataset, availableDatasets, speciesFilter, speciesOptions, setSpeciesFilter, filterOptions,
+    showFiltered, setShowFiltered,
   }
 }

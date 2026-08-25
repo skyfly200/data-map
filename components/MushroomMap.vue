@@ -6,16 +6,22 @@
     <div v-else-if="!loaded" class="overlay">Loading observations…</div>
 
     <!-- Thematic layer selector -->
-    <div v-if="loaded" class="colorby">
-      <label for="colorby-sel">Color by</label>
-      <select id="colorby-sel" v-model="colorBy">
-        <option value="cluster">Cluster</option>
-        <option value="elevation">Elevation</option>
-        <option value="soil_moisture">Soil moisture</option>
-        <option value="water_retention">Water retention</option>
-        <option value="ndvi">NDVI</option>
-        <option value="land_cover_label">Land cover</option>
-      </select>
+    <div v-if="loaded" class="controls">
+      <div class="colorby">
+        <label for="colorby-sel">Color by</label>
+        <select id="colorby-sel" v-model="colorBy">
+          <option value="cluster">Cluster</option>
+          <option value="elevation">Elevation</option>
+          <option value="soil_moisture">Soil moisture</option>
+          <option value="water_retention">Water retention</option>
+          <option value="ndvi">NDVI</option>
+          <option value="land_cover_label">Land cover</option>
+        </select>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" v-model="showFiltered" />
+        Include excluded water / non-terrestrial rows
+      </label>
     </div>
 
     <!-- Legend (categorical swatches or a sequential gradient) -->
@@ -58,7 +64,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { PALETTE, UNCLUSTERED, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 
-const { data, filteredData, load } = useObservations()
+const { data, filteredData, load, showFiltered, setShowFiltered } = useObservations()
 const { elevLabel } = useUnits()
 
 const mapEl = ref(null)
@@ -197,14 +203,23 @@ onBeforeUnmount(() => { if (map) map.remove() })
 }
 .overlay.error { color: #b00020; }
 
+.controls {
+  position: absolute; top: 12px; left: 12px; z-index: 500; display: flex; gap: 10px; align-items: center;
+  flex-wrap: wrap;
+}
 .colorby {
-  position: absolute; top: 12px; left: 12px; z-index: 500;
   background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
   padding: 7px 10px; font: 13px system-ui, sans-serif; display: flex; gap: 8px; align-items: center;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 .colorby label { color: #6b7280; font-weight: 600; }
 .colorby select { border: 1px solid #cbd2d9; border-radius: 6px; padding: 3px 6px; font-size: 13px; }
+.toggle {
+  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
+  padding: 7px 10px; font: 13px system-ui, sans-serif; display: inline-flex; gap: 8px; align-items: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+.toggle input { accent-color: #2a78d6; }
 
 .legend {
   position: absolute; bottom: 18px; right: 12px; z-index: 500;

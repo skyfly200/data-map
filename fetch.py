@@ -84,7 +84,12 @@ def download_srtm_dem(area=None, output_dir="dem/", dem_type="SRTMGL3", api_key=
         with open(out_path, "wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
-        print(f"✅ DEM saved to {out_path}")
+        try:
+            from compress_rasters import convert_raster_to_cog
+            converted = convert_raster_to_cog(out_path, delete_original=True, verify=True)
+            print(f"✅ DEM saved to {converted}")
+        except Exception as exc:
+            print(f"[!] DEM compression failed; keeping uncompressed file: {exc}")
         return out_path
     except Exception as e:
         print(f"[!] Error fetching DEM: {e}")
@@ -318,7 +323,12 @@ def fetch_chirps_precip(date_str, output_dir="precip/"):
             shutil.copyfileobj(f_in, f_out)
 
         os.remove(gz_path)
-        print(f"✅ CHIRPS saved to {out_path}")
+        try:
+            from compress_rasters import convert_raster_to_cog
+            converted = convert_raster_to_cog(out_path, delete_original=True, verify=True)
+            print(f"✅ CHIRPS saved to {converted}")
+        except Exception as exc:
+            print(f"[!] CHIRPS compression failed; keeping uncompressed file: {exc}")
         return out_path
 
     except Exception as e:
@@ -385,7 +395,12 @@ def download_worldcover_tiles(df, output_dir="world_cover/", year=2020, version=
             with open(out_path, "wb") as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
-            print(f"✅ WorldCover saved to {out_path}")
+            try:
+                from compress_rasters import convert_raster_to_cog
+                converted = convert_raster_to_cog(out_path, delete_original=True, verify=True)
+                print(f"✅ WorldCover saved to {converted}")
+            except Exception as exc:
+                print(f"[!] WorldCover compression failed; keeping uncompressed file: {exc}")
         except Exception as e:
             print(f"[!] Error fetching WorldCover tile {tile}: {e}")
             if os.path.exists(out_path):
