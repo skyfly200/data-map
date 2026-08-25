@@ -52,7 +52,11 @@ export function hasValue(v) {
   return v !== null && v !== undefined && v !== ''
 }
 
+// Datasets fetched on the fly (Data tab) and held in memory for the session.
+const inlineDatasets = new Map()
+
 async function fetchObservations(datasetPath = '/mushroom_observations.geojson') {
+  if (inlineDatasets.has(datasetPath)) return inlineDatasets.get(datasetPath)
   // Prefer a direct dataset selection when one is set. If not, use the latest
   // processed GeoJSON first, then fall back to the Netlify blob and static baseline.
   for (const candidate of [datasetPath, '/.netlify/functions/observations', '/data/observations.geojson']) {
@@ -130,12 +134,55 @@ export function useObservations() {
     return load()
   }
 
+  // Add a dataset fetched on the fly (Data tab) and switch to it.
+  function addInlineDataset(entry, geojson) {
+    inlineDatasets.set(entry.path, geojson)
+    if (!availableDatasets.value.some((d) => d.path === entry.path)) {
+      availableDatasets.value = [...availableDatasets.value, entry]
+    }
+    speciesFilter.value = []
+    data.value = geojson
+    selectedDataset.value = entry.path
+    // Persist only real (servable) paths; in-memory ones can't survive reload.
+    if (import.meta.client && !String(entry.path).startsWith('mem:')) {
+      try { localStorage.setItem(DATASET_KEY, entry.path) } catch { /* ignore */ }
+    }
+  }
+
   // Convenience: a flat array of property objects (with lon/lat attached).
-  const rows = computed(() => (data.value?.features || []).map((f) => ({
+  // Optional species filter (a Set of species names). Empty = show all.
+  // Applied to every view (map/table/charts/explore) via filteredData + rows.
+  const speciesFilter = useState('observations-species-filter', () => [])
+
+  const filteredData = computed(() => {
+    const feats = data.value?.features || []
+    const sel = speciesFilter.value
+    if (!sel.length) return data.value || { type: 'FeatureCollection', features: [] }
+    const set = new Set(sel)
+    return { type: 'FeatureCollection', features: feats.filter((f) => set.has(f.properties?.species)) }
+  })
+
+  // Species present in the loaded dataset with counts (unfiltered), for pickers.
+  const speciesOptions = computed(() => {
+    const counts = new Map()
+    for (const f of data.value?.features || []) {
+      const s = f.properties?.species
+      if (!s) continue
+      counts.set(s, (counts.get(s) || 0) + 1)
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([species, count]) => ({ species, count }))
+  })
+
+  function setSpeciesFilter(list) { speciesFilter.value = [...list] }
+
+  const rows = computed(() => (filteredData.value?.features || []).map((f) => ({
     ...f.properties,
     lon: f.geometry?.coordinates?.[0],
     lat: f.geometry?.coordinates?.[1],
   })))
 
-  return { data, rows, error, pending, load, loadDatasets, setDataset, selectedDataset, availableDatasets }
+  return {
+    data, filteredData, rows, error, pending, load, loadDatasets, setDataset, addInlineDataset,
+    selectedDataset, availableDatasets, speciesFilter, speciesOptions, setSpeciesFilter,
+  }
 }
