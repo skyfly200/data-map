@@ -1,6 +1,7 @@
 import { getStore } from '@netlify/blobs'
 import { buildInatUrl, fetchInatFeatures } from './observations.mjs'
-import { syncObservationsToSupabase } from './supabase.mjs'
+import { supabaseConfigured } from './supabase-storage.mjs'
+import { uploadJson } from './datasets-store.mjs'
 
 export const STAGE_KEYS = {
   fetch: 'fetch-observations',
@@ -33,7 +34,6 @@ export function getRuntimeConfig(overrides = {}, request = null) {
   const perPage = Number(overrides.perPage ?? params.get('perPage') ?? process.env.INAT_PER_PAGE ?? process.env.PER_PAGE ?? 100)
   const qualityGrade = overrides.qualityGrade ?? params.get('qualityGrade') ?? process.env.INAT_QUALITY_GRADE ?? process.env.QUALITY_GRADE ?? 'research'
   const refreshAll = overrides.refreshAll ?? params.get('refreshAll') ?? getRefreshAllFlag()
-  const syncToSupabase = overrides.syncToSupabase ?? params.get('syncToSupabase') ?? process.env.SUPABASE_SYNC ?? process.env.SYNC_TO_SUPABASE ?? '0'
 
   return {
     species: parseSpeciesList(species),
@@ -43,7 +43,6 @@ export function getRuntimeConfig(overrides = {}, request = null) {
     perPage,
     qualityGrade,
     refreshAll: Boolean(refreshAll),
-    syncToSupabase: ['1', 'true', 'yes', 'y', 'on'].includes(String(syncToSupabase).trim().toLowerCase()),
   }
 }
 
@@ -134,34 +133,11 @@ export async function fetchObservationsStage(config, fetchImpl = fetch) {
   const collection = toFeatureCollection(unique)
   await writeStage('fetch', { count: unique.length, species, items: collection, refreshAll: Boolean(config.refreshAll) })
 
-  if (config.syncToSupabase) {
-    const syncResult = await syncObservationsToSupabase(
-      collection.features?.map((feature) => ({
-        ...feature.properties,
-        id: feature.properties?.inat_id ?? feature.properties?.uuid ?? null,
-        uuid: feature.properties?.uuid ?? null,
-        geojson: feature.geometry,
-        taxon: { name: feature.properties?.species ?? species[0] ?? 'unknown' },
-        place_guess: feature.properties?.location ?? null,
-        observed_on: feature.properties?.date ?? null,
-        quality_grade: 'research',
-      })) ?? [],
-      { env: process.env },
-    )
-
-    if (syncResult.ok) {
-      console.log(`Supabase sync complete: ${syncResult.rowCount} rows upserted to ${syncResult.table}`)
-    } else {
-      console.warn(`Supabase sync skipped: ${syncResult.reason}`)
-    }
-  }
-
   return buildStageResult('fetch', {
     species,
     count: unique.length,
     source: 'inaturalist',
     refreshAll: Boolean(config.refreshAll),
-    syncToSupabase: Boolean(config.syncToSupabase),
     featureCollection: collection,
   })
 }
@@ -244,9 +220,22 @@ export async function exportObservationsStage(config) {
   const collection = toFeatureCollection(source)
   await writeStage('export', { count: source.length, species: config.species, items: collection })
 
+  // Publish the exported dataset to Supabase Storage when configured, so it
+  // becomes the source of truth the frontend + serving function read from.
+  let uploaded = false
+  if (supabaseConfigured()) {
+    try {
+      await uploadJson('observations.geojson', collection)
+      uploaded = true
+    } catch (err) {
+      console.warn('Supabase Storage upload skipped:', String(err))
+    }
+  }
+
   return buildStageResult('export', {
     species: config.species,
     count: source.length,
+    uploadedToStorage: uploaded,
     featureCollection: collection,
   })
 }
