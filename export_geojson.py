@@ -97,12 +97,19 @@ def to_geojson(df):
     return {"type": "FeatureCollection", "features": features}
 
 
+def _stage_output_path(input_path, suffix, output_dir='.'):
+    if not input_path:
+        raise ValueError('Input path is required')
+    stem = os.path.splitext(os.path.basename(input_path))[0]
+    return os.path.join(output_dir, f"{stem}{suffix}.geojson")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Export observations to GeoJSON for the map")
     parser.add_argument("--input", default=None,
                         help="Input CSV (default: mushroom_clusters.csv, else "
                              "mushroom_observations_enriched.csv)")
-    parser.add_argument("--output", default="public/data/observations.geojson")
+    parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
     input_path = args.input
@@ -114,15 +121,18 @@ def main():
     if not input_path or not os.path.exists(input_path):
         raise SystemExit("No input CSV found. Run enrich_with_rasters.py / cluster.py first.")
 
+    input_stem = os.path.splitext(os.path.basename(input_path))[0]
+    output_path = args.output or os.path.join('public', 'data', f"{input_stem}.geojson")
+
     print(f"📂 Loading {input_path}...")
     df = pd.read_csv(input_path)
 
     geojson = to_geojson(df)
-    os.makedirs(os.path.dirname(args.output), exist_ok=True)
-    with open(args.output, "w") as f:
+    os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+    with open(output_path, "w") as f:
         json.dump(geojson, f)
 
-    print(f"✅ Wrote {len(geojson['features'])} features to {args.output}")
+    print(f"✅ Wrote {len(geojson['features'])} features to {output_path}")
 
 
 if __name__ == "__main__":

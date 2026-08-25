@@ -1,3 +1,4 @@
+import argparse
 import pandas as pd
 from datetime import timedelta
 import rasterio
@@ -7,6 +8,16 @@ import numpy as np
 import math
 import os
 import shutil
+
+
+def stage_output_path(input_path, suffix, output_dir='.'):
+    if not input_path:
+        raise ValueError('Input path is required')
+    stem = os.path.splitext(os.path.basename(input_path))[0]
+    filename = f"{stem}{suffix}.csv"
+    if output_dir in (None, '', '.'):
+        return filename
+    return os.path.join(output_dir, filename)
 
 # ─── Raster Data Sources ────────────────────────────────────────────────────────
 # https://worldcover2020.esa.int/downloader
@@ -321,8 +332,13 @@ def enrich_df_with_rasters(df, ndvi_dir='ndvi/', soil_dir='soil/'):
 # ─── Script Entrypoint ────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    input_file = "mushroom_observations.csv"
-    output_file = "mushroom_observations_enriched.csv"
+    parser = argparse.ArgumentParser(description="Enrich observation rows with raster and terrain data")
+    parser.add_argument("--input", default="mushroom_observations.csv", help="Input observation CSV")
+    parser.add_argument("--output", default=None, help="Output enriched CSV path")
+    args = parser.parse_args()
+
+    input_file = args.input
+    output_file = args.output or stage_output_path(input_file, '_enriched')
 
     print(f"Loading {input_file}...")
     df = pd.read_csv(input_file)
@@ -346,5 +362,6 @@ if __name__ == "__main__":
     df = fill_missing_ndvi(df, max_days_gap=7)
 
     print(f"Saving enriched data to {output_file}...")
+    os.makedirs(os.path.dirname(output_file) or '.', exist_ok=True)
     df.to_csv(output_file, index=False)
     print("Done ✅")
