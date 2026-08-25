@@ -1,5 +1,7 @@
 <template>
   <div class="data-page">
+    <FilterPanel />
+
     <div class="head">
       <div>
         <h2>Species</h2>
@@ -14,9 +16,21 @@
 
     <div class="fetch-new">
       <label>Fetch a new species</label>
-      <input v-model="newSpecies" type="text" placeholder="e.g. Amanita muscaria" @keyup.enter="fetchNew" />
-      <button :disabled="fetching || !newSpecies.trim()" @click="fetchNew">{{ fetching ? 'Fetching…' : 'Fetch' }}</button>
-      <span v-if="fetchMsg" :class="['fmsg', fetchOk ? 'ok' : 'err']">{{ fetchMsg }}</span>
+      <template v-if="configured && !isAuthed">
+        <span class="fmsg">Live fetching is rate-protected.</span>
+        <NuxtLink to="/login" class="signin-link">Sign in to fetch</NuxtLink>
+      </template>
+      <template v-else>
+        <input v-model="newSpecies" type="text" placeholder="e.g. Amanita muscaria" :disabled="fetching" @keyup.enter="fetchNew" />
+        <button :disabled="fetching || !newSpecies.trim()" @click="fetchNew">{{ fetching ? 'Fetching…' : 'Fetch' }}</button>
+        <span v-if="fetchMsg && !fetching" :class="['fmsg', fetchOk ? 'ok' : 'err']">{{ fetchMsg }}</span>
+      </template>
+    </div>
+
+    <div v-if="fetching" class="fetch-progress">
+      <div class="pbar"><span class="pfill"></span></div>
+      <span class="ptext">Fetching &amp; clustering “{{ fetchingName }}”… {{ elapsed }}s
+        <em>(large species can take up to a minute)</em></span>
     </div>
 
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
@@ -55,21 +69,66 @@
 import { useObservations } from '~/composables/useObservations'
 
 const { speciesOptions, speciesFilter, setSpeciesFilter, addInlineDataset, error, pending, load } = useObservations()
+const { isAuthed, configured, accessToken } = useAuth()
+const { filters } = useFilters()
 onMounted(load)
+
+// Turn the active location/time filters into iNaturalist query params so a
+// scoped fetch pulls only what matches, instead of the whole history.
+function fetchScopeParams() {
+  const f = filters.value
+  const p = new URLSearchParams()
+  if (f.center && f.radiusKm) {
+    p.set('lat', String(f.center.lat))
+    p.set('lng', String(f.center.lng))
+    p.set('radius', String(f.radiusKm))
+  }
+  if (f.dateFrom) p.set('d1', f.dateFrom)
+  if (f.dateTo) p.set('d2', f.dateTo)
+  // Whole-year / month shortcuts become a date range for iNaturalist.
+  if (f.year && !f.dateFrom && !f.dateTo) {
+    const mm = f.month ? String(f.month).padStart(2, '0') : null
+    if (mm) {
+      const last = new Date(Number(f.year), Number(f.month), 0).getDate()
+      p.set('d1', `${f.year}-${mm}-01`); p.set('d2', `${f.year}-${mm}-${String(last).padStart(2, '0')}`)
+    } else {
+      p.set('d1', `${f.year}-01-01`); p.set('d2', `${f.year}-12-31`)
+    }
+  }
+  return p
+}
 
 // ── Fetch a new species on demand (Netlify function → iNaturalist) ────────────
 const newSpecies = ref('')
 const fetching = ref(false)
 const fetchMsg = ref('')
 const fetchOk = ref(false)
+const fetchingName = ref('')
+const elapsed = ref(0)
+let timer = null
+
+function startTimer() {
+  elapsed.value = 0
+  const t0 = Date.now()
+  timer = setInterval(() => { elapsed.value = Math.round((Date.now() - t0) / 1000) }, 250)
+}
+function stopTimer() { if (timer) { clearInterval(timer); timer = null } }
+onBeforeUnmount(stopTimer)
 
 async function fetchNew() {
   const q = newSpecies.value.trim()
   if (!q || fetching.value) return
   fetching.value = true
+  fetchingName.value = q
   fetchMsg.value = ''
+  startTimer()
   try {
-    const res = await fetch(`/.netlify/functions/fetch-species?species=${encodeURIComponent(q)}`)
+    const token = await accessToken()
+    const headers = token ? { authorization: `Bearer ${token}` } : {}
+    const scope = fetchScopeParams()
+    scope.set('species', q)
+    const res = await fetch(`/.netlify/functions/fetch-species?${scope.toString()}`, { headers })
+    if (res.status === 401) throw new Error('Please sign in to fetch new species.')
     const data = await res.json()
     if (!data.ok) throw new Error(data.error || 'fetch failed')
     if (!data.count) { fetchOk.value = false; fetchMsg.value = `No research-grade observations found for “${q}”.`; return }
@@ -82,6 +141,7 @@ async function fetchNew() {
     fetchOk.value = false
     fetchMsg.value = `Couldn’t fetch — this needs the deployed function (and Supabase to persist). ${e.message}`
   } finally {
+    stopTimer()
     fetching.value = false
   }
 }
@@ -118,7 +178,7 @@ function barWidth(n) { return `${(n / maxCount.value) * 100}%` }
 </script>
 
 <style scoped>
-.data-page { padding: 16px 18px; max-width: 720px; }
+.data-page { padding: 16px 18px; max-width: 900px; }
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
 .head h2 { margin: 0; font-size: 1.1rem; }
 .sub { margin: 2px 0 0; color: #6b7280; font-size: 0.82rem; }
@@ -152,6 +212,16 @@ tr.off .bar { background: #cbd5e1; }
 .fmsg { font-size: 0.8rem; }
 .fmsg.ok { color: #2b7a3d; }
 .fmsg.err { color: #b00020; }
+.signin-link { font-size: 0.82rem; font-weight: 600; color: #2b7a3d; text-decoration: none; border: 1px solid #2b7a3d; border-radius: 6px; padding: 4px 10px; }
+.signin-link:hover { background: #f0fdf4; }
+
+.fetch-progress { display: flex; align-items: center; gap: 10px; margin: -4px 0 12px; }
+.pbar { position: relative; flex: 0 1 220px; height: 6px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+.pfill { position: absolute; top: 0; left: 0; height: 100%; width: 40%; background: #2a78d6; border-radius: 4px; animation: indeterminate 1.1s ease-in-out infinite; }
+@keyframes indeterminate { 0% { left: -40%; } 100% { left: 100%; } }
+.ptext { font-size: 0.8rem; color: #374151; }
+.ptext em { color: #9aa0a6; font-style: normal; }
+@media (prefers-reduced-motion: reduce) { .pfill { animation: none; width: 100%; opacity: 0.6; } }
 
 .hint { margin-top: 12px; font-size: 0.8rem; color: #6b7280; }
 .hint code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; }

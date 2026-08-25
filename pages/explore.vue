@@ -102,10 +102,7 @@ function save() {
 </script>
 
 <style scoped>
-.explore {
-  padding: 16px 18px; display: flex; flex-direction: column; gap: 14px;
-  min-height: 0; height: 100%;
-}
+.explore { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
 .panel {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 12px 18px; align-items: end; background: #fff; border: 1px solid #e5e7eb;
@@ -126,10 +123,10 @@ function save() {
 .save:hover { background: #246833; }
 .save:disabled { opacity: 0.8; cursor: default; }
 
-.stage {
-  flex: 1 1 auto; min-height: 420px; display: flex; flex-direction: column; justify-content: center;
-  min-width: 0;
-}
+/* Cap the chart so its width-driven height can't exceed the viewport and spill
+   over the controls above. The card keeps its natural height; the page scrolls. */
+.stage { align-self: stretch; min-width: 0; }
+.stage :deep(svg) { max-height: 68vh; }
 .msg { padding: 16px; color: #555; }
 .msg.error { color: #b00020; }
 </style>

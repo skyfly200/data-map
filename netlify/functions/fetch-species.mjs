@@ -8,6 +8,8 @@
 import { fetchInatFeatures } from '../lib/observations.mjs'
 import { supabaseConfigured, publicUrl } from '../lib/supabase-storage.mjs'
 import { uploadJson, readJson } from '../lib/datasets-store.mjs'
+import { clusterFeatures } from '../lib/cluster.mjs'
+import { requireUser } from '../lib/auth.mjs'
 
 export const config = { timeout: 60 }
 
@@ -20,6 +22,9 @@ function json(obj, status = 200) {
 
 export default async (request) => {
   try {
+    const auth = await requireUser(request)
+    if (!auth.ok) return auth.response
+
     const url = new URL(request.url)
     let species = url.searchParams.get('species')
     if (!species && request.method === 'POST') {
@@ -32,11 +37,16 @@ export default async (request) => {
       lat: Number(url.searchParams.get('lat') ?? process.env.INAT_LAT ?? 40.0),
       lng: Number(url.searchParams.get('lng') ?? process.env.INAT_LNG ?? -105.0),
       radius: Number(url.searchParams.get('radius') ?? process.env.INAT_RADIUS ?? 500),
+      d1: url.searchParams.get('d1') || null,
+      d2: url.searchParams.get('d2') || null,
       perPage: 200,
       qualityGrade: 'research',
     }
 
-    const features = await fetchInatFeatures(opts)
+    const rawFeatures = await fetchInatFeatures(opts)
+    // Give freshly-fetched species meaningful groups now (spatial/temporal),
+    // until the full Python pipeline re-runs and clusters on enriched rasters.
+    const features = clusterFeatures(rawFeatures)
     const geojson = { type: 'FeatureCollection', features }
     const slug = slugify(species)
     let path = null
