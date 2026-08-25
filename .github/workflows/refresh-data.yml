@@ -66,6 +66,20 @@ jobs:
             cp dem/derived/*.tif data/terrain/
           fi
 
+      - name: Upload datasets to Supabase Storage (optional)
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_DATASETS_BUCKET: ${{ secrets.SUPABASE_DATASETS_BUCKET }}
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            npm ci --omit=dev || npm install
+            node scripts/upload_datasets.mjs
+          else
+            echo "No Supabase secrets set; skipping Storage upload."
+          fi
+
       - name: Commit refreshed data
         run: |
           git config user.name  "github-actions[bot]"

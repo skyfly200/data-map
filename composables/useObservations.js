@@ -91,11 +91,19 @@ export function useObservations() {
   const availableDatasets = useState('observation-datasets', () => OBSERVATION_DATASETS)
 
   async function loadDatasets() {
+    const manifestUrl = useRuntimeConfig().public.datasetsManifestUrl || DATASET_MANIFEST
     try {
-      const res = await fetch(DATASET_MANIFEST)
+      const res = await fetch(manifestUrl)
       if (!res.ok) return
       const list = await res.json()
-      if (Array.isArray(list) && list.length) availableDatasets.value = list
+      if (!Array.isArray(list) || !list.length) return
+      availableDatasets.value = list
+      // Keep the current selection valid against the (possibly Supabase) paths.
+      const paths = list.map((d) => d.path)
+      const saved = import.meta.client ? localStorage.getItem(DATASET_KEY) : null
+      if (!paths.includes(selectedDataset.value) && !(saved && paths.includes(saved))) {
+        selectedDataset.value = list[0].path
+      }
     } catch {
       // keep the fallback list
     }
