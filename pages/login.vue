@@ -61,7 +61,8 @@
       </template>
 
       <p class="policy-link">
-        By signing in you agree to our <NuxtLink to="/privacy">Privacy Policy</NuxtLink>.
+        By signing in you agree to our <NuxtLink to="/terms">Terms</NuxtLink>
+        and <NuxtLink to="/privacy">Privacy Policy</NuxtLink>.
       </p>
     </div>
   </div>
