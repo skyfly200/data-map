@@ -2,7 +2,7 @@ import unittest
 
 from cluster import stage_output_path
 from export_geojson import build_parser
-from iNat import format_observation_progress, parse_species_list
+from iNat import format_observation_progress, parse_species_list, should_refresh_all, filter_new_observations
 
 
 class SpeciesListParsingTests(unittest.TestCase):
@@ -44,6 +44,24 @@ class ObservationProgressTests(unittest.TestCase):
         self.assertEqual(
             format_observation_progress('morchella', 2, 5),
             'morchella [########------------] 2/5',
+        )
+
+
+class IncrementalRefreshTests(unittest.TestCase):
+    def test_refresh_all_flag_defaults_to_false(self):
+        self.assertFalse(should_refresh_all({'REFRESH_ALL': ''}))
+        self.assertFalse(should_refresh_all({}))
+
+    def test_refresh_all_flag_can_be_enabled(self):
+        self.assertTrue(should_refresh_all({'REFRESH_ALL': '1'}))
+        self.assertTrue(should_refresh_all({'INAT_REFRESH_ALL': 'true'}))
+
+    def test_only_new_observations_are_kept(self):
+        existing = [{'inat_id': 1}, {'inat_id': 2}]
+        fresh = [{'inat_id': 1}, {'inat_id': 3}, {'inat_id': 4}]
+        self.assertEqual(
+            [item['inat_id'] for item in filter_new_observations(fresh, existing)],
+            [3, 4],
         )
 
 

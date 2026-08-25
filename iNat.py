@@ -116,6 +116,59 @@ def parse_species_list(species_value):
     return cleaned
 
 
+def should_refresh_all(env=None):
+    values = {**(env or {})}
+    for key in ('REFRESH_ALL', 'INAT_REFRESH_ALL', 'FULL_REFRESH'):
+        raw = values.get(key)
+        if raw is None:
+            raw = os.getenv(key)
+        if raw is None:
+            continue
+        value = str(raw).strip().lower()
+        if value in ('1', 'true', 'yes', 'y', 'on'):
+            return True
+        if value in ('0', 'false', 'no', 'n', 'off', ''):
+            return False
+    return False
+
+
+def _existing_observation_ids(path):
+    try:
+        df = pd.read_csv(path)
+    except Exception:
+        return set()
+    ids = []
+    for column in ('inat_id', 'id'):
+        if column in df.columns:
+            ids.extend(df[column].dropna().astype(str).tolist())
+    return {str(item) for item in ids}
+
+
+def filter_new_observations(fresh_rows, existing_rows=None):
+    seen = set()
+    if isinstance(existing_rows, list):
+        seen = {str(item.get('inat_id') if isinstance(item, dict) else item) for item in existing_rows if item is not None}
+    elif isinstance(existing_rows, pd.DataFrame):
+        if 'inat_id' in existing_rows.columns:
+            seen = {str(item) for item in existing_rows['inat_id'].dropna().tolist()}
+    if not isinstance(fresh_rows, list):
+        return []
+    new_rows = []
+    for item in fresh_rows:
+        if not isinstance(item, dict):
+            continue
+        inat_id = item.get('inat_id')
+        key = str(inat_id) if inat_id is not None else str(item.get('uuid')) if item.get('uuid') is not None else None
+        if key is None:
+            new_rows.append(item)
+            continue
+        if key in seen:
+            continue
+        seen.add(key)
+        new_rows.append(item)
+    return new_rows
+
+
 def _unique_output_base(prefix='mushroom_observations', species='morchella', lat=40.0, lng=-105.0, radius=500.0):
     timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
     species_list = parse_species_list(species)
@@ -228,11 +281,21 @@ def main():
     radius = _read_float_env('INAT_RADIUS', 'RADIUS', default=500.0)
     per_page = int(getenv_with_file('INAT_PER_PAGE', default=(getenv_with_file('PER_PAGE', default='100', env_file=env_file)), env_file=env_file) or 100)
     max_observations = int(getenv_with_file('INAT_MAX_OBSERVATIONS_PER_SPECIES', default=(getenv_with_file('MAX_OBSERVATIONS_PER_SPECIES', default='0', env_file=env_file)), env_file=env_file) or 0)
+    refresh_all = should_refresh_all()
     output_prefix = getenv_with_file('OUTPUT_PREFIX', default='mushroom_observations', env_file=env_file)
     output_dir = getenv_with_file('OUTPUT_DIR', default='.', env_file=env_file)
     os.makedirs(output_dir, exist_ok=True)
 
-    print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km (per_page={per_page}, max_per_species={max_observations or 'unlimited'})...")
+    canonical_csv = os.path.join(output_dir, 'mushroom_observations.csv')
+    canonical_geojson = os.path.join(output_dir, 'mushroom_observations.geojson')
+    existing_inat_ids = set()
+    if not refresh_all:
+        existing_inat_ids = _existing_observation_ids(canonical_csv)
+        print(f"Incremental refresh enabled. Skipping {len(existing_inat_ids)} existing records by inat_id unless REFRESH_ALL=1.")
+    else:
+        print('Full refresh enabled: REFRESH_ALL=1, reloading all observations.')
+
+    print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km (per_page={per_page}, max_per_species={max_observations or 'unlimited'}, refresh_all={refresh_all})...")
     frames = []
     total_species = len(species_list)
     for index, species in enumerate(species_list, start=1):
@@ -266,26 +329,28 @@ def main():
         )
         print()
         count = len(df_species) if df_species is not None else 0
-        print(f"  -> {species}: {count} observations fetched")
-        if not df_species.empty:
+        if not refresh_all and df_species is not None and not df_species.empty:
+            df_species = df_species[~df_species['inat_id'].astype(str).isin(existing_inat_ids)] if 'inat_id' in df_species.columns else df_species
+            count = len(df_species)
+        print(f"  -> {species}: {count} new observations fetched")
+        if df_species is not None and not df_species.empty:
             frames.append(df_species)
     if not frames:
-        raise ValueError(f"No observations found for species list: {species_list}")
+        print('No new observations found; leaving the existing canonical dataset unchanged.')
+        return
 
     df_inat = pd.concat(frames, ignore_index=True)
     print("Data fetched successfully.")
 
-    base_name = _unique_output_base(output_prefix, species_list, lat, lng, radius)
-    csv_path = os.path.join(output_dir, f'{base_name}.csv')
-    geojson_path = os.path.join(output_dir, f'{base_name}.geojson')
+    if refresh_all:
+        base_name = _unique_output_base(output_prefix, species_list, lat, lng, radius)
+        csv_path = os.path.join(output_dir, f'{base_name}.csv')
+        geojson_path = os.path.join(output_dir, f'{base_name}.geojson')
+        print(f"Saving CSV to {csv_path}...")
+        df_inat.to_csv(csv_path, index=False)
+        print(f"Saving GeoJSON to {geojson_path}...")
+        df_inat.to_json(geojson_path, orient='records')
 
-    print(f"Saving CSV to {csv_path}...")
-    df_inat.to_csv(csv_path, index=False)
-    print(f"Saving GeoJSON to {geojson_path}...")
-    df_inat.to_json(geojson_path, orient='records')
-
-    canonical_csv = os.path.join(output_dir, 'mushroom_observations.csv')
-    canonical_geojson = os.path.join(output_dir, 'mushroom_observations.geojson')
     print(f"Saving canonical CSV to {canonical_csv}...")
     df_inat.to_csv(canonical_csv, index=False)
     print(f"Saving canonical GeoJSON to {canonical_geojson}...")
