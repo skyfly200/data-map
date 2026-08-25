@@ -361,10 +361,16 @@ def process_dem(dem_path, out_dir="dem/derived/", prevailing_wind_deg=270.0):
 
 
 def _find_dem(dem_dir="dem/"):
-    if not os.path.isdir(dem_dir):
-        return None
-    tifs = sorted(f for f in os.listdir(dem_dir) if f.lower().endswith((".tif", ".tiff")))
-    return os.path.join(dem_dir, tifs[0]) if tifs else None
+    dem_dir = str(dem_dir)
+    if os.path.isdir(dem_dir):
+        tifs = sorted(f for f in os.listdir(dem_dir) if f.lower().endswith((".tif", ".tiff")))
+        if tifs:
+            return os.path.join(dem_dir, tifs[0])
+    if os.path.isdir(os.path.join('.', 'dem')):
+        tifs = sorted(f for f in os.listdir(os.path.join('.', 'dem')) if f.lower().endswith((".tif", ".tiff")))
+        if tifs:
+            return os.path.join('.', 'dem', tifs[0])
+    return None
 
 
 if __name__ == "__main__":
@@ -379,6 +385,20 @@ if __name__ == "__main__":
 
     dem_path = args.dem or _find_dem()
     if not dem_path or not os.path.exists(dem_path):
-        raise SystemExit("No DEM found. Run fetch.py to download one, or pass --dem.")
+        try:
+            from fetch import download_srtm_dem
+            downloaded = download_srtm_dem()
+            if downloaded and os.path.exists(downloaded):
+                dem_path = downloaded
+            else:
+                raise SystemExit(
+                    "No DEM found. Set OPENTOPOGRAPHY_API_KEY in the environment or pass --dem. "
+                    "The free API key is available at https://portal.opentopography.org/login"
+                )
+        except Exception:
+            raise SystemExit(
+                "No DEM found. Set OPENTOPOGRAPHY_API_KEY in the environment or pass --dem. "
+                "The free API key is available at https://portal.opentopography.org/login"
+            )
 
     process_dem(dem_path, out_dir=args.out, prevailing_wind_deg=args.wind_dir)
