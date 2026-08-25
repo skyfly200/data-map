@@ -413,12 +413,12 @@ def main(csv_path='mushroom_observations.csv'):
     df = pd.read_csv(csv_path)
 
     # ─── NDVI (Sentinel-2) ────────────────────────────────────────────────────
-    # One Earth Engine export task per observation, delivered to Google Drive
-    # (folder 'EarthEngineNDVI'). Download those GeoTIFFs into ndvi/ to enrich.
-    if skip_ee:
-        print("Skipping Sentinel-2 NDVI exports (SKIP_EARTH_ENGINE=1).")
-    else:
-        print("Fetching Sentinel-2 NDVI exports...")
+    # NDVI is now sampled directly at each point during enrichment
+    # (enrich_with_rasters.enrich_with_ndvi_ee), so the pipeline no longer needs
+    # the asynchronous Drive export by default. Set EXPORT_NDVI_TILES=1 to also
+    # export NDVI GeoTIFFs to Drive (folder 'EarthEngineNDVI').
+    if not skip_ee and os.environ.get("EXPORT_NDVI_TILES") == "1":
+        print("Exporting Sentinel-2 NDVI tiles to Drive...")
         for idx, row in df.iterrows():
             if pd.isna(row['lat']) or pd.isna(row['lon']) or pd.isna(row['date']):
                 continue
