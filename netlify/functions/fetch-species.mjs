@@ -8,6 +8,7 @@
 import { fetchInatFeatures } from '../lib/observations.mjs'
 import { supabaseConfigured, publicUrl } from '../lib/supabase-storage.mjs'
 import { uploadJson, readJson } from '../lib/datasets-store.mjs'
+import { clusterFeatures } from '../lib/cluster.mjs'
 
 export const config = { timeout: 60 }
 
@@ -36,7 +37,10 @@ export default async (request) => {
       qualityGrade: 'research',
     }
 
-    const features = await fetchInatFeatures(opts)
+    const rawFeatures = await fetchInatFeatures(opts)
+    // Give freshly-fetched species meaningful groups now (spatial/temporal),
+    // until the full Python pipeline re-runs and clusters on enriched rasters.
+    const features = clusterFeatures(rawFeatures)
     const geojson = { type: 'FeatureCollection', features }
     const slug = slugify(species)
     let path = null
