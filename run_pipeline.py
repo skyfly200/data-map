@@ -4,6 +4,26 @@ import sys
 from pathlib import Path
 
 
+def stage_output_path(input_path, suffix, output_dir='.'):
+    if not input_path:
+        raise ValueError('Input path is required')
+    stem = Path(input_path).stem
+    filename = f"{stem}{suffix}"
+    if output_dir in (None, '', '.'):
+        return filename
+    return str(Path(output_dir) / filename)
+
+
+def latest_observation_csv(root):
+    matches = sorted(root.glob('mushroom_observations*.csv'))
+    unique_matches = [p for p in matches if p.name != 'mushroom_observations.csv']
+    if unique_matches:
+        return str(unique_matches[-1])
+    if matches:
+        return str(matches[-1])
+    return 'mushroom_observations.csv'
+
+
 def load_env_file(path=None):
     config_path = Path(path or os.getenv('ENV_FILE') or '.env')
     if not config_path.exists():
@@ -54,9 +74,10 @@ def _resolve_python():
     return sys.executable
 
 
-def run_step(label, python_executable, script_name):
+def run_step(label, python_executable, script_name, *args):
     print(f"\n=== {label} ===")
-    result = subprocess.run([python_executable, script_name], check=False)
+    cmd = [python_executable, script_name, *args]
+    result = subprocess.run(cmd, check=False)
     if result.returncode != 0:
         raise SystemExit(f"{label} failed with exit code {result.returncode}")
 
@@ -73,14 +94,19 @@ def main():
     python_executable = _resolve_python()
     print(f"Using Python interpreter: {python_executable}")
 
-    for label, script in [
-        ("Fetch iNaturalist observations", "iNat.py"),
-        ("Download environmental layers", "fetch.py"),
-        ("Enrich observations with rasters", "enrich_with_rasters.py"),
-        ("Cluster observations", "cluster.py"),
-        ("Export GeoJSON for map", "export_geojson.py"),
-    ]:
-        run_step(label, python_executable, script)
+    run_step("Fetch iNaturalist observations", python_executable, "iNat.py")
+    observation_csv = latest_observation_csv(root)
+    print(f"Using observation input: {observation_csv}")
+
+    enriched_csv = stage_output_path(observation_csv, '_enriched')
+    run_step("Download environmental layers", python_executable, "fetch.py")
+    run_step("Enrich observations with rasters", python_executable, "enrich_with_rasters.py", "--input", observation_csv, "--output", enriched_csv)
+
+    clustered_csv = stage_output_path(enriched_csv, '_clusters')
+    run_step("Cluster observations", python_executable, "cluster.py", "--input", enriched_csv, "--output", clustered_csv)
+
+    geojson_output = str(Path('public') / 'data' / f"{Path(clustered_csv).stem}.geojson")
+    run_step("Export GeoJSON for map", python_executable, "export_geojson.py", "--input", clustered_csv, "--output", geojson_output)
 
     print("\n✅ Full data pipeline completed successfully.")
 

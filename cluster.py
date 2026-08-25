@@ -1,8 +1,19 @@
+import os
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 import argparse
+
+
+def stage_output_path(input_path, suffix, output_dir='.'):
+    if not input_path:
+        raise ValueError('Input path is required')
+    stem = os.path.splitext(os.path.basename(input_path))[0]
+    filename = f"{stem}{suffix}.csv"
+    if output_dir in (None, '', '.'):
+        return filename
+    return os.path.join(output_dir, filename)
 
 
 def cluster_environmental(df, features=None, n_clusters=4):
@@ -53,17 +64,20 @@ def cluster_environmental(df, features=None, n_clusters=4):
 def main():
     parser = argparse.ArgumentParser(description="Cluster mushroom observations by environmental similarity")
     parser.add_argument("--input", default="mushroom_observations_enriched.csv", help="Path to enriched CSV file")
-    parser.add_argument("--output", default="mushroom_clusters.csv", help="Output CSV with cluster labels")
+    parser.add_argument("--output", default=None, help="Output CSV with cluster labels")
     parser.add_argument("--clusters", type=int, default=4, help="Number of clusters to form")
     args = parser.parse_args()
+
+    output_path = args.output or stage_output_path(args.input, '_clusters')
 
     print(f"📂 Loading {args.input}...")
     df = pd.read_csv(args.input)
 
     df = cluster_environmental(df, n_clusters=args.clusters)
 
-    print(f"💾 Saving with clusters to {args.output}...")
-    df.to_csv(args.output, index=False)
+    print(f"💾 Saving with clusters to {output_path}...")
+    os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+    df.to_csv(output_path, index=False)
     print("✅ Done.")
 
 
