@@ -1,5 +1,6 @@
 import { getStore } from '@netlify/blobs'
 import { buildInatUrl, fetchInatFeatures } from './observations.mjs'
+import { syncObservationsToSupabase } from './supabase.mjs'
 
 export const STAGE_KEYS = {
   fetch: 'fetch-observations',
@@ -17,6 +18,12 @@ export function parseSpeciesList(species) {
     .filter(Boolean)
 }
 
+export function getRefreshAllFlag(env = process.env) {
+  const raw = env.REFRESH_ALL ?? env.INAT_REFRESH_ALL ?? env.FULL_REFRESH ?? '0'
+  const value = String(raw).trim().toLowerCase()
+  return ['1', 'true', 'yes', 'y', 'on'].includes(value)
+}
+
 export function getRuntimeConfig(overrides = {}, request = null) {
   const params = request instanceof Request ? new URL(request.url).searchParams : new URLSearchParams()
   const species = overrides.species ?? params.get('species') ?? process.env.INAT_TAXON ?? process.env.SPECIES ?? 'morchella'
@@ -25,6 +32,8 @@ export function getRuntimeConfig(overrides = {}, request = null) {
   const radius = Number(overrides.radius ?? params.get('radius') ?? process.env.INAT_RADIUS ?? process.env.RADIUS ?? 500)
   const perPage = Number(overrides.perPage ?? params.get('perPage') ?? process.env.INAT_PER_PAGE ?? process.env.PER_PAGE ?? 100)
   const qualityGrade = overrides.qualityGrade ?? params.get('qualityGrade') ?? process.env.INAT_QUALITY_GRADE ?? process.env.QUALITY_GRADE ?? 'research'
+  const refreshAll = overrides.refreshAll ?? params.get('refreshAll') ?? getRefreshAllFlag()
+  const syncToSupabase = overrides.syncToSupabase ?? params.get('syncToSupabase') ?? process.env.SUPABASE_SYNC ?? process.env.SYNC_TO_SUPABASE ?? '0'
 
   return {
     species: parseSpeciesList(species),
@@ -33,6 +42,8 @@ export function getRuntimeConfig(overrides = {}, request = null) {
     radius,
     perPage,
     qualityGrade,
+    refreshAll: Boolean(refreshAll),
+    syncToSupabase: ['1', 'true', 'yes', 'y', 'on'].includes(String(syncToSupabase).trim().toLowerCase()),
   }
 }
 
@@ -80,19 +91,28 @@ export function buildStageResult(stageName, payload) {
   }
 }
 
+export function filterExistingFeatures(freshFeatures, existingFeatures = []) {
+  const seen = new Set(
+    (existingFeatures || [])
+      .map((feature) => feature?.properties?.inat_id ?? feature?.properties?.uuid)
+      .filter(Boolean)
+      .map(String),
+  )
+
+  return (freshFeatures || []).filter((feature) => {
+    const id = feature?.properties?.inat_id ?? feature?.properties?.uuid
+    if (!id) return true
+    if (seen.has(String(id))) return false
+    seen.add(String(id))
+    return true
+  })
+}
+
 export async function fetchObservationsStage(config, fetchImpl = fetch) {
   const species = config.species || ['morchella']
   const collected = []
 
   for (const taxonName of species) {
-    const url = buildInatUrl({
-      taxonName,
-      lat: config.lat,
-      lng: config.lng,
-      radius: config.radius,
-      perPage: config.perPage,
-      qualityGrade: config.qualityGrade,
-    })
     const features = await fetchInatFeatures({
       taxonName,
       lat: config.lat,
@@ -104,14 +124,44 @@ export async function fetchObservationsStage(config, fetchImpl = fetch) {
     collected.push(...features)
   }
 
-  const unique = dedupeFeatures(collected)
+  let unique = dedupeFeatures(collected)
+  if (!config.refreshAll) {
+    const existing = await readStage('fetch')
+    const existingFeatures = existing?.items?.features ?? existing?.features ?? []
+    unique = filterExistingFeatures(unique, existingFeatures)
+  }
+
   const collection = toFeatureCollection(unique)
-  await writeStage('fetch', { count: unique.length, species, items: collection })
+  await writeStage('fetch', { count: unique.length, species, items: collection, refreshAll: Boolean(config.refreshAll) })
+
+  if (config.syncToSupabase) {
+    const syncResult = await syncObservationsToSupabase(
+      collection.features?.map((feature) => ({
+        ...feature.properties,
+        id: feature.properties?.inat_id ?? feature.properties?.uuid ?? null,
+        uuid: feature.properties?.uuid ?? null,
+        geojson: feature.geometry,
+        taxon: { name: feature.properties?.species ?? species[0] ?? 'unknown' },
+        place_guess: feature.properties?.location ?? null,
+        observed_on: feature.properties?.date ?? null,
+        quality_grade: 'research',
+      })) ?? [],
+      { env: process.env },
+    )
+
+    if (syncResult.ok) {
+      console.log(`Supabase sync complete: ${syncResult.rowCount} rows upserted to ${syncResult.table}`)
+    } else {
+      console.warn(`Supabase sync skipped: ${syncResult.reason}`)
+    }
+  }
 
   return buildStageResult('fetch', {
     species,
     count: unique.length,
     source: 'inaturalist',
+    refreshAll: Boolean(config.refreshAll),
+    syncToSupabase: Boolean(config.syncToSupabase),
     featureCollection: collection,
   })
 }
