@@ -13,13 +13,17 @@ import { join } from 'node:path'
 import { fetchInatFeatures, newFeatures } from '../lib/observations.mjs'
 import { openTerrain, enrichFeatureTerrain } from '../lib/terrain.mjs'
 import { loadBaseline } from '../lib/baseline.mjs'
+import { supabaseConfigured } from '../lib/supabase-storage.mjs'
+import { uploadJson, readJson } from '../lib/datasets-store.mjs'
 
 // Run every 6 hours. Adjust the cron as needed.
 export const config = { schedule: '0 */6 * * *' }
 
 export default async () => {
   try {
-    const baseline = await loadBaseline()
+    let baseline = null
+    if (supabaseConfigured()) baseline = await readJson('observations.geojson')
+    if (!baseline) baseline = await loadBaseline()
 
     const opts = {
       taxonName: process.env.INAT_TAXON || 'morchella',
@@ -40,11 +44,18 @@ export default async () => {
       }
     }
 
-    const store = getStore('observations')
-    await store.setJSON('new-observations', { type: 'FeatureCollection', features: news })
+    const collection = { type: 'FeatureCollection', features: news }
+    let sink = 'netlify-blob'
+    if (supabaseConfigured()) {
+      await uploadJson('new-observations.geojson', collection)
+      sink = 'supabase'
+    } else {
+      const store = getStore('observations')
+      await store.setJSON('new-observations', collection)
+    }
 
     return new Response(
-      JSON.stringify({ ok: true, baseline: baseline.features?.length ?? 0, new: news.length }),
+      JSON.stringify({ ok: true, sink, baseline: baseline.features?.length ?? 0, new: news.length }),
       { headers: { 'content-type': 'application/json' } },
     )
   } catch (err) {
