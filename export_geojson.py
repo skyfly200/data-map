@@ -13,6 +13,7 @@ import argparse
 import json
 import math
 import os
+import re
 
 import pandas as pd
 
@@ -97,11 +98,56 @@ def to_geojson(df):
     return {"type": "FeatureCollection", "features": features}
 
 
-def _stage_output_path(input_path, suffix, output_dir='.'):
-    if not input_path:
-        raise ValueError('Input path is required')
-    stem = os.path.splitext(os.path.basename(input_path))[0]
-    return os.path.join(output_dir, f"{stem}{suffix}.geojson")
+def _slugify(value):
+    slug = re.sub(r'[^a-z0-9]+', '-', str(value).strip().lower()).strip('-')
+    return slug or 'unknown'
+
+
+def _write_geojson(df, path):
+    os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+    geojson = to_geojson(df)
+    with open(path, "w") as f:
+        json.dump(geojson, f)
+    return len(geojson["features"])
+
+
+def export_all(df, data_dir=os.path.join('public', 'data')):
+    """Write the combined dataset, one GeoJSON per species, and a manifest.
+
+    Layout served by the frontend:
+        public/data/observations.geojson        – all species combined
+        public/data/species/<slug>.geojson       – one per species
+        public/data/datasets.json                – manifest the UI reads
+    """
+    species_dir = os.path.join(data_dir, 'species')
+    os.makedirs(species_dir, exist_ok=True)
+
+    combined_path = os.path.join(data_dir, 'observations.geojson')
+    total = _write_geojson(df, combined_path)
+    print(f"✅ Wrote {total} features to {combined_path}")
+
+    manifest = [{
+        "id": "all",
+        "label": f"All species ({total})",
+        "path": "/data/observations.geojson",
+        "count": total,
+    }]
+
+    if "species" in df.columns:
+        counts = df["species"].fillna("Unknown").value_counts()
+        for species, count in counts.items():
+            slug = _slugify(species)
+            rel = f"/data/species/{slug}.geojson"
+            n = _write_geojson(df[df["species"].fillna("Unknown") == species],
+                               os.path.join(species_dir, f"{slug}.geojson"))
+            manifest.append({"id": slug, "label": f"{species} ({n})", "path": rel, "count": n})
+            print(f"   ✓ {species}: {n} → {rel}")
+
+    manifest_path = os.path.join(data_dir, 'datasets.json')
+    with open(manifest_path, "w") as f:
+        json.dump(manifest, f, indent=2)
+    print(f"✅ Wrote manifest ({len(manifest)} datasets) to {manifest_path}")
+    return manifest
 
 
 def main():
@@ -109,7 +155,8 @@ def main():
     parser.add_argument("--input", default=None,
                         help="Input CSV (default: mushroom_clusters.csv, else "
                              "mushroom_observations_enriched.csv)")
-    parser.add_argument("--output", default=None)
+    parser.add_argument("--data-dir", default=os.path.join('public', 'data'),
+                        help="Output directory served by the frontend")
     args = parser.parse_args()
 
     input_path = args.input
@@ -121,18 +168,9 @@ def main():
     if not input_path or not os.path.exists(input_path):
         raise SystemExit("No input CSV found. Run enrich_with_rasters.py / cluster.py first.")
 
-    input_stem = os.path.splitext(os.path.basename(input_path))[0]
-    output_path = args.output or os.path.join('public', 'data', f"{input_stem}.geojson")
-
     print(f"📂 Loading {input_path}...")
     df = pd.read_csv(input_path)
-
-    geojson = to_geojson(df)
-    os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
-    with open(output_path, "w") as f:
-        json.dump(geojson, f)
-
-    print(f"✅ Wrote {len(geojson['features'])} features to {output_path}")
+    export_all(df, data_dir=args.data_dir)
 
 
 if __name__ == "__main__":

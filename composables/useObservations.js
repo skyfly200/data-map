@@ -1,11 +1,13 @@
 // Shared observation data + display helpers for every view (map, table, charts).
 // Data is fetched once on the client and cached in Nuxt state across pages.
 
+// Fallback dataset list. The real list is loaded at runtime from the manifest
+// public/data/datasets.json (written by export_geojson.py), which lists the
+// combined dataset plus one enriched GeoJSON per species.
+export const DATASET_MANIFEST = '/data/datasets.json'
+export const DEFAULT_DATASET = '/data/observations.geojson'
 export const OBSERVATION_DATASETS = [
-  { id: 'latest', label: 'Latest processed', path: '/mushroom_observations.geojson' },
-  { id: 'baseline', label: 'Static baseline', path: '/data/observations.geojson' },
-  { id: 'morchella', label: 'Morchella sample 1', path: '/mushroom_observations_morchella_40.0_-105.0_500.0_20260824T224804Z.geojson' },
-  { id: 'amanita', label: 'Amanita sample', path: '/mushroom_observations_amanita_40.0_-105.0_500.0_20260824T225224Z.geojson' },
+  { id: 'all', label: 'All species', path: DEFAULT_DATASET },
 ]
 
 // Validated colour-blind-safe categorical palette (worst adjacent CVD ΔE 9.1),
@@ -70,25 +72,37 @@ async function fetchObservations(datasetPath = '/mushroom_observations.geojson')
   throw new Error('No observation dataset was available to load.')
 }
 
-export function useObservations() {
-  const route = useRoute()
-  const routeScope = (route.path || '/').replace(/^\/+|\/+$/g, '') || 'root'
-  const keyPrefix = `observations-${routeScope.replace(/\//g, '-')}`
+const DATASET_KEY = 'observations-dataset'
 
-  const data = useState(`${keyPrefix}-data`, () => null)
-  const error = useState(`${keyPrefix}-error`, () => '')
-  const pending = useState(`${keyPrefix}-pending`, () => false)
-  const selectedDataset = useState(`${keyPrefix}-dataset`, () => {
+export function useObservations() {
+  // One shared dataset selection + loaded data across every view (map, table,
+  // charts), so the header dataset picker is consistent everywhere.
+  const data = useState('observations-data', () => null)
+  const error = useState('observations-error', () => '')
+  const pending = useState('observations-pending', () => false)
+  const selectedDataset = useState(DATASET_KEY, () => {
     if (import.meta.client) {
-      const saved = localStorage.getItem(`${keyPrefix}-dataset`)
+      const saved = localStorage.getItem(DATASET_KEY)
       if (saved) return saved
     }
-    return OBSERVATION_DATASETS[0].path
+    return DEFAULT_DATASET
   })
-  const availableDatasets = OBSERVATION_DATASETS
+  // The dataset list is the same for every view, so keep it in global state.
+  const availableDatasets = useState('observation-datasets', () => OBSERVATION_DATASETS)
+
+  async function loadDatasets() {
+    try {
+      const res = await fetch(DATASET_MANIFEST)
+      if (!res.ok) return
+      const list = await res.json()
+      if (Array.isArray(list) && list.length) availableDatasets.value = list
+    } catch {
+      // keep the fallback list
+    }
+  }
 
   async function load() {
-    if (pending.value) return
+    if (data.value || pending.value) return // already loaded (shared across views)
     pending.value = true
     try {
       data.value = await fetchObservations(selectedDataset.value)
@@ -102,7 +116,7 @@ export function useObservations() {
 
   function setDataset(path) {
     selectedDataset.value = path
-    if (import.meta.client) localStorage.setItem(`${keyPrefix}-dataset`, path)
+    if (import.meta.client) localStorage.setItem(DATASET_KEY, path)
     data.value = null
     error.value = ''
     return load()
@@ -115,5 +129,5 @@ export function useObservations() {
     lat: f.geometry?.coordinates?.[1],
   })))
 
-  return { data, rows, error, pending, load, setDataset, selectedDataset, availableDatasets }
+  return { data, rows, error, pending, load, loadDatasets, setDataset, selectedDataset, availableDatasets }
 }
