@@ -288,6 +288,59 @@ def fill_missing_ndvi(df, max_days_gap=7):
     print(f"✅ Filled {filled} NDVI values using same-location fallback.")
     return df
 
+# ─── NDVI via direct Earth Engine point sampling ──────────────────────────────
+# The old approach exported a Sentinel-2 NDVI GeoTIFF per observation to Google
+# Drive (fetch.py:fetch_sentinel2_ndvi) — asynchronous, and nothing downloaded
+# the tiles back, so the `ndvi` column stayed empty. This samples the NDVI value
+# directly at each point with reduceRegion().getInfo(): no Drive round-trip, and
+# it populates the column in a single (Earth-Engine-authenticated) run.
+
+def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60):
+    if os.environ.get('SKIP_EARTH_ENGINE') == '1':
+        print('Skipping Earth Engine NDVI sampling (SKIP_EARTH_ENGINE=1).')
+        return df
+
+    try:
+        import ee
+        try:
+            ee.Initialize(project=os.environ.get('EARTHENGINE_PROJECT'))
+        except Exception:
+            ee.Authenticate(quiet=True)
+            ee.Initialize(project=os.environ.get('EARTHENGINE_PROJECT'))
+    except Exception as e:
+        print(f'[!] Earth Engine unavailable — NDVI sampling skipped: {e}')
+        return df
+
+    if 'ndvi' not in df.columns:
+        df['ndvi'] = None
+
+    print(f'Sampling Sentinel-2 NDVI per point (±{buffer_days}d, {scale} m) via Earth Engine...')
+    sampled = 0
+    for idx, row in df.iterrows():
+        if pd.isna(row.get('lat')) or pd.isna(row.get('lon')) or pd.isna(row.get('date')):
+            continue
+        try:
+            date = pd.to_datetime(row['date'])
+            start = (date - timedelta(days=buffer_days)).strftime('%Y-%m-%d')
+            end = (date + timedelta(days=buffer_days)).strftime('%Y-%m-%d')
+            point = ee.Geometry.Point([float(row['lon']), float(row['lat'])])
+            collection = (ee.ImageCollection('COPERNICUS/S2_SR')
+                          .filterDate(start, end)
+                          .filterBounds(point)
+                          .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', cloud_pct))
+                          .map(lambda img: img.normalizedDifference(['B8', 'B4']).rename('NDVI')))
+            value = (collection.median()
+                     .reduceRegion(ee.Reducer.mean(), point, scale)
+                     .get('NDVI').getInfo())
+            if value is not None:
+                df.at[idx, 'ndvi'] = value
+                sampled += 1
+        except Exception as e:
+            print(f"[!] NDVI sample failed at ({row['lat']}, {row['lon']}) {row['date']}: {e}")
+
+    print(f'✅ NDVI sampled for {sampled}/{len(df)} points.')
+    return df
+
 # ─── Main Enrichment Script ───────────────────────────────────────────────────
 
 def enrich_df_with_rasters(df, ndvi_dir='ndvi/', soil_dir='soil/'):
@@ -356,6 +409,8 @@ if __name__ == "__main__":
     df = add_worldcover_labels(df)
     df = enrich_with_terrain(df)
     df = enrich_with_temperature_history(df)
+    # NDVI sampled directly from Earth Engine (replaces the Drive-export path).
+    df = enrich_with_ndvi_ee(df)
 
     # 🧠 Fill missing NDVI using same-location fallback
     print("Filling missing NDVI...")
