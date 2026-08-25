@@ -203,6 +203,36 @@ Storage → frontend + `observations` function read from Supabase; the scheduled
 `refresh-observations` function writes `new-observations.geojson` to the same
 bucket.
 
+### Sign-in to protect the live-fetch endpoints (Supabase Auth)
+
+Browsing (map, table, charts, explore) is fully open. The endpoints that make
+**on-demand outbound API calls** — `fetch-species` (Data tab) and
+`run-data-pipeline` — are gated behind **Supabase Auth** so they can't be
+hammered anonymously.
+
+- **Server side:** `netlify/lib/auth.mjs` validates the caller's Supabase
+  access token (`Authorization: Bearer <jwt>`) via `auth.getUser`. Enforcement
+  turns on automatically whenever Supabase is configured (`SUPABASE_URL` +
+  `SUPABASE_ANON_KEY` in the Netlify env). Overrides: `AUTH_DISABLED=true`
+  forces the endpoints open even when configured; `AUTH_REQUIRED=true` fails
+  closed and refuses traffic until Supabase is configured.
+- **Browser side:** set the public keys so the login UI works and fetches send
+  the token:
+  - Netlify / `.env`: `NUXT_PUBLIC_SUPABASE_URL`,
+    `NUXT_PUBLIC_SUPABASE_ANON_KEY` (the anon key is public by design; the
+    service-role key stays server-only).
+- **Enable sign-in methods** in the Supabase dashboard (Authentication →
+  Providers): Email (password + magic link) is on by default; enable **GitHub**
+  and **Google** OAuth and add your site URL + `…/login` to the redirect
+  allow-list. The `/login` page surfaces all of these.
+  - _Passkeys_ are shown as “coming soon” — Supabase has no native passkey
+    provider yet, so that button is a placeholder for a future WebAuthn flow.
+
+When Supabase public keys are **not** set, the login UI shows a
+“not configured” notice and fetches run unauthenticated (which the functions
+allow only because the server is likewise unconfigured) — so local dev works
+with zero credentials.
+
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 ## Setup

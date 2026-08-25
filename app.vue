@@ -30,6 +30,15 @@
           <NuxtLink to="/explore" class="nav-link">Explore</NuxtLink>
           <NuxtLink to="/data" class="nav-link">Data</NuxtLink>
         </nav>
+        <ClientOnly>
+          <div class="auth-box" v-if="configured">
+            <template v-if="isAuthed">
+              <span class="who" :title="user?.email || ''">{{ shortEmail }}</span>
+              <button class="auth-btn" @click="signOut">Sign out</button>
+            </template>
+            <NuxtLink v-else to="/login" class="auth-btn as-link">Sign in</NuxtLink>
+          </div>
+        </ClientOnly>
       </div>
     </header>
     <main class="app-main">
@@ -49,6 +58,12 @@ useHead({
 
 const { selectedDataset, availableDatasets, setDataset, loadDatasets } = useObservations()
 onMounted(loadDatasets)
+
+const { user, isAuthed, configured, signOut } = useAuth()
+const shortEmail = computed(() => {
+  const e = user.value?.email
+  return e ? e.split('@')[0] : 'Account'
+})
 
 function handleDatasetChange(event) {
   setDataset(event.target.value)
@@ -112,6 +127,12 @@ body { font-family: system-ui, -apple-system, sans-serif; color: #1f2933; }
 }
 .nav-link:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 .nav-link.router-link-exact-active { background: #3e4c59; color: #fff; }
+
+.auth-box { display: inline-flex; align-items: center; gap: 8px; }
+.auth-box .who { font-size: 0.8rem; color: #cbd2d9; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.auth-btn { border: 1px solid #52606d; background: transparent; color: #cbd2d9; border-radius: 6px; padding: 5px 11px; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: none; }
+.auth-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.auth-btn.as-link { display: inline-block; }
 
 .app-main { flex: 1 1 auto; min-height: 0; overflow: auto; }
 </style>
