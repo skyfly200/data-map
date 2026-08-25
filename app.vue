@@ -15,6 +15,9 @@
             </option>
           </select>
         </div>
+        <NuxtLink v-if="filterCount" to="/data" class="filter-flag" title="Active filters — manage on the Data tab">
+          Filters: {{ filterCount }}
+        </NuxtLink>
         <div class="units" role="group" aria-label="Elevation units">
           <button :class="{ active: unit === 'ft' }" @click="unit = 'ft'">ft</button>
           <button :class="{ active: unit === 'm' }" @click="unit = 'm'">m</button>
@@ -58,6 +61,8 @@ useHead({
 
 const { selectedDataset, availableDatasets, setDataset, loadDatasets } = useObservations()
 onMounted(loadDatasets)
+
+const { activeCount: filterCount } = useFilters()
 
 const { user, isAuthed, configured, signOut } = useAuth()
 const shortEmail = computed(() => {
@@ -127,6 +132,9 @@ body { font-family: system-ui, -apple-system, sans-serif; color: #1f2933; }
 }
 .nav-link:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 .nav-link.router-link-exact-active { background: #3e4c59; color: #fff; }
+
+.filter-flag { background: #2b7a3d; color: #fff; border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.filter-flag:hover { background: #256a34; }
 
 .auth-box { display: inline-flex; align-items: center; gap: 8px; }
 .auth-box .who { font-size: 0.8rem; color: #cbd2d9; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
