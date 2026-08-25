@@ -1,0 +1,27 @@
+# Supabase connection
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-or-service-role-key
+SUPABASE_TABLE=observations
+SUPABASE_SYNC=0
+
+# Incremental refresh defaults
+REFRESH_ALL=0
+INAT_REFRESH_ALL=0
+FULL_REFRESH=0
+
+# Existing app config
+INAT_TAXON_NAME=morchella
+SPECIES=morchella
+INAT_QUALITY_GRADE=research
+QUALITY_GRADE=research
+INAT_LAT=40.0
+INAT_LNG=-105.0
+INAT_LOCATION=40.0,-105.0
+INAT_RADIUS=500
+RADIUS=500
+INAT_PER_PAGE=100
+PER_PAGE=100
+OUTPUT_PREFIX=mushroom_observations
+OUTPUT_DIR=.
+SKIP_EARTH_ENGINE=1
+ENV_FILE=.env
