@@ -99,7 +99,7 @@ function save() {
 </script>
 
 <style scoped>
-.explore { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; height: 100%; }
+.explore { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
 .panel {
   display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center;
   background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 16px;
@@ -118,7 +118,10 @@ function save() {
 .save:hover { background: #24683380; }
 .save:disabled { opacity: 0.8; cursor: default; }
 
-.stage { flex: 1 1 auto; min-height: 420px; display: flex; flex-direction: column; justify-content: center; }
+/* Cap the chart so its width-driven height can't exceed the viewport and spill
+   over the controls above. The card keeps its natural height; the page scrolls. */
+.stage { align-self: stretch; }
+.stage :deep(svg) { max-height: 68vh; }
 .msg { padding: 16px; color: #555; }
 .msg.error { color: #b00020; }
 </style>

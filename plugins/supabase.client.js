@@ -16,6 +16,9 @@ export default defineNuxtPlugin(() => {
       // Complete magic-link / OAuth redirects that land back with tokens in the URL.
       detectSessionInUrl: true,
       flowType: 'pkce',
+      // Enable the WebAuthn/passkey API (signInWithPasskey / registerPasskey).
+      // Requires passkeys to also be enabled in the Supabase project's Auth settings.
+      experimental: { passkey: true },
     },
   })
   return { provide: { supabase: client } }

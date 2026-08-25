@@ -51,6 +51,18 @@ export function useAuth() {
     const { error } = await $supabase.auth.signInWithOAuth({ provider, options: { redirectTo: redirectTo() } })
     if (error) throw error
   }
+  // Passwordless passkey sign-in (WebAuthn). Creates a session on success.
+  async function signInWithPasskey() {
+    if (!configured) throw new Error('Auth is not configured.')
+    const { error } = await $supabase.auth.signInWithPasskey()
+    if (error) throw error
+  }
+  // Register a passkey for the currently signed-in user (requires a session).
+  async function registerPasskey() {
+    if (!configured) throw new Error('Auth is not configured.')
+    const { error } = await $supabase.auth.registerPasskey()
+    if (error) throw error
+  }
   async function signOut() {
     if (!configured) return
     await $supabase.auth.signOut()
@@ -68,6 +80,7 @@ export function useAuth() {
 
   return {
     user, ready, configured, isAuthed,
-    signInWithOtp, signInWithPassword, signUp, signInWithOAuth, signOut, accessToken,
+    signInWithOtp, signInWithPassword, signUp, signInWithOAuth,
+    signInWithPasskey, registerPasskey, signOut, accessToken,
   }
 }
