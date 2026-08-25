@@ -24,6 +24,21 @@
       </ChartCard>
 
       <ChartCard>
+        <BarChart title="Observations by week of year" :data="weekData" :format="int" />
+        <p class="note">Seasonal timing across all years (ISO week 1–53), ignoring which year.</p>
+      </ChartCard>
+
+      <ChartCard v-if="hasTempHistory">
+        <BarChart :title="`Avg. daily high in the 7 days before (°${tempUnit})`" :data="tempLeadUp" :format="deg" />
+        <p class="note">Mean daily high temperature across observations, by days before the find.</p>
+      </ChartCard>
+
+      <ChartCard v-if="hasDayTemp">
+        <BarChart :title="`Observation-day high temperature (°${tempUnit})`" :data="tempHighDist" :format="int" />
+        <p class="note">Count of observations per high-temperature band.</p>
+      </ChartCard>
+
+      <ChartCard>
         <BarChart title="Elevation distribution" :data="elevationData" :format="int" />
         <p class="note">Count of observations per elevation band ({{ unit }}).</p>
       </ChartCard>
@@ -44,12 +59,50 @@ import { PALETTE, UNCLUSTERED, colorFor, hasValue, useObservations } from '~/com
 import { useUnits } from '~/composables/useUnits'
 
 const { rows, error, pending, load } = useObservations()
-const { unit, elevValue } = useUnits()
+const { unit, elevValue, tempUnit, tempValue } = useUnits()
 onMounted(load)
 
 const int = (v) => String(v)
 const cov = (v) => `${v}/${rows.value.length}`
 const mm = (v) => `${v}`
+const deg = (v) => `${v}°`
+
+const hasDayTemp = computed(() => rows.value.some((r) => hasValue(r.tmax)))
+const hasTempHistory = computed(() => rows.value.some((r) => hasValue(r.tmax_d0)))
+
+// Seasonal timing regardless of year: bucket day_of_year into ISO-ish weeks.
+const weekData = computed(() => {
+  const counts = new Map()
+  for (const r of rows.value) {
+    if (!hasValue(r.day_of_year)) continue
+    const wk = Math.min(53, Math.max(1, Math.ceil(Number(r.day_of_year) / 7)))
+    counts.set(wk, (counts.get(wk) || 0) + 1)
+  }
+  return [...counts.entries()].sort((a, b) => a[0] - b[0])
+    .map(([wk, n]) => ({ label: `Week ${wk}`, short: `${wk}`, value: n }))
+})
+
+// Avg daily high (converted to the display unit) for the 7 days before a find.
+const tempLeadUp = computed(() => [6, 5, 4, 3, 2, 1, 0].map((o) => {
+  const vals = rows.value.map((r) => r[`tmax_d${o}`]).filter(hasValue).map((c) => tempValue(c))
+  const mean = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
+  return { label: o === 0 ? 'day of' : `${o}d before`, short: o === 0 ? '0' : `-${o}`, value: Math.round(mean) }
+}))
+
+// Distribution of the observation-day high temperature, in the display unit.
+const tempHighDist = computed(() => {
+  const vals = rows.value.map((r) => r.tmax).filter(hasValue).map((c) => tempValue(c))
+  if (!vals.length) return []
+  const step = tempUnit.value === 'F' ? 10 : 5
+  const min = Math.floor(Math.min(...vals) / step) * step
+  const max = Math.ceil(Math.max(...vals) / step) * step
+  const bins = []
+  for (let lo = min; lo < max; lo += step) {
+    const n = vals.filter((v) => v >= lo && v < lo + step).length
+    bins.push({ label: `${lo}–${lo + step}°${tempUnit.value}`, short: `${lo}°`, value: n })
+  }
+  return bins
+})
 
 const rainLeadUp = computed(() => [6, 5, 4, 3, 2, 1, 0].map((o) => {
   const vals = rows.value.map((r) => r[`prcp_d${o}`]).filter(hasValue).map(Number)
