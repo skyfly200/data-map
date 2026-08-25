@@ -4,8 +4,8 @@
     <div class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
       <div class="chart-viewport" :style="viewportStyle">
         <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
-          <text v-for="(c, j) in cols" :key="`c${j}`" :x="cx(j) + cw / 2" :y="padT - 4" class="lbl lbl-col">{{ compactLabel(c, 12) }}</text>
-          <text v-for="(r, i) in rows" :key="`r${i}`" :x="padL - 6" :y="cy(i) + ch / 2 + 3" class="lbl lbl-row">{{ compactLabel(r, 16) }}</text>
+          <text v-for="(c, j) in cols" :key="`c${j}`" :x="cx(j) + cw / 2" :y="padT - 4" class="lbl lbl-col" :style="{ fontSize: `${labelFontSize}px` }">{{ compactLabel(c, Math.max(6, 12 - Math.max(0, props.cols.length - 8))) }}</text>
+          <text v-for="(r, i) in rows" :key="`r${i}`" :x="padL.value - 6" :y="cy(i) + ch / 2 + 3" class="lbl lbl-row" :style="{ fontSize: `${labelFontSize}px` }">{{ compactLabel(r, Math.max(8, 16 - Math.max(0, props.rows.length - 6))) }}</text>
 
           <template v-for="(r, i) in rows">
             <g v-for="(c, j) in cols" :key="`${i}-${j}`">
@@ -43,15 +43,19 @@ function compactLabel(label, maxLen = 16) {
   return `${value.slice(0, Math.max(0, maxLen - 1)).trimEnd()}…`
 }
 
+const labelFontSize = computed(() => {
+  const n = Math.max(props.rows.length || 1, props.cols.length || 1)
+  return Math.max(8, 10 - Math.max(0, n - 8) * 0.35)
+})
 const W = computed(() => Math.max(640, (props.cols.length || 1) * 90 + 180))
-const padL = 130
+const padL = computed(() => Math.max(90, 130 - Math.min(28, Math.max(0, (props.rows.length || 1) - 5) * 4)))
 const padR = 12
 const padT = 26
 const padB = 8
 const ch = 30
 
 const H = computed(() => padT + padB + props.rows.length * ch)
-const cw = computed(() => (W.value - padL - padR) / Math.max(1, props.cols.length))
+const cw = computed(() => (W.value - padL.value - padR) / Math.max(1, props.cols.length))
 const zoom = ref(1)
 const pan = ref({ x: 0, y: 0 })
 const dragStart = ref(null)
@@ -63,7 +67,7 @@ const viewportStyle = computed(() => ({
   transition: dragStart.value ? 'none' : 'transform 0.15s ease-out',
 }))
 
-const cx = (j) => padL + j * cw.value
+const cx = (j) => padL.value + j * cw.value
 const cy = (i) => padT + i * ch
 
 const flat = computed(() => props.matrix.flat().filter((v) => Number.isFinite(v)))

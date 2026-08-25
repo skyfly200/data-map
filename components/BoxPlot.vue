@@ -10,7 +10,7 @@
           </g>
 
           <g v-for="(b, i) in boxes" :key="i" @mouseenter="active = b">
-            <text :x="padL - 8" :y="b.cy + 4" class="tick tick-y">{{ b.short }}</text>
+            <text :x="padL.value - 8" :y="b.cy + 4" class="tick tick-y" :style="{ fontSize: `${labelFontSize}px` }">{{ b.short }}</text>
             <line :x1="b.min" :y1="b.cy" :x2="b.max" :y2="b.cy" class="whisker" />
             <line :x1="b.min" :y1="b.cy - 5" :x2="b.min" :y2="b.cy + 5" class="cap" />
             <line :x1="b.max" :y1="b.cy - 5" :x2="b.max" :y2="b.cy + 5" class="cap" />
@@ -19,7 +19,7 @@
             <line :x1="b.med" :y1="b.cy - bh / 2" :x2="b.med" :y2="b.cy + bh / 2" class="median" />
           </g>
 
-          <text :x="(padL + W - padR) / 2" :y="H - 2" class="axis-label">{{ xLabel }}</text>
+          <text :x="(padL.value + W.value - padR) / 2" :y="H - 2" class="axis-label">{{ xLabel }}</text>
         </svg>
       </div>
 
@@ -43,8 +43,12 @@ const props = defineProps({
   format: { type: Function, default: (v) => `${Math.round(v)}` },
 })
 
+const labelFontSize = computed(() => {
+  const n = props.data.length || 1
+  return Math.max(8, 10 - Math.max(0, n - 6) * 0.4)
+})
 const W = computed(() => Math.max(640, (props.data.length || 1) * 120 + 180))
-const padL = 118
+const padL = computed(() => Math.max(82, 118 - Math.min(28, Math.max(0, (props.data.length || 1) - 5) * 4)))
 const padR = 20
 const padT = 10
 const padB = 30
@@ -103,9 +107,15 @@ const stats = computed(() => props.data
   .map((d) => ({ ...d, values: (d.values || []).filter((v) => Number.isFinite(v)).sort((a, b) => a - b) }))
   .filter((d) => d.values.length >= 1)
   .map((d) => ({
-    label: d.label, short: compactLabel(d.label || d.short, 18), color: d.color || SERIES_1, n: d.values.length,
-    minVal: d.values[0], maxVal: d.values[d.values.length - 1],
-    q1Val: quantile(d.values, 0.25), medVal: quantile(d.values, 0.5), q3Val: quantile(d.values, 0.75),
+    label: d.label,
+    short: compactLabel(d.label || d.short, Math.max(8, 18 - Math.max(0, props.data.length - 6))),
+    color: d.color || SERIES_1,
+    n: d.values.length,
+    minVal: d.values[0],
+    maxVal: d.values[d.values.length - 1],
+    q1Val: quantile(d.values, 0.25),
+    medVal: quantile(d.values, 0.5),
+    q3Val: quantile(d.values, 0.75),
   })))
 
 const domain = computed(() => {
@@ -116,7 +126,7 @@ const domain = computed(() => {
   const pad = (hi - lo) * 0.04
   return [lo - pad, hi + pad]
 })
-const sx = (v) => padL + ((v - domain.value[0]) / (domain.value[1] - domain.value[0])) * (W - padL - padR)
+const sx = (v) => padL.value + ((v - domain.value[0]) / (domain.value[1] - domain.value[0])) * (W.value - padL.value - padR)
 
 const boxes = computed(() => stats.value.map((d, i) => ({
   ...d, cy: padT + i * rowH + rowH / 2,

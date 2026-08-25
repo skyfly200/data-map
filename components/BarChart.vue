@@ -36,9 +36,13 @@ const props = defineProps({
   format: { type: Function, default: (v) => String(v) },
 })
 
+const labelFontSize = computed(() => {
+  const n = props.data.length || 1
+  return Math.max(8, 11 - Math.max(0, n - 8) * 0.35)
+})
 const W = computed(() => props.horizontal ? Math.max(640, (props.data.length || 1) * 120 + 180) : 640)
 const H = computed(() => props.horizontal ? Math.max(120, props.data.length * 30 + 24) : 260)
-const padL = computed(() => props.horizontal ? 128 : 34)
+const padL = computed(() => props.horizontal ? Math.max(84, 128 - Math.min(36, Math.max(0, (props.data.length || 1) - 6) * 4)) : 34)
 const padR = 44
 const padT = 20  // headroom so the tallest bar's value label isn't clipped
 const padB = computed(() => props.horizontal ? 8 : 40)
@@ -58,8 +62,10 @@ const active = ref(null)
 const ptr = ref({ x: 0, y: 0 })
 function compactLabel(label, maxLen = 18) {
   const value = String(label ?? '')
-  if (value.length <= maxLen) return value
-  return `${value.slice(0, Math.max(0, maxLen - 1)).trimEnd()}…`
+  if (!value) return ''
+  const safeMax = Math.max(5, maxLen)
+  if (value.length <= safeMax) return value
+  return `${value.slice(0, Math.max(0, safeMax - 1)).trimEnd()}…`
 }
 function onMove(e) {
   const r = e.currentTarget.getBoundingClientRect()
@@ -117,12 +123,13 @@ const scaled = computed(() => {
     return props.data.map((d, i) => {
       const y = padT + i * band + (band - barH) / 2
       const w = (d.value / maxV) * trackW
+      const labelLimit = Math.max(8, 18 - Math.max(0, props.data.length - 8))
       return {
         ...d,
         color: d.color || SERIES_1,
         path: roundedRectPath(padL.value, y, Math.max(0.5, w), barH, 4, 'right'),
         valueLabel: props.format(d.value),
-        short: compactLabel(d.short || d.label, 18),
+        short: compactLabel(d.short || d.label, labelLimit),
         valuePos: { x: padL.value + w + 6, y: y + barH / 2 + 4, 'text-anchor': 'start' },
         catPos: { x: padL.value - 8, y: y + barH / 2 + 4, 'text-anchor': 'end' },
       }
@@ -167,7 +174,7 @@ svg { width: 100%; height: 100%; display: block; }
 .bar { transition: opacity 0.1s; }
 .bar:hover { opacity: 0.82; }
 .value { fill: #4b5563; font-size: 11px; font-variant-numeric: tabular-nums; }
-.cat { fill: #6b7280; font-size: 11px; }
+.cat { fill: #6b7280; font-size: v-bind('`${labelFontSize}px`'); }
 
 .tooltip {
   position: absolute; pointer-events: none; z-index: 10;
