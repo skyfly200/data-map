@@ -233,9 +233,10 @@ hammered anonymously.
 - **Enable sign-in methods** in the Supabase dashboard (Authentication →
   Providers): Email (password + magic link) is on by default; enable **GitHub**
   and **Google** OAuth and add your site URL + `…/login` to the redirect
-  allow-list. The `/login` page surfaces all of these.
-  - _Passkeys_ are shown as “coming soon” — Supabase has no native passkey
-    provider yet, so that button is a placeholder for a future WebAuthn flow.
+  allow-list. Turn on **Passkeys / WebAuthn** there too. The `/login` page
+  surfaces all of these — "Sign in with a passkey" for returning users, and
+  "Add a passkey to this account" once you're signed in (the client enables the
+  experimental passkey API automatically).
 
 When Supabase public keys are **not** set, the login UI shows a
 “not configured” notice and fetches run unauthenticated (which the functions

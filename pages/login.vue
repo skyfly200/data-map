@@ -15,19 +15,23 @@
           <NuxtLink to="/data" class="primary as-link">Go to Data</NuxtLink>
           <button class="ghost" @click="doSignOut">Sign out</button>
         </div>
+        <button class="oauth-btn passkey-add" :disabled="busy" @click="addPasskey">
+          <span class="ico" aria-hidden="true">🔑</span> Add a passkey to this account
+        </button>
+        <p v-if="msg" :class="['msg', ok ? 'ok' : 'err']">{{ msg }}</p>
       </template>
 
       <template v-else>
-        <!-- OAuth -->
+        <!-- Passkey + OAuth -->
         <div class="oauth">
+          <button class="oauth-btn" :disabled="busy" @click="passkey">
+            <span class="ico" aria-hidden="true">🔑</span> Sign in with a passkey
+          </button>
           <button class="oauth-btn" @click="oauth('github')">
             <span class="ico" aria-hidden="true">●</span> Continue with GitHub
           </button>
           <button class="oauth-btn" @click="oauth('google')">
             <span class="ico" aria-hidden="true">●</span> Continue with Google
-          </button>
-          <button class="oauth-btn disabled" disabled title="Passkeys are not a native Supabase provider yet — coming soon.">
-            <span class="ico" aria-hidden="true">🔑</span> Passkey <em>(coming soon)</em>
           </button>
         </div>
 
@@ -60,7 +64,7 @@
 </template>
 
 <script setup>
-const { user, isAuthed, configured, signInWithOtp, signInWithPassword, signUp, signInWithOAuth, signOut } = useAuth()
+const { user, isAuthed, configured, signInWithOtp, signInWithPassword, signUp, signInWithOAuth, signInWithPasskey, registerPasskey, signOut } = useAuth()
 
 const mode = ref('signin') // 'signin' | 'signup' | 'magic'
 const email = ref('')
@@ -111,6 +115,36 @@ async function oauth(provider) {
   }
 }
 
+async function passkey() {
+  busy.value = true
+  msg.value = ''
+  try {
+    await signInWithPasskey()
+    ok.value = true
+    msg.value = 'Signed in with passkey.'
+  } catch (e) {
+    ok.value = false
+    msg.value = e.message || String(e)
+  } finally {
+    busy.value = false
+  }
+}
+
+async function addPasskey() {
+  busy.value = true
+  msg.value = ''
+  try {
+    await registerPasskey()
+    ok.value = true
+    msg.value = 'Passkey added — use “Sign in with a passkey” next time.'
+  } catch (e) {
+    ok.value = false
+    msg.value = e.message || String(e)
+  } finally {
+    busy.value = false
+  }
+}
+
 async function doSignOut() { await signOut() }
 </script>
 
@@ -129,6 +163,7 @@ h2 { margin: 0 0 4px; font-size: 1.2rem; }
 .oauth-btn.disabled { opacity: 0.5; cursor: default; }
 .oauth-btn .ico { font-size: 0.9rem; }
 .oauth-btn em { color: #9aa0a6; font-style: normal; margin-left: auto; font-size: 0.78rem; }
+.passkey-add { margin-top: 12px; width: 100%; justify-content: center; }
 
 .divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: #9aa0a6; font-size: 0.75rem; }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
