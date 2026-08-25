@@ -12,6 +12,13 @@
       </div>
     </div>
 
+    <div class="fetch-new">
+      <label>Fetch a new species</label>
+      <input v-model="newSpecies" type="text" placeholder="e.g. Amanita muscaria" @keyup.enter="fetchNew" />
+      <button :disabled="fetching || !newSpecies.trim()" @click="fetchNew">{{ fetching ? 'Fetching…' : 'Fetch' }}</button>
+      <span v-if="fetchMsg" :class="['fmsg', fetchOk ? 'ok' : 'err']">{{ fetchMsg }}</span>
+    </div>
+
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
     <p v-else-if="pending && !speciesOptions.length" class="msg">Loading…</p>
     <p v-else-if="!speciesOptions.length" class="msg">No species in the current dataset.</p>
@@ -47,8 +54,37 @@
 <script setup>
 import { useObservations } from '~/composables/useObservations'
 
-const { speciesOptions, speciesFilter, setSpeciesFilter, error, pending, load } = useObservations()
+const { speciesOptions, speciesFilter, setSpeciesFilter, addInlineDataset, error, pending, load } = useObservations()
 onMounted(load)
+
+// ── Fetch a new species on demand (Netlify function → iNaturalist) ────────────
+const newSpecies = ref('')
+const fetching = ref(false)
+const fetchMsg = ref('')
+const fetchOk = ref(false)
+
+async function fetchNew() {
+  const q = newSpecies.value.trim()
+  if (!q || fetching.value) return
+  fetching.value = true
+  fetchMsg.value = ''
+  try {
+    const res = await fetch(`/.netlify/functions/fetch-species?species=${encodeURIComponent(q)}`)
+    const data = await res.json()
+    if (!data.ok) throw new Error(data.error || 'fetch failed')
+    if (!data.count) { fetchOk.value = false; fetchMsg.value = `No research-grade observations found for “${q}”.`; return }
+    const entry = { id: data.slug, label: `${data.species} (${data.count})`, path: data.path || `mem:${data.slug}` }
+    addInlineDataset(entry, data.geojson)
+    fetchOk.value = true
+    fetchMsg.value = `Loaded ${data.count} observations for ${data.species}.` + (data.path ? '' : ' (session only — configure Supabase to persist)')
+    newSpecies.value = ''
+  } catch (e) {
+    fetchOk.value = false
+    fetchMsg.value = `Couldn’t fetch — this needs the deployed function (and Supabase to persist). ${e.message}`
+  } finally {
+    fetching.value = false
+  }
+}
 
 // Local selection mirrors the global filter. Empty filter == all species shown.
 const selected = ref(new Set())
@@ -104,6 +140,18 @@ tbody tr.off .sp em { color: #b0b6be; }
 .c-bar { width: 140px; }
 .bar { display: block; height: 8px; background: #2a78d6; border-radius: 4px; }
 tr.off .bar { background: #cbd5e1; }
+
+.fetch-new {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+  background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px;
+}
+.fetch-new label { font-size: 0.82rem; font-weight: 600; color: #374151; }
+.fetch-new input { flex: 0 1 240px; border: 1px solid #cbd2d9; border-radius: 6px; padding: 5px 9px; font-size: 0.85rem; }
+.fetch-new button { border: 1px solid #2b7a3d; background: #2b7a3d; color: #fff; border-radius: 6px; padding: 5px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.fetch-new button:disabled { opacity: 0.55; cursor: default; }
+.fmsg { font-size: 0.8rem; }
+.fmsg.ok { color: #2b7a3d; }
+.fmsg.err { color: #b00020; }
 
 .hint { margin-top: 12px; font-size: 0.8rem; color: #6b7280; }
 .hint code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; }
