@@ -102,21 +102,23 @@ export function useObservations() {
       const list = await res.json()
       if (!Array.isArray(list) || !list.length) return
       availableDatasets.value = list
-      const paths = list.map((d) => d.path)
+      const paths = new Set(list.map((d) => d.path))
+      const canonical = list.find((d) => d.id === 'all')?.path || list[0].path
       const saved = import.meta.client ? localStorage.getItem(DATASET_KEY) : null
       const current = selectedDataset.value
 
-      if (paths.includes(current)) {
-        if (import.meta.client && saved && saved !== current) {
-          localStorage.setItem(DATASET_KEY, current)
-        }
+      // A stale single-species dataset can linger in local storage; always prefer
+      // the canonical all-species dataset when it is available so the UI shows
+      // the enriched multi-species baseline instead of a morel-only snapshot.
+      if (!paths.has(current) || current.includes('/species/')) {
+        selectedDataset.value = canonical
+        if (import.meta.client) localStorage.setItem(DATASET_KEY, canonical)
         return
       }
 
-      const fallbackPath = saved && paths.includes(saved) ? saved : list[0].path
-      selectedDataset.value = fallbackPath
-      if (import.meta.client) {
-        localStorage.setItem(DATASET_KEY, fallbackPath)
+      if (saved && saved !== current && paths.has(saved)) {
+        selectedDataset.value = saved
+        if (import.meta.client) localStorage.setItem(DATASET_KEY, saved)
       }
     } catch {
       // keep the fallback list
