@@ -1,7 +1,10 @@
 <template>
   <div class="data-page">
-    <FilterPanel />
-
+    <div class="layout">
+      <aside class="side">
+        <FilterPanel />
+      </aside>
+      <section class="main">
     <div class="head">
       <div>
         <h2>Species</h2>
@@ -33,9 +36,15 @@
         <em>(large species can take up to a minute)</em></span>
     </div>
 
+    <div v-if="speciesOptions.length" class="species-search">
+      <input v-model="speciesQuery" type="search" placeholder="Search species…" aria-label="Search species" />
+      <span v-if="speciesQuery" class="found">{{ visibleSpecies.length }} match{{ visibleSpecies.length === 1 ? '' : 'es' }}</span>
+    </div>
+
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
     <p v-else-if="pending && !speciesOptions.length" class="msg">Loading…</p>
     <p v-else-if="!speciesOptions.length" class="msg">No species in the current dataset.</p>
+    <p v-else-if="!visibleSpecies.length" class="msg">No species match “{{ speciesQuery }}”.</p>
 
     <div v-else class="table-wrap">
       <table>
@@ -48,7 +57,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="opt in speciesOptions" :key="opt.species" :class="{ off: !selected.has(opt.species) }" @click="toggle(opt.species)">
+          <tr v-for="opt in visibleSpecies" :key="opt.species" :class="{ off: !selected.has(opt.species) }" @click="toggle(opt.species)">
             <td class="c-check"><input type="checkbox" :checked="selected.has(opt.species)" @click.stop="toggle(opt.species)" /></td>
             <td class="sp"><em>{{ opt.species }}</em></td>
             <td class="c-num">{{ opt.count }}</td>
@@ -62,6 +71,8 @@
       Tip: select <strong>All species</strong> in the Dataset menu to pick from every fetched species.
       To search for a <em>new</em> species, add it to the pipeline (<code>INAT_TAXON_NAME</code>) and re-run.
     </p>
+      </section>
+    </div>
   </div>
 </template>
 
@@ -195,6 +206,14 @@ function selectAll() { selected.value = new Set(speciesOptions.value.map((o) => 
 function clearAll() { selected.value = new Set(); commit() }
 function toggleAll() { allChecked.value ? clearAll() : selectAll() }
 
+// Search filter over the species list (display only; All/None still act on all).
+const speciesQuery = ref('')
+const visibleSpecies = computed(() => {
+  const q = speciesQuery.value.trim().toLowerCase()
+  if (!q) return speciesOptions.value
+  return speciesOptions.value.filter((o) => o.species.toLowerCase().includes(q))
+})
+
 const allChecked = computed(() => selected.value.size === speciesOptions.value.length && speciesOptions.value.length > 0)
 const someChecked = computed(() => selected.value.size > 0 && !allChecked.value)
 
@@ -203,7 +222,14 @@ function barWidth(n) { return `${(n / maxCount.value) * 100}%` }
 </script>
 
 <style scoped>
-.data-page { padding: 16px 18px; max-width: 900px; }
+.data-page { padding: 16px 18px; max-width: 1200px; margin: 0 auto; }
+.layout { display: grid; grid-template-columns: minmax(300px, 360px) 1fr; gap: 22px; align-items: start; }
+.side { position: sticky; top: 16px; }
+.main { min-width: 0; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .side { position: static; }
+}
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
 .head h2 { margin: 0; font-size: 1.1rem; }
 .sub { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; }
@@ -250,6 +276,13 @@ tr.off .bar { background: #cbd5e1; }
 
 .hint { margin-top: 12px; font-size: 0.8rem; color: var(--muted); }
 .hint code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
-.msg { padding: 16px; color: #555; }
-.msg.error { color: #b00020; }
+.msg { padding: 16px; color: var(--muted); }
+.msg.error { color: var(--danger); }
+
+.species-search { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.species-search input {
+  flex: 1 1 auto; border: 1px solid var(--border); border-radius: 8px; padding: 7px 11px;
+  font-size: 0.88rem; background: var(--input-bg); color: var(--text);
+}
+.species-search .found { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
 </style>
