@@ -11,8 +11,8 @@
           <text :x="t.p" :y="H - padB + 14" class="tick tick-x">{{ t.label }}</text>
         </g>
 
-        <polyline :points="polyline" class="line" :style="{ stroke: color }" />
-        <circle v-for="(pt, i) in scaled" :key="i" :cx="pt.cx" :cy="pt.cy" r="3" class="dot" :style="{ fill: color }" />
+        <polyline :points="polyline" class="line" :style="{ stroke: color, color }" />
+        <circle v-for="(pt, i) in scaled" :key="i" :cx="pt.cx" :cy="pt.cy" r="3" class="dot" :style="{ fill: color, color }" />
 
         <text :x="(padL + W - padR) / 2" :y="H - 3" class="axis-label">{{ xLabel }}</text>
         <text :x="-(padT + H - padB) / 2" :y="12" transform="rotate(-90)" class="axis-label">{{ yLabel }}</text>
@@ -78,14 +78,14 @@ const yTicks = computed(() => ticks(yDom.value, props.yFormat, sy))
 
 <style scoped>
 .chart { margin: 0; }
-.chart-title { font-size: 0.95rem; font-weight: 600; color: #1f2933; margin-bottom: 6px; }
+.chart-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
 .chart-area { position: relative; }
 svg { width: 100%; height: auto; display: block; }
-.grid { stroke: #eef0f2; stroke-width: 1; }
-.tick { fill: #9aa0a6; font-size: 10px; }
+.grid { stroke: var(--border-soft); stroke-width: 1; }
+.tick { fill: var(--muted); font-size: 10px; }
 .tick-y { text-anchor: end; }
 .tick-x { text-anchor: middle; }
-.axis-label { fill: #6b7280; font-size: 11px; text-anchor: middle; }
-.line { fill: none; stroke-width: 2; }
-.dot { stroke: #fff; stroke-width: 1; }
+.axis-label { fill: var(--muted); font-size: 11px; text-anchor: middle; }
+.line { fill: none; stroke-width: 2; filter: var(--chart-glow); }
+.dot { stroke: var(--surface); stroke-width: 1; filter: var(--chart-glow); }
 </style>

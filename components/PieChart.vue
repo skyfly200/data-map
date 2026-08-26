@@ -4,10 +4,10 @@
     <div class="pie-wrap">
       <svg :viewBox="`0 0 ${size} ${size}`" role="img" :aria-label="title">
         <g :transform="`translate(${size / 2}, ${size / 2})`">
-          <path v-for="(a, i) in arcs" :key="i" :d="a.d" :fill="a.color">
+          <path v-for="(a, i) in arcs" :key="i" :d="a.d" :fill="a.color" :style="{ color: a.color }" class="arc">
             <title>{{ a.label }}: {{ format(a.value) }} ({{ a.pct }}%)</title>
           </path>
-          <circle :r="inner" fill="#fff" />
+          <circle class="hole" :r="inner" />
           <text class="center-num" text-anchor="middle" dy="-2">{{ format(total) }}</text>
           <text class="center-lbl" text-anchor="middle" dy="14">total</text>
         </g>
@@ -62,13 +62,15 @@ const arcs = computed(() => {
 
 <style scoped>
 .chart { margin: 0; }
-.chart-title { font-size: 0.95rem; font-weight: 600; color: #1f2933; margin-bottom: 10px; }
+.chart-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 10px; }
 .pie-wrap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; justify-content: center; }
 svg { width: 260px; max-width: 100%; height: auto; }
-.center-num { font-size: 22px; font-weight: 700; fill: #1f2933; }
-.center-lbl { font-size: 11px; fill: #9aa0a6; }
-.legend { display: flex; flex-direction: column; gap: 5px; font-size: 0.8rem; color: #4b5563; }
+.hole { fill: var(--surface); }
+.arc { filter: var(--chart-glow); }
+.center-num { font-size: 22px; font-weight: 700; fill: var(--text); }
+.center-lbl { font-size: 11px; fill: var(--muted); }
+.legend { display: flex; flex-direction: column; gap: 5px; font-size: 0.8rem; color: var(--text); }
 .legend .lg { display: inline-flex; align-items: center; gap: 6px; }
 .legend .sw { width: 11px; height: 11px; border-radius: 3px; flex: 0 0 auto; }
-.lg-val { color: #9aa0a6; font-variant-numeric: tabular-nums; }
+.lg-val { color: var(--muted); font-variant-numeric: tabular-nums; }
 </style>

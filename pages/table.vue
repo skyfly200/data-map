@@ -112,25 +112,25 @@ const filtered = computed(() => {
 
 .toolbar { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
 .search {
-  flex: 0 1 320px; padding: 7px 11px; border: 1px solid #cbd2d9; border-radius: 7px;
+  flex: 0 1 320px; padding: 7px 11px; border: 1px solid var(--border); border-radius: 7px;
   font-size: 0.9rem;
 }
-.count { color: #6b7280; font-size: 0.85rem; }
+.count { color: var(--muted); font-size: 0.85rem; }
 
 .msg { color: #555; }
 .msg.error { color: #b00020; }
 
-.table-wrap { overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
 table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
 thead th {
-  position: sticky; top: 0; background: #f3f4f6; text-align: left;
-  padding: 8px 10px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; color: #374151;
+  position: sticky; top: 0; background: var(--surface-2); text-align: left;
+  padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text);
 }
 th.sortable { cursor: pointer; user-select: none; }
 th.sortable:hover { background: #e9ebee; }
-.arrow { font-size: 0.7rem; color: #6b7280; }
-tbody td { padding: 6px 10px; border-bottom: 1px solid #f1f2f4; white-space: nowrap; }
-tbody tr:hover { background: #fafbfc; }
+.arrow { font-size: 0.7rem; color: var(--muted); }
+tbody td { padding: 6px 10px; border-bottom: 1px solid var(--border-soft); white-space: nowrap; }
+tbody tr:hover { background: var(--surface-2); }
 td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .chip {

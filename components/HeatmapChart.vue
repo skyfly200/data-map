@@ -76,16 +76,16 @@ const hi = computed(() => (flat.value.length ? Math.max(...flat.value) : 1))
 
 // Sequential single-hue ramp (light → dark blue).
 function cellColor(v) {
-  if (!Number.isFinite(v)) return '#f3f4f6'
+  if (!Number.isFinite(v)) return 'var(--surface-2)'
   const t = (v - lo.value) / ((hi.value - lo.value) || 1)
   const a = [232, 241, 251], b = [11, 61, 145]
   const c = a.map((ch2, k) => Math.round(ch2 + (b[k] - ch2) * t))
   return `rgb(${c[0]}, ${c[1]}, ${c[2]})`
 }
 function textColor(v) {
-  if (!Number.isFinite(v)) return '#9aa0a6'
+  if (!Number.isFinite(v)) return 'var(--muted)'
   const t = (v - lo.value) / ((hi.value - lo.value) || 1)
-  return t > 0.55 ? '#fff' : '#1f2933'
+  return t > 0.55 ? '#fff' : 'var(--text)'
 }
 function cellText(v) { return Number.isFinite(v) ? props.format(v) : '—' }
 
@@ -115,7 +115,7 @@ function onPointerUp() { dragStart.value = null }
 
 <style scoped>
 .chart { margin: 0; }
-.chart-title { font-size: 0.95rem; font-weight: 600; color: #1f2933; margin-bottom: 6px; }
+.chart-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
 .chart-area {
   position: relative; overflow: auto; max-width: 100%; border-radius: 8px;
   background: linear-gradient(180deg, rgba(148, 163, 184, 0.03), rgba(148, 163, 184, 0.01));
@@ -126,14 +126,14 @@ function onPointerUp() { dragStart.value = null }
   position: relative; display: block; min-width: 100%; min-height: 100%;
 }
 svg { width: 100%; height: 100%; display: block; }
-.lbl { fill: #4b5563; font-size: 10px; }
+.lbl { fill: var(--text); font-size: 10px; }
 .lbl-col { text-anchor: middle; }
 .lbl-row { text-anchor: end; }
-.cell { stroke: #fff; stroke-width: 2; }
+.cell { stroke: var(--surface); stroke-width: 2; }
 .cell-val { font-size: 10px; text-anchor: middle; font-variant-numeric: tabular-nums; }
 .tooltip {
   position: absolute; pointer-events: none; z-index: 10; display: flex; flex-direction: column;
-  background: #1f2933; color: #fff; padding: 5px 8px; border-radius: 6px;
+  background: var(--tooltip-bg); color: var(--tooltip-fg); padding: 5px 8px; border-radius: 6px;
   font-size: 0.75rem; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 .tooltip strong { margin-bottom: 2px; }

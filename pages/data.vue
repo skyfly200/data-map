@@ -145,7 +145,12 @@ async function fetchNew() {
         throw new Error('the server requires sign-in, but the app couldn’t read your session. '
           + 'Make sure NUXT_PUBLIC_SUPABASE_URL and NUXT_PUBLIC_SUPABASE_ANON_KEY are set (and redeploy), then sign in again.')
       }
-      throw new Error(detail || 'your session was rejected — try signing out and back in.')
+      // A token WAS sent but rejected → the function verifies against different
+      // Supabase credentials than the browser signed in with.
+      throw new Error('you’re signed in, but the server rejected the session. '
+        + 'This usually means the function’s SUPABASE_URL / SUPABASE_ANON_KEY point at a different project (or wrong key) '
+        + 'than the app’s NUXT_PUBLIC_SUPABASE_* — line those up and redeploy. '
+        + (detail ? `(server: ${detail})` : ''))
     }
     if (!res.ok) throw new Error(`server returned ${res.status}.`)
 
@@ -201,18 +206,18 @@ function barWidth(n) { return `${(n / maxCount.value) * 100}%` }
 .data-page { padding: 16px 18px; max-width: 900px; }
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
 .head h2 { margin: 0; font-size: 1.1rem; }
-.sub { margin: 2px 0 0; color: #6b7280; font-size: 0.82rem; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; }
 .actions { display: flex; align-items: center; gap: 8px; }
-.count { color: #6b7280; font-size: 0.82rem; }
-.actions button { border: 1px solid #cbd2d9; background: #fff; border-radius: 6px; padding: 4px 10px; font-size: 0.82rem; cursor: pointer; }
-.actions button:hover { background: #f3f4f6; }
+.count { color: var(--muted); font-size: 0.82rem; }
+.actions button { border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: 4px 10px; font-size: 0.82rem; cursor: pointer; }
+.actions button:hover { background: var(--surface-2); }
 
-.table-wrap { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+.table-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
-thead th { background: #f3f4f6; text-align: left; padding: 8px 10px; border-bottom: 1px solid #e5e7eb; color: #374151; }
-tbody td { padding: 7px 10px; border-bottom: 1px solid #f1f2f4; }
+thead th { background: var(--surface-2); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border-soft); }
 tbody tr { cursor: pointer; }
-tbody tr:hover { background: #fafbfc; }
+tbody tr:hover { background: var(--surface-2); }
 tbody tr.off { color: #b0b6be; }
 tbody tr.off .sp em { color: #b0b6be; }
 .c-check { width: 34px; text-align: center; }
@@ -223,10 +228,10 @@ tr.off .bar { background: #cbd5e1; }
 
 .fetch-new {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
-  background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
 }
-.fetch-new label { font-size: 0.82rem; font-weight: 600; color: #374151; }
-.fetch-new input { flex: 0 1 240px; border: 1px solid #cbd2d9; border-radius: 6px; padding: 5px 9px; font-size: 0.85rem; }
+.fetch-new label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.fetch-new input { flex: 0 1 240px; border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px; font-size: 0.85rem; }
 .fetch-new button { border: 1px solid #2b7a3d; background: #2b7a3d; color: #fff; border-radius: 6px; padding: 5px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 .fetch-new button:disabled { opacity: 0.55; cursor: default; }
 .fmsg { font-size: 0.8rem; }
@@ -236,15 +241,15 @@ tr.off .bar { background: #cbd5e1; }
 .signin-link:hover { background: #f0fdf4; }
 
 .fetch-progress { display: flex; align-items: center; gap: 10px; margin: -4px 0 12px; }
-.pbar { position: relative; flex: 0 1 220px; height: 6px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+.pbar { position: relative; flex: 0 1 220px; height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; }
 .pfill { position: absolute; top: 0; left: 0; height: 100%; width: 40%; background: #2a78d6; border-radius: 4px; animation: indeterminate 1.1s ease-in-out infinite; }
 @keyframes indeterminate { 0% { left: -40%; } 100% { left: 100%; } }
-.ptext { font-size: 0.8rem; color: #374151; }
-.ptext em { color: #9aa0a6; font-style: normal; }
+.ptext { font-size: 0.8rem; color: var(--text); }
+.ptext em { color: var(--muted); font-style: normal; }
 @media (prefers-reduced-motion: reduce) { .pfill { animation: none; width: 100%; opacity: 0.6; } }
 
-.hint { margin-top: 12px; font-size: 0.8rem; color: #6b7280; }
-.hint code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; }
+.hint { margin-top: 12px; font-size: 0.8rem; color: var(--muted); }
+.hint code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
 .msg { padding: 16px; color: #555; }
 .msg.error { color: #b00020; }
 </style>
