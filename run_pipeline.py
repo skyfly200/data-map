@@ -110,6 +110,14 @@ def main():
         print(f"Loading env file: {env_file}")
         load_env_into_os(env_file)
 
+    # Report which data sources are configured before doing any work, so the
+    # run's gaps (skipped terrain / NDVI / soil) are predictable up front.
+    try:
+        from preflight import print_preflight
+        print_preflight()
+    except Exception as exc:
+        print(f"[!] Pre-flight check skipped: {exc}")
+
     refresh_all = os.getenv('REFRESH_ALL', '').strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
 
     python_executable = _resolve_python()
