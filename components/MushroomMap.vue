@@ -18,6 +18,13 @@
           </optgroup>
         </select>
       </div>
+      <div v-if="colorOptions.numeric.length" class="colorby">
+        <label for="sizeby-sel">Size by</label>
+        <select id="sizeby-sel" v-model="sizeBy">
+          <option value="">Uniform</option>
+          <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
+        </select>
+      </div>
       <button class="locate" :class="{ busy: locating }" :title="locateError || 'Show my location'"
               @click="locateMe">
         <span class="dot-icon"></span>{{ locating ? 'Locating…' : 'My location' }}
@@ -83,6 +90,14 @@ if (import.meta.client) {
   if (saved) colorBy.value = saved
 }
 watch(colorBy, (v) => { if (import.meta.client) localStorage.setItem(COLORBY_KEY, v) })
+// Remember the "Size by" dimension per viewer.
+const SIZEBY_KEY = 'map-size-by'
+const sizeBy = ref('')
+if (import.meta.client) {
+  const saved = localStorage.getItem(SIZEBY_KEY)
+  if (saved !== null) sizeBy.value = saved
+}
+watch(sizeBy, (v) => { if (import.meta.client) localStorage.setItem(SIZEBY_KEY, v) })
 const selected = ref(null)
 const locating = ref(false)
 const locateError = ref('')
@@ -108,6 +123,8 @@ const colorOptions = computed(() => {
 watch(colorOptions, (opts) => {
   const keys = [...opts.category, ...opts.numeric].map((o) => o.key)
   if (keys.length && !keys.includes(colorBy.value)) colorBy.value = keys[0]
+  // Drop a size field that the new dataset doesn't carry.
+  if (sizeBy.value && !opts.numeric.some((o) => o.key === sizeBy.value)) sizeBy.value = ''
 })
 
 function fmtNum(v) { return Math.abs(v) >= 100 ? Math.round(v).toLocaleString() : Number(v).toFixed(2) }
@@ -178,9 +195,28 @@ const coloring = computed(() => {
   }
 })
 
-// Re-style markers when the colouring changes.
-watch(coloring, (c) => {
-  if (geoLayer) geoLayer.eachLayer((l) => l.setStyle({ fillColor: c.colorFn(l.feature.properties) }))
+// Size points by a numeric field (radius), or a uniform size when "none".
+const sizeScale = computed(() => {
+  if (!sizeBy.value) return null
+  const feats = filteredData.value?.features || []
+  const vals = feats.map((f) => f.properties[sizeBy.value]).filter(hasValue).map(Number)
+  if (!vals.length) return null
+  return { lo: Math.min(...vals), hi: Math.max(...vals) }
+})
+function radiusFor(props) {
+  const s = sizeScale.value
+  if (!s) return 6
+  const v = props[sizeBy.value]
+  if (!hasValue(v)) return 3
+  return 4 + 9 * ((Number(v) - s.lo) / ((s.hi - s.lo) || 1)) // 4 … 13
+}
+
+// Re-style markers when the colouring or sizing changes.
+watch([coloring, sizeScale], ([c]) => {
+  if (geoLayer) geoLayer.eachLayer((l) => {
+    l.setStyle({ fillColor: c.colorFn(l.feature.properties) })
+    l.setRadius(radiusFor(l.feature.properties))
+  })
 })
 
 // Rebuild the point layer whenever the dataset changes (e.g. species switch).
@@ -191,7 +227,7 @@ function renderPoints(geo) {
 
   geoLayer = L.geoJSON(geo, {
     pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
-      radius: 6, weight: 1, color: '#222',
+      radius: radiusFor(feature.properties), weight: 1, color: '#222',
       fillColor: coloring.value.colorFn(feature.properties), fillOpacity: 0.85,
     }),
     onEachFeature: (feature, lyr) => {
