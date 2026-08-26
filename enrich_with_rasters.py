@@ -223,17 +223,22 @@ def enrich_with_terrain(df, terrain_dir="dem/derived/"):
     print("Adding terrain exposure (solar / wind / water retention)...")
 
     layer_paths = {}
+    missing = []
     for name in TERRAIN_LAYERS:
         df[name] = None
         path = resolve_raster_path(os.path.join(terrain_dir, f"{name}.tif"))
         if path:
             layer_paths[name] = path
         else:
-            print(f"[!] Terrain layer missing: {os.path.join(terrain_dir, name)}.tif")
+            missing.append(name)
 
     if not layer_paths:
-        print("[!] No terrain layers found — skipping terrain enrichment.")
+        print(f"[!] No terrain layers in {terrain_dir} — skipping terrain enrichment.")
+        print("    Generate them with `python terrain_pipeline.py` (it needs a DEM in dem/; "
+              "set OPENTOPOGRAPHY_API_KEY to auto-download one), then re-run enrichment.")
         return df
+    if missing:
+        print(f"[!] Terrain layers missing: {', '.join(missing)} (re-run terrain_pipeline.py).")
 
     for idx, row in df.iterrows():
         if pd.isna(row.get("lat")) or pd.isna(row.get("lon")):
