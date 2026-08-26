@@ -32,6 +32,7 @@
           <NuxtLink to="/charts" class="nav-link">Charts</NuxtLink>
           <NuxtLink to="/explore" class="nav-link">Explore</NuxtLink>
           <NuxtLink to="/data" class="nav-link">Data</NuxtLink>
+          <NuxtLink to="/coverage" class="nav-link">Coverage</NuxtLink>
         </nav>
         <ClientOnly>
           <div class="auth-box" v-if="configured">
