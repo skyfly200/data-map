@@ -5,12 +5,14 @@
         <span>Chart</span>
         <select v-model="chartType">
           <option value="scatter">Scatter</option>
-          <option value="line">Line (trend)</option>
           <option value="bar">Bar (aggregate)</option>
-          <option value="pie">Pie / donut</option>
+          <option value="line">Line</option>
+          <option value="area">Area</option>
           <option value="box">Box plot by category</option>
           <option value="histogram">Histogram</option>
           <option value="heatmap">Heatmap</option>
+          <option value="radar">Radar</option>
+          <option value="donut">Donut</option>
         </select>
       </label>
 
@@ -21,20 +23,15 @@
         <label v-if="xField === 'day_of_year'" class="ctrl chk"><input type="checkbox" v-model="showToday" /> Today line</label>
       </template>
 
-      <template v-else-if="chartType === 'line'">
-        <label class="ctrl"><span>X</span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Measure</span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Bins</span><input type="number" min="4" max="60" v-model.number="bins" /></label>
-      </template>
-
       <template v-else-if="chartType === 'bar'">
         <label class="ctrl"><span>Group by</span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Measure</span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
         <label class="ctrl chk"><input type="checkbox" v-model="horizontal" /> Horizontal</label>
       </template>
 
-      <template v-else-if="chartType === 'pie'">
-        <label class="ctrl"><span>Group by</span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+      <template v-else-if="chartType === 'line' || chartType === 'area'">
+        <label class="ctrl"><span>X</span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Y (mean)</span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
       </template>
 
       <template v-else-if="chartType === 'box'">
@@ -50,6 +47,11 @@
       <template v-else-if="chartType === 'heatmap'">
         <label class="ctrl"><span>Rows</span><select v-model="rowField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Columns</span><select v-model="colField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Measure</span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
+      </template>
+
+      <template v-else-if="chartType === 'radar' || chartType === 'donut'">
+        <label class="ctrl"><span>Group by</span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Measure</span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
       </template>
 

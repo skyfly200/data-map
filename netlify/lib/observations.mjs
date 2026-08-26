@@ -25,7 +25,7 @@ const EMPTY_PROPS = {
 
 export function buildInatUrl({
   taxonName = 'morchella', lat = 40.0, lng = -105.0, radius = 500,
-  perPage = 100, qualityGrade = 'research', d1 = null, d2 = null,
+  perPage = 100, qualityGrade = 'research', d1 = null, d2 = null, page = 1,
 } = {}) {
   const params = new URLSearchParams({
     taxon_name: taxonName,
@@ -36,6 +36,7 @@ export function buildInatUrl({
     geo: 'true',
     captive: 'false',
     per_page: String(perPage),
+    page: String(page),
     order: 'desc',
     order_by: 'created_at',
   })
@@ -74,10 +75,26 @@ export function inatResultToFeature(obs) {
 }
 
 export async function fetchInatFeatures(opts = {}, fetchImpl = fetch) {
-  const res = await fetchImpl(buildInatUrl(opts))
-  if (!res.ok) throw new Error(`iNaturalist HTTP ${res.status}`)
-  const data = await res.json()
-  return (data.results || []).map(inatResultToFeature).filter(Boolean)
+  const perPage = Number(opts.perPage ?? 100)
+  const maxPages = Number(opts.maxPages ?? 50)
+  const all = []
+  let page = 1
+
+  while (page <= maxPages) {
+    const res = await fetchImpl(buildInatUrl({ ...opts, perPage, page }))
+    if (!res.ok) throw new Error(`iNaturalist HTTP ${res.status}`)
+    const data = await res.json()
+    const results = Array.isArray(data.results) ? data.results : []
+    if (!results.length) break
+
+    const mapped = results.map(inatResultToFeature).filter(Boolean)
+    all.push(...mapped)
+
+    if (results.length < perPage) break
+    page += 1
+  }
+
+  return all
 }
 
 export function baselineUuidSet(baseline) {
