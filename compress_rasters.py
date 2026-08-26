@@ -73,22 +73,47 @@ def convert_raster_to_cog(input_path, output_path=None, *, delete_original=False
     return str(out_path)
 
 
+def _fmt_size(num_bytes):
+    mb = num_bytes / 1e6
+    return f"{mb / 1000:.2f} GB" if mb >= 1000 else f"{mb:.1f} MB"
+
+
 def convert_all_rasters_in_dir(directory, *, replace_originals=False):
     directory = Path(directory)
+    targets = [p for p in sorted(directory.rglob("*.tif")) if not p.name.endswith(".cog.tif")]
+    total = len(targets)
+    print(f"🗜  Compressing {total} raster(s) in {directory} to COG...")
+
     converted = []
-    for path in sorted(directory.rglob("*.tif")):
-        if path.name.endswith(".cog.tif"):
-            continue
+    failed = 0
+    bytes_before = bytes_after = 0
+    for i, path in enumerate(targets, 1):
+        prefix = f"[{i}/{total}]"
+        orig_size = path.stat().st_size if path.exists() else 0
         try:
             output = convert_raster_to_cog(path, delete_original=False, verify=True)
+            final_path = path if replace_originals else Path(output)
             if replace_originals:
                 new_path = Path(output)
                 if new_path.exists() and path.exists():
                     path.unlink(missing_ok=True)
                     new_path.rename(path)
+            new_size = final_path.stat().st_size if final_path.exists() else 0
+            bytes_before += orig_size
+            bytes_after += new_size
+            pct = (1 - new_size / orig_size) * 100 if orig_size else 0
+            print(f"{prefix} ✅ {path.name}: {_fmt_size(orig_size)} → {_fmt_size(new_size)} "
+                  f"({pct:.0f}% smaller)")
             converted.append(output)
         except Exception as exc:
-            print(f"[!] Failed to compress {path}: {exc}")
+            failed += 1
+            print(f"{prefix} [!] Failed to compress {path}: {exc}")
+
+    saved = bytes_before - bytes_after
+    pct = (saved / bytes_before) * 100 if bytes_before else 0
+    print(f"🗜  Done — {len(converted)} converted, {failed} failed. "
+          f"{_fmt_size(bytes_before)} → {_fmt_size(bytes_after)} "
+          f"(saved {_fmt_size(saved)}, {pct:.0f}%).")
     return converted
 
 
@@ -102,8 +127,7 @@ def main():
 
     target = Path(args.path)
     if target.is_dir():
-        converted = convert_all_rasters_in_dir(target, replace_originals=args.delete_original)
-        print(f"Converted {len(converted)} rasters to COGs.")
+        convert_all_rasters_in_dir(target, replace_originals=args.delete_original)
         return
 
     result = convert_raster_to_cog(str(target), output_path=args.output, delete_original=args.delete_original, verify=args.verify)
