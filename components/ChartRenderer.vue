@@ -5,11 +5,12 @@
   <BarChart v-else-if="config.type === 'bar'" :title="title" :data="barData" :horizontal="!!config.horizontal" :format="barFmt" />
   <BoxPlot v-else-if="config.type === 'box'" :title="title" :data="boxData" :xLabel="labelOf(config.valueField)" :format="fmtOf(config.valueField)" />
   <BarChart v-else-if="config.type === 'histogram'" :title="title" :data="histogramData" :format="(v) => String(v)" />
-  <LineChart v-else-if="config.type === 'line'" :title="title" :data="lineData"
-    :xLabel="labelOf(config.xField)" :yLabel="lineYLabel" :xFormat="fmtOf(config.xField)" :yFormat="lineYFmt" />
-  <PieChart v-else-if="config.type === 'pie'" :title="title" :data="pieData" :format="(v) => String(Math.round(v))" />
   <HeatmapChart v-else-if="config.type === 'heatmap'" :title="title" :rows="heatmap.rows" :cols="heatmap.cols"
     :matrix="heatmap.matrix" :format="heatFmt" />
+  <LineChart v-else-if="config.type === 'line' || config.type === 'area'" :title="title" :data="lineSeries"
+    :xLabel="labelOf(config.xField)" :yLabel="labelOf(config.yField)" :xFormat="fmtOf(config.xField)" :yFormat="fmtOf(config.yField)" />
+  <PieChart v-else-if="config.type === 'donut'" :title="title" :data="donutData" :format="(v) => String(Math.round(v))" />
+  <BarChart v-else-if="config.type === 'radar'" :title="title" :data="radarData" :format="(v) => String(v)" :horizontal="false" />
   <p v-if="isEmpty" class="cr-empty">No data for this combination.</p>
 </template>
 
@@ -122,6 +123,61 @@ const barData = computed(() => {
 })
 const barFmt = computed(() => (c.value.measure === 'count' ? (v) => String(v) : (v) => Number(v).toFixed(1)))
 
+// Real line/area series: mean of Y across bins of the ordered X axis, so a
+// trend (e.g. mean elevation over day-of-year) reads as a connected curve.
+const lineSeries = computed(() => {
+  const xs = rows.value
+    .map((r) => ({ x: numVal(r, c.value.xField), y: numVal(r, c.value.yField) }))
+    .filter((d) => d.x !== null && d.y !== null)
+  if (!xs.length) return []
+  const lo = Math.min(...xs.map((d) => d.x)), hi = Math.max(...xs.map((d) => d.x))
+  const n = 24
+  const step = (hi - lo) / n || 1
+  const bins = Array.from({ length: n }, () => [])
+  for (const d of xs) bins[Math.min(n - 1, Math.floor((d.x - lo) / step))].push(d.y)
+  const out = []
+  bins.forEach((ys, i) => {
+    if (ys.length) out.push({ x: lo + (i + 0.5) * step, y: ys.reduce((s, v) => s + v, 0) / ys.length })
+  })
+  return out
+})
+
+// Real donut: composition by category (top 8 + grey Other). Count, or the sum
+// of a numeric measure — both are valid parts-of-a-whole.
+const donutData = computed(() => {
+  const entries = [...groupBy(c.value.groupField)].map(([label, rs]) => {
+    let value
+    if (c.value.measure === 'count') value = rs.length
+    else value = rs.map((r) => numVal(r, c.value.measure)).filter((v) => v !== null).reduce((s, v) => s + v, 0)
+    return { label, value }
+  }).filter((e) => e.value > 0)
+  entries.sort((a, b) => b.value - a.value)
+  const top = entries.slice(0, 8)
+  const rest = entries.slice(8)
+  const hasOther = rest.length > 0
+  if (hasOther) top.push({ label: `Other (${rest.length})`, value: rest.reduce((s, e) => s + e.value, 0) })
+  return top.map((e, i) => ({
+    ...e,
+    color: (hasOther && i === top.length - 1) ? UNCLUSTERED
+      : (c.value.groupField === 'cluster' ? clusterColor(e.label) : PALETTE[i % PALETTE.length]),
+  }))
+})
+
+const radarData = computed(() => {
+  const groups = groupBy(c.value.groupField)
+  const out = []
+  for (const [label, rs] of groups) {
+    let value
+    if (c.value.measure === 'count') value = rs.length
+    else {
+      const vals = rs.map((r) => numVal(r, c.value.measure)).filter((v) => v !== null)
+      value = vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0
+    }
+    out.push({ label, short: label, value, color: c.value.groupField === 'cluster' ? clusterColor(label) : SERIES_1 })
+  }
+  return out.sort((a, b) => b.value - a.value).slice(0, 12)
+})
+
 const histogramData = computed(() => {
   const vals = rows.value.map((r) => numVal(r, c.value.valueField)).filter((v) => v !== null)
   if (!vals.length) return []
@@ -163,63 +219,16 @@ const heatmap = computed(() => {
 })
 const heatFmt = computed(() => (c.value.measure === 'count' ? (v) => `${Math.round(v)}` : (v) => Number(v).toFixed(1)))
 
-// Line: aggregate a measure across bins of an ordered numeric x (trends /
-// phenology). Measure is count, or the mean of a numeric field.
-const lineData = computed(() => {
-  const xs = rows.value.map((r) => ({ x: numVal(r, c.value.xField), r })).filter((d) => d.x !== null)
-  if (!xs.length) return []
-  const lo = Math.min(...xs.map((d) => d.x)), hi = Math.max(...xs.map((d) => d.x))
-  const n = Math.max(4, Math.min(60, c.value.bins || 24))
-  const step = (hi - lo) / n || 1
-  const bins = Array.from({ length: n }, () => [])
-  for (const d of xs) {
-    const idx = Math.min(n - 1, Math.floor((d.x - lo) / step))
-    bins[idx].push(d.r)
-  }
-  const out = []
-  bins.forEach((rs, i) => {
-    if (!rs.length) return
-    const x = lo + (i + 0.5) * step
-    let y
-    if (c.value.measure === 'count') y = rs.length
-    else {
-      const vals = rs.map((r) => numVal(r, c.value.measure)).filter((v) => v !== null)
-      if (!vals.length) return
-      y = vals.reduce((s, v) => s + v, 0) / vals.length
-    }
-    out.push({ x, y })
-  })
-  return out
-})
-const lineYLabel = computed(() => (c.value.measure === 'count' ? 'Count' : `Mean ${labelOf(c.value.measure)}`))
-const lineYFmt = computed(() => (c.value.measure === 'count' ? (v) => String(Math.round(v)) : (v) => Number(v).toFixed(1)))
-
-// Pie/donut: composition of observation counts by a category (top 8 + "Other").
-const pieData = computed(() => {
-  const entries = [...groupBy(c.value.groupField)].map(([label, rs]) => ({ label, value: rs.length }))
-  entries.sort((a, b) => b.value - a.value)
-  const top = entries.slice(0, 8)
-  const rest = entries.slice(8)
-  const hasOther = rest.length > 0
-  if (hasOther) top.push({ label: `Other (${rest.length})`, value: rest.reduce((s, e) => s + e.value, 0) })
-  return top.map((e, i) => {
-    const isOther = hasOther && i === top.length - 1
-    const color = isOther ? UNCLUSTERED
-      : (c.value.groupField === 'cluster' ? clusterColor(e.label) : PALETTE[i % PALETTE.length])
-    return { ...e, color }
-  })
-})
-
 const title = computed(() => {
   if (c.value.title) return c.value.title
   const t = c.value.type
   if (t === 'scatter') return `${labelOf(c.value.yField)} vs. ${labelOf(c.value.xField)}`
   if (t === 'bar') return c.value.measure === 'count' ? `Count by ${catLabel(c.value.groupField)}` : `Mean ${labelOf(c.value.measure)} by ${catLabel(c.value.groupField)}`
+  if (t === 'line' || t === 'area') return `${labelOf(c.value.yField)} over ${labelOf(c.value.xField)}`
   if (t === 'box') return `${labelOf(c.value.valueField)} by ${catLabel(c.value.groupField)}`
   if (t === 'histogram') return `Distribution of ${labelOf(c.value.valueField)}`
-  if (t === 'line') return `${lineYLabel.value} across ${labelOf(c.value.xField)}`
-  if (t === 'pie') return `Composition by ${catLabel(c.value.groupField)}`
   if (t === 'heatmap') return `${catLabel(c.value.rowField)} × ${catLabel(c.value.colField)}`
+  if (t === 'radar' || t === 'donut') return `${c.value.measure === 'count' ? 'Count' : labelOf(c.value.measure)} by ${catLabel(c.value.groupField)}`
   return ''
 })
 defineExpose({ title })
@@ -228,10 +237,11 @@ const isEmpty = computed(() => {
   const t = c.value.type
   if (t === 'scatter') return scatterData.value.length === 0
   if (t === 'bar') return barData.value.length === 0
+  if (t === 'line' || t === 'area') return lineSeries.value.length === 0
+  if (t === 'donut') return donutData.value.length === 0
+  if (t === 'radar') return radarData.value.length === 0
   if (t === 'box') return boxData.value.length === 0
   if (t === 'histogram') return histogramData.value.length === 0
-  if (t === 'line') return lineData.value.length === 0
-  if (t === 'pie') return pieData.value.length === 0
   if (t === 'heatmap') return heatmap.value.rows.length === 0
   return false
 })

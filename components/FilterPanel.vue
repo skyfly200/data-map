@@ -130,8 +130,10 @@ legend { font-size: 0.78rem; font-weight: 700; color: #374151; padding: 0 6px; }
 label { display: flex; flex-direction: column; gap: 3px; font-size: 0.75rem; font-weight: 600; color: #6b7280; margin-top: 8px; }
 select, input { border: 1px solid #cbd2d9; border-radius: 6px; padding: 5px 8px; font-size: 0.82rem; font-weight: 400; color: #1f2933; }
 
-.radius-row, .time-row { display: flex; gap: 8px; }
-.radius-row label, .time-row label { flex: 1; }
+.radius-row, .time-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;
+}
+.radius-row label, .time-row label { margin-top: 0; }
 .radius-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .mini { border: 1px solid #2b7a3d; background: #2b7a3d; color: #fff; border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
 .mini.ghost { background: #fff; color: #374151; border-color: #cbd2d9; }

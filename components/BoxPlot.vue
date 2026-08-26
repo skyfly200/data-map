@@ -1,25 +1,27 @@
 <template>
   <figure class="chart">
     <figcaption v-if="title" class="chart-title">{{ title }}</figcaption>
-    <div class="chart-area" @mousemove="onMove" @mouseleave="active = null">
-      <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
-        <g v-for="t in xTicks" :key="t.v">
-          <line :x1="t.p" :y1="padT" :x2="t.p" :y2="H - padB" class="grid" />
-          <text :x="t.p" :y="H - padB + 14" class="tick tick-x">{{ t.label }}</text>
-        </g>
+    <div class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
+      <div class="chart-viewport" :style="viewportStyle">
+        <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
+          <g v-for="t in xTicks" :key="t.v">
+            <line :x1="t.p" :y1="padT" :x2="t.p" :y2="H - padB" class="grid" />
+            <text :x="t.p" :y="H - padB + 14" class="tick tick-x">{{ t.label }}</text>
+          </g>
 
-        <g v-for="(b, i) in boxes" :key="i" @mouseenter="active = b">
-          <text :x="padL - 8" :y="b.cy + 4" class="tick tick-y">{{ b.short }}</text>
-          <line :x1="b.min" :y1="b.cy" :x2="b.max" :y2="b.cy" class="whisker" />
-          <line :x1="b.min" :y1="b.cy - 5" :x2="b.min" :y2="b.cy + 5" class="cap" />
-          <line :x1="b.max" :y1="b.cy - 5" :x2="b.max" :y2="b.cy + 5" class="cap" />
-          <rect :x="b.q1" :y="b.cy - bh / 2" :width="Math.max(1, b.q3 - b.q1)" :height="bh" rx="2"
-                :fill="b.color" class="box" />
-          <line :x1="b.med" :y1="b.cy - bh / 2" :x2="b.med" :y2="b.cy + bh / 2" class="median" />
-        </g>
+          <g v-for="(b, i) in boxes" :key="i" @mouseenter="active = b">
+            <text :x="padL.value - 8" :y="b.cy + 4" class="tick tick-y" :style="{ fontSize: `${labelFontSize}px` }">{{ b.short }}</text>
+            <line :x1="b.min" :y1="b.cy" :x2="b.max" :y2="b.cy" class="whisker" />
+            <line :x1="b.min" :y1="b.cy - 5" :x2="b.min" :y2="b.cy + 5" class="cap" />
+            <line :x1="b.max" :y1="b.cy - 5" :x2="b.max" :y2="b.cy + 5" class="cap" />
+            <rect :x="b.q1" :y="b.cy - bh / 2" :width="Math.max(1, b.q3 - b.q1)" :height="bh" rx="2"
+                  :fill="b.color" class="box" />
+            <line :x1="b.med" :y1="b.cy - bh / 2" :x2="b.med" :y2="b.cy + bh / 2" class="median" />
+          </g>
 
-        <text :x="(padL + W - padR) / 2" :y="H - 2" class="axis-label">{{ xLabel }}</text>
-      </svg>
+          <text :x="(padL.value + W.value - padR) / 2" :y="H - 2" class="axis-label">{{ xLabel }}</text>
+        </svg>
+      </div>
 
       <div v-if="active" class="tooltip" :style="{ left: `${ptr.x + 12}px`, top: `${ptr.y + 8}px` }">
         <strong>{{ active.label }} (n={{ active.n }})</strong>
@@ -41,8 +43,12 @@ const props = defineProps({
   format: { type: Function, default: (v) => `${Math.round(v)}` },
 })
 
-const W = 640
-const padL = 118
+const labelFontSize = computed(() => {
+  const n = props.data.length || 1
+  return Math.max(8, 10 - Math.max(0, n - 6) * 0.4)
+})
+const W = computed(() => Math.max(640, (props.data.length || 1) * 120 + 180))
+const padL = computed(() => Math.max(82, 118 - Math.min(28, Math.max(0, (props.data.length || 1) - 5) * 4)))
 const padR = 20
 const padT = 10
 const padB = 30
@@ -50,13 +56,44 @@ const bh = 16
 const rowH = 30
 
 const H = computed(() => padT + padB + Math.max(1, props.data.length) * rowH)
+const zoom = ref(1)
+const pan = ref({ x: 0, y: 0 })
+const dragStart = ref(null)
+const viewportStyle = computed(() => ({
+  width: `${W.value}px`,
+  height: `${H.value}px`,
+  transform: `translate(${pan.value.x}px, ${pan.value.y}px) scale(${zoom.value})`,
+  transformOrigin: '0 0',
+  transition: dragStart.value ? 'none' : 'transform 0.15s ease-out',
+}))
 
 const active = ref(null)
 const ptr = ref({ x: 0, y: 0 })
+function compactLabel(label, maxLen = 18) {
+  const value = String(label ?? '')
+  if (value.length <= maxLen) return value
+  return `${value.slice(0, Math.max(0, maxLen - 1)).trimEnd()}…`
+}
 function onMove(e) {
   const r = e.currentTarget.getBoundingClientRect()
   ptr.value = { x: e.clientX - r.left, y: e.clientY - r.top }
 }
+function clamp(v, min, max) { return Math.min(max, Math.max(min, v)) }
+function onWheel(e) {
+  const delta = e.deltaY > 0 ? 0.9 : 1.1
+  zoom.value = clamp(zoom.value * delta, 0.7, 2.5)
+}
+function onPointerDown(e) {
+  dragStart.value = { x: e.clientX, y: e.clientY, panX: pan.value.x, panY: pan.value.y }
+  e.currentTarget.setPointerCapture?.(e.pointerId)
+}
+function onPointerMove(e) {
+  if (!dragStart.value) return
+  const dx = e.clientX - dragStart.value.x
+  const dy = e.clientY - dragStart.value.y
+  pan.value = { x: dragStart.value.panX + dx / zoom.value, y: dragStart.value.panY + dy / zoom.value }
+}
+function onPointerUp() { dragStart.value = null }
 const fmt = (v) => props.format(v)
 
 function quantile(sorted, p) {
@@ -70,9 +107,15 @@ const stats = computed(() => props.data
   .map((d) => ({ ...d, values: (d.values || []).filter((v) => Number.isFinite(v)).sort((a, b) => a - b) }))
   .filter((d) => d.values.length >= 1)
   .map((d) => ({
-    label: d.label, short: d.label, color: d.color || SERIES_1, n: d.values.length,
-    minVal: d.values[0], maxVal: d.values[d.values.length - 1],
-    q1Val: quantile(d.values, 0.25), medVal: quantile(d.values, 0.5), q3Val: quantile(d.values, 0.75),
+    label: d.label,
+    short: compactLabel(d.label || d.short, Math.max(8, 18 - Math.max(0, props.data.length - 6))),
+    color: d.color || SERIES_1,
+    n: d.values.length,
+    minVal: d.values[0],
+    maxVal: d.values[d.values.length - 1],
+    q1Val: quantile(d.values, 0.25),
+    medVal: quantile(d.values, 0.5),
+    q3Val: quantile(d.values, 0.75),
   })))
 
 const domain = computed(() => {
@@ -83,7 +126,7 @@ const domain = computed(() => {
   const pad = (hi - lo) * 0.04
   return [lo - pad, hi + pad]
 })
-const sx = (v) => padL + ((v - domain.value[0]) / (domain.value[1] - domain.value[0])) * (W - padL - padR)
+const sx = (v) => padL.value + ((v - domain.value[0]) / (domain.value[1] - domain.value[0])) * (W.value - padL.value - padR)
 
 const boxes = computed(() => stats.value.map((d, i) => ({
   ...d, cy: padT + i * rowH + rowH / 2,
