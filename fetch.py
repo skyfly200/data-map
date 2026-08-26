@@ -4,6 +4,8 @@ import math
 import os
 import gzip
 import shutil
+import threading
+import time
 import zipfile
 from datetime import timedelta
 from pathlib import Path
@@ -12,6 +14,31 @@ import cdsapi
 import ee
 import pandas as pd
 import requests
+
+# When the independent download sources run concurrently, their logs interleave.
+# Serialize prints and tag every line with its source so the output stays legible.
+_print_lock = threading.Lock()
+_progress_last = {}
+
+
+def _log(tag, msg):
+    with _print_lock:
+        print(f"[{tag}] {msg}", flush=True)
+
+
+def _fetch_progress(tag, done, total, t0, min_interval=3.0):
+    """Throttled, tagged progress with an ETA — prints at most every `min_interval`
+    seconds per source (and always on the final item), so concurrent stages give
+    live feedback without flooding the console with one line per file."""
+    now = time.monotonic()
+    if done < total and now - _progress_last.get(tag, 0.0) < min_interval:
+        return
+    _progress_last[tag] = now
+    elapsed = now - t0
+    rate = done / elapsed if elapsed > 0 else 0
+    eta = (total - done) / rate if rate > 0 else 0
+    pct = (100 * done) // max(total, 1)
+    _log(tag, f"{done}/{total} ({pct}%)  ETA {eta:5.0f}s")
 
 # Consolidate the local compression import
 try:
@@ -420,6 +447,92 @@ def download_worldcover_tiles(df, output_dir="world_cover/", year=2020, version=
                 print(f"[!] Error fetching {tile}: {result}")
 
 
+# ─── Independent download-source stages ───────────────────────────────────────
+# Each stage below downloads from a *different* server (CDS, UCSB, ESA S3,
+# OpenTopography) and writes to a disjoint output dir, so they have no data
+# dependency on one another. main() runs them concurrently to overlap their
+# latency (total time → max of the stages, not the sum), while each keeps its
+# own internal per-source thread pool so per-server rate limits are respected.
+
+def _stage_era5(df, tag="ERA5"):
+    """ERA5-Land soil moisture via the CDS API (one netCDF per unique date)."""
+    try:
+        dates = get_unique_dates(df)
+        total = len(dates)
+        _log(tag, f"soil moisture — {total} daily file(s) to check")
+        downloaded = failed = cached = 0
+        t0 = time.monotonic()
+        done = 0
+        # Low concurrency (3): the CDS API restricts concurrent requests per user.
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            futures = {executor.submit(download_era5_worker, d): d for d in dates}
+            for future in concurrent.futures.as_completed(futures):
+                status, date_str, result = future.result()
+                done += 1
+                if status == "cached":
+                    cached += 1
+                elif status == "downloaded":
+                    downloaded += 1
+                elif status == "error":
+                    failed += 1
+                    _log(tag, f"[!] {date_str}: {result}")
+                _fetch_progress(tag, done, total, t0)
+        _log(tag, f"✅ done — {downloaded} downloaded, {cached} cached, {failed} failed / {total}")
+    except Exception as e:
+        _log(tag, f"[!] skipped: {e}")
+
+
+def _stage_chirps(df, tag="CHIRPS"):
+    """CHIRPS daily precipitation (one GeoTIFF per date in the ±buffer window)."""
+    try:
+        dates = get_precip_dates(df, buffer_days=6)
+        total = len(dates)
+        _log(tag, f"precipitation — {total} daily tile(s) to check")
+        downloaded = failed = cached = 0
+        t0 = time.monotonic()
+        done = 0
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {executor.submit(fetch_chirps_precip_worker, d): d for d in dates}
+            for future in concurrent.futures.as_completed(futures):
+                status, date_str, result = future.result()
+                done += 1
+                if status == "cached":
+                    cached += 1
+                elif status == "downloaded":
+                    downloaded += 1
+                elif status == "not_found":
+                    failed += 1
+                elif status == "error":
+                    failed += 1
+                    _log(tag, f"[!] {date_str}: {result}")
+                _fetch_progress(tag, done, total, t0)
+        _log(tag, f"✅ done — {downloaded} downloaded, {cached} cached, {failed} unavailable/failed / {total}")
+    except Exception as e:
+        _log(tag, f"[!] skipped: {e}")
+
+
+def _stage_worldcover(df, tag="WorldCover"):
+    """ESA WorldCover land-cover tiles (a handful covering the study area)."""
+    try:
+        download_worldcover_tiles(df)
+        _log(tag, "✅ done")
+    except Exception as e:
+        _log(tag, f"[!] skipped: {e}")
+
+
+def _stage_terrain(df, tag="Terrain"):
+    """DEM download + terrain derivation (slope/aspect/exposure)."""
+    try:
+        dem_path = download_srtm_dem()
+        if dem_path:
+            _log(tag, "DEM ready — deriving terrain layers...")
+            from terrain_pipeline import process_dem
+            process_dem(dem_path)
+        _log(tag, "✅ done")
+    except Exception as e:
+        _log(tag, f"[!] skipped: {e}")
+
+
 def main(csv_path='mushroom_observations.csv'):
     skip_ee = os.environ.get("SKIP_EARTH_ENGINE") == "1"
     if not skip_ee:
@@ -430,7 +543,9 @@ def main(csv_path='mushroom_observations.csv'):
 
     df = pd.read_csv(csv_path)
 
-    # ─── NDVI (Sentinel-2) ────────────────────────────────────────────────────
+    # ─── NDVI (Sentinel-2) — Earth Engine, main thread ────────────────────────
+    # Queues async Drive export tasks; kept off the concurrent pool to avoid EE
+    # client thread-safety concerns (and it's fast — just task.start() calls).
     if not skip_ee and os.environ.get("EXPORT_NDVI_TILES") == "1":
         print("Exporting Sentinel-2 NDVI tiles to Drive...")
         for idx, row in df.iterrows():
@@ -439,86 +554,32 @@ def main(csv_path='mushroom_observations.csv'):
             print(f"  → NDVI for {row['date']} at ({row['lat']}, {row['lon']})")
             fetch_sentinel2_ndvi(row['lat'], row['lon'], row['date'])
 
-    # ─── Soil moisture (ERA5-Land) ────────────────────────────────────────────
-    try:
-        era5_dates = get_unique_dates(df)
-        total_era = len(era5_dates)
-        print(f"Fetching ERA5-Land soil moisture — {total_era} daily files to check using multithreading...")
-        
-        era_downloaded = era_failed = era_cached = 0
-        
-        # Keep max_workers low (3) for ERA5. The CDS API restricts concurrent API requests per user.
-        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-            future_to_date = {executor.submit(download_era5_worker, date_str): date_str for date_str in era5_dates}
-            
-            for i, future in enumerate(concurrent.futures.as_completed(future_to_date), 1):
-                status, date_str, result = future.result()
-                prefix = f"[{i}/{total_era}]"
-                
-                if status == "cached":
-                    era_cached += 1
-                    print(f"{prefix} ✅ Cached {date_str}")
-                elif status == "downloaded":
-                    era_downloaded += 1
-                    print(f"{prefix} ✅ Downloaded {date_str} -> {result}")
-                elif status == "error":
-                    era_failed += 1
-                    print(f"{prefix} [!] Error for {date_str}: {result}")
+    # ─── Independent HTTP sources — run concurrently ──────────────────────────
+    # These hit different servers with no cross-dependency, so overlapping them
+    # collapses total wall time to the slowest single source (usually ERA5/CDS).
+    stages = [
+        ("ERA5", _stage_era5),
+        ("CHIRPS", _stage_chirps),
+        ("WorldCover", _stage_worldcover),
+        ("Terrain", _stage_terrain),
+    ]
+    if os.environ.get("SEQUENTIAL_FETCH") == "1":
+        print("Fetching data sources sequentially (SEQUENTIAL_FETCH=1)...")
+        for _name, fn in stages:
+            fn(df)
+    else:
+        print(f"Fetching {len(stages)} data sources concurrently: "
+              f"{', '.join(name for name, _ in stages)}...")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(stages)) as executor:
+            futures = {executor.submit(fn, df): name for name, fn in stages}
+            for future in concurrent.futures.as_completed(futures):
+                name = futures[future]
+                try:
+                    future.result()
+                except Exception as e:
+                    _log(name, f"[!] failed: {e}")
 
-        print(f"✅ ERA5 done — {era_downloaded} downloaded, {era_cached} already cached, "
-              f"{era_failed} failed out of {total_era} total.")
-    except Exception as e:
-        print(f"[!] Soil moisture download skipped: {e}")
-
-    # ─── Precipitation (CHIRPS) ───────────────────────────────────────────────
-    try:
-        precip_dates = get_precip_dates(df, buffer_days=6)
-        total_precip = len(precip_dates)
-        print(f"Fetching CHIRPS precipitation — {total_precip} daily tiles to check using multithreading...")
-        
-        precip_downloaded = precip_failed = precip_cached = 0
-        
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            future_to_date = {executor.submit(fetch_chirps_precip_worker, date_str): date_str for date_str in precip_dates}
-            
-            for i, future in enumerate(concurrent.futures.as_completed(future_to_date), 1):
-                status, date_str, result = future.result()
-                prefix = f"[{i}/{total_precip}]"
-                
-                if status == "cached":
-                    precip_cached += 1
-                    print(f"{prefix} ✅ Cached {date_str}")
-                elif status == "downloaded":
-                    precip_downloaded += 1
-                    print(f"{prefix} ✅ Downloaded {date_str} -> {result}")
-                elif status == "not_found":
-                    precip_failed += 1
-                    print(f"{prefix} ⚠️  CHIRPS not available for {date_str}")
-                elif status == "error":
-                    precip_failed += 1
-                    print(f"{prefix} [!] Error for {date_str}: {result}")
-
-        print(f"✅ CHIRPS done — {precip_downloaded} downloaded, {precip_cached} already cached, "
-              f"{precip_failed} unavailable/failed out of {total_precip} total.")
-    except Exception as e:
-        print(f"[!] Precipitation download skipped: {e}")
-
-    # ─── Land cover (ESA WorldCover) ──────────────────────────────────────────
-    try:
-        download_worldcover_tiles(df)
-    except Exception as e:
-        print(f"[!] WorldCover download skipped: {e}")
-
-    # ─── Topography ───────────────────────────────────────────────────────────
-    try:
-        dem_path = download_srtm_dem()
-        if dem_path:
-            from terrain_pipeline import process_dem
-            process_dem(dem_path)
-    except Exception as e:
-        print(f"[!] Terrain processing skipped: {e}")
-
-    # ─── Independent Satellite Moisture ───────────────────────────────────────
+    # ─── Independent Satellite Moisture — Earth Engine, main thread ────────────
     if os.environ.get("EXPORT_SATELLITE_MOISTURE") == "1" and not skip_ee:
         obs_dates = pd.to_datetime(df['date'].dropna())
         win_start = obs_dates.min().strftime('%Y-%m-%d')
