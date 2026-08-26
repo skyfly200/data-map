@@ -121,6 +121,7 @@ watch(tempUnit, (v) => {
 /* ── Design tokens. Dark is the default (bare :root) so first paint is dark with
    no flash; [data-theme="light"] opts back into the original light palette. ── */
 :root {
+  color-scheme: dark;
   --bg: #0e1217;
   --surface: #171e27;
   --surface-2: #1e2732;
@@ -140,10 +141,11 @@ watch(tempUnit, (v) => {
   --glow: 0.9; /* chart glow strength (0 = off) */
   --tooltip-bg: #0b0f14;
   --tooltip-fg: #f4f6f8;
-  /* Neon edge-glow for chart marks (uses each mark's own colour via currentColor). */
-  --chart-glow: drop-shadow(0 0 2px currentColor) drop-shadow(0 0 5px currentColor);
+  /* Soft edge-glow for chart marks (uses each mark's own colour via currentColor). */
+  --chart-glow: drop-shadow(0 0 2px currentColor);
 }
 :root[data-theme="light"] {
+  color-scheme: light;
   --bg: #ffffff;
   --surface: #ffffff;
   --surface-2: #f7f8fa;
@@ -168,6 +170,11 @@ watch(tempUnit, (v) => {
 
 html, body, #__nuxt { height: 100%; margin: 0; }
 body { font-family: system-ui, -apple-system, sans-serif; color: var(--text); background: var(--bg); }
+
+/* Global form-control theming so text is readable in both themes. Components
+   can still override, but this ensures no light-on-white inputs in dark mode. */
+input, select, textarea { background: var(--input-bg); color: var(--text); }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 
 .app { display: flex; flex-direction: column; height: 100vh; background: var(--bg); }
 

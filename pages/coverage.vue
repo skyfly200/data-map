@@ -34,29 +34,30 @@
         </div>
       </div>
 
-      <template v-if="datedLayers.length && matrixDates.length">
-        <h3 class="section">Coverage by date</h3>
-        <p class="sub">A filled cell means that layer has data for that date.</p>
-        <div class="matrix-wrap">
-          <table class="matrix">
-            <thead>
-              <tr>
-                <th class="date-col">Date</th>
-                <th v-for="l in datedLayers" :key="l.key">
-                  <span class="dot sm" :style="{ background: colorOf(l.key) }"></span>{{ l.label }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="d in matrixDates" :key="d">
-                <td class="date-col">{{ d }}</td>
-                <td v-for="l in datedLayers" :key="l.key" class="cell">
-                  <span v-if="has(l.key, d)" class="mark" :style="{ background: colorOf(l.key) }" :title="`${l.label} · ${d}`"></span>
-                  <span v-else class="gap" title="no data">·</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <template v-if="matrixDates.length">
+        <div class="cal-head">
+          <h3 class="section">Coverage by date</h3>
+          <div class="legend-scale">
+            <span>fewer layers</span>
+            <span v-for="n in maxIntensity + 1" :key="n" class="swatch" :style="{ background: cellColor(n - 1) }"></span>
+            <span>more</span>
+          </div>
+        </div>
+        <p class="sub">Each square is a day, shaded by how many layers have data for it.</p>
+
+        <div class="cal-wrap">
+          <div v-for="cal in calendars" :key="cal.year" class="cal-year">
+            <div class="cal-title">{{ cal.year }} <span class="cal-total">{{ cal.total }} days</span></div>
+            <div class="cal-grid" :style="{ gridTemplateColumns: `repeat(${cal.weeks.length}, 11px)` }">
+              <div v-for="(mo, mi) in cal.monthLabels" :key="mi" class="cal-month"
+                   :style="{ gridColumn: mo.col + 1 }">{{ mo.label }}</div>
+              <template v-for="(week, wi) in cal.weeks">
+                <div v-for="(day, di) in week" :key="`${wi}-${di}`" class="cal-cell"
+                     :style="{ gridColumn: wi + 1, gridRow: di + 2, background: day ? cellColor(day.intensity) : 'transparent' }"
+                     :title="day ? `${day.date}: ${day.intensity ? day.layers.join(', ') : 'no data'}` : ''"></div>
+              </template>
+            </div>
+          </div>
         </div>
       </template>
     </template>
@@ -99,6 +100,47 @@ const dateSets = computed(() => {
 })
 function has(key, date) { return dateSets.value[key]?.has(date) }
 
+// ── Calendar heatmap: one grid per year, cells shaded by how many layers have
+// data on that date (GitHub-contributions style). ─────────────────────────────
+const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const iso = (d) => d.toISOString().slice(0, 10)
+
+const maxIntensity = computed(() => {
+  let m = 0
+  for (const layers of Object.values(cov.value?.date_index || {})) m = Math.max(m, layers.length)
+  return m || 1
+})
+
+const calendars = computed(() => {
+  const idx = cov.value?.date_index || {}
+  const years = [...new Set(Object.keys(idx).map((d) => d.slice(0, 4)))].sort()
+  return years.map((year) => {
+    const y = Number(year)
+    const start = new Date(Date.UTC(y, 0, 1))
+    const end = new Date(Date.UTC(y, 11, 31))
+    const weeks = []
+    let week = new Array(start.getUTCDay()).fill(null) // pad to the first weekday
+    const monthLabels = []
+    for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+      const ds = iso(d)
+      if (d.getUTCDate() === 1) monthLabels.push({ col: weeks.length, label: MONTH_ABBR[d.getUTCMonth()] })
+      week.push({ date: ds, intensity: (idx[ds] || []).length, layers: idx[ds] || [] })
+      if (week.length === 7) { weeks.push(week); week = [] }
+    }
+    if (week.length) { while (week.length < 7) week.push(null); weeks.push(week) }
+    const total = Object.keys(idx).filter((d) => d.startsWith(year)).length
+    return { year, weeks, monthLabels, total }
+  })
+})
+
+function cellColor(intensity) {
+  if (!intensity) return 'var(--surface-2)'
+  // Discrete green ramp by fraction of the max layer count on any day.
+  const t = intensity / maxIntensity.value
+  const alpha = 0.35 + 0.65 * t
+  return `color-mix(in srgb, var(--accent) ${Math.round(alpha * 100)}%, var(--surface-2))`
+}
+
 function mb(bytes) {
   if (!bytes) return '0 MB'
   const v = bytes / 1e6
@@ -137,15 +179,17 @@ dd { margin: 0; color: var(--text); font-variant-numeric: tabular-nums; text-ali
 .extent { font-size: 0.76rem; }
 
 .section { margin: 4px 0 2px; font-size: 1rem; }
-.matrix-wrap { overflow: auto; border: 1px solid var(--border); border-radius: 10px; margin-top: 10px; max-height: 60vh; }
-.matrix { border-collapse: collapse; width: 100%; font-size: 0.82rem; }
-.matrix th, .matrix td { padding: 6px 12px; border-bottom: 1px solid var(--border-soft); white-space: nowrap; }
-.matrix thead th { position: sticky; top: 0; background: var(--surface-2); text-align: left; color: var(--text); border-bottom: 1px solid var(--border); }
-.date-col { font-variant-numeric: tabular-nums; color: var(--text); position: sticky; left: 0; background: var(--surface); }
-.matrix thead .date-col { background: var(--surface-2); z-index: 1; }
-.cell { text-align: center; }
-.mark { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
-.gap { color: var(--border); }
-.msg { padding: 16px; color: #555; }
+.cal-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.legend-scale { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--muted); }
+.legend-scale .swatch { width: 11px; height: 11px; border-radius: 2px; border: 1px solid var(--border-soft); }
+
+.cal-wrap { display: flex; flex-direction: column; gap: 18px; margin-top: 12px; }
+.cal-year { overflow-x: auto; }
+.cal-title { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.cal-total { font-weight: 400; color: var(--muted); font-size: 0.78rem; }
+.cal-grid { display: grid; grid-auto-rows: 11px; gap: 2px; grid-template-rows: 14px repeat(7, 11px); width: max-content; }
+.cal-month { font-size: 0.66rem; color: var(--muted); grid-row: 1; align-self: end; white-space: nowrap; }
+.cal-cell { width: 11px; height: 11px; border-radius: 2px; }
+.msg { padding: 16px; color: var(--muted); }
 .msg code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
 </style>
