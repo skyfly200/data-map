@@ -23,6 +23,29 @@ export function colorFor(cluster) {
   return PALETTE[cluster % PALETTE.length]
 }
 
+// Deterministic colour for a category value, so the same value (a species, a
+// year, a land-cover class) gets the SAME colour on the map and in every chart.
+// A stable string hash → palette index; identity is never colour-alone (legends
+// everywhere), so palette collisions across distant values are acceptable.
+export function stableColor(value) {
+  if (value === null || value === undefined || value === '') return UNCLUSTERED
+  const s = String(value)
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
+  return PALETTE[h % PALETTE.length]
+}
+
+// Colour for a (field, value) pair. Cluster keeps its index-based palette
+// (already consistent everywhere); every other category uses the stable hash.
+export function categoryColor(field, value) {
+  if (value === null || value === undefined || value === '') return UNCLUSTERED
+  if (field === 'cluster') {
+    const n = Number(String(value).replace(/^C/, ''))
+    return Number.isFinite(n) ? colorFor(n) : UNCLUSTERED
+  }
+  return stableColor(value)
+}
+
 // Canonical iNaturalist URL. Prefers the numeric id; falls back to the UUID,
 // which the iNaturalist observations route also resolves.
 export function inatUrl(p) {
@@ -52,14 +75,33 @@ export function hasValue(v) {
   return v !== null && v !== undefined && v !== ''
 }
 
-// Derive a `genus` property from the scientific binomial in `species` (its first
-// token), so views can group/colour by genus without a pipeline change. Mutates
-// the features in place and is idempotent (skips features that already have one).
-function deriveGenus(geojson) {
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+// Columns that mark an observation as environmentally enriched. Its
+// "enrichment level" is how many of these carry data — a quick coverage lens.
+const ENRICH_COLS = ['ndvi', 'soil_moisture', 'slope', 'solar_exposure', 'land_cover_label', 'prcp_d0']
+
+// Derive lightweight fields the views can group/colour/plot by without a
+// pipeline change — genus (from the binomial), year/month (from the date), and
+// an enrichment-level bucket. Mutates features in place; idempotent.
+function deriveFields(geojson) {
   for (const f of geojson?.features || []) {
     const p = f.properties
-    if (p && !hasValue(p.genus) && hasValue(p.species)) {
+    if (!p) continue
+    if (!hasValue(p.genus) && hasValue(p.species)) {
       p.genus = String(p.species).trim().split(/\s+/)[0]
+    }
+    if (!hasValue(p.year) && hasValue(p.date)) {
+      const d = new Date(p.date)
+      if (!Number.isNaN(d.getTime())) {
+        p.year = d.getUTCFullYear()
+        p.month = d.getUTCMonth() + 1
+        p.month_name = MONTH_NAMES[d.getUTCMonth()]
+      }
+    }
+    if (!hasValue(p.enrichment_level)) {
+      const n = ENRICH_COLS.reduce((s, c) => s + (hasValue(p[c]) ? 1 : 0), 0)
+      p.enrichment_level = n === 0 ? 'none' : n >= ENRICH_COLS.length ? 'full' : 'partial'
     }
   }
   return geojson
@@ -157,7 +199,7 @@ export function useObservations() {
     if (data.value || pending.value) return // already loaded (shared across views)
     pending.value = true
     try {
-      data.value = deriveGenus(await fetchObservations(selectedDataset.value))
+      data.value = deriveFields(await fetchObservations(selectedDataset.value))
       error.value = ''
     } catch (e) {
       error.value = e.message
@@ -176,7 +218,7 @@ export function useObservations() {
 
   // Add a dataset fetched on the fly (Data tab) and switch to it.
   function addInlineDataset(entry, geojson) {
-    deriveGenus(geojson)
+    deriveFields(geojson)
     inlineDatasets.set(entry.path, geojson)
     if (!availableDatasets.value.some((d) => d.path === entry.path)) {
       availableDatasets.value = [...availableDatasets.value, entry]

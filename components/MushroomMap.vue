@@ -65,7 +65,7 @@
 <script setup>
 import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { PALETTE, UNCLUSTERED, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useUnits } from '~/composables/useUnits'
 
@@ -148,13 +148,14 @@ const coloring = computed(() => {
       if (hasValue(v)) counts.set(v, (counts.get(v) || 0) + 1)
     }
     const cats = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
-    const map2 = new Map(cats.map((v, i) => [v, PALETTE[i % PALETTE.length]]))
     const LEGEND_CAP = 12
-    const legend = cats.slice(0, LEGEND_CAP).map((v) => ({ label: String(v), color: map2.get(v) }))
+    // Stable per-value colours, so a species/year/class matches its colour in
+    // the charts. Legend shows the most frequent values first.
+    const legend = cats.slice(0, LEGEND_CAP).map((v) => ({ label: String(v), color: categoryColor(key, v) }))
     if (cats.length > LEGEND_CAP) legend.push({ label: `+${cats.length - LEGEND_CAP} more`, color: UNCLUSTERED })
     return {
       type: 'categorical', title,
-      colorFn: (p) => (hasValue(p[key]) ? map2.get(p[key]) : UNCLUSTERED),
+      colorFn: (p) => (hasValue(p[key]) ? categoryColor(key, p[key]) : UNCLUSTERED),
       legend,
     }
   }
