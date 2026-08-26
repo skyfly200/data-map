@@ -541,43 +541,66 @@ def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60, max_workers=
     print(f'Sampling Sentinel-2 NDVI per point (±{buffer_days}d, {scale} m) via Earth Engine '
           f'— {total} points, {max_workers} parallel...')
 
-    def worker(task):
-        idx, lon, lat, date = task
+    # Batch by observation date: points that share a date share the ±buffer
+    # window, so ONE median composite + ONE reduceRegions over a FeatureCollection
+    # samples them all in a single getInfo instead of one call per point. Dates
+    # run concurrently, and each date's points are chunked to bound the payload.
+    by_date = {}
+    for idx, lon, lat, date in tasks:
+        by_date.setdefault(pd.Timestamp(date).normalize(), []).append((idx, lon, lat))
+    total_dates = len(by_date)
+    chunk_size = 500
+
+    print(f'  batched into {total_dates} date group(s), {max_workers} parallel.')
+
+    def worker(item):
+        date, pts = item
         start = (date - timedelta(days=buffer_days)).strftime('%Y-%m-%d')
         end = (date + timedelta(days=buffer_days)).strftime('%Y-%m-%d')
+        results = {}
         try:
-            point = ee.Geometry.Point([lon, lat])
-            collection = (ee.ImageCollection('COPERNICUS/S2_SR')
-                          .filterDate(start, end)
-                          .filterBounds(point)
-                          .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', cloud_pct))
-                          .map(lambda img: img.normalizedDifference(['B8', 'B4']).rename('NDVI')))
-            value = (collection.median()
-                     .reduceRegion(ee.Reducer.mean(), point, scale)
-                     .get('NDVI').getInfo())
-            return idx, value, None
+            lons = [p[1] for p in pts]
+            lats = [p[2] for p in pts]
+            region = ee.Geometry.Rectangle([min(lons) - 0.05, min(lats) - 0.05,
+                                            max(lons) + 0.05, max(lats) + 0.05])
+            ndvi = (ee.ImageCollection('COPERNICUS/S2_SR')
+                    .filterDate(start, end)
+                    .filterBounds(region)
+                    .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', cloud_pct))
+                    .map(lambda img: img.normalizedDifference(['B8', 'B4']).rename('NDVI'))
+                    .median())
+            for c in range(0, len(pts), chunk_size):
+                fc = ee.FeatureCollection([
+                    ee.Feature(ee.Geometry.Point([lon, lat]), {'ridx': int(idx)})
+                    for idx, lon, lat in pts[c:c + chunk_size]
+                ])
+                reduced = ndvi.reduceRegions(collection=fc, reducer=ee.Reducer.mean(), scale=scale).getInfo()
+                for feat in reduced.get('features', []):
+                    props = feat.get('properties', {})
+                    results[props.get('ridx')] = props.get('NDVI')
+            return date, results, None
         except Exception as e:
-            return idx, None, str(e)
+            return date, results, str(e)
 
-    sampled = fails = 0
+    sampled = fail_batches = 0
     t0 = time.monotonic()
-    # EE getInfo() calls are independent network requests → run them concurrently.
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as ex:
-        futures = [ex.submit(worker, t) for t in tasks]
+        futures = [ex.submit(worker, item) for item in by_date.items()]
         for i, fut in enumerate(concurrent.futures.as_completed(futures), 1):
-            idx, value, err = fut.result()
+            _date, results, err = fut.result()
             if err:
-                fails += 1
-            elif value is not None:
-                df.at[idx, 'ndvi'] = value
-                sampled += 1
-            _progress(f"NDVI ({sampled} sampled)", i, total, t0)
-            if checkpoint and i % 500 == 0:
+                fail_batches += 1
+            for ridx, val in results.items():
+                if ridx is not None and val is not None:
+                    df.at[ridx, 'ndvi'] = val
+                    sampled += 1
+            _progress(f"NDVI ({sampled} sampled)", i, total_dates, t0)
+            if checkpoint:
                 checkpoint()
 
-    if fails:
-        print(f"[!] {fails}/{total} NDVI request(s) failed.")
-    print(f'✅ NDVI sampled for {sampled}/{total} points.')
+    if fail_batches:
+        print(f"[!] {fail_batches}/{total_dates} NDVI date-batch(es) failed.")
+    print(f'✅ NDVI sampled for {sampled}/{total} points across {total_dates} date-batches.')
     return df
 
 # ─── Main Enrichment Script ───────────────────────────────────────────────────
