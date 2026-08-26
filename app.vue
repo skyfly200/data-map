@@ -235,4 +235,25 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 .auth-btn.as-link { display: inline-block; }
 
 .app-main { flex: 1 1 auto; min-height: 0; overflow: auto; }
+
+/* ── Mobile: the header is a single row on desktop; let it wrap and give the
+   nav its own horizontally-scrollable strip so nothing overflows off-screen. ── */
+@media (max-width: 860px) {
+  .app-header { flex-wrap: wrap; gap: 8px 10px; padding: 8px 12px; }
+  .brand h1 { font-size: 1rem; }
+  .app-controls { flex-wrap: wrap; gap: 8px 10px; width: 100%; }
+  .dataset-picker { flex: 1 1 160px; min-width: 0; }
+  .dataset-picker select { width: 100%; min-width: 0; }
+  .app-nav {
+    order: 5; width: 100%; flex-wrap: nowrap; overflow-x: auto;
+    -webkit-overflow-scrolling: touch; gap: 4px; padding-bottom: 2px;
+  }
+  .app-nav::-webkit-scrollbar { height: 0; }
+  .nav-link { white-space: nowrap; padding: 6px 10px; }
+  .auth-box { margin-left: auto; }
+}
+@media (max-width: 480px) {
+  .brand h1 { font-size: 0.95rem; }
+  .units button { padding: 4px 8px; }
+}
 </style>
