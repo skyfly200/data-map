@@ -52,6 +52,19 @@ export function hasValue(v) {
   return v !== null && v !== undefined && v !== ''
 }
 
+// Derive a `genus` property from the scientific binomial in `species` (its first
+// token), so views can group/colour by genus without a pipeline change. Mutates
+// the features in place and is idempotent (skips features that already have one).
+function deriveGenus(geojson) {
+  for (const f of geojson?.features || []) {
+    const p = f.properties
+    if (p && !hasValue(p.genus) && hasValue(p.species)) {
+      p.genus = String(p.species).trim().split(/\s+/)[0]
+    }
+  }
+  return geojson
+}
+
 // Datasets fetched on the fly (Data tab) and held in memory for the session.
 const inlineDatasets = new Map()
 
@@ -144,7 +157,7 @@ export function useObservations() {
     if (data.value || pending.value) return // already loaded (shared across views)
     pending.value = true
     try {
-      data.value = await fetchObservations(selectedDataset.value)
+      data.value = deriveGenus(await fetchObservations(selectedDataset.value))
       error.value = ''
     } catch (e) {
       error.value = e.message
@@ -163,6 +176,7 @@ export function useObservations() {
 
   // Add a dataset fetched on the fly (Data tab) and switch to it.
   function addInlineDataset(entry, geojson) {
+    deriveGenus(geojson)
     inlineDatasets.set(entry.path, geojson)
     if (!availableDatasets.value.some((d) => d.path === entry.path)) {
       availableDatasets.value = [...availableDatasets.value, entry]

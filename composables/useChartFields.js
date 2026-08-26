@@ -19,6 +19,7 @@ export const ALL_NUMERIC = [
 
 export const ALL_CATEGORY = [
   { key: 'species', label: 'Species' },
+  { key: 'genus', label: 'Genus' },
   { key: 'land_cover_label', label: 'Land cover' },
   { key: 'cluster', label: 'Cluster' },
 ]
