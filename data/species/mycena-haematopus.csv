@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9b2383a8-7f2c-4990-b704-f6ddaababede,306563230,2025-08-15 11:32:45-06:00,2025-08-15,-107.8232633333,37.8553383333,2983.0,,11.0,21.0,6.4,5.8,,1031.4,Mycena haematopus,"Ophir, CO, US",3
+f0542a60-8cbe-4925-b090-0526f9f7b4ec,229816752,2024-07-16 17:57:08-06:00,2024-07-16,-107.5501289516,38.2463764123,2747.0,,16.7,31.7,0.0,12.1,,1014.4,Mycena haematopus,"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",3
+8237b4a0-26c1-4e65-982e-5fc4ed90bb18,229813912,2024-07-16 15:42:02-06:00,2024-07-16,-107.5409083333,38.24578,2706.0,,16.7,31.7,0.0,12.1,,1014.4,Mycena haematopus,"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",1
+6738c755-b5cb-4895-8251-2a2a7136efcc,132362808,2022-08-21 10:36:42-06:00,2022-08-21,-107.8379200771,37.9311044643,3076.0,,9.0,17.0,1.7,4.5,,1031.4,Mycena haematopus,"Mountain Village, CO, USA",1
+cdd2f61d-f634-4036-b84c-60ead23e3d09,3550420,2014-08-18,2014-08-18,-108.0575,37.8831,2900.0,,,,,7.5,,,Mycena haematopus,"Woods Lake, San Juan Co., Colorado, USA",2

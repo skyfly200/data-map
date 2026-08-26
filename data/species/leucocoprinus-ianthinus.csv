@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2e52b6e8-9d0a-492d-8d90-d10a59dc63c3,244387373,2021-08-28 16:22:39-06:00,2021-08-28,-105.0506583333,39.7418633333,1633.0,,18.1,31.6,,14.8,,1009.2,Leucocoprinus ianthinus,"Yates St, Denver, CO, US",1
+6485daa2-8e38-4bdf-b544-a281bfe39342,231740948,2024-07-25 18:52:06-06:00,2024-07-25,-105.0898376852,39.7195522151,1679.0,,20.0,34.4,0.0,16.9,,1017.1,Leucocoprinus ianthinus,"Creighton, Lakewood, CO 80226, USA",2
+4e113878-1105-4938-a95d-28dcf43d4474,221468263,2024-06-08 20:10:25-06:00,2024-06-08,-105.0887577608,39.7204230981,1674.0,,18.0,27.5,0.2,13.7,,1009.2,Leucocoprinus ianthinus,"Creighton, Lakewood, CO 80226, USA",1

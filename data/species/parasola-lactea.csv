@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2e51c149-129c-4fd5-871e-ca39099acac3,286894368,2025-06-04 15:09:04-06:00,2025-06-04,-104.92872,39.6954883333,1650.0,,9.6,18.3,1.5,12.4,,1013.7,Parasola lactea,"E Kansas Dr, Denver, CO, US",2

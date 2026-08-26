@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0afd68e2-f8f8-4bf9-95c7-12de31aae068,313335308,2025-09-11 11:53:00-06:00,2025-09-11,-105.79956111,35.79956944,3249.0,,13.0,28.0,0.0,21.1,,1025.2,Clitocybe amarescens,"Santa Fe, New Mexico, United States",2
+a19f712d-851f-4fe0-8c86-8821f971ce27,312804009,2025-09-08 13:57:00-06:00,2025-09-08,-105.80177222,35.79785556,3166.0,,9.0,28.0,0.0,9.0,,1025.2,Clitocybe amarescens,"Santa Fe, New Mexico, United States",1
+5f2e2d6f-3f01-46b5-a2c4-cad6e0b39dda,238528054,2024-08-28 18:47:14-06:00,2024-08-28,-107.9974533333,39.0087666667,2965.0,,15.0,33.9,0.0,13.0,,1012.4,Clitocybe amarescens,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",3

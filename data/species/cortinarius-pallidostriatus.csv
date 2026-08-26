@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0f7211c8-a9ca-47bb-ac65-98d76281d4c8,234005254,2024-07-23 11:29:00-06:00,2024-07-23,-105.8048835347,35.7952577552,3124.0,,13.3,31.1,0.8,14.9,,1017.5,Cortinarius pallidostriatus,"Sangre de Christo Mountains, NM, USA",3
+b995bed1-671b-4f50-a09c-9b3257d13605,226020032,2024-06-29 11:23:45-06:00,2024-06-29,-105.0796673628,38.767060366,3189.0,,15.0,25.0,16.5,22.4,,1027.0,Cortinarius pallidostriatus,"Victor, CO, US",2

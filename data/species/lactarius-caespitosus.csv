@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+87225224-2911-4aad-bea3-6624647a6e58,134090198,2022-08-27,2022-08-27,-106.4692,39.2472,3306.0,,2.8,18.3,0.0,11.0,,1013.4,Lactarius caespitosus,"Colorado. Lake Co., San Isabel National Forest, Native Lake trailhead, SW of Turquoise Lake.",1
+a08f2655-feea-4abf-8977-9bcfa37b6914,133140402,2022-08-29 10:26:18-06:00,2022-08-29,-105.5828783333,40.0519361667,3435.0,,2.6,24.2,0.0,3.0,,1029.8,Lactarius caespitosus,"Ward, CO, US",4
+fbff49f1-0497-4d55-a547-fa72f18f5b96,129734470,2022-08-06 11:20:59-06:00,2022-08-06,-105.7813921422,39.8093195528,3362.0,,5.4,16.7,2.4,7.6,,1020.0,Lactarius caespitosus,"Grand County, US-CO, US",1
+3abed79e-3f47-48ab-a3b8-10f5f4fba267,91149170,2021-08-14 09:56:35-06:00,2021-08-14,-105.75385312,40.05540725,3058.0,,6.0,28.3,0.0,7.2,,1033.2,Lactarius caespitosus,"Grand County, US-CO, US",2

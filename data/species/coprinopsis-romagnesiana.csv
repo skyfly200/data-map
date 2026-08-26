@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+557cfa80-6f1e-49cd-9556-21f0e95f8067,315727782,2025-09-21 12:15:18-06:00,2025-09-21,-106.39592,35.89558,2896.0,,13.0,26.0,0.0,8.9,,1022.8,Coprinopsis romagnesiana,"Pajarito Mountain Ski Area, Los Alamos, NM, US",1
+04546324-e5d9-4c6c-b311-b00bc96fc046,231479560,2024-07-10 11:41:00-06:00,2024-07-10,-105.8057096551,35.793952401,3124.0,,13.9,31.7,,12.5,,1015.2,Coprinopsis romagnesiana,"Santa Fe County, NM, USA",2
+be675d01-baa1-4517-a22d-be846adaaaa6,229814674,2024-07-16 16:57:24-06:00,2024-07-16,-107.5490590566,38.2353977907,2773.0,,16.7,31.7,0.0,12.1,,1014.4,Coprinopsis romagnesiana,"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",2

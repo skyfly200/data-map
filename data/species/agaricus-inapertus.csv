@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+48a7d174-2946-4fb5-a311-3be019de387a,378967639,2026-07-05 20:01:35-06:00,2026-07-05,-105.404145,39.563395,2776.0,,6.0,15.0,0.0,8.2,,1021.4,Agaricus inapertus,"Pine Grove, Pine, CO, US",1

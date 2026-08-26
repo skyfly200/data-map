@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+257d7e60-47c9-4dee-9a76-eec330fb1dd6,241935108,2024-09-15 13:00:36-06:00,2024-09-15,-105.5366568535,40.1188369631,2859.0,,13.0,30.0,0.0,5.8,,1016.9,Russula densifolia,"County Road 96, Ward, CO, US",1

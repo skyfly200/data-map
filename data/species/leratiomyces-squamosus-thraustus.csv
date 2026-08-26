@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+97e28d91-573b-4a0c-a769-9e3ff24c015d,180876004,2023-08-29 17:03:14-06:00,2023-08-29,-105.9380449165,39.4900272975,3225.0,,0.8,13.6,0.0,9.7,,1025.3,Leratiomyces squamosus thraustus,"Colorado, US",2

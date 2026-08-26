@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b2f7b10e-24b6-473f-b889-50014d13f85d,179527594,2023-08-20 09:05:00-06:00,2023-08-20,-104.9093578968,39.68295347,1662.0,,19.3,34.6,0.0,18.2,,1015.0,Chlorophyllum hortense,"Virginia Village, Denver, CO, USA",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b867ea63-4c93-4d0c-a5f1-1d2d11718edf,316594217,2025-09-24 10:30:00-06:00,2025-09-24,-105.81081389,35.77390556,2979.0,,6.0,22.0,0.0,11.8,,1029.1,Russula densifolia dilatoria,"Santa Fe, New Mexico, United States",3

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+da46506d-8182-4ccf-af0d-e10f9f3f4f1a,309797567,2025-08-27 11:49:00-06:00,2025-08-27,-105.801575,35.79803056,3208.0,,15.0,26.0,1.6,10.3,,1026.5,Russula olivina,"Santa Fe, New Mexico, United States",2

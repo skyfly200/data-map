@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+997b20e1-fe5e-4cd4-ada5-b07e82dd06b3,313250840,2025-09-10 14:24:00-06:00,2025-09-10,-105.803854407,35.7770901224,3132.0,,12.0,29.0,0.0,13.0,,1023.9,Psilocybe mescaleroensis,"Santa Fe County, NM, USA",2
+5062e373-9033-43fa-90ed-7b4133d898e7,40349347,2018-08-17,2018-08-17,-107.836,37.9421,2652.0,,12.0,23.0,,6.1,,,Psilocybe mescaleroensis,"Telluride, Colorado, USA",10

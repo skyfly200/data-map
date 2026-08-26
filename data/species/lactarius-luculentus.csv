@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6951d4fe-9774-407e-a9e6-20a72bdfb463,390674255,2026-08-12 10:30:15-06:00,2026-08-12,-105.7830766,39.8102116,3362.0,,5.0,13.0,7.9,8.2,,,Lactarius luculentus,"Winter Park, CO 80482, USA",1
+33b6762d-cf96-4593-a863-a841dff76cb4,308579745,2025-08-11 14:02:04-06:00,2025-08-11,-105.4998033333,39.691625,3162.0,,0.6,11.0,0.1,7.1,,1022.1,Lactarius luculentus,"SH-103, Idaho Springs, CO, US",1
+409470b6-da07-4600-bcd6-5ae1e7b94ae4,241242865,2024-09-11 22:19:21-06:00,2024-09-11,-107.7885054903,37.9215571644,3349.0,,10.0,20.0,2.6,7.8,,1024.4,Lactarius luculentus,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",2
+552fc5dd-8432-49bb-bff0-3f7203bb2466,235615416,2024-08-13 10:57:26-06:00,2024-08-13,-107.805596441,37.8596536886,3165.0,,10.0,18.0,15.2,7.5,,1031.3,Lactarius luculentus,"Ophir, CO 81426, USA",2
+568e91be-5229-40cc-ac02-1028ef96d63c,29650572,2017-08-19 11:50:00-07:00,2017-08-19,-108.0258416667,37.7797472222,3145.0,,,,,7.7,,,Lactarius luculentus,"Dolores County, CO, USA",1

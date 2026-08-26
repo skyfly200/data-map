@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+137aba14-7737-4cd3-92d5-0e3de02e2b4e,308864051,2025-08-24 13:18:59-06:00,2025-08-24,-105.0411990929,38.9947247283,2634.0,,12.3,25.6,3.8,7.3,,1017.8,Amanita nivalis,"Colorado, US",1

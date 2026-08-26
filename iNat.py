@@ -9,6 +9,8 @@ from meteostat import Point, stations, daily
 from datetime import datetime
 import requests
 
+import species_store as store
+
 # https://www.inaturalist.org/observations?subview=map
 
 _ELEVATION_CACHE = {}
@@ -362,15 +364,12 @@ def main():
     max_observations = int(getenv_with_file('INAT_MAX_OBSERVATIONS_PER_SPECIES', default=(getenv_with_file('MAX_OBSERVATIONS_PER_SPECIES', default='0', env_file=env_file)), env_file=env_file) or 0)
     parallel_fetches = get_parallel_fetch_workers({**load_env_file(env_file), **os.environ})
     refresh_all = should_refresh_all()
-    output_prefix = getenv_with_file('OUTPUT_PREFIX', default='mushroom_observations', env_file=env_file)
-    output_dir = getenv_with_file('OUTPUT_DIR', default='.', env_file=env_file)
-    os.makedirs(output_dir, exist_ok=True)
-
-    canonical_csv = os.path.join(output_dir, 'mushroom_observations.csv')
-    canonical_geojson = os.path.join(output_dir, 'mushroom_observations.geojson')
     existing_inat_ids = set()
     if not refresh_all:
-        existing_inat_ids = _existing_observation_ids(canonical_csv)
+        # Incremental: skip observations already in the per-species store.
+        existing_df = store.load_all(store.SPECIES_DIR)
+        if 'inat_id' in existing_df.columns:
+            existing_inat_ids = {str(v) for v in existing_df['inat_id'].dropna().tolist()}
         print(f"Incremental refresh enabled. Skipping {len(existing_inat_ids)} existing records by inat_id unless REFRESH_ALL=1.")
     else:
         print('Full refresh enabled: REFRESH_ALL=1, reloading all observations.')
@@ -434,20 +433,13 @@ def main():
     df_inat = pd.concat(frames, ignore_index=True)
     print("Data fetched successfully.")
 
-    if refresh_all:
-        base_name = _unique_output_base(output_prefix, species_list, lat, lng, radius)
-        csv_path = os.path.join(output_dir, f'{base_name}.csv')
-        geojson_path = os.path.join(output_dir, f'{base_name}.geojson')
-        print(f"Saving CSV to {csv_path}...")
-        df_inat.to_csv(csv_path, index=False)
-        print(f"Saving GeoJSON to {geojson_path}...")
-        df_inat.to_json(geojson_path, orient='records')
-
-    print(f"Saving canonical CSV to {canonical_csv}...")
-    df_inat.to_csv(canonical_csv, index=False)
-    print(f"Saving canonical GeoJSON to {canonical_geojson}...")
-    df_inat.to_json(canonical_geojson, orient='records')
-    print("Data saved successfully.")
+    # Write into the per-species store: one CSV per species under data/species/.
+    # Incremental runs merge with existing files (de-duped on uuid); a full
+    # refresh overwrites each fetched species' file.
+    written = store.write_split(df_inat, base=store.SPECIES_DIR, merge=not refresh_all)
+    total = sum(written.values())
+    print(f"Saved {len(df_inat)} fetched observation(s) into {len(written)} species file(s) "
+          f"under {store.SPECIES_DIR}/ ({total} rows on disk after merge/dedup).")
 
 
 if __name__ == "__main__":

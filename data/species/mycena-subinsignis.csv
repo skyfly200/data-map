@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+66a1803d-aef2-44f7-b795-0d1fc4bbe9cb,235533208,2024-08-12 13:08:00-06:00,2024-08-12,-106.6946861111,37.4731472222,3238.0,,5.0,13.0,4.0,11.7,,1039.4,Mycena subinsignis,"Rio Grande County, CO, USA",1

@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a3356807-439e-4d1f-88e9-18d203ef3233,343765301,2025-08-17 16:03:32-06:00,2025-08-17,-107.846925,37.7952383333,3316.0,,8.0,23.0,0.1,9.2,,1031.8,Russula sanguinea,"Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",1
+8af707ee-8d2b-48e6-bea2-4892fca840e7,241674871,2024-09-08 18:40:00-06:00,2024-09-08,-105.6495289228,40.3138745431,2897.0,,1.9,22.2,0.0,4.6,,1030.0,Russula sanguinea,"Larimer County, CO, USA",1
+0c922695-6dd7-4236-b13a-f7a18498feec,238314038,2024-08-26 11:49:56-06:00,2024-08-26,-110.8215782997,40.7262126997,3247.0,,,,,,,,Russula sanguinea,"Bear River, Wyoming 82930, USA",2
+35358fb7-0c7f-4247-ab9f-37b92c634b31,233828581,2024-08-04 16:39:36-06:00,2024-08-04,-106.5052408912,35.834527812,2598.0,,18.0,31.7,0.0,6.8,,1025.8,Russula sanguinea,"Valles Caldera National Preserve, Jemez Springs, NM, US",1
+f8b69418-4819-4c8a-b0a3-ac9c2e11c8b1,128912757,2022-07-28 17:15:40-06:00,2022-07-28,-105.7823054307,35.8104082989,3196.0,,13.3,27.2,,15.6,,1015.2,Russula sanguinea,"Santa Fe County, US-NM, US",1
+b0215a90-1926-4ebb-b9e9-4f390a95cfcd,128836016,2022-07-31 11:54:10-06:00,2022-07-31,-107.6695951439,37.824958832,2990.0,,11.0,22.0,9.9,3.2,,1034.4,Russula sanguinea,"CO, US",1
+fb107029-b36b-459e-af5f-cf6df90f0bf5,31144159,2019-08-19 13:46:01-06:00,2019-08-19,-106.84276216,37.52724439,3231.0,,,,,,,,Russula sanguinea,"Mineral County, US-CO, US",2

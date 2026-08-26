@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+98ff922c-509a-45dc-80b1-4b8064fc74e0,240184825,2024-09-05 16:14:13-06:00,2024-09-05,-107.7919916667,38.1120221667,2637.0,,10.0,20.0,0.5,6.8,,1035.6,Amanita sp. 'pahasapaensis',"Highland Dr, Ridgway, CO, US",3

@@ -11,6 +11,8 @@ import math
 import os
 import shutil
 
+import species_store as store
+
 
 def stage_output_path(input_path, suffix, output_dir='.'):
     if not input_path:
@@ -656,6 +658,20 @@ def _checkpoint(df, path):
     os.replace(tmp, path)
 
 
+def _merge_enriched(base, prior):
+    """Carry enriched columns from a prior (partial) run onto the current raw
+    rows, matched by uuid. Rows without a prior value stay unenriched so the
+    stages fill them, and newly-added species/observations are picked up too."""
+    if prior is None or prior.empty or 'uuid' not in base.columns or 'uuid' not in prior.columns:
+        return base
+    prior = prior.drop_duplicates(subset='uuid', keep='last').set_index('uuid')
+    df = base.copy()
+    for col in prior.columns:  # enriched-only columns; raw columns already correct in base
+        if col not in df.columns:
+            df[col] = df['uuid'].map(prior[col])
+    return df
+
+
 def run_stage(label, fn, df, path):
     """Run one enrichment stage, then checkpoint. A stage failure is logged and
     skipped (keeping every earlier stage's data) rather than aborting the run;
@@ -688,49 +704,95 @@ def _postprocess_landcover(df):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Enrich observation rows with raster and terrain data")
-    parser.add_argument("--input", default="mushroom_observations.csv", help="Input observation CSV")
-    parser.add_argument("--output", default=None, help="Output enriched CSV path")
+    parser.add_argument("--input", default=None,
+                        help="Single input CSV (default: the per-species store data/species/)")
+    parser.add_argument("--output", default=None,
+                        help="Single output CSV (default: the per-species enriched store data/enriched/)")
     args = parser.parse_args()
 
-    input_file = args.input
-    output_file = args.output or stage_output_path(input_file, '_enriched')
-    done_marker = f"{output_file}.done"
+    store_mode = args.input is None
 
-    # Resume: if a previous (unfinished) run left a checkpoint, continue from it
-    # instead of the raw input. Each stage only re-does rows still missing its
-    # values, so a stop/start, crash, or hang picks up where it left off. A stale
-    # completion marker is cleared while we work.
-    base = pd.read_csv(input_file)
-    if os.path.exists(output_file) and not os.path.exists(done_marker):
-        try:
-            resumed = pd.read_csv(output_file)
-            if len(resumed) == len(base):
-                df = resumed
-                print(f"↻ Resuming from checkpoint {output_file} ({len(df)} rows).")
-            else:
-                print(f"[!] Checkpoint row count ({len(resumed)}) != input ({len(base)}); starting fresh.")
-                df = base
-        except Exception as exc:
-            print(f"[!] Couldn't read checkpoint ({exc}); starting fresh.")
-            df = base
+    # Resume in both modes: an interrupted run leaves a checkpoint, and each stage
+    # only re-does rows still missing its values, so a stop/start, crash, or hang
+    # picks up where it left off. A stale completion marker is cleared while we work.
+    if store_mode:
+        base = store.load_all(store.SPECIES_DIR)
+        if base.empty:
+            raise SystemExit(f"No CSVs in {store.SPECIES_DIR}/. "
+                             "Run iNat.py or migrate_data_layout.py first.")
+        os.makedirs(store.ENRICHED_DIR, exist_ok=True)
+        checkpoint_file = os.path.join(store.ENRICHED_DIR, '_checkpoint.csv')
+        done_marker = store.ENRICHED_DONE
+        print(f"Loaded {len(base)} rows from {store.SPECIES_DIR}/ ({base['species'].nunique()} species).")
+
+        # Prefer a combined checkpoint from an interrupted run; otherwise fold in
+        # the per-species enriched files already on disk (matched by uuid).
+        prior = None
+        if not os.path.exists(done_marker):
+            if os.path.exists(checkpoint_file):
+                try:
+                    prior = pd.read_csv(checkpoint_file)
+                    print(f"↻ Resuming from {checkpoint_file} ({len(prior)} rows).")
+                except Exception as exc:
+                    print(f"[!] Couldn't read checkpoint ({exc}); ignoring.")
+            if prior is None:
+                existing = store.load_all(store.ENRICHED_DIR)
+                if not existing.empty:
+                    prior = existing
+                    print(f"↻ Resuming from {store.ENRICHED_DIR}/ ({len(prior)} rows).")
+        df = _merge_enriched(base, prior)
+        if os.path.exists(done_marker):
+            os.remove(done_marker)
+
+        def save():
+            _checkpoint(df, checkpoint_file)  # single fast combined write during the run
     else:
-        print(f"Loading {input_file}...")
-        df = base
-    if os.path.exists(done_marker):
-        os.remove(done_marker)
+        input_file = args.input
+        output_file = args.output or stage_output_path(input_file, '_enriched')
+        done_marker = f"{output_file}.done"
+        base = pd.read_csv(input_file)
+        if os.path.exists(output_file) and not os.path.exists(done_marker):
+            try:
+                resumed = pd.read_csv(output_file)
+                if len(resumed) == len(base):
+                    df = resumed
+                    print(f"↻ Resuming from checkpoint {output_file} ({len(df)} rows).")
+                else:
+                    print(f"[!] Checkpoint row count ({len(resumed)}) != input ({len(base)}); starting fresh.")
+                    df = base
+            except Exception as exc:
+                print(f"[!] Couldn't read checkpoint ({exc}); starting fresh.")
+                df = base
+        else:
+            print(f"Loading {input_file}...")
+            df = base
+        if os.path.exists(done_marker):
+            os.remove(done_marker)
+
+        def save():
+            _checkpoint(df, output_file)
 
     print("Total dates needed (for precip):", len(get_needed_raster_dates(df)))
 
-    save = lambda: _checkpoint(df, output_file)  # noqa: E731 — periodic in-stage checkpoints
-    df = run_stage("NDVI + soil (cached rasters)", lambda d: enrich_df_with_rasters(d, ndvi_dir="ndvi/", soil_dir="soil/"), df, output_file)
-    df = run_stage("Precipitation history", lambda d: enrich_with_precip(d, precip_dir="precip/", checkpoint=save), df, output_file)
-    df = run_stage("Land cover", lambda d: enrich_with_worldcover(d, checkpoint=save), df, output_file)
-    df = run_stage("Land-cover labels / filter", _postprocess_landcover, df, output_file)
-    df = run_stage("Terrain exposure", lambda d: enrich_with_terrain(d, checkpoint=save), df, output_file)
-    df = run_stage("Temperature history", lambda d: enrich_with_temperature_history(d, checkpoint=save), df, output_file)
-    df = run_stage("NDVI (Earth Engine)", lambda d: enrich_with_ndvi_ee(d, checkpoint=save), df, output_file)
-    df = run_stage("Fill missing NDVI", lambda d: fill_missing_ndvi(d, max_days_gap=7), df, output_file)
+    checkpoint_path = checkpoint_file if store_mode else output_file
+    df = run_stage("NDVI + soil (cached rasters)", lambda d: enrich_df_with_rasters(d, ndvi_dir="ndvi/", soil_dir="soil/"), df, checkpoint_path)
+    df = run_stage("Precipitation history", lambda d: enrich_with_precip(d, precip_dir="precip/", checkpoint=save), df, checkpoint_path)
+    df = run_stage("Land cover", lambda d: enrich_with_worldcover(d, checkpoint=save), df, checkpoint_path)
+    df = run_stage("Land-cover labels / filter", _postprocess_landcover, df, checkpoint_path)
+    df = run_stage("Terrain exposure", lambda d: enrich_with_terrain(d, checkpoint=save), df, checkpoint_path)
+    df = run_stage("Temperature history", lambda d: enrich_with_temperature_history(d, checkpoint=save), df, checkpoint_path)
+    df = run_stage("NDVI (Earth Engine)", lambda d: enrich_with_ndvi_ee(d, checkpoint=save), df, checkpoint_path)
+    df = run_stage("Fill missing NDVI", lambda d: fill_missing_ndvi(d, max_days_gap=7), df, checkpoint_path)
 
-    # Mark the run complete so it isn't resumed / re-run as if unfinished.
-    open(done_marker, 'w').close()
-    print(f"\nDone ✅  Enriched data saved to {output_file}")
+    if store_mode:
+        # Split the completed frame into per-species enriched files, drop the
+        # combined checkpoint, and mark the run complete.
+        written = store.write_split(df, base=store.ENRICHED_DIR, merge=False)
+        if os.path.exists(checkpoint_file):
+            os.remove(checkpoint_file)
+        open(done_marker, 'w').close()
+        print(f"\nDone ✅  Enriched {len(df)} rows → {store.ENRICHED_DIR}/ "
+              f"({len(written)} species files).")
+    else:
+        open(done_marker, 'w').close()
+        print(f"\nDone ✅  Enriched data saved to {output_file}")

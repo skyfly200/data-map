@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5b1bee06-4684-4323-b749-d6d03dd607bb,235444393,2024-08-12 16:44:42-06:00,2024-08-12,-105.754123149,39.4137409883,3062.0,,1.8,14.4,5.9,9.2,,1021.7,Russula sp. 'Woo44',"Park County, US-CO, US",2
+072d8106-0ef3-4349-ac74-30ad6b817473,235266871,2024-08-11 18:34:26-06:00,2024-08-11,-108.0100086347,39.0160498217,3097.0,,16.6,30.7,1.2,10.6,,1016.3,Russula sp. 'Woo44',"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",1

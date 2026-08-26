@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+505555fe-dab5-4503-9ada-1b91aa81d3dc,131942244,2022-08-19 10:51:39-06:00,2022-08-19,-107.8269116667,37.8535800026,3047.0,,10.0,17.0,7.5,3.4,,1030.0,Lepiota lepida,"Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",2

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+efc01dac-7e60-4490-8ba6-2ad4ead4285d,312216495,2025-09-06 12:28:12-06:00,2025-09-06,-105.0306195,39.1806079997,2779.0,,8.0,22.0,0.0,13.7,,1023.9,Cortinarius saniosus,"Sedalia, CO 80135, USA",2

@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c8bec9b4-8604-441a-acb3-623ed12b09f8,385783419,2023-09-19 15:28:05-06:00,2023-09-19,-105.0836416667,40.5701616667,1535.0,,12.8,25.0,0.0,11.4,,1010.0,Morchella rufobrunnea,"Center Ave, Fort Collins, CO, US",1
+89584930-e6e2-4cb2-8efc-a5735758439b,291359470,2025-06-20 19:30:00-06:00,2025-06-20,-104.8758480793,39.7621431903,1611.0,,18.8,35.6,0.0,27.6,,1000.5,Morchella rufobrunnea,"Denver County, US, CO",2
+f5512571-36f2-40a6-8d65-58d583f04d6a,168895360,2023-06-22 15:25:57-06:00,2023-06-22,-104.92623,39.73853,1631.0,,16.0,25.6,6.5,17.0,,1012.4,Morchella rufobrunnea,"Glencoe St, Denver, CO, US",2

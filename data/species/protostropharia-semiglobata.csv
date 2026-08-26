@@ -1,0 +1,10 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ef1087ed-2ac3-4e93-a207-bc4d29eb106b,310605667,2025-08-31 09:34:36-06:00,2025-08-31,-104.7077171988,39.0996113163,2264.0,,7.0,22.0,0.0,10.6,,1030.8,Protostropharia semiglobata,"Walker Rd, Colorado Springs, CO, US",1
+795d588a-d38b-487f-a118-1352d67dec2f,299034504,2025-07-18 09:23:11-06:00,2025-07-18,-103.41585624,43.65502729,1286.0,,11.7,24.4,0.0,13.3,,1013.2,Protostropharia semiglobata,"Custer County, US-SD, US",1
+ae42c353-c3b8-41a0-b06e-c82b57d0a901,234413078,2024-08-07 13:14:05-06:00,2024-08-07,-105.777405,35.799795,3527.0,,17.2,34.4,0.0,16.8,,1012.0,Protostropharia semiglobata,"Santa Fe National Forest, Tererro, NM, US",1
+28bf5993-3965-4ed1-be45-a3b78d17d521,181471563,2023-09-02 14:36:08-06:00,2023-09-02,-105.2788056806,38.9546676606,2587.0,,7.3,20.6,0.3,10.9,,1019.3,Protostropharia semiglobata,"Florissant, CO 80816, USA",1
+f6479231-b74c-444e-86b8-6b70cc8b01a6,131656807,2022-08-20 11:47:53-06:00,2022-08-20,-105.7792511111,39.9756368778,2626.0,,6.6,22.2,6.7,5.3,,1027.6,Protostropharia semiglobata,"CR-83, Granby, CO, US",2
+8b7988a7-51f9-4fd3-be32-9ef06d1105d1,131423545,2022-08-16 15:31:22-06:00,2022-08-16,-106.3884966667,41.4188716667,2919.0,,8.0,25.0,0.0,14.1,,1026.6,Protostropharia semiglobata,"Medicine Bow-Routt National Forest & Thunder Basin National Grassland, Rock River, WY, US",1
+d860d599-5eb5-4e1a-b495-8fac2f4f937e,89004668,2021-07-28 15:32:28-06:00,2021-07-28,-106.7906749084,35.8318903255,2268.0,,16.5,27.6,0.8,5.8,,1028.4,Protostropharia semiglobata,"Santa Fe National Forest, Jemez Springs, NM, US",1
+1ebfcf64-27ec-4e83-a474-5c3a765abfbc,85628403,2021-07-01 08:29:38-06:00,2021-07-01,-105.28587,36.3754259722,2590.0,,10.0,20.5,5.8,5.7,,1029.1,Protostropharia semiglobata,"Angel Fire, NM, USA",1
+3f5161cf-87e5-472a-b86e-043c9fcc5b0c,9572773,1992-08-13,1992-08-13,-105.283,36.3936,2562.0,,,,,,,,Protostropharia semiglobata,"Angel Fire, New Mexico, USA",1

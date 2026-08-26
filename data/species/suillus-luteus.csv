@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+49c21ed6-0301-4567-9e0c-b845eb558094,313950003,2025-09-13 17:30:44-06:00,2025-09-13,-105.0398940833,39.1128082222,2855.0,,8.5,22.0,2.7,10.3,,1018.5,Suillus luteus,"Woodland Park, CO 80863, USA",2

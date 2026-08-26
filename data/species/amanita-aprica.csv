@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+910c4a81-3cc9-497e-a0f8-253ca1753c66,297769686,2025-07-13 18:12:31-06:00,2025-07-13,-104.7943363823,39.0661025272,2276.0,,11.4,30.5,0.0,12.3,,1015.3,Amanita aprica,"Fox Run Regional Park, Colorado Springs, CO, US",1
+ae0617bb-635e-4fd9-9733-715a0edd78a6,265004711,2024-08-05 10:22:33-06:00,2024-08-05,-106.2288399805,39.6536518619,3548.0,,11.0,21.0,8.6,11.8,,1042.8,Amanita aprica,"White River National Forest, Avon, CO, US",1
+5ded56e3-6502-4f3a-87d2-9ebf7e7e1049,132604928,2022-08-28 09:58:31-06:00,2022-08-28,-105.8430265721,40.2399859319,2555.0,,2.8,22.7,0.3,6.1,,1023.2,Amanita aprica,"Grand County, US-CO, US",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ad52e39a-cee4-4a57-8fe2-1b4c168cb3fb,53490826,2020-07-16 13:17:38-06:00,2020-07-16,-107.6897915256,38.5556186655,2417.0,,17.8,27.8,,12.2,,1014.7,Coprinopsis alopecia,"Black Canyon of the Gunnison National Park, Crawford, CO, US",1

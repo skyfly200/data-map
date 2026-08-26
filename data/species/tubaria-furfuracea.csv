@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+802baf0c-b573-4871-b86d-a464c2c5bd3a,385084721,2026-07-24 12:19:00-06:00,2026-07-24,-105.8172361015,35.6527491775,2750.0,,17.8,32.2,0.5,7.0,,,Tubaria furfuracea,"New Mexico, US",1
+4f842a63-612e-427f-b47e-050209fa260f,226295169,2024-06-30 10:44:42-06:00,2024-06-30,-105.8287812956,35.7514630523,2767.0,,16.7,29.4,,18.1,,1017.0,Tubaria furfuracea,"Santa Fe County, US-NM, US",1
+4c9dc7ba-843b-4eb7-9a30-618c9b21f6ec,176438142,2023-08-03 08:30:47-06:00,2023-08-03,-105.6286621094,41.3157310486,2188.0,,11.0,25.0,2.0,14.4,,1025.0,Tubaria furfuracea,Laramie,1
+42ef78b4-203e-4571-8d26-28fb01412529,88582805,2021-07-25 10:38:19-06:00,2021-07-25,-109.2301297945,41.6117829397,1919.0,,7.6,29.9,0.0,9.6,,1013.5,Tubaria furfuracea,"Elk St, Rock Springs, WY, US",1

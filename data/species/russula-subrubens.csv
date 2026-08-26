@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1b2ada8d-30bb-48fd-bb1d-8aa3409dabe8,132888796,2022-08-29 10:51:47-06:00,2022-08-29,-105.58353796,40.051772272,3460.0,,2.6,24.2,0.0,3.0,,1029.8,Russula subrubens,"Boulder County, US-CO, US",6

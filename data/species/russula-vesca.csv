@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e43e54b7-a029-4537-aa80-beb34bda724f,300344238,2025-07-22 17:34:23-06:00,2025-07-22,-104.1342937,44.3727176,1708.0,,18.0,23.0,0.0,11.3,,1012.8,Russula vesca,"Beulah, WY 82712, USA",1

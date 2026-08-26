@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ea82d7f9-3b9c-43f9-9181-d135c6da7206,317816034,2025-09-29 10:51:00-06:00,2025-09-29,-105.83400833,35.74725278,2709.0,,8.0,22.0,0.1,11.5,,1024.8,Agaricus benesii,"Santa Fe, New Mexico, United States",3
+9978c75c-831f-43ba-8dc1-c20b006491cc,309416070,2025-08-26 15:12:45-06:00,2025-08-26,-104.9180364323,38.67031209,2276.0,,13.0,15.0,3.2,9.6,,1027.7,Agaricus benesii,"Colorado, US",1
+6e113c34-dff5-44bb-a4f3-4ea5b95794da,290706613,2024-08-07 18:18:00-06:00,2024-08-07,-106.9878231,38.8697146,2722.0,,9.4,27.8,,7.8,,1021.0,Agaricus benesii,"Crested Butte, CO 81224, USA",2

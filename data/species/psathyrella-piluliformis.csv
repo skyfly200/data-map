@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2860b7f8-5775-4b21-98c5-5d0afff23b2a,142171571,2022-11-16 14:09:01-07:00,2022-11-16,-105.2686004639,40.0146789551,1627.0,,-2.0,5.0,0.0,7.0,,1026.9,Psathyrella piluliformis,Boulder,1

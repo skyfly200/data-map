@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c38effcb-c843-44d2-a19c-8936b31621e8,239248227,2024-09-01 12:08:31-06:00,2024-09-01,-107.1677593997,38.8567590997,2785.0,,,,,7.4,,1023.6,Picipes badius,"Somerset, CO 81434, USA",1
+147c04f4-8a6e-4f13-a898-af91ea02858b,237545930,2024-08-20 13:07:00-06:00,2024-08-20,-105.8006583333,35.797325,3166.0,,17.8,35.0,0.0,10.6,,1014.3,Picipes badius,"Santa Fe County, NM, USA",1
+63d10406-8dfb-4863-a8f4-fa3831652070,120853782,2022-06-03 15:14:16-06:00,2022-06-03,-105.80355349,39.48185379,3008.0,,-4.3,7.2,0.0,8.9,,1013.5,Picipes badius,"Park County, US-CO, US",2
+f3b1b121-5bec-42ae-a0fc-191d40d478b1,4315150,2016-08-27 12:26:00-07:00,2016-08-27,-105.77669,36.2895,1933.0,,6.0,23.0,,10.0,,,Picipes badius,"Taos County, NM, USA",2
+39b17a4b-7d5e-46e5-94ac-cd72b78a00a5,3550171,2014-08-15,2014-08-15,-107.8785,37.842,2961.0,,,,,7.1,,,Picipes badius,"Galloping Goose Trail, Telluride, Colorado, USA",2

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5d5e78b9-377f-4931-ad9a-5f9221d0e84b,293027337,2025-06-26 08:52:06-06:00,2025-06-26,-104.7887493297,39.568135496,1746.0,,12.8,28.9,0.0,11.5,,1014.2,Parasola auricoma,"Dove Valley, CO, USA",1
+97b0eca5-64eb-42e3-a967-5ff500563874,184482619,2023-09-16 11:27:00-06:00,2023-09-16,-103.6689096609,43.7309996888,1619.0,,6.1,21.1,0.0,7.6,,1020.3,Parasola auricoma,"Custer County, SD, USA",2

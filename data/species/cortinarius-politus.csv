@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b98c13b6-79ef-4cb1-8257-230e1c65a43e,228548545,2024-07-10 15:05:51-06:00,2024-07-10,-108.0098035659,39.0144952523,3101.0,,15.3,34.7,0.0,11.9,,1014.0,Cortinarius politus,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",1

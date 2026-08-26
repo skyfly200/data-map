@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1be9162a-80ac-441a-8b0f-057cf0ff261e,310392802,2025-08-30 11:46:59-06:00,2025-08-30,-104.9079895,38.7291908056,2644.0,,11.3,19.3,2.1,11.1,,1019.1,Cortinarius atrocaeruleus,"Rock Creek, Colorado Springs, CO, USA",1
+3c4c29db-17ff-4353-beec-bafb5f9c01ff,236207389,2024-08-16 19:49:23-06:00,2024-08-16,-107.8079616667,37.9327283333,2702.0,,12.0,25.0,0.0,11.9,,1033.2,Cortinarius atrocaeruleus,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",3

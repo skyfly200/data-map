@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f127c9cf-86ee-4c00-ad6d-22f3f4751572,227813832,2024-07-04,2024-07-04,-106.6468938813,35.8848484694,2359.0,,17.5,30.5,0.0,11.2,,1024.8,Russula sardonia,"V9M3+W5, Jemez Springs, NM 87025, USA",1

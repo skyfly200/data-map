@@ -123,37 +123,35 @@ def main():
     python_executable = _resolve_python()
     print(f"Using Python interpreter: {python_executable}")
 
-    if should_skip_fetch(root):
-        print("Using cached iNaturalist observations from mushroom_observations.csv; skipping network fetch.")
-        observation_csv = 'mushroom_observations.csv'
+    # The whole pipeline reads and writes the per-species store under data/;
+    # each script defaults to it, so stages need no CSV paths passed between them.
+    import species_store as store
+
+    # 1. Observations — skip the network fetch when the store already has data.
+    species_files = store.list_species_files(store.SPECIES_DIR)
+    if not refresh_all and species_files:
+        print(f"Using cached observations in {store.SPECIES_DIR}/ "
+              f"({len(species_files)} species files); skipping iNaturalist fetch.")
     else:
         run_step("Fetch iNaturalist observations", python_executable, "iNat.py")
-        observation_csv = latest_observation_csv(root)
-        print(f"Using observation input: {observation_csv}")
 
-    enriched_csv = stage_output_path(observation_csv, '_enriched')
-    # Only skip when enrichment finished (.done marker). A bare checkpoint means an
-    # interrupted run — re-run enrich, which resumes from where it left off.
-    if not refresh_all and should_skip_stage(enriched_csv) and os.path.exists(f"{enriched_csv}.done"):
-        print(f"Skipping enrichment: {enriched_csv} already complete.")
+    # 2. Enrichment — env-layer downloads + raster sampling → per-species enriched
+    # store. Only skip when a full run finished (.done marker); a bare checkpoint
+    # means an interrupted run, which enrich_with_rasters resumes automatically.
+    if not refresh_all and os.path.exists(store.ENRICHED_DONE):
+        print(f"Skipping enrichment: {store.ENRICHED_DIR}/ already complete.")
     else:
         run_step("Download environmental layers", python_executable, "fetch.py")
         run_step("Process terrain DEM", python_executable, "terrain_pipeline.py")
-        run_step("Enrich observations with rasters", python_executable, "enrich_with_rasters.py", "--input", observation_csv, "--output", enriched_csv)
+        run_step("Enrich observations with rasters", python_executable, "enrich_with_rasters.py")
 
-    clustered_csv = stage_output_path(enriched_csv, '_clusters')
-    if not refresh_all and should_skip_stage(clustered_csv):
-        print(f"Skipping clustering: {clustered_csv} already exists.")
-    else:
-        run_step("Cluster observations", python_executable, "cluster.py", "--input", enriched_csv, "--output", clustered_csv)
+    # 3. Clustering — global KMeans, cluster labels written back into the store.
+    run_step("Cluster observations", python_executable, "cluster.py")
 
-    geojson_output = str(Path('public') / 'data' / f"{Path(clustered_csv).stem}.geojson")
-    if not refresh_all and should_skip_stage(geojson_output):
-        print(f"Skipping GeoJSON export: {geojson_output} already exists.")
-    else:
-        run_step("Export GeoJSON for map", python_executable, "export_geojson.py", "--input", clustered_csv, "--output", geojson_output)
+    # 4. GeoJSON export for the map (per-species files + combined + manifest).
+    run_step("Export GeoJSON for map", python_executable, "export_geojson.py")
 
-    # Summarize the raster cache for the Coverage page (best effort — a missing
+    # 5. Summarize the raster cache for the Coverage page (best effort — a missing
     # rasterio or empty cache just yields a smaller summary, never a hard fail).
     try:
         run_step("Summarize raster coverage", python_executable, "raster_coverage.py")

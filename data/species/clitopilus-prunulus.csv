@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8be35644-76ba-48a7-a38b-6b0cae8de38d,131164264,2022-08-16 12:58:50-06:00,2022-08-16,-108.0259555,37.7924416667,3093.0,,11.0,17.0,16.4,3.4,,1030.8,Clitopilus prunulus,"San Juan National Forest headquarters, Dolores, CO, US",2

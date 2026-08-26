@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+40b5800a-d3ce-4a02-8be3-c4c0ca8bcc7c,3900121,2016-08-16 13:03:36-06:00,2016-08-16,-104.961546,39.732349,1646.0,,12.8,30.5,,14.9,,1016.7,Agaricus,"1001 Race Street Denver, CO 80206",1

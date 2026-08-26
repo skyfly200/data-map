@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+80f1cd1f-5e56-4205-bc96-775b3e082bfb,229815998,2024-07-16 17:39:47-06:00,2024-07-16,-107.5356793321,38.2309643813,2802.0,,16.7,31.7,0.0,12.1,,1014.4,Cortinarius sp. 'CA43',"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",3

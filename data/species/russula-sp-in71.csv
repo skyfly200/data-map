@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+3a449bef-c14d-4d99-abbb-401b1c43e318,237155926,2024-08-21 10:00:58-06:00,2024-08-21,-104.8669239,38.7886098,1937.0,,15.5,29.0,2.2,14.0,,1023.4,Russula sp. 'IN71',"2130 S Cheyenne Canyon Rd, Colorado Springs, CO 80906, USA",2

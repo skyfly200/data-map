@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a1a10ddb-2fe6-4a31-bc85-c5f7ae06d7f6,297918386,2025-07-07 18:09:46-06:00,2025-07-07,-105.0548222222,38.08465,2525.0,,16.0,35.0,0.0,8.9,,1013.9,Atractosporocybe inornata,"Wetmore, CO 81253, USA",2

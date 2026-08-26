@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+37883f75-0594-438d-84a0-a68874e9a878,90614778,2021-08-08 11:00:23-06:00,2021-08-08,-105.6282306742,39.6113429288,3908.0,,,,,,,,Boletus mottiae,"Colorado, US",2

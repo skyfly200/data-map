@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e995f000-77ba-4cec-9a11-4e8b3f42ae97,316119153,2025-09-23 11:57:00-06:00,2025-09-23,-105.801445,35.7901466667,3207.0,,8.0,26.0,0.0,16.5,,1022.9,Hygrophorus russula,"Santa Fe National Forest, Tererro, NM, US",1

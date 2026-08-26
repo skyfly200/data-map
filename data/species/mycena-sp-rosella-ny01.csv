@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+95f9ef38-a914-4c70-b842-7dbe6c53a0b5,241535070,2024-09-08 12:31:00-06:00,2024-09-08,-107.0870848833,38.9105746083,3714.0,,6.7,24.4,0.0,9.9,,1016.8,Mycena sp. 'rosella-NY01',"Gunnison County, US-CO, US",2
