@@ -57,12 +57,20 @@ def download_srtm_dem(area=None, output_dir="dem/", dem_type="SRTMGL3", api_key=
     out_path = os.path.join(output_dir, f"dem_{dem_type}.tif")
     cog_path = os.path.join(output_dir, f"dem_{dem_type}.cog.tif")
 
-    # Check for the compressed file first
+    # Use a cached DEM if present. Prefer the compressed COG, but also accept a
+    # raw .tif left behind when a previous compression failed — otherwise the DEM
+    # re-downloads on every run. Retry compression opportunistically, never
+    # re-download when the data is already on disk.
     if os.path.exists(cog_path):
         print(f"✅ Already downloaded: {cog_path}")
         return cog_path
-    elif os.path.exists(out_path) and not convert_raster_to_cog:
+    if os.path.exists(out_path):
         print(f"✅ Already downloaded: {out_path}")
+        if convert_raster_to_cog:
+            try:
+                return convert_raster_to_cog(out_path, output_path=cog_path, delete_original=True, verify=True)
+            except Exception as exc:
+                print(f"[!] DEM compression retry failed; using uncompressed file: {exc}")
         return out_path
 
     api_key = api_key or os.environ.get("OPENTOPOGRAPHY_API_KEY")
