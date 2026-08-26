@@ -23,6 +23,7 @@ handle reading the DEM and writing GeoTIFFs of each derived layer.
 
 import math
 import os
+import sys
 
 import numpy as np
 
@@ -398,15 +399,16 @@ if __name__ == "__main__":
             downloaded = download_srtm_dem()
             if downloaded and os.path.exists(downloaded):
                 dem_path = downloaded
-            else:
-                raise SystemExit(
-                    "No DEM found. Set OPENTOPOGRAPHY_API_KEY in the environment or pass --dem. "
-                    "The free API key is available at https://portal.opentopography.org/login"
-                )
-        except Exception:
-            raise SystemExit(
-                "No DEM found. Set OPENTOPOGRAPHY_API_KEY in the environment or pass --dem. "
-                "The free API key is available at https://portal.opentopography.org/login"
-            )
+        except Exception as exc:
+            print(f"[!] DEM download unavailable: {exc}")
+
+    if not dem_path or not os.path.exists(dem_path):
+        # Skip gracefully (exit 0) so the full pipeline still completes without
+        # terrain layers, rather than aborting every later stage. Terrain
+        # enrichment is optional; the map just won't have solar/wind/water.
+        print("[!] No DEM found — skipping terrain layers. "
+              "Set OPENTOPOGRAPHY_API_KEY (free at https://portal.opentopography.org/login) "
+              "or pass --dem to enable them.")
+        sys.exit(0)
 
     process_dem(dem_path, out_dir=args.out, prevailing_wind_deg=args.wind_dir)
