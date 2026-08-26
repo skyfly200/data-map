@@ -225,6 +225,13 @@ export function useObservations() {
 
   function setSpeciesFilter(list) { speciesFilter.value = [...list] }
 
+  // A single observation the user asked to "open on the map" (from a chart).
+  // The map watches this, selects the matching point, and pans to it.
+  const focusObservation = useState('focus-observation', () => null)
+  function setFocusObservation(obs) {
+    focusObservation.value = obs ? { ...obs } : null
+  }
+
   // Distinct location + time values present in the loaded data, for the filter
   // dropdowns. Species filter is intentionally ignored here so the options
   // reflect the whole dataset, not the current narrowing.
@@ -254,6 +261,6 @@ export function useObservations() {
   return {
     data, filteredData, rows, error, pending, load, loadDatasets, setDataset, addInlineDataset,
     selectedDataset, availableDatasets, speciesFilter, speciesOptions, setSpeciesFilter, filterOptions,
-    showFiltered, setShowFiltered,
+    showFiltered, setShowFiltered, focusObservation, setFocusObservation,
   }
 }

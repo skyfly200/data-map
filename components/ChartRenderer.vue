@@ -1,7 +1,7 @@
 <template>
   <ScatterChart v-if="config.type === 'scatter'" :title="title" :data="scatterData" :legend="coloring.legend"
     :xLabel="labelOf(config.xField)" :yLabel="labelOf(config.yField)" :xFormat="fmtOf(config.xField)" :yFormat="fmtOf(config.yField)"
-    :todayX="todayX" :todayLabel="todayLabel" />
+    :todayX="todayX" :todayLabel="todayLabel" @select="$emit('select', $event)" />
   <BarChart v-else-if="config.type === 'bar'" :title="title" :data="barData" :horizontal="!!config.horizontal" :format="barFmt" />
   <BoxPlot v-else-if="config.type === 'box'" :title="title" :data="boxData" :xLabel="labelOf(config.valueField)" :format="fmtOf(config.valueField)" />
   <BarChart v-else-if="config.type === 'histogram'" :title="title" :data="histogramData" :format="(v) => String(v)" />
@@ -20,6 +20,7 @@ import { useUnits } from '~/composables/useUnits'
 import { ALL_NUMERIC, ALL_CATEGORY } from '~/composables/useChartFields'
 
 const props = defineProps({ config: { type: Object, required: true } })
+defineEmits(['select'])
 
 const { rows } = useObservations()
 const { unit, tempUnit, elevValue, tempValue } = useUnits()
@@ -93,7 +94,7 @@ const coloring = computed(() => categoryColoring(c.value.colorField))
 const scatterData = computed(() => rows.value.map((r) => {
   const x = numVal(r, c.value.xField), y = numVal(r, c.value.yField)
   if (x === null || y === null) return null
-  return { x, y, color: c.value.colorField ? coloring.value.colorOf(catVal(r, c.value.colorField)) : SERIES_1, label: r.species }
+  return { x, y, color: c.value.colorField ? coloring.value.colorOf(catVal(r, c.value.colorField)) : SERIES_1, label: r.species, obs: r }
 }).filter(Boolean))
 
 function groupBy(field) {
