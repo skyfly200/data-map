@@ -4,6 +4,13 @@
       <h2>Sign in</h2>
       <p class="sub">A quick sign-in keeps the live data-fetching endpoints from being abused. Browsing the map, table, and charts stays open to everyone.</p>
 
+      <ClientOnly>
+        <template #fallback>
+          <p class="loading">Loading…</p>
+        </template>
+
+      <p v-if="urlError" class="notice err-notice">{{ urlError }}</p>
+
       <p v-if="!configured" class="notice">
         Auth isn’t configured for this deployment. Set <code>NUXT_PUBLIC_SUPABASE_URL</code> and
         <code>NUXT_PUBLIC_SUPABASE_ANON_KEY</code> to enable sign-in. Fetching runs unauthenticated until then.
@@ -59,6 +66,7 @@
 
         <p v-if="msg" :class="['msg', ok ? 'ok' : 'err']">{{ msg }}</p>
       </template>
+      </ClientOnly>
 
       <p class="policy-link">
         By signing in you agree to our <NuxtLink to="/terms">Terms</NuxtLink>
@@ -71,12 +79,30 @@
 <script setup>
 const { user, isAuthed, configured, signInWithOtp, signInWithPassword, signUp, signInWithOAuth, signInWithPasskey, registerPasskey, signOut } = useAuth()
 
-const mode = ref('signin') // 'signin' | 'signup' | 'magic'
+const route = useRoute()
+const mode = ref(route.query.mode === 'signup' ? 'signup' : 'signin') // 'signin' | 'signup' | 'magic'
 const email = ref('')
 const password = ref('')
 const busy = ref(false)
 const msg = ref('')
 const ok = ref(false)
+
+// OAuth/magic-link failures come back in the return URL (query for PKCE, hash
+// for implicit). Surface them persistently — otherwise the redirect lands on a
+// fresh page with no context and the reason for a failed GitHub/Google sign-in
+// is lost. Then strip them from the URL so a refresh doesn't keep showing them.
+const urlError = ref('')
+onMounted(() => {
+  const loc = window.location
+  const q = new URLSearchParams(loc.search)
+  const h = new URLSearchParams(loc.hash.replace(/^#/, ''))
+  const desc = q.get('error_description') || h.get('error_description')
+  const code = q.get('error') || h.get('error')
+  if (desc || code) {
+    urlError.value = decodeURIComponent(desc || code).replace(/\+/g, ' ')
+    history.replaceState({}, '', loc.pathname)
+  }
+})
 
 const submitLabel = computed(() => ({
   signin: 'Sign in',
@@ -158,8 +184,10 @@ async function doSignOut() { await signOut() }
 .card { width: 100%; max-width: 380px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background: #fff; }
 h2 { margin: 0 0 4px; font-size: 1.2rem; }
 .sub { margin: 0 0 16px; color: #6b7280; font-size: 0.82rem; }
-.notice { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; }
+.notice { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; margin: 0 0 14px; }
 .notice code { background: #ffedd5; padding: 1px 4px; border-radius: 4px; }
+.err-notice { background: #fef2f2; border-color: #fecaca; color: #b00020; }
+.loading { color: #9aa0a6; font-size: 0.85rem; }
 .signed { font-size: 0.9rem; }
 
 .oauth { display: flex; flex-direction: column; gap: 8px; }

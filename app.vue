@@ -2,10 +2,9 @@
   <div class="app">
     <NuxtRouteAnnouncer />
     <header class="app-header">
-      <div class="brand">
+      <NuxtLink to="/" class="brand">
         <h1>Mushroom Observations</h1>
-        <p>iNaturalist finds enriched with terrain &amp; environmental exposure, clustered by similarity.</p>
-      </div>
+      </NuxtLink>
       <div class="app-controls">
         <div class="dataset-picker">
           <label for="dataset-select">Dataset</label>
@@ -27,7 +26,8 @@
           <button :class="{ active: tempUnit === 'C' }" @click="tempUnit = 'C'">°C</button>
         </div>
         <nav class="app-nav">
-          <NuxtLink to="/" class="nav-link">Map</NuxtLink>
+          <NuxtLink to="/" class="nav-link">Home</NuxtLink>
+          <NuxtLink to="/map" class="nav-link">Map</NuxtLink>
           <NuxtLink to="/table" class="nav-link">Table</NuxtLink>
           <NuxtLink to="/charts" class="nav-link">Charts</NuxtLink>
           <NuxtLink to="/explore" class="nav-link">Explore</NuxtLink>
@@ -108,8 +108,9 @@ body { font-family: system-ui, -apple-system, sans-serif; color: #1f2933; }
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 10px 20px; background: #1f2933; color: #fff; flex: 0 0 auto;
 }
+.brand { text-decoration: none; color: inherit; }
 .brand h1 { margin: 0; font-size: 1.15rem; }
-.brand p { margin: 2px 0 0; font-size: 0.82rem; opacity: 0.8; }
+.brand:hover h1 { opacity: 0.85; }
 
 .app-controls { display: flex; align-items: center; gap: 14px; }
 

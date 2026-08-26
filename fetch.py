@@ -292,10 +292,13 @@ def _remove_stale_chirps_files(*paths):
             pass
 
 
-def fetch_chirps_precip(date_str, output_dir="precip/"):
+def fetch_chirps_precip(date_str, output_dir="precip/", progress=""):
     os.makedirs(output_dir, exist_ok=True)
     out_path = os.path.join(output_dir, f"precip_{date_str}.tif")
+    tag = f"{progress} " if progress else ""
     if os.path.exists(out_path):
+        if progress:
+            print(f"{tag}✅ cached {date_str}")
         return out_path
 
     year, month, day = date_str.split("-")
@@ -303,10 +306,10 @@ def fetch_chirps_precip(date_str, output_dir="precip/"):
     gz_path = out_path + ".gz"
 
     try:
-        print(f"🔽 Downloading CHIRPS for {date_str}...")
+        print(f"{tag}🔽 Downloading CHIRPS for {date_str}...")
         r = requests.get(url, stream=True, timeout=30)
         if r.status_code == 404:
-            print(f"⚠️ CHIRPS not available for {date_str}. Skipping.")
+            print(f"{tag}⚠️ CHIRPS not available for {date_str}. Skipping.")
             _remove_stale_chirps_files(gz_path, out_path)
             return None
         r.raise_for_status()
@@ -326,13 +329,13 @@ def fetch_chirps_precip(date_str, output_dir="precip/"):
         try:
             from compress_rasters import convert_raster_to_cog
             converted = convert_raster_to_cog(out_path, delete_original=True, verify=True)
-            print(f"✅ CHIRPS saved to {converted}")
+            print(f"{tag}✅ CHIRPS saved to {converted}")
         except Exception as exc:
-            print(f"[!] CHIRPS compression failed; keeping uncompressed file: {exc}")
+            print(f"{tag}[!] CHIRPS compression failed; keeping uncompressed file: {exc}")
         return out_path
 
     except Exception as e:
-        print(f"[!] Error fetching CHIRPS for {date_str}: {e}")
+        print(f"{tag}[!] Error fetching CHIRPS for {date_str}: {e}")
         _remove_stale_chirps_files(gz_path, out_path)
         return None
 
@@ -452,10 +455,23 @@ def main(csv_path='mushroom_observations.csv'):
 
     # ─── Precipitation (CHIRPS) ───────────────────────────────────────────────
     # Each observation date plus the 6 preceding days, for a 7-day rain history.
-    print("Fetching CHIRPS precipitation...")
     try:
-        for date_str in get_precip_dates(df, buffer_days=6):
-            fetch_chirps_precip(date_str)
+        precip_dates = get_precip_dates(df, buffer_days=6)
+        total = len(precip_dates)
+        print(f"Fetching CHIRPS precipitation — {total} daily tiles to check...")
+        downloaded = failed = 0
+        for i, date_str in enumerate(precip_dates, 1):
+            out = os.path.join("precip/", f"precip_{date_str}.tif")
+            existed = os.path.exists(out)
+            result = fetch_chirps_precip(date_str, progress=f"[{i}/{total}]")
+            if not existed:
+                if result:
+                    downloaded += 1
+                else:
+                    failed += 1
+        cached = total - downloaded - failed
+        print(f"✅ CHIRPS done — {downloaded} downloaded, {cached} already cached, "
+              f"{failed} unavailable/failed out of {total} total.")
     except Exception as e:
         print(f"[!] Precipitation download skipped: {e}")
 
