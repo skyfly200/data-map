@@ -1,4 +1,5 @@
 import argparse
+import time
 import pandas as pd
 from datetime import timedelta
 import rasterio
@@ -84,27 +85,40 @@ def get_needed_raster_dates(df, buffer_days=6):
 
 # ─── Precipitation Utilities ──────────────────────────────────────────────────
 def enrich_with_precip(df, precip_dir="precip/"):
-    print("Adding 7-day precipitation history...")
     for d in range(7):
-        col_name = f'prcp_d{d}'
-        df[col_name] = None
+        df[f'prcp_d{d}'] = None
 
     unique_dates = pd.to_datetime(df['date'].dropna().unique())
+    total = len(unique_dates)
+    total_rows = int(df['date'].notna().sum())
+    print(f"Adding 7-day precipitation history — {total} dates, {total_rows} observations...")
 
-    for date in unique_dates:
-        print(f"  → Enriching precip data for {date.strftime('%Y-%m-%d')} ({len(df[df['date'] == date.strftime('%Y-%m-%d')])} rows)")
+    start = time.monotonic()
+    missing = set()
+    done_rows = 0
+    for i, date in enumerate(sorted(unique_dates), 1):
+        dstr = date.strftime('%Y-%m-%d')
+        day_rows = df[df['date'] == dstr]          # compute the date group once
         for d in range(7):
             target_date = (date - timedelta(days=d)).strftime('%Y-%m-%d')
             tif_path = resolve_raster_path(os.path.join(precip_dir, f"precip_{target_date}.tif"))
-
             if not tif_path:
-                print(f"[!] Precip raster missing for {target_date} (looked for .tif / .cog.tif)")
+                missing.add(target_date)
                 continue
+            for idx, row in day_rows.iterrows():
+                df.at[idx, f'prcp_d{d}'] = sample_raster_value(tif_path, row.lon, row.lat)
 
-            for idx, row in df[df['date'] == date.strftime('%Y-%m-%d')].iterrows():
-                val = sample_raster_value(tif_path, row.lon, row.lat)
-                df.at[idx, f'prcp_d{d}'] = val
+        done_rows += len(day_rows)
+        pct = i / total * 100
+        elapsed = time.monotonic() - start
+        eta = (elapsed / i) * (total - i)
+        print(f"  [{i}/{total}] {pct:5.1f}%  {dstr} ({len(day_rows)} obs)  "
+              f"· {done_rows}/{total_rows} obs · {elapsed:4.0f}s elapsed, ~{eta:4.0f}s left",
+              flush=True)
 
+    if missing:
+        print(f"[!] {len(missing)} precip date(s) had no raster (points keep null rain for those days).")
+    print(f"✅ Precipitation history done in {time.monotonic() - start:.0f}s.")
     return df
 
 # ─── Land Cover Utilities ──────────────────────────────────────────────────
