@@ -1,7 +1,7 @@
 <template>
   <figure class="chart">
     <figcaption v-if="title" class="chart-title">{{ title }}</figcaption>
-    <div class="chart-area">
+    <div ref="container" class="chart-area">
       <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
         <g v-for="t in yTicks" :key="`y${t.v}`">
           <line :x1="padL" :y1="t.p" :x2="W - padR" :y2="t.p" class="grid" />
@@ -34,8 +34,7 @@ const props = defineProps({
   color: { type: String, default: SERIES_1 },
 })
 
-const W = 640
-const H = 360
+const { container, width: W, height: H } = useChartSize()
 const padL = 52
 const padR = 16
 const padT = 12
@@ -56,8 +55,8 @@ const yDom = computed(() => {
   return [Math.min(0, lo), hi + (hi - lo) * 0.05]
 })
 
-const sx = (v) => padL + ((v - xDom.value[0]) / (xDom.value[1] - xDom.value[0] || 1)) * (W - padL - padR)
-const sy = (v) => (H - padB) - ((v - yDom.value[0]) / (yDom.value[1] - yDom.value[0] || 1)) * (H - padT - padB)
+const sx = (v) => padL + ((v - xDom.value[0]) / (xDom.value[1] - xDom.value[0] || 1)) * (W.value - padL - padR)
+const sy = (v) => (H.value - padB) - ((v - yDom.value[0]) / (yDom.value[1] - yDom.value[0] || 1)) * (H.value - padT - padB)
 
 const scaled = computed(() => points.value.map((d) => ({ cx: sx(d.x), cy: sy(d.y) })))
 const polyline = computed(() => scaled.value.map((p) => `${p.cx},${p.cy}`).join(' '))
@@ -79,8 +78,8 @@ const yTicks = computed(() => ticks(yDom.value, props.yFormat, sy))
 <style scoped>
 .chart { margin: 0; }
 .chart-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-.chart-area { position: relative; }
-svg { width: 100%; height: auto; display: block; }
+.chart-area { position: relative; height: 100%; min-height: 260px; overflow: hidden; }
+svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .grid { stroke: var(--border-soft); stroke-width: 1; }
 .tick { fill: var(--muted); font-size: 10px; }
 .tick-y { text-anchor: end; }

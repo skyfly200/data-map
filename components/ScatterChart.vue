@@ -1,7 +1,7 @@
 <template>
   <figure class="chart">
     <figcaption v-if="title" class="chart-title">{{ title }}</figcaption>
-    <div class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
+    <div ref="container" class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
       <div class="chart-viewport" :style="viewportStyle">
         <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
           <!-- gridlines + axis ticks -->
@@ -56,8 +56,7 @@ const props = defineProps({
   todayLabel: { type: String, default: 'Today' },
 })
 
-const W = 640
-const H = 360
+const { container, width: W, height: H } = useChartSize()
 const padL = 52
 const padR = 16
 const padT = 12
@@ -66,8 +65,6 @@ const zoom = ref(1)
 const pan = ref({ x: 0, y: 0 })
 const dragStart = ref(null)
 const viewportStyle = computed(() => ({
-  width: `${W}px`,
-  height: `${H}px`,
   transform: `translate(${pan.value.x}px, ${pan.value.y}px) scale(${zoom.value})`,
   transformOrigin: '0 0',
   transition: dragStart.value ? 'none' : 'transform 0.15s ease-out',
@@ -108,8 +105,8 @@ const points = computed(() => props.data.filter((d) => Number.isFinite(d.x) && N
 const xDom = computed(() => domain(points.value.map((d) => d.x)))
 const yDom = computed(() => domain(points.value.map((d) => d.y)))
 
-const sx = (v) => padL + ((v - xDom.value[0]) / (xDom.value[1] - xDom.value[0])) * (W - padL - padR)
-const sy = (v) => (H - padB) - ((v - yDom.value[0]) / (yDom.value[1] - yDom.value[0])) * (H - padT - padB)
+const sx = (v) => padL + ((v - xDom.value[0]) / (xDom.value[1] - xDom.value[0])) * (W.value - padL - padR)
+const sy = (v) => (H.value - padB) - ((v - yDom.value[0]) / (yDom.value[1] - yDom.value[0])) * (H.value - padT - padB)
 
 const scaled = computed(() => points.value.map((d) => ({
   ...d, cx: sx(d.x), cy: sy(d.y), color: d.color || SERIES_1,
@@ -132,8 +129,9 @@ const yTicks = computed(() => ticks(yDom.value, props.yFormat, sy))
 <style scoped>
 .chart { margin: 0; }
 .chart-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-.chart-area { position: relative; }
-svg { width: 100%; height: auto; display: block; }
+.chart-area { position: relative; height: 100%; min-height: 260px; overflow: hidden; }
+.chart-viewport { position: absolute; inset: 0; }
+svg { width: 100%; height: 100%; display: block; }
 
 .grid { stroke: var(--border-soft); stroke-width: 1; }
 .tick { fill: var(--muted); font-size: 10px; }
