@@ -88,6 +88,45 @@ def sample_raster_value(tif_path, lon, lat, scale_factor=1.0, nodata_val=None):
         print(f"[!] Error sampling raster at ({lon}, {lat}) in {tif_path}: {e}")
         return None
 
+
+def sample_raster_points(tif_path, points, scale_factor=1.0, nodata_val=None):
+    """Sample many (lon, lat) points from one raster with a SINGLE open+read.
+
+    The per-point ``sample_raster_value`` re-opens the file and reads the whole
+    band for every point — catastrophic when sampling hundreds of points from
+    the same raster. This opens once, reads the band once, and indexes every
+    point, which is orders of magnitude faster for the enrichment loops.
+
+    Returns a list of values aligned with ``points`` (None where out of bounds,
+    nodata, or NaN).
+    """
+    out = [None] * len(points)
+    if not points:
+        return out
+    try:
+        with rasterio.open(tif_path) as src:
+            band = src.read(1)
+            h, w = band.shape
+            src_nodata = src.nodata
+            xs = [p[0] for p in points]
+            ys = [p[1] for p in points]
+            X, Y = transform('EPSG:4326', src.crs, xs, ys)  # batch reproject
+            for i, (x, y) in enumerate(zip(X, Y)):
+                r, c = src.index(x, y)
+                if not (0 <= r < h and 0 <= c < w):
+                    continue
+                v = band[r, c]
+                if nodata_val is not None and v == nodata_val:
+                    continue
+                if src_nodata is not None and v == src_nodata:
+                    continue
+                if isinstance(v, float) and math.isnan(v):
+                    continue
+                out[i] = float(v) * scale_factor
+    except Exception as e:
+        print(f"[!] Error batch-sampling {tif_path}: {e}")
+    return out
+
 def get_needed_raster_dates(df, buffer_days=6):
     if 'date' not in df.columns:
         raise ValueError("CSV must contain a 'date' column in YYYY-MM-DD format.")
@@ -122,14 +161,18 @@ def enrich_with_precip(df, precip_dir="precip/", checkpoint=None):
     for i, date in enumerate(pending, 1):
         dstr = date.strftime('%Y-%m-%d')
         day_rows = df[df['date'] == dstr]          # compute the date group once
+        idxs = list(day_rows.index)
+        coords = list(zip(day_rows['lon'], day_rows['lat']))
         for d in range(7):
             target_date = (date - timedelta(days=d)).strftime('%Y-%m-%d')
             tif_path = resolve_raster_path(os.path.join(precip_dir, f"precip_{target_date}.tif"))
             if not tif_path:
                 missing.add(target_date)
                 continue
-            for idx, row in day_rows.iterrows():
-                df.at[idx, f'prcp_d{d}'] = sample_raster_value(tif_path, row.lon, row.lat)
+            # One open+read for the whole date group instead of one per point.
+            vals = sample_raster_points(tif_path, coords)
+            for idx, v in zip(idxs, vals):
+                df.at[idx, f'prcp_d{d}'] = v
 
         done_rows += len(day_rows)
         pct = i / total * 100
@@ -170,21 +213,25 @@ def enrich_with_worldcover(df, base_dir="./world_cover/", checkpoint=None):
     print(f"Adding WorldCover land class — {total} observations...")
 
     start = time.monotonic()
-    resolved = {}   # tile name → resolved path (or None); warn once per tile
-    missing = set()
-    for n, (idx, row) in enumerate(pending, 1):
-        tile_name = get_worldcover_tile_name(row.lat, row.lon)
-        if tile_name not in resolved:
-            resolved[tile_name] = resolve_raster_path(os.path.join(base_dir, tile_name))
-            if not resolved[tile_name]:
-                missing.add(tile_name)
-                print(f"[!] WorldCover tile not cached: {tile_name} (run fetch.py to download it)")
+    # Group points by their 3°×3° tile, then sample each tile once for all of them.
+    by_tile = {}
+    for idx, row in pending:
+        by_tile.setdefault(get_worldcover_tile_name(row.lat, row.lon), []).append((idx, row.lon, row.lat))
 
-        tile_path = resolved[tile_name]
-        if tile_path:
-            df.at[idx, 'land_cover'] = sample_raster_value(tile_path, row.lon, row.lat, scale_factor=1, nodata_val=255)
-        _progress("land cover", n, total, start)
-        if checkpoint and n % 1000 == 0:
+    missing = set()
+    done = 0
+    for t, (tile_name, group) in enumerate(by_tile.items(), 1):
+        tile_path = resolve_raster_path(os.path.join(base_dir, tile_name))
+        if not tile_path:
+            missing.add(tile_name)
+            print(f"[!] WorldCover tile not cached: {tile_name} (run fetch.py to download it)")
+        else:
+            vals = sample_raster_points(tile_path, [(lon, lat) for _, lon, lat in group], scale_factor=1, nodata_val=255)
+            for (idx, _, _), v in zip(group, vals):
+                df.at[idx, 'land_cover'] = v
+        done += len(group)
+        _progress("land cover", done, total, start)
+        if checkpoint:
             checkpoint()
 
     if missing:
@@ -297,11 +344,15 @@ def enrich_with_terrain(df, terrain_dir="dem/derived/", checkpoint=None):
         return df
     print(f"Adding terrain exposure ({len(layer_paths)} layers × {total} observations)...")
     start = time.monotonic()
-    for n, (idx, row) in enumerate(pending, 1):
-        for name, path in layer_paths.items():
-            df.at[idx, name] = sample_raster_value(path, row.lon, row.lat)
-        _progress("terrain", n, total, start)
-        if checkpoint and n % 1000 == 0:
+    idxs = [idx for idx, _ in pending]
+    coords = [(row.lon, row.lat) for _, row in pending]
+    # Each static layer is opened+read once for ALL points, not once per point.
+    for li, (name, path) in enumerate(layer_paths.items(), 1):
+        vals = sample_raster_points(path, coords)
+        for idx, v in zip(idxs, vals):
+            df.at[idx, name] = v
+        _progress(f"terrain ({name})", li, len(layer_paths), start)
+        if checkpoint:
             checkpoint()
 
     return df
