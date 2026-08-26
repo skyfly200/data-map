@@ -18,6 +18,10 @@
           </optgroup>
         </select>
       </div>
+      <button class="locate" :class="{ busy: locating }" :title="locateError || 'Show my location'"
+              @click="locateMe">
+        <span class="dot-icon"></span>{{ locating ? 'Locating…' : 'My location' }}
+      </button>
       <label class="toggle">
         <input type="checkbox" v-model="showFiltered" />
         Include excluded water / non-terrestrial rows
@@ -80,7 +84,9 @@ if (import.meta.client) {
 }
 watch(colorBy, (v) => { if (import.meta.client) localStorage.setItem(COLORBY_KEY, v) })
 const selected = ref(null)
-let map, geoLayer, L
+const locating = ref(false)
+const locateError = ref('')
+let map, geoLayer, L, userLayer
 
 const RAMP = ['#e8f1fb', '#0b3d91'] // sequential light → dark blue
 
@@ -253,6 +259,38 @@ onMounted(async () => {
   }
 })
 
+// Show a dot at the viewer's location (browser geolocation, opt-in per click).
+function locateMe() {
+  if (!map || !L) return
+  if (!('geolocation' in navigator)) {
+    locateError.value = 'Geolocation not supported by this browser.'
+    return
+  }
+  locating.value = true
+  locateError.value = ''
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      locating.value = false
+      const { latitude: lat, longitude: lon, accuracy } = pos.coords
+      if (userLayer) { userLayer.remove(); userLayer = null }
+      userLayer = L.layerGroup([
+        // Accuracy halo + a solid "you are here" dot.
+        L.circle([lat, lon], { radius: accuracy || 0, color: '#2a78d6', weight: 1, fillOpacity: 0.12 }),
+        L.circleMarker([lat, lon], { radius: 7, color: '#fff', weight: 2, fillColor: '#2a78d6', fillOpacity: 1 })
+          .bindTooltip('You are here', { direction: 'top' }),
+      ]).addTo(map)
+      map.setView([lat, lon], Math.max(map.getZoom() || 0, 11))
+    },
+    (err) => {
+      locating.value = false
+      locateError.value = err.code === err.PERMISSION_DENIED
+        ? 'Location permission denied.'
+        : 'Could not get your location.'
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+  )
+}
+
 onBeforeUnmount(() => { if (map) map.remove() })
 </script>
 
@@ -284,6 +322,18 @@ onBeforeUnmount(() => { if (map) map.remove() })
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 .toggle input { accent-color: #2a78d6; }
+
+.locate {
+  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
+  padding: 7px 10px; font: 600 13px system-ui, sans-serif; color: #333; cursor: pointer;
+  display: inline-flex; gap: 7px; align-items: center; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+.locate:hover { background: #fff; }
+.locate.busy { opacity: 0.7; cursor: progress; }
+.locate .dot-icon {
+  width: 11px; height: 11px; border-radius: 50%; background: #2a78d6; border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #2a78d6; flex: 0 0 auto;
+}
 
 .legend {
   position: absolute; bottom: 18px; right: 12px; z-index: 500;
