@@ -65,7 +65,17 @@ def main():
     parser = argparse.ArgumentParser(description="Cluster mushroom observations by environmental similarity")
     parser.add_argument("--input", default="mushroom_observations_enriched.csv", help="Path to enriched CSV file")
     parser.add_argument("--output", default=None, help="Output CSV with cluster labels")
-    parser.add_argument("--clusters", type=int, default=4, help="Number of clusters to form")
+    # Cluster count: --clusters wins, else CLUSTER_COUNT env var, else 4. This lets
+    # run_pipeline.py (which invokes cluster.py without --clusters) tune k via the env.
+    default_clusters = 4
+    env_clusters = os.getenv('CLUSTER_COUNT', '').strip()
+    if env_clusters:
+        try:
+            default_clusters = max(1, int(env_clusters))
+        except ValueError:
+            print(f"⚠️  Ignoring invalid CLUSTER_COUNT={env_clusters!r}; using {default_clusters}.")
+    parser.add_argument("--clusters", type=int, default=default_clusters,
+                        help="Number of clusters to form (default: CLUSTER_COUNT env var or 4)")
     args = parser.parse_args()
 
     output_path = args.output or stage_output_path(args.input, '_clusters')

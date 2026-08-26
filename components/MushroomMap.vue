@@ -10,12 +10,12 @@
       <div class="colorby">
         <label for="colorby-sel">Color by</label>
         <select id="colorby-sel" v-model="colorBy">
-          <option value="cluster">Cluster</option>
-          <option value="elevation">Elevation</option>
-          <option value="soil_moisture">Soil moisture</option>
-          <option value="water_retention">Water retention</option>
-          <option value="ndvi">NDVI</option>
-          <option value="land_cover_label">Land cover</option>
+          <optgroup label="Category">
+            <option v-for="o in colorOptions.category" :key="o.key" :value="o.key">{{ o.label }}</option>
+          </optgroup>
+          <optgroup v-if="colorOptions.numeric.length" label="Numeric">
+            <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
+          </optgroup>
         </select>
       </div>
       <label class="toggle">
@@ -62,6 +62,7 @@
 import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { PALETTE, UNCLUSTERED, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useUnits } from '~/composables/useUnits'
 
 const { data, filteredData, load, showFiltered, setShowFiltered } = useObservations()
@@ -76,10 +77,25 @@ let map, geoLayer, L
 
 const RAMP = ['#e8f1fb', '#0b3d91'] // sequential light → dark blue
 
-const NUMERIC_LABEL = {
-  elevation: 'Elevation (m)', soil_moisture: 'Soil moisture',
-  water_retention: 'Water retention', ndvi: 'NDVI',
-}
+// Field labels + which keys are categorical, drawn from the shared chart
+// registry so the map and the Explore builder stay in sync.
+const CATEGORY_KEYS = new Set(ALL_CATEGORY.map((f) => f.key))
+const FIELD_LABEL = Object.fromEntries([...ALL_CATEGORY, ...ALL_NUMERIC].map((f) => [f.key, f.label]))
+
+// Offer only the dimensions that actually carry data in the current dataset,
+// so an un-enriched layer (e.g. NDVI still empty) doesn't yield an all-grey map.
+const colorOptions = computed(() => {
+  const feats = filteredData.value?.features || []
+  const present = (list) => list.filter((f) => feats.some((ft) => hasValue(ft.properties[f.key])))
+  return { category: present(ALL_CATEGORY), numeric: present(ALL_NUMERIC) }
+})
+
+// If a dataset switch drops the active dimension's data, fall back to the first
+// option still available (cluster, in practice).
+watch(colorOptions, (opts) => {
+  const keys = [...opts.category, ...opts.numeric].map((o) => o.key)
+  if (keys.length && !keys.includes(colorBy.value)) colorBy.value = keys[0]
+})
 
 function fmtNum(v) { return Math.abs(v) >= 100 ? Math.round(v).toLocaleString() : Number(v).toFixed(2) }
 
@@ -94,7 +110,9 @@ function hexLerp(a, b, t) {
 const coloring = computed(() => {
   const feats = filteredData.value?.features || []
   const key = colorBy.value
+  const title = FIELD_LABEL[key] || key
 
+  // Cluster keeps its own stable palette + an explicit "Unclustered" bucket.
   if (key === 'cluster') {
     const seen = new Set()
     let hasNull = false
@@ -104,16 +122,18 @@ const coloring = computed(() => {
     }
     const legend = [...seen].sort((a, b) => a - b).map((c) => ({ label: `Cluster ${c}`, color: colorFor(c) }))
     if (hasNull) legend.push({ label: 'Unclustered', color: UNCLUSTERED })
-    return { type: 'categorical', title: 'Cluster', colorFn: (p) => colorFor(p.cluster), legend }
+    return { type: 'categorical', title, colorFn: (p) => colorFor(p.cluster), legend }
   }
 
-  if (key === 'land_cover_label') {
-    const cats = [...new Set(feats.map((f) => f.properties.land_cover_label).filter(hasValue))]
+  // Any other categorical dimension (land cover, species, …): assign palette
+  // colours to the distinct values present.
+  if (CATEGORY_KEYS.has(key)) {
+    const cats = [...new Set(feats.map((f) => f.properties[key]).filter(hasValue))]
     const map2 = new Map(cats.map((v, i) => [v, PALETTE[i % PALETTE.length]]))
     return {
-      type: 'categorical', title: 'Land cover',
-      colorFn: (p) => (hasValue(p.land_cover_label) ? map2.get(p.land_cover_label) : UNCLUSTERED),
-      legend: cats.map((v) => ({ label: v, color: map2.get(v) })),
+      type: 'categorical', title,
+      colorFn: (p) => (hasValue(p[key]) ? map2.get(p[key]) : UNCLUSTERED),
+      legend: cats.map((v) => ({ label: String(v), color: map2.get(v) })),
     }
   }
 
@@ -121,7 +141,7 @@ const coloring = computed(() => {
   const min = vals.length ? Math.min(...vals) : 0
   const max = vals.length ? Math.max(...vals) : 1
   return {
-    type: 'sequential', title: NUMERIC_LABEL[key] || key, min, max,
+    type: 'sequential', title, min, max,
     colorFn: (p) => {
       const v = p[key]
       if (!hasValue(v)) return UNCLUSTERED
