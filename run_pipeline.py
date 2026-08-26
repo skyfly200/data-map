@@ -143,6 +143,13 @@ def main():
     else:
         run_step("Export GeoJSON for map", python_executable, "export_geojson.py", "--input", clustered_csv, "--output", geojson_output)
 
+    # Summarize the raster cache for the Coverage page (best effort — a missing
+    # rasterio or empty cache just yields a smaller summary, never a hard fail).
+    try:
+        run_step("Summarize raster coverage", python_executable, "raster_coverage.py")
+    except Exception as exc:
+        print(f"[!] Raster coverage summary skipped: {exc}")
+
     print("\n✅ Full data pipeline completed successfully.")
 
 
