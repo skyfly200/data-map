@@ -116,7 +116,10 @@ function save() {
 </script>
 
 <style scoped>
-.explore { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+.explore {
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 14px;
+  height: 100%; min-height: 0; box-sizing: border-box;
+}
 .panel {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 12px 18px; align-items: end; background: var(--surface); border: 1px solid var(--border);
@@ -137,10 +140,14 @@ function save() {
 .save:hover { background: #246833; }
 .save:disabled { opacity: 0.8; cursor: default; }
 
-/* Cap the chart so its width-driven height can't exceed the viewport and spill
-   over the controls above. The card keeps its natural height; the page scrolls. */
-.stage { align-self: stretch; min-width: 0; }
-.stage :deep(svg) { max-height: 68vh; }
-.msg { padding: 16px; color: #555; }
-.msg.error { color: #b00020; }
+/* The chart card fills the space left below the controls, and the SVG scales to
+   fit that box (preserveAspectRatio letterboxes it) — so the chart always fits
+   on screen without the page scrolling. */
+.stage { flex: 1 1 auto; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+.panel { flex: 0 0 auto; }
+.stage :deep(figure) { flex: 1 1 auto; min-height: 0; min-width: 0; margin: 0; display: flex; flex-direction: column; }
+.stage :deep(figure > div) { flex: 1 1 auto; min-height: 0; }
+.stage :deep(svg) { width: 100%; height: 100%; max-height: 100%; display: block; }
+.msg { padding: 16px; color: var(--muted); }
+.msg.error { color: var(--danger); }
 </style>
