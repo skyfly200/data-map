@@ -132,8 +132,10 @@ def main():
         print(f"Using observation input: {observation_csv}")
 
     enriched_csv = stage_output_path(observation_csv, '_enriched')
-    if not refresh_all and should_skip_stage(enriched_csv):
-        print(f"Skipping enrichment: {enriched_csv} already exists.")
+    # Only skip when enrichment finished (.done marker). A bare checkpoint means an
+    # interrupted run — re-run enrich, which resumes from where it left off.
+    if not refresh_all and should_skip_stage(enriched_csv) and os.path.exists(f"{enriched_csv}.done"):
+        print(f"Skipping enrichment: {enriched_csv} already complete.")
     else:
         run_step("Download environmental layers", python_executable, "fetch.py")
         run_step("Process terrain DEM", python_executable, "terrain_pipeline.py")
