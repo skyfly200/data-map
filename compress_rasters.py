@@ -1,4 +1,5 @@
 import argparse
+import concurrent.futures
 import os
 from pathlib import Path
 
@@ -78,58 +79,88 @@ def _fmt_size(num_bytes):
     return f"{mb / 1000:.2f} GB" if mb >= 1000 else f"{mb:.1f} MB"
 
 
+def _process_single_raster(path_args):
+    """Worker function to process a single file in a separate process."""
+    path, replace_originals = path_args
+    orig_size = path.stat().st_size if path.exists() else 0
+    
+    try:
+        is_valid, _, _ = cog_validate(str(path), quiet=True)
+        
+        if is_valid:
+            new_name = f"{path.stem}.cog.tif"
+            new_path = path.with_name(new_name)
+            
+            if new_path != path:
+                path.rename(new_path)
+                
+            return True, True, orig_size, orig_size, path, new_path, None
+            
+        output = convert_raster_to_cog(path, delete_original=False, verify=True)
+        final_path = Path(output)
+        
+        if replace_originals:
+            if final_path.exists() and path.exists() and final_path != path:
+                path.unlink(missing_ok=True)
+        
+        new_size = final_path.stat().st_size if final_path.exists() else 0
+        return True, False, orig_size, new_size, path, final_path, None
+        
+    except Exception as exc:
+        return False, False, orig_size, 0, path, None, str(exc)
+
+
 def convert_all_rasters_in_dir(directory, *, replace_originals=False):
     directory = Path(directory)
     
-    # Collect all .tif and .tiff files. Do not include files that already end with .cog.tif.
     targets = []
     for ext in ("*.tif", "*.tiff"):
         targets.extend(p for p in directory.rglob(ext) if not p.name.endswith(".cog.tif"))
     targets = sorted(targets)
     
     total = len(targets)
+    
+    # Use max CPU cores, but cap it at 8 to prevent memory exhaustion
+    cpu_count = os.cpu_count() or 4
+    max_workers = min(cpu_count, 8)
+    
     print(f"🗜  Compressing {total} raster(s) in {directory} to COG...")
+    print(f"⚙️  Using {max_workers} processes.")
 
     converted = []
     failed = 0
     bytes_before = bytes_after = 0
     
-    for i, path in enumerate(targets, 1):
-        prefix = f"[{i}/{total}]"
-        orig_size = path.stat().st_size if path.exists() else 0
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
+        # Submit all tasks to the process pool
+        tasks = {executor.submit(_process_single_raster, (path, replace_originals)): path for path in targets}
         
-        try:
-            # Inspect the file. Check if the file is already a valid COG.
-            is_valid, _, _ = cog_validate(str(path), quiet=True)
+        # Process results as they complete
+        for i, future in enumerate(concurrent.futures.as_completed(tasks), 1):
+            prefix = f"[{i}/{total}]"
+            path = tasks[future]
             
-            if is_valid:
-                new_name = f"{path.stem}.cog.tif"
-                new_path = path.with_name(new_name)
+            try:
+                success, is_already_cog, orig_size, new_size, orig_path, final_path, error_msg = future.result()
                 
-                if new_path != path:
-                    path.rename(new_path)
+                if not success:
+                    failed += 1
+                    print(f"{prefix} [!] Failed to process {orig_path.name}: {error_msg}")
+                    continue
                     
-                print(f"{prefix} ⏭️  {path.name} is already a valid COG. Renamed to {new_path.name}.")
-                continue
-                
-            output = convert_raster_to_cog(path, delete_original=False, verify=True)
-            final_path = Path(output)
-            
-            if replace_originals:
-                if final_path.exists() and path.exists() and final_path != path:
-                    path.unlink(missing_ok=True)
-            
-            new_size = final_path.stat().st_size if final_path.exists() else 0
-            bytes_before += orig_size
-            bytes_after += new_size
-            pct = (1 - new_size / orig_size) * 100 if orig_size else 0
-            print(f"{prefix} ✅ {path.name}: {_fmt_size(orig_size)} → {_fmt_size(new_size)} "
-                  f"({pct:.0f}% smaller)")
-            converted.append(output)
-            
-        except Exception as exc:
-            failed += 1
-            print(f"{prefix} [!] Failed to process {path}: {exc}")
+                if is_already_cog:
+                    print(f"{prefix} ⏭️  {orig_path.name} is already a valid COG. Renamed to {final_path.name}.")
+                else:
+                    bytes_before += orig_size
+                    bytes_after += new_size
+                    pct = (1 - new_size / orig_size) * 100 if orig_size else 0
+                    print(f"{prefix} ✅ {orig_path.name}: {_fmt_size(orig_size)} → {_fmt_size(new_size)} "
+                          f"({pct:.0f}% smaller)")
+                    converted.append(str(final_path))
+                    
+            except Exception as exc:
+                failed += 1
+                print(f"{prefix} [!] Error retrieving result for {path.name}: {exc}")
 
     saved = bytes_before - bytes_after
     pct = (saved / bytes_before) * 100 if bytes_before else 0
