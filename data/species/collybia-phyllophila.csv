@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d2c90ca6-3512-4d7d-9dfa-e9c3e74b2a75,319013048,2025-10-05 11:08:48-06:00,2025-10-05,-105.5846322,39.98512514,3031.0,,-6.7,3.0,6.8,15.6,,1014.3,Collybia phyllophila,"Boulder County, US-CO, US",2
+f77e6398-09b5-4f30-86c4-3435b5be6865,291128819,2025-06-19 18:24:46-06:00,2025-06-19,-104.8978083333,38.7152027778,2798.0,,16.0,31.0,0.0,10.5,,1021.2,Collybia phyllophila,"Rock Creek, Colorado Springs, CO, USA",1
+2904c4a8-24a1-4af4-8890-717ff9762347,236356186,2024-08-17 09:23:29-06:00,2024-08-17,-107.8472717221,37.8589959145,2920.0,,12.0,23.0,4.9,9.4,,1034.5,Collybia phyllophila,"Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",2

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9155bc1b-8894-46f7-8b76-a19daec6d045,226016008,2024-06-29 11:15:06-06:00,2024-06-29,-105.0210571289,38.732772798,2876.0,,15.0,25.0,16.5,22.4,,1027.0,Cortinarius sp. 'CO01',"Manitou Springs, CO 80829, USA",2

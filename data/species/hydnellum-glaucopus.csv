@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1d332a12-fc62-4090-b2e7-e5cd262e767b,180110928,2023-08-22 10:49:11-06:00,2023-08-22,-104.9423133333,38.7361633333,3027.0,,20.0,31.0,0.0,16.7,,1027.6,Hydnellum glaucopus,"Pike and San Isabel National Forests, Divide, CO, US",5
+6db3d6d4-0a93-471b-a3f2-48b8045d70e4,178079106,2023-08-12 14:45:52-06:00,2023-08-12,-105.56893,40.0410695,3235.0,,17.0,28.0,0.0,8.5,,1019.7,Hydnellum glaucopus,"Ward, CO, US",4
+d3658114-f2bb-45f1-838d-27cd032286da,178078606,2023-08-12 14:55:24-06:00,2023-08-12,-105.570755,40.0433195,3268.0,,17.0,28.0,0.0,8.5,,1019.7,Hydnellum glaucopus,"Ward, CO, US",2

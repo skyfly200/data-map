@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+46d5cf49-e773-40f8-b0a9-2ef7a77a7a48,312792803,2025-09-09 16:59:10-06:00,2025-09-09,-105.0321237539,39.7883425888,1647.0,,14.7,26.3,0.0,10.7,,1013.0,Agaricus nanaugustus,"Regis University Rd, Denver, CO, US",1
+c95e95f7-3b03-44a9-ac1b-c5d1ac146d8a,228545424,2024-07-10 18:07:48-06:00,2024-07-10,-107.6061333333,37.3284033333,2323.0,,11.1,31.7,0.0,10.7,,1016.7,Agaricus nanaugustus,"Deer Ridge Dr, Bayfield, CO, US",1
+219c2d01-4a2c-49f5-bc6d-78a206135d55,178081585,2023-08-12 14:09:43-06:00,2023-08-12,-104.7680926323,38.8789211951,1993.0,,15.0,26.7,3.3,9.0,,1015.1,Agaricus nanaugustus,Palmer Park,6
+21ab69d3-66b0-45d4-9f47-28a314f5edd4,138071585,2022-09-30 08:33:52-06:00,2022-09-30,-104.957825,39.728955,1639.0,,11.9,23.1,1.1,10.4,,1012.8,Agaricus nanaugustus,"Columbine St, Denver, CO, US",1

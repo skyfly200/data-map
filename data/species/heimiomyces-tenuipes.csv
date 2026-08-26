@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c115c9e4-776c-422d-82b4-582082e55305,121979391,2022-06-15 14:14:34-06:00,2022-06-15,-106.2814633333,39.67362,3141.0,,1.0,15.0,0.0,18.2,,1031.5,Heimiomyces tenuipes,"White River National Forest, Vail, CO, US",1

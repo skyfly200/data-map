@@ -1,0 +1,10 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d5a9445d-562f-4d95-a953-5ff99dfde8e4,315728746,2025-09-21 12:56:19-06:00,2025-09-21,-106.39868,35.8964666667,2887.0,,13.0,26.0,0.0,8.9,,1022.8,Caloboletus rubripes,"Pajarito Mountain Ski Area, Los Alamos, NM, US",1
+7a61152c-c9f7-4f62-bc0d-97038511529b,314704232,2025-09-17 19:17:36-06:00,2025-09-17,-106.3710805,35.8408668,2379.0,,11.0,26.0,0.1,10.7,,1025.0,Caloboletus rubripes,"Los Alamos County, NM, USA",1
+ecf4610f-e8a4-4016-8982-0c49b006b71b,310626569,2025-08-31 16:50:28-06:00,2025-08-31,-105.8342177421,35.7469851914,2709.0,,12.0,26.0,2.8,15.0,,1027.3,Caloboletus rubripes,"Santa Fe County, US-NM, US",1
+f2b62590-1f94-467c-9fc9-ff10411fb584,291925734,2025-06-21 14:10:00-06:00,2025-06-21,-106.37016389,35.83966944,2406.0,,19.7,30.3,0.0,16.5,,1017.9,Caloboletus rubripes,"Los Alamos, New Mexico, United States",1
+bf55658c-d8c1-4ac0-9ea5-ce068463f4b6,243501094,2024-06-30 13:27:12-06:00,2024-06-30,-106.2236559716,35.9250576344,2096.0,,14.1,26.6,,10.2,,1030.1,Caloboletus rubripes,"New Mexico, US",1
+0731d537-68cd-42fe-807b-e3f68af796bd,239550973,2024-08-31 11:50:14-06:00,2024-08-31,-105.1194277778,36.6271944444,2510.0,,2.6,23.2,,4.4,,,Caloboletus rubripes,"Cimarron, NM 87714, USA",1
+b7e9a13f-bc8f-439f-b3aa-bfedb233332e,237292278,2024-07-04 10:34:32-06:00,2024-07-04,-106.7546466667,37.4114533333,2642.0,,7.0,16.0,0.0,12.4,,1038.6,Caloboletus rubripes,"San Juan National Forest - Headquarters, Creede, CO, US",1
+3e56932f-0ea8-433f-8a97-c3f613547170,132092269,2022-08-19 18:10:00-06:00,2022-08-19,-105.530545563,36.5585037952,2549.0,,10.6,23.9,,7.3,,1019.0,Caloboletus rubripes,"Taos County, NM, USA",1
+2ca47f12-5522-4dfa-86af-c64fb577f6e6,31086121,2019-08-18 12:32:26-06:00,2019-08-18,-105.5947913602,36.620033231,2705.0,,,,,11.2,,,Caloboletus rubripes,"San Cristobal, NM 87564, USA",1

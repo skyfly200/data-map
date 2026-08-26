@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+80bf2366-a5a5-4b26-a628-7a0470fb19eb,343599372,2025-08-28 18:29:56-06:00,2025-08-28,-104.812745,38.8458633333,1846.0,,13.0,23.0,8.3,13.4,,1025.9,Mycena oregonensis,"E Cache la Poudre St, Colorado Springs, CO, US",1

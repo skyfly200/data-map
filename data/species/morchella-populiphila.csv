@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9c162422-b14e-4054-99ec-0a25140201e3,236973005,2024-05-12 12:05:12-06:00,2024-05-12,-105.0201575578,39.6876805759,1627.0,,8.1,16.3,11.2,12.7,,1009.6,Morchella populiphila,"Colorado, US",2
+5cb67ec2-e36c-49d2-a011-cf50c0094de8,236971631,2024-05-12 14:44:00-06:00,2024-05-12,-105.1340550693,39.695712984,1786.0,,8.0,16.0,13.3,13.7,,1013.9,Morchella populiphila,"Colorado, US",1
+167de5bb-ae18-4e9d-ae43-fcb890dded34,119961632,2022-06-02 16:54:04-06:00,2022-06-02,-105.6950695922,39.7112283581,2594.0,,-6.2,6.1,0.0,6.0,,1017.0,Morchella populiphila,"Rose St, Georgetown, CO, US",2

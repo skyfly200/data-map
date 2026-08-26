@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b1165891-3c90-434b-9c94-d44d913662c9,305881911,2025-08-11 17:10:14-06:00,2025-08-11,-108.820525,42.7415777778,2049.0,,11.1,30.0,0.0,8.3,,1016.3,Lactarius sp. 'carbonicola-PNW12',"Sweetwater Station, WY 82520, USA",1
+07cf8dcc-05b5-4c27-9951-0d691e66521a,143398097,2003-09-27 17:57:00-06:00,2003-09-27,-105.6049184172,40.1449130962,3083.0,,,,,,,,Lactarius sp. 'carbonicola-PNW12',"Boulder County, CO, USA",2

@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+dc54956b-e089-4272-a71d-6c27b28bef78,131843861,2021-08-18 16:45:00-06:00,2021-08-18,-107.8432074,37.8883932,3436.0,,11.0,21.0,7.6,4.9,,1025.8,Stropharia aeruginosa,"Alta Lakes, Colorado 81435, USA",2
+da6547d7-2cb6-486c-bca3-f0454c7c91e2,131370552,2022-08-18 11:25:42-06:00,2022-08-18,-108.0076133,37.774675,3062.0,,9.0,23.0,0.6,6.6,,1032.2,Stropharia aeruginosa,"Dolores, CO 81323, USA",1
+ddb8a542-30ae-4c06-8c4a-6d6fe4f4c1af,31306247,2019-08-13 19:46:30-06:00,2019-08-13,-107.2705546008,37.5571633837,2584.0,,,,,,,,Stropharia aeruginosa,"Hinsdale County, US-CO, US",2

@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b443f766-ff3a-4fa4-9d73-63b14c0bb078,239562632,2024-09-02 17:07:18-06:00,2024-09-02,-105.6776458975,39.5321140803,3315.0,,,,,,,,Lacrymaria lacrymabunda,"Colorado, US",2
+fe77a68f-8a72-4a5a-a913-78a4bbe323cc,178098317,2023-08-12 10:33:36-06:00,2023-08-12,-105.5368583333,40.0318083333,2911.0,,17.0,28.0,0.0,8.5,,1019.7,Lacrymaria lacrymabunda,"County Road 116, Ward, CO, US",4
+34608c1b-8c11-467d-9853-52cdd903ca0a,131415409,2022-08-18 19:15:18-06:00,2022-08-18,-107.8863299702,37.8850866897,2965.0,,9.0,23.0,0.6,6.6,,1032.2,Lacrymaria lacrymabunda,"Mountain Village, CO 81435, USA",2
+752275eb-a3dd-466d-afec-d201292fd011,7001458,2016-08-12,2016-08-12,-107.505,37.4471,2426.0,,9.4,28.3,0.0,11.8,,1016.1,Lacrymaria lacrymabunda,"Pine River Campground, Bayfield, Colorado, USA",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0d7b69c1-edb4-4064-913b-8057e129150e,240469567,2024-09-07 10:38:59-06:00,2024-09-07,-105.1973382011,39.2133951178,2176.0,,1.8,16.3,1.4,8.9,,1022.6,Agaricus albiceps,"Colorado, US",1

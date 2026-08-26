@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f9916b91-cb8a-4c33-b235-c13b7fb32156,304642700,2025-08-07 20:05:19-06:00,2025-08-07,-106.385305,35.8911136997,2865.0,,20.1,30.3,0.7,9.7,,1029.7,Agaricus altipes,"Los Alamos County, NM, USA",2
+fc0785fb-65fa-403d-ac8d-df5f813fbb2c,236371111,2024-08-17 15:06:24-06:00,2024-08-17,-107.8191566506,37.8507357019,3213.0,,12.0,23.0,4.9,9.4,,1034.5,Agaricus altipes,"Colorado, US",2
+c68953b5-37d5-44e9-9c73-83b10777310f,131942645,2022-07-17 10:49:15-06:00,2022-07-17,-105.1684810594,38.9724990304,2799.0,,12.8,31.3,0.0,16.1,,1016.0,Agaricus altipes,"Divide, CO 80814, USA",4

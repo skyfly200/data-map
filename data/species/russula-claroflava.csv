@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6eb2df0d-ccde-4994-9bad-a109560b8f5a,310919972,2025-09-01 16:59:04-06:00,2025-09-01,-105.6541781112,35.8164278076,2593.0,,12.0,27.0,0.0,12.5,,1029.0,Russula claroflava,"San Miguel County, US-NM, US",1
+0ef13f47-721c-44bc-b6a8-059a7ce13249,307875959,2025-08-20 15:01:08-06:00,2025-08-20,-105.8060525927,35.791559948,3135.0,,14.4,31.1,0.0,16.2,,1017.5,Russula claroflava,"Winsor Trail, Tererro, NM, US",1
+e1921fb2-aaf3-4c65-ad62-47b69e5d2128,241030000,2024-09-03 13:00:00-06:00,2024-09-03,-105.8105777778,35.7737722222,2979.0,,9.4,29.4,0.0,12.3,,1017.3,Russula claroflava,"Santa Fe County, NM, USA",1
+56183660-8f26-4882-bad2-fb772de943a3,240550489,2024-09-04 14:42:55-06:00,2024-09-04,-105.2799383333,36.3781783333,2637.0,,0.5,25.3,0.2,4.9,,1032.3,Russula claroflava,"Angel Fire, NM, US",1
+cd60f7bf-ce2b-40e0-a401-f4f536d8f67f,171807406,2023-07-07 16:05:16-06:00,2023-07-07,-103.4133336693,43.7325177702,1463.0,,8.9,21.1,0.0,8.7,,1014.7,Russula claroflava,Custer State Park,1

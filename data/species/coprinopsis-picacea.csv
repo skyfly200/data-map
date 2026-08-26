@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+90a7644c-3c31-4332-961a-efb180a1f694,305662195,2025-07-15 14:32:52-06:00,2025-07-15,-104.8171219781,38.8448768813,1849.0,,13.3,33.9,0.0,13.0,,1010.4,Coprinopsis picacea,"N Wahsatch Ave, Colorado Springs, CO, US",1
+bbc5113e-dcbe-44ba-9b6b-497c1fd826c8,160864282,2022-06-09 06:34:39-06:00,2022-06-09,-105.4431943566,39.6113569608,2476.0,,-2.2,9.6,0.0,12.1,,1017.6,Coprinopsis picacea,"Ranch Trail, Evergreen, CO, US",1
+70031dba-f1c2-4025-9bb0-738990b01335,90915042,2021-08-12 08:39:44-06:00,2021-08-12,-109.4488983154,37.6736373901,1841.0,,17.6,33.4,0.1,9.2,,1024.0,Coprinopsis picacea,Blanding,1
+8e442b7b-e7e1-46f3-b65d-16fdab5d8b6a,32273219,2019-09-07 09:43:04-06:00,2019-09-07,-105.3200594386,39.6165784986,2263.0,,17.2,30.6,,11.0,,1014.2,Coprinopsis picacea,"Cub Creek Park, Evergreen, CO, US",1
+22a7355e-c8fe-4b60-aabd-f8c3a8056bc6,24745591,2017-10-10 19:45:30-04:00,2017-10-10,-105.8157408689,40.36776722,3244.0,,,,,3.6,,,Coprinopsis picacea,"Rocky Mountain National Park, Granby, CO, US",1

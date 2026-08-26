@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5134f0a5-25bb-477d-a6c2-c2513aa61bee,311710837,2025-09-04 09:23:00-06:00,2025-09-04,-105.92134722,35.67996111,2169.0,,11.0,28.0,0.2,15.3,,1022.3,Agaricus iodosmus,"Santa Fe, New Mexico, United States",1
+4d88d936-6091-4dcf-99b8-78ac92ea9643,291036656,2025-06-19 09:35:00-06:00,2025-06-19,-105.92130278,35.68005278,2169.0,,19.4,33.9,0.0,25.6,,1011.1,Agaricus iodosmus,"Santa Fe, New Mexico, United States",2
+78782528-7dbf-440e-bf1e-21812fe7297b,236617046,2024-08-18 16:23:59-06:00,2024-08-18,-107.8851166667,38.4590083333,1802.0,,14.4,26.1,,9.3,,1020.4,Agaricus iodosmus,"Chipeta Rd, Montrose, CO, US",3
+dd3a61a8-664c-429a-aab9-d8c10f73094e,230227960,2024-07-18 12:43:44-06:00,2024-07-18,-107.7524033333,38.1520111667,2132.0,,11.0,23.0,16.7,7.3,,1035.6,Agaricus iodosmus,"Sherman St, Ridgway, CO, US",3

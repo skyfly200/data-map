@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4dd8bd28-ccd4-4b14-bf65-c6794a51088c,286628064,2025-05-31 11:22:53-06:00,2025-05-31,-105.0462416667,37.9980166667,2737.0,,10.0,29.0,0.0,7.8,,1015.8,Morchella sextelata,"Pike and San Isabel National Forests, Rye, CO, US",1

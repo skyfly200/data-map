@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f2e9812b-6ee7-459f-9d3b-904a0309b58d,366408736,2026-05-21 12:34:00-06:00,2026-05-21,-105.7996611111,35.7992972222,3249.0,,7.8,25.6,0.0,7.2,,,Mycena sp. 'silvae-nigrae-IN02',"Santa Fe County, NM, USA",1
+8b498b13-5ffe-40f3-be5e-8b34122b3722,366390543,2026-05-21 11:51:00-06:00,2026-05-21,-105.8000944444,35.8000527778,3266.0,,7.8,25.6,0.0,7.2,,,Mycena sp. 'silvae-nigrae-IN02',"Santa Fe County, NM, USA",1
+516ccbcf-ef09-4f42-b1bc-30ad231894d3,361545667,2026-05-14 11:14:00-06:00,2026-05-14,-105.8008805556,35.7995833333,3208.0,,12.2,27.8,0.0,9.6,,,Mycena sp. 'silvae-nigrae-IN02',"Santa Fe County, NM, USA",1

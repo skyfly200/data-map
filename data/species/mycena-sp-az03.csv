@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cb36e59e-cb10-48bb-8395-fb32c5ffcecd,311713092,2025-08-30 10:30:00-06:00,2025-08-30,-107.9732602855,39.037395353,3114.0,,13.0,31.0,0.0,8.5,,1024.1,Mycena sp. 'AZ03',"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",2
+bec95beb-2bd3-4d4c-b4bd-1f7bdc7ac4f5,306483367,2025-08-14 11:52:00-06:00,2025-08-14,-107.87609167,37.81308333,3048.0,,14.0,23.0,1.2,9.1,,1030.5,Mycena sp. 'AZ03',"San Miguel, Colorado, United States",2
+7e3b3374-db0d-4d9d-9b37-006984585938,236399767,2024-08-17 13:31:01-06:00,2024-08-17,-107.858505,37.8800366667,3275.0,,12.0,23.0,4.9,9.4,,1034.5,Mycena sp. 'AZ03',"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",2

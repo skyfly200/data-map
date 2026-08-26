@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a5b5f198-b251-4757-a8b8-d24a2575c01a,236984697,2024-06-23 09:02:10-06:00,2024-06-23,-107.3327001193,37.2667893693,2425.0,,11.0,28.0,1.2,8.2,,1028.6,Morchella eximia,"Colorado, US",3

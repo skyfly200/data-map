@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1e176964-9587-490d-b88d-abf4de974a79,179050473,2023-08-18 11:43:44-06:00,2023-08-18,-107.9362790287,37.7953407447,3077.0,,11.0,22.0,3.3,5.9,,1032.5,Mycena galopus,"Durango, CO 81301, USA",1

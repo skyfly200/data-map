@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4abea9e8-f7fe-4435-b375-74bcfe76118b,312359976,2025-09-07 17:32:32-06:00,2025-09-07,-104.8756542137,38.6307469495,1984.0,,13.0,25.0,0.4,7.4,,1023.6,Lepiota sp. 'Eriophorae-CO01',"Colorado, US",2

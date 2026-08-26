@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4efbd8a5-62ca-46e9-b634-12ef35a690de,178114990,2023-08-12 11:59:26-06:00,2023-08-12,-105.5830916667,40.0514721667,3435.0,,7.6,22.4,1.2,6.2,,1029.1,Agaricus porphyrocephalus alpinus,"Ward, CO, US",2

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cb5f7633-1e35-4e40-90ef-d739c813524c,232266448,2024-07-23 12:45:00-06:00,2024-07-23,-105.8039300094,35.7965341239,3149.0,,13.3,31.1,0.8,14.9,,1017.5,Deliciosi,"Santa Fe County, NM, USA",3

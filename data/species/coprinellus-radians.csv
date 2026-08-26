@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b1281326-2b5e-4120-91b2-3da06c88f10a,235970047,2024-08-15 12:28:22-06:00,2024-08-15,-105.2452685665,39.4639795048,2307.0,,15.6,27.8,,10.9,,1016.1,Coprinellus radians,"Jefferson County, US-CO, US",3
+007c3f6a-8bc0-4cf5-a366-0a55bd6def9a,235777120,2024-08-14 12:31:19-06:00,2024-08-14,-105.2450373616,39.464229428,2307.0,,15.0,30.6,,10.1,,1014.1,Coprinellus radians,"Jefferson County, US-CO, US",2

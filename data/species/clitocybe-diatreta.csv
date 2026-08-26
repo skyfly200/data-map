@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9c8e1d32-6c6e-4954-8bd6-c31028389a3a,152865158,2022-09-17 14:30:00-06:00,2022-09-17,-105.536595,40.035367,2970.0,,12.0,26.0,1.7,7.1,,1015.2,Clitocybe diatreta,"Denver Botanic Gardens, Denver, CO, US",2

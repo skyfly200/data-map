@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a954e199-0325-4390-a8c1-034fbf52e7c1,285979826,2025-05-23 11:39:02-06:00,2025-05-23,-106.0114293226,38.4645412444,3294.0,,6.0,25.8,0.0,17.7,,1018.8,Morchella kaibabensis,"Colorado, US",4

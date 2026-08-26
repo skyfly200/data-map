@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+794ff3c1-b4c9-4d3c-9f1d-7aaf2bf00dfa,234540654,2024-08-07 11:46:22-06:00,2024-08-07,-105.7850033333,35.8037083333,3337.0,,17.2,34.4,0.0,16.8,,1012.0,Russula atropurpurea,"Santa Fe National Forest, Tererro, NM, US",1

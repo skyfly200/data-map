@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5f911532-ec60-4efa-b0bc-b6d5d9469edf,312296712,2025-09-07 11:08:49-06:00,2025-09-07,-105.5024748997,39.4050482997,2444.0,,1.8,15.6,0.8,11.2,,1020.5,Mycena sp. 'haematopus-IN01',"Bailey, CO 80421, USA",2

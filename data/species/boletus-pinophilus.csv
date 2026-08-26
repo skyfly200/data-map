@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c5b2e2a1-ddb5-4185-a233-c907835ed435,308866082,2025-08-16,2025-08-16,-107.8122851998,37.9374922219,2675.0,,11.0,21.0,2.7,5.8,,1032.0,Boletus pinophilus,"Telluride, CO, USA",1

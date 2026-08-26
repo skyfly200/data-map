@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+7c494162-5990-44e4-b07a-dd8fea4a846d,98206134,2021-08-25 13:29:32-06:00,2021-08-25,-105.8097506315,39.484900017,3043.0,,,,,,,,Sarcodon squamosus,"Dillon, CO 80435, USA",2

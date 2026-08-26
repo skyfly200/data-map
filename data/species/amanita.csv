@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5528ca2b-937b-4fee-94b8-39e13a0ddff0,288873664,2025-06-06 10:51:47-06:00,2025-06-06,-105.1245422363,36.6285858154,2507.0,,0.7,21.5,0.2,11.2,,1025.2,Amanita,Ute Park,3
+226da2ca-7b7d-4759-9690-de15bdb043bd,126397131,2022-07-15 12:57:57-06:00,2022-07-15,-106.3586379722,35.830407,2309.0,,17.0,28.6,9.1,10.2,,1030.1,Amanita,"Los Alamos County, NM, USA",2
+6093b07d-0cab-4fb6-9bad-7b368d9dc700,15959102,2018-08-26 11:38:00-06:00,2018-08-26,-105.3544181,39.24622697,2494.0,,,,,,,,Amanita,"Jefferson County, CO, USA",2

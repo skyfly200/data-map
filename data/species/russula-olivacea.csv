@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+613a124f-fd7e-4477-9cf1-d76f8f4b2d29,129025054,2022-07-28 18:55:41-06:00,2022-07-28,-106.817695,39.1973533333,2407.0,,13.9,20.6,,10.2,,1014.3,Russula olivacea,"American Ln, Aspen, CO, US",1

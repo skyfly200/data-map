@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c3952041-4097-4ab6-9a56-1d02cf56e8d3,133543340,2022-09-03 09:45:28-06:00,2022-09-03,-106.853753947,44.2749517858,2206.0,,15.6,35.6,0.0,17.2,,1016.9,Boletus regineus,"Johnson County, US-WY, US",3
+bb9f5f23-ecf2-4520-9d8f-ee1bfb297aa6,133402737,2022-09-02 16:23:41-06:00,2022-09-02,-106.895167353,44.1175633568,2401.0,,20.6,30.6,0.0,14.6,,1016.4,Boletus regineus,"Johnson County, US-WY, US",1
+73b1734f-6e55-41ba-96ce-169a48092e4c,132773817,2022-08-28 16:58:32-06:00,2022-08-28,-105.7994345621,36.1277638376,2234.0,,8.3,26.7,,11.8,,1015.8,Boletus regineus,"New Mexico, US",1

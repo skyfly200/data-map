@@ -18,6 +18,8 @@ import re
 
 import pandas as pd
 
+import species_store as store
+
 # Columns surfaced to the map, in the order shown in popups. Only those present
 # in the input CSV are included, so this works before or after the terrain and
 # clustering stages have run.
@@ -224,8 +226,8 @@ def export_all(df, data_dir=os.path.join('public', 'data'), combined_path=None):
 def build_parser():
     parser = argparse.ArgumentParser(description="Export observations to GeoJSON for the map")
     parser.add_argument("--input", default=None,
-                        help="Input CSV (default: mushroom_clusters.csv, else "
-                             "mushroom_observations_enriched.csv)")
+                        help="Input CSV (default: the per-species store — enriched "
+                             "files if present, else raw observations)")
     parser.add_argument("--output", default=None,
                         help="Exact combined GeoJSON output path; also sets the data directory")
     parser.add_argument("--data-dir", default=None,
@@ -252,17 +254,21 @@ def main():
         if os.path.splitext(combined_path)[1].lower() != '.geojson':
             combined_path = os.path.join(data_dir, os.path.basename(combined_path))
 
-    input_path = args.input
-    if input_path is None:
-        for candidate in ("mushroom_clusters.csv", "mushroom_observations_enriched.csv"):
-            if os.path.exists(candidate):
-                input_path = candidate
-                break
-    if not input_path or not os.path.exists(input_path):
-        raise SystemExit("No input CSV found. Run enrich_with_rasters.py / cluster.py first.")
+    if args.input:
+        print(f"📂 Loading {args.input}...")
+        df = pd.read_csv(args.input)
+    else:
+        # Default: build from the per-species store — enriched files when they
+        # exist (they carry clusters + environmental layers), otherwise the raw
+        # observations so the map still renders before enrichment has run.
+        base = store.ENRICHED_DIR if store.list_species_files(store.ENRICHED_DIR) else store.SPECIES_DIR
+        df = store.load_all(base)
+        if df.empty:
+            raise SystemExit(
+                f"No CSVs found in the store ({store.SPECIES_DIR}/). "
+                "Run iNat.py (or migrate_data_layout.py) first.")
+        print(f"📂 Loaded {len(df)} rows from {base}/ ({df['species'].nunique()} species).")
 
-    print(f"📂 Loading {input_path}...")
-    df = pd.read_csv(input_path)
     export_all(df, data_dir=data_dir, combined_path=combined_path)
 
 

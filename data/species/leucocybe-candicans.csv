@@ -1,0 +1,13 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+807468bf-361d-4230-90d5-119247662985,317429864,2025-09-28 19:22:37-06:00,2025-09-28,-107.1064335971,38.7538442107,2969.0,,8.0,18.0,0.9,11.7,,1026.2,Leucocybe candicans,"Gunnison County, US-CO, US",1
+95a23274-84da-4e9e-bdb6-d4d147934595,312219802,2025-09-07 10:10:48-06:00,2025-09-07,-104.82403205,38.71009575,1915.0,,14.0,23.0,1.8,9.6,,1025.2,Leucocybe candicans,"Rock Creek, Colorado Springs, CO, USA",1
+2cc5c7e9-4bd8-4924-a36b-458c47a21567,312047896,2025-09-06 13:24:56-06:00,2025-09-06,-105.03265077,39.18090212,2784.0,,8.0,22.0,0.0,13.7,,1023.9,Leucocybe candicans,"Douglas County, US-CO, US",2
+76bd3757-7e24-484c-bcd1-3ee9eb2035a3,310390713,2025-08-30 22:01:56-06:00,2025-08-30,-104.8910405,39.6685878,1674.0,,13.0,24.0,3.6,10.3,,1024.7,Leucocybe candicans,"Four Square Mile, CO, USA",1
+4bbeef4b-4195-4854-b79d-c5d7f28a1042,310390127,2025-08-30 09:56:51-06:00,2025-08-30,-104.9065348997,38.7314233,2692.0,,11.3,19.3,2.1,11.1,,1019.1,Leucocybe candicans,"Rock Creek, Colorado Springs, CO, USA",1
+8217e868-f9de-4abb-8c4a-ebac51e3afa9,248800107,2024-10-23 13:28:56-06:00,2024-10-23,-107.9946133333,38.2352633333,2799.0,,2.8,21.1,0.0,9.0,,1023.3,Leucocybe candicans,"Grand Mesa Uncompahgre and Gunnison National Forests, Montrose, CO, US",1
+31bbe7fc-6da5-469d-a410-bbd39cdc9e71,238527550,2024-08-28 18:22:49-06:00,2024-08-28,-107.9974216667,39.0086972167,2965.0,,15.0,33.9,0.0,13.0,,1012.4,Leucocybe candicans,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",3
+ccef6694-b460-455e-83d4-975eb5185d3b,237558441,2024-08-23 13:14:00-06:00,2024-08-23,-105.7220309705,39.9858754963,3094.0,,8.0,20.9,0.0,7.2,,1025.9,Leucocybe candicans,"Grand County, CO, USA",4
+eb4b2356-ead0-4066-8614-4d616ffc4622,236207494,2024-08-16 19:58:57-06:00,2024-08-16,-107.8029133988,37.9361399769,2687.0,,12.0,25.0,0.0,11.9,,1033.2,Leucocybe candicans,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",3
+32da34e3-a0be-42f3-acbf-61479a29c803,178111727,2023-08-12 21:07:08-06:00,2023-08-12,-105.5355997298,40.0321330284,2911.0,,17.0,28.0,0.0,8.5,,1019.7,Leucocybe candicans,"County Road 116, Ward, CO, US",4
+5ee0fbef-a3a7-4dfb-97da-1fdca0e2352a,150069168,2023-03-02 11:11:15-07:00,2023-03-02,-105.57283,40.0454,3303.0,,-6.0,10.0,0.0,4.8,,1006.1,Leucocybe candicans,"Denver Botanic Gardens, Denver, CO, US",2
+8b72d1b1-8ed1-4f1a-a9dd-6796e42e7a85,131503473,2022-08-19 10:08:37-06:00,2022-08-19,-107.8258166667,37.8549194444,2981.0,,10.0,17.0,7.5,3.4,,1030.0,Leucocybe candicans,"Ophir, CO 81426, USA",2

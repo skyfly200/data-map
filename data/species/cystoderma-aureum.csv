@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c1c59a4f-c8dc-4d86-9a68-832f284d2680,179051151,2023-08-18 10:47:58-06:00,2023-08-18,-107.8360800818,37.8569938745,2920.0,,11.0,22.0,3.3,5.9,,1032.5,Cystoderma aureum,"Ophir, CO 81426, USA",1
+6d1a2b52-7567-4bc7-b301-8ed05c671c5e,136335021,2022-08-16 12:36:00-06:00,2022-08-16,-107.8278446,37.9280097997,3193.0,,11.0,17.0,16.4,3.4,,1030.8,Cystoderma aureum,"Mountain Village, CO, USA",3
+4eb6c8a0-e645-4bde-a085-245c76112d0f,131963224,2022-08-18 16:06:47-06:00,2022-08-18,-107.8278416667,37.9278966667,3193.0,,9.0,23.0,0.6,6.6,,1032.2,Cystoderma aureum,"Telluride Ski Resort, Telluride, CO, US",2
+22844059-2192-4517-9660-78fabcefda9e,16931593,2007-09-30 08:22:00-06:00,2007-09-30,-106.7556,37.2554,2540.0,,,,,,,,Cystoderma aureum,"Archuleta County, CO, USA",1
+956e3d59-6c9a-498b-b85d-4e783b229739,16931592,2007-09-30 08:22:00-06:00,2007-09-30,-106.7556,37.2554,2540.0,,,,,,,,Cystoderma aureum,"Archuleta County, CO, USA",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+3d3c6aa4-dbcd-4e9c-853f-4cf21cb1ed45,383169756,2026-07-19 19:06:26-06:00,2026-07-19,-108.0391166667,37.795355,3101.0,,11.0,23.7,0.4,5.8,,,Pyrrhulomyces astragalinus,"Dolores, CO, US",1

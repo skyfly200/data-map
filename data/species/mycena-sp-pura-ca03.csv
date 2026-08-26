@@ -1,0 +1,9 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cc754efe-66b9-4b9d-88e7-e04e6e13c34a,373682877,2026-06-16 11:52:00-06:00,2026-06-16,-105.6943661592,35.7288774183,2695.0,,12.8,32.8,0.0,7.0,,,Mycena sp. 'pura-CA03',"New Mexico, US",1
+9a0a86c8-15f8-4789-9eb1-3c3070178d4d,317420717,2025-09-28 13:43:04-06:00,2025-09-28,-107.1902480918,38.7186231045,3739.0,,8.0,18.0,0.9,11.7,,1026.2,Mycena sp. 'pura-CA03',"Gunnison County, US-CO, US",1
+64cbb81a-dbb3-4115-aa23-05a1eb2ffb30,296547720,2025-07-08 11:32:00-06:00,2025-07-08,-105.8017583333,35.7978222222,3166.0,,16.1,34.4,0.0,14.2,,1016.0,Mycena sp. 'pura-CA03',"Santa Fe County, NM, USA",3
+e694f2bc-1bbd-4fb0-991d-0caebea75a60,237420271,2024-08-22 15:22:25-06:00,2024-08-22,-105.5024658329,39.9830299284,2540.0,,18.0,30.0,2.5,9.2,,1021.2,Mycena sp. 'pura-CA03',"Colorado, US",2
+97d069cc-4305-46c7-9568-1e18fe20ab9d,236345005,2024-08-17 09:05:31-06:00,2024-08-17,-108.0611891673,37.6331059495,2622.0,,12.0,23.0,4.9,9.4,,1034.5,Mycena sp. 'pura-CA03',"Montezuma County, US-CO, US",2
+3fc06d15-56e1-449c-916f-8a1f098ebc02,235970166,2024-08-15 12:32:40-06:00,2024-08-15,-105.245272433,39.4639616949,2307.0,,15.6,27.8,,10.9,,1016.1,Mycena sp. 'pura-CA03',"Jefferson County, US-CO, US",2
+42e413e2-970e-47ec-84b1-ac4db630cc84,235674413,2024-08-13 16:04:20-06:00,2024-08-13,-107.9072416667,37.8376533333,3354.0,,10.0,18.0,15.2,7.5,,1031.3,Mycena sp. 'pura-CA03',"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",2
+5afebe4a-109b-44ff-83df-853f053cf2cd,3550235,2014-08-15,2014-08-15,-107.8855,37.8238,2958.0,,,,,7.1,,,Mycena sp. 'pura-CA03',"Trout Lake, San Juan Co., Colorado, USA",2

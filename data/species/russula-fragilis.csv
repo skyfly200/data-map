@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+762b38c5-af5b-4d1f-be95-513073733d17,382123112,2026-07-15 11:30:00-06:00,2026-07-15,-105.9311216448,35.6279054702,2168.0,,17.2,29.4,0.9,9.7,,,Russula fragilis,"New Mexico, US",2
+fc1cd285-fbb7-46ab-accc-e9fe92a53c3b,382091283,2026-07-14 14:50:00-06:00,2026-07-14,-105.8131273305,35.7153339592,2866.0,,18.3,29.4,3.8,8.7,,,Russula fragilis,"New Mexico, US",2

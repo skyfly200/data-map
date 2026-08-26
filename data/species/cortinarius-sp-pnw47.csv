@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8b267c9f-024f-4410-8720-6717ec77b17c,291647901,2025-06-21 15:11:49-06:00,2025-06-21,-105.0105027778,39.1779916667,2719.0,,17.5,33.6,0.0,16.9,,997.8,Cortinarius sp. 'PNW47',"Sedalia, CO 80135, USA",2

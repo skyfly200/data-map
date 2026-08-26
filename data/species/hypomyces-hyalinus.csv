@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9dd2a6ae-c0e4-46b4-a34c-cfe2ca409c55,30252971,2019-08-05 10:56:52-06:00,2019-08-05,-105.2926957041,36.3910969728,2594.0,,7.9,24.0,,2.8,,,Hypomyces hyalinus,"1–99 Alamagordo Terr, Angel Fire, NM, US",1

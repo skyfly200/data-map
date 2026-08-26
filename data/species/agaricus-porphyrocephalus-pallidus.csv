@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e73d5d65-55dc-4d30-8b9f-83eab9acab9e,236369798,2024-08-17 11:58:57-06:00,2024-08-17,-107.9883833069,37.8629969986,3985.0,,12.0,23.0,4.9,9.4,,1034.5,Agaricus porphyrocephalus pallidus,"Colorado, US",4
+f9654c6b-1646-4426-adc6-a78ff283e3a0,178075542,2023-08-12 13:10:01-06:00,2023-08-12,-105.5790964833,40.0474529478,3332.0,,7.6,22.4,1.2,6.2,,1029.1,Agaricus porphyrocephalus pallidus,"Boulder County, US-CO, US",4
+741eb7fe-505c-4d95-b6eb-0a8a6df7677d,133127658,2022-08-29 11:02:44-06:00,2022-08-29,-105.5833366667,40.0509083333,3460.0,,2.6,24.2,0.0,3.0,,1029.8,Agaricus porphyrocephalus pallidus,"Ward, CO, US",6

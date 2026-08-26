@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+84013738-d0fa-497d-9656-4893a533a9d1,177468012,2023-08-08 15:13:54-06:00,2023-08-08,-105.4653466667,39.68985,2750.0,,-0.4,13.3,0.5,15.9,,1017.2,Atheniella flavoalba,"Idaho Springs, CO, US",1
+7e2123ee-fc65-4b39-a69e-99eeb00de80f,129734317,2022-08-06 11:02:55-06:00,2022-08-06,-105.7812900786,39.8094246411,3362.0,,5.4,16.7,2.4,7.6,,1020.0,Atheniella flavoalba,"Grand County, US-CO, US",1

@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0b4cbaec-9744-4732-b28f-7e8b8560ee21,311140568,2025-08-30 11:58:00-06:00,2025-08-30,-107.9707866667,39.03753,3098.0,,13.0,31.0,0.0,8.5,,1024.1,Mycena vulgaris,"Delta County, CO, USA",1
+517ee466-b37b-4aaf-8d77-67285b970783,307619007,2025-08-19 10:29:33-06:00,2025-08-19,-105.33892,39.6320466667,2183.0,,16.0,34.0,0.0,10.8,,1026.4,Mycena vulgaris,"Jefferson County, US-CO, US",1
+d4e0cb62-44c2-46a9-ad07-bac6fccc0aac,302971320,2025-08-01 13:14:05-06:00,2025-08-01,-105.1248147997,38.0218312,3439.0,,15.0,31.0,0.0,6.5,,1021.1,Mycena vulgaris,"Rye, CO 81069, USA",2
+7178bb24-9853-434c-a972-2fa0498f0898,236900430,2024-08-19 15:54:00-06:00,2024-08-19,-106.9522638889,38.9115,3009.0,,10.0,26.1,,9.0,,1019.5,Mycena vulgaris,"Gunnison County, CO, USA",2

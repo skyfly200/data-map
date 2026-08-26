@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b00f4552-3994-42c6-85bd-cd2a9c4600ce,317808541,2025-09-29 09:49:00-06:00,2025-09-29,-105.83418333,35.74622222,2709.0,,8.0,22.0,0.1,11.5,,1024.8,Coprinus caprimammillatus,"Santa Fe, New Mexico, United States",2

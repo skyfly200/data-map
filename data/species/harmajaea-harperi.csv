@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9bfc8719-9ada-4be6-8fe9-ba46022b022a,235777433,2024-08-14 12:48:34-06:00,2024-08-14,-105.2417086872,39.4660907843,2260.0,,15.0,30.6,,10.1,,1014.1,Harmajaea harperi,"Jefferson County, US-CO, US",3

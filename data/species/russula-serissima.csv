@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0ad73448-6ae4-4455-ae1f-e7b3c8c544eb,135569751,2022-09-17 11:53:11-06:00,2022-09-17,-105.57937,40.0472971667,3349.0,,2.5,21.3,0.0,6.2,,1021.8,Russula serissima,"Boulder County, US-CO, US",7

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ec1361c0-d2c5-49d8-a073-8c304aaa3476,191396725,2023-11-18 11:55:02-07:00,2023-11-18,-108.3472497761,41.9241034048,2008.0,,,,,,,,Psilocybe pelliculosa,United States,3

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9db770ac-31cf-4e35-8350-2b6002db8f46,239254691,2024-09-01 11:51:24-06:00,2024-09-01,-107.1607061383,38.8637757393,2706.0,,,,,7.4,,1023.6,Russula atroglauca,"Grand Mesa Uncompahgre and Gunnison National Forests, Somerset, CO, US",3
+973bae4a-7443-4bcc-bffb-47749688cdb8,235772443,2024-08-14 10:09:45-06:00,2024-08-14,-107.8988239914,37.9291155149,2474.0,,9.0,20.0,0.1,7.9,,1032.4,Russula atroglauca,"Mountain Village, CO 81435, USA",4

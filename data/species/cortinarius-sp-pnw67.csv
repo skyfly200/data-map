@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+3eadbf33-8fc8-4ef0-b965-81b7743c0532,307784165,2025-08-20 11:23:00-06:00,2025-08-20,-105.7865600556,39.8098335,3399.0,,0.7,16.0,0.0,12.5,,1024.8,Cortinarius sp. 'PNW67',"Winter Park, CO 80482, USA",1

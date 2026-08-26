@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5f7047f9-7af9-4246-a890-81005271f58e,312599497,2025-09-08 16:35:37-06:00,2025-09-08,-104.8195480936,38.7207161916,1860.0,,13.7,25.1,1.6,12.7,,1020.5,Lactarius barrowsii,"Colorado, US",1

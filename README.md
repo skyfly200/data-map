@@ -20,24 +20,52 @@ pip install -r requirements.txt
 | DEM ([OpenTopography](https://portal.opentopography.org/login)) | `OPENTOPOGRAPHY_API_KEY` |
 | Soil moisture ([Copernicus CDS](https://cds.climate.copernicus.eu)) | copy `.cdsapirc.example` to `~/.cdsapirc` with your key (and accept the ERA5-Land license on the CDS site) |
 
-Stages (run in order):
+### Data layout (per-species CSV store)
+
+Observations live as one lightweight CSV per species — not a single monolithic
+file — under a dedicated folder, with enriched copies alongside:
+
+```
+data/
+  species/<slug>.csv     raw observations, one file per species (tracked)
+  enriched/<slug>.csv    enriched observations, clusters folded in (git-ignored, regenerable)
+  archive/               originals moved by the migration (git-ignored, local backup)
+```
+
+`species_store.py` is the shared accessor every stage reads/writes through; set
+`DATA_DIR` to relocate the whole store (defaults to `data`). Coming from the old
+monolithic `mushroom_observations*.csv` files? Run the one-shot migration — it
+merges every root CSV (de-duped on uuid), splits by species, and archives the
+originals:
+
+```bash
+python migrate_data_layout.py --dry-run   # preview
+python migrate_data_layout.py             # migrate (archives originals)
+```
+
+Stages (run in order — or just `python run_pipeline.py`, which chains them):
 
 1. **`iNat.py`** — pull mushroom observations from iNaturalist (+ elevation and
-   weather) → `mushroom_observations.csv`.
+   weather) → per-species CSVs in `data/species/` (incremental runs merge and
+   de-dupe on uuid; `REFRESH_ALL=1` overwrites).
 2. **`fetch.py`** — download *all* the environmental data for those observations,
    end to end: NDVI (Sentinel-2 via Earth Engine), soil moisture (ERA5-Land),
    precipitation (CHIRPS, 7-day history), land cover (ESA WorldCover tiles,
-   auto-downloaded), and **topography (SRTM DEM)**. After the DEM downloads it
-   runs `terrain_pipeline.process_dem` to derive the terrain-exposure layers.
-   NDVI is exported asynchronously to Google Drive (folder `EarthEngineNDVI`) —
-   download those GeoTIFFs into `ndvi/` before enriching.
+   auto-downloaded), and **topography (SRTM DEM)**. The independent HTTP sources
+   download concurrently (each keeps its own per-source thread pool;
+   `SEQUENTIAL_FETCH=1` disables). After the DEM downloads it runs
+   `terrain_pipeline.process_dem` to derive the terrain-exposure layers. NDVI is
+   exported asynchronously to Google Drive (folder `EarthEngineNDVI`) — download
+   those GeoTIFFs into `ndvi/` before enriching.
 3. **`terrain_pipeline.py`** — turn the raw DEM into terrain-exposure layers
    (see below). Runs automatically from `fetch.py`, or standalone:
    `python terrain_pipeline.py --dem dem/dem_SRTMGL3.tif`.
 4. **`enrich_with_rasters.py`** — sample every raster (including the terrain
-   layers) at each observation point → `mushroom_observations_enriched.csv`.
-5. **`cluster.py`** — KMeans-cluster observations by environmental similarity →
-   `mushroom_clusters.csv`.
+   layers) at each observation point → per-species files in `data/enriched/`
+   (resumable; a `.done` marker signals completion).
+5. **`cluster.py`** — KMeans-cluster observations by environmental similarity
+   *globally* across all species, writing the `cluster` label back into each
+   `data/enriched/` file. Tune the count with `CLUSTER_COUNT` or `--clusters`.
 
 ### Running in a notebook / Colab
 

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2fb111fb-5028-4de6-9e4b-ed493f53c41a,239246079,2024-09-01 11:41:40-06:00,2024-09-01,-107.1684717656,38.8568708432,2785.0,,,,,7.4,,1023.6,Xerocomellus amylosporus,"Grand Mesa Uncompahgre and Gunnison National Forests, Somerset, CO, US",3

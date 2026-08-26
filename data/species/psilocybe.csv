@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+3d1b683d-21d7-451d-8e28-2bf99e50ce67,236766516,2024-08-19 13:32:29-05:00,2024-08-19,-100.022305756,37.7734105117,804.0,,,,,,,,Psilocybe,"Fourth Ave, Dodge City, KS, US",1

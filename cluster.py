@@ -5,6 +5,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 import argparse
 
+import species_store as store
+
 
 def stage_output_path(input_path, suffix, output_dir='.'):
     if not input_path:
@@ -63,8 +65,10 @@ def cluster_environmental(df, features=None, n_clusters=4):
 
 def main():
     parser = argparse.ArgumentParser(description="Cluster mushroom observations by environmental similarity")
-    parser.add_argument("--input", default="mushroom_observations_enriched.csv", help="Path to enriched CSV file")
-    parser.add_argument("--output", default=None, help="Output CSV with cluster labels")
+    parser.add_argument("--input", default=None,
+                        help="Single enriched CSV (default: the per-species enriched store data/enriched/)")
+    parser.add_argument("--output", default=None,
+                        help="Single output CSV (store mode writes cluster labels back into data/enriched/)")
     # Cluster count: --clusters wins, else CLUSTER_COUNT env var, else 4. This lets
     # run_pipeline.py (which invokes cluster.py without --clusters) tune k via the env.
     default_clusters = 4
@@ -77,6 +81,22 @@ def main():
     parser.add_argument("--clusters", type=int, default=default_clusters,
                         help="Number of clusters to form (default: CLUSTER_COUNT env var or 4)")
     args = parser.parse_args()
+
+    store_mode = args.input is None
+
+    if store_mode:
+        # Cluster globally across every enriched species file (KMeans on the
+        # shared environmental features), then write the cluster label back into
+        # each per-species enriched file so the labels stay with their data.
+        df = store.load_all(store.ENRICHED_DIR)
+        if df.empty:
+            raise SystemExit(f"No enriched CSVs in {store.ENRICHED_DIR}/. Run enrich_with_rasters.py first.")
+        print(f"📂 Loaded {len(df)} enriched rows from {store.ENRICHED_DIR}/ ({df['species'].nunique()} species).")
+        df = cluster_environmental(df, n_clusters=args.clusters)
+        written = store.write_split(df, base=store.ENRICHED_DIR, merge=False)
+        print(f"💾 Wrote cluster labels back into {len(written)} species file(s) under {store.ENRICHED_DIR}/.")
+        print("✅ Done.")
+        return
 
     output_path = args.output or stage_output_path(args.input, '_clusters')
 

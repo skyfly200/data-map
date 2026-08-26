@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+edbd02a5-50ca-461f-adf9-3db554b4ff0e,182498994,2023-08-30 11:27:22-06:00,2023-08-30,-105.0535390121,38.8582285416,3590.0,,16.0,28.0,0.0,15.5,,1024.1,Russula sp. 'brevipes-MX2',"Colorado, US",2

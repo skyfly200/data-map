@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ec4daf40-ab1a-4cb2-a1ac-2a1317a4c119,181808960,2023-09-04 11:59:15-06:00,2023-09-04,-105.5083316937,40.0722081523,2781.0,,15.0,30.0,0.0,10.5,,1010.8,Atheniella adonis,"Ward, CO, USA",1

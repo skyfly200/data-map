@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e9f1d2a0-ee59-4aa0-bc8f-940c6ee3c9f8,306621681,2025-08-15 14:10:05-06:00,2025-08-15,-105.37831,39.1745283333,2477.0,,12.0,21.0,2.3,7.0,,1016.4,Phlegmacium foetens,"Jefferson County, US-CO, US",1

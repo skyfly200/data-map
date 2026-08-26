@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+abc8b7e4-a809-4cec-a706-7d6cb029a158,130739915,2022-08-13 15:49:17-06:00,2022-08-13,-105.8054119004,39.5914235331,3749.0,,4.1,14.2,4.8,5.4,,1023.8,Cortinarius trappei,"Colorado, US",3

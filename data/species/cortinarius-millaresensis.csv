@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b8d60376-64fe-4d82-9084-317e57dc55b6,236400963,2024-08-17 12:30:16-06:00,2024-08-17,-107.8553866667,37.883205,3347.0,,12.0,23.0,4.9,9.4,,1034.5,Cortinarius millaresensis,"Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",1

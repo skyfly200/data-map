@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d913cb60-797f-4f13-92af-70d06b7d1385,235775307,2024-08-14 11:14:05-06:00,2024-08-14,-105.2429754289,39.4649196649,2260.0,,15.0,30.6,,10.1,,1014.1,Mycena subcana,"Jefferson County, US-CO, US",2

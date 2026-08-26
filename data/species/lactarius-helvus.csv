@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e1c979ea-09ec-4ae0-9999-e1b4b5d12f8f,315911354,2025-09-22 12:40:31-06:00,2025-09-22,-105.8079608444,39.4833316929,3015.0,,-2.6,8.6,4.3,11.7,,1017.1,Lactarius helvus,"Grant, CO, US",2
+2cc84965-f9fd-4a71-bb9b-abe6197c2ff7,179039809,2023-08-18 11:30:25-06:00,2023-08-18,-107.8085089847,37.8560843062,3100.0,,11.0,22.0,3.3,5.9,,1032.5,Lactarius helvus,"Ophir, CO 81426, USA",1
+db92eb84-53e1-48cb-9a14-28e6f435bcf7,141097330,2017-07-28 23:09:00-06:00,2017-07-28,-107.6672826,37.9505504,2940.0,,12.3,23.6,,5.0,,,Lactarius helvus,"Ironton Park, Colorado 81432, USA",1

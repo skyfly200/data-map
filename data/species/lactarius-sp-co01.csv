@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5ac361ae-5105-414c-8461-198025a05c21,299423141,2025-07-19 11:26:39-06:00,2025-07-19,-104.6128900775,39.0371551947,2267.0,,14.2,30.3,3.0,11.7,,1023.9,Lactarius sp. 'CO01',"Colorado, US",2

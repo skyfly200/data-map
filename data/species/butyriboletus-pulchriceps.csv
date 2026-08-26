@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+629b128a-c84e-456a-9392-91806f401dcf,233839849,2024-08-03 12:06:00-06:00,2024-08-03,-105.6551444444,35.8438388889,2722.0,,15.6,33.9,,10.6,,1016.2,Butyriboletus pulchriceps,"San Miguel County, NM, USA",1
+b5022c16-bde6-494e-b959-8acb0a7212ac,178767477,2023-08-11 14:25:45-06:00,2023-08-11,-104.7730656705,38.8854130145,1991.0,,15.0,30.0,0.0,15.5,,1012.1,Butyriboletus pulchriceps,"Colorado Springs, CO 80907, USA",1
+ccabf503-cfb4-42ee-b1c2-30fedc3b66c3,178318190,2023-08-11 14:27:35-06:00,2023-08-11,-104.7730466667,38.885455,1957.0,,15.0,30.0,0.0,15.5,,1012.1,Butyriboletus pulchriceps,"East Colorado Springs, Colorado Springs, CO, US",2

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+01bdadb2-818a-4c36-862a-02ecf415a257,237785469,2024-08-24 11:18:04-06:00,2024-08-24,-105.8012084722,35.7991294722,3208.0,,16.7,30.0,,13.6,,1016.5,Echinoderma asperum,"Santa Fe County, US-NM, US",1
+915c7743-cf9a-490c-991b-13f3dc7d5127,182203268,2023-09-07 09:42:10-06:00,2023-09-07,-104.9641584232,39.7294149599,1643.0,,16.1,29.5,0.0,12.4,,1013.1,Echinoderma asperum,"Cheesman Park, Denver, CO, USA",2

@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+71b06170-285b-4102-8f49-6aadc92de92e,280960313,2023-05-16 18:45:56-06:00,2023-05-16,-105.2347017825,40.2107472778,1599.0,,7.1,26.7,2.7,5.1,,1022.3,Morchella punctipes,"Longmont, CO 80503, USA",1
+e84d0bd2-78cf-460c-bc10-d58267ab6f14,222111940,2024-05-05 13:29:31-06:00,2024-05-05,-104.94168,40.4718966667,1460.0,,1.7,23.9,0.0,14.1,,1002.8,Morchella punctipes,"Windsor, CO, US",1
+55e3e8db-8cc9-49f8-b6e8-61e502126232,116760724,2022-05-12 16:39:56-06:00,2022-05-12,-103.3099735598,43.8912957935,1227.0,,8.9,16.1,4.8,22.7,,1007.4,Morchella punctipes,"Pennington County, US-SD, US",2
+b8860599-60b7-4ba6-aaa2-e8e67c2f1f65,44816451,2020-05-02 15:39:00-04:00,2020-05-02,-106.0640179,39.5911871,2812.0,,1.0,9.0,,20.0,,,Morchella punctipes,"Summit County, CO, USA",1

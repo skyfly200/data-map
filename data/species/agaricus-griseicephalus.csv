@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f2958f71-592d-4680-99be-22c95c51c67f,389508563,2026-08-08 12:10:19-06:00,2026-08-08,-104.9806324926,38.7494705833,3462.0,,16.0,33.3,0.3,5.4,,,Agaricus griseicephalus,"Colorado, US",1
+4e68ca0a-0dea-445b-b2d7-367b98b82bb5,316592787,2025-09-23,2025-09-23,-105.8114367995,35.7676140063,2936.0,,8.0,26.0,0.0,16.5,,1022.9,Agaricus griseicephalus,"Santa Fe County, NM, USA",2
+d4cf38a1-a37b-4eb4-81c1-43cfb5b4ed3f,312301032,2025-09-07 11:30:57-06:00,2025-09-07,-105.5015807997,39.406176,2440.0,,1.8,15.6,0.8,11.2,,1020.5,Agaricus griseicephalus,"Bailey, CO 80421, USA",2
+50b70ece-e437-418d-b0ee-f5e750927b36,298757405,2025-07-15 13:46:00-06:00,2025-07-15,-105.80589167,35.79468611,3124.0,,14.4,32.8,0.0,13.5,,1011.1,Agaricus griseicephalus,"Santa Fe, New Mexico, United States",2
+a4ab41ba-76e9-4cc2-813b-7632c9da5a6d,236342581,2024-08-17 09:30:41-06:00,2024-08-17,-108.0612256286,37.6329179015,2622.0,,12.0,23.0,4.9,9.4,,1034.5,Agaricus griseicephalus,"Montezuma County, US-CO, US",4
+9c1437eb-7240-47f4-be4f-903ad685b584,226012081,2024-06-29 10:50:06-06:00,2024-06-29,-105.0129458401,38.7357639346,2944.0,,15.0,25.0,16.5,22.4,,1027.0,Agaricus griseicephalus,"Teller County, US-CO, US",5
+46f3b647-e47c-4347-a564-f1a068dcb061,180216392,2023-08-17 13:52:24-06:00,2023-08-17,-107.8260751347,37.9360392073,2822.0,,11.0,25.0,5.5,7.2,,1033.4,Agaricus griseicephalus,"Colorado, US",5

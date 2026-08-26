@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+35238188-9a4d-4a9b-adf4-dd06b8a3911d,317150953,2025-09-27 16:17:09-06:00,2025-09-27,-104.8851027778,38.7466194444,2456.0,,15.0,24.0,0.0,15.1,,1023.4,Russula sp. 'CO04',"Colorado Springs, CO 80906, USA",2

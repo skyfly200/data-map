@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ee730c69-e168-42df-934e-08e1ac3b2ec6,178114891,2023-08-12 12:12:40-06:00,2023-08-12,-105.5839,40.05115,3460.0,,7.6,22.4,1.2,6.2,,1029.1,Cortinarius paulus,"Ward, CO, US",1
+43ca4813-bb0f-4937-b1df-f8eac82b3a7b,178114225,2023-08-12 12:29:49-06:00,2023-08-12,-105.5838783333,40.0511638333,3460.0,,7.6,22.4,1.2,6.2,,1029.1,Cortinarius paulus,"Ward, CO, US",1

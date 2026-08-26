@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e9098059-64f9-4e1f-83a2-a762de7696f0,306246962,2025-08-13 11:33:27-06:00,2025-08-13,-107.9815305556,37.77,2847.0,,13.0,26.0,0.0,8.0,,1031.2,Infundibulicybe geotropa,"Durango, CO 81301, USA",3
+1fe1d473-e5fa-4761-a3bc-4c7fa447e93f,306096714,2025-08-13 11:28:00-06:00,2025-08-13,-107.98146111,37.77019444,2847.0,,13.0,26.0,0.0,8.0,,1031.2,Infundibulicybe geotropa,"Dolores, Colorado, United States",1
+ee1e3490-4f16-458b-ba1e-852ac0b55861,306095903,2025-08-13 11:25:26-06:00,2025-08-13,-107.98143,37.7701716667,2847.0,,13.0,26.0,0.0,8.0,,1031.2,Infundibulicybe geotropa,"San Juan National Forest - Headquarters, Rico, CO, US",2
+5715e39c-3ea3-4091-9e40-3dd11c889e64,306092317,2025-08-13 11:04:11-06:00,2025-08-13,-107.981445,37.7701416667,2847.0,,13.0,26.0,0.0,8.0,,1031.2,Infundibulicybe geotropa,"Rico, CO, US",1
+1bcf9351-db79-4343-9f62-e3ad5cad3ec6,55291609,2020-08-02 14:27:48-06:00,2020-08-02,-105.8581405329,39.7375330834,3305.0,,10.0,18.0,,15.0,,,Infundibulicybe geotropa,"Colorado, US",1

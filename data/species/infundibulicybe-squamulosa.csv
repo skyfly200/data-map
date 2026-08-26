@@ -1,0 +1,10 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a9875cea-28bc-4367-a5a3-3e8e6af70c82,313881517,2025-09-13 11:38:53-06:00,2025-09-13,-105.80033,35.7965133333,3166.0,,9.0,19.0,9.1,9.6,,1021.8,Infundibulicybe squamulosa,"NM-475, Tererro, NM, US",1
+7293c76a-1fe0-4941-9721-728f2b163997,311379017,2025-08-31 18:43:24-06:00,2025-08-31,-105.1194805556,36.6109,2661.0,,3.0,19.0,1.9,6.3,,1033.4,Infundibulicybe squamulosa,"Cimarron, NM 87714, USA",1
+988e800f-b9d3-41df-aa4d-30c765e6d7ae,388002889,2026-07-30 13:31:00-06:00,2026-07-30,-105.4408796021,36.137993162,2997.0,,7.0,29.8,0.0,5.4,,,Infundibulicybe squamulosa,"New Mexico, US",1
+856012a9-6501-435a-b0b0-ffcde3a70509,385388193,2026-07-25 13:33:00-06:00,2026-07-25,-105.6879533652,35.6743223602,2234.0,,18.3,31.7,8.8,7.2,,,Infundibulicybe squamulosa,"New Mexico, US",1
+99337ed3-eb12-41ae-a34f-bb542370140c,385288335,2026-07-25 14:13:00-06:00,2026-07-25,-106.5855688584,35.8216082381,2480.0,,20.7,31.3,5.6,5.5,,,Infundibulicybe squamulosa,"Sandoval County, NM, USA",1
+704d03ff-b205-4943-bd74-0e59d876e6f0,384085687,2026-07-20 11:17:00-06:00,2026-07-20,-105.9121042097,35.740724247,2164.0,,17.8,32.2,0.5,4.8,,,Infundibulicybe squamulosa,"New Mexico, US",1
+54f3a1dc-1c40-4c16-bbe9-7bb43ff15f26,350118919,2024-08-25 09:57:00-06:00,2024-08-25,-106.1750691999,36.712149,2755.0,,,,,,,,Infundibulicybe squamulosa,"Rio Arriba, New Mexico, United States",1
+9c94c54d-cb1b-460a-86e4-98492f07e0a8,308514794,2025-08-23 13:05:23-06:00,2025-08-23,-105.3051133333,39.4662966667,2436.0,,13.9,27.2,,11.2,,1021.6,Infundibulicybe squamulosa,"S Baird Rd, Conifer, CO, US",1
+44fd7781-d28c-4bc3-925d-e252fec9ea87,240557407,2024-09-06 13:38:53-06:00,2024-09-06,-105.2242366667,36.53393,2488.0,,3.9,20.9,0.0,2.9,,1036.8,Infundibulicybe squamulosa,"Cimarron Canyon State Park, Ute Park, NM, US",1

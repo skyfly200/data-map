@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+440c52f5-65b1-4ae6-ad41-7df8796842c2,181001095,2023-08-30 11:46:57-06:00,2023-08-30,-105.0111120789,38.8715633521,2840.0,,9.1,29.2,0.0,13.9,,1014.7,Amanita arctica,"Colorado, US",4

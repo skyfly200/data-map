@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+3403c818-46ce-4276-a655-4f68b7e2bbcb,390682351,2026-08-11 10:05:30-06:00,2026-08-11,-106.5330116667,35.8188383333,2576.0,,16.4,30.9,0.8,7.4,,,Neoboletus subvelutipes,"Jemez National Recreation Area, Jemez Springs, NM, US",1
+46f1a554-03b7-4e9c-a61a-d36300e0e561,387270638,2026-08-01 09:00:30-06:00,2026-08-01,-105.5283708,36.1316672,2596.0,,14.5,29.6,2.4,11.8,,1019.3,Neoboletus subvelutipes,"Taos County, US-NM, US",1
+276345d1-b15c-4c1e-8530-470f0ca3ab73,256469776,2024-07-04 14:36:20-06:00,2024-07-04,-106.641595,35.9160616725,2639.0,,17.5,30.5,0.0,11.2,,1024.8,Neoboletus subvelutipes,"Santa Fe National Forest, Jemez Springs, NM, US",1
+d2044aae-1cd8-4908-9c51-f7e1f64809f6,234444759,2024-08-07 15:45:46-06:00,2024-08-07,-106.7177133333,35.9515716667,2585.0,,18.1,31.4,,11.3,,1026.8,Neoboletus subvelutipes,"Sandoval County, US-NM, US",1
+4f96c745-5773-4946-95d8-ab52e9291f2d,234357454,2024-08-05 12:55:24-06:00,2024-08-05,-106.633067087,35.9173029359,2688.0,,18.7,30.4,0.3,9.7,,1027.3,Neoboletus subvelutipes,"Sandoval County, US-NM, US",1
+0bf25169-82b2-4b45-b819-f4ed9cf7a7f6,231036460,2024-07-21 11:47:31-06:00,2024-07-21,-106.8459744631,36.0455714333,2893.0,,,,,,,,Neoboletus subvelutipes,"Rio Arriba County, US-NM, US",1

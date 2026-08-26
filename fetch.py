@@ -15,6 +15,8 @@ import ee
 import pandas as pd
 import requests
 
+import species_store as store
+
 # When the independent download sources run concurrently, their logs interleave.
 # Serialize prints and tag every line with its source so the output stays legible.
 _print_lock = threading.Lock()
@@ -533,7 +535,7 @@ def _stage_terrain(df, tag="Terrain"):
         _log(tag, f"[!] skipped: {e}")
 
 
-def main(csv_path='mushroom_observations.csv'):
+def main(csv_path=None):
     skip_ee = os.environ.get("SKIP_EARTH_ENGINE") == "1"
     if not skip_ee:
         skip_ee = not init_earth_engine()
@@ -541,7 +543,16 @@ def main(csv_path='mushroom_observations.csv'):
         print("Skipping Earth Engine stages because auth is unavailable or blocked by Google.")
         print("Non-Earth-Engine data sources will continue normally.")
 
-    df = pd.read_csv(csv_path)
+    # Downloads cover the union of all observation dates/locations, so load the
+    # whole per-species store (or a single CSV when one is passed explicitly).
+    if csv_path and os.path.exists(csv_path):
+        df = pd.read_csv(csv_path)
+    else:
+        df = store.load_all(store.SPECIES_DIR)
+        if df.empty:
+            print(f"No observations in {store.SPECIES_DIR}/. Run iNat.py or migrate_data_layout.py first.")
+            return
+        print(f"Loaded {len(df)} observations from {store.SPECIES_DIR}/ for environmental downloads.")
 
     # ─── NDVI (Sentinel-2) — Earth Engine, main thread ────────────────────────
     # Queues async Drive export tasks; kept off the concurrent pool to avoid EE

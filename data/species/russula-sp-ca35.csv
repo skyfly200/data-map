@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+015a6b3b-03df-4ee2-b0b0-67c63971f9f1,229814222,2024-07-16 14:29:56-06:00,2024-07-16,-107.5381083333,38.231225,2733.0,,16.7,31.7,0.0,12.1,,1014.4,Russula sp. 'CA35',"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",2

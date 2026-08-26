@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+eb99e8c8-e6b3-44b7-820e-ba4f232a5616,168945939,2023-06-22 15:56:25-06:00,2023-06-22,-105.25422,41.1970666667,2286.0,,9.7,16.7,2.9,19.6,,1016.1,Amanita pantherina,"Curt Gowdy State Park, Cheyenne, WY, US",1

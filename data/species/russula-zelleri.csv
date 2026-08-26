@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c71b6ccd-aa51-4c41-b7fa-5e85039a79ac,181479238,2022-07-19 14:16:00-06:00,2022-07-19,-105.750625,39.5277666667,3011.0,,7.1,15.5,4.6,12.1,,1021.6,Russula zelleri,"Park County, CO, USA",3
+7bf3583d-49df-4d6a-b4a4-fa2283ed2067,181061760,2023-08-30 10:28:21-06:00,2023-08-30,-105.097948052,38.8641528878,3372.0,,16.0,28.0,0.0,15.5,,1024.1,Russula zelleri,"Colorado, US",1

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+82496bbc-9043-4508-888c-831305e554cf,239904300,2024-09-04 19:16:13-06:00,2024-09-04,-108.0098035659,39.0144952523,3101.0,,15.1,31.1,0.0,11.0,,1016.9,Cystoderma carcharias,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",6
+4c1b54a1-d942-4b99-8575-30d92dfee71a,236398984,2024-08-17 13:53:24-06:00,2024-08-17,-107.8587583333,37.8802333333,3275.0,,12.0,23.0,4.9,9.4,,1034.5,Cystoderma carcharias,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",2

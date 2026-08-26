@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e7b545db-7c6f-4be3-82e9-e059b01beaa0,239882583,2024-09-04 13:11:47-06:00,2024-09-04,-107.994255,39.0053333333,2951.0,,15.1,31.1,0.0,11.0,,1016.9,Cortinarius raffinii,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",1

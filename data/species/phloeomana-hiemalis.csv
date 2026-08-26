@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+440977c0-e5df-421b-a3b0-eb67234c71e4,173527343,2022-06-05 13:41:00-06:00,2022-06-05,-105.2154694444,39.7131666667,1935.0,,14.0,26.0,0.8,9.9,,1011.4,Phloeomana hiemalis,"Golden, CO, USA",3

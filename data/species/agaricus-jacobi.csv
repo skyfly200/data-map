@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d736c88a-39af-494b-8cf2-fc23fe0f0ecc,132229456,2022-08-24 12:13:57-06:00,2022-08-24,-104.9144965553,38.7376905996,2797.0,,15.0,25.0,0.0,10.2,,1024.3,Agaricus jacobi,"El Paso County, US-CO, US",5

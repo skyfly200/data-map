@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+83b5806f-dd91-4c75-b32f-047452dccea4,131158063,2022-08-16 11:15:52-06:00,2022-08-16,-105.7250136649,39.606063833,3469.0,,2.9,7.4,10.8,7.3,,1024.7,Rickenella swartzii,"Clear Creek County, US-CO, US",3

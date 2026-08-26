@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d1d5ac89-74a7-4905-8bc1-4ac37953d3b6,178107027,2023-08-12 20:19:23-06:00,2023-08-12,-105.5358045316,40.0319052816,2911.0,,17.0,28.0,0.0,8.5,,1019.7,Calonarius metarius,"County Road 116, Ward, CO, US",4

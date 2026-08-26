@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e29e5be3-3f48-42cd-90ba-c7296f6c05cb,317817182,2025-09-29 11:00:00-06:00,2025-09-29,-105.83391667,35.74768056,2709.0,,8.0,22.0,0.1,11.5,,1024.8,Cortinarius saturninus,"Santa Fe, New Mexico, United States",1

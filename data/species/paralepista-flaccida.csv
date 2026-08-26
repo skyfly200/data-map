@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c4982c57-75d0-4595-a126-11461d05ec9b,232067680,2024-07-03 11:03:00-06:00,2024-07-03,-105.8048781703,35.7958059976,3124.0,,14.4,29.4,0.0,10.6,,1011.9,Paralepista flaccida,"Santa Fe County, NM, USA",1

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1a6eae10-c22e-448b-bb4e-2522c4ef96e5,315686470,2025-09-21 12:38:31-06:00,2025-09-21,-107.073910333,38.8168993842,2882.0,,7.0,22.0,0.0,6.3,,1024.2,Stropharia caerulea,"Gunnison County, US-CO, US",1
+677c1e36-af21-43bb-8dc1-af78fe8dcad5,178463699,2021-08-14,2021-08-14,-107.8565951439,39.0899251728,3144.0,,17.1,37.9,0.0,7.2,,1024.2,Stropharia caerulea,"Mesa County, US-CO, US",2

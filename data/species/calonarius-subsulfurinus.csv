@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a84b678f-d4fa-41e6-bfce-0648f8b52df1,236401270,2024-08-17 12:17:55-06:00,2024-08-17,-107.85533,37.8831966667,3347.0,,12.0,23.0,4.9,9.4,,1034.5,Calonarius subsulfurinus,"Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",1

@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2383c869-bca2-4419-9dd6-de944d90fbd6,307795199,2025-08-20 12:11:24-06:00,2025-08-20,-105.7844716,39.8103416,3391.0,,0.7,16.0,0.0,12.5,,1024.8,Mycena sp. 'maculata-IN01',"Winter Park, CO 80482, USA",2
+4a417112-ebac-4ef7-9893-3f7283937668,306345318,2025-08-14 13:07:00-06:00,2025-08-14,-107.8766782972,37.8122605083,3111.0,,14.0,23.0,1.2,9.1,,1030.5,Mycena sp. 'maculata-IN01',"Ophir, CO 81426, USA",3
+7a7ed75b-6e6a-4328-8eec-27afd44c45ce,236755606,2024-08-16 10:48:00-06:00,2024-08-16,-107.9221583333,37.7998805556,3138.0,,12.0,25.0,0.0,11.9,,1033.2,Mycena sp. 'maculata-IN01',"Dolores, Colorado, United States",2
+107c447d-5337-4c32-8325-dda026cc2998,235533233,2024-08-12 12:50:00-06:00,2024-08-12,-106.6949222222,37.4730194444,3238.0,,5.0,13.0,4.0,11.7,,1039.4,Mycena sp. 'maculata-IN01',"Rio Grande County, CO, USA",2
+adad1843-84b6-48bb-aa5f-e668c84ee7d6,179214120,2023-08-19 12:16:51-06:00,2023-08-19,-107.8518833333,37.8860083333,3377.0,,12.0,26.0,2.4,9.5,,1031.9,Mycena sp. 'maculata-IN01',"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",3

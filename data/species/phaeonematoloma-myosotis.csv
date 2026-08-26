@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+915e6f5b-53e5-4fd0-9037-0f19bc356d0a,245162814,2024-09-28 17:44:01-06:00,2024-09-28,-105.4985666667,40.0886972222,2805.0,,13.0,32.0,0.0,3.3,,1023.8,Phaeonematoloma myosotis,"Ward, CO 80481, USA",1

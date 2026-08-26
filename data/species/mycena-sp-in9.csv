@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6c9d476e-e4ab-4e68-8bc3-255d29cfc405,236400681,2024-08-17 12:50:31-06:00,2024-08-17,-107.8547883333,37.8838466667,3338.0,,12.0,23.0,4.9,9.4,,1034.5,Mycena sp. 'IN9',"Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",2

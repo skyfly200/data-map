@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+7d17ab85-aae3-4f43-a624-106acfc7ef48,237585569,2024-08-23 15:47:07-06:00,2024-08-23,-105.367005,39.2524383333,2591.0,,5.3,18.5,0.3,14.2,,1017.9,Amanita sp. 'jakeslandingensis',"Pike and San Isabel National Forests, Sedalia, CO, US",3
+0e364273-ddc9-4dfe-8ff9-b89e26f60162,236755617,2024-08-16 11:47:00-06:00,2024-08-16,-107.9220111111,37.8007277778,3105.0,,12.0,25.0,0.0,11.9,,1033.2,Amanita sp. 'jakeslandingensis',"Dolores County, CO, USA",2
+505c8c90-c8ad-480e-bae3-fe5ca8b70b5b,233881405,2024-08-01 16:04:11-06:00,2024-08-01,-105.1915438931,37.8025211228,2204.0,,11.0,23.0,0.2,11.5,,1042.5,Amanita sp. 'jakeslandingensis',"Colorado, US",3
+c54cdda0-6c9c-4c4b-9dcd-737290552e26,129172136,2022-08-02 11:46:24-06:00,2022-08-02,-105.3778248747,39.567706408,2542.0,,4.6,14.5,6.4,12.8,,1020.1,Amanita sp. 'jakeslandingensis',"Arapaho & Roosevelt National Forests Pawnee National Grassland, Conifer, CO, US",2
+aa52da83-8126-47f9-b968-39a2eccb7df3,129161605,2022-08-02 10:39:08-06:00,2022-08-02,-105.3766293638,39.5629000571,2578.0,,4.6,14.5,6.4,12.8,,1020.1,Amanita sp. 'jakeslandingensis',"Jefferson County, US-CO, US",2

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e84c299c-0bb3-43dc-941e-0495c3ab8a41,229637733,2024-07-15 10:58:51-06:00,2024-07-15,-105.60592,36.6171033333,2539.0,,15.6,31.7,,13.1,,1019.3,Xerocomellus dryophilus,"Carson National Forest, Questa, NM, US",1

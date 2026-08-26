@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8da200ea-149a-40be-9f41-30dfb13f14a9,307831361,2025-08-20 15:03:37-06:00,2025-08-20,-105.50148183,39.8425949,2842.0,,0.7,16.0,0.0,12.5,,1024.8,Russula sp. 'AK01',"Black Hawk, CO 80422, USA",2
+06fd8f57-cfda-47c2-9f1a-9cfbbf3da6e0,183807323,2023-09-17 09:51:06-06:00,2023-09-17,-105.0218218938,39.0471680879,2828.0,,4.5,24.6,0.0,13.6,,1018.7,Russula sp. 'AK01',"Woodland Park, CO 80863, USA",3
+c7971820-8616-4f42-a4ee-63da9c5b0db8,179964659,2023-08-22 10:58:05-06:00,2023-08-22,-104.8637351387,38.7658960865,2570.0,,20.0,31.0,0.0,16.7,,1027.6,Russula sp. 'AK01',"Colorado, US",3
+2b4ed069-2741-4654-bc01-c21947d897ec,178114475,2023-08-12 12:24:47-06:00,2023-08-12,-105.5384966667,40.0309528333,2936.0,,17.0,28.0,0.0,8.5,,1019.7,Russula sp. 'AK01',"County Road 116, Ward, CO, US",5

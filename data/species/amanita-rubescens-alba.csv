@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1161e7f0-ba89-458b-af3b-a25499f5c788,54459895,2020-07-26 22:45:00+00:00,2020-07-26,-100.9227194,37.0503313,869.0,,22.2,36.7,0.0,21.9,,1014.1,Amanita rubescens alba,Liberal,2
