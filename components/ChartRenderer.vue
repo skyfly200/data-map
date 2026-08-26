@@ -199,7 +199,9 @@ const boxData = computed(() => {
       out.push({ label, values, color: groupColor(label) })
     }
   }
-  return out.sort((a, b) => b.values.length - a.values.length)
+  // Cap to the most-sampled categories so a high-cardinality field (e.g. 200+
+  // species) stays readable instead of running off-screen.
+  return out.sort((a, b) => b.values.length - a.values.length).slice(0, 30)
 })
 
 const heatmap = computed(() => {
