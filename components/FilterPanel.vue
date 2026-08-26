@@ -125,10 +125,10 @@ function clearRadius() {
 .reset:not(:disabled):hover { background: var(--surface-2); }
 
 .groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-fieldset { border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px 12px; margin: 0; }
+fieldset { border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px 12px; margin: 0; min-width: 0; }
 legend { font-size: 0.78rem; font-weight: 700; color: var(--text); padding: 0 6px; }
-label { display: flex; flex-direction: column; gap: 3px; font-size: 0.75rem; font-weight: 600; color: var(--muted); margin-top: 8px; }
-select, input { border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 0.82rem; font-weight: 400; color: var(--text); }
+label { display: flex; flex-direction: column; gap: 3px; font-size: 0.75rem; font-weight: 600; color: var(--muted); margin-top: 8px; min-width: 0; }
+select, input { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 0.82rem; font-weight: 400; color: var(--text); background: var(--input-bg); }
 
 .radius-row, .time-row {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;
