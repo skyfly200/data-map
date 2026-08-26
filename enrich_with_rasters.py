@@ -100,19 +100,26 @@ def get_needed_raster_dates(df, buffer_days=6):
     return sorted(all_dates)
 
 # ─── Precipitation Utilities ──────────────────────────────────────────────────
-def enrich_with_precip(df, precip_dir="precip/"):
+def enrich_with_precip(df, precip_dir="precip/", checkpoint=None):
     for d in range(7):
-        df[f'prcp_d{d}'] = None
+        if f'prcp_d{d}' not in df.columns:
+            df[f'prcp_d{d}'] = None
 
-    unique_dates = pd.to_datetime(df['date'].dropna().unique())
-    total = len(unique_dates)
-    total_rows = int(df['date'].notna().sum())
+    # Resume: skip dates whose rows already have precip filled.
+    all_dates = sorted(pd.to_datetime(df['date'].dropna().unique()))
+    pending = [d for d in all_dates
+               if df.loc[df['date'] == d.strftime('%Y-%m-%d'), 'prcp_d0'].isna().any()]
+    total = len(pending)
+    if not total:
+        print("Precipitation history already complete — skipping.")
+        return df
+    total_rows = int(sum(len(df[df['date'] == d.strftime('%Y-%m-%d')]) for d in pending))
     print(f"Adding 7-day precipitation history — {total} dates, {total_rows} observations...")
 
     start = time.monotonic()
     missing = set()
     done_rows = 0
-    for i, date in enumerate(sorted(unique_dates), 1):
+    for i, date in enumerate(pending, 1):
         dstr = date.strftime('%Y-%m-%d')
         day_rows = df[df['date'] == dstr]          # compute the date group once
         for d in range(7):
@@ -131,6 +138,8 @@ def enrich_with_precip(df, precip_dir="precip/"):
         print(f"  [{i}/{total}] {pct:5.1f}%  {dstr} ({len(day_rows)} obs)  "
               f"· {done_rows}/{total_rows} obs · {elapsed:4.0f}s elapsed, ~{eta:4.0f}s left",
               flush=True)
+        if checkpoint and i % 50 == 0:
+            checkpoint()
 
     if missing:
         print(f"[!] {len(missing)} precip date(s) had no raster (points keep null rain for those days).")
@@ -149,15 +158,21 @@ def get_worldcover_tile_name(lat, lon):
     lon_str = f"{abs(lon_deg):03d}"
     return f"ESA_WorldCover_10m_2020_v100_{lat_prefix}{lat_str}{lon_prefix}{lon_str}_Map.tif"
 
-def enrich_with_worldcover(df, base_dir="./world_cover/"):
-    df['land_cover'] = None
-    total = len(df)
+def enrich_with_worldcover(df, base_dir="./world_cover/", checkpoint=None):
+    if 'land_cover' not in df.columns:
+        df['land_cover'] = None
+    # Resume: only rows without a land-cover value yet.
+    pending = [(idx, row) for idx, row in df.iterrows() if pd.isna(row.get('land_cover'))]
+    total = len(pending)
+    if not total:
+        print("WorldCover already complete — skipping.")
+        return df
     print(f"Adding WorldCover land class — {total} observations...")
 
     start = time.monotonic()
     resolved = {}   # tile name → resolved path (or None); warn once per tile
     missing = set()
-    for n, (idx, row) in enumerate(df.iterrows(), 1):
+    for n, (idx, row) in enumerate(pending, 1):
         tile_name = get_worldcover_tile_name(row.lat, row.lon)
         if tile_name not in resolved:
             resolved[tile_name] = resolve_raster_path(os.path.join(base_dir, tile_name))
@@ -169,6 +184,8 @@ def enrich_with_worldcover(df, base_dir="./world_cover/"):
         if tile_path:
             df.at[idx, 'land_cover'] = sample_raster_value(tile_path, row.lon, row.lat, scale_factor=1, nodata_val=255)
         _progress("land cover", n, total, start)
+        if checkpoint and n % 1000 == 0:
+            checkpoint()
 
     if missing:
         print(f"[!] {len(missing)} WorldCover tile(s) missing; those points have no land cover.")
@@ -245,18 +262,17 @@ def filter_non_productive_landcover(df, landcover_col='land_cover', label_col='l
 TERRAIN_LAYERS = ["slope", "aspect", "solar_exposure", "wind_exposure", "water_retention"]
 
 
-def enrich_with_terrain(df, terrain_dir="dem/derived/"):
+def enrich_with_terrain(df, terrain_dir="dem/derived/", checkpoint=None):
     """Sample the DEM-derived terrain layers at each observation point.
 
     Adds columns: slope, aspect, solar_exposure, wind_exposure, water_retention.
     Run ``fetch.py`` (or ``terrain_pipeline.py``) first to generate the layers.
     """
-    print("Adding terrain exposure (solar / wind / water retention)...")
-
     layer_paths = {}
     missing = []
     for name in TERRAIN_LAYERS:
-        df[name] = None
+        if name not in df.columns:
+            df[name] = None
         path = resolve_raster_path(os.path.join(terrain_dir, f"{name}.tif"))
         if path:
             layer_paths[name] = path
@@ -271,14 +287,22 @@ def enrich_with_terrain(df, terrain_dir="dem/derived/"):
     if missing:
         print(f"[!] Terrain layers missing: {', '.join(missing)} (re-run terrain_pipeline.py).")
 
-    total = len(df)
+    first = next(iter(layer_paths))
+    # Resume: only rows without a terrain value yet.
+    pending = [(idx, row) for idx, row in df.iterrows()
+               if not (pd.isna(row.get("lat")) or pd.isna(row.get("lon"))) and pd.isna(row.get(first))]
+    total = len(pending)
+    if not total:
+        print("Terrain exposure already complete — skipping.")
+        return df
     print(f"Adding terrain exposure ({len(layer_paths)} layers × {total} observations)...")
     start = time.monotonic()
-    for n, (idx, row) in enumerate(df.iterrows(), 1):
-        if not (pd.isna(row.get("lat")) or pd.isna(row.get("lon"))):
-            for name, path in layer_paths.items():
-                df.at[idx, name] = sample_raster_value(path, row.lon, row.lat)
+    for n, (idx, row) in enumerate(pending, 1):
+        for name, path in layer_paths.items():
+            df.at[idx, name] = sample_raster_value(path, row.lon, row.lat)
         _progress("terrain", n, total, start)
+        if checkpoint and n % 1000 == 0:
+            checkpoint()
 
     return df
 
@@ -288,20 +312,26 @@ def enrich_with_terrain(df, terrain_dir="dem/derived/"):
 # (prcp_d0..d6) to chart the weather run-up to each find. d0 = observation day,
 # d6 = six days before.
 
-def enrich_with_temperature_history(df, days=7, max_workers=10):
+def enrich_with_temperature_history(df, days=7, max_workers=10, checkpoint=None):
     import requests
 
     for d in range(days):
-        df[f'tmax_d{d}'] = None
-        df[f'tmin_d{d}'] = None
+        for col in (f'tmax_d{d}', f'tmin_d{d}'):
+            if col not in df.columns:
+                df[col] = None
 
     url = "https://archive-api.open-meteo.com/v1/archive"
+    # Resume: only rows still missing their temperature history.
     tasks = [
         (idx, float(row['lat']), float(row['lon']), pd.to_datetime(row['date']))
         for idx, row in df.iterrows()
         if not (pd.isna(row.get('lat')) or pd.isna(row.get('lon')) or pd.isna(row.get('date')))
+        and pd.isna(row.get('tmax_d0'))
     ]
     total = len(tasks)
+    if not total:
+        print("Temperature history already complete — skipping.")
+        return df
     print(f"Adding {days}-day temperature history (Open-Meteo) — {total} points, {max_workers} parallel...")
 
     def worker(task):
@@ -345,6 +375,8 @@ def enrich_with_temperature_history(df, days=7, max_workers=10):
                 for col, val in out.items():
                     df.at[idx, col] = val
             _progress("temperature", i, total, start_t)
+            if checkpoint and i % 500 == 0:
+                checkpoint()
 
     if fails:
         print(f"[!] {fails}/{total} temperature request(s) failed.")
@@ -425,7 +457,7 @@ def fill_missing_ndvi(df, max_days_gap=7):
 # directly at each point with reduceRegion().getInfo(): no Drive round-trip, and
 # it populates the column in a single (Earth-Engine-authenticated) run.
 
-def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60, max_workers=8):
+def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60, max_workers=8, checkpoint=None):
     if os.environ.get('SKIP_EARTH_ENGINE') == '1':
         print('Skipping Earth Engine NDVI sampling (SKIP_EARTH_ENGINE=1).')
         return df
@@ -444,12 +476,17 @@ def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60, max_workers=
     if 'ndvi' not in df.columns:
         df['ndvi'] = None
 
+    # Resume: only rows still missing an NDVI value.
     tasks = [
         (idx, float(row['lon']), float(row['lat']), pd.to_datetime(row['date']))
         for idx, row in df.iterrows()
         if not (pd.isna(row.get('lat')) or pd.isna(row.get('lon')) or pd.isna(row.get('date')))
+        and pd.isna(row.get('ndvi'))
     ]
     total = len(tasks)
+    if not total:
+        print("NDVI already complete — skipping.")
+        return df
     print(f'Sampling Sentinel-2 NDVI per point (±{buffer_days}d, {scale} m) via Earth Engine '
           f'— {total} points, {max_workers} parallel...')
 
@@ -484,6 +521,8 @@ def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60, max_workers=
                 df.at[idx, 'ndvi'] = value
                 sampled += 1
             _progress(f"NDVI ({sampled} sampled)", i, total, t0)
+            if checkpoint and i % 500 == 0:
+                checkpoint()
 
     if fails:
         print(f"[!] {fails}/{total} NDVI request(s) failed.")
@@ -493,8 +532,10 @@ def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60, max_workers=
 # ─── Main Enrichment Script ───────────────────────────────────────────────────
 
 def enrich_df_with_rasters(df, ndvi_dir='ndvi/', soil_dir='soil/'):
-    df['ndvi'] = None
-    df['soil_moisture'] = None
+    # Don't wipe values from a resumed checkpoint — only initialise if absent.
+    for col in ('ndvi', 'soil_moisture'):
+        if col not in df.columns:
+            df[col] = None
 
     unique_dates = sorted(set(df['date'].dropna()))
     total = len(unique_dates)
@@ -532,6 +573,45 @@ def enrich_df_with_rasters(df, ndvi_dir='ndvi/', soil_dir='soil/'):
 
 # ─── Script Entrypoint ────────────────────────────────────────────────────────
 
+def _checkpoint(df, path):
+    """Atomically write the enriched CSV so far, so a partial run still produces
+    usable output (write to a temp file, then replace — never a half-written CSV)."""
+    os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+    tmp = f"{path}.tmp"
+    df.to_csv(tmp, index=False)
+    os.replace(tmp, path)
+
+
+def run_stage(label, fn, df, path):
+    """Run one enrichment stage, then checkpoint. A stage failure is logged and
+    skipped (keeping every earlier stage's data) rather than aborting the run;
+    an interrupt saves progress before exiting. This makes enrichment
+    progressive — the output CSV always reflects the last completed stage."""
+    print(f"\n=== {label} ===")
+    try:
+        df = fn(df)
+    except KeyboardInterrupt:
+        print(f"[!] Interrupted during '{label}' — saving progress and exiting.")
+        _checkpoint(df, path)
+        raise
+    except Exception as exc:
+        print(f"[!] Stage '{label}' failed ({exc}); continuing with partial data.")
+    _checkpoint(df, path)
+    print(f"  💾 checkpoint → {path}")
+    return df
+
+
+def _postprocess_landcover(df):
+    df = add_worldcover_labels(df)
+    if 'water_mask' not in df.columns:
+        df['water_mask'] = False
+    if 'exclude_reason' not in df.columns:
+        df['exclude_reason'] = 'keep'
+    if should_filter_non_productive_landcover():
+        df = filter_non_productive_landcover(df)
+    return df
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Enrich observation rows with raster and terrain data")
     parser.add_argument("--input", default="mushroom_observations.csv", help="Input observation CSV")
@@ -540,37 +620,43 @@ if __name__ == "__main__":
 
     input_file = args.input
     output_file = args.output or stage_output_path(input_file, '_enriched')
+    done_marker = f"{output_file}.done"
 
-    print(f"Loading {input_file}...")
-    df = pd.read_csv(input_file)
+    # Resume: if a previous (unfinished) run left a checkpoint, continue from it
+    # instead of the raw input. Each stage only re-does rows still missing its
+    # values, so a stop/start, crash, or hang picks up where it left off. A stale
+    # completion marker is cleared while we work.
+    base = pd.read_csv(input_file)
+    if os.path.exists(output_file) and not os.path.exists(done_marker):
+        try:
+            resumed = pd.read_csv(output_file)
+            if len(resumed) == len(base):
+                df = resumed
+                print(f"↻ Resuming from checkpoint {output_file} ({len(df)} rows).")
+            else:
+                print(f"[!] Checkpoint row count ({len(resumed)}) != input ({len(base)}); starting fresh.")
+                df = base
+        except Exception as exc:
+            print(f"[!] Couldn't read checkpoint ({exc}); starting fresh.")
+            df = base
+    else:
+        print(f"Loading {input_file}...")
+        df = base
+    if os.path.exists(done_marker):
+        os.remove(done_marker)
 
-    core_dates = get_needed_raster_dates(df, 0)
-    precip_dates = get_needed_raster_dates(df)
-    print("Total dates needed (for raster):", len(core_dates))
-    print("Total dates needed (for precip):", len(precip_dates))
-    # print(precip_dates)
+    print("Total dates needed (for precip):", len(get_needed_raster_dates(df)))
 
-    print("Starting raster-based enrichment...")
-    df = enrich_df_with_rasters(df, ndvi_dir="ndvi/", soil_dir="soil/")
-    df = enrich_with_precip(df, precip_dir="precip/")
-    df = enrich_with_worldcover(df)
-    df = add_worldcover_labels(df)
-    if 'water_mask' not in df.columns:
-        df['water_mask'] = False
-    if 'exclude_reason' not in df.columns:
-        df['exclude_reason'] = 'keep'
-    if should_filter_non_productive_landcover():
-        df = filter_non_productive_landcover(df)
-    df = enrich_with_terrain(df)
-    df = enrich_with_temperature_history(df)
-    # NDVI sampled directly from Earth Engine (replaces the Drive-export path).
-    df = enrich_with_ndvi_ee(df)
+    save = lambda: _checkpoint(df, output_file)  # noqa: E731 — periodic in-stage checkpoints
+    df = run_stage("NDVI + soil (cached rasters)", lambda d: enrich_df_with_rasters(d, ndvi_dir="ndvi/", soil_dir="soil/"), df, output_file)
+    df = run_stage("Precipitation history", lambda d: enrich_with_precip(d, precip_dir="precip/", checkpoint=save), df, output_file)
+    df = run_stage("Land cover", lambda d: enrich_with_worldcover(d, checkpoint=save), df, output_file)
+    df = run_stage("Land-cover labels / filter", _postprocess_landcover, df, output_file)
+    df = run_stage("Terrain exposure", lambda d: enrich_with_terrain(d, checkpoint=save), df, output_file)
+    df = run_stage("Temperature history", lambda d: enrich_with_temperature_history(d, checkpoint=save), df, output_file)
+    df = run_stage("NDVI (Earth Engine)", lambda d: enrich_with_ndvi_ee(d, checkpoint=save), df, output_file)
+    df = run_stage("Fill missing NDVI", lambda d: fill_missing_ndvi(d, max_days_gap=7), df, output_file)
 
-    # 🧠 Fill missing NDVI using same-location fallback
-    print("Filling missing NDVI...")
-    df = fill_missing_ndvi(df, max_days_gap=7)
-
-    print(f"Saving enriched data to {output_file}...")
-    os.makedirs(os.path.dirname(output_file) or '.', exist_ok=True)
-    df.to_csv(output_file, index=False)
-    print("Done ✅")
+    # Mark the run complete so it isn't resumed / re-run as if unfinished.
+    open(done_marker, 'w').close()
+    print(f"\nDone ✅  Enriched data saved to {output_file}")
