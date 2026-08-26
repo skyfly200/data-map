@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9389c5f1-78fd-44fd-8138-224acaf78b25,316845112,2025-09-26 11:39:00-06:00,2025-09-26,-105.83608889,35.71914722,2670.0,,9.0,26.0,0.0,9.4,,1021.0,Amanita coryli,"Santa Fe, New Mexico, United States",2
+aba25ac5-8110-447d-bd97-355e363de6d1,183178129,2023-09-13 18:57:36-06:00,2023-09-13,-105.0264768675,39.0843438379,2824.0,,7.9,22.3,1.2,8.5,,1015.7,Amanita coryli,"Colorado Springs, CO 80921, USA",1

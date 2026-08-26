@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+725d8b53-c66a-4b24-82b2-200f4f7f5bb4,320257405,2025-10-11 13:01:03-06:00,2025-10-11,-104.8940027778,38.7895888889,2168.0,,12.0,21.0,0.7,6.4,,1013.9,Mycena robusta,"Colorado Springs, CO 80906, USA",2
+0ab830f0-b55b-44b8-9f01-a90b6c06b913,241532480,2024-09-08 12:19:00-06:00,2024-09-08,-107.0570876025,38.9620540429,3051.0,,6.7,24.4,0.0,9.9,,1016.8,Mycena robusta,"Gunnison County, US-CO, US",2
+b9afcf46-8b2a-4fc5-ace9-2c784f2ca9de,239882688,2024-09-04 13:25:01-06:00,2024-09-04,-107.99398,39.0048333333,2951.0,,15.1,31.1,0.0,11.0,,1016.9,Mycena robusta,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",3

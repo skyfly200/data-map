@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4e1668c1-49cf-4b54-b380-ed1c1a4db83c,180392207,2023-08-15 10:14:54-06:00,2023-08-15,-104.8596752816,38.7454683524,2796.0,,15.0,28.0,0.0,9.1,,1029.0,Russula sp. 'CO03',"Colorado, US",2

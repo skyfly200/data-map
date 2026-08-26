@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f2241647-d35b-49b5-917c-7743c962f149,169663833,2020-05-21 15:31:50-06:00,2020-05-21,-103.4670333333,43.8876133333,1579.0,,5.0,18.3,,13.6,,1007.9,Morchella angusticeps,"Black Hills National Forest, Keystone, SD, US",1
+5b4d0770-0696-4e95-888a-7edf7ed0aa92,78295258,2021-05-10 18:24:35-10:00,2021-05-10,-103.8999624391,44.4141437022,1452.0,,0.0,9.0,0.0,11.4,,1023.2,Morchella angusticeps,United States,1
+932f9457-ebc3-4e16-a53c-9a9e6558ac4e,53225456,2020-04-16 01:34:30+00:00,2020-04-16,-103.35399667,44.00978888,1349.0,,-6.6,5.6,0.0,17.6,,1025.6,Morchella angusticeps,Rapid City,2
+a6bb5c83-4c4c-41e7-b433-3232481e24cd,41487161,2016-06-08 12:08:00-04:00,2016-06-08,-103.4560611111,43.8772666667,1585.0,,12.2,26.1,,10.3,,1008.0,Morchella angusticeps,"Pennington County, SD, USA",2
+60d37d66-a5e9-4ffb-93af-3ce52d6f5127,25200362,2019-05-12 12:31:29-06:00,2019-05-12,-103.3511992916,43.9670909906,1309.0,,-0.5,18.3,0.0,11.2,,1011.8,Morchella angusticeps,"13536 US-16, Rapid City, SD 57702, USA",2

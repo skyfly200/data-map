@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f414f4f8-166f-4838-b41b-7b08bbe490cd,310336610,2025-08-30 10:20:00-06:00,2025-08-30,-105.65486944,35.84186111,2736.0,,12.0,28.0,0.0,11.0,,1023.8,Agaricus sylvaticus occidentalis,"San Miguel, New Mexico, United States",1
+0b5138f1-3d33-4a00-99a8-a68ef67edc43,310336132,2025-08-30 10:21:00-06:00,2025-08-30,-105.65488333,35.84185833,2736.0,,12.0,28.0,0.0,11.0,,1023.8,Agaricus sylvaticus occidentalis,"San Miguel, New Mexico, United States",2
+f1765875-2a06-49de-aab3-69e12df59996,178323135,2023-08-12 23:39:00-06:00,2023-08-12,-104.7739169167,38.8857946898,1957.0,,15.0,26.7,3.3,9.0,,1015.1,Agaricus sylvaticus occidentalis,"East Colorado Springs, Colorado Springs, CO, USA",5
+5f1674fb-f5af-415e-935d-f5d9924b7e2f,91597285,2021-08-17 13:27:45-06:00,2021-08-17,-105.5098923619,39.9780264032,2560.0,,16.0,35.0,0.0,6.5,,1013.8,Agaricus sylvaticus occidentalis,"Mud Lake, Nederland, CO, US",1

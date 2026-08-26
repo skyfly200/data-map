@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+db906a7a-3740-46f2-9bdd-33fa6af85aa7,321916217,2025-10-19 11:32:07-06:00,2025-10-19,-106.6317770259,35.8752009558,2360.0,,6.0,19.0,0.0,7.1,,1025.6,Russula avellaneiceps,"Sandoval County, US-NM, US",1
+1dc86e7a-875e-4447-b630-e8d26a9de437,235048286,2024-08-10 23:00:00-06:00,2024-08-10,-105.0917666667,39.0419611111,2478.0,,12.8,23.7,2.9,11.1,,1018.8,Russula avellaneiceps,"Teller County, CO, USA",4
+f476cec6-fe63-4bad-ba51-78d17cdbc9e7,131520538,2022-08-19 11:39:00-06:00,2022-08-19,-107.8260201162,37.8543605641,2981.0,,10.0,17.0,7.5,3.4,,1030.0,Russula avellaneiceps,"San Miguel County, US-CO, US",2
+f25a52ba-d087-4f96-93ac-146cbe99a64a,131492930,2022-08-19 11:17:36-06:00,2022-08-19,-107.8260037324,37.8547463987,2981.0,,10.0,17.0,7.5,3.4,,1030.0,Russula avellaneiceps,"San Miguel County, US-CO, US",1
+5aab1091-ee75-4ea6-af68-390528f640e1,131487994,2022-08-19 11:16:12-06:00,2022-08-19,-107.8260138352,37.8546985332,2981.0,,10.0,17.0,7.5,3.4,,1030.0,Russula avellaneiceps,"San Miguel County, US-CO, US",2

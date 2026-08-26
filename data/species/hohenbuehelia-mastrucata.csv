@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+7f0c056d-f23c-4d8b-b682-e78319c23913,350344769,2026-03-14 18:39:51-06:00,2026-03-14,-105.1285933303,39.7747962829,1656.0,,11.0,23.0,0.0,27.0,,1006.5,Hohenbuehelia mastrucata,"Prospect Park Trail, Wheat Ridge, CO, US",1
+ace6a660-1662-4bec-b8f9-78c3acd7368a,235639331,2024-08-13 17:08:05-06:00,2024-08-13,-107.7524033333,38.15435,2129.0,,10.0,18.0,15.2,7.5,,1031.3,Hohenbuehelia mastrucata,"US-550, Ridgway, CO, US",3
+a7aa7e03-5170-4455-ba70-6fe70c71264e,55029622,2020-07-31 07:15:00-06:00,2020-07-31,-105.422731272,41.2526770281,2561.0,,,,,12.5,,,Hohenbuehelia mastrucata,"Albany County, WY, USA",1
+63acac53-9acf-4cac-b548-31c2f99792e7,32447823,2019-07-26 20:01:07-06:00,2019-07-26,-105.2990111317,39.4923067812,2608.0,,18.3,32.2,,11.4,,1015.8,Hohenbuehelia mastrucata,"Colorado, US",2
+f3ff5942-40a3-407c-99a6-51db1b1f2e10,10240890,2018-03-13 16:53:59-06:00,2018-03-13,-105.2920133333,39.9972216667,1814.0,,-1.0,13.0,,4.3,,,Hohenbuehelia mastrucata,"Boulder Mountain Park, Boulder, CO, US",1

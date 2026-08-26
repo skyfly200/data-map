@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ed5a0baa-b02f-4836-889b-324c52db0657,305059941,2025-08-09 10:24:50-06:00,2025-08-09,-106.65335,39.5138783333,3037.0,,12.2,29.4,0.0,11.1,,1013.3,Arrhenia epichysium,"Main St, Eagle, CO, US",1
+60ffd1bd-d465-4d14-b111-0c69e3bf0ca9,131644358,2022-08-20 11:19:52-06:00,2022-08-20,-107.9514,37.8006216667,3268.0,,10.0,17.0,13.8,5.1,,1029.5,Arrhenia epichysium,"San Juan National Forest headquarters, Dolores, CO, US",1
+53155df3-ac88-4c9c-b949-76e62c6f0898,131499039,2022-08-19 11:29:44-06:00,2022-08-19,-107.950645,37.8007783333,3268.0,,10.0,17.0,7.5,3.4,,1030.0,Arrhenia epichysium,"San Juan National Forest headquarters, Dolores, CO, US",1
+5a3b1235-3845-4c79-a0c6-88701c6077bb,131369961,2022-08-18 11:24:51-06:00,2022-08-18,-108.0075065997,37.7745516,3062.0,,9.0,23.0,0.6,6.6,,1032.2,Arrhenia epichysium,"Dolores, CO 81323, USA",1

@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8076d3f7-e818-4ae8-a962-39bf804b41fa,231525817,2024-07-24,2024-07-24,-107.2111629322,39.4022047025,1884.0,,11.8,23.0,0.0,9.4,,1020.9,Agaricus subfloccosus,"Carbondale, CO 81623, USA",2
+f9d58ec9-7050-44b2-99f2-08cf272d6667,229833494,2024-07-14 17:46:49-06:00,2024-07-14,-107.7555383333,38.14925,2142.0,,15.0,25.0,1.7,6.8,,1036.0,Agaricus subfloccosus,"CR-23, Ridgway, CO, US",4
+aec1fde8-2e9b-4a34-97ca-34b6eb425d02,164822985,2023-05-28,2023-05-28,-105.0498570129,38.466631189,1676.0,,8.1,23.8,0.0,11.5,,1010.3,Agaricus subfloccosus,"Penrose, CO 81240, USA",3
+013804a3-a7c4-47cb-bb16-5b16a0589c14,132582189,2022-08-28 07:00:00-06:00,2022-08-28,-105.4485834762,39.0340046754,2654.0,,3.5,15.3,4.9,7.5,,1013.9,Agaricus subfloccosus,"Lake George, CO 80827, USA",4

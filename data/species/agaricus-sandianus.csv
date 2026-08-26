@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1c217b0a-1861-4e5a-9e01-2e02ac2dd03e,311761471,2025-09-04 11:07:00-06:00,2025-09-04,-105.79835556,35.80020278,3269.0,,11.0,28.0,0.2,15.3,,1022.3,Agaricus sandianus,"Santa Fe, New Mexico, United States",1
+87670efd-0183-4997-bd8b-174dc1d4d4ed,238062662,2024-08-24 12:29:19-06:00,2024-08-24,-105.8002776944,35.8008193889,3266.0,,16.7,30.0,,13.6,,1016.5,Agaricus sandianus,"San Ildefonso Pueblo, NM 87506, USA",2
+0a7ec77e-9e99-4ddb-a69e-58a46ac48608,236370835,2024-08-17 10:55:22-06:00,2024-08-17,-107.9541949396,37.9198097777,2866.0,,12.0,23.0,4.9,9.4,,1034.5,Agaricus sandianus,"Colorado, US",2
+5d29b5c9-7d09-4a83-8e5f-783787419b1a,181733440,2023-09-02 15:28:05-06:00,2023-09-02,-106.4747946337,39.1627474261,3363.0,,6.7,21.1,,6.1,,1016.3,Agaricus sandianus,"Leadville, CO 80461, USA",2
+28c51be3-18e1-4b49-9a7d-cdb755d762dd,97689199,2021-09-03 11:58:25-06:00,2021-09-03,-106.1775018,39.4945224,3176.0,,7.0,14.0,11.7,16.0,,1035.4,Agaricus sandianus,"Frisco, CO 80443, USA",4

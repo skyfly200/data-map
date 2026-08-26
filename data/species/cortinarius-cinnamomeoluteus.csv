@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0b46ca59-8708-4421-a96e-34ae42d5e752,178114426,2023-08-12 12:26:30-06:00,2023-08-12,-105.58393,40.05115,3460.0,,7.6,22.4,1.2,6.2,,1029.1,Cortinarius cinnamomeoluteus,"Ward, CO, US",2

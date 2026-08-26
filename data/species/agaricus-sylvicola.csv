@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a9dfc4ff-98c2-4aeb-bd2b-8f86371f7b04,304076963,2025-08-05 12:03:02-06:00,2025-08-05,-103.8923716667,44.3988883333,1390.0,,17.0,27.8,2.3,11.5,,1016.6,Agaricus sylvicola,"Black Hills National Forest, Spearfish, SD, US",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fa3034cc-a862-40de-9a03-e580dcea3ca0,387372250,2026-08-01 15:25:26-06:00,2026-08-01,-105.7005533333,36.0601888333,2621.0,,14.5,29.6,2.4,11.8,,1019.3,Amanita rubescens,"Forest Service Road 207, Truchas, NM, US",1

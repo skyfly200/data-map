@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e7d425d9-975b-4d25-9c9d-99c8efe61eee,141307165,2012-08-15 14:21:00-06:00,2012-08-15,-107.5378368,37.9338849,3841.0,,,,,6.4,,,Lactarius nanus,"Cinnamon Pass, Colorado 81235, USA",4

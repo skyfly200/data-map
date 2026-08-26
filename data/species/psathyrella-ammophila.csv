@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8a142e0a-ee6e-4725-9d25-647623bfc8d9,251180488,2024-11-09 16:06:08-07:00,2024-11-09,-108.7595242997,39.1343074997,1417.0,,-6.0,-3.0,0.6,8.4,,1017.6,Psathyrella ammophila,"Fruita, CO 81521, USA",1

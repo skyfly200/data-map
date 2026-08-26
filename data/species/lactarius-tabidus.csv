@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2d3f30ab-d223-47d7-a593-c675d67570b8,240556613,2024-09-06 12:37:55-06:00,2024-09-06,-105.2245516139,36.5269122536,2600.0,,3.9,20.9,0.0,2.9,,1036.8,Lactarius tabidus,"Cimarron Canyon State Park, Ute Park, NM, US",1

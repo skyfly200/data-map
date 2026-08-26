@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f3d27831-8ef8-4221-8a60-07995af70546,315317845,2025-09-20 12:17:51-06:00,2025-09-20,-105.3048633333,39.4656866667,2436.0,,11.0,25.0,1.2,8.5,,1021.1,Russula integra,"S Baird Rd, Conifer, CO, US",1

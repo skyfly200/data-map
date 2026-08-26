@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+38a4d59e-5e25-4590-a6f1-66ae01ae6b37,340077618,2024-07-23 18:32:41-06:00,2024-07-23,-103.4988185303,43.9412411585,1501.0,,12.2,30.0,0.0,7.8,,1016.9,Lactarius indigo,"Black Hills National Forest, Keystone, SD, US",3
+a719a39e-6e1d-43e8-9589-72a4347f5f81,314897137,2019-08-14 17:58:00-06:00,2019-08-14,-103.7186361111,44.2992361111,1793.0,,12.0,23.0,,10.3,,,Lactarius indigo,"Lawrence County, SD, USA",1
+1ad84163-1c11-497e-8954-42c90aef625c,171145968,2023-07-04 21:02:54-06:00,2023-07-04,-103.7203174812,44.2115690958,1812.0,,10.5,17.1,8.3,14.9,,1018.5,Lactarius indigo,"Black Hills National Forest, Lead, SD, US",2
+e15d3762-a582-4e35-9023-5946ed23c816,69791899,2020-07-31 12:17:36-06:00,2020-07-31,-103.7201833333,44.3020216667,1807.0,,,,,,,,Lactarius indigo,"Black Hills National Forest, Deadwood, SD, US",1

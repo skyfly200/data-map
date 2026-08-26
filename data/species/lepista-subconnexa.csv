@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cbe137f8-2642-4243-80e3-545327a2c8ee,327332161,2025-09-09 07:30:00-06:00,2025-09-09,-103.1161277778,44.034,925.0,,15.0,31.1,0.0,14.4,,1016.0,Lepista subconnexa,"Green Valley, SD 57703, USA",1

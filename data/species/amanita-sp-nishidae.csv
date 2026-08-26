@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4aa3caa4-2d4c-491c-862c-62c5ff97c15c,299410459,2025-07-19 15:19:47-06:00,2025-07-19,-104.7124958347,39.0523118417,2312.0,,13.3,30.3,2.6,11.0,,1011.8,Amanita sp. 'nishidae',"Colorado, US",1
+62d0d3f4-7fdf-4917-a1f2-20f9b6044820,299405441,2025-07-19 11:23:46-06:00,2025-07-19,-104.685105265,39.0393398868,2325.0,,13.3,30.3,2.6,11.0,,1011.8,Amanita sp. 'nishidae',"Colorado, US",2

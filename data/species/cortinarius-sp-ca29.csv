@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+98e5fccc-3c8b-4a37-a381-2802d1d175d0,308569747,2025-08-22 12:04:00-06:00,2025-08-22,-105.7952277778,35.8032583333,3385.0,,15.0,31.7,0.0,11.2,,1014.3,Cortinarius sp. 'CA29',"Santa Fe County, NM, USA",3
+ed91d111-28d3-4ab6-a3b3-810aaf9cbf07,236401876,2024-08-17 11:27:08-06:00,2024-08-17,-107.8547789474,37.8846860222,3338.0,,12.0,23.0,4.9,9.4,,1034.5,Cortinarius sp. 'CA29',"Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",1

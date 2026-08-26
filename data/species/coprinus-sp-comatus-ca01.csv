@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4175002c-a2b1-410f-aa04-59be89bda6d1,323299668,2025-10-24 12:56:00-06:00,2025-10-24,-105.91764722,35.68024722,2174.0,,3.0,16.0,0.4,13.7,,1019.2,Coprinus sp. 'comatus-CA01',"Santa Fe, New Mexico, United States",2

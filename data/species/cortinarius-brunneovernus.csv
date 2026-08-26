@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a8fd7a6f-c2d5-4c17-8403-502d0c955f1b,127032569,2022-07-19 18:51:18-06:00,2022-07-19,-105.6982688886,39.6869557444,2854.0,,7.1,15.5,4.6,12.1,,1021.6,Cortinarius brunneovernus,"Arapaho & Roosevelt National Forests Pawnee National Grassland, Idaho Springs, CO, US",1

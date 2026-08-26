@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+816cfa00-4327-4fc7-b336-fdcf25dabaa1,21888033,2017-07-20 12:38:00-04:00,2017-07-20,-105.877058427,39.6697390125,3570.0,,10.0,18.0,,9.9,,,Lichenomphalia ericetorum,"Clear Creek County, CO, USA",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fc2f44e0-1bd9-4411-974d-9d603ee28e0d,235559989,2024-08-12 10:44:01-06:00,2024-08-12,-106.8021227047,37.482702302,3309.0,,5.0,13.0,4.0,11.7,,1039.4,Mycena bulliformis,"Mineral County, CO, USA",2

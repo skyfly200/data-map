@@ -33,6 +33,12 @@ ndvi/
 treecover/
 dem/
 
+# Per-species CSV store: raw observations (data/species/) are the tracked source
+# of truth. Enriched files are regenerable pipeline output, and archive/ holds
+# the migrated originals as a local backup — neither belongs in the repo.
+data/enriched/
+data/archive/
+
 # Python
 __pycache__/
 *.pyc

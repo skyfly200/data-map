@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b6b8e993-4190-4cd9-b8bc-ac8b9b7575b6,26200490,2019-06-01 12:00:27-06:00,2019-06-01,-106.2304533333,41.5758666667,2408.0,,,,,,,,Morchella,"82083, Rock River, WY, US",1

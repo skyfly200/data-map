@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+347d65b5-c795-4aeb-a0f7-01106a9ae5ea,319793049,2025-10-08 14:06:40-06:00,2025-10-08,-106.896057164,38.0922191081,3283.0,,-4.4,23.0,0.0,3.2,,1021.7,Mycena sp. 'pura-IN03',"Colorado, US",3
+e9be7a86-f881-4aeb-a445-769b34a9f771,316864677,2025-09-25 17:04:58-06:00,2025-09-25,-105.5754807353,40.1276831913,3034.0,,-1.0,21.0,0.0,5.1,,1031.8,Mycena sp. 'pura-IN03',"Colorado, US",4
+cfb59c92-8d35-4092-b64f-14b84a5d67f2,237223575,2024-08-20 11:23:00-06:00,2024-08-20,-106.4012835406,38.8112315428,3524.0,,4.1,23.6,0.9,7.9,,1022.5,Mycena sp. 'pura-IN03',"Chaffee County, CO, USA",1
+f0c1f99a-eb49-409f-8f3b-1f655963ee30,231477133,2024-07-03 11:50:00-06:00,2024-07-03,-105.8036282609,35.7974507021,3149.0,,14.4,29.4,0.0,10.6,,1011.9,Mycena sp. 'pura-IN03',"Santa Fe County, NM, USA",2
+611c47d8-944d-4514-96f5-5522bebfabe8,226804191,2024-07-02 16:15:18-06:00,2024-07-02,-107.9263945,38.894747,1882.0,,14.7,29.3,9.4,12.3,,1011.7,Mycena sp. 'pura-IN03',"SE Frontier Ave, Cedaredge, CO, US",2

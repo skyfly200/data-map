@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b2404aaf-3f98-4f6a-9b1c-e73f9ec54763,94488449,2021-08-21 10:32:29-06:00,2021-08-21,-107.85833267,37.93408634,2905.0,,6.0,20.0,1.8,10.2,,1026.3,Imleria badia,"Mountain Village, CO, USA",1

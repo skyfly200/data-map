@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8056f8b0-0d95-48f6-b769-414e30834bbe,183462278,2023-09-15 18:35:43-06:00,2023-09-15,-104.8882085887,39.1283240238,2226.0,,5.0,12.9,,15.6,,1023.4,Russula sp. 'IUMQ4342',"Colorado, US",2
+1d9ac6b2-830a-48a8-9d9b-dd7076ce79ab,178111047,2023-08-12 10:43:04-06:00,2023-08-12,-105.53682,40.0316805,2911.0,,17.0,28.0,0.0,8.5,,1019.7,Russula sp. 'IUMQ4342',"County Road 116, Ward, CO, US",4
+470f1da7-5eed-41b0-a3a4-63a98e4a1ed7,178110621,2023-08-12 10:40:36-06:00,2023-08-12,-105.5367366667,40.0317,2911.0,,17.0,28.0,0.0,8.5,,1019.7,Russula sp. 'IUMQ4342',"County Road 116, Ward, CO, US",4

@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+21ab1a7b-cb33-4a8b-9312-556bf15af89b,305553157,2025-08-11 09:37:12-06:00,2025-08-11,-105.4435142742,36.6069370306,3159.0,,5.0,22.5,0.5,8.0,,1029.0,Russula sp. 'Woo46',"Carson National Forest, Taos, NM, US",2
+abb57fae-bff7-4ffe-a2ef-c8d1f3c3eba9,236400246,2024-08-17 13:19:46-06:00,2024-08-17,-107.8586283333,37.88005,3275.0,,12.0,23.0,4.9,9.4,,1034.5,Russula sp. 'Woo46',"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",2
+51bb5b65-70c2-44e6-b6d4-abe5ec295d69,229817465,2024-07-16 16:36:42-06:00,2024-07-16,-107.54013,38.2468916667,2708.0,,16.7,31.7,0.0,12.1,,1014.4,Russula sp. 'Woo46',"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",1

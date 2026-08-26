@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+7ebad065-8d20-4365-8023-94d46b26d051,150669799,2023-03-09 11:15:10-07:00,2023-03-09,-105.54283,40.0454,3005.0,,-2.0,12.0,0.7,15.3,,1017.2,Mycena sp. 'IN07',"Denver Botanic Gardens, Denver, CO, US",4

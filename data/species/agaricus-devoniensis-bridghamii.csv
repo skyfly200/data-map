@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+7745adb8-6a14-4e49-aa22-a1db78587a90,320534098,2025-10-12 17:03:11-06:00,2025-10-12,-106.3292550997,35.8803359997,2235.0,,10.0,19.0,0.4,12.4,,1016.5,Agaricus devoniensis bridghamii,"Los Alamos County, NM, USA",3

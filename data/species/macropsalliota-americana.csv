@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c8f28946-bc09-4be6-8f3d-329df4d19d60,122667780,2019-09-09 12:24:00-06:00,2019-09-09,-104.9600055556,39.7311861111,1650.0,,15.1,28.0,,12.8,,1007.7,Macropsalliota americana,"Cheesman Park, Denver, CO, USA",1

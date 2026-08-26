@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6d4a8e40-258d-46b7-af19-ad9fe5657dde,383203269,2026-07-19 20:15:08-06:00,2026-07-19,-105.6479500475,39.9548692967,3353.0,,8.0,16.0,0.1,11.1,,,Lyophyllum decastes,"Colorado, US",1
+6e55b522-9d4e-427d-8142-3f28c765f602,295538467,2025-07-04 15:51:17-06:00,2025-07-04,-106.66388,35.9031833333,2672.0,,15.7,27.1,0.0,12.4,,1024.5,Lyophyllum decastes,"Santa Fe National Forest, Jemez Springs, NM, US",1
+428dae9f-702f-491a-885c-d1acd210f70c,237989792,2024-08-25 14:47:48-06:00,2024-08-25,-106.3532706175,35.8720068991,2455.0,,13.2,26.7,,9.8,,1021.6,Lyophyllum decastes,"Santa Fe National Forest, Los Alamos, NM, US",1
+6716d4cb-bb4f-42b0-ad84-42dc3304acdc,237791034,2024-08-24 13:46:05-06:00,2024-08-24,-105.80256141,35.79592534,3149.0,,16.7,30.0,,13.6,,1016.5,Lyophyllum decastes,"Santa Fe County, US-NM, US",1
+83c8c75d-404a-4ada-919b-47e79ea3676d,81296600,2021-06-02 07:00:52-06:00,2021-06-02,-104.7509704687,38.8171191193,1855.0,,8.3,22.8,0.0,10.4,,1015.7,Lyophyllum decastes,"Nazarene Bible College, Colorado Springs, CO, US",1

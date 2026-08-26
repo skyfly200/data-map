@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+56b72119-24de-4752-b18a-ec7e2509285b,385097511,2026-07-25 11:49:52-06:00,2026-07-25,-105.6819111111,39.8391722222,3502.0,,9.0,17.0,1.7,8.8,,,Deconica montana,"Stewart Lake Dam, Idaho Springs, CO 80452, USA",1
+0a9e0595-c3b0-45e7-a0c5-79721ecd0730,378555669,2026-07-05 11:39:29-06:00,2026-07-05,-106.2643262113,41.3521785107,3215.0,,13.1,27.4,0.0,12.7,,1014.5,Deconica montana,"Wyoming, US",1
+3db6432f-739a-4cb5-beba-f0f443f77aee,240471789,2024-09-07 10:50:29-06:00,2024-09-07,-105.1027723409,39.2959103402,2520.0,,12.8,28.9,0.0,12.7,,1018.1,Deconica montana,"Colorado, US",1
+03c9d183-0f5b-4c7f-ba56-73f3828f6a8a,235786180,2024-08-12 15:49:00-06:00,2024-08-12,-106.8245833257,36.0813572725,3112.0,,,,,,,,Deconica montana,"Rio Arriba County, NM, USA",1
+595ba13c-6aef-4df0-992e-0b46cf940309,132235027,2022-08-19 11:06:59-06:00,2022-08-19,-107.9501883333,37.80072,3268.0,,10.0,17.0,7.5,3.4,,1030.0,Deconica montana,"San Juan National Forest headquarters, Dolores, CO, US",1

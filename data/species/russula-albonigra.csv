@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0d4ad993-14b6-4a65-aeee-26564246b25c,237931863,2024-08-25 12:12:50-06:00,2024-08-25,-105.8055633333,35.78983,3135.0,,14.4,27.8,,17.8,,1019.0,Russula albonigra,"Santa Fe National Forest, Tererro, NM, US",1
+a5116fd1-4c90-41dd-87e4-5fcd47b98d04,236391625,2024-08-16 10:22:18-06:00,2024-08-16,-105.7998522541,35.7975989072,3238.0,,16.7,34.4,,11.2,,1012.5,Russula albonigra,"Santa Fe County, US-NM, US",2
+ca27dc90-d165-457e-a51c-bbe467cdf8ad,231762170,2024-07-25 18:53:20-06:00,2024-07-25,-104.8907278211,38.7624666336,2292.0,,20.0,29.0,0.0,15.3,,1028.5,Russula albonigra,"Colorado, US",1

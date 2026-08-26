@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0b8813f3-78e4-4828-82d6-265a35a2fd33,314508899,2020-08-10 10:56:00-06:00,2020-08-10,-103.6988888899,44.0923411293,1785.0,,11.7,24.4,0.0,9.7,,1015.5,Lentinellus cochleatus,"Pennington County, SD, USA",1

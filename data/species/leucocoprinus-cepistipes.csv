@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+bf5cfff0-3ed2-4fb6-b3d1-660732f29348,15196163,2018-08-07 08:12:04-06:00,2018-08-07,-104.9117295833,39.6048652669,1718.0,,14.4,28.9,0.0,14.0,,1016.2,Leucocoprinus cepistipes,"6164 S Magnolia Ct, Centennial, CO, US",1

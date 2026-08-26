@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9e93db23-8f39-43fc-bc4d-d3015fde9c04,315332094,2025-09-17 14:00:00-06:00,2025-09-17,-106.7422967995,35.9295566598,2578.0,,11.0,26.0,0.1,10.7,,1025.0,Amanita sp. 'cochiseana',"Sandoval County, US-NM, US",3
+7580df52-262c-461a-be60-e8b30ca27fdf,304323274,2025-07-31 14:52:00-06:00,2025-07-31,-105.4215251939,35.832557977,2303.0,,12.8,23.9,6.5,16.2,,1021.3,Amanita sp. 'cochiseana',"Rociada, NM",4
+29c8eadb-13f8-4366-b6f0-d1776f9cc7a7,294082181,2025-06-25 09:43:48-06:00,2025-06-25,-104.570051,39.3062159722,2077.0,,11.0,22.0,6.1,10.2,,1023.5,Amanita sp. 'cochiseana',"Elizabeth, CO 80107, USA",3

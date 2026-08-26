@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+46295e05-b28c-42df-90d4-b14b3919ae07,298754797,2025-07-15 12:46:00-06:00,2025-07-15,-105.79995,35.79677222,3238.0,,14.4,32.8,0.0,13.5,,1011.1,Lactarius sp. 'luculentus-CO01',"Santa Fe, New Mexico, United States",2
+0ce85243-f84d-404e-ab70-20fb234aca8a,323954404,2025-08-17 12:44:00-06:00,2025-08-17,-105.433625,36.5679944444,3274.0,,0.5,25.0,0.0,5.6,,1029.6,Lactarius sp. 'luculentus-CO01',"Taos County, NM, USA",1
+81ad66ea-7d02-44bb-ab06-b41d23ec6943,231343087,2024-07-23 17:11:19-06:00,2024-07-23,-107.5929033333,39.08785,2851.0,,7.5,20.8,0.0,9.2,,1019.3,Lactarius sp. 'luculentus-CO01',"Grand Mesa Uncompahgre and Gunnison National Forests, Paonia, CO, US",1

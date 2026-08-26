@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cec0d85d-bca1-4a90-838e-d6d47af8e920,317418942,2025-09-28 13:01:41-06:00,2025-09-28,-107.1674633706,38.7573145492,3022.0,,8.0,18.0,0.9,11.7,,1026.2,Russula sp. 'Woo40',"Gunnison County, US-CO, US",1
+46014f0b-a908-4f68-a733-a0162bfa8748,237736167,2024-08-17 12:28:00-06:00,2024-08-17,-107.8589338753,37.8830976924,3292.0,,12.0,23.0,4.9,9.4,,1034.5,Russula sp. 'Woo40',"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",1
+3c5fdabf-703e-43ba-bd45-418c472468e8,236399376,2024-08-17 13:40:29-06:00,2024-08-17,-107.858895,37.8802083333,3275.0,,12.0,23.0,4.9,9.4,,1034.5,Russula sp. 'Woo40',"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",1
+cd31cb27-282f-4783-9058-419c0714de05,236399307,2024-08-17 13:43:45-06:00,2024-08-17,-107.8589333333,37.8802,3275.0,,12.0,23.0,4.9,9.4,,1034.5,Russula sp. 'Woo40',"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",1
+eb66e3d0-aea0-4f55-a549-a3e85ab2bf29,234132019,2024-08-05 20:38:14-06:00,2024-08-05,-108.0086944863,39.0139298965,3101.0,,18.6,33.8,0.0,10.2,,1015.0,Russula sp. 'Woo40',"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",2
+76eff846-90a5-47a9-8cff-a7c308c338f7,232991824,2024-07-31 14:20:15-06:00,2024-07-31,-107.3833305,38.1503642,3149.0,,,,,,,,Russula sp. 'Woo40',"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",2
+d73c2235-2c23-4dd9-9eb4-056ab5031424,184012868,2023-09-18 11:40:34-06:00,2023-09-18,-105.5826977127,40.0523188727,3475.0,,2.3,19.2,0.5,9.4,,1026.5,Russula sp. 'Woo40',"Boulder County, US-CO, US",4

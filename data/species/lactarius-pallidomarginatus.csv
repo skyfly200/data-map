@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+35e98fe8-cf44-40a1-8321-1dd4c3f304da,141308424,2011-08-13 14:34:00-06:00,2011-08-13,-107.5495039,37.7952754,3839.0,,12.0,26.0,,10.1,,,Lactarius pallidomarginatus,"Stony Pass, Colorado 81433, USA",4

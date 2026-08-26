@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+80ad2f78-a74e-45ff-9132-01946fa415e5,370667424,2010-08-13,2026-06-11,-105.926666,39.992904,2666.0,,5.0,20.7,0.0,6.9,,,Agaricus pilosporus,"Grand County, US-CO, US",1
+cec8b0b5-cd0a-4830-8956-e9624d71d85b,313967186,2025-09-14 13:28:00-06:00,2025-09-14,-105.9086804381,35.5842715784,2184.0,,7.0,24.0,0.0,10.0,,1021.5,Agaricus pilosporus,"New Mexico, US",2
+397fb26e-8c16-4c7b-85f7-2951d03c9a95,288318043,2025-06-09 14:55:26-06:00,2025-06-09,-104.9889148458,38.6115746005,2434.0,,9.0,21.0,0.0,12.2,,1021.7,Agaricus pilosporus,"Colorado, US",3
+9f79234d-a1dc-4d5e-9fb1-c2c37b6cc59a,223471489,2024-06-17 19:20:21-06:00,2024-06-17,-104.8208345845,38.8501974068,1854.0,,13.9,34.4,0.0,23.0,,996.1,Agaricus pilosporus,"Nevada/Uintah, Colorado Springs, CO 80903, USA",1
+d7db206e-c799-4573-9511-3c4cfd9481a3,178205132,2023-08-13 10:22:29-06:00,2023-08-13,-104.8219295964,38.7110980669,1908.0,,13.0,23.0,2.2,21.0,,1026.6,Agaricus pilosporus,"Rock Creek, Colorado Springs, CO, USA",4
+8f6c04cd-b106-4967-933e-62a58f204444,60046222,2010-08-14,2010-08-14,-105.7635,39.89235,2762.0,,16.0,27.0,,7.2,,,Agaricus pilosporus,"YMCA Snow Mountain Ranch, Winter Park, Colorado, USA",2
+3a8af1c4-ca75-4489-b374-8f91fcfd820d,60046220,2010-08-12,2010-08-12,-105.7635,39.89235,2762.0,,20.0,34.0,,10.5,,,Agaricus pilosporus,"YMCA Snow Mountain Ranch, Winter Park, Colorado, USA",2

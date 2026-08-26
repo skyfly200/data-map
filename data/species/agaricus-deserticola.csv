@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+530809ca-6b37-421c-a3f0-f5d0dc7d9826,347119266,2026-04-03 17:15:57-06:00,2026-04-03,-104.7923662228,38.8093613789,1802.0,,3.3,12.8,,14.7,,1008.0,Agaricus deserticola,"Colorado Springs, CO 80910, USA",1
+15000fe9-7d37-4daa-a845-184919584d97,289023310,2025-06-12 09:32:46-06:00,2025-06-12,-106.3017083333,35.9048283333,2184.0,,14.7,26.8,4.2,9.4,,1021.7,Agaricus deserticola,"Range Rd & Aspen Dr, Los Alamos, NM 87544, USA",1
+b9608a64-9b77-42e7-8713-013c68b27695,194694150,2022-08-25 07:37:00-06:00,2022-08-25,-105.73990667,36.46291667,2128.0,,10.6,26.1,,8.1,,1023.0,Agaricus deserticola,"Taos County, NM, USA",2
+e55ebe5b-eb86-4b01-afbd-c611e5e86855,56961731,2020-08-19 13:00:33-06:00,2020-08-19,-108.2169477519,36.7499316147,1647.0,,18.3,35.0,0.0,10.3,,1013.3,Agaricus deserticola,"S Hidden Glenn St, Farmington, NM, US",1

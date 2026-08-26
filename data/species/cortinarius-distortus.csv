@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+22355ac8-6d9b-4943-bd97-9d8ed5f6c45d,236400013,2024-08-17 13:26:44-06:00,2024-08-17,-107.8587333333,37.8801166667,3275.0,,12.0,23.0,4.9,9.4,,1034.5,Cortinarius distortus,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",1
+2edb7def-3425-4973-866e-5471d636715a,178094410,2023-08-12 15:00:44-06:00,2023-08-12,-105.5703133333,40.0416416667,3235.0,,17.0,28.0,0.0,8.5,,1019.7,Cortinarius distortus,"Ward, CO, US",1

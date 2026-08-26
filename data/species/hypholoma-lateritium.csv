@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e8d2c6c8-952d-47a4-894d-0312ee7b1942,15867924,2018-08-20 17:11:17-07:00,2018-08-20,-107.8919916667,37.8174966667,3071.0,,8.0,25.0,,10.3,,,Hypholoma lateritium,"Uncompahgre National Forest, Ophir, CO, US",1

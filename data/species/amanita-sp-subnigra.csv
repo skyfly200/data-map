@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fec06b5d-fc0f-4f9d-8c5a-de5cc1bbe4cb,181011605,2023-08-30 10:30:49-06:00,2023-08-30,-105.1983307396,38.889295688,2905.0,,3.1,20.0,0.0,10.9,,1018.2,Amanita sp. 'subnigra',"Colorado, US",3

@@ -1,0 +1,9 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1a5bba53-9520-4451-a07e-db47cdd7346c,246848517,2024-10-11 11:59:55-06:00,2024-10-11,-104.9641633333,39.6983633333,1630.0,,13.3,21.5,0.0,8.6,,1019.8,Hypholoma fasciculare,"E Tennessee Ave, Denver, CO, US",1
+ec71cb49-9372-41da-a56b-3d2757a86150,233200216,2024-07-25 11:46:32-06:00,2024-07-25,-106.2139879,38.7722035997,3062.0,,3.9,23.9,1.2,6.9,,1023.0,Hypholoma fasciculare,"Buena Vista, CO 81211, USA",1
+8551cbb2-354b-45f3-935c-bd67b3f769e6,207609803,2024-04-16 11:26:51-06:00,2024-04-16,-104.8693997585,39.7837502153,1619.0,,5.5,18.7,2.4,26.8,,1004.7,Hypholoma fasciculare,"Colorado, US",1
+d52e88c8-26d4-44b3-bb6c-cd77d2a496f9,189188516,2023-10-27 11:39:54-06:00,2023-10-27,-105.0955971667,39.54518,1672.0,,0.0,7.2,0.0,12.9,,1021.0,Hypholoma fasciculare,"Chatfield State Park, Littleton, CO, US",1
+d0ee0f6a-714c-44cb-96f5-a2bf97e024c4,161442336,2023-05-13 11:34:09-06:00,2023-05-13,-104.9999557848,39.6057891294,1671.0,,5.6,13.9,0.0,10.2,,1023.4,Hypholoma fasciculare,"Colorado, US",1
+d5616f0d-d2ff-4601-a500-0ef468b3d9fc,128365091,2022-07-28 13:00:42-06:00,2022-07-28,-106.6465076751,39.1246439386,3188.0,,13.9,20.6,,10.2,,1014.3,Hypholoma fasciculare,"Pitkin County, US-CO, US",3
+eb60803d-ed38-4697-823a-0180219fcdad,87699429,2021-07-18 11:27:18-06:00,2021-07-18,-106.0682688982,39.4900985219,3035.0,,12.0,23.0,0.0,11.6,,1044.1,Hypholoma fasciculare,"White River National Forest, Breckenridge, CO, US",1
+de92758c-a77b-4b13-ac7d-7a83134f39d5,19021114,2018-07-24 16:50:38-06:00,2018-07-24,-105.5771416667,40.0763666667,3181.0,,16.0,30.0,,3.4,,,Hypholoma fasciculare,"Brainard Lake, Ward, CO, US",1

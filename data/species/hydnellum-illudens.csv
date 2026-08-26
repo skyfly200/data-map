@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b6b240db-4692-403e-9896-e74ea81b3fd9,235774798,2024-08-14 10:20:00-06:00,2024-08-14,-107.8494048142,37.9462816963,2653.0,,9.0,20.0,0.1,7.9,,1032.4,Hydnellum illudens,"Colorado, US",5

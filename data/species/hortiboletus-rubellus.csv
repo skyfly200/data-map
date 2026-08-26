@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+82238b10-d34d-46c9-b880-f87f8e3541c8,235230296,2024-08-11 17:26:30-06:00,2024-08-11,-104.9365386963,39.6602783203,1673.0,,14.4,29.4,0.0,15.0,,1015.9,Hortiboletus rubellus,Denver,1

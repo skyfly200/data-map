@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f0f5398c-97b2-4079-bc12-cede3447c15b,198594015,2023-08-12 13:24:00-06:00,2023-08-12,-105.533573964,40.0318830956,2902.0,,17.0,28.0,0.0,8.5,,1019.7,Thaxterogaster fulvo-ochrascens,"County Road 116, Nederland, CO, US",2

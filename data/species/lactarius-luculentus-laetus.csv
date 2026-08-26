@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cb248c30-f7fc-4719-9e52-bd8c5ec49700,178538599,2023-08-11 14:49:54-06:00,2023-08-11,-106.464045,39.8422716667,2841.0,,8.0,16.0,2.8,11.6,,1037.4,Lactarius luculentus laetus,"White River National Forest, Bond, CO, US",2
+b6e5d732-d57a-4108-825e-f0c8a3910ac3,178113699,2023-08-12 21:11:05-06:00,2023-08-12,-105.5354166667,40.0321111667,2911.0,,17.0,28.0,0.0,8.5,,1019.7,Lactarius luculentus laetus,"County Road 116, Ward, CO, US",2
+cbd5040c-36af-4067-9f47-3a11c6d2aa05,132889250,2022-08-29 12:08:14-06:00,2022-08-29,-105.5730307507,40.0436931723,3282.0,,15.0,30.0,0.0,4.4,,1021.5,Lactarius luculentus laetus,"Boulder County, US-CO, US",3
+2cb40b25-e552-4a8a-a8c1-8d368071576b,92307001,2021-08-22 16:01:24-06:00,2021-08-22,-107.848875,37.8057648997,3334.0,,13.0,22.0,0.0,8.8,,1027.4,Lactarius luculentus laetus,"Ophir, CO 81426, USA",1
+231e72a4-dd4a-4d4c-a65d-9261884583cd,91427239,2021-08-15 19:01:46-06:00,2021-08-15,-105.6351954725,39.9944446173,3087.0,,6.8,22.9,1.5,4.1,,1030.3,Lactarius luculentus laetus,"Boulder County, US-CO, US",1
+aec180ba-ced8-4316-a39b-dc2fad280488,32323999,2019-09-07 11:44:39-06:00,2019-09-07,-105.71859221,39.60890533,3323.0,,,,,,,,Lactarius luculentus laetus,"Clear Creek County, US-CO, US",2

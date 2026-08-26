@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+36518796-23cf-450d-8346-9c7b3f665ca7,235048283,2024-08-10 22:53:00-06:00,2024-08-10,-105.0915916667,39.0419916667,2491.0,,12.8,23.7,2.9,11.1,,1018.8,Phlegmacium fulminoides,"Teller County, CO, USA",0

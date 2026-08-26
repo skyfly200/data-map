@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6b2f89ff-d7eb-4270-b3ea-0244554cd00b,235440096,2024-08-10 09:54:47-06:00,2024-08-10,-104.9853944444,38.7362361111,3076.0,,12.0,21.7,0.2,12.8,,1025.7,Lepiota spheniscispora,"Manitou Springs, CO 80829, USA",1

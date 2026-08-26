@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+50e7934d-27a9-41aa-b549-66287e93d860,316591162,2025-09-23,2025-09-23,-105.8474469385,35.726294551,2545.0,,8.0,26.0,0.0,16.5,,1022.9,Amanita sp. 'barrowsii',"New Mexico, US",3
+c97f03c6-fc0c-4e76-a65e-df07a984b764,312101241,2025-09-06 12:48:21-06:00,2025-09-06,-105.0302906997,39.1808191,2779.0,,8.0,22.0,0.0,13.7,,1023.9,Amanita sp. 'barrowsii',"Sedalia, CO 80135, USA",3
+75f587df-4276-4625-914a-504db5fe3910,304798160,2025-07-31 13:59:00-06:00,2025-07-31,-107.2167560646,36.8213620364,2107.0,,,,,,,,Amanita sp. 'barrowsii',"Rio Arriba County, NM, USA",3
+8f0f407b-293a-4fe9-b548-3edfcfee2697,304636472,2025-08-07 18:05:09-06:00,2025-08-07,-106.3836711997,35.8917648997,2813.0,,20.1,30.3,0.7,9.7,,1029.7,Amanita sp. 'barrowsii',"Los Alamos County, NM, USA",3
+cc5467f3-92bf-45be-b0dc-f4a9dd6d7f2b,304589807,2025-08-07 13:46:23-06:00,2025-08-07,-104.9916222222,39.104225,2700.0,,14.5,34.0,0.0,18.4,,1013.4,Amanita sp. 'barrowsii',"Colorado Springs, CO 80921, USA",2
+aabc6618-d82c-44a4-a292-cf757ae6ef00,63998286,2010-08-14,2010-08-14,-105.7635,39.89235,2762.0,,16.0,27.0,,7.2,,,Amanita sp. 'barrowsii',"YMCA Snow Mountain Ranch, Winter Park, Colorado, USA",1
+9e89ca7c-eb0a-4f16-a2f2-273bdfe52ea7,63998247,2010-08-13,2010-08-13,-105.7635,39.89235,2762.0,,20.0,33.0,,9.1,,,Amanita sp. 'barrowsii',"YMCA Snow Mountain Ranch, Winter Park, Colorado, USA",1

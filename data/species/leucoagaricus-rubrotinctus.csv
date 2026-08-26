@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+97d5dd86-af43-497d-ac13-3232fc6f09f4,136738314,2022-09-27 15:15:19-06:00,2022-09-27,-105.0230900968,40.5604451979,1493.0,,9.4,25.0,,9.4,,1022.0,Leucoagaricus rubrotinctus,"Fort Collins, CO, US",1

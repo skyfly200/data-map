@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+53007140-0f4d-47e6-913f-5f5e9a91db68,235655500,2024-08-13 11:33:36-06:00,2024-08-13,-107.8943060807,37.6032882965,3117.0,,10.0,18.0,15.2,7.5,,1031.3,Lactarius scrobiculatus,"Colorado, US",1
+8b5e068a-8e77-480a-a9cf-31bdaf399c86,178075870,2023-08-12 14:32:59-06:00,2023-08-12,-105.5710883655,40.0414075059,3250.0,,17.0,28.0,0.0,8.5,,1019.7,Lactarius scrobiculatus,"Boulder County, US-CO, US",2
+e3f4dede-8ae0-4faa-a759-541ac03a0ceb,175385871,2023-07-24 11:50:36-06:00,2023-07-24,-105.4475466667,39.674995,2838.0,,5.1,18.3,1.7,11.4,,1023.5,Lactarius scrobiculatus,"Mestaa’ėhehe Pass, Evergreen, CO, US",1
+e0f05501-ac34-42f3-a1ec-6062940ac5bb,131519443,2022-08-19 08:39:59-06:00,2022-08-19,-107.8468386468,37.7965440104,3298.0,,10.0,17.0,7.5,3.4,,1030.0,Lactarius scrobiculatus,"San Miguel County, US-CO, US",1
+10efb901-5a77-44bc-99e3-c21122366b2d,40349103,2018-08-16,2018-08-16,-107.836,37.9421,2652.0,,11.0,23.0,,6.2,,,Lactarius scrobiculatus,"Telluride, Colorado, USA",1
+2c83718d-ac35-4155-b87d-f010d1816598,31634263,2019-08-27 14:00:10-06:00,2019-08-27,-107.87716581,37.91587087,2940.0,,10.0,24.0,,11.2,,,Lactarius scrobiculatus,"San Miguel County, US-CO, US",1
