@@ -28,6 +28,22 @@ def stage_output_path(input_path, suffix, output_dir='.'):
 
 # ─── Utility Function to Sample Raster Value ──────────────────────────────────
 
+def resolve_raster_path(path):
+    """Return an existing raster path, tolerating COG compression.
+
+    ``fetch.py`` compresses downloaded rasters to Cloud-Optimized GeoTIFFs and
+    renames ``<name>.tif`` → ``<name>.cog.tif`` (deleting the original). The
+    enrichment lookups still ask for ``<name>.tif``; this resolves to the
+    ``.cog.tif`` sibling when the plain file is gone, so compression no longer
+    breaks enrichment. Returns None if neither exists.
+    """
+    if os.path.exists(path):
+        return path
+    stem, _ext = os.path.splitext(path)
+    cog = f"{stem}.cog.tif"
+    return cog if os.path.exists(cog) else None
+
+
 def sample_raster_value(tif_path, lon, lat, scale_factor=1.0, nodata_val=None):
     """
     Samples a raster file at the given longitude and latitude.
@@ -79,14 +95,12 @@ def enrich_with_precip(df, precip_dir="precip/"):
         print(f"  → Enriching precip data for {date.strftime('%Y-%m-%d')} ({len(df[df['date'] == date.strftime('%Y-%m-%d')])} rows)")
         for d in range(7):
             target_date = (date - timedelta(days=d)).strftime('%Y-%m-%d')
-            # tif_path = os.path.join(precip_dir, f"precip_sample.tif")
-            tif_path = os.path.join(precip_dir, f"precip_{target_date}.tif")
+            tif_path = resolve_raster_path(os.path.join(precip_dir, f"precip_{target_date}.tif"))
 
-            if not os.path.exists(tif_path):
-                print(f"[!] Precip raster missing: {tif_path}")
+            if not tif_path:
+                print(f"[!] Precip raster missing for {target_date} (looked for .tif / .cog.tif)")
                 continue
 
-            # print(f"  ✓ Using {tif_path} for {d}-day offset")
             for idx, row in df[df['date'] == date.strftime('%Y-%m-%d')].iterrows():
                 val = sample_raster_value(tif_path, row.lon, row.lat)
                 df.at[idx, f'prcp_d{d}'] = val
@@ -109,18 +123,24 @@ def enrich_with_worldcover(df, base_dir="./world_cover/"):
     print("Adding WorldCover land class...")
     df['land_cover'] = None
 
+    resolved = {}   # tile name → resolved path (or None); warn once per tile
+    missing = set()
     for idx, row in df.iterrows():
         tile_name = get_worldcover_tile_name(row.lat, row.lon)
-        tile_path = os.path.join(base_dir, tile_name)
+        if tile_name not in resolved:
+            resolved[tile_name] = resolve_raster_path(os.path.join(base_dir, tile_name))
+            if not resolved[tile_name]:
+                missing.add(tile_name)
+                print(f"[!] WorldCover tile not cached: {tile_name} (run fetch.py to download it)")
 
-        if not os.path.exists(tile_path):
-            print(f"[!] Tile not found: {tile_path}")
+        tile_path = resolved[tile_name]
+        if not tile_path:
             continue
-
-        print(f"  ✓ Using {tile_path} for ({row.lat}, {row.lon})")
         val = sample_raster_value(tile_path, row.lon, row.lat, scale_factor=1, nodata_val=255)
         df.at[idx, 'land_cover'] = val
 
+    if missing:
+        print(f"[!] {len(missing)} WorldCover tile(s) missing; those points have no land cover.")
     return df
 
 ESA_WORLDCOVER_CLASSES = {
@@ -205,11 +225,11 @@ def enrich_with_terrain(df, terrain_dir="dem/derived/"):
     layer_paths = {}
     for name in TERRAIN_LAYERS:
         df[name] = None
-        path = os.path.join(terrain_dir, f"{name}.tif")
-        if os.path.exists(path):
+        path = resolve_raster_path(os.path.join(terrain_dir, f"{name}.tif"))
+        if path:
             layer_paths[name] = path
         else:
-            print(f"[!] Terrain layer missing: {path}")
+            print(f"[!] Terrain layer missing: {os.path.join(terrain_dir, name)}.tif")
 
     if not layer_paths:
         print("[!] No terrain layers found — skipping terrain enrichment.")
@@ -404,11 +424,11 @@ def enrich_df_with_rasters(df, ndvi_dir='ndvi/', soil_dir='soil/'):
         # Construct expected filenames
         lat = date_df['lat'].iloc[0]
         lon = date_df['lon'].iloc[0]
-        ndvi_path = os.path.join(ndvi_dir, f"ndvi_{date_str}_{lat:.4f}_{lon:.4f}.tif")
+        ndvi_path = resolve_raster_path(os.path.join(ndvi_dir, f"ndvi_{date_str}_{lat:.4f}_{lon:.4f}.tif"))
         soil_path = os.path.join(soil_dir, f"soil_{date_str}.nc")
 
         # Check existence
-        has_ndvi = os.path.exists(ndvi_path)
+        has_ndvi = ndvi_path is not None
         has_soil = os.path.exists(soil_path)
 
         if not has_ndvi and not has_soil:
