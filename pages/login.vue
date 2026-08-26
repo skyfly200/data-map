@@ -181,49 +181,49 @@ async function doSignOut() { await signOut() }
 
 <style scoped>
 .login { display: flex; justify-content: center; padding: 40px 16px; }
-.card { width: 100%; max-width: 380px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background: #fff; }
+.card { width: 100%; max-width: 380px; border: 1px solid var(--border); border-radius: 12px; padding: 24px; background: var(--surface); }
 h2 { margin: 0 0 4px; font-size: 1.2rem; }
-.sub { margin: 0 0 16px; color: #6b7280; font-size: 0.82rem; }
+.sub { margin: 0 0 16px; color: var(--muted); font-size: 0.82rem; }
 .notice { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; margin: 0 0 14px; }
 .notice code { background: #ffedd5; padding: 1px 4px; border-radius: 4px; }
 .err-notice { background: #fef2f2; border-color: #fecaca; color: #b00020; }
-.loading { color: #9aa0a6; font-size: 0.85rem; }
+.loading { color: var(--muted); font-size: 0.85rem; }
 .signed { font-size: 0.9rem; }
 
 .oauth { display: flex; flex-direction: column; gap: 8px; }
 .oauth-btn {
-  display: flex; align-items: center; gap: 10px; border: 1px solid #d5dbe1; background: #fff;
-  border-radius: 8px; padding: 10px 14px; font-size: 0.9rem; font-weight: 500; color: #1f2933;
+  display: flex; align-items: center; gap: 10px; border: 1px solid #d5dbe1; background: var(--surface);
+  border-radius: 8px; padding: 10px 14px; font-size: 0.9rem; font-weight: 500; color: var(--text);
   cursor: pointer; transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
 }
-.oauth-btn:hover:not(:disabled) { background: #f7f8fa; border-color: #c3cbd3; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06); }
+.oauth-btn:hover:not(:disabled) { background: var(--surface-2); border-color: #c3cbd3; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06); }
 .oauth-btn:active:not(:disabled) { background: #eef1f4; }
 .oauth-btn:disabled { opacity: 0.55; cursor: default; }
 .oauth-btn .ico { flex: 0 0 18px; display: inline-flex; }
 .oauth-btn > span { flex: 1; text-align: center; margin-right: 18px; }
 .passkey-add { margin-top: 12px; }
 
-.divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: #9aa0a6; font-size: 0.75rem; }
-.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+.divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--muted); font-size: 0.75rem; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
 form { display: flex; flex-direction: column; gap: 10px; }
-label { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 600; color: #374151; }
-input { border: 1px solid #cbd2d9; border-radius: 8px; padding: 8px 10px; font-size: 0.9rem; font-weight: 400; }
+label { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 600; color: var(--text); }
+input { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 0.9rem; font-weight: 400; }
 
 .primary { border: 1px solid #2b7a3d; background: #2b7a3d; color: #fff; border-radius: 8px; padding: 9px 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
 .primary:disabled { opacity: 0.6; cursor: default; }
 .primary.as-link { text-decoration: none; text-align: center; }
-.ghost { border: 1px solid #cbd2d9; background: #fff; border-radius: 8px; padding: 9px 12px; font-size: 0.9rem; cursor: pointer; }
+.ghost { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 9px 12px; font-size: 0.9rem; cursor: pointer; }
 .row { display: flex; gap: 10px; margin-top: 8px; }
 
 .modes { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
-.modes button { flex: 1; border: 1px solid #e5e7eb; background: #f9fafb; color: #374151; border-radius: 6px; padding: 6px 8px; font-size: 0.76rem; cursor: pointer; }
+.modes button { flex: 1; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 0.76rem; cursor: pointer; }
 .modes button.on { border-color: #2b7a3d; color: #2b7a3d; background: #f0fdf4; font-weight: 600; }
 
 .msg { margin: 12px 0 0; font-size: 0.82rem; }
 .msg.ok { color: #2b7a3d; }
 .msg.err { color: #b00020; }
 
-.policy-link { margin: 16px 0 0; font-size: 0.76rem; color: #9aa0a6; text-align: center; }
-.policy-link a { color: #6b7280; }
+.policy-link { margin: 16px 0 0; font-size: 0.76rem; color: var(--muted); text-align: center; }
+.policy-link a { color: var(--muted); }
 </style>

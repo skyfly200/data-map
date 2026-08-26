@@ -24,14 +24,14 @@ onBeforeUnmount(() => document.removeEventListener('fullscreenchange', onChange)
 
 <style scoped>
 .card {
-  position: relative; background: #fff; border: 1px solid #e5e7eb;
+  position: relative; background: var(--surface); border: 1px solid var(--border);
   border-radius: 10px; padding: 14px 16px;
 }
 .expand {
   position: absolute; top: 8px; right: 8px; z-index: 2; border: 0; background: transparent;
-  cursor: pointer; font-size: 0.95rem; color: #9aa0a6; padding: 4px 6px; border-radius: 6px; line-height: 1;
+  cursor: pointer; font-size: 0.95rem; color: var(--muted); padding: 4px 6px; border-radius: 6px; line-height: 1;
 }
-.expand:hover { background: #f3f4f6; color: #374151; }
+.expand:hover { background: var(--surface-2); color: var(--text); }
 
 .card:fullscreen {
   padding: 48px 64px; display: flex; flex-direction: column; justify-content: center;

@@ -25,6 +25,9 @@
           <button :class="{ active: tempUnit === 'F' }" @click="tempUnit = 'F'">°F</button>
           <button :class="{ active: tempUnit === 'C' }" @click="tempUnit = 'C'">°C</button>
         </div>
+        <button class="theme-btn" :title="`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`" @click="toggleTheme">
+          {{ theme === 'dark' ? '☀' : '☾' }}
+        </button>
         <nav class="app-nav">
           <NuxtLink to="/" class="nav-link">Home</NuxtLink>
           <NuxtLink to="/map" class="nav-link">Map</NuxtLink>
@@ -80,9 +83,24 @@ function handleDatasetChange(event) {
   setDataset(event.target.value)
 }
 
+// Theme: default dark, remembered per viewer. `:root` CSS defaults to dark so
+// there's no light flash before hydration; we only stamp an attribute for light.
+const theme = useState('theme', () => 'dark')
+function applyTheme(t) {
+  if (import.meta.client) document.documentElement.setAttribute('data-theme', t)
+}
+function toggleTheme() {
+  theme.value = theme.value === 'dark' ? 'light' : 'dark'
+  applyTheme(theme.value)
+  if (import.meta.client) localStorage.setItem('theme', theme.value)
+}
+
 // Units: default feet + Fahrenheit, remembered per viewer.
 const { unit, tempUnit } = useUnits()
 onMounted(() => {
+  const savedTheme = localStorage.getItem('theme')
+  theme.value = savedTheme === 'light' ? 'light' : 'dark'
+  applyTheme(theme.value)
   const e = localStorage.getItem('elev-unit')
   if (e === 'm' || e === 'ft') unit.value = e
   const t = localStorage.getItem('temp-unit')
@@ -100,14 +118,63 @@ watch(tempUnit, (v) => {
 </script>
 
 <style>
-html, body, #__nuxt { height: 100%; margin: 0; }
-body { font-family: system-ui, -apple-system, sans-serif; color: #1f2933; }
+/* ── Design tokens. Dark is the default (bare :root) so first paint is dark with
+   no flash; [data-theme="light"] opts back into the original light palette. ── */
+:root {
+  --bg: #0e1217;
+  --surface: #171e27;
+  --surface-2: #1e2732;
+  --surface-3: #253040;
+  --text: #e6e9ee;
+  --text-strong: #f4f6f8;
+  --muted: #9aa4b2;
+  --border: #2a3441;
+  --border-soft: #222b36;
+  --accent: #34c46a;
+  --accent-ink: #0e1217;
+  --header-bg: #12181f;
+  --input-bg: #0f151c;
+  --grid: #26303c;
+  --danger: #ff6b6b;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --glow: 0.9; /* chart glow strength (0 = off) */
+  --tooltip-bg: #0b0f14;
+  --tooltip-fg: #f4f6f8;
+  /* Neon edge-glow for chart marks (uses each mark's own colour via currentColor). */
+  --chart-glow: drop-shadow(0 0 2px currentColor) drop-shadow(0 0 5px currentColor);
+}
+:root[data-theme="light"] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --surface-3: #f3f4f6;
+  --text: #1f2933;
+  --text-strong: #10151b;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --border-soft: #eef0f2;
+  --accent: #2b7a3d;
+  --accent-ink: #ffffff;
+  --header-bg: #1f2933;
+  --input-bg: #ffffff;
+  --grid: #eef0f2;
+  --danger: #b00020;
+  --shadow: rgba(16, 24, 40, 0.12);
+  --glow: 0;
+  --tooltip-bg: #1f2933;
+  --tooltip-fg: #ffffff;
+  --chart-glow: none;
+}
 
-.app { display: flex; flex-direction: column; height: 100vh; }
+html, body, #__nuxt { height: 100%; margin: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; color: var(--text); background: var(--bg); }
+
+.app { display: flex; flex-direction: column; height: 100vh; background: var(--bg); }
 
 .app-header {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 10px 20px; background: #1f2933; color: #fff; flex: 0 0 auto;
+  padding: 10px 20px; background: var(--header-bg); color: #fff; flex: 0 0 auto;
+  border-bottom: 1px solid var(--border);
 }
 .brand { text-decoration: none; color: inherit; }
 .brand h1 { margin: 0; font-size: 1.15rem; }
@@ -120,9 +187,15 @@ body { font-family: system-ui, -apple-system, sans-serif; color: #1f2933; }
 }
 .dataset-picker label { font-weight: 600; }
 .dataset-picker select {
-  background: #fff; color: #1f2933; border: 1px solid #d0d7de; border-radius: 6px;
+  background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px;
   padding: 4px 8px; font-size: 0.8rem;
 }
+
+.theme-btn {
+  border: 1px solid #52606d; background: transparent; color: #cbd2d9; cursor: pointer;
+  border-radius: 6px; width: 30px; height: 28px; font-size: 0.95rem; line-height: 1;
+}
+.theme-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
 
 .units { display: inline-flex; border: 1px solid #52606d; border-radius: 6px; overflow: hidden; }
 .units button {

@@ -16,7 +16,7 @@
 
           <!-- points -->
           <circle v-for="(pt, i) in scaled" :key="i" :cx="pt.cx" :cy="pt.cy" r="4"
-                  :fill="pt.color" class="dot" @mouseenter="active = pt" />
+                  :fill="pt.color" :style="{ color: pt.color }" class="dot" @mouseenter="active = pt" />
 
           <g v-if="todayX !== null && Number.isFinite(todayX)">
             <line :x1="sx(todayX)" :y1="padT" :x2="sx(todayX)" :y2="H - padB" class="today-line" />
@@ -131,27 +131,27 @@ const yTicks = computed(() => ticks(yDom.value, props.yFormat, sy))
 
 <style scoped>
 .chart { margin: 0; }
-.chart-title { font-size: 0.95rem; font-weight: 600; color: #1f2933; margin-bottom: 6px; }
+.chart-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
 .chart-area { position: relative; }
 svg { width: 100%; height: auto; display: block; }
 
-.grid { stroke: #eef0f2; stroke-width: 1; }
-.tick { fill: #9aa0a6; font-size: 10px; }
+.grid { stroke: var(--border-soft); stroke-width: 1; }
+.tick { fill: var(--muted); font-size: 10px; }
 .tick-y { text-anchor: end; }
 .tick-x { text-anchor: middle; }
-.axis-label { fill: #6b7280; font-size: 11px; text-anchor: middle; }
-.dot { stroke: #fff; stroke-width: 1; opacity: 0.9; }
-.dot:hover { stroke: #1f2933; stroke-width: 1.5; }
+.axis-label { fill: var(--muted); font-size: 11px; text-anchor: middle; }
+.dot { stroke: var(--surface); stroke-width: 1; opacity: 0.9; filter: var(--chart-glow); }
+.dot:hover { stroke: var(--text); stroke-width: 1.5; }
 .today-line { stroke: #b00020; stroke-width: 1.5; stroke-dasharray: 4 4; }
 .today-label { fill: #b00020; font-size: 10px; font-weight: 600; }
 
-.legend { position: absolute; top: 4px; right: 8px; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 0.72rem; color: #4b5563; }
+.legend { position: absolute; top: 4px; right: 8px; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 0.72rem; color: var(--text); }
 .legend .lg { display: inline-flex; align-items: center; gap: 4px; }
-.legend .sw { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #cbd2d9; }
+.legend .sw { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--border); }
 
 .tooltip {
   position: absolute; pointer-events: none; z-index: 10; display: flex; flex-direction: column;
-  background: #1f2933; color: #fff; padding: 5px 8px; border-radius: 6px;
+  background: var(--tooltip-bg); color: var(--tooltip-fg); padding: 5px 8px; border-radius: 6px;
   font-size: 0.75rem; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 .tooltip strong { margin-bottom: 2px; }
