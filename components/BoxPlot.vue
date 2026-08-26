@@ -144,21 +144,21 @@ const xTicks = computed(ticks)
 
 <style scoped>
 .chart { margin: 0; }
-.chart-title { font-size: 0.95rem; font-weight: 600; color: #1f2933; margin-bottom: 6px; }
+.chart-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
 .chart-area { position: relative; }
 svg { width: 100%; height: auto; display: block; }
-.grid { stroke: #eef0f2; stroke-width: 1; }
-.tick { fill: #9aa0a6; font-size: 10px; }
+.grid { stroke: var(--border-soft); stroke-width: 1; }
+.tick { fill: var(--muted); font-size: 10px; }
 .tick-x { text-anchor: middle; }
-.tick-y { text-anchor: end; fill: #4b5563; }
-.axis-label { fill: #6b7280; font-size: 11px; text-anchor: middle; }
-.whisker { stroke: #9aa0a6; stroke-width: 1.5; }
-.cap { stroke: #9aa0a6; stroke-width: 1.5; }
-.box { stroke: #1f2933; stroke-opacity: 0.15; }
+.tick-y { text-anchor: end; fill: var(--text); }
+.axis-label { fill: var(--muted); font-size: 11px; text-anchor: middle; }
+.whisker { stroke: var(--muted); stroke-width: 1.5; }
+.cap { stroke: var(--muted); stroke-width: 1.5; }
+.box { stroke: var(--text); stroke-opacity: 0.15; }
 .median { stroke: #fff; stroke-width: 2; }
 .tooltip {
   position: absolute; pointer-events: none; z-index: 10; display: flex; flex-direction: column;
-  background: #1f2933; color: #fff; padding: 5px 8px; border-radius: 6px;
+  background: var(--tooltip-bg); color: var(--tooltip-fg); padding: 5px 8px; border-radius: 6px;
   font-size: 0.75rem; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 .tooltip strong { margin-bottom: 2px; }

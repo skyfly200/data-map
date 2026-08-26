@@ -119,13 +119,13 @@ function save() {
 .explore { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
 .panel {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 12px 18px; align-items: end; background: #fff; border: 1px solid #e5e7eb;
+  gap: 12px 18px; align-items: end; background: var(--surface); border: 1px solid var(--border);
   border-radius: 10px; padding: 12px 16px; width: 100%; box-sizing: border-box;
 }
-.ctrl { display: inline-flex; align-items: center; gap: 7px; font-size: 0.85rem; color: #374151; }
-.ctrl > span { color: #6b7280; font-weight: 600; }
+.ctrl { display: inline-flex; align-items: center; gap: 7px; font-size: 0.85rem; color: var(--text); }
+.ctrl > span { color: var(--muted); font-weight: 600; }
 .ctrl select, .ctrl input[type="number"] {
-  border: 1px solid #cbd2d9; border-radius: 6px; padding: 4px 8px; font-size: 0.85rem; background: #fff;
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 0.85rem; background: var(--surface);
 }
 .ctrl input[type="number"] { width: 60px; }
 .ctrl.chk { gap: 5px; }

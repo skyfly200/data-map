@@ -383,18 +383,18 @@ const speciesData = computed(() => {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 16px;
 }
-.note { margin: 8px 0 0; font-size: 0.78rem; color: #6b7280; }
+.note { margin: 8px 0 0; font-size: 0.78rem; color: var(--muted); }
 .msg { padding: 16px; color: #555; }
 .msg.error { color: #b00020; }
 
 .saved { margin-bottom: 22px; }
-.saved-title { margin: 0 0 10px; font-size: 1rem; color: #1f2933; }
+.saved-title { margin: 0 0 10px; font-size: 1rem; color: var(--text); }
 .saved-tools { position: absolute; top: 8px; right: 34px; display: flex; gap: 2px; z-index: 3; }
 .saved-tools button {
-  border: 1px solid #e5e7eb; background: #fff; color: #6b7280; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer;
   width: 22px; height: 22px; border-radius: 5px; font-size: 0.85rem; line-height: 1; padding: 0;
 }
-.saved-tools button:hover:not(:disabled) { background: #f3f4f6; color: #1f2933; }
+.saved-tools button:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
 .saved-tools button:disabled { opacity: 0.35; cursor: default; }
 .saved-tools .rm:hover { background: #fdecec; color: #b00020; border-color: #f5c2c2; }
 </style>

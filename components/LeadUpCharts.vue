@@ -120,20 +120,20 @@ function dayLabel(offset) { return offset === 0 ? 'observation day' : `${offset}
 
 <style scoped>
 .leadup { display: flex; flex-direction: column; gap: 14px; }
-.lc-title { font-size: 0.78rem; font-weight: 600; color: #374151; margin-bottom: 3px; }
+.lc-title { font-size: 0.78rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
 .lc-svg { width: 100%; height: auto; display: block; }
-.grid { stroke: #e5e7eb; stroke-width: 1; }
+.grid { stroke: var(--border); stroke-width: 1; }
 .rain-bar { fill: #2a78d6; }
 .temp-band { fill: rgba(235, 104, 52, 0.15); stroke: none; }
 .temp-high { fill: none; stroke: #eb6834; stroke-width: 2; }
 .temp-low { fill: none; stroke: #2a78d6; stroke-width: 1.5; stroke-dasharray: 3 2; }
-.lc-cat { fill: #9aa0a6; font-size: 9px; text-anchor: middle; }
-.lc-y { fill: #9aa0a6; font-size: 9px; text-anchor: end; }
-.lc-legend { font-size: 0.72rem; color: #6b7280; display: flex; align-items: center; gap: 5px; }
+.lc-cat { fill: var(--muted); font-size: 9px; text-anchor: middle; }
+.lc-y { fill: var(--muted); font-size: 9px; text-anchor: end; }
+.lc-legend { font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
 .lc-legend .k { display: inline-block; width: 12px; height: 3px; border-radius: 2px; }
 .lc-legend .k.high { background: #eb6834; }
 .lc-legend .k.low { background: #2a78d6; }
-.day-temp { display: flex; gap: 12px; font-size: 0.85rem; color: #374151; }
+.day-temp { display: flex; gap: 12px; font-size: 0.85rem; color: var(--text); }
 .day-temp .avg { font-weight: 600; }
-.lc-note { font-size: 0.72rem; color: #9aa0a6; margin-top: 4px; }
+.lc-note { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
 </style>
