@@ -39,4 +39,4 @@ We may update these Terms from time to time. Continued use of the app after chan
 
 ## Contact
 
-Questions about these Terms can be sent to [CONTACT_EMAIL_HERE](mailto:CONTACT_EMAIL_HERE). *(Replace this with your contact email before publishing.)*
+Questions about these Terms can be sent to [datamap@wskylerfly.com](mailto:datamap@wskylerfly.com).
