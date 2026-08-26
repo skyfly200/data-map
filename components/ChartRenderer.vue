@@ -248,5 +248,5 @@ const isEmpty = computed(() => {
 </script>
 
 <style scoped>
-.cr-empty { color: #9aa0a6; text-align: center; padding: 20px; }
+.cr-empty { color: var(--muted); text-align: center; padding: 20px; }
 </style>

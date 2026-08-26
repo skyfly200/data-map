@@ -9,7 +9,7 @@
           <line v-else :x1="padL" :y1="H - padB" :x2="W - padR" :y2="H - padB" class="axis" />
 
           <template v-for="(d, i) in scaled" :key="i">
-            <path :d="d.path" :fill="d.color" class="bar" @mouseenter="active = d" />
+            <path :d="d.path" :fill="d.color" :style="{ color: d.color }" class="bar" @mouseenter="active = d" />
             <!-- direct value label at the data end -->
             <text v-bind="d.valuePos" class="value">{{ d.valueLabel }}</text>
             <!-- category label -->
@@ -158,7 +158,7 @@ const scaled = computed(() => {
 
 <style scoped>
 .chart { margin: 0; }
-.chart-title { font-size: 0.95rem; font-weight: 600; color: #1f2933; margin-bottom: 6px; }
+.chart-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
 .chart-area {
   position: relative; overflow: auto; max-width: 100%; border-radius: 8px;
   background: linear-gradient(180deg, rgba(148, 163, 184, 0.03), rgba(148, 163, 184, 0.01));
@@ -170,15 +170,15 @@ const scaled = computed(() => {
 }
 svg { width: 100%; height: 100%; display: block; }
 
-.axis { stroke: #d1d5db; stroke-width: 1; }
-.bar { transition: opacity 0.1s; }
+.axis { stroke: var(--border); stroke-width: 1; }
+.bar { transition: opacity 0.1s; filter: var(--chart-glow); }
 .bar:hover { opacity: 0.82; }
-.value { fill: #4b5563; font-size: 11px; font-variant-numeric: tabular-nums; }
-.cat { fill: #6b7280; font-size: v-bind('`${labelFontSize}px`'); }
+.value { fill: var(--text); font-size: 11px; font-variant-numeric: tabular-nums; }
+.cat { fill: var(--muted); font-size: v-bind('`${labelFontSize}px`'); }
 
 .tooltip {
   position: absolute; pointer-events: none; z-index: 10;
-  background: #1f2933; color: #fff; padding: 4px 8px; border-radius: 6px;
+  background: var(--tooltip-bg); color: var(--tooltip-fg); padding: 4px 8px; border-radius: 6px;
   font-size: 0.78rem; white-space: nowrap; display: flex; gap: 8px; align-items: baseline;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }

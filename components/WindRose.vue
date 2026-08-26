@@ -73,17 +73,17 @@ const sectors = computed(() => {
 
 <style scoped>
 .chart { margin: 0; }
-.chart-title { font-size: 0.95rem; font-weight: 600; color: #1f2933; margin-bottom: 6px; }
+.chart-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
 .chart-area { position: relative; }
 svg { width: 100%; max-width: 320px; height: auto; display: block; margin: 0 auto; }
-.ring { fill: none; stroke: #eef0f2; stroke-width: 1; }
-.compass { fill: #9aa0a6; font-size: 11px; text-anchor: middle; font-weight: 600; }
-.sector { fill: #2a78d6; fill-opacity: 0.8; stroke: #fff; stroke-width: 1; }
+.ring { fill: none; stroke: var(--border-soft); stroke-width: 1; }
+.compass { fill: var(--muted); font-size: 11px; text-anchor: middle; font-weight: 600; }
+.sector { fill: #2a78d6; fill-opacity: 0.8; stroke: var(--surface); stroke-width: 1; }
 .sector:hover { fill-opacity: 1; }
-.empty { color: #9aa0a6; font-size: 0.85rem; padding: 24px 8px; text-align: center; }
+.empty { color: var(--muted); font-size: 0.85rem; padding: 24px 8px; text-align: center; }
 .tooltip {
   position: absolute; pointer-events: none; z-index: 10; display: flex; flex-direction: column;
-  background: #1f2933; color: #fff; padding: 5px 8px; border-radius: 6px;
+  background: var(--tooltip-bg); color: var(--tooltip-fg); padding: 5px 8px; border-radius: 6px;
   font-size: 0.75rem; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 </style>

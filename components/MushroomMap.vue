@@ -212,8 +212,8 @@ onBeforeUnmount(() => { if (map) map.remove() })
   padding: 7px 10px; font: 13px system-ui, sans-serif; display: flex; gap: 8px; align-items: center;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
-.colorby label { color: #6b7280; font-weight: 600; }
-.colorby select { border: 1px solid #cbd2d9; border-radius: 6px; padding: 3px 6px; font-size: 13px; }
+.colorby label { color: var(--muted); font-weight: 600; }
+.colorby select { border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; font-size: 13px; }
 .toggle {
   background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
   padding: 7px 10px; font: 13px system-ui, sans-serif; display: inline-flex; gap: 8px; align-items: center;
@@ -231,21 +231,21 @@ onBeforeUnmount(() => { if (map) map.remove() })
 .legend-row { display: flex; align-items: center; gap: 8px; }
 .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #222; flex: 0 0 auto; }
 .gradient { height: 12px; border-radius: 3px; border: 1px solid #ccc; }
-.gradient-scale { display: flex; justify-content: space-between; font-size: 11px; color: #6b7280; margin-top: 3px; }
+.gradient-scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 3px; }
 
 .drawer {
   position: absolute; top: 0; right: 0; z-index: 600; width: 320px; max-width: 86%;
-  height: 100%; background: #fff; box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2);
+  height: 100%; background: var(--surface); box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2);
   padding: 16px 18px; overflow-y: auto; font: 14px/1.45 system-ui, sans-serif;
 }
 .drawer h3 { margin: 0 26px 10px 0; font-size: 1.05rem; }
 .close {
   position: absolute; top: 8px; right: 10px; border: 0; background: transparent;
-  font-size: 1.5rem; line-height: 1; color: #6b7280; cursor: pointer;
+  font-size: 1.5rem; line-height: 1; color: var(--muted); cursor: pointer;
 }
 .meta { margin: 0 0 14px; display: grid; gap: 5px; }
 .meta div { display: grid; grid-template-columns: 84px 1fr; gap: 8px; }
-.meta dt { color: #6b7280; }
+.meta dt { color: var(--muted); }
 .meta dd { margin: 0; }
 .chip { display: inline-block; min-width: 20px; padding: 0 7px; border-radius: 10px; color: #fff; font-weight: 600; text-align: center; }
 .inat { display: inline-block; margin-top: 14px; color: #2b7a3d; font-weight: 600; text-decoration: none; }
