@@ -127,8 +127,28 @@ async function fetchNew() {
     const headers = token ? { authorization: `Bearer ${token}` } : {}
     const scope = fetchScopeParams()
     scope.set('species', q)
-    const res = await fetch(`/.netlify/functions/fetch-species?${scope.toString()}`, { headers })
-    if (res.status === 401) throw new Error('Please sign in to fetch new species.')
+
+    let res
+    try {
+      res = await fetch(`/.netlify/functions/fetch-species?${scope.toString()}`, { headers })
+    } catch {
+      // fetch itself failed → the function isn't reachable (local dev, or not deployed).
+      throw new Error('couldn’t reach the fetch function — it only runs on the deployed site.')
+    }
+
+    if (res.status === 401) {
+      // Server requires auth but didn't accept us. Distinguish "no token sent"
+      // (client can't read a session) from "token rejected".
+      let detail = ''
+      try { detail = (await res.json())?.error || '' } catch { /* ignore */ }
+      if (!token) {
+        throw new Error('the server requires sign-in, but the app couldn’t read your session. '
+          + 'Make sure NUXT_PUBLIC_SUPABASE_URL and NUXT_PUBLIC_SUPABASE_ANON_KEY are set (and redeploy), then sign in again.')
+      }
+      throw new Error(detail || 'your session was rejected — try signing out and back in.')
+    }
+    if (!res.ok) throw new Error(`server returned ${res.status}.`)
+
     const data = await res.json()
     if (!data.ok) throw new Error(data.error || 'fetch failed')
     if (!data.count) { fetchOk.value = false; fetchMsg.value = `No research-grade observations found for “${q}”.`; return }
@@ -139,7 +159,7 @@ async function fetchNew() {
     newSpecies.value = ''
   } catch (e) {
     fetchOk.value = false
-    fetchMsg.value = `Couldn’t fetch — this needs the deployed function (and Supabase to persist). ${e.message}`
+    fetchMsg.value = `Couldn’t fetch — ${e.message}`
   } finally {
     stopTimer()
     fetching.value = false
