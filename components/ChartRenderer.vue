@@ -1,5 +1,6 @@
 <template>
   <ScatterChart v-if="config.type === 'scatter'" :title="title" :data="scatterData" :legend="coloring.legend"
+    :shapeLegend="shaping ? shaping.legend : []" :sizeLegend="config.sizeField ? `${labelOf(config.sizeField)} (small→large)` : ''"
     :xLabel="labelOf(config.xField)" :yLabel="labelOf(config.yField)" :xFormat="fmtOf(config.xField)" :yFormat="fmtOf(config.yField)"
     :todayX="todayX" :todayLabel="todayLabel" @select="$emit('select', $event)" />
   <BarChart v-else-if="config.type === 'bar'" :title="title" :data="barData" :horizontal="!!config.horizontal" :format="barFmt" />
@@ -85,6 +86,27 @@ function categoryColoring(field) {
 }
 const coloring = computed(() => categoryColoring(c.value.colorField))
 
+// Encode a category by SHAPE (six distinguishable marks) for scatter points.
+const SHAPES = ['circle', 'square', 'triangle', 'diamond', 'cross', 'wye']
+function shapeMapping(field) {
+  if (!field) return null
+  const uniq = [...new Set(rows.value.map((r) => catVal(r, field)).filter((v) => v !== null))]
+  const m = new Map(uniq.map((v, i) => [v, SHAPES[i % SHAPES.length]]))
+  return { shapeOf: (v) => m.get(v) || 'circle', legend: uniq.slice(0, 6).map((v) => ({ label: v, shape: m.get(v) })) }
+}
+const shaping = computed(() => shapeMapping(c.value.shapeField))
+
+// Encode a numeric field by SIZE (radius) for scatter points.
+function sizeScale(field) {
+  if (!field) return null
+  const vals = rows.value.map((r) => rawNum(r, field)).filter((v) => v !== null)
+  if (!vals.length) return null
+  const lo = Math.min(...vals), hi = Math.max(...vals)
+  const minR = 3, maxR = 11
+  return { rOf: (v) => (v === null ? 4 : minR + (maxR - minR) * ((v - lo) / ((hi - lo) || 1))) }
+}
+const sizing = computed(() => sizeScale(c.value.sizeField))
+
 // Colour a grouped mark (bar/box/donut/radar slice) by its category value, so
 // the same category is the same colour here and on the map.
 function groupColor(label) { return categoryColor(c.value.groupField, label) }
@@ -92,7 +114,10 @@ function groupColor(label) { return categoryColor(c.value.groupField, label) }
 const scatterData = computed(() => rows.value.map((r) => {
   const x = numVal(r, c.value.xField), y = numVal(r, c.value.yField)
   if (x === null || y === null) return null
-  return { x, y, color: c.value.colorField ? coloring.value.colorOf(catVal(r, c.value.colorField)) : SERIES_1, label: r.species, obs: r }
+  const p = { x, y, color: c.value.colorField ? coloring.value.colorOf(catVal(r, c.value.colorField)) : SERIES_1, label: r.species, obs: r }
+  if (shaping.value) p.shape = shaping.value.shapeOf(catVal(r, c.value.shapeField))
+  if (sizing.value) p.r = sizing.value.rOf(rawNum(r, c.value.sizeField))
+  return p
 }).filter(Boolean))
 
 function groupBy(field) {
@@ -130,7 +155,7 @@ const lineSeries = computed(() => {
     .filter((d) => d.x !== null && d.y !== null)
   if (!xs.length) return []
   const lo = Math.min(...xs.map((d) => d.x)), hi = Math.max(...xs.map((d) => d.x))
-  const n = 24
+  const n = Math.max(4, Math.min(60, c.value.granularity || 24))
   const step = (hi - lo) / n || 1
   const bins = Array.from({ length: n }, () => [])
   for (const d of xs) bins[Math.min(n - 1, Math.floor((d.x - lo) / step))].push(d.y)
