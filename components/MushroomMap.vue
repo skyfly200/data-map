@@ -66,12 +66,19 @@ import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useUnits } from '~/composables/useUnits'
 
 const { data, filteredData, load, showFiltered, setShowFiltered, focusObservation, setFocusObservation } = useObservations()
-const { elevLabel } = useUnits()
+const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 
 const mapEl = ref(null)
 const loaded = ref(false)
 const loadError = ref('')
+// Remember the "Color by" dimension per viewer.
+const COLORBY_KEY = 'map-color-by'
 const colorBy = ref('cluster')
+if (import.meta.client) {
+  const saved = localStorage.getItem(COLORBY_KEY)
+  if (saved) colorBy.value = saved
+}
+watch(colorBy, (v) => { if (import.meta.client) localStorage.setItem(COLORBY_KEY, v) })
 const selected = ref(null)
 let map, geoLayer, L
 
@@ -126,26 +133,40 @@ const coloring = computed(() => {
   }
 
   // Any other categorical dimension (land cover, species, …): assign palette
-  // colours to the distinct values present.
+  // colours to the distinct values present, most frequent first. The legend is
+  // capped (a dataset can have hundreds of species) with a "+N more" row.
   if (CATEGORY_KEYS.has(key)) {
-    const cats = [...new Set(feats.map((f) => f.properties[key]).filter(hasValue))]
+    const counts = new Map()
+    for (const f of feats) {
+      const v = f.properties[key]
+      if (hasValue(v)) counts.set(v, (counts.get(v) || 0) + 1)
+    }
+    const cats = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
     const map2 = new Map(cats.map((v, i) => [v, PALETTE[i % PALETTE.length]]))
+    const LEGEND_CAP = 12
+    const legend = cats.slice(0, LEGEND_CAP).map((v) => ({ label: String(v), color: map2.get(v) }))
+    if (cats.length > LEGEND_CAP) legend.push({ label: `+${cats.length - LEGEND_CAP} more`, color: UNCLUSTERED })
     return {
       type: 'categorical', title,
       colorFn: (p) => (hasValue(p[key]) ? map2.get(p[key]) : UNCLUSTERED),
-      legend: cats.map((v) => ({ label: String(v), color: map2.get(v) })),
+      legend,
     }
   }
 
-  const vals = feats.map((f) => f.properties[key]).filter(hasValue).map(Number)
+  // Numeric (sequential). Elevation and temperature follow the ft/m and °F/°C
+  // settings, so the gradient scale matches the units shown elsewhere.
+  const meta = ALL_NUMERIC.find((f) => f.key === key) || {}
+  const conv = meta.unit === 'elev' ? elevValue : meta.unit === 'temp' ? tempValue : (v) => Number(v)
+  const unitSuffix = meta.unit === 'elev' ? ` (${unit.value})` : meta.unit === 'temp' ? ` (°${tempUnit.value})` : ''
+  const vals = feats.map((f) => f.properties[key]).filter(hasValue).map((v) => conv(Number(v)))
   const min = vals.length ? Math.min(...vals) : 0
   const max = vals.length ? Math.max(...vals) : 1
   return {
-    type: 'sequential', title, min, max,
+    type: 'sequential', title: title + unitSuffix, min, max,
     colorFn: (p) => {
-      const v = p[key]
-      if (!hasValue(v)) return UNCLUSTERED
-      return hexLerp(RAMP[0], RAMP[1], (Number(v) - min) / ((max - min) || 1))
+      const raw = p[key]
+      if (!hasValue(raw)) return UNCLUSTERED
+      return hexLerp(RAMP[0], RAMP[1], (conv(Number(raw)) - min) / ((max - min) || 1))
     },
   }
 })
@@ -212,7 +233,10 @@ onMounted(async () => {
       attribution: 'Imagery © Esri', maxZoom: 19,
     })
 
-    map = L.map(mapEl.value, { scrollWheelZoom: true, layers: [osm] }).setView([39.5, -105.7], 7)
+    // Zoom control on the bottom-left so it never overlaps the top-left
+    // "Color by" control (previously it clipped the label).
+    map = L.map(mapEl.value, { scrollWheelZoom: true, zoomControl: false, layers: [osm] }).setView([39.5, -105.7], 7)
+    L.control.zoom({ position: 'bottomleft' }).addTo(map)
     L.control.layers(
       { 'Street (OSM)': osm, 'Terrain (OpenTopoMap)': topo, 'Satellite (Esri)': sat },
       {}, { position: 'topright', collapsed: true },
@@ -265,13 +289,26 @@ onBeforeUnmount(() => { if (map) map.remove() })
   position: absolute; bottom: 18px; right: 12px; z-index: 500;
   background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
   padding: 10px 12px; font: 13px/1.4 system-ui, sans-serif; color: #222; min-width: 120px;
+  max-width: 46vw; max-height: 44vh; overflow-y: auto;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
-.legend-title { font-weight: 600; margin-bottom: 6px; }
+.legend-title { font-weight: 600; margin-bottom: 6px; position: sticky; top: 0; }
 .legend-row { display: flex; align-items: center; gap: 8px; }
+.legend-row span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #222; flex: 0 0 auto; }
 .gradient { height: 12px; border-radius: 3px; border: 1px solid #ccc; }
 .gradient-scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* Mobile: tighten the on-map controls and legend so they don't swallow the map. */
+@media (max-width: 640px) {
+  .controls { top: 8px; left: 8px; right: 8px; gap: 6px; }
+  .colorby, .toggle { padding: 5px 8px; font-size: 12px; }
+  .toggle { flex: 1 1 100%; }
+  .legend {
+    bottom: 8px; right: 8px; left: auto; max-width: 62vw; max-height: 34vh;
+    padding: 8px 10px; font-size: 12px;
+  }
+}
 
 .drawer {
   position: absolute; top: 0; right: 0; z-index: 600; width: 320px; max-width: 86%;

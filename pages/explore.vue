@@ -112,6 +112,21 @@ const config = computed(() => ({
 // Click a scatter point to open its observation (iNat link + open on map).
 const selected = ref(null)
 
+// Remember the builder configuration per viewer, so returning to Explore keeps
+// the last chart you were designing.
+const EXPLORE_KEY = 'explore-config'
+const persisted = { type: chartType, xField, yField, colorField, groupField, valueField, measure, rowField, colField, bins, horizontal, showToday }
+onMounted(() => {
+  if (!import.meta.client) return
+  try {
+    const saved = JSON.parse(localStorage.getItem(EXPLORE_KEY) || 'null')
+    if (saved) for (const [k, r] of Object.entries(persisted)) if (saved[k] !== undefined) r.value = saved[k]
+  } catch { /* ignore malformed storage */ }
+})
+watch(config, (cfg) => {
+  if (import.meta.client) localStorage.setItem(EXPLORE_KEY, JSON.stringify(cfg))
+}, { deep: true })
+
 const justSaved = ref(false)
 function save() {
   saved.add({ ...config.value })
