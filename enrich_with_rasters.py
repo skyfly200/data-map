@@ -1,4 +1,5 @@
 import argparse
+import concurrent.futures
 import time
 import pandas as pd
 from datetime import timedelta
@@ -287,24 +288,29 @@ def enrich_with_terrain(df, terrain_dir="dem/derived/"):
 # (prcp_d0..d6) to chart the weather run-up to each find. d0 = observation day,
 # d6 = six days before.
 
-def enrich_with_temperature_history(df, days=7):
+def enrich_with_temperature_history(df, days=7, max_workers=10):
     import requests
 
-    print(f"Adding {days}-day temperature history (Open-Meteo)...")
     for d in range(days):
         df[f'tmax_d{d}'] = None
         df[f'tmin_d{d}'] = None
 
     url = "https://archive-api.open-meteo.com/v1/archive"
-    for idx, row in df.iterrows():
-        if pd.isna(row.get('lat')) or pd.isna(row.get('lon')) or pd.isna(row.get('date')):
-            continue
-        obs_date = pd.to_datetime(row['date'])
+    tasks = [
+        (idx, float(row['lat']), float(row['lon']), pd.to_datetime(row['date']))
+        for idx, row in df.iterrows()
+        if not (pd.isna(row.get('lat')) or pd.isna(row.get('lon')) or pd.isna(row.get('date')))
+    ]
+    total = len(tasks)
+    print(f"Adding {days}-day temperature history (Open-Meteo) — {total} points, {max_workers} parallel...")
+
+    def worker(task):
+        idx, lat, lon, obs_date = task
         start = (obs_date - timedelta(days=days - 1)).strftime('%Y-%m-%d')
         end = obs_date.strftime('%Y-%m-%d')
         try:
             r = requests.get(url, params={
-                "latitude": row['lat'], "longitude": row['lon'],
+                "latitude": lat, "longitude": lon,
                 "start_date": start, "end_date": end,
                 "daily": "temperature_2m_max,temperature_2m_min",
                 "timezone": "UTC",
@@ -315,14 +321,33 @@ def enrich_with_temperature_history(df, days=7):
             lows = daily.get('temperature_2m_min', [])
             # API returns ascending dates: index 0 = oldest (d{days-1}), last = d0.
             n = len(highs)
+            out = {}
             for d in range(days):
                 j = n - 1 - d
                 if 0 <= j < n:
-                    df.at[idx, f'tmax_d{d}'] = highs[j]
-                    df.at[idx, f'tmin_d{d}'] = lows[j]
+                    out[f'tmax_d{d}'] = highs[j]
+                    out[f'tmin_d{d}'] = lows[j]
+            return idx, out, None
         except Exception as e:
-            print(f"[!] Temp history failed for ({row['lat']}, {row['lon']}) {end}: {e}")
+            return idx, None, str(e)
 
+    start_t = time.monotonic()
+    fails = 0
+    # Requests are independent and network-bound → thread pool; df writes stay on
+    # the main thread as results arrive.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = [ex.submit(worker, t) for t in tasks]
+        for i, fut in enumerate(concurrent.futures.as_completed(futures), 1):
+            idx, out, err = fut.result()
+            if err:
+                fails += 1
+            elif out:
+                for col, val in out.items():
+                    df.at[idx, col] = val
+            _progress("temperature", i, total, start_t)
+
+    if fails:
+        print(f"[!] {fails}/{total} temperature request(s) failed.")
     return df
 
 # ─── Soil Moisture Utilities ──────────────────────────────────────────────────
@@ -400,7 +425,7 @@ def fill_missing_ndvi(df, max_days_gap=7):
 # directly at each point with reduceRegion().getInfo(): no Drive round-trip, and
 # it populates the column in a single (Earth-Engine-authenticated) run.
 
-def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60):
+def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60, max_workers=8):
     if os.environ.get('SKIP_EARTH_ENGINE') == '1':
         print('Skipping Earth Engine NDVI sampling (SKIP_EARTH_ENGINE=1).')
         return df
@@ -419,19 +444,21 @@ def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60):
     if 'ndvi' not in df.columns:
         df['ndvi'] = None
 
-    total = len(df)
-    print(f'Sampling Sentinel-2 NDVI per point (±{buffer_days}d, {scale} m) via Earth Engine — {total} points...')
-    sampled = 0
-    t0 = time.monotonic()
-    for n, (idx, row) in enumerate(df.iterrows(), 1):
-        _progress(f"NDVI ({sampled} sampled)", n, total, t0)
-        if pd.isna(row.get('lat')) or pd.isna(row.get('lon')) or pd.isna(row.get('date')):
-            continue
+    tasks = [
+        (idx, float(row['lon']), float(row['lat']), pd.to_datetime(row['date']))
+        for idx, row in df.iterrows()
+        if not (pd.isna(row.get('lat')) or pd.isna(row.get('lon')) or pd.isna(row.get('date')))
+    ]
+    total = len(tasks)
+    print(f'Sampling Sentinel-2 NDVI per point (±{buffer_days}d, {scale} m) via Earth Engine '
+          f'— {total} points, {max_workers} parallel...')
+
+    def worker(task):
+        idx, lon, lat, date = task
+        start = (date - timedelta(days=buffer_days)).strftime('%Y-%m-%d')
+        end = (date + timedelta(days=buffer_days)).strftime('%Y-%m-%d')
         try:
-            date = pd.to_datetime(row['date'])
-            start = (date - timedelta(days=buffer_days)).strftime('%Y-%m-%d')
-            end = (date + timedelta(days=buffer_days)).strftime('%Y-%m-%d')
-            point = ee.Geometry.Point([float(row['lon']), float(row['lat'])])
+            point = ee.Geometry.Point([lon, lat])
             collection = (ee.ImageCollection('COPERNICUS/S2_SR')
                           .filterDate(start, end)
                           .filterBounds(point)
@@ -440,13 +467,27 @@ def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60):
             value = (collection.median()
                      .reduceRegion(ee.Reducer.mean(), point, scale)
                      .get('NDVI').getInfo())
-            if value is not None:
+            return idx, value, None
+        except Exception as e:
+            return idx, None, str(e)
+
+    sampled = fails = 0
+    t0 = time.monotonic()
+    # EE getInfo() calls are independent network requests → run them concurrently.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = [ex.submit(worker, t) for t in tasks]
+        for i, fut in enumerate(concurrent.futures.as_completed(futures), 1):
+            idx, value, err = fut.result()
+            if err:
+                fails += 1
+            elif value is not None:
                 df.at[idx, 'ndvi'] = value
                 sampled += 1
-        except Exception as e:
-            print(f"[!] NDVI sample failed at ({row['lat']}, {row['lon']}) {row['date']}: {e}")
+            _progress(f"NDVI ({sampled} sampled)", i, total, t0)
 
-    print(f'✅ NDVI sampled for {sampled}/{len(df)} points.')
+    if fails:
+        print(f"[!] {fails}/{total} NDVI request(s) failed.")
+    print(f'✅ NDVI sampled for {sampled}/{total} points.')
     return df
 
 # ─── Main Enrichment Script ───────────────────────────────────────────────────
