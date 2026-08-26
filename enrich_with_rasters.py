@@ -45,6 +45,21 @@ def resolve_raster_path(path):
     return cog if os.path.exists(cog) else None
 
 
+def _progress(label, i, total, start, stride=None):
+    """Throttled one-line [i/total] progress with percent, elapsed and ETA.
+
+    Prints at most ~40 updates across the loop (plus the final one), so long
+    enrichment passes show steady overall progress without flooding the log.
+    """
+    stride = stride or max(1, total // 40)
+    if i != total and i % stride:
+        return
+    pct = i / total * 100 if total else 100.0
+    elapsed = time.monotonic() - start
+    eta = (elapsed / i) * (total - i) if i else 0.0
+    print(f"  [{i}/{total}] {pct:5.1f}% {label} · {elapsed:4.0f}s elapsed, ~{eta:4.0f}s left", flush=True)
+
+
 def sample_raster_value(tif_path, lon, lat, scale_factor=1.0, nodata_val=None):
     """
     Samples a raster file at the given longitude and latitude.
@@ -134,12 +149,14 @@ def get_worldcover_tile_name(lat, lon):
     return f"ESA_WorldCover_10m_2020_v100_{lat_prefix}{lat_str}{lon_prefix}{lon_str}_Map.tif"
 
 def enrich_with_worldcover(df, base_dir="./world_cover/"):
-    print("Adding WorldCover land class...")
     df['land_cover'] = None
+    total = len(df)
+    print(f"Adding WorldCover land class — {total} observations...")
 
+    start = time.monotonic()
     resolved = {}   # tile name → resolved path (or None); warn once per tile
     missing = set()
-    for idx, row in df.iterrows():
+    for n, (idx, row) in enumerate(df.iterrows(), 1):
         tile_name = get_worldcover_tile_name(row.lat, row.lon)
         if tile_name not in resolved:
             resolved[tile_name] = resolve_raster_path(os.path.join(base_dir, tile_name))
@@ -148,10 +165,9 @@ def enrich_with_worldcover(df, base_dir="./world_cover/"):
                 print(f"[!] WorldCover tile not cached: {tile_name} (run fetch.py to download it)")
 
         tile_path = resolved[tile_name]
-        if not tile_path:
-            continue
-        val = sample_raster_value(tile_path, row.lon, row.lat, scale_factor=1, nodata_val=255)
-        df.at[idx, 'land_cover'] = val
+        if tile_path:
+            df.at[idx, 'land_cover'] = sample_raster_value(tile_path, row.lon, row.lat, scale_factor=1, nodata_val=255)
+        _progress("land cover", n, total, start)
 
     if missing:
         print(f"[!] {len(missing)} WorldCover tile(s) missing; those points have no land cover.")
@@ -254,11 +270,14 @@ def enrich_with_terrain(df, terrain_dir="dem/derived/"):
     if missing:
         print(f"[!] Terrain layers missing: {', '.join(missing)} (re-run terrain_pipeline.py).")
 
-    for idx, row in df.iterrows():
-        if pd.isna(row.get("lat")) or pd.isna(row.get("lon")):
-            continue
-        for name, path in layer_paths.items():
-            df.at[idx, name] = sample_raster_value(path, row.lon, row.lat)
+    total = len(df)
+    print(f"Adding terrain exposure ({len(layer_paths)} layers × {total} observations)...")
+    start = time.monotonic()
+    for n, (idx, row) in enumerate(df.iterrows(), 1):
+        if not (pd.isna(row.get("lat")) or pd.isna(row.get("lon"))):
+            for name, path in layer_paths.items():
+                df.at[idx, name] = sample_raster_value(path, row.lon, row.lat)
+        _progress("terrain", n, total, start)
 
     return df
 
@@ -400,9 +419,12 @@ def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60):
     if 'ndvi' not in df.columns:
         df['ndvi'] = None
 
-    print(f'Sampling Sentinel-2 NDVI per point (±{buffer_days}d, {scale} m) via Earth Engine...')
+    total = len(df)
+    print(f'Sampling Sentinel-2 NDVI per point (±{buffer_days}d, {scale} m) via Earth Engine — {total} points...')
     sampled = 0
-    for idx, row in df.iterrows():
+    t0 = time.monotonic()
+    for n, (idx, row) in enumerate(df.iterrows(), 1):
+        _progress(f"NDVI ({sampled} sampled)", n, total, t0)
         if pd.isna(row.get('lat')) or pd.isna(row.get('lon')) or pd.isna(row.get('date')):
             continue
         try:
@@ -434,38 +456,37 @@ def enrich_df_with_rasters(df, ndvi_dir='ndvi/', soil_dir='soil/'):
     df['soil_moisture'] = None
 
     unique_dates = sorted(set(df['date'].dropna()))
-    print(f"Processing {len(unique_dates)} unique dates...")
+    total = len(unique_dates)
+    print(f"Adding NDVI + soil moisture — {total} unique dates...")
 
-    for date_str in unique_dates:
+    start = time.monotonic()
+    n_ndvi = n_soil = n_skip = 0
+    for i, date_str in enumerate(unique_dates, 1):
         date_df = df[df['date'] == date_str]
-        print(f"→ Enriching data for {date_str} ({len(date_df)} rows)")
+        _progress("NDVI/soil", i, total, start)
 
-        # Construct expected filenames
         lat = date_df['lat'].iloc[0]
         lon = date_df['lon'].iloc[0]
         ndvi_path = resolve_raster_path(os.path.join(ndvi_dir, f"ndvi_{date_str}_{lat:.4f}_{lon:.4f}.tif"))
         soil_path = os.path.join(soil_dir, f"soil_{date_str}.nc")
-
-        # Check existence
         has_ndvi = ndvi_path is not None
         has_soil = os.path.exists(soil_path)
 
         if not has_ndvi and not has_soil:
-            print(f"[!] Skipping {date_str}: no NDVI or soil file found")
+            n_skip += 1
             continue
+        n_ndvi += has_ndvi
+        n_soil += has_soil
+        soil_ds = load_soil_moisture_dataset(soil_path) if has_soil else None
 
-        if has_ndvi:
-            print(f"  ✓ NDVI file found: {ndvi_path}")
-        if has_soil:
-            print(f"  ✓ Soil file found: {soil_path}")
-            soil_ds = load_soil_moisture_dataset(soil_path)
-
-        for idx, row in df[df['date'] == date_str].iterrows():
+        for idx, row in date_df.iterrows():
             if has_ndvi:
                 df.at[idx, 'ndvi'] = get_ndvi_from_raster(ndvi_path, row.lon, row.lat)
             if has_soil:
                 df.at[idx, 'soil_moisture'] = extract_soil_moisture(soil_ds, row.lat, row.lon, row.date)
 
+    print(f"✅ NDVI/soil pass done — {n_ndvi} date(s) with NDVI, {n_soil} with soil, "
+          f"{n_skip} with neither ({total} total).")
     return df
 
 # ─── Script Entrypoint ────────────────────────────────────────────────────────
