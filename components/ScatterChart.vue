@@ -14,11 +14,11 @@
             <text :x="t.p" :y="H - padB + 14" class="tick tick-x">{{ t.label }}</text>
           </g>
 
-          <!-- points -->
-          <circle v-for="(pt, i) in scaled" :key="i" :cx="pt.cx" :cy="pt.cy" r="4"
-                  :fill="pt.color" :style="{ color: pt.color }" class="dot"
-                  :class="{ selectable: pt.obs }" @mouseenter="active = pt"
-                  @click="onDotClick(pt)" />
+          <!-- points (path so shape can vary; radius can vary too) -->
+          <path v-for="(pt, i) in scaled" :key="i" :d="pt.d"
+                :fill="pt.color" :style="{ color: pt.color }" class="dot"
+                :class="{ selectable: pt.obs }" @mouseenter="active = pt"
+                @click="onDotClick(pt)" />
 
           <g v-if="todayX !== null && Number.isFinite(todayX)">
             <line :x1="sx(todayX)" :y1="padT" :x2="sx(todayX)" :y2="H - padB" class="today-line" />
@@ -30,8 +30,21 @@
         </svg>
       </div>
 
-      <div v-if="legend && legend.length" class="legend">
-        <span v-for="l in legend" :key="l.label" class="lg"><span class="sw" :style="{ background: l.color }"></span>{{ l.label }}</span>
+      <div v-if="(legend && legend.length) || (shapeLegend && shapeLegend.length) || sizeLegend" class="legend">
+        <template v-if="legend && legend.length">
+          <span v-for="l in legend" :key="l.label" class="lg"><span class="sw" :style="{ background: l.color }"></span>{{ l.label }}</span>
+        </template>
+        <template v-if="shapeLegend && shapeLegend.length">
+          <span class="lg lg-sep" v-if="legend && legend.length"></span>
+          <span v-for="s in shapeLegend" :key="`sh-${s.label}`" class="lg">
+            <svg class="sw-shape" viewBox="-6 -6 12 12"><path :d="glyph(s.shape)" fill="var(--muted)" /></svg>{{ s.label }}
+          </span>
+        </template>
+        <span v-if="sizeLegend" class="lg lg-size">
+          <svg class="sw-shape" viewBox="-6 -6 12 12"><circle r="2.5" fill="var(--muted)" /></svg>
+          <svg class="sw-shape" viewBox="-6 -6 12 12"><circle r="5" fill="var(--muted)" /></svg>
+          {{ sizeLegend }}
+        </span>
       </div>
       <div v-if="active" class="tooltip" :style="{ left: `${ptr.x + 12}px`, top: `${ptr.y + 8}px` }">
         <strong v-if="active.label">{{ active.label }}</strong>
@@ -54,10 +67,27 @@ const props = defineProps({
   xFormat: { type: Function, default: (v) => `${Math.round(v)}` },
   yFormat: { type: Function, default: (v) => `${Math.round(v)}` },
   legend: { type: Array, default: () => [] },
+  shapeLegend: { type: Array, default: () => [] }, // [{ label, shape }]
+  sizeLegend: { type: String, default: '' },       // e.g. "Slope (small→large)"
   todayX: { type: Number, default: null },
   todayLabel: { type: String, default: 'Today' },
 })
 const emit = defineEmits(['select'])
+
+// SVG path for a mark of radius r centered at (cx, cy). Six distinguishable
+// shapes; `glyph` is the same centered at the origin for legend swatches.
+function shapePath(shape, cx, cy, r) {
+  const a = r * 0.6
+  switch (shape) {
+    case 'square': return `M${cx - r},${cy - r}h${2 * r}v${2 * r}h${-2 * r}z`
+    case 'triangle': return `M${cx},${cy - r}L${cx + r},${cy + r}L${cx - r},${cy + r}z`
+    case 'diamond': return `M${cx},${cy - r}L${cx + r},${cy}L${cx},${cy + r}L${cx - r},${cy}z`
+    case 'cross': return `M${cx - a},${cy - r}h${2 * a}v${r - a}h${r - a}v${2 * a}h${-(r - a)}v${r - a}h${-2 * a}v${-(r - a)}h${-(r - a)}v${-2 * a}h${r - a}z`
+    case 'wye': return `M${cx - a},${cy + r}l${a},${-r}l${-r},${-a}l${a * 0.6},${-a * 0.9}l${r - a * 0.6},${a}l${r - a * 0.6},${-a}l${a * 0.6},${a * 0.9}l${-r},${a}l${a},${r}z`
+    default: return `M${cx - r},${cy}a${r},${r} 0 1,0 ${2 * r},0a${r},${r} 0 1,0 ${-2 * r},0z` // circle
+  }
+}
+function glyph(shape) { return shapePath(shape, 0, 0, 5) }
 
 const { container, width: W, height: H } = useChartSize()
 const padL = 52
@@ -119,9 +149,10 @@ const yDom = computed(() => domain(points.value.map((d) => d.y)))
 const sx = (v) => padL + ((v - xDom.value[0]) / (xDom.value[1] - xDom.value[0])) * (W.value - padL - padR)
 const sy = (v) => (H.value - padB) - ((v - yDom.value[0]) / (yDom.value[1] - yDom.value[0])) * (H.value - padT - padB)
 
-const scaled = computed(() => points.value.map((d) => ({
-  ...d, cx: sx(d.x), cy: sy(d.y), color: d.color || SERIES_1,
-})))
+const scaled = computed(() => points.value.map((d) => {
+  const cx = sx(d.x), cy = sy(d.y), r = Number.isFinite(d.r) ? d.r : 4
+  return { ...d, cx, cy, color: d.color || SERIES_1, d: shapePath(d.shape || 'circle', cx, cy, r) }
+}))
 
 function ticks(dom, fmt, toPix) {
   const [lo, hi] = dom
@@ -155,9 +186,16 @@ svg { width: 100%; height: 100%; display: block; }
 .today-line { stroke: #b00020; stroke-width: 1.5; stroke-dasharray: 4 4; }
 .today-label { fill: #b00020; font-size: 10px; font-weight: 600; }
 
-.legend { position: absolute; top: 4px; right: 8px; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 0.72rem; color: var(--text); }
+.legend {
+  position: absolute; top: 4px; right: 8px; display: flex; flex-wrap: wrap; gap: 4px 10px;
+  font-size: 0.72rem; color: var(--text); max-width: 60%; justify-content: flex-end;
+  background: color-mix(in srgb, var(--surface) 72%, transparent); padding: 3px 6px; border-radius: 6px;
+}
 .legend .lg { display: inline-flex; align-items: center; gap: 4px; }
 .legend .sw { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--border); }
+.legend .sw-shape { width: 12px; height: 12px; flex: 0 0 auto; }
+.legend .lg-sep { border-left: 1px solid var(--border); align-self: stretch; }
+.legend .lg-size { gap: 2px; }
 
 .tooltip {
   position: absolute; pointer-events: none; z-index: 10; display: flex; flex-direction: column;

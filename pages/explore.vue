@@ -20,6 +20,8 @@
         <label class="ctrl"><span>X</span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Y</span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Colour</span><select v-model="colorField"><option value="">— none —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Shape</span><select v-model="shapeField"><option value="">— none —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Size</span><select v-model="sizeField"><option value="">— none —</option><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label v-if="xField === 'day_of_year'" class="ctrl chk"><input type="checkbox" v-model="showToday" /> Today line</label>
       </template>
 
@@ -32,6 +34,7 @@
       <template v-else-if="chartType === 'line' || chartType === 'area'">
         <label class="ctrl"><span>X</span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Y (mean)</span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Granularity</span><input type="range" min="4" max="60" v-model.number="granularity" /><span class="gval">{{ granularity }}</span></label>
       </template>
 
       <template v-else-if="chartType === 'box'">
@@ -92,21 +95,25 @@ const chartType = ref('scatter')
 const xField = ref('day_of_year')
 const yField = ref('elevation')
 const colorField = ref('cluster')
+const shapeField = ref('')
+const sizeField = ref('')
 const groupField = ref('species')
 const valueField = ref('elevation')
 const measure = ref('count')
 const rowField = ref('species')
 const colField = ref('land_cover_label')
 const bins = ref(10)
+const granularity = ref(24)
 const horizontal = ref(false)
 const showToday = ref(false)
 
 const config = computed(() => ({
   type: chartType.value,
   xField: xField.value, yField: yField.value, colorField: colorField.value,
+  shapeField: shapeField.value, sizeField: sizeField.value,
   groupField: groupField.value, valueField: valueField.value, measure: measure.value,
-  rowField: rowField.value, colField: colField.value, bins: bins.value, horizontal: horizontal.value,
-  showToday: showToday.value,
+  rowField: rowField.value, colField: colField.value, bins: bins.value, granularity: granularity.value,
+  horizontal: horizontal.value, showToday: showToday.value,
 }))
 
 // Click a scatter point to open its observation (iNat link + open on map).
@@ -115,7 +122,7 @@ const selected = ref(null)
 // Remember the builder configuration per viewer, so returning to Explore keeps
 // the last chart you were designing.
 const EXPLORE_KEY = 'explore-config'
-const persisted = { type: chartType, xField, yField, colorField, groupField, valueField, measure, rowField, colField, bins, horizontal, showToday }
+const persisted = { type: chartType, xField, yField, colorField, shapeField, sizeField, groupField, valueField, measure, rowField, colField, bins, granularity, horizontal, showToday }
 onMounted(() => {
   if (!import.meta.client) return
   try {
@@ -151,6 +158,8 @@ function save() {
   border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 0.85rem; background: var(--surface);
 }
 .ctrl input[type="number"] { width: 60px; }
+.ctrl input[type="range"] { width: 96px; accent-color: var(--accent); }
+.ctrl .gval { color: var(--text); font-weight: 600; min-width: 1.4em; text-align: right; }
 .ctrl.chk { gap: 5px; }
 .save {
   justify-self: end; border: 1px solid #2b7a3d; background: #2b7a3d; color: #fff;
