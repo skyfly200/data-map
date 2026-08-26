@@ -16,7 +16,9 @@
 
           <!-- points -->
           <circle v-for="(pt, i) in scaled" :key="i" :cx="pt.cx" :cy="pt.cy" r="4"
-                  :fill="pt.color" :style="{ color: pt.color }" class="dot" @mouseenter="active = pt" />
+                  :fill="pt.color" :style="{ color: pt.color }" class="dot"
+                  :class="{ selectable: pt.obs }" @mouseenter="active = pt"
+                  @click="onDotClick(pt)" />
 
           <g v-if="todayX !== null && Number.isFinite(todayX)">
             <line :x1="sx(todayX)" :y1="padT" :x2="sx(todayX)" :y2="H - padB" class="today-line" />
@@ -55,6 +57,7 @@ const props = defineProps({
   todayX: { type: Number, default: null },
   todayLabel: { type: String, default: 'Today' },
 })
+const emit = defineEmits(['select'])
 
 const { container, width: W, height: H } = useChartSize()
 const padL = 52
@@ -81,17 +84,25 @@ function onWheel(e) {
   const delta = e.deltaY > 0 ? 0.9 : 1.1
   zoom.value = clamp(zoom.value * delta, 0.7, 2.5)
 }
+const dragged = ref(false)
 function onPointerDown(e) {
   dragStart.value = { x: e.clientX, y: e.clientY, panX: pan.value.x, panY: pan.value.y }
-  e.currentTarget.setPointerCapture?.(e.pointerId)
+  dragged.value = false
+  // NB: no setPointerCapture — capturing would retarget the click off the point
+  // and break click-to-select. Panning still works via the move handler below.
 }
 function onPointerMove(e) {
   if (!dragStart.value) return
   const dx = e.clientX - dragStart.value.x
   const dy = e.clientY - dragStart.value.y
+  if (Math.abs(dx) + Math.abs(dy) > 4) dragged.value = true
   pan.value = { x: dragStart.value.panX + dx / zoom.value, y: dragStart.value.panY + dy / zoom.value }
 }
 function onPointerUp() { dragStart.value = null }
+function onDotClick(pt) {
+  // Ignore the click that ends a pan-drag; only a genuine click selects.
+  if (!dragged.value && pt.obs) emit('select', pt.obs)
+}
 
 function domain(vals) {
   if (!vals.length) return [0, 1]
@@ -140,6 +151,7 @@ svg { width: 100%; height: 100%; display: block; }
 .axis-label { fill: var(--muted); font-size: 11px; text-anchor: middle; }
 .dot { stroke: var(--surface); stroke-width: 1; opacity: 0.9; filter: var(--chart-glow); }
 .dot:hover { stroke: var(--text); stroke-width: 1.5; }
+.dot.selectable { cursor: pointer; }
 .today-line { stroke: #b00020; stroke-width: 1.5; stroke-dasharray: 4 4; }
 .today-label { fill: #b00020; font-size: 10px; font-weight: 600; }
 

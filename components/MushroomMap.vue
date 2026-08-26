@@ -65,7 +65,7 @@ import { PALETTE, UNCLUSTERED, colorFor, hasValue, inatUrl, useObservations } fr
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useUnits } from '~/composables/useUnits'
 
-const { data, filteredData, load, showFiltered, setShowFiltered } = useObservations()
+const { data, filteredData, load, showFiltered, setShowFiltered, focusObservation, setFocusObservation } = useObservations()
 const { elevLabel } = useUnits()
 
 const mapEl = ref(null)
@@ -178,6 +178,24 @@ function renderPoints(geo) {
 
 watch(filteredData, (geo) => renderPoints(geo))
 
+// "Open on map" from a chart: select the matching observation and pan to it.
+function applyFocus(target) {
+  if (!target || !map) return
+  const lon = Number(target.lon), lat = Number(target.lat)
+  const feats = filteredData.value?.features || []
+  const match = (target.uuid && feats.find((f) => f.properties?.uuid === target.uuid))
+    || feats.find((f) => {
+      const co = f.geometry?.coordinates
+      return co && Math.abs(co[0] - lon) < 1e-6 && Math.abs(co[1] - lat) < 1e-6
+    })
+  if (match) selected.value = match.properties
+  if (Number.isFinite(lat) && Number.isFinite(lon)) {
+    map.setView([lat, lon], Math.max(map.getZoom() || 0, 12))
+  }
+  setFocusObservation(null) // consume so a later revisit doesn't re-trigger
+}
+watch(focusObservation, (t) => t && applyFocus(t))
+
 onMounted(async () => {
   try {
     await nextTick()
@@ -204,6 +222,8 @@ onMounted(async () => {
     if (!data.value) throw new Error('no data')
     renderPoints(filteredData.value)
     loaded.value = true
+    // If arriving via "Open on map" from a chart, focus that observation now.
+    if (focusObservation.value) applyFocus(focusObservation.value)
   } catch (err) {
     loadError.value = `Could not load map (${err.message}).`
   }

@@ -61,8 +61,10 @@
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
     <p v-else-if="pending && !rows.length" class="msg">Loading…</p>
     <ChartCard v-else class="stage">
-      <ChartRenderer :config="config" />
+      <ChartRenderer :config="config" @select="selected = $event" />
     </ChartCard>
+
+    <ObservationDrawer :selected="selected" @close="selected = null" />
   </div>
 </template>
 
@@ -106,6 +108,9 @@ const config = computed(() => ({
   rowField: rowField.value, colField: colField.value, bins: bins.value, horizontal: horizontal.value,
   showToday: showToday.value,
 }))
+
+// Click a scatter point to open its observation (iNat link + open on map).
+const selected = ref(null)
 
 const justSaved = ref(false)
 function save() {

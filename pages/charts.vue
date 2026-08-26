@@ -14,7 +14,7 @@
               <button title="Move right" :disabled="i === saved.charts.value.length - 1" @click="saved.move(chart.id, 1)">›</button>
               <button title="Remove" class="rm" @click="saved.remove(chart.id)">✕</button>
             </div>
-            <ChartRenderer :config="chart" />
+            <ChartRenderer :config="chart" @select="selected = $event" />
           </ChartCard>
         </div>
       </section>
@@ -70,21 +70,24 @@
       <ChartCard v-if="elevVsDoy.length">
         <ScatterChart title="Elevation vs. day of year" :data="elevVsDoy" :legend="clusterLegend"
           xLabel="Day of year" :yLabel="`Elevation (${unit})`"
-          :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v).toLocaleString()" />
+          :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v).toLocaleString()"
+          @select="selected = $event" />
         <p class="note">Each point is one observation, coloured by cluster — seasonal timing across elevation.</p>
       </ChartCard>
 
       <ChartCard v-if="elevVsTemp.length">
         <ScatterChart title="Elevation vs. observation-day high temp" :data="elevVsTemp" :legend="clusterLegend"
           :xLabel="`High temp (°${tempUnit})`" :yLabel="`Elevation (${unit})`"
-          :xFormat="(v) => `${Math.round(v)}°`" :yFormat="(v) => Math.round(v).toLocaleString()" />
+          :xFormat="(v) => `${Math.round(v)}°`" :yFormat="(v) => Math.round(v).toLocaleString()"
+          @select="selected = $event" />
         <p class="note">Higher sites tend to be cooler on the day of the find.</p>
       </ChartCard>
 
       <ChartCard v-if="rainVsDoy.length">
         <ScatterChart title="7-day rain total vs. day of year" :data="rainVsDoy" :legend="clusterLegend"
           xLabel="Day of year" yLabel="Rain total (mm)"
-          :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v)" />
+          :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v)"
+          @select="selected = $event" />
         <p class="note">Total precipitation in the 7 days before each find.</p>
       </ChartCard>
 
@@ -123,6 +126,8 @@
       </ChartCard>
     </div>
     </template>
+
+    <ObservationDrawer :selected="selected" @close="selected = null" />
   </div>
 </template>
 
@@ -157,18 +162,21 @@ const clusterLegend = computed(() => {
 
 const elevVsDoy = computed(() => rows.value
   .filter((r) => hasValue(r.elevation) && hasValue(r.day_of_year))
-  .map((r) => ({ x: Number(r.day_of_year), y: elevValue(r.elevation), color: ptColor(r), label: r.species })))
+  .map((r) => ({ x: Number(r.day_of_year), y: elevValue(r.elevation), color: ptColor(r), label: r.species, obs: r })))
 
 const elevVsTemp = computed(() => rows.value
   .filter((r) => hasValue(r.elevation) && hasValue(r.tmax))
-  .map((r) => ({ x: tempValue(r.tmax), y: elevValue(r.elevation), color: ptColor(r), label: r.species })))
+  .map((r) => ({ x: tempValue(r.tmax), y: elevValue(r.elevation), color: ptColor(r), label: r.species, obs: r })))
 
 const rainVsDoy = computed(() => rows.value
   .filter((r) => hasValue(r.day_of_year) && [0, 1, 2, 3, 4, 5, 6].some((o) => hasValue(r[`prcp_d${o}`])))
   .map((r) => {
     const total = [0, 1, 2, 3, 4, 5, 6].reduce((s, o) => s + (hasValue(r[`prcp_d${o}`]) ? Number(r[`prcp_d${o}`]) : 0), 0)
-    return { x: Number(r.day_of_year), y: total, color: ptColor(r), label: r.species }
+    return { x: Number(r.day_of_year), y: total, color: ptColor(r), label: r.species, obs: r }
   }))
+
+// Click a scatter point to open its observation (iNat link + open on map).
+const selected = ref(null)
 
 // ── Distribution charts (box plots, heatmaps, wind-rose) ─────────────────────
 const MIN_PER_SPECIES = 3
