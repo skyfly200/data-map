@@ -27,7 +27,7 @@ def _load_env(path=".env"):
 
 def _earth_engine_ready():
     if os.environ.get("SKIP_EARTH_ENGINE") == "1":
-        return False, "disabled by SKIP_EARTH_ENGINE=1"
+        return False, "disabled by SKIP_EARTH_ENGINE=1 — unset it (or set 0) to enable NDVI"
     cred = Path.home() / ".config" / "earthengine" / "credentials"
     if os.environ.get("EARTHENGINE_PROJECT") or cred.exists():
         return True, ""
@@ -35,10 +35,18 @@ def _earth_engine_ready():
 
 
 def _cds_ready():
+    # Mirrors cdsapi's own resolution: CDSAPI_URL/KEY env, then CDSAPI_RC, then
+    # ~/.cdsapirc. A repo-local .cdsapirc is NOT auto-read by cdsapi.
     if os.environ.get("CDSAPI_URL") and os.environ.get("CDSAPI_KEY"):
+        return True, ""
+    rc = os.environ.get("CDSAPI_RC")
+    if rc and Path(rc).expanduser().exists():
         return True, ""
     if (Path.home() / ".cdsapirc").exists():
         return True, ""
+    if Path(".cdsapirc").exists():
+        return False, ("found ./.cdsapirc, but cdsapi reads ~/.cdsapirc — move it to your home "
+                       "directory or set CDSAPI_RC=$(pwd)/.cdsapirc")
     return False, "create ~/.cdsapirc (or set CDSAPI_URL / CDSAPI_KEY)"
 
 
