@@ -5,7 +5,9 @@
         <span>Chart</span>
         <select v-model="chartType">
           <option value="scatter">Scatter</option>
+          <option value="line">Line (trend)</option>
           <option value="bar">Bar (aggregate)</option>
+          <option value="pie">Pie / donut</option>
           <option value="box">Box plot by category</option>
           <option value="histogram">Histogram</option>
           <option value="heatmap">Heatmap</option>
@@ -19,10 +21,20 @@
         <label v-if="xField === 'day_of_year'" class="ctrl chk"><input type="checkbox" v-model="showToday" /> Today line</label>
       </template>
 
+      <template v-else-if="chartType === 'line'">
+        <label class="ctrl"><span>X</span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Measure</span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Bins</span><input type="number" min="4" max="60" v-model.number="bins" /></label>
+      </template>
+
       <template v-else-if="chartType === 'bar'">
         <label class="ctrl"><span>Group by</span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Measure</span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
         <label class="ctrl chk"><input type="checkbox" v-model="horizontal" /> Horizontal</label>
+      </template>
+
+      <template v-else-if="chartType === 'pie'">
+        <label class="ctrl"><span>Group by</span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
       </template>
 
       <template v-else-if="chartType === 'box'">
