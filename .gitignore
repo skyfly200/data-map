@@ -37,3 +37,7 @@ dem/
 __pycache__/
 *.pyc
 .env.example
+
+# Enrichment checkpoint markers (resumable pipeline)
+*.csv.done
+*.csv.tmp
