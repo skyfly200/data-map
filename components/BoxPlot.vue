@@ -1,7 +1,7 @@
 <template>
   <figure class="chart">
     <figcaption v-if="title" class="chart-title">{{ title }}</figcaption>
-    <div class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
+    <div ref="areaEl" class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
       <div class="chart-viewport" :style="viewportStyle">
         <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
           <g v-for="t in xTicks" :key="t.v">
@@ -9,7 +9,8 @@
             <text :x="t.p" :y="H - padB + 14" class="tick tick-x">{{ t.label }}</text>
           </g>
 
-          <g v-for="(b, i) in boxes" :key="i" @mouseenter="active = b">
+          <g v-for="(b, i) in boxes" :key="i" class="boxrow" @mouseenter="active = b" @click="onBoxTap($event, b)">
+            <rect class="hit" x="0" :y="b.cy - rowH / 2" :width="W" :height="rowH" />
             <text :x="padL.value - 8" :y="b.cy + 4" class="tick tick-y" :style="{ fontSize: `${labelFontSize}px` }">{{ b.short }}</text>
             <line :x1="b.min" :y1="b.cy" :x2="b.max" :y2="b.cy" class="whisker" />
             <line :x1="b.min" :y1="b.cy - 5" :x2="b.min" :y2="b.cy + 5" class="cap" />
@@ -29,6 +30,14 @@
         <span>{{ fmt(active.q1Val) }} – {{ fmt(active.q3Val) }} (IQR)</span>
       </div>
     </div>
+
+    <!-- Colour key: full category labels (the y-axis labels are truncated). -->
+    <div v-if="showKey && boxes.length" class="boxkey">
+      <span v-for="b in boxes" :key="b.label" class="k" :class="{ on: active && active.label === b.label }"
+            @click="active = b">
+        <span class="sw" :style="{ background: b.color }"></span>{{ b.label }}
+      </span>
+    </div>
   </figure>
 </template>
 
@@ -41,6 +50,7 @@ const props = defineProps({
   data: { type: Array, required: true },
   xLabel: { type: String, default: '' },
   format: { type: Function, default: (v) => `${Math.round(v)}` },
+  showKey: { type: Boolean, default: true },
 })
 
 const labelFontSize = computed(() => {
@@ -69,6 +79,8 @@ const viewportStyle = computed(() => ({
 
 const active = ref(null)
 const ptr = ref({ x: 0, y: 0 })
+const areaEl = ref(null)
+const dragged = ref(false)
 function compactLabel(label, maxLen = 18) {
   const value = String(label ?? '')
   if (value.length <= maxLen) return value
@@ -78,6 +90,14 @@ function onMove(e) {
   const r = e.currentTarget.getBoundingClientRect()
   ptr.value = { x: e.clientX - r.left, y: e.clientY - r.top }
 }
+// Tap/click a box shows its stats — the info that hover gives on desktop, made
+// reachable on touch devices.
+function onBoxTap(e, b) {
+  if (dragged.value) return
+  const r = areaEl.value?.getBoundingClientRect()
+  if (r) ptr.value = { x: e.clientX - r.left, y: e.clientY - r.top }
+  active.value = b
+}
 function clamp(v, min, max) { return Math.min(max, Math.max(min, v)) }
 function onWheel(e) {
   const delta = e.deltaY > 0 ? 0.9 : 1.1
@@ -85,12 +105,15 @@ function onWheel(e) {
 }
 function onPointerDown(e) {
   dragStart.value = { x: e.clientX, y: e.clientY, panX: pan.value.x, panY: pan.value.y }
-  e.currentTarget.setPointerCapture?.(e.pointerId)
+  dragged.value = false
+  // No setPointerCapture — it would retarget the tap off the box and break
+  // tap-to-show-info. Panning still works via the move handler below.
 }
 function onPointerMove(e) {
   if (!dragStart.value) return
   const dx = e.clientX - dragStart.value.x
   const dy = e.clientY - dragStart.value.y
+  if (Math.abs(dx) + Math.abs(dy) > 4) dragged.value = true
   pan.value = { x: dragStart.value.panX + dx / zoom.value, y: dragStart.value.panY + dy / zoom.value }
 }
 function onPointerUp() { dragStart.value = null }
@@ -162,4 +185,14 @@ svg { width: 100%; height: auto; display: block; }
   font-size: 0.75rem; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 .tooltip strong { margin-bottom: 2px; }
+
+.boxrow { cursor: pointer; }
+.hit { fill: transparent; pointer-events: all; }
+.boxkey {
+  display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px;
+  font-size: 0.75rem; color: var(--text); max-height: 92px; overflow-y: auto;
+}
+.boxkey .k { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; opacity: 0.9; }
+.boxkey .k:hover, .boxkey .k.on { opacity: 1; font-weight: 600; }
+.boxkey .sw { width: 11px; height: 11px; border-radius: 3px; border: 1px solid var(--border); flex: 0 0 auto; }
 </style>
