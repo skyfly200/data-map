@@ -79,6 +79,38 @@ def _fmt_size(num_bytes):
     return f"{mb / 1000:.2f} GB" if mb >= 1000 else f"{mb:.1f} MB"
 
 
+def cleanup_legacy_cogs(directory):
+    """Remove files left by the old buggy COG naming, e.g. ``foo.tif.cog.tif``.
+
+    An earlier version wrote the compressed file as ``<name>.<ext>.cog.tif``
+    instead of ``<name>.cog.tif``, so caches can hold stray double-extension
+    duplicates. For each one: if the correctly-named ``<name>.cog.tif`` already
+    exists, delete the stray; otherwise rename it to the correct name so no data
+    is lost. Returns (removed, renamed).
+    """
+    directory = Path(directory)
+    removed = renamed = 0
+    strays = list(directory.rglob("*.tif.cog.tif")) + list(directory.rglob("*.tiff.cog.tif"))
+    for bad in strays:
+        base = bad.name[: -len(".cog.tif")]   # "precip_X.tif"
+        base = base.rsplit(".", 1)[0]         # "precip_X"
+        good = bad.with_name(f"{base}.cog.tif")
+        try:
+            if good.exists() and good != bad:
+                bad.unlink()
+                removed += 1
+                print(f"🧹 Removed duplicate {bad.name} (valid {good.name} already present)")
+            elif good != bad:
+                bad.rename(good)
+                renamed += 1
+                print(f"🧹 Renamed stray {bad.name} → {good.name}")
+        except OSError as exc:
+            print(f"[!] Couldn't clean {bad}: {exc}")
+    if removed or renamed:
+        print(f"🧹 Legacy COG cleanup: {removed} removed, {renamed} renamed.")
+    return removed, renamed
+
+
 def _process_single_raster(path_args):
     """Worker function to process a single file in a separate process."""
     path, replace_originals = path_args
@@ -112,7 +144,10 @@ def _process_single_raster(path_args):
 
 def convert_all_rasters_in_dir(directory, *, replace_originals=False):
     directory = Path(directory)
-    
+
+    # Clear out any stray double-extension COGs from the old naming first.
+    cleanup_legacy_cogs(directory)
+
     targets = []
     for ext in ("*.tif", "*.tiff"):
         targets.extend(p for p in directory.rglob(ext) if not p.name.endswith(".cog.tif"))
@@ -176,11 +211,15 @@ def main():
     parser.add_argument("--output", default=None, help="Optional output path for a single file")
     parser.add_argument("--delete-original", action="store_true", help="Delete the original uncompressed raster after successful conversion")
     parser.add_argument("--verify", action="store_true", help="Read back the converted raster for a quick validation")
+    parser.add_argument("--clean-only", action="store_true", help="Only remove stray *.tif.cog.tif duplicates from the directory, don't compress")
     args = parser.parse_args()
 
     target = Path(args.path)
     if target.is_dir():
-        convert_all_rasters_in_dir(target, replace_originals=args.delete_original)
+        if args.clean_only:
+            cleanup_legacy_cogs(target)
+        else:
+            convert_all_rasters_in_dir(target, replace_originals=args.delete_original)
         return
 
     result = convert_raster_to_cog(str(target), output_path=args.output, delete_original=args.delete_original, verify=args.verify)
