@@ -110,6 +110,20 @@ python validate_wetness.py raster --satellite s1_vv_<window>.tif \
 Sentinel-1 VV tracks bare/low-vegetation soil moisture best, so masking dense
 vegetation and built-up/water (via `--landcover`) sharpens the comparison.
 
+### Raster coverage summary
+
+`raster_coverage.py` scans the environmental-layer cache (CHIRPS precip, ERA5
+soil, NDVI, tree cover, DEM, WorldCover) and writes `public/data/coverage.json`
+— per layer: file count, date range, on-disk size, and geographic extent, plus
+a date→layers index. `run_pipeline.py` runs it after the export step, and the
+frontend **Coverage** tab renders it as layer cards plus a date × layer matrix
+so gaps are obvious at a glance.
+
+```bash
+python raster_coverage.py            # → public/data/coverage.json
+python raster_coverage.py --pretty   # human-readable
+```
+
 ## Nuxt frontend & Netlify deploy
 
 The frontend is a Nuxt 3 app that renders the observations on a Leaflet map,
