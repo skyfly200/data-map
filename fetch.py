@@ -1,12 +1,23 @@
-import ee
-import pandas as pd
-from datetime import timedelta
+import argparse
+import concurrent.futures
 import math
 import os
-from pathlib import Path
-import cdsapi
+import gzip
+import shutil
 import zipfile
+from datetime import timedelta
+from pathlib import Path
+
+import cdsapi
+import ee
+import pandas as pd
 import requests
+
+# Consolidate the local compression import
+try:
+    from compress_rasters import convert_raster_to_cog
+except ImportError:
+    convert_raster_to_cog = None
 
 
 def load_env_file(path=None):
@@ -38,23 +49,19 @@ STUDY_AREA = [42, -106, 39, -102]  # around Colorado
 
 # ─── Topography (Digital Elevation Model) ─────────────────────────────────────
 def download_srtm_dem(area=None, output_dir="dem/", dem_type="SRTMGL3", api_key=None):
-    """Download a DEM GeoTIFF for the study area from the OpenTopography API.
-
-    Topography is static, so a single DEM covering the whole study area is
-    fetched once (unlike the date-indexed weather layers). ``terrain_pipeline``
-    then derives slope, aspect, solar/wind exposure and water retention from it.
-
-    ``dem_type`` selects the global DEM: ``SRTMGL3`` (90 m, small & fast) or
-    ``SRTMGL1`` (30 m, higher resolution but much larger). A free OpenTopography
-    API key is required — set ``OPENTOPOGRAPHY_API_KEY`` or pass ``api_key``.
-    See https://portal.opentopography.org/apidocs/ .
-    """
+    """Download a DEM GeoTIFF for the study area from the OpenTopography API."""
     area = area or STUDY_AREA
     north, west, south, east = area
     os.makedirs(output_dir, exist_ok=True)
+    
     out_path = os.path.join(output_dir, f"dem_{dem_type}.tif")
+    cog_path = os.path.join(output_dir, f"dem_{dem_type}.cog.tif")
 
-    if os.path.exists(out_path):
+    # Check for the compressed file first
+    if os.path.exists(cog_path):
+        print(f"✅ Already downloaded: {cog_path}")
+        return cog_path
+    elif os.path.exists(out_path) and not convert_raster_to_cog:
         print(f"✅ Already downloaded: {out_path}")
         return out_path
 
@@ -84,12 +91,16 @@ def download_srtm_dem(area=None, output_dir="dem/", dem_type="SRTMGL3", api_key=
         with open(out_path, "wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
-        try:
-            from compress_rasters import convert_raster_to_cog
-            converted = convert_raster_to_cog(out_path, delete_original=True, verify=True)
-            print(f"✅ DEM saved to {converted}")
-        except Exception as exc:
-            print(f"[!] DEM compression failed; keeping uncompressed file: {exc}")
+        
+        if convert_raster_to_cog:
+            try:
+                # Explicitly pass the correctly formatted cog_path
+                converted = convert_raster_to_cog(out_path, output_path=cog_path, delete_original=True, verify=True)
+                print(f"✅ DEM saved to {converted}")
+                return converted
+            except Exception as exc:
+                print(f"[!] DEM compression failed; keeping uncompressed file: {exc}")
+                
         return out_path
     except Exception as e:
         print(f"[!] Error fetching DEM: {e}")
@@ -97,21 +108,20 @@ def download_srtm_dem(area=None, output_dir="dem/", dem_type="SRTMGL3", api_key=
             os.remove(out_path)
         return None
 
-# Initialize the CDS API client to download ERA5-Land data (Soil Moisture)
-def download_era5_soil_moisture(date_str, output_dir="soil/"):
+# ─── Soil Moisture (ERA5-Land) Worker ─────────────────────────────────────────
+def download_era5_worker(date_str, output_dir="soil/"):
+    """Thread worker for fetching ERA5-Land soil moisture via CDS API."""
     os.makedirs(output_dir, exist_ok=True)
     year, month, day = date_str.split("-")
-
-    c = cdsapi.Client()
 
     zip_path = os.path.join(output_dir, f"soil_{date_str}.zip")
     nc_path = os.path.join(output_dir, f"soil_{date_str}.nc")
 
     if os.path.exists(nc_path):
-        print(f"✅ Already downloaded: {nc_path}")
-        return nc_path
+        return "cached", date_str, nc_path
 
-    print(f"🔽 Downloading ERA5-Land soil moisture for {date_str}...")
+    # Initialize a local client for the thread. quiet=True prevents intertwined console spam.
+    c = cdsapi.Client(quiet=True)
 
     dataset = "reanalysis-era5-land"
     request = {
@@ -121,40 +131,29 @@ def download_era5_soil_moisture(date_str, output_dir="soil/"):
         "day": [day],
         "time": [f"{h:02d}:00" for h in range(24)],  # All 24 hours
         "data_format": "netcdf",
-        "area": STUDY_AREA,  # North, West, South, East (bounding box around Colorado, you can adjust)
+        "area": STUDY_AREA,
     }
     
-    print(request)
+    try:
+        c.retrieve(dataset, request, zip_path)
 
-    c.retrieve(
-        dataset,
-        request,
-        zip_path
-    )
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(output_dir)
+            extracted_files = zip_ref.namelist()
+            extracted_nc = [f for f in extracted_files if f.endswith(".nc")]
+            if extracted_nc:
+                os.rename(os.path.join(output_dir, extracted_nc[0]), nc_path)
+        os.remove(zip_path)
 
-    # Extract .nc file from the zip
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(output_dir)
-        extracted_files = zip_ref.namelist()
-        extracted_nc = [f for f in extracted_files if f.endswith(".nc")]
-        if extracted_nc:
-            os.rename(os.path.join(output_dir, extracted_nc[0]), nc_path)
-    os.remove(zip_path)
+        return "downloaded", date_str, nc_path
+    except Exception as e:
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+        return "error", date_str, str(e)
 
-    print(f"✅ Saved NetCDF to {nc_path}")
-    return nc_path
 
 def init_earth_engine():
-    """Initialize Earth Engine and auto-authenticate when needed.
-
-    Earth Engine can fail on a fresh machine with the "Please authorize access
-    to your Earth Engine account" exception. When that happens, the SDK can be
-    re-run through ee.Authenticate() once, after which ee.Initialize() succeeds
-    normally.
-
-    If Google blocks the OAuth flow for the current account, we gracefully skip
-    the Earth Engine stages instead of crashing the rest of the data pipeline.
-    """
+    """Initialize Earth Engine and auto-authenticate when needed."""
     project = os.environ.get("EARTHENGINE_PROJECT")
     try:
         ee.Initialize(project=project)
@@ -171,14 +170,15 @@ def init_earth_engine():
             print("    Reason:", auth_exc)
             return False
 
+
 def fetch_sentinel2_ndvi(lat, lon, date_str, output_dir="ndvi/"):
     date = pd.to_datetime(date_str)
-    range = 5
-    start_date = (date - timedelta(days=range)).strftime('%Y-%m-%d')
-    end_date = (date + timedelta(days=range)).strftime('%Y-%m-%d')
+    range_val = 5
+    start_date = (date - timedelta(days=range_val)).strftime('%Y-%m-%d')
+    end_date = (date + timedelta(days=range_val)).strftime('%Y-%m-%d')
 
     point = ee.Geometry.Point([lon, lat])
-    region = point.buffer(500).bounds()  # ~1km square
+    region = point.buffer(500).bounds()
 
     collection = (ee.ImageCollection('COPERNICUS/S2_SR')
                   .filterDate(start_date, end_date)
@@ -200,28 +200,16 @@ def fetch_sentinel2_ndvi(lat, lon, date_str, output_dir="ndvi/"):
     )
 
     task.start()
-
     print(f"📦 Started NDVI export task for {date_str} at ({lat},{lon})")
 
+
 def _study_region(area=None):
-    """ee.Geometry rectangle for the study area [North, West, South, East]."""
     north, west, south, east = area or STUDY_AREA
     return ee.Geometry.Rectangle([west, south, east, north])
 
 
 def fetch_sentinel1_moisture(area=None, start_date="2024-04-01", end_date="2024-06-30",
                              scale=90, folder="EarthEngineMoisture"):
-    """Export a Sentinel-1 VV backscatter composite as a soil-moisture proxy.
-
-    SAR VV backscatter rises with surface soil moisture (strongest on bare/low
-    vegetation), so a median composite over a window is an independent,
-    fine-resolution wetness signal to validate the topographic wetness index
-    against — see validate_wetness.py (raster mode).
-
-    Covers the whole study area at ``scale`` metres (default 90 m to match the
-    SRTMGL3 DEM). Exports to Google Drive; download the resulting GeoTIFF and
-    point ``validate_wetness.py raster --satellite`` at it.
-    """
     region = _study_region(area)
 
     collection = (ee.ImageCollection('COPERNICUS/S1_GRD')
@@ -250,12 +238,6 @@ def fetch_sentinel1_moisture(area=None, start_date="2024-04-01", end_date="2024-
 
 def fetch_sentinel2_ndmi(area=None, start_date="2024-04-01", end_date="2024-06-30",
                          scale=20, cloud_pct=40, folder="EarthEngineMoisture"):
-    """Export a Sentinel-2 NDMI composite (vegetation/surface moisture proxy).
-
-    NDMI = (B8 - B11) / (B8 + B11); higher = wetter. Optical, so it needs
-    low-cloud scenes but is easy given the existing Sentinel-2 usage. Another
-    independent layer for validate_wetness.py (raster mode).
-    """
     region = _study_region(area)
 
     collection = (ee.ImageCollection('COPERNICUS/S2_SR')
@@ -292,26 +274,28 @@ def _remove_stale_chirps_files(*paths):
             pass
 
 
-def fetch_chirps_precip(date_str, output_dir="precip/", progress=""):
+def fetch_chirps_precip_worker(date_str, output_dir="precip/"):
+    """Thread worker for fetching CHIRPS precip."""
     os.makedirs(output_dir, exist_ok=True)
+    
     out_path = os.path.join(output_dir, f"precip_{date_str}.tif")
-    tag = f"{progress} " if progress else ""
-    if os.path.exists(out_path):
-        if progress:
-            print(f"{tag}✅ cached {date_str}")
-        return out_path
+    cog_path = os.path.join(output_dir, f"precip_{date_str}.cog.tif")
+    
+    # Check for the compressed version to avoid re-downloading
+    if os.path.exists(cog_path):
+        return "cached", date_str, cog_path
+    elif os.path.exists(out_path) and not convert_raster_to_cog:
+        return "cached", date_str, out_path
 
     year, month, day = date_str.split("-")
     url = f"https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_daily/tifs/p05/{year}/chirps-v2.0.{year}.{month}.{day}.tif.gz"
     gz_path = out_path + ".gz"
 
     try:
-        print(f"{tag}🔽 Downloading CHIRPS for {date_str}...")
         r = requests.get(url, stream=True, timeout=30)
         if r.status_code == 404:
-            print(f"{tag}⚠️ CHIRPS not available for {date_str}. Skipping.")
             _remove_stale_chirps_files(gz_path, out_path)
-            return None
+            return "not_found", date_str, None
         r.raise_for_status()
 
         _remove_stale_chirps_files(gz_path, out_path)
@@ -321,31 +305,30 @@ def fetch_chirps_precip(date_str, output_dir="precip/", progress=""):
                 if chunk:
                     f.write(chunk)
 
-        import gzip, shutil
         with gzip.open(gz_path, 'rb') as f_in, open(out_path, 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out)
 
         os.remove(gz_path)
-        try:
-            from compress_rasters import convert_raster_to_cog
-            converted = convert_raster_to_cog(out_path, delete_original=True, verify=True)
-            print(f"{tag}✅ CHIRPS saved to {converted}")
-        except Exception as exc:
-            print(f"{tag}[!] CHIRPS compression failed; keeping uncompressed file: {exc}")
-        return out_path
+        
+        if convert_raster_to_cog:
+            try:
+                # Explicitly set output_path
+                out_path = convert_raster_to_cog(out_path, output_path=cog_path, delete_original=True, verify=True)
+            except Exception as exc:
+                return "error", date_str, f"Compression failed: {exc}"
+                
+        return "downloaded", date_str, out_path
 
     except Exception as e:
-        print(f"{tag}[!] Error fetching CHIRPS for {date_str}: {e}")
         _remove_stale_chirps_files(gz_path, out_path)
-        return None
+        return "error", date_str, str(e)
+
 
 def get_unique_dates(df):
     return sorted(pd.to_datetime(df['date'].dropna()).dt.strftime('%Y-%m-%d').unique())
 
 
 def get_precip_dates(df, buffer_days=6):
-    """Every date needed for a ``buffer_days`` precipitation history: each
-    observation date plus the preceding days (matches enrich_with_precip)."""
     all_dates = set()
     for d in pd.to_datetime(df['date'].dropna()):
         for i in range(buffer_days + 1):
@@ -355,8 +338,6 @@ def get_precip_dates(df, buffer_days=6):
 
 # ─── Land Cover (ESA WorldCover) ──────────────────────────────────────────────
 def _worldcover_tile_name(lat, lon, year=2020, version="v100"):
-    """WorldCover tiles are 3°×3°, named by their SW corner (mirrors
-    enrich_with_rasters.get_worldcover_tile_name)."""
     lat_deg = math.floor(lat / 3) * 3
     lon_deg = math.floor(lon / 3) * 3
     lat_prefix = "N" if lat_deg >= 0 else "S"
@@ -365,13 +346,44 @@ def _worldcover_tile_name(lat, lon, year=2020, version="v100"):
             f"{lat_prefix}{abs(lat_deg):02d}{lon_prefix}{abs(lon_deg):03d}_Map.tif")
 
 
-def download_worldcover_tiles(df, output_dir="world_cover/", year=2020, version="v100"):
-    """Auto-download the ESA WorldCover tiles covering the observations.
+def _download_worldcover_worker(tile, base_url, output_dir):
+    """Thread worker for fetching WorldCover tiles."""
+    out_path = os.path.join(output_dir, tile)
+    
+    # Remove the .tif at the end, and append .cog.tif
+    cog_path = os.path.splitext(out_path)[0] + ".cog.tif"
+    
+    if os.path.exists(cog_path):
+        return "cached", tile, cog_path
+    elif os.path.exists(out_path) and not convert_raster_to_cog:
+        return "cached", tile, out_path
+        
+    url = f"{base_url}/{tile}"
+    try:
+        r = requests.get(url, stream=True, timeout=120)
+        if r.status_code == 404:
+            return "not_found", tile, None
+        r.raise_for_status()
+        
+        with open(out_path, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+                
+        if convert_raster_to_cog:
+            try:
+                # Explicitly set output_path
+                out_path = convert_raster_to_cog(out_path, output_path=cog_path, delete_original=True, verify=True)
+            except Exception as exc:
+                return "error", tile, f"Compression failed: {exc}"
+                
+        return "downloaded", tile, out_path
+    except Exception as e:
+        if os.path.exists(out_path):
+            os.remove(out_path)
+        return "error", tile, str(e)
 
-    Tiles are served from the ESA WorldCover open bucket on AWS S3. Only the
-    unique tiles spanned by the observation points are fetched, and existing
-    files are skipped.
-    """
+
+def download_worldcover_tiles(df, output_dir="world_cover/", year=2020, version="v100"):
     os.makedirs(output_dir, exist_ok=True)
     base_url = f"https://esa-worldcover.s3.eu-central-1.amazonaws.com/{version}/{year}/map"
 
@@ -381,46 +393,26 @@ def download_worldcover_tiles(df, output_dir="world_cover/", year=2020, version=
             continue
         tiles.add(_worldcover_tile_name(row['lat'], row['lon'], year, version))
 
-    print(f"🗺  Ensuring {len(tiles)} WorldCover tile(s)...")
-    for tile in sorted(tiles):
-        out_path = os.path.join(output_dir, tile)
-        if os.path.exists(out_path):
-            print(f"✅ Already downloaded: {out_path}")
-            continue
-        url = f"{base_url}/{tile}"
-        try:
-            print(f"🔽 Downloading {tile}...")
-            r = requests.get(url, stream=True, timeout=120)
-            if r.status_code == 404:
-                print(f"⚠️ WorldCover tile not found (ocean or out of coverage?): {tile}")
-                continue
-            r.raise_for_status()
-            with open(out_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            try:
-                from compress_rasters import convert_raster_to_cog
-                converted = convert_raster_to_cog(out_path, delete_original=True, verify=True)
-                print(f"✅ WorldCover saved to {converted}")
-            except Exception as exc:
-                print(f"[!] WorldCover compression failed; keeping uncompressed file: {exc}")
-        except Exception as e:
-            print(f"[!] Error fetching WorldCover tile {tile}: {e}")
-            if os.path.exists(out_path):
-                os.remove(out_path)
+    tiles = sorted(tiles)
+    print(f"🗺  Ensuring {len(tiles)} WorldCover tile(s) using multithreading...")
+    
+    # ThreadPool for I/O bounds
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_tile = {executor.submit(_download_worldcover_worker, tile, base_url, output_dir): tile for tile in tiles}
+        
+        for future in concurrent.futures.as_completed(future_to_tile):
+            status, tile, result = future.result()
+            if status == "cached":
+                print(f"✅ Cached: {tile}")
+            elif status == "downloaded":
+                print(f"✅ Downloaded & Processed: {tile} -> {result}")
+            elif status == "not_found":
+                print(f"⚠️  Not found (ocean or out of coverage?): {tile}")
+            elif status == "error":
+                print(f"[!] Error fetching {tile}: {result}")
 
 
 def main(csv_path='mushroom_observations.csv'):
-    """Download every environmental layer for the observations, end to end.
-
-    Importable so notebooks can call individual fetch functions without
-    triggering the whole download; only running the file (or calling main())
-    kicks off the pipeline.
-    """
-    # Earth Engine (NDVI + satellite-moisture exports) needs interactive/service
-    # auth and delivers to Google Drive, so it can't run headless. Set
-    # SKIP_EARTH_ENGINE=1 (e.g. in CI) to skip every EE step and still fetch the
-    # DEM/terrain, precipitation, soil moisture, and land-cover layers.
     skip_ee = os.environ.get("SKIP_EARTH_ENGINE") == "1"
     if not skip_ee:
         skip_ee = not init_earth_engine()
@@ -431,10 +423,6 @@ def main(csv_path='mushroom_observations.csv'):
     df = pd.read_csv(csv_path)
 
     # ─── NDVI (Sentinel-2) ────────────────────────────────────────────────────
-    # NDVI is now sampled directly at each point during enrichment
-    # (enrich_with_rasters.enrich_with_ndvi_ee), so the pipeline no longer needs
-    # the asynchronous Drive export by default. Set EXPORT_NDVI_TILES=1 to also
-    # export NDVI GeoTIFFs to Drive (folder 'EarthEngineNDVI').
     if not skip_ee and os.environ.get("EXPORT_NDVI_TILES") == "1":
         print("Exporting Sentinel-2 NDVI tiles to Drive...")
         for idx, row in df.iterrows():
@@ -443,35 +431,67 @@ def main(csv_path='mushroom_observations.csv'):
             print(f"  → NDVI for {row['date']} at ({row['lat']}, {row['lon']})")
             fetch_sentinel2_ndvi(row['lat'], row['lon'], row['date'])
 
-    # Each stage is isolated so one failing data source (e.g. a missing CDS key
-    # in CI) doesn't abort the rest of the pipeline.
-
     # ─── Soil moisture (ERA5-Land) ────────────────────────────────────────────
     try:
-        for date_str in get_unique_dates(df):
-            download_era5_soil_moisture(date_str)
+        era5_dates = get_unique_dates(df)
+        total_era = len(era5_dates)
+        print(f"Fetching ERA5-Land soil moisture — {total_era} daily files to check using multithreading...")
+        
+        era_downloaded = era_failed = era_cached = 0
+        
+        # Keep max_workers low (3) for ERA5. The CDS API restricts concurrent API requests per user.
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            future_to_date = {executor.submit(download_era5_worker, date_str): date_str for date_str in era5_dates}
+            
+            for i, future in enumerate(concurrent.futures.as_completed(future_to_date), 1):
+                status, date_str, result = future.result()
+                prefix = f"[{i}/{total_era}]"
+                
+                if status == "cached":
+                    era_cached += 1
+                    print(f"{prefix} ✅ Cached {date_str}")
+                elif status == "downloaded":
+                    era_downloaded += 1
+                    print(f"{prefix} ✅ Downloaded {date_str} -> {result}")
+                elif status == "error":
+                    era_failed += 1
+                    print(f"{prefix} [!] Error for {date_str}: {result}")
+
+        print(f"✅ ERA5 done — {era_downloaded} downloaded, {era_cached} already cached, "
+              f"{era_failed} failed out of {total_era} total.")
     except Exception as e:
         print(f"[!] Soil moisture download skipped: {e}")
 
     # ─── Precipitation (CHIRPS) ───────────────────────────────────────────────
-    # Each observation date plus the 6 preceding days, for a 7-day rain history.
     try:
         precip_dates = get_precip_dates(df, buffer_days=6)
-        total = len(precip_dates)
-        print(f"Fetching CHIRPS precipitation — {total} daily tiles to check...")
-        downloaded = failed = 0
-        for i, date_str in enumerate(precip_dates, 1):
-            out = os.path.join("precip/", f"precip_{date_str}.tif")
-            existed = os.path.exists(out)
-            result = fetch_chirps_precip(date_str, progress=f"[{i}/{total}]")
-            if not existed:
-                if result:
-                    downloaded += 1
-                else:
-                    failed += 1
-        cached = total - downloaded - failed
-        print(f"✅ CHIRPS done — {downloaded} downloaded, {cached} already cached, "
-              f"{failed} unavailable/failed out of {total} total.")
+        total_precip = len(precip_dates)
+        print(f"Fetching CHIRPS precipitation — {total_precip} daily tiles to check using multithreading...")
+        
+        precip_downloaded = precip_failed = precip_cached = 0
+        
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_date = {executor.submit(fetch_chirps_precip_worker, date_str): date_str for date_str in precip_dates}
+            
+            for i, future in enumerate(concurrent.futures.as_completed(future_to_date), 1):
+                status, date_str, result = future.result()
+                prefix = f"[{i}/{total_precip}]"
+                
+                if status == "cached":
+                    precip_cached += 1
+                    print(f"{prefix} ✅ Cached {date_str}")
+                elif status == "downloaded":
+                    precip_downloaded += 1
+                    print(f"{prefix} ✅ Downloaded {date_str} -> {result}")
+                elif status == "not_found":
+                    precip_failed += 1
+                    print(f"{prefix} ⚠️  CHIRPS not available for {date_str}")
+                elif status == "error":
+                    precip_failed += 1
+                    print(f"{prefix} [!] Error for {date_str}: {result}")
+
+        print(f"✅ CHIRPS done — {precip_downloaded} downloaded, {precip_cached} already cached, "
+              f"{precip_failed} unavailable/failed out of {total_precip} total.")
     except Exception as e:
         print(f"[!] Precipitation download skipped: {e}")
 
@@ -481,8 +501,7 @@ def main(csv_path='mushroom_observations.csv'):
     except Exception as e:
         print(f"[!] WorldCover download skipped: {e}")
 
-    # Topography is static — fetch the DEM once, then derive the terrain layers
-    # (slope, aspect, solar/wind exposure, water retention) from it.
+    # ─── Topography ───────────────────────────────────────────────────────────
     try:
         dem_path = download_srtm_dem()
         if dem_path:
@@ -491,12 +510,8 @@ def main(csv_path='mushroom_observations.csv'):
     except Exception as e:
         print(f"[!] Terrain processing skipped: {e}")
 
-    # Independent satellite moisture layer for validating the wetness index.
-    # Opt-in (these are large Earth Engine exports to Drive): set
-    # EXPORT_SATELLITE_MOISTURE=1. Download the GeoTIFF from Drive, then:
-    #   python validate_wetness.py raster --satellite s1_vv_<window>.tif
+    # ─── Independent Satellite Moisture ───────────────────────────────────────
     if os.environ.get("EXPORT_SATELLITE_MOISTURE") == "1" and not skip_ee:
-        # Match the export window to the span of observed dates.
         obs_dates = pd.to_datetime(df['date'].dropna())
         win_start = obs_dates.min().strftime('%Y-%m-%d')
         win_end = obs_dates.max().strftime('%Y-%m-%d')
