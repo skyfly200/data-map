@@ -37,4 +37,4 @@ Account information is retained while your account exists. To delete your accoun
 
 ## Contact
 
-Questions about this policy can be sent to [CONTACT_EMAIL_HERE](mailto:CONTACT_EMAIL_HERE). *(Replace this with your contact email before publishing.)*
+Questions about this policy can be sent to [datamap@wskylerfly.com](mailto:datamap@wskylerfly.com).

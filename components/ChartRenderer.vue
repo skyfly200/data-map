@@ -7,8 +7,10 @@
   <BarChart v-else-if="config.type === 'histogram'" :title="title" :data="histogramData" :format="(v) => String(v)" />
   <HeatmapChart v-else-if="config.type === 'heatmap'" :title="title" :rows="heatmap.rows" :cols="heatmap.cols"
     :matrix="heatmap.matrix" :format="heatFmt" />
-  <BarChart v-else-if="config.type === 'line' || config.type === 'area'" :title="title" :data="lineData" :format="lineFmt" :horizontal="false" />
-  <BarChart v-else-if="config.type === 'radar' || config.type === 'donut'" :title="title" :data="radarData" :format="(v) => String(v)" :horizontal="false" />
+  <LineChart v-else-if="config.type === 'line' || config.type === 'area'" :title="title" :data="lineSeries"
+    :xLabel="labelOf(config.xField)" :yLabel="labelOf(config.yField)" :xFormat="fmtOf(config.xField)" :yFormat="fmtOf(config.yField)" />
+  <PieChart v-else-if="config.type === 'donut'" :title="title" :data="donutData" :format="(v) => String(Math.round(v))" />
+  <BarChart v-else-if="config.type === 'radar'" :title="title" :data="radarData" :format="(v) => String(v)" :horizontal="false" />
   <p v-if="isEmpty" class="cr-empty">No data for this combination.</p>
 </template>
 
@@ -121,31 +123,45 @@ const barData = computed(() => {
 })
 const barFmt = computed(() => (c.value.measure === 'count' ? (v) => String(v) : (v) => Number(v).toFixed(1)))
 
-const lineData = computed(() => {
-  const grouped = new Map()
-  for (const r of rows.value) {
-    const x = numVal(r, c.value.xField)
-    const y = numVal(r, c.value.yField)
-    if (x === null || y === null) continue
-    const key = c.value.groupField ? catVal(r, c.value.groupField) || 'Unassigned' : 'All'
-    if (!grouped.has(key)) grouped.set(key, [])
-    grouped.get(key).push({ x, y })
-  }
-
+// Real line/area series: mean of Y across bins of the ordered X axis, so a
+// trend (e.g. mean elevation over day-of-year) reads as a connected curve.
+const lineSeries = computed(() => {
+  const xs = rows.value
+    .map((r) => ({ x: numVal(r, c.value.xField), y: numVal(r, c.value.yField) }))
+    .filter((d) => d.x !== null && d.y !== null)
+  if (!xs.length) return []
+  const lo = Math.min(...xs.map((d) => d.x)), hi = Math.max(...xs.map((d) => d.x))
+  const n = 24
+  const step = (hi - lo) / n || 1
+  const bins = Array.from({ length: n }, () => [])
+  for (const d of xs) bins[Math.min(n - 1, Math.floor((d.x - lo) / step))].push(d.y)
   const out = []
-  for (const [key, pts] of grouped.entries()) {
-    const ordered = [...pts].sort((a, b) => a.x - b.x)
-    const total = ordered.reduce((sum, p) => sum + p.y, 0)
-    out.push({
-      label: key,
-      short: key,
-      value: total / Math.max(1, ordered.length),
-      color: c.value.groupField === 'cluster' ? clusterColor(key) : PALETTE[(out.length) % PALETTE.length],
-    })
-  }
-  return out.slice(0, 12)
+  bins.forEach((ys, i) => {
+    if (ys.length) out.push({ x: lo + (i + 0.5) * step, y: ys.reduce((s, v) => s + v, 0) / ys.length })
+  })
+  return out
 })
-const lineFmt = computed(() => (v) => Number(v).toFixed(1))
+
+// Real donut: composition by category (top 8 + grey Other). Count, or the sum
+// of a numeric measure — both are valid parts-of-a-whole.
+const donutData = computed(() => {
+  const entries = [...groupBy(c.value.groupField)].map(([label, rs]) => {
+    let value
+    if (c.value.measure === 'count') value = rs.length
+    else value = rs.map((r) => numVal(r, c.value.measure)).filter((v) => v !== null).reduce((s, v) => s + v, 0)
+    return { label, value }
+  }).filter((e) => e.value > 0)
+  entries.sort((a, b) => b.value - a.value)
+  const top = entries.slice(0, 8)
+  const rest = entries.slice(8)
+  const hasOther = rest.length > 0
+  if (hasOther) top.push({ label: `Other (${rest.length})`, value: rest.reduce((s, e) => s + e.value, 0) })
+  return top.map((e, i) => ({
+    ...e,
+    color: (hasOther && i === top.length - 1) ? UNCLUSTERED
+      : (c.value.groupField === 'cluster' ? clusterColor(e.label) : PALETTE[i % PALETTE.length]),
+  }))
+})
 
 const radarData = computed(() => {
   const groups = groupBy(c.value.groupField)
@@ -208,7 +224,7 @@ const title = computed(() => {
   const t = c.value.type
   if (t === 'scatter') return `${labelOf(c.value.yField)} vs. ${labelOf(c.value.xField)}`
   if (t === 'bar') return c.value.measure === 'count' ? `Count by ${catLabel(c.value.groupField)}` : `Mean ${labelOf(c.value.measure)} by ${catLabel(c.value.groupField)}`
-  if (t === 'line' || t === 'area') return c.value.groupField ? `${labelOf(c.value.yField)} by ${catLabel(c.value.groupField)}` : `${labelOf(c.value.yField)} over ${labelOf(c.value.xField)}`
+  if (t === 'line' || t === 'area') return `${labelOf(c.value.yField)} over ${labelOf(c.value.xField)}`
   if (t === 'box') return `${labelOf(c.value.valueField)} by ${catLabel(c.value.groupField)}`
   if (t === 'histogram') return `Distribution of ${labelOf(c.value.valueField)}`
   if (t === 'heatmap') return `${catLabel(c.value.rowField)} × ${catLabel(c.value.colField)}`
@@ -220,7 +236,10 @@ defineExpose({ title })
 const isEmpty = computed(() => {
   const t = c.value.type
   if (t === 'scatter') return scatterData.value.length === 0
-  if (t === 'bar' || t === 'line' || t === 'area' || t === 'radar' || t === 'donut') return (lineData.value.length === 0 && radarData.value.length === 0 && barData.value.length === 0)
+  if (t === 'bar') return barData.value.length === 0
+  if (t === 'line' || t === 'area') return lineSeries.value.length === 0
+  if (t === 'donut') return donutData.value.length === 0
+  if (t === 'radar') return radarData.value.length === 0
   if (t === 'box') return boxData.value.length === 0
   if (t === 'histogram') return histogramData.value.length === 0
   if (t === 'heatmap') return heatmap.value.rows.length === 0

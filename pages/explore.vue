@@ -31,8 +31,7 @@
 
       <template v-else-if="chartType === 'line' || chartType === 'area'">
         <label class="ctrl"><span>X</span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Y</span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Group by</span><select v-model="groupField"><option value="">— none —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Y (mean)</span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
       </template>
 
       <template v-else-if="chartType === 'box'">
