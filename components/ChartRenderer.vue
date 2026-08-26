@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import { PALETTE, SERIES_1, UNCLUSTERED, colorFor, hasValue, useObservations } from '~/composables/useObservations'
+import { SERIES_1, UNCLUSTERED, categoryColor, hasValue, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 import { ALL_NUMERIC, ALL_CATEGORY } from '~/composables/useChartFields'
 
@@ -75,21 +75,19 @@ function fmtOf(key) {
   return (v) => Math.round(v).toLocaleString()
 }
 
-function clusterColor(label) {
-  const n = typeof label === 'string' && label.startsWith('C') ? Number(label.slice(1)) : Number(label)
-  return Number.isFinite(n) ? colorFor(n) : UNCLUSTERED
-}
+// Colour a category value the same way the map does, so keys stay consistent.
 function categoryColoring(field) {
   if (!field) return { colorOf: () => SERIES_1, legend: [] }
   const uniq = [...new Set(rows.value.map((r) => catVal(r, field)).filter((v) => v !== null))]
-  if (field === 'cluster') {
-    uniq.sort()
-    return { colorOf: clusterColor, legend: uniq.map((v) => ({ label: v, color: clusterColor(v) })) }
-  }
-  const map = new Map(uniq.map((v, i) => [v, PALETTE[i % PALETTE.length]]))
-  return { colorOf: (v) => map.get(v) || UNCLUSTERED, legend: uniq.slice(0, 8).map((v) => ({ label: v, color: map.get(v) })) }
+  if (field === 'cluster') uniq.sort()
+  const colorOf = (v) => categoryColor(field, v)
+  return { colorOf, legend: uniq.slice(0, 12).map((v) => ({ label: v, color: colorOf(v) })) }
 }
 const coloring = computed(() => categoryColoring(c.value.colorField))
+
+// Colour a grouped mark (bar/box/donut/radar slice) by its category value, so
+// the same category is the same colour here and on the map.
+function groupColor(label) { return categoryColor(c.value.groupField, label) }
 
 const scatterData = computed(() => rows.value.map((r) => {
   const x = numVal(r, c.value.xField), y = numVal(r, c.value.yField)
@@ -118,7 +116,7 @@ const barData = computed(() => {
       if (!vals.length) continue
       value = vals.reduce((s, v) => s + v, 0) / vals.length
     }
-    out.push({ label, short: label, value, color: c.value.groupField === 'cluster' ? clusterColor(label) : SERIES_1 })
+    out.push({ label, short: label, value, color: groupColor(label) })
   }
   return out.sort((a, b) => b.value - a.value).slice(0, 25)
 })
@@ -159,8 +157,7 @@ const donutData = computed(() => {
   if (hasOther) top.push({ label: `Other (${rest.length})`, value: rest.reduce((s, e) => s + e.value, 0) })
   return top.map((e, i) => ({
     ...e,
-    color: (hasOther && i === top.length - 1) ? UNCLUSTERED
-      : (c.value.groupField === 'cluster' ? clusterColor(e.label) : PALETTE[i % PALETTE.length]),
+    color: (hasOther && i === top.length - 1) ? UNCLUSTERED : groupColor(e.label),
   }))
 })
 
@@ -174,7 +171,7 @@ const radarData = computed(() => {
       const vals = rs.map((r) => numVal(r, c.value.measure)).filter((v) => v !== null)
       value = vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0
     }
-    out.push({ label, short: label, value, color: c.value.groupField === 'cluster' ? clusterColor(label) : SERIES_1 })
+    out.push({ label, short: label, value, color: groupColor(label) })
   }
   return out.sort((a, b) => b.value - a.value).slice(0, 12)
 })
@@ -196,12 +193,10 @@ const histogramData = computed(() => {
 
 const boxData = computed(() => {
   const out = []
-  let i = 0
   for (const [label, rs] of groupBy(c.value.groupField)) {
     const values = rs.map((r) => numVal(r, c.value.valueField)).filter((v) => v !== null)
     if (values.length >= 3) {
-      out.push({ label, values, color: c.value.groupField === 'cluster' ? clusterColor(label) : PALETTE[i % PALETTE.length] })
-      i++
+      out.push({ label, values, color: groupColor(label) })
     }
   }
   return out.sort((a, b) => b.values.length - a.values.length)
