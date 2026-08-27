@@ -1,5 +1,13 @@
 <template>
   <div class="charts-page">
+    <nav class="tabs">
+      <button :class="{ on: tab === 'gallery' }" @click="tab = 'gallery'">Charts</button>
+      <button :class="{ on: tab === 'build' }" @click="tab = 'build'">Explore</button>
+    </nav>
+
+    <ChartBuilder v-if="tab === 'build'" class="build-pane" />
+
+    <template v-else>
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
     <p v-else-if="pending && !rows.length" class="msg">Loading…</p>
 
@@ -128,6 +136,7 @@
     </template>
 
     <ObservationDrawer :selected="selected" @close="selected = null" />
+    </template>
   </div>
 </template>
 
@@ -135,6 +144,16 @@
 import { PALETTE, UNCLUSTERED, colorFor, hasValue, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 import { useSavedCharts } from '~/composables/useSavedCharts'
+
+// Two tabs on this page: the preset chart gallery and the Explore builder.
+// Tab lives in the URL query so /charts?tab=build deep-links (and the old
+// /explore route redirects here).
+const route = useRoute()
+const router = useRouter()
+const tab = computed({
+  get: () => (route.query.tab === 'build' ? 'build' : 'gallery'),
+  set: (v) => router.replace({ query: { ...route.query, tab: v } }),
+})
 
 const saved = useSavedCharts()
 const { rows, error, pending, load } = useObservations()
@@ -387,6 +406,15 @@ const speciesData = computed(() => {
 
 <style scoped>
 .charts-page { padding: 16px 18px; }
+.tabs { display: flex; gap: 4px; margin: -4px 0 14px; border-bottom: 1px solid var(--border); }
+.tabs button {
+  border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  padding: 8px 16px; font-size: 0.92rem; font-weight: 600; border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.tabs button:hover { color: var(--text); }
+.tabs button.on { color: var(--text); border-bottom-color: var(--accent); }
+.build-pane { height: calc(100vh - 150px); min-height: 440px; }
+.build-pane :deep(.explore) { padding: 0; }
 .grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 16px;

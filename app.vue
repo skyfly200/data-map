@@ -31,9 +31,7 @@
         <nav class="app-nav">
           <NuxtLink to="/" class="nav-link">Home</NuxtLink>
           <NuxtLink to="/map" class="nav-link">Map</NuxtLink>
-          <NuxtLink to="/table" class="nav-link">Table</NuxtLink>
           <NuxtLink to="/charts" class="nav-link">Charts</NuxtLink>
-          <NuxtLink to="/explore" class="nav-link">Explore</NuxtLink>
           <NuxtLink to="/data" class="nav-link">Data</NuxtLink>
           <NuxtLink to="/coverage" class="nav-link">Coverage</NuxtLink>
         </nav>
