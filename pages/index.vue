@@ -11,7 +11,7 @@
 
       <div class="cta">
         <NuxtLink to="/map" class="btn primary">Open the map</NuxtLink>
-        <NuxtLink to="/explore" class="btn">Build a chart</NuxtLink>
+        <NuxtLink to="/charts?tab=build" class="btn">Build a chart</NuxtLink>
       </div>
 
       <ClientOnly>
