@@ -7,11 +7,19 @@
       <section class="main">
     <div class="head">
       <div>
-        <h2>Species</h2>
-        <p class="sub">Choose which species to show across the map, table, charts, and explorer.</p>
+        <h2>{{ levelLabel }}</h2>
+        <p class="sub">Choose which {{ levelLabel.toLowerCase() }} to show across the map, table, charts, and explorer.</p>
       </div>
       <div class="actions">
-        <span class="count">{{ selected.size }} / {{ speciesOptions.length }} selected</span>
+        <label class="level">
+          <span>Level</span>
+          <select v-model="level">
+            <option value="genus">Genus</option>
+            <option value="species">Species</option>
+            <option value="subspecies">Subspecies</option>
+          </select>
+        </label>
+        <span class="count">{{ selectedGroups }} / {{ groupedOptions.length }} selected</span>
         <button @click="selectAll">All</button>
         <button @click="clearAll">None</button>
       </div>
@@ -37,29 +45,31 @@
     </div>
 
     <div v-if="speciesOptions.length" class="species-search">
-      <input v-model="speciesQuery" type="search" placeholder="Search species…" aria-label="Search species" />
-      <span v-if="speciesQuery" class="found">{{ visibleSpecies.length }} match{{ visibleSpecies.length === 1 ? '' : 'es' }}</span>
+      <input v-model="speciesQuery" type="search" :placeholder="`Search ${levelLabel.toLowerCase()}…`" :aria-label="`Search ${levelLabel.toLowerCase()}`" />
+      <span v-if="speciesQuery" class="found">{{ visibleGroups.length }} match{{ visibleGroups.length === 1 ? '' : 'es' }}</span>
     </div>
 
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
     <p v-else-if="pending && !speciesOptions.length" class="msg">Loading…</p>
     <p v-else-if="!speciesOptions.length" class="msg">No species in the current dataset.</p>
-    <p v-else-if="!visibleSpecies.length" class="msg">No species match “{{ speciesQuery }}”.</p>
+    <p v-else-if="!visibleGroups.length" class="msg">No {{ levelLabel.toLowerCase() }} match “{{ speciesQuery }}”.</p>
 
     <div v-else class="table-wrap">
       <table>
         <thead>
           <tr>
             <th class="c-check"><input type="checkbox" :checked="allChecked" :indeterminate.prop="someChecked" @change="toggleAll" /></th>
-            <th>Species</th>
+            <th>{{ levelLabel }}</th>
+            <th class="c-num" v-if="level !== 'subspecies'">Taxa</th>
             <th class="c-num">Observations</th>
             <th class="c-bar"></th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="opt in visibleSpecies" :key="opt.species" :class="{ off: !selected.has(opt.species) }" @click="toggle(opt.species)">
-            <td class="c-check"><input type="checkbox" :checked="selected.has(opt.species)" @click.stop="toggle(opt.species)" /></td>
-            <td class="sp"><em>{{ opt.species }}</em></td>
+          <tr v-for="opt in visibleGroups" :key="opt.key" :class="{ off: groupState(opt) === 'off' }" @click="toggleGroup(opt)">
+            <td class="c-check"><input type="checkbox" :checked="groupState(opt) === 'on'" :indeterminate.prop="groupState(opt) === 'some'" @click.stop="toggleGroup(opt)" /></td>
+            <td class="sp"><em>{{ opt.key }}</em></td>
+            <td class="c-num" v-if="level !== 'subspecies'">{{ opt.members.length }}</td>
             <td class="c-num">{{ opt.count }}</td>
             <td class="c-bar"><span class="bar" :style="{ width: barWidth(opt.count) }"></span></td>
           </tr>
@@ -182,6 +192,39 @@ async function fetchNew() {
   }
 }
 
+// Taxonomic level to filter/group at. The underlying filter is always a set of
+// full species names; the level only changes how they're grouped in this list
+// and how a row's toggle expands to member species.
+const LEVEL_KEY = 'data-taxon-level'
+const level = ref('species')
+if (import.meta.client) {
+  const saved = localStorage.getItem(LEVEL_KEY)
+  if (['genus', 'species', 'subspecies'].includes(saved)) level.value = saved
+}
+watch(level, (v) => { if (import.meta.client) localStorage.setItem(LEVEL_KEY, v) })
+const levelLabel = computed(() => ({ genus: 'Genus', species: 'Species', subspecies: 'Subspecies' }[level.value]))
+
+function taxonKey(name) {
+  const parts = String(name).trim().split(/\s+/)
+  if (level.value === 'genus') return parts[0] || name
+  if (level.value === 'species') return parts.slice(0, 2).join(' ') || name
+  return name // subspecies = full name
+}
+
+// Group the species options by the current level, summing observation counts and
+// keeping the member species so a group toggle can expand to them.
+const groupedOptions = computed(() => {
+  const groups = new Map()
+  for (const o of speciesOptions.value) {
+    const key = taxonKey(o.species)
+    const g = groups.get(key) || { key, count: 0, members: [] }
+    g.count += o.count
+    g.members.push(o.species)
+    groups.set(key, g)
+  }
+  return [...groups.values()].sort((a, b) => b.count - a.count)
+})
+
 // Local selection mirrors the global filter. Empty filter == all species shown.
 const selected = ref(new Set())
 
@@ -196,9 +239,18 @@ function commit() {
   // All selected → clear the filter (== show everything); otherwise store the subset.
   setSpeciesFilter(selected.value.size === all.length ? [] : [...selected.value])
 }
-function toggle(species) {
+
+// A group is on/off/some depending on how many of its member species are selected.
+function groupState(group) {
+  const on = group.members.filter((m) => selected.value.has(m)).length
+  if (on === 0) return 'off'
+  if (on === group.members.length) return 'on'
+  return 'some'
+}
+function toggleGroup(group) {
   const s = new Set(selected.value)
-  s.has(species) ? s.delete(species) : s.add(species)
+  const turnOff = groupState(group) === 'on'
+  for (const m of group.members) (turnOff ? s.delete(m) : s.add(m))
   selected.value = s
   commit()
 }
@@ -206,18 +258,19 @@ function selectAll() { selected.value = new Set(speciesOptions.value.map((o) => 
 function clearAll() { selected.value = new Set(); commit() }
 function toggleAll() { allChecked.value ? clearAll() : selectAll() }
 
-// Search filter over the species list (display only; All/None still act on all).
+// Search filter over the grouped list (display only; All/None still act on all).
 const speciesQuery = ref('')
-const visibleSpecies = computed(() => {
+const visibleGroups = computed(() => {
   const q = speciesQuery.value.trim().toLowerCase()
-  if (!q) return speciesOptions.value
-  return speciesOptions.value.filter((o) => o.species.toLowerCase().includes(q))
+  if (!q) return groupedOptions.value
+  return groupedOptions.value.filter((g) => g.key.toLowerCase().includes(q))
 })
 
+const selectedGroups = computed(() => groupedOptions.value.filter((g) => groupState(g) !== 'off').length)
 const allChecked = computed(() => selected.value.size === speciesOptions.value.length && speciesOptions.value.length > 0)
 const someChecked = computed(() => selected.value.size > 0 && !allChecked.value)
 
-const maxCount = computed(() => Math.max(1, ...speciesOptions.value.map((o) => o.count)))
+const maxCount = computed(() => Math.max(1, ...groupedOptions.value.map((o) => o.count)))
 function barWidth(n) { return `${(n / maxCount.value) * 100}%` }
 </script>
 
@@ -233,7 +286,9 @@ function barWidth(n) { return `${(n / maxCount.value) * 100}%` }
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
 .head h2 { margin: 0; font-size: 1.1rem; }
 .sub { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; }
-.actions { display: flex; align-items: center; gap: 8px; }
+.actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.level { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--muted); }
+.level select { border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 0.82rem; background: var(--input-bg); color: var(--text); }
 .count { color: var(--muted); font-size: 0.82rem; }
 .actions button { border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: 4px 10px; font-size: 0.82rem; cursor: pointer; }
 .actions button:hover { background: var(--surface-2); }
