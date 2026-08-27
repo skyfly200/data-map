@@ -34,6 +34,7 @@
       <template v-else-if="chartType === 'line' || chartType === 'area'">
         <label class="ctrl"><span>X</span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Y (mean)</span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Series</span><select v-model="seriesField"><option value="">— one line —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Granularity</span><input type="range" min="4" max="60" v-model.number="granularity" /><span class="gval">{{ granularity }}</span></label>
       </template>
 
@@ -102,6 +103,7 @@ const yField = ref('elevation')
 const colorField = ref('cluster')
 const shapeField = ref('')
 const sizeField = ref('')
+const seriesField = ref('')
 const groupField = ref('species')
 const valueField = ref('elevation')
 const measure = ref('count')
@@ -115,7 +117,7 @@ const showToday = ref(false)
 const config = computed(() => ({
   type: chartType.value,
   xField: xField.value, yField: yField.value, colorField: colorField.value,
-  shapeField: shapeField.value, sizeField: sizeField.value,
+  shapeField: shapeField.value, sizeField: sizeField.value, seriesField: seriesField.value,
   groupField: groupField.value, valueField: valueField.value, measure: measure.value,
   rowField: rowField.value, colField: colField.value, bins: bins.value, granularity: granularity.value,
   horizontal: horizontal.value, showToday: showToday.value,
@@ -127,7 +129,7 @@ const selected = ref(null)
 // Remember the builder configuration per viewer, so returning to Explore keeps
 // the last chart you were designing.
 const EXPLORE_KEY = 'explore-config'
-const persisted = { type: chartType, xField, yField, colorField, shapeField, sizeField, groupField, valueField, measure, rowField, colField, bins, granularity, horizontal, showToday }
+const persisted = { type: chartType, xField, yField, colorField, shapeField, sizeField, seriesField, groupField, valueField, measure, rowField, colField, bins, granularity, horizontal, showToday }
 onMounted(() => {
   if (!import.meta.client) return
   try {
