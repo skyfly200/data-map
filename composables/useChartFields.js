@@ -25,6 +25,7 @@ export const ALL_CATEGORY = [
   { key: 'genus', label: 'Genus' },
   { key: 'land_cover_label', label: 'Land cover' },
   { key: 'cluster', label: 'Cluster' },
+  { key: 'live_cluster', label: 'Live cluster' },
   { key: 'year', label: 'Year' },
   { key: 'month_name', label: 'Month' },
   { key: 'enrichment_level', label: 'Enrichment level' },

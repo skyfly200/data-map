@@ -58,6 +58,7 @@
         <label class="ctrl"><span>Measure</span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
       </template>
 
+      <LiveClusterControls class="lc-item" />
       <button class="save" :disabled="justSaved" @click="save">{{ justSaved ? '✓ Saved to Charts' : '+ Save to Charts' }}</button>
     </div>
 
@@ -84,12 +85,16 @@ function rawNum(r, key) {
   if (key === 'rain7') return [0, 1, 2, 3, 4, 5, 6].some((o) => hasValue(r[`prcp_d${o}`])) ? 1 : null
   return hasValue(r[key]) ? Number(r[key]) : null
 }
+const live = useLiveClusters()
 function catPresent(r, key) {
   if (key === 'cluster') return hasValue(r.cluster)
+  if (key === 'live_cluster') return false // handled via `live.active` below
   return hasValue(r[key])
 }
 const numericFields = computed(() => ALL_NUMERIC.filter((f) => rows.value.some((r) => rawNum(r, f.key) !== null)))
-const categoryFields = computed(() => ALL_CATEGORY.filter((f) => rows.value.some((r) => catPresent(r, f.key))))
+const categoryFields = computed(() => ALL_CATEGORY.filter((f) => (
+  f.key === 'live_cluster' ? live.active.value : rows.value.some((r) => catPresent(r, f.key))
+)))
 
 const chartType = ref('scatter')
 const xField = ref('day_of_year')
