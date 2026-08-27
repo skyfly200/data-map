@@ -25,6 +25,7 @@ defineEmits(['select'])
 
 const { rows } = useObservations()
 const { unit, tempUnit, elevValue, tempValue } = useUnits()
+const live = useLiveClusters()
 const c = computed(() => props.config)
 
 function currentDayOfYear() {
@@ -58,6 +59,7 @@ function numVal(r, key) {
 }
 function catVal(r, key) {
   if (key === 'cluster') return hasValue(r.cluster) ? `C${r.cluster}` : null
+  if (key === 'live_cluster') return live.labelFor(r)
   return hasValue(r[key]) ? String(r[key]) : null
 }
 function labelOf(key) {
