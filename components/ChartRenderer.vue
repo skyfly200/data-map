@@ -8,7 +8,7 @@
   <BarChart v-else-if="config.type === 'histogram'" :title="title" :data="histogramData" :format="(v) => String(v)" />
   <HeatmapChart v-else-if="config.type === 'heatmap'" :title="title" :rows="heatmap.rows" :cols="heatmap.cols"
     :matrix="heatmap.matrix" :format="heatFmt" />
-  <LineChart v-else-if="config.type === 'line' || config.type === 'area'" :title="title" :data="lineSeries"
+  <LineChart v-else-if="config.type === 'line' || config.type === 'area'" :title="title" :series="lineChartSeries"
     :xLabel="labelOf(config.xField)" :yLabel="labelOf(config.yField)" :xFormat="fmtOf(config.xField)" :yFormat="fmtOf(config.yField)" />
   <PieChart v-else-if="config.type === 'donut'" :title="title" :data="donutData" :format="(v) => String(Math.round(v))" />
   <BarChart v-else-if="config.type === 'radar'" :title="title" :data="radarData" :format="(v) => String(v)" :horizontal="false" />
@@ -149,23 +149,40 @@ const barData = computed(() => {
 })
 const barFmt = computed(() => (c.value.measure === 'count' ? (v) => String(v) : (v) => Number(v).toFixed(1)))
 
-// Real line/area series: mean of Y across bins of the ordered X axis, so a
-// trend (e.g. mean elevation over day-of-year) reads as a connected curve.
-const lineSeries = computed(() => {
-  const xs = rows.value
-    .map((r) => ({ x: numVal(r, c.value.xField), y: numVal(r, c.value.yField) }))
+// Line/area series: mean of Y across bins of the ordered X axis, so a trend
+// (e.g. mean elevation over day-of-year) reads as a connected curve. With a
+// "Series" category set, one line per category value (top 10 by sample count),
+// all binned on the SAME x-axis so the lines align.
+const lineChartSeries = computed(() => {
+  const all = rows.value
+    .map((r) => ({ r, x: numVal(r, c.value.xField), y: numVal(r, c.value.yField) }))
     .filter((d) => d.x !== null && d.y !== null)
-  if (!xs.length) return []
-  const lo = Math.min(...xs.map((d) => d.x)), hi = Math.max(...xs.map((d) => d.x))
+  if (!all.length) return []
+  const lo = Math.min(...all.map((d) => d.x)), hi = Math.max(...all.map((d) => d.x))
   const n = Math.max(4, Math.min(60, c.value.granularity || 24))
   const step = (hi - lo) / n || 1
-  const bins = Array.from({ length: n }, () => [])
-  for (const d of xs) bins[Math.min(n - 1, Math.floor((d.x - lo) / step))].push(d.y)
-  const out = []
-  bins.forEach((ys, i) => {
-    if (ys.length) out.push({ x: lo + (i + 0.5) * step, y: ys.reduce((s, v) => s + v, 0) / ys.length })
-  })
-  return out
+  const bin = (subset) => {
+    const bins = Array.from({ length: n }, () => [])
+    for (const d of subset) bins[Math.min(n - 1, Math.max(0, Math.floor((d.x - lo) / step)))].push(d.y)
+    const out = []
+    bins.forEach((ys, i) => { if (ys.length) out.push({ x: lo + (i + 0.5) * step, y: ys.reduce((s, v) => s + v, 0) / ys.length }) })
+    return out
+  }
+
+  const field = c.value.seriesField
+  if (!field) return [{ label: '', color: SERIES_1, data: bin(all) }]
+
+  const groups = new Map()
+  for (const d of all) {
+    const key = catVal(d.r, field)
+    if (key === null) continue
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key).push(d)
+  }
+  return [...groups.entries()]
+    .sort((a, b) => b[1].length - a[1].length)
+    .slice(0, 10)
+    .map(([label, subset]) => ({ label, color: categoryColor(field, label), data: bin(subset) }))
 })
 
 // Real donut: composition by category (top 8 + grey Other). Count, or the sum
@@ -262,7 +279,7 @@ const isEmpty = computed(() => {
   const t = c.value.type
   if (t === 'scatter') return scatterData.value.length === 0
   if (t === 'bar') return barData.value.length === 0
-  if (t === 'line' || t === 'area') return lineSeries.value.length === 0
+  if (t === 'line' || t === 'area') return lineChartSeries.value.length === 0
   if (t === 'donut') return donutData.value.length === 0
   if (t === 'radar') return radarData.value.length === 0
   if (t === 'box') return boxData.value.length === 0
