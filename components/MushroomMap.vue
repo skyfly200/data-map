@@ -29,6 +29,7 @@
               @click="locateMe">
         <span class="dot-icon"></span>{{ locating ? 'Locating…' : 'My location' }}
       </button>
+      <LiveClusterControls />
       <label class="toggle">
         <input type="checkbox" v-model="showFiltered" />
         Include excluded water / non-terrestrial rows
@@ -78,6 +79,7 @@ import { useUnits } from '~/composables/useUnits'
 
 const { data, filteredData, load, showFiltered, setShowFiltered, focusObservation, setFocusObservation } = useObservations()
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
+const live = useLiveClusters()
 
 const mapEl = ref(null)
 const loaded = ref(false)
@@ -115,7 +117,9 @@ const FIELD_LABEL = Object.fromEntries([...ALL_CATEGORY, ...ALL_NUMERIC].map((f)
 // so an un-enriched layer (e.g. NDVI still empty) doesn't yield an all-grey map.
 const colorOptions = computed(() => {
   const feats = filteredData.value?.features || []
-  const present = (list) => list.filter((f) => feats.some((ft) => hasValue(ft.properties[f.key])))
+  const present = (list) => list.filter((f) => (
+    f.key === 'live_cluster' ? live.active.value : feats.some((ft) => hasValue(ft.properties[f.key]))
+  ))
   return { category: present(ALL_CATEGORY), numeric: present(ALL_NUMERIC) }
 })
 
@@ -142,6 +146,20 @@ const coloring = computed(() => {
   const feats = filteredData.value?.features || []
   const key = colorBy.value
   const title = FIELD_LABEL[key] || key
+
+  // Live (in-browser) clusters: values come from the reactive assignment map,
+  // not a property. Same stable palette as the pipeline clusters.
+  if (key === 'live_cluster') {
+    const seen = new Set()
+    let hasNull = false
+    for (const f of feats) {
+      const lab = live.labelFor(f.properties)
+      if (hasValue(lab)) seen.add(lab); else hasNull = true
+    }
+    const legend = [...seen].sort().map((lab) => ({ label: lab, color: categoryColor('live_cluster', lab) }))
+    if (hasNull) legend.push({ label: 'Unclustered', color: UNCLUSTERED })
+    return { type: 'categorical', title, colorFn: (p) => categoryColor('live_cluster', live.labelFor(p)), legend }
+  }
 
   // Cluster keeps its own stable palette + an explicit "Unclustered" bucket.
   if (key === 'cluster') {

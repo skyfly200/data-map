@@ -39,8 +39,8 @@ export function stableColor(value) {
 // (already consistent everywhere); every other category uses the stable hash.
 export function categoryColor(field, value) {
   if (value === null || value === undefined || value === '') return UNCLUSTERED
-  if (field === 'cluster') {
-    const n = Number(String(value).replace(/^C/, ''))
+  if (field === 'cluster' || field === 'live_cluster') {
+    const n = Number(String(value).replace(/^[CK]/, ''))
     return Number.isFinite(n) ? colorFor(n) : UNCLUSTERED
   }
   return stableColor(value)
