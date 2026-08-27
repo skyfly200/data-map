@@ -99,9 +99,10 @@ if (import.meta.client) {
 }
 watch(sizeBy, (v) => { if (import.meta.client) localStorage.setItem(SIZEBY_KEY, v) })
 const selected = ref(null)
+const selectedLatLng = ref(null)
 const locating = ref(false)
 const locateError = ref('')
-let map, geoLayer, L, userLayer
+let map, geoLayer, L, userLayer, selectedMarker
 
 const RAMP = ['#e8f1fb', '#0b3d91'] // sequential light → dark blue
 
@@ -219,11 +220,14 @@ watch([coloring, sizeScale], ([c]) => {
   })
 })
 
+// When focusing an observation, the next re-render must not refit/clear it.
+let suppressFit = false
+
 // Rebuild the point layer whenever the dataset changes (e.g. species switch).
 function renderPoints(geo) {
   if (!map || !L || !geo) return
   if (geoLayer) { geoLayer.remove(); geoLayer = null }
-  selected.value = null
+  if (!suppressFit) selected.value = null
 
   geoLayer = L.geoJSON(geo, {
     pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
@@ -232,12 +236,19 @@ function renderPoints(geo) {
     }),
     onEachFeature: (feature, lyr) => {
       lyr.bindTooltip(feature.properties.species || 'Observation', { direction: 'top' })
-      lyr.on('click', () => { selected.value = feature.properties })
+      lyr.on('click', () => {
+        selected.value = feature.properties
+        const co = feature.geometry?.coordinates
+        selectedLatLng.value = co ? [co[1], co[0]] : null
+      })
     },
   }).addTo(map)
 
   const bounds = geoLayer.getBounds()
-  if (bounds.isValid()) map.fitBounds(bounds.pad(0.1))
+  // Non-animated: an in-flight fit animation would block a subsequent zoom-in to
+  // a focused observation (Leaflet ignores zoom changes mid-animation).
+  if (bounds.isValid() && !suppressFit) map.fitBounds(bounds.pad(0.1), { animate: false })
+  suppressFit = false // one-shot
 }
 
 watch(filteredData, (geo) => renderPoints(geo))
@@ -254,11 +265,34 @@ function applyFocus(target) {
     })
   if (match) selected.value = match.properties
   if (Number.isFinite(lat) && Number.isFinite(lon)) {
-    map.setView([lat, lon], Math.max(map.getZoom() || 0, 12))
+    selectedLatLng.value = [lat, lon]
+    // Zoom in on the observation (not just pan). Stop any in-flight fit-to-data
+    // animation first, or it would complete and override this zoom.
+    suppressFit = true
+    map.setView([lat, lon], 15)
   }
   setFocusObservation(null) // consume so a later revisit doesn't re-trigger
 }
 watch(focusObservation, (t) => t && applyFocus(t))
+
+// A location pin marks the currently-selected observation (from a click or from
+// "Open on map"), and clears when the detail drawer is closed.
+function pinIcon() {
+  return L.divIcon({
+    className: 'obs-pin', iconSize: [28, 40], iconAnchor: [14, 38], tooltipAnchor: [0, -34],
+    html: `<svg viewBox="0 0 24 34" width="28" height="40" aria-hidden="true">
+      <path d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 34 12 34s12-13.4 12-22.1C24 5.3 18.6 0 12 0z"
+            fill="#e34948" stroke="#fff" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>`,
+  })
+}
+watch(selectedLatLng, (ll) => {
+  if (!map || !L) return
+  if (selectedMarker) { selectedMarker.remove(); selectedMarker = null }
+  if (ll) selectedMarker = L.marker(ll, { icon: pinIcon(), interactive: false, zIndexOffset: 1000 }).addTo(map)
+})
+// Closing the drawer (selected → null) removes the pin.
+watch(selected, (s) => { if (!s) selectedLatLng.value = null })
 
 onMounted(async () => {
   try {
