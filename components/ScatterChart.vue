@@ -2,8 +2,11 @@
   <figure class="chart">
     <figcaption v-if="title" class="chart-title">{{ title }}</figcaption>
     <div ref="container" class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
-      <div class="chart-viewport" :style="viewportStyle">
+      <div class="chart-viewport">
         <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
+          <defs>
+            <clipPath :id="clipId"><rect :x="padL" :y="padT" :width="Math.max(0, W - padL - padR)" :height="Math.max(0, H - padT - padB)" /></clipPath>
+          </defs>
           <!-- gridlines + axis ticks -->
           <g v-for="t in yTicks" :key="`y${t.v}`">
             <line :x1="padL" :y1="t.p" :x2="W - padR" :y2="t.p" class="grid" />
@@ -14,20 +17,30 @@
             <text :x="t.p" :y="H - padB + 14" class="tick tick-x">{{ t.label }}</text>
           </g>
 
-          <!-- points (path so shape can vary; radius can vary too) -->
-          <path v-for="(pt, i) in scaled" :key="i" :d="pt.d"
-                :fill="pt.color" :style="{ color: pt.color }" class="dot"
-                :class="{ selectable: pt.obs }" @mouseenter="active = pt"
-                @click="onDotClick(pt)" />
+          <!-- points clipped to the plot box, so a zoom never pushes a mark off
+               the chart where it can't be reached -->
+          <g :clip-path="`url(#${clipId})`">
+            <path v-for="(pt, i) in scaled" :key="i" :d="pt.d"
+                  :fill="pt.color" :style="{ color: pt.color }" class="dot"
+                  :class="{ selectable: pt.obs }" @mouseenter="active = pt"
+                  @pointerdown="onDotDown($event, pt)" @pointerup="onDotUp($event, pt)"
+                  @click="onDotClick(pt)" />
 
-          <g v-if="todayX !== null && Number.isFinite(todayX)">
-            <line :x1="sx(todayX)" :y1="padT" :x2="sx(todayX)" :y2="H - padB" class="today-line" />
-            <text :x="sx(todayX) + 4" :y="padT + 12" class="today-label">{{ todayLabel }}</text>
+            <g v-if="todayX !== null && Number.isFinite(todayX) && inXDomain(todayX)">
+              <line :x1="sx(todayX)" :y1="padT" :x2="sx(todayX)" :y2="H - padB" class="today-line" />
+              <text :x="sx(todayX) + 4" :y="padT + 12" class="today-label">{{ todayLabel }}</text>
+            </g>
           </g>
 
           <text :x="(padL + W - padR) / 2" :y="H - 3" class="axis-label">{{ xLabel }}</text>
           <text :x="-(padT + H - padB) / 2" :y="12" transform="rotate(-90)" class="axis-label">{{ yLabel }}</text>
         </svg>
+      </div>
+
+      <div class="zoombar">
+        <button title="Zoom in" @click="zoomBy(1.6)">+</button>
+        <button title="Zoom out" @click="zoomBy(1 / 1.6)">−</button>
+        <button v-if="zoomed" title="Reset zoom" @click="resetZoom">⟲</button>
       </div>
 
       <div v-if="(legend && legend.length) || (shapeLegend && shapeLegend.length) || sizeLegend" class="legend">
@@ -94,46 +107,9 @@ const padL = 52
 const padR = 16
 const padT = 12
 const padB = 34
-const zoom = ref(1)
-const pan = ref({ x: 0, y: 0 })
-const dragStart = ref(null)
-const viewportStyle = computed(() => ({
-  transform: `translate(${pan.value.x}px, ${pan.value.y}px) scale(${zoom.value})`,
-  transformOrigin: '0 0',
-  transition: dragStart.value ? 'none' : 'transform 0.15s ease-out',
-}))
+const clipId = `plot-clip-${Math.random().toString(36).slice(2, 9)}`
 
-const active = ref(null)
-const ptr = ref({ x: 0, y: 0 })
-function onMove(e) {
-  const r = e.currentTarget.getBoundingClientRect()
-  ptr.value = { x: e.clientX - r.left, y: e.clientY - r.top }
-}
 function clamp(v, min, max) { return Math.min(max, Math.max(min, v)) }
-function onWheel(e) {
-  const delta = e.deltaY > 0 ? 0.9 : 1.1
-  zoom.value = clamp(zoom.value * delta, 0.7, 2.5)
-}
-const dragged = ref(false)
-function onPointerDown(e) {
-  dragStart.value = { x: e.clientX, y: e.clientY, panX: pan.value.x, panY: pan.value.y }
-  dragged.value = false
-  // NB: no setPointerCapture — capturing would retarget the click off the point
-  // and break click-to-select. Panning still works via the move handler below.
-}
-function onPointerMove(e) {
-  if (!dragStart.value) return
-  const dx = e.clientX - dragStart.value.x
-  const dy = e.clientY - dragStart.value.y
-  if (Math.abs(dx) + Math.abs(dy) > 4) dragged.value = true
-  pan.value = { x: dragStart.value.panX + dx / zoom.value, y: dragStart.value.panY + dy / zoom.value }
-}
-function onPointerUp() { dragStart.value = null }
-function onDotClick(pt) {
-  // Ignore the click that ends a pan-drag; only a genuine click selects.
-  if (!dragged.value && pt.obs) emit('select', pt.obs)
-}
-
 function domain(vals) {
   if (!vals.length) return [0, 1]
   let lo = Math.min(...vals), hi = Math.max(...vals)
@@ -143,11 +119,100 @@ function domain(vals) {
 }
 
 const points = computed(() => props.data.filter((d) => Number.isFinite(d.x) && Number.isFinite(d.y)))
-const xDom = computed(() => domain(points.value.map((d) => d.x)))
-const yDom = computed(() => domain(points.value.map((d) => d.y)))
+const baseXDom = computed(() => domain(points.value.map((d) => d.x)))
+const baseYDom = computed(() => domain(points.value.map((d) => d.y)))
+
+// Zoom is expressed on the DATA domain (not a CSS transform), so points always
+// render inside the axes and stay clickable. k = zoom factor, center = focal
+// point in data coords.
+const k = ref(1)
+const center = ref(null) // { x, y } | null → base midpoint
+const zoomed = computed(() => k.value > 1.001)
+
+function viewDomain(base, c) {
+  const [blo, bhi] = base
+  const bw = bhi - blo
+  const w = bw / k.value
+  const mid = c ?? (blo + bhi) / 2
+  let lo = mid - w / 2, hi = mid + w / 2
+  if (lo < blo) { hi += blo - lo; lo = blo }
+  if (hi > bhi) { lo -= hi - bhi; hi = bhi }
+  return [Math.max(blo, lo), Math.min(bhi, hi)]
+}
+const xDom = computed(() => viewDomain(baseXDom.value, center.value?.x))
+const yDom = computed(() => viewDomain(baseYDom.value, center.value?.y))
 
 const sx = (v) => padL + ((v - xDom.value[0]) / (xDom.value[1] - xDom.value[0])) * (W.value - padL - padR)
 const sy = (v) => (H.value - padB) - ((v - yDom.value[0]) / (yDom.value[1] - yDom.value[0])) * (H.value - padT - padB)
+// Pixel → data (for cursor-anchored zoom and drag-to-pan).
+const invX = (px) => xDom.value[0] + ((px - padL) / ((W.value - padL - padR) || 1)) * (xDom.value[1] - xDom.value[0])
+const invY = (py) => yDom.value[0] + (((H.value - padB) - py) / ((H.value - padT - padB) || 1)) * (yDom.value[1] - yDom.value[0])
+const inXDomain = (v) => v >= xDom.value[0] && v <= xDom.value[1]
+
+function currentCenter() {
+  return center.value ?? { x: (baseXDom.value[0] + baseXDom.value[1]) / 2, y: (baseYDom.value[0] + baseYDom.value[1]) / 2 }
+}
+function setZoom(next, focal) {
+  const kv = clamp(next, 1, 60)
+  if (kv <= 1.001) { k.value = 1; center.value = null; return }
+  k.value = kv
+  center.value = focal || currentCenter()
+}
+function zoomBy(factor) { setZoom(k.value * factor) }
+function resetZoom() { k.value = 1; center.value = null }
+
+const active = ref(null)
+const ptr = ref({ x: 0, y: 0 })
+const dragged = ref(false)
+const dragStart = ref(null)
+let holdTimer = null
+
+function onMove(e) {
+  const r = e.currentTarget.getBoundingClientRect()
+  ptr.value = { x: e.clientX - r.left, y: e.clientY - r.top }
+}
+function onWheel(e) {
+  const r = e.currentTarget.getBoundingClientRect()
+  const focal = { x: invX(e.clientX - r.left), y: invY(e.clientY - r.top) }
+  setZoom(k.value * (e.deltaY > 0 ? 0.83 : 1.2), k.value * (e.deltaY > 0 ? 0.83 : 1.2) <= 1.001 ? null : focal)
+}
+function onPointerDown(e) {
+  active.value = null
+  dragStart.value = { x: e.clientX, y: e.clientY, center: currentCenter() }
+  dragged.value = false
+}
+function onPointerMove(e) {
+  if (!dragStart.value) return
+  const dxPx = e.clientX - dragStart.value.x
+  const dyPx = e.clientY - dragStart.value.y
+  if (Math.abs(dxPx) + Math.abs(dyPx) > 4) { dragged.value = true; clearHold() }
+  if (!zoomed.value) return // nothing to pan at full extent
+  const xSpan = xDom.value[1] - xDom.value[0], ySpan = yDom.value[1] - yDom.value[0]
+  const nx = dragStart.value.center.x - dxPx * (xSpan / ((W.value - padL - padR) || 1))
+  const ny = dragStart.value.center.y + dyPx * (ySpan / ((H.value - padT - padB) || 1))
+  center.value = { x: nx, y: ny }
+}
+function onPointerUp() { dragStart.value = null; clearHold() }
+
+function clearHold() { if (holdTimer) { clearTimeout(holdTimer); holdTimer = null } }
+// Press-and-hold on a point shows the hover tooltip on touch (same info a mouse
+// gets on hover); a quick tap still selects.
+function onDotDown(e, pt) {
+  if (e.pointerType !== 'touch') return
+  const r = container.value?.getBoundingClientRect()
+  clearHold()
+  holdTimer = setTimeout(() => {
+    if (r) ptr.value = { x: e.clientX - r.left, y: e.clientY - r.top }
+    active.value = pt
+    holdTimer = 'fired'
+  }, 350)
+}
+function onDotUp() { if (holdTimer && holdTimer !== 'fired') clearHold() }
+function onDotClick(pt) {
+  // Ignore the click that ends a pan-drag or a long-press; only a genuine tap selects.
+  if (holdTimer === 'fired') { holdTimer = null; return }
+  if (!dragged.value && pt.obs) emit('select', pt.obs)
+}
 
 const scaled = computed(() => points.value.map((d) => {
   const cx = sx(d.x), cy = sy(d.y), r = Number.isFinite(d.r) ? d.r : 4
@@ -203,4 +268,12 @@ svg { width: 100%; height: 100%; display: block; }
   font-size: 0.75rem; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 .tooltip strong { margin-bottom: 2px; }
+
+.zoombar { position: absolute; left: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 4px; }
+.zoombar button {
+  width: 26px; height: 26px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); border-radius: 6px; font-size: 15px; line-height: 1; cursor: pointer;
+  box-shadow: 0 1px 3px var(--shadow); display: grid; place-items: center; padding: 0;
+}
+.zoombar button:hover { background: var(--surface-2); }
 </style>
