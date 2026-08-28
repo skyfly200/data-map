@@ -48,10 +48,19 @@ export function categoryColor(field, value) {
 
 // Canonical iNaturalist URL. Prefers the numeric id; falls back to the UUID,
 // which the iNaturalist observations route also resolves.
-export function inatUrl(p) {
-  const id = p?.inat_id ?? p?.uuid
-  return id ? `https://www.inaturalist.org/observations/${id}` : null
+export async function fetchObservationDetails(id) {
+  if (!id) return null
+  try {
+    const res = await fetch(`https://api.inaturalist.org/v1/observations/${id}`)
+    if (!res.ok) return null
+    const data = await res.json()
+    const obs = data.results?.[0]
+    return obs || null
+  } catch {
+    return null
+  }
 }
+
 
 const num1 = (v) => Number(v).toFixed(1)
 const num2 = (v) => Number(v).toFixed(2)

@@ -63,6 +63,12 @@
           <div v-if="hasValue(selected.land_cover_label)"><dt>Land cover</dt><dd>{{ selected.land_cover_label }}</dd></div>
           <div v-if="hasValue(selected.cluster)"><dt>Cluster</dt><dd><span class="chip" :style="{ background: colorFor(selected.cluster) }">{{ selected.cluster }}</span></dd></div>
         </dl>
+        <div v-if="observationInfo && observationInfo.photos && observationInfo.photos.length" class="photos">
+          <img v-for="p in observationInfo.photos" :src="p.url" :alt="'Observation photo'" class="obs-photo" />
+        </div>
+        <div v-if="observationInfo && observationInfo.description" class="description">
+          {{ observationInfo.description }}
+        </div>
         <LeadUpCharts :p="selected" />
         <a v-if="inatUrl(selected)" :href="inatUrl(selected)" target="_blank" rel="noopener" class="inat">View on iNaturalist ↗</a>
       </aside>
@@ -73,7 +79,7 @@
 <script setup>
 import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, inatUrl, fetchObservationDetails, useObservations } from '~/composables/useObservations'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useUnits } from '~/composables/useUnits'
 
@@ -105,6 +111,17 @@ const selectedLatLng = ref(null)
 const locating = ref(false)
 const locateError = ref('')
 let map, geoLayer, L, userLayer, selectedMarker
+
+// Holds enriched observation info (photos, description, etc.) fetched from iNaturalist API
+const observationInfo = ref(null)
+watch(selected, async (s) => {
+  if (s) {
+    const id = s.inat_id ?? s.uuid
+    observationInfo.value = await fetchObservationDetails(id)
+  } else {
+    observationInfo.value = null
+  }
+})
 
 const RAMP = ['#e8f1fb', '#0b3d91'] // sequential light → dark blue
 
@@ -466,6 +483,9 @@ onBeforeUnmount(() => { if (map) map.remove() })
 .chip { display: inline-block; min-width: 20px; padding: 0 7px; border-radius: 10px; color: #fff; font-weight: 600; text-align: center; }
 .inat { display: inline-block; margin-top: 14px; color: #2b7a3d; font-weight: 600; text-decoration: none; }
 .inat:hover { text-decoration: underline; }
+.photos { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.obs-photo { max-width: 100%; height: auto; border-radius: 4px; }
+.description { margin-top: 8px; white-space: pre-wrap; }
 
 .slide-enter-active, .slide-leave-active { transition: transform 0.2s ease; }
 .slide-enter-from, .slide-leave-to { transform: translateX(100%); }
