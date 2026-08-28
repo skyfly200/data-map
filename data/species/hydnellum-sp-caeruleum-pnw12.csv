@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8b895a59-6f7d-4e2c-ac64-7c8ffdea53b5,306563348,2025-08-15 10:54:04-06:00,2025-08-15,-107.8242716667,37.854905,2983.0,,11.0,21.0,6.4,5.8,,1031.4,Hydnellum sp. 'caeruleum-PNW12',"San Miguel County, US-CO, US",2
+9cad2337-34c2-41bb-a2c9-f878fefb9821,132081533,2022-08-23 13:33:09-06:00,2022-08-23,-105.6118283877,39.6819361283,2879.0,,-0.1,12.0,1.5,5.3,,1021.2,Hydnellum sp. 'caeruleum-PNW12',"Arapaho & Roosevelt National Forests Pawnee National Grassland, Idaho Springs, CO, US",2

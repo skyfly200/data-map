@@ -4,3 +4,5 @@ uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,winds
 505c8c90-c8ad-480e-bae3-fe5ca8b70b5b,233881405,2024-08-01 16:04:11-06:00,2024-08-01,-105.1915438931,37.8025211228,2204.0,,11.0,23.0,0.2,11.5,,1042.5,Amanita sp. 'jakeslandingensis',"Colorado, US",3
 c54cdda0-6c9c-4c4b-9dcd-737290552e26,129172136,2022-08-02 11:46:24-06:00,2022-08-02,-105.3778248747,39.567706408,2542.0,,4.6,14.5,6.4,12.8,,1020.1,Amanita sp. 'jakeslandingensis',"Arapaho & Roosevelt National Forests Pawnee National Grassland, Conifer, CO, US",2
 aa52da83-8126-47f9-b968-39a2eccb7df3,129161605,2022-08-02 10:39:08-06:00,2022-08-02,-105.3766293638,39.5629000571,2578.0,,4.6,14.5,6.4,12.8,,1020.1,Amanita sp. 'jakeslandingensis',"Jefferson County, US-CO, US",2
+96d7ec46-3b41-4abc-b86c-34bb4524e05e,383965051,2026-07-19 09:58:00-06:00,2026-07-19,-105.9451517637,35.6609172305,2146.0,,14.4,31.1,0.5,8.5,,,Amanita sp. 'jakeslandingensis',"New Mexico, US",1
+2ba01014-6da3-4b07-82ab-f282f1a091ae,311349485,2025-09-02 13:43:00-06:00,2025-09-02,-105.795425,35.80085,3378.0,,12.0,28.0,0.4,11.8,,1029.0,Amanita sp. 'jakeslandingensis',"Santa Fe, New Mexico, United States",1

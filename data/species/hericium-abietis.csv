@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+16445d00-7438-4a08-8d89-158aa6ebf985,239233338,2024-08-31 14:01:24-06:00,2024-08-31,-108.0585750119,37.4574594982,3214.0,,8.3,28.9,,8.1,,1020.9,Hericium abietis,"Colorado, US",1

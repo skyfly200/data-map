@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+679a5ede-4166-4921-94ab-f6856546e52c,391252001,2026-08-14 10:50:54-06:00,2026-08-14,-107.8259282559,37.8550611608,2981.0,,10.0,19.0,4.5,2.8,,,Tricholoma inamoenum,"Ophir, CO 81426, USA",1
+180e8e1d-8d40-41f8-8f37-f1567ffc6615,311759379,2025-09-04 10:47:00-06:00,2025-09-04,-105.79953889,35.799275,3249.0,,11.0,28.0,0.2,15.3,,1022.3,Tricholoma inamoenum,"Santa Fe, New Mexico, United States",2
+18d4d1fe-67f3-4b2c-8079-9b6907a98971,236399021,2024-08-17 13:50:50-06:00,2024-08-17,-107.8588166667,37.8801416667,3275.0,,12.0,23.0,4.9,9.4,,1034.5,Tricholoma inamoenum,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",1

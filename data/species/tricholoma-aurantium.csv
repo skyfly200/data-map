@@ -1,0 +1,11 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+14bdef4b-25a7-4aaf-8fd2-828ecd2b25d4,385387238,2026-07-25 11:49:00-06:00,2026-07-25,-105.9077037692,35.7268109005,2219.0,,18.3,31.7,8.8,7.2,,,Tricholoma aurantium,"New Mexico, US",1
+e37bbf8c-5960-4882-9942-a71eb0215693,235892077,2024-08-14 17:36:43-06:00,2024-08-14,-107.8073583333,37.9314833333,2702.0,,9.0,20.0,0.1,7.9,,1032.4,Tricholoma aurantium,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",1
+bb570334-e111-4d73-9eab-7c4623a6a887,235775531,2024-08-14 11:26:33-06:00,2024-08-14,-107.8993533333,37.9274550026,2474.0,,9.0,20.0,0.1,7.9,,1032.4,Tricholoma aurantium,"Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",1
+5134c4f4-edd5-4506-93e9-d5d13d97ec74,235774990,2024-08-14 11:09:50-06:00,2024-08-14,-107.8992378061,37.9274493456,2474.0,,9.0,20.0,0.1,7.9,,1032.4,Tricholoma aurantium,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",1
+002456da-71c7-42dd-a959-1826cd027e07,235774736,2024-08-14 09:54:06-06:00,2024-08-14,-107.9003482406,37.9257335281,2508.0,,9.0,20.0,0.1,7.9,,1032.4,Tricholoma aurantium,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",1
+fdf75b31-9233-401f-b145-883163821f47,235649367,2024-08-13 14:49:09-06:00,2024-08-13,-107.9095619262,37.9724968357,2678.0,,10.0,18.0,15.2,7.5,,1031.3,Tricholoma aurantium,"Colorado, US",1
+55023a30-925b-4a58-a501-1ba10fdf00be,31055245,2019-08-17 10:39:04-06:00,2019-08-17,-107.9068461433,37.9721505889,2650.0,,12.0,23.0,,10.8,,,Tricholoma aurantium,"Telluride, CO 81435, USA",2
+d3293464-91df-4b5c-9f0e-42a7e45032f8,7002144,2016-08-12,2016-08-12,-107.505,37.4471,2426.0,,9.4,28.3,0.0,11.8,,1016.1,Tricholoma aurantium,"Pine River Campground, Bayfield, Colorado, USA",1
+360983c7-f203-43ff-ba7f-893a52c5e056,3550446,2014-08-18,2014-08-18,-108.0575,37.8831,2900.0,,,,,7.5,,,Tricholoma aurantium,"Woods Lake, San Juan Co., Colorado, USA",1
+68a05b74-0519-44ff-868a-07150a1e6ea6,3550269,2014-08-16,2014-08-16,-107.8955,37.9033,2842.0,,,,,,,,Tricholoma aurantium,"South Fork Rd., Uncompaghre National Forest, San Juan Co., Colorado, USA",1

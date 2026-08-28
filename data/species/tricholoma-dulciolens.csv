@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+463cb0f4-a91d-4255-a3ac-48565c515689,130740244,2022-08-13 17:26:16-06:00,2022-08-13,-105.8882420918,39.5960909542,3054.0,,4.1,14.2,4.8,5.4,,1023.8,Tricholoma dulciolens,"Colorado, US",2

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+bf9f6450-040c-4242-b276-71ba513df2b5,245525145,2024-10-03 18:36:03-06:00,2024-10-03,-105.165942566,39.6942441766,2044.0,,13.0,20.0,0.0,12.8,,1021.7,Ganoderma sessile,"Colorado, US",2

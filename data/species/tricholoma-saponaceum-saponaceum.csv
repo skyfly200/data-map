@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ff715a04-a72e-42db-92cf-619a57601779,312312537,2025-09-06 12:43:24-06:00,2025-09-06,-105.5863731888,35.7745934686,3340.0,,11.0,17.0,1.4,14.0,,1026.2,Tricholoma saponaceum saponaceum,"Tererro, NM, US",1

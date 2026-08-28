@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+623edabb-101b-449d-a179-00cda9f807eb,254748062,2024-10-24 18:18:51-06:00,2024-10-24,-104.9143,39.1163,2180.0,,1.7,22.4,0.0,17.6,,1014.0,Tricholoma populinum,"Palmer Lake, CO 80133, USA",2
+a589984e-5c8d-41a7-ad10-7a682d7c4c3c,16346939,2016-09-21,2016-09-21,-108.452,37.6901,2368.0,,,,,,,,Tricholoma populinum,"Delores Co., Colorado, USA",3

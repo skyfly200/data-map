@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5fa2dedc-dc58-455a-9999-9fa54da45d6f,182499461,2023-08-30 10:46:20-06:00,2023-08-30,-105.1101949914,38.8233457997,3597.0,,16.0,28.0,0.0,15.5,,1024.1,Tricholoma lutescens,"Colorado, US",3

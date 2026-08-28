@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fecd623a-924a-4b6e-a152-5d0c408244b4,312374003,2025-09-07 16:20:52-06:00,2025-09-07,-105.60253,39.9534133333,2760.0,,-0.6,10.2,1.0,13.7,,1024.6,Hydnellum sp. 'aurantiacum-PNW09',"Nederland, CO, US",2

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+bbd684d0-212b-4e9a-831d-756da273d393,317412996,2025-09-28 18:00:05-06:00,2025-09-28,-107.1008470581,38.6384055184,3091.0,,8.0,18.0,0.9,11.7,,1026.2,Calonarius largentii,"Gunnison County, US-CO, US",2

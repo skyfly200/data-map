@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+3d49aadc-3a78-499a-8035-af9aa281b828,87794398,2021-07-18 11:52:43-06:00,2021-07-18,-105.6876216667,38.80422,3080.0,,10.5,28.3,0.1,8.8,,1032.9,Tricholoma rapipes,"Pike and San Isabel National Forests, Guffey, CO, US",1

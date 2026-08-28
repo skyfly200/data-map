@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d88a63f3-1e7a-4576-9217-58eda8ef969a,293961232,2025-06-24 11:01:08-06:00,2025-06-24,-107.00483055,39.38102,2211.0,,8.3,24.4,0.2,13.3,,1011.7,Pleurotus citrinopileatus,"Cedar Dr, Basalt, CO, US",3
+5079215d-f815-4755-b368-2963a8a69b2b,172558026,2023-07-12 13:33:48-06:00,2023-07-12,-104.8674083333,38.8474716667,1858.0,,16.5,30.0,0.0,17.6,,1021.9,Pleurotus citrinopileatus,"S 27th St, Colorado Springs, CO, US",2
+dc0b21e6-1da4-4577-bd6f-bdc540fb6082,33678879,2019-09-30,2019-09-30,-104.85,39.7,1683.0,,9.2,23.8,,16.5,,1005.2,Pleurotus citrinopileatus,Aurora,7

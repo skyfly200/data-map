@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+842d4808-eac6-4b03-ade2-7b6d50bf2aee,317415332,2025-09-28 14:08:29-06:00,2025-09-28,-107.0181387089,38.7726564097,2669.0,,8.0,18.0,0.9,11.7,,1026.2,Calonarius calojanthinus,"Gunnison County, US-CO, US",2
+46fd1f4a-b47c-435f-b605-4b26254f87d0,308556091,2025-08-22 10:32:00-06:00,2025-08-22,-105.801025,35.79801667,3208.0,,15.0,31.7,0.0,11.2,,1014.3,Calonarius calojanthinus,"Santa Fe, New Mexico, United States",1
+2e04a23b-17d4-4efb-9e94-2303e9eeea1c,235777555,2024-08-14 10:31:00-06:00,2024-08-14,-107.8998781,37.9216631,2536.0,,9.0,20.0,0.1,7.9,,1032.4,Calonarius calojanthinus,"San Miguel River South Fork Preserve, 37 921612 #107.899833, Mountain Village, CO 81435, USA",7
+6c582a03-ee71-4777-a904-a620068abd36,145670627,2022-08-12 00:00:00-06:00,2022-08-12,-105.5713244,39.5106183,2881.0,,5.6,16.4,6.0,5.8,,1024.0,Calonarius calojanthinus,"Deer Creek Trail, , Colorado",1

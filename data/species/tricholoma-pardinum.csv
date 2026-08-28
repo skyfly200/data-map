@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a8ddbe4f-03ff-4a74-8f8e-ee6449a56256,237194954,2024-08-18 13:56:00-06:00,2024-08-18,-105.8104861111,35.7738138889,2979.0,,16.1,33.3,0.0,13.0,,1014.2,Tricholoma pardinum,"Santa Fe County, NM, USA",1
+62bb8cf6-b10a-499c-81fe-991d297298cd,183283648,2023-09-14 15:31:55-06:00,2023-09-14,-105.7869837997,39.734018473,3571.0,,-1.7,5.7,5.7,7.9,,1021.2,Tricholoma pardinum,"Colorado, US",1
+bea778d2-904e-4cf5-a170-913220fc7381,91184456,2021-08-14 12:57:54+00:00,2021-08-14,-105.7713472222,39.8226611111,3282.0,,6.0,28.3,0.0,7.2,,1033.2,Tricholoma pardinum,"Winter Park, CO 80482, USA",2

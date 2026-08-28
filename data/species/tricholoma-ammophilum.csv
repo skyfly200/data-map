@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fa176dc2-37b1-4282-84b9-5f8e661fd25d,328945417,2025-11-29 13:22:00-07:00,2025-11-29,-105.9192583333,35.6804805556,2171.0,,-1.0,12.0,0.0,15.9,,1019.1,Tricholoma ammophilum,"Santa Fe, NM, USA",1
+e829d81a-a5e0-4002-a322-d044ed2984cd,323320442,2025-10-24 13:10:00-06:00,2025-10-24,-105.91789167,35.68021389,2174.0,,3.0,16.0,0.4,13.7,,1019.2,Tricholoma ammophilum,"Santa Fe, New Mexico, United States",2
+e8fc8ff9-cc52-4ca0-916f-2e854de449d5,317588629,2025-09-29 10:29:01-06:00,2025-09-29,-105.9740835774,35.8029725553,1943.0,,8.0,22.0,0.1,11.5,,1024.8,Tricholoma ammophilum,"TP 806, Santa Fe, NM, US",2
+e33ea908-3044-4b60-a568-7c66f544dc50,257521522,2024-10-28 12:34:00-06:00,2024-10-28,-105.9091944444,35.68135,2197.0,,6.1,23.9,0.0,10.5,,1010.4,Tricholoma ammophilum,"Santa Fe, NM, USA",3

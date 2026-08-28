@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e690c757-c89f-43d5-897c-4c3e932f29af,130779295,2022-08-13 10:06:47-06:00,2022-08-13,-105.6491703496,39.899487983,2852.0,,4.1,14.2,4.8,5.4,,1023.8,Hydnellum regium,"Gilpin County, US-CO, US",3

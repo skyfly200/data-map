@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b925e057-8d19-49d7-9d21-f199e6780840,304639267,2025-08-07 19:39:54-06:00,2025-08-07,-106.375383035,35.8517093583,2543.0,,20.1,30.3,0.7,9.7,,1029.7,Hericium cirrhatum,"New Mexico, US",1
+11d4d8e5-a68b-43f2-8e50-399c2769835f,293473753,2025-06-28 10:59:33-06:00,2025-06-28,-106.2583294027,35.9130513388,2097.0,,15.5,28.9,1.8,10.4,,1025.0,Hericium cirrhatum,"New Mexico, US",3
+a41104f2-a866-48eb-9da5-66193cf3f4c5,243496776,2024-09-22 15:39:02-06:00,2024-09-22,-106.2908017138,35.9726870162,2292.0,,8.8,17.5,0.6,6.3,,1023.0,Hericium cirrhatum,"New Mexico, US",3

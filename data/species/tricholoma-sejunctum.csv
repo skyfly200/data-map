@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b559b91d-dbb8-4888-a86f-a2e11b2ac9d1,179037289,2023-08-16 18:03:17-06:00,2023-08-16,-105.8309910669,39.5617980076,3937.0,,6.0,15.4,3.5,11.9,,1023.3,Tricholoma sejunctum,"Colorado, US",1
