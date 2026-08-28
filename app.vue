@@ -3,7 +3,7 @@
     <NuxtRouteAnnouncer />
     <header class="app-header">
       <NuxtLink to="/" class="brand">
-        <h1>Mushroom Observations</h1>
+        <h1>Nexstrata</h1>
       </NuxtLink>
       <div class="app-controls">
         <div class="dataset-picker">
