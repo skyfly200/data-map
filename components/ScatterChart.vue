@@ -77,8 +77,24 @@ const props = defineProps({
   data: { type: Array, required: true },
   xLabel: { type: String, default: 'x' },
   yLabel: { type: String, default: 'y' },
-  xFormat: { type: Function, default: (v) => `${Math.round(v)}` },
-  yFormat: { type: Function, default: (v) => `${Math.round(v)}` },
+  xFormat: {
+    type: Function,
+    default: (v) => {
+      if (!Number.isFinite(Number(v))) return ''
+      const num = Number(v)
+      if (Number.isInteger(num)) return Math.round(num).toLocaleString()
+      return Math.abs(num) < 10 ? num.toFixed(2) : num.toFixed(1)
+    },
+  },
+  yFormat: {
+    type: Function,
+    default: (v) => {
+      if (!Number.isFinite(Number(v))) return ''
+      const num = Number(v)
+      if (Number.isInteger(num)) return Math.round(num).toLocaleString()
+      return Math.abs(num) < 10 ? num.toFixed(2) : num.toFixed(1)
+    },
+  },
   legend: { type: Array, default: () => [] },
   shapeLegend: { type: Array, default: () => [] }, // [{ label, shape }]
   sizeLegend: { type: String, default: '' },       // e.g. "Slope (small→large)"

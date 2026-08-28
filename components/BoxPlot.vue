@@ -11,7 +11,7 @@
 
           <g v-for="(b, i) in boxes" :key="i" class="boxrow" @mouseenter="active = b" @click="onBoxTap($event, b)">
             <rect class="hit" x="0" :y="b.cy - rowH / 2" :width="W" :height="rowH" />
-            <text :x="padL.value - 8" :y="b.cy + 4" class="tick tick-y" :style="{ fontSize: `${labelFontSize}px` }">{{ b.short }}</text>
+            <text :x="padL - 8" :y="b.cy + 4" class="tick tick-y" :style="{ fontSize: `${labelFontSize}px` }">{{ b.short }}</text>
             <line :x1="b.min" :y1="b.cy" :x2="b.max" :y2="b.cy" class="whisker" />
             <line :x1="b.min" :y1="b.cy - 5" :x2="b.min" :y2="b.cy + 5" class="cap" />
             <line :x1="b.max" :y1="b.cy - 5" :x2="b.max" :y2="b.cy + 5" class="cap" />
@@ -20,7 +20,7 @@
             <line :x1="b.med" :y1="b.cy - bh / 2" :x2="b.med" :y2="b.cy + bh / 2" class="median" />
           </g>
 
-          <text :x="(padL.value + W.value - padR) / 2" :y="H - 2" class="axis-label">{{ xLabel }}</text>
+          <text :x="(padL + W - padR) / 2" :y="H - 2" class="axis-label">{{ xLabel }}</text>
         </svg>
       </div>
 
@@ -49,7 +49,15 @@ const props = defineProps({
   // [{ label, values: number[], color? }]
   data: { type: Array, required: true },
   xLabel: { type: String, default: '' },
-  format: { type: Function, default: (v) => `${Math.round(v)}` },
+  format: {
+    type: Function,
+    default: (v) => {
+      if (!Number.isFinite(Number(v))) return ''
+      const num = Number(v)
+      if (Number.isInteger(num)) return Math.round(num).toLocaleString()
+      return Math.abs(num) < 10 ? num.toFixed(2) : num.toFixed(1)
+    },
+  },
   showKey: { type: Boolean, default: true },
 })
 
@@ -57,20 +65,20 @@ const labelFontSize = computed(() => {
   const n = props.data.length || 1
   return Math.max(8, 10 - Math.max(0, n - 6) * 0.4)
 })
-const W = computed(() => Math.max(640, (props.data.length || 1) * 120 + 180))
-const padL = computed(() => Math.max(82, 118 - Math.min(28, Math.max(0, (props.data.length || 1) - 5) * 4)))
-const padR = 20
-const padT = 10
-const padB = 30
-const bh = 16
-const rowH = 30
+const W = 640
+const padL = computed(() => Math.max(90, 130 - Math.min(36, Math.max(0, (props.data.length || 1) - 5) * 3)))
+const padR = 24
+const padT = 12
+const padB = 34
+const bh = 14
+const rowH = 28
 
 const H = computed(() => padT + padB + Math.max(1, props.data.length) * rowH)
 const zoom = ref(1)
 const pan = ref({ x: 0, y: 0 })
 const dragStart = ref(null)
 const viewportStyle = computed(() => ({
-  width: `${W.value}px`,
+  width: `${W}px`,
   height: `${H.value}px`,
   transform: `translate(${pan.value.x}px, ${pan.value.y}px) scale(${zoom.value})`,
   transformOrigin: '0 0',
@@ -149,7 +157,7 @@ const domain = computed(() => {
   const pad = (hi - lo) * 0.04
   return [lo - pad, hi + pad]
 })
-const sx = (v) => padL.value + ((v - domain.value[0]) / (domain.value[1] - domain.value[0])) * (W.value - padL.value - padR)
+const sx = (v) => padL.value + ((v - domain.value[0]) / (domain.value[1] - domain.value[0] || 1)) * (W - padL.value - padR)
 
 const boxes = computed(() => stats.value.map((d, i) => ({
   ...d, cy: padT + i * rowH + rowH / 2,
@@ -158,8 +166,12 @@ const boxes = computed(() => stats.value.map((d, i) => ({
 
 function ticks() {
   const [lo, hi] = domain.value
+  const span = hi - lo
   const out = []
-  for (let i = 0; i <= 4; i++) { const v = lo + ((hi - lo) * i) / 4; out.push({ v, p: sx(v), label: props.format(v) }) }
+  for (let i = 0; i <= 4; i++) {
+    const v = lo + (span * i) / 4
+    out.push({ v, p: sx(v), label: props.format(v) })
+  }
   return out
 }
 const xTicks = computed(ticks)
@@ -168,8 +180,16 @@ const xTicks = computed(ticks)
 <style scoped>
 .chart { margin: 0; }
 .chart-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-.chart-area { position: relative; }
-svg { width: 100%; height: auto; display: block; }
+.chart-area {
+  position: relative; overflow: auto; max-width: 100%; border-radius: 8px;
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.03), rgba(148, 163, 184, 0.01));
+  cursor: grab; user-select: none; touch-action: none;
+}
+.chart-area:active { cursor: grabbing; }
+.chart-viewport {
+  position: relative; display: block; min-width: 100%; min-height: 100%;
+}
+svg { width: 100%; height: 100%; display: block; }
 .grid { stroke: var(--border-soft); stroke-width: 1; }
 .tick { fill: var(--muted); font-size: 10px; }
 .tick-x { text-anchor: middle; }

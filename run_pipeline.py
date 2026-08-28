@@ -127,13 +127,25 @@ def main():
     # each script defaults to it, so stages need no CSV paths passed between them.
     import species_store as store
 
-    # 1. Observations — skip the network fetch when the store already has data.
-    species_files = store.list_species_files(store.SPECIES_DIR)
-    if not refresh_all and species_files:
+    # 1. Observations — run incremental fetch by default so new taxa or fresh sightings are captured.
+    skip_fetch = os.getenv('SKIP_INAT_FETCH', '').strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
+    species_files_before = set(store.species_slugs(store.SPECIES_DIR))
+    counts_before = store.store_counts(store.SPECIES_DIR)
+
+    if skip_fetch and species_files_before:
         print(f"Using cached observations in {store.SPECIES_DIR}/ "
-              f"({len(species_files)} species files); skipping iNaturalist fetch.")
+              f"({len(species_files_before)} species files); skipping iNaturalist fetch (SKIP_INAT_FETCH=1).")
     else:
         run_step("Fetch iNaturalist observations", python_executable, "iNat.py")
+        species_files_after = set(store.species_slugs(store.SPECIES_DIR))
+        counts_after = store.store_counts(store.SPECIES_DIR)
+        # If new species files or new rows were added, ensure enrichment runs for them
+        if species_files_after != species_files_before or counts_after != counts_before:
+            if os.path.exists(store.ENRICHED_DONE):
+                try:
+                    os.remove(store.ENRICHED_DONE)
+                except OSError:
+                    pass
 
     # 2. Enrichment — env-layer downloads + raster sampling → per-species enriched
     # store. Only skip when a full run finished (.done marker); a bare checkpoint

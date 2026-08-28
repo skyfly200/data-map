@@ -1,4 +1,5 @@
 import os
+import sys
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.impute import SimpleImputer
@@ -6,6 +7,10 @@ from sklearn.preprocessing import StandardScaler
 import argparse
 
 import species_store as store
+
+if sys.platform == 'win32' and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 
 def stage_output_path(input_path, suffix, output_dir='.'):
@@ -56,8 +61,9 @@ def cluster_environmental(df, features=None, n_clusters=4):
     kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
     df_cluster['cluster'] = kmeans.fit_predict(X_scaled)
 
-    # Merge back into original DataFrame
-    df = df.merge(df_cluster[['uuid', 'cluster']], on='uuid', how='left')
+    # Assign clusters back onto the original DataFrame by index
+    df['cluster'] = None
+    df.loc[df_cluster.index, 'cluster'] = df_cluster['cluster'].values
     print(f"✅ Assigned {df['cluster'].notnull().sum()} rows to {k} clusters "
           f"using {len(usable)} feature(s): {', '.join(usable)}")
     return df
