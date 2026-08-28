@@ -11,6 +11,7 @@ from datetime import datetime
 import requests
 
 import species_store as store
+import utils.olc as olc_utils
 
 if sys.platform == 'win32' and hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -119,7 +120,30 @@ def _resolve_location_from_env(default_lat=40.0, default_lng=-105.0):
     lng = _read_float_env('INAT_LNG', 'LNG', 'LON', default=default_lng)
     return lat, lng
 
-def _parse_locations_with_radius(env_value: str, default_radius: float) -> list[dict]:
+def parse_plus_codes(env_value: str, default_radius: float) -> list[dict]:
+    """Parse a semicolon‑separated list of Open Location Codes (plus‑codes).
+
+    Each entry can be ``pluscode`` or ``pluscode,radius``. The radius defaults
+    to ``default_radius`` (the same value used for lat/lng locations). The
+    function returns a list of dicts with ``lat``, ``lng`` and ``radius`` keys.
+    """
+    locations = []
+    if not env_value:
+        return locations
+    for entry in env_value.split(";"):
+        entry = entry.strip()
+        if not entry:
+            continue
+        parts = entry.split(",")
+        try:
+            plus = parts[0]
+            lat, lng = olc_utils.decode_olc(plus)
+            rad = float(parts[1]) if len(parts) > 1 else default_radius
+            locations.append({"lat": lat, "lng": lng, "radius": rad})
+        except Exception as exc:
+            print(f"[!] Invalid plus‑code entry ignored: {entry} ({exc})")
+    return locations
+
     """Parse a semi‑colon separated list of `lat,lng[,radius]` strings.
     Returns a list of dictionaries with keys 'lat', 'lng', 'radius'.
     Missing radius defaults to `default_radius`.
@@ -388,6 +412,25 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
                 'date': date,
                 'lon': lon_val,
                 'lat': lat_val,
+                'olc': olc_utils.encode_olc(lat_val, lon_val, length=8) if has_coords else None,
+                'elevation': elevation,
+                'tavg': weather.get('tavg', None),
+                'tmin': weather.get('tmin', None),
+                'tmax': weather.get('tmax', None),
+                'precipitation': weather.get('prcp', None),
+                'windspeed': weather.get('wspd', None),
+                'winddirection': weather.get('wdir', None),
+                'presure': weather.get('pres', None),
+                'species': species_name_found or taxon_name,
+                'location': obs.get('place_guess', ''),
+                'num_identification_agreements': obs.get('num_identification_agreements', 0),
+            })
+                'uuid': obs.get('uuid'),
+                'inat_id': obs.get('id'),
+                'timestamp': timestamp,
+                'date': date,
+                'lon': lon_val,
+                'lat': lat_val,
                 'elevation': elevation,
                 'tavg': weather.get('tavg', None),
                 'tmin': weather.get('tmin', None),
@@ -419,12 +462,20 @@ def main():
     quality_grade = getenv_with_file('INAT_QUALITY_GRADE', default=(getenv_with_file('QUALITY_GRADE', default='research', env_file=env_file)), env_file=env_file)
 
     # Parse multiple locations with optional per‑location radius
+    # Parse multiple locations with optional per‑location radius
     default_radius = _read_float_env('INAT_RADIUS', 'RADIUS', default=500.0)
     locations = _parse_locations_with_radius(os.getenv('INAT_LOCATIONS'), default_radius)
+    # Plus‑code support – parse OLC strings and merge
+    plus_locations = parse_plus_codes(os.getenv('INAT_PLUS_CODES'), default_radius)
+    if plus_locations:
+        locations.extend(plus_locations)
     if not locations:
         # Fallback to legacy single‑location variables for backward compatibility
         lat, lng = _resolve_location_from_env(default_lat=40.0, default_lng=-105.0)
         locations = [{'lat': lat, 'lng': lng, 'radius': default_radius}]
+
+
+
 
     per_page = resolve_inat_page_size({**load_env_file(env_file), **os.environ})
     max_observations = int(getenv_with_file('INAT_MAX_OBSERVATIONS_PER_SPECIES', default=(getenv_with_file('MAX_OBSERVATIONS_PER_SPECIES', default='0', env_file=env_file)), env_file=env_file) or 0)
@@ -552,6 +603,11 @@ def main():
     # Incremental runs merge with existing files (de-duped on uuid); a full
     # refresh overwrites each fetched species' file.
     written = store.write_split(df_inat, base=store.SPECIES_DIR, merge=not refresh_all)
+    # Write per‑species per‑tile GeoJSON files for fast map tiling
+    store.write_geojson_tiles(df_inat)
+    total = sum(written.values())
+    print(f"Saved {len(df_inat)} fetched observation(s) into {len(written)} species file(s) "
+          f"under {store.SPECIES_DIR}/ ({total} rows on disk after merge/dedup).")
     total = sum(written.values())
     print(f"Saved {len(df_inat)} fetched observation(s) into {len(written)} species file(s) "
           f"under {store.SPECIES_DIR}/ ({total} rows on disk after merge/dedup).")

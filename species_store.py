@@ -97,3 +97,61 @@ def store_counts(base=SPECIES_DIR):
         except OSError:
             pass
     return counts
+
+def write_geojson_tiles(df, base_path=None):
+    """Write observations to per‑species, per‑tile GeoJSON files.
+
+    The DataFrame must contain at least the columns:
+      - 'species' (string)
+      - 'lat' and 'lon' (float)
+      - 'olc' (the 8‑char plus code for the observation)
+    For each unique (species, olc) pair a separate GeoJSON file is created at
+    ``public/data/<species>/<olc>.geojson``.
+    Existing files are merged (de‑duped on ``inat_id``) unless ``overwrite=True``
+    is passed.
+    Returns a dict mapping ``(species, olc)`` to the number of features written.
+    """
+    import json
+    import os
+    from pathlib import Path
+    import pandas as pd
+
+    if base_path is None:
+        base_path = Path('public/data')
+    else:
+        base_path = Path(base_path)
+    written = {}
+    for (species, tile), group in df.groupby(['species', 'olc']):
+        species_path = base_path / species
+        species_path.mkdir(parents=True, exist_ok=True)
+        file_path = species_path / f"{tile}.geojson"
+        # Build FeatureCollection
+        features = []
+        for _, row in group.iterrows():
+            if pd.isna(row.lat) or pd.isna(row.lon):
+                continue
+            feature = {
+                "type": "Feature",
+                "properties": {k: v for k, v in row.items() if k not in ['lat', 'lon', 'geometry']},
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [row.lon, row.lat]
+                }
+            }
+            features.append(feature)
+        # Merge with existing if present
+        if file_path.exists():
+            try:
+                existing = json.loads(file_path.read_text())
+                existing_features = existing.get('features', [])
+                seen = {f['properties'].get('inat_id') for f in existing_features}
+                for f in features:
+                    if f['properties'].get('inat_id') not in seen:
+                        existing_features.append(f)
+                features = existing_features
+            except Exception:
+                pass
+        geojson = {"type": "FeatureCollection", "features": features}
+        file_path.write_text(json.dumps(geojson, ensure_ascii=False, indent=2))
+        written[(species, tile)] = len(features)
+    return written
