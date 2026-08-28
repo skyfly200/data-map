@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+38722edf-f034-4769-9e81-eeb7ebb21452,244390331,2024-09-26 15:43:00-07:00,2024-09-26,-121.7364883333,45.27705,1112.0,,10.1,21.1,0.0,7.2,,1016.4,Lactarius cuspidoaurantiacus,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1

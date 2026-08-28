@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b43eee3a-1fc7-4451-9525-d0a493239dd0,286181964,2025-05-30 15:18:00-07:00,2025-05-30,-121.79087042,45.0329388012,1288.0,,,,,,,,Cortinarius rumoribrunsi,"Clackamas County, OR, USA",1
+dec57c08-2bd9-42de-ac16-3da1c0860ac9,169634541,2023-06-23 13:49:04-07:00,2023-06-23,-121.7959366667,45.5967966667,1270.0,,12.7,27.1,0.0,10.4,,1012.8,Cortinarius rumoribrunsi,"Mt. Hood National Forest, Cascade Locks, OR, US",1

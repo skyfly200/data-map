@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f0ff8e4e-b68a-486a-b2da-31607c6f05a4,242042546,2024-09-15 13:15:46-07:00,2024-09-15,-121.77807,45.3023716667,1117.0,,11.3,21.2,0.0,11.3,,1012.3,Thaxterogaster sphagnophilus,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1

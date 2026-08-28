@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2ad97c8e-8d9d-4210-ab2c-fabfcdea6395,246406298,2024-10-08 13:08:49-07:00,2024-10-08,-122.2928288487,45.4897778202,118.0,,11.1,21.7,,2.8,,1014.7,Hortiboletus coccyginus,"Oxbow Regional Park, Gresham, OR, US",1
+4a7ddbce-6cf8-4d0b-8cbb-75e6d0857638,246405756,2024-10-08 11:10:20-07:00,2024-10-08,-122.2882821691,45.4947224306,76.0,,11.1,21.7,,2.8,,1014.7,Hortiboletus coccyginus,"Multnomah County, US-OR, US",1
+6d21b9a2-03cf-47f9-bb10-7bcbbe6db1a4,192616167,2023-10-21 16:00:00-07:00,2023-10-21,-122.2874816414,45.4922459104,128.0,,12.8,16.7,0.3,2.0,,1011.7,Hortiboletus coccyginus,"Multnomah County, OR, USA",1

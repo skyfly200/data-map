@@ -1,3 +1,5 @@
 uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 2b146c4c-8e8f-44cc-a59f-d32ecc22ad61,162387256,2023-05-17 14:34:14-06:00,2023-05-17,-105.211781976,39.8064256872,1769.0,,10.0,25.0,0.4,9.6,,1018.3,Pruinomycena acicula,"Crestone St, Arvada, CO, US",2
 7f503e35-8bd1-4288-b7b2-d4b698069ee4,89830130,2021-08-03 12:59:05-06:00,2021-08-03,-105.719163671,39.6091103264,3343.0,,7.0,12.0,10.9,10.1,,1039.0,Pruinomycena acicula,"Clear Creek County, US-CO, US",1
+3b46d50c-ede9-4571-aec6-5d1de3f088e5,265179052,2025-03-08 10:11:00-08:00,2025-03-08,-121.3483694444,45.71995,125.0,,-0.4,15.9,0.0,8.5,,1022.4,Pruinomycena acicula,"Klickitat County, WA, USA",3
+650f2cc7-37ce-471f-b549-b5268ec14297,80847146,2021-05-28 17:59:00-07:00,2021-05-28,-121.9249725261,45.2671463043,553.0,,11.7,20.6,0.0,8.9,,1024.1,Pruinomycena acicula,"Oregon, US",1

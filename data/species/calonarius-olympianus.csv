@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5bd3f059-ed88-43e3-a527-1171a7fcf136,326643411,2025-10-31 14:47:37-07:00,2025-10-31,-121.8468116667,45.1184278333,1099.0,,,,,,,,Calonarius olympianus,"Mt. Hood National Forest, Estacada, OR, US",1
+8d2b9c74-0143-46f2-9111-41ab921b5d16,195721984,2019-10-12 09:30:00-07:00,2019-10-12,-121.8425300788,45.3417113853,1383.0,,10.0,16.7,0.0,21.9,,1015.0,Calonarius olympianus,"Oregon, US",1

@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+efa2f4ff-f166-499f-aec4-73a5da872833,327323391,2025-11-14 13:22:22-08:00,2025-11-14,-122.0826,45.5467666667,914.0,,9.0,16.0,4.6,7.9,,1012.5,Hydnellum fuscoindicum,"Cascade Locks, OR 97014, USA",1
+feba769a-9060-4e48-9b29-6c1b91983cd3,188714575,2023-10-22 15:52:00-07:00,2023-10-22,-121.8136461117,45.319428055,1012.0,,12.2,18.7,0.0,11.0,,1010.1,Hydnellum fuscoindicum,"Mount Hood Wilderness, OR, USA",1
+aa8ee3a2-9e01-4416-9049-5a9b41c1a02f,99841193,2021-10-30 12:52:42-07:00,2021-10-30,-121.7704304828,45.257592142,1397.0,,,,,,,,Hydnellum fuscoindicum,"Oregon, US",3
+fa24fbd2-15d4-4b8f-a1ca-103c869dcada,97831985,2021-10-09 12:25:43-07:00,2021-10-09,-121.724522889,45.2745240059,1177.0,,,,,,,,Hydnellum fuscoindicum,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
+90118566-8277-4fbd-9da0-676405cd11e3,62085191,2020-10-08 13:10:00-07:00,2020-10-08,-121.7033404067,45.3411525876,2008.0,,,,,,,,Hydnellum fuscoindicum,"Oregon, US",2
+bdb71ea7-4155-4207-a3f1-07ee717d4174,35019304,2019-10-13,2019-10-13,-121.81,45.31605,916.0,,,,,,,,Hydnellum fuscoindicum,"SW Mount Hood, Clackamas Co., Oregon, USA",3

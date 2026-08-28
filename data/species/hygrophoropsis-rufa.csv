@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4a99a195-cc95-459b-b6c7-d1763bf14fbb,139080804,2022-10-14 14:43:00-07:00,2022-10-14,-121.6220333333,45.3198888889,1324.0,,11.4,23.8,0.0,2.4,,1016.1,Hygrophoropsis rufa,"Hood River, Oregon, United States",1

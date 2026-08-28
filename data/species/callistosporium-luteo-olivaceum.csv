@@ -1,3 +1,4 @@
 uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 89952b57-9a8b-4da3-b8df-a544813f3958,235708266,2024-08-12 12:08:29-06:00,2024-08-12,-105.3915033333,36.2202216667,3323.0,,6.6,25.5,2.7,7.2,,1030.6,Callistosporium luteo-olivaceum,"Carson National Forest, Chacon, NM, US",1
 f2a129f9-6580-470f-8ae9-635d8a500b7d,178767846,2023-08-12 10:55:21-06:00,2023-08-12,-104.7748371733,38.8853982639,1991.0,,15.0,26.7,3.3,9.0,,1015.1,Callistosporium luteo-olivaceum,"Colorado Springs, CO 80907, USA",1
+a695bf61-740e-4f83-bb93-38636f623e01,250754306,2024-11-06 19:47:59-08:00,2024-11-06,-122.2968968786,45.4901440477,41.0,,3.9,14.4,0.0,11.0,,1027.4,Callistosporium luteo-olivaceum,"Oxbow Regional Park, Gresham, OR, US",1

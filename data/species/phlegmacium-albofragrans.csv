@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+72f83ac5-8428-439a-b48d-80e56ecd69a9,191017699,2023-11-13 12:24:00-08:00,2023-11-13,-121.3144444444,45.7177027778,257.0,,3.3,14.4,0.0,8.6,,1016.5,Phlegmacium albofragrans,"Klickitat County, WA, USA",2

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+acbf3989-f1df-4430-b886-435b09f7a06a,146734818,2022-06-28 13:15:00-07:00,2022-06-28,-121.432805,45.352803,1322.0,,19.4,28.3,0.0,30.8,,1015.8,Lactarius crassus,"Friend, OR",2

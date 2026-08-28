@@ -1,0 +1,13 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+bb1f4e48-ffd0-43e1-b174-e46718ce92fe,248808333,2024-10-22 11:53:01-07:00,2024-10-22,-122.0272,45.6197716667,28.0,,7.2,15.6,4.1,2.9,,1025.2,Amanita calyptroderma,"Beacon Rock State Park, Stevenson, WA, US",1
+4f7be073-e478-4998-ad30-b484e198bd4b,238544911,2023-11-05 14:25:40-08:00,2023-11-05,-121.8123601602,45.6896130896,212.0,,7.4,12.3,8.8,5.1,,1011.4,Amanita calyptroderma,"Columbia River Gorge National Scenic Area, Cascade Locks, OR, US",1
+e9613189-f596-444b-a602-d1ddb58f0dec,193059315,2023-11-24 11:57:00-08:00,2023-11-24,-121.713755003,45.6245916291,1041.0,,-0.5,8.2,0.0,5.4,,1028.6,Amanita calyptroderma,"Washington, US",1
+d1ef4e1c-611e-4e3c-bb3c-0c3e5766bf5d,191346712,2023-11-17 14:19:00-08:00,2023-11-17,-122.0219944444,45.6312222222,138.0,,5.2,13.9,0.0,30.0,,1016.3,Amanita calyptroderma,"Skamania County, WA, USA",1
+16b88b3a-b5ed-4de8-8389-3e34b6947569,189539693,2023-10-27 17:00:31-07:00,2023-10-27,-121.8765353411,45.6963311222,27.0,,2.1,8.3,0.2,8.7,,1028.0,Amanita calyptroderma,"Stevenson, WA 98648, USA",1
+336a7d75-aa27-4353-ac1c-d85b5efed5ad,189295676,2023-10-21 11:15:08-07:00,2023-10-21,-121.8758375459,45.6623584006,253.0,,11.1,21.1,0.0,6.7,,1010.7,Amanita calyptroderma,"Columbia River Gorge National Scenic Area, Cascade Locks, OR, US",1
+cbfbb601-50f9-40c3-ae72-38669682d952,188853351,2023-10-20 16:43:17-07:00,2023-10-20,-121.7416994106,45.604196502,939.0,,9.0,24.3,0.0,5.0,,1014.2,Amanita calyptroderma,"Washington, US",1
+2d42b1b0-3220-40bf-a387-4a8bb7a0ee5b,141033455,2022-11-03 12:16:07-07:00,2022-11-03,-122.2049716667,45.2780616667,371.0,,6.1,9.4,,3.5,,1023.5,Amanita calyptroderma,"SE Rainbow Rd, Estacada, OR, US",1
+73419b0c-c319-4241-95e2-7d923cb01d88,98737891,2021-10-19 13:17:57-07:00,2021-10-19,-121.6891223566,45.6890421454,68.0,,2.8,17.2,0.0,3.0,,1011.6,Amanita calyptroderma,"Columbia River Gorge National Scenic Area, Hood River, OR, US",1
+01a8df07-fb7f-417f-bf77-2c943c98153b,63445270,2020-10-24 16:14:39-07:00,2020-10-24,-122.2050027778,45.2779861111,371.0,,6.7,14.4,,17.2,,1020.2,Amanita calyptroderma,"Estacada, OR 97023, USA",2
+abee3347-0b45-456e-980f-3b23bf63643b,62974317,2020-10-18 13:27:24-07:00,2020-10-18,-122.274664782,45.3240622185,210.0,,12.8,19.4,,8.3,,1020.0,Amanita calyptroderma,"97022, Eagle Creek, OR, US",2
+aca8d3dd-67be-4c73-b1de-172d80a82c7c,35030002,2019-10-28 17:03:36-07:00,2019-10-28,-122.0470711534,45.0363213855,640.0,,,,,,,,Amanita calyptroderma,"Clackamas County, US-OR, US",2

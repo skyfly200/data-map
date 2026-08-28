@@ -1,2 +1,6 @@
 uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 2fb111fb-5028-4de6-9e4b-ed493f53c41a,239246079,2024-09-01 11:41:40-06:00,2024-09-01,-107.1684717656,38.8568708432,2785.0,,,,,7.4,,1023.6,Xerocomellus amylosporus,"Grand Mesa Uncompahgre and Gunnison National Forests, Somerset, CO, US",3
+de8b9ac5-19ff-421d-bb85-f26197d5b155,29635449,2019-07-13,2019-07-13,-121.81,45.31605,916.0,,,,,,,,Xerocomellus amylosporus,"SW Mount Hood, Clackamas Co., Oregon, USA",3
+53211df6-cd11-477b-84b2-f6bdd2cb017b,17712408,2018-10-03,2018-10-03,-121.795,45.30895,1029.0,,,,,,,,Xerocomellus amylosporus,"Barlow Trail, Laurel Ridge, Government Camp, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",2
+937012eb-7bc6-44e3-85de-aa77bbe359f0,16957307,2018-09-25,2018-09-25,-121.795,45.30895,1029.0,,,,,,,,Xerocomellus amylosporus,"Barlow Trail, Laurel Ridge, Government Camp, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",1
+70c491d6-5a0a-4cd9-b4dc-67406674593b,16783702,2018-09-19,2018-09-19,-121.795,45.30895,1029.0,,,,,,,,Xerocomellus amylosporus,"Barlow Trail, Laurel Ridge, Government Camp, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",3

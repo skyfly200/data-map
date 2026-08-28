@@ -1,2 +1,5 @@
 uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 1e4fa9a4-07bf-44db-8e90-e3cbaac5ad09,176480318,2023-08-03 09:22:34-05:00,2023-08-03,-102.0079258,37.07399935,1058.0,,20.0,33.0,0.0,12.6,,1018.1,Panellus stipticus,"Morton County, US-KS, US",1
+b5f14a8a-892d-4089-825a-e720f2de4409,338386501,2026-02-12 17:16:08-08:00,2026-02-12,-121.5985716667,45.6950633333,334.0,,,,,2.5,,,Panellus stipticus,"Hood River, OR, US",1
+7737d354-924f-4322-93e1-14de76fa03b3,333402318,2026-01-03 12:30:14-08:00,2026-01-03,-122.1126611111,45.6147472222,232.0,,5.0,7.0,1.4,30.6,,999.4,Panellus stipticus,"Stevenson, WA 98648, USA",1
+e311d895-29ed-4285-b430-86e7eeff97ca,191250385,2023-11-16 23:24:00-08:00,2023-11-16,-122.0588314245,45.0325555973,463.0,,,,,,,,Panellus stipticus,"Clackamas County, OR, USA",1

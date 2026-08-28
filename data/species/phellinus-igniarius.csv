@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+65772c78-e300-4b21-99b9-2898707a1c53,300269658,2025-07-22 11:17:51-07:00,2025-07-22,-122.2151120939,45.5517793447,5.0,,13.3,28.9,0.0,4.3,,1014.3,Phellinus igniarius,"Columbia River Gorge National Scenic Area, Corbett, OR, US",1

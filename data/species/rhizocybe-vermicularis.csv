@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+abf37931-9490-40d1-acda-6e5401c8c72f,345394771,2026-03-26 16:43:00-07:00,2026-03-26,-122.2253453037,45.3084680539,383.0,,-1.0,15.0,0.0,5.4,,1032.5,Rhizocybe vermicularis,"Clackamas County, OR, USA",1

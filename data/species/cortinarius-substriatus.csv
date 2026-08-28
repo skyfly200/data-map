@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+96152c10-ed72-4dcc-9748-4968cf2e5424,233525375,2023-10-19 12:09:00-07:00,2023-10-19,-122.1135027483,45.2401645527,1025.0,,8.3,22.2,0.0,1.5,,1017.8,Cortinarius substriatus,"Clackamas County, OR, USA",1

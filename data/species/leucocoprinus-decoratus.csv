@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f79183d5-bb4e-4802-98d2-feea63cf10b5,67882478,2021-01-10 09:56:39-08:00,2021-01-10,-121.9417283333,45.294505,509.0,,5.6,7.8,,27.1,,1024.4,Leucocoprinus decoratus,"Mt. Hood National Forest, Welches, OR, US",1

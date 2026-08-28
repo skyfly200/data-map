@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+67623dd1-60c5-4a53-b218-c147f0a54ce8,328148245,2025-11-24 10:22:00-08:00,2025-11-24,-122.2270765476,45.3073624764,413.0,,5.0,11.0,0.2,2.8,,1028.0,Mycena maculata,"Clackamas County, OR, USA",1
+8ff29ba5-c402-4c82-89cc-3806bb438580,254178734,2024-12-04 15:05:00-08:00,2024-12-04,-122.2220044809,45.3036987539,373.0,,3.9,6.7,0.0,37.5,,1026.0,Mycena maculata,"Clackamas County, US-OR, US",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9d8c5a16-1194-4c4a-905d-f3b5a22956de,252529706,2024-10-11 11:49:00-07:00,2024-10-11,-122.2273416066,45.3070594808,413.0,,14.4,21.1,0.0,16.4,,1015.5,Clitocybe odora pacifica,"Clackamas County, US-OR, US",1

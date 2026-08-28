@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+41d9bcbc-bba3-4706-838f-61bf030b2fdb,250945197,2024-11-07 15:29:05-08:00,2024-11-07,-121.398209491,45.7109511376,326.0,,0.6,11.6,0.0,7.8,,1027.8,Hericium oregonense,"Oregon, US",1

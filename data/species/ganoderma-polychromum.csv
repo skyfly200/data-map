@@ -1,2 +1,5 @@
 uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 d6505698-dbf3-49ca-8884-b0f0890a6718,178588909,2023-08-15 11:50:33-06:00,2023-08-15,-109.2728416667,38.492455,2865.0,,,,,,,,Ganoderma polychromum,"Manti-La Sal National Forest, Moab, UT, US",1
+2e9f73dd-7355-416f-be62-98dd4fd0bb44,244822316,2024-09-29 15:33:24-07:00,2024-09-29,-121.752823,45.3021255,1196.0,,10.0,18.8,0.0,16.0,,1022.3,Ganoderma polychromum,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
+f431a81b-4298-43dc-8c04-f7fdeb6917d4,90911836,2021-08-12 09:11:21-07:00,2021-08-12,-121.7340545654,45.3387336731,1747.0,,,,,,,,Ganoderma polychromum,"Clackamas County, US-OR, US",1
+30181da8-d412-4e50-a046-07a04867e0f9,56242081,2020-08-09 15:16:05-07:00,2020-08-09,-121.618095,45.34233667,1569.0,,16.1,31.1,0.0,14.6,,1019.6,Ganoderma polychromum,"Mt. Hood Park Division Recreation Area, Mount Hood Parkdale, OR, US",1

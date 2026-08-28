@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c8b8af64-33da-48b1-97ea-1d61529b038d,250223336,2024-11-02 10:36:07-07:00,2024-11-02,-121.821918,45.738,163.0,,6.3,10.4,3.7,10.5,,1010.7,Cortinarius sp. 'Harrower112a',"Columbia River Gorge National Scenic Area, Carson, WA, US",3

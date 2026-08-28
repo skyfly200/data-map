@@ -1,0 +1,13 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+20f85c60-d180-4ecb-a738-6745ec28abbe,248683068,2024-10-22 15:47:54-07:00,2024-10-22,-121.8778348274,45.2438219933,943.0,,,,,,,,Lactarius pseudomucidus,"Oregon, US",1
+96f633f5-4981-444c-97ce-ff1fdf3522f2,221555114,2021-11-06,2021-11-06,-121.9137902185,45.2821627051,1215.0,,6.1,11.1,,12.6,,1015.8,Lactarius pseudomucidus,"Rhododendron, OR 97049, USA",1
+5db95853-6493-43ee-ad11-7c4dc3a2b027,139635761,2022-10-15 17:50:29-07:00,2022-10-15,-121.5709434921,45.3391578623,1102.0,,10.2,24.3,0.0,5.6,,1016.2,Lactarius pseudomucidus,"Mt. Hood Park Division Recreation Area, Mount Hood Parkdale, OR, US",2
+0246209d-9686-48a0-8311-6c9be5dda654,138934672,2022-10-15 17:19:00-07:00,2022-10-15,-121.6215833333,45.3183638889,1321.0,,10.2,24.3,0.0,5.6,,1016.2,Lactarius pseudomucidus,"Hood River County, OR, USA",2
+5305ca22-9027-4f1c-964c-90e718099320,101670067,2021-11-21 08:46:11-08:00,2021-11-21,-121.9396583333,45.2627,640.0,,1.1,8.3,0.0,10.5,,1028.3,Lactarius pseudomucidus,"Mount Hood National Forest, Welches, OR, US",1
+411161b7-b60d-4f07-891e-629b1ae242c1,101588704,2021-11-20 09:03:36-08:00,2021-11-20,-122.0922778333,45.5681583333,515.0,,1.7,11.7,0.0,1.8,,1032.6,Lactarius pseudomucidus,"Mark O Hatfield Wilderness, Corbett, OR, US",1
+f937afcb-b51c-4cb5-8b05-9008d3a24875,97505266,2021-10-07 14:23:12-07:00,2021-10-07,-121.4676163932,45.446283763,1004.0,,3.9,20.0,0.0,4.4,,1018.5,Lactarius pseudomucidus,"Oregon, US",1
+f497d2cb-f221-4e69-b1eb-cc11d10cd35a,63888853,2020-10-23 16:27:05-07:00,2020-10-23,-121.825243882,45.3479351959,1334.0,,,,,,,,Lactarius pseudomucidus,"Oregon, US",3
+9088acd1-3bce-4bf3-a205-46fa28d99699,63866193,2020-10-17 13:13:00-10:00,2020-10-17,-121.7731638889,45.3066194444,1144.0,,,,,,,,Lactarius pseudomucidus,"Clackamas, Oregon, United States",2
+5750f5d0-8c71-4bf5-b62c-602deed051a2,34881688,2019-10-20,2019-10-20,-121.81,45.31605,916.0,,,,,,,,Lactarius pseudomucidus,"SW Mount Hood, Clackamas Co., Oregon, USA",1
+865b3571-e9ce-4249-aecb-4097bf48f181,34223852,2019-10-05 10:24:00-07:00,2019-10-05,-121.8136,45.3152083333,899.0,,,,,,,,Lactarius pseudomucidus,"Clackamas County, OR, USA",1
+0c9ff6e7-55d6-41c7-9724-2e5b1c43801d,18335850,2018-11-02,2018-11-02,-121.81,45.31605,916.0,,,,,,,,Lactarius pseudomucidus,"SW Mount Hood, Clackamas Co., Oregon, USA",1

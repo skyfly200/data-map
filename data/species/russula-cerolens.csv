@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f30e806f-52f0-408b-818d-b5994926c031,328594345,2025-11-27 13:35:58-08:00,2025-11-27,-121.8947805556,45.6223638889,156.0,,5.0,7.0,4.3,1.2,,1020.5,Russula cerolens,"Cascade Locks, OR 97014, USA",1
+44264435-6bdb-4948-bff0-575276809846,251743245,2024-11-13 12:33:20-08:00,2024-11-13,-121.7726076183,45.3289939632,1146.0,,6.8,9.5,20.0,6.2,,1006.5,Russula cerolens,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
+86297073-6670-48ff-88cf-512198fd00e9,185503413,2023-09-29 17:08:58-07:00,2023-09-29,-121.1726233333,45.231385,331.0,,11.7,15.6,,4.9,,1012.2,Russula cerolens,"Wasco County, US-OR, US",1

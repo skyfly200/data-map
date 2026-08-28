@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+24bcbde0-29e4-4796-b00b-89d7ca40ac0a,249253842,2024-10-26 15:37:00-07:00,2024-10-26,-121.9856102948,45.3634232795,378.0,,11.1,16.1,,21.2,,1014.6,Lactarius fallax,"Oregon, US",1
+5714758f-f650-4d98-b749-4572ddfb1018,101670353,2021-11-21 07:55:39-08:00,2021-11-21,-121.9392616667,45.2701333333,559.0,,1.1,8.3,0.0,10.5,,1028.3,Lactarius fallax,"Mount Hood National Forest, Welches, OR, US",1
+201ff765-aaeb-4f34-b4ad-114d85e4f094,63460811,2020-10-24 14:04:25-07:00,2020-10-24,-121.9495441063,45.2663860956,751.0,,6.7,14.4,,17.2,,1020.2,Lactarius fallax,"Oregon, US",2
+b53bbfe2-8adc-4f5a-ad5c-0f8a266feefb,34948129,2019-10-21 12:31:19-07:00,2019-10-21,-121.8669662476,45.3006095886,708.0,,,,,,,,Lactarius fallax,"Zigzag, OR 97049, USA",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b1dabd37-6d2e-4c15-9654-a99588cc281e,341048111,2026-03-02 14:25:00-08:00,2026-03-02,-122.2272015212,45.3064361704,413.0,,7.0,17.0,0.0,10.0,,1019.3,Lactarius substriatus,"Clackamas County, OR, USA",1

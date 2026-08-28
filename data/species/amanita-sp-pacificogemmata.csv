@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4e5162f6-1c6d-4ec6-bc0e-c32534768176,179410237,2023-08-19 15:44:44-07:00,2023-08-19,-121.7593383333,45.3823883333,1577.0,,11.6,31.7,0.0,8.2,,1012.0,Amanita sp. 'pacificogemmata',"Zigzag Ranger Station, Rhododendron, OR, US",3

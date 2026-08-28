@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+318bd60e-3844-4504-9a5f-181bd22a6e87,324062137,2025-10-29 17:00:00-07:00,2025-10-29,-121.84709232,45.116059864,1095.0,,,,,,,,Calonarius aureofulvus,"Clackamas County, OR, USA",2

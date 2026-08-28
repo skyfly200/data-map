@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+50ede960-7584-4f43-9525-07c9e4ab513b,246275352,2024-10-07 18:11:00-07:00,2024-10-07,-122.2286990786,45.3080498026,413.0,,8.9,27.2,0.0,2.5,,1015.9,Russula pseudotsugarum,"Clackamas County, OR, USA",1

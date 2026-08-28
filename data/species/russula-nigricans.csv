@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+29b96968-4811-44b9-8b08-6793b77bbd23,263027173,2024-11-03 14:11:00-08:00,2024-11-03,-122.0878302,45.5326996,1217.0,,10.0,14.4,,7.1,,1022.3,Russula nigricans,"Sherrard Point, Oregon 97014, USA",1
+ce63fdcc-253c-4e8b-be3b-403a4e23cfe0,136351573,2022-09-24 13:34:59-07:00,2022-09-24,-122.180583183,45.2067447925,701.0,,10.0,26.7,0.0,4.5,,1021.2,Russula nigricans,"Oregon, US",1
+b5e6e61b-680e-403c-8a99-c3af3fcc9463,34220709,2019-10-04 12:47:00-07:00,2019-10-04,-122.0359194444,45.3849111111,355.0,,9.4,17.2,,4.8,,1022.4,Russula nigricans,"Clackamas County, OR, USA",1
+21b3edff-29f5-4959-a6c1-7558320f6e52,18336106,2018-11-04,2018-11-04,-121.81,45.31605,916.0,,,,,,,,Russula nigricans,"SW Mount Hood, Clackamas Co., Oregon, USA",2
+52028b6e-ceca-40dd-a1b0-f8438e8d796c,18335695,2018-11-01,2018-11-01,-121.81,45.31605,916.0,,,,,,,,Russula nigricans,"SW Mount Hood, Clackamas Co., Oregon, USA",1

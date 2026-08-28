@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+644cd912-d17c-4b10-b6ef-de4f94cfc723,32627570,2019-09-11 13:13:00-07:00,2019-09-11,-121.73099452,45.2729046968,1132.0,,,,,,,,Hygronarius renidens,"Clackamas County, OR, USA",3

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ef3aadb7-4492-4085-bd3b-81659a023958,228362484,2023-10-13 15:54:00-07:00,2023-10-13,-122.2302605595,45.3099799375,385.0,,13.9,19.4,,21.3,,1010.0,Mycena rutilantiformis,"Clackamas County, OR, USA",1

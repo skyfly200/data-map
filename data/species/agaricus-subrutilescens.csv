@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+86a6c25d-bec8-465a-b929-d7a2bb4578af,254120824,2024-12-02 12:18:31-08:00,2024-12-02,-121.9923033333,45.3499966667,392.0,,4.4,7.8,0.0,24.7,,1026.4,Agaricus subrutilescens,"Wildwood Recreation Site, Welches, OR, US",1
+a1c2ea79-57b1-4196-943a-a501d60b3317,249711004,2024-10-29 11:54:18-07:00,2024-10-29,-122.058059,45.0325279722,479.0,,,,,,,,Agaricus subrutilescens,"Estacada, OR 97023, USA",1
+943a56d9-0b1f-445c-aebb-683286661118,248406264,2024-10-20 15:35:08-07:00,2024-10-20,-121.9392466667,45.297795,507.0,,8.3,21.1,,8.3,,1015.5,Agaricus subrutilescens,"Zigzag Ranger Station, Welches, OR, US",2
+5e3d6072-9a38-4850-af49-173908e4aec5,189321681,2023-10-28 14:03:38-07:00,2023-10-28,-122.0990445,45.298605,534.0,,3.9,12.2,0.0,19.5,,1031.7,Agaricus subrutilescens,"Eagle Creek, Sandy, OR, US",1
+cdbe1e3e-6b35-458f-93ae-74d67f3a424a,187989191,2023-10-17 13:25:34-07:00,2023-10-17,-122.1873866667,45.20582,686.0,,10.6,19.4,0.0,2.8,,1021.6,Agaricus subrutilescens,"Mt. Hood National Forest, Estacada, OR, US",1
+9d29f3c8-0096-449a-bfb7-ecbfe39b6286,187314892,2023-10-11 14:32:05-07:00,2023-10-11,-122.289305,45.3244533333,181.0,,13.3,18.3,,18.3,,1006.3,Agaricus subrutilescens,"Eagle Fern Park, Eagle Creek, OR, US",2
+e419b925-3e42-4ef0-ba0d-209e8dcb8302,186868529,2023-10-08 10:34:48-07:00,2023-10-08,-122.1189853179,45.2533694916,874.0,,12.8,27.8,0.0,3.2,,1009.6,Agaricus subrutilescens,"Oregon, US",1

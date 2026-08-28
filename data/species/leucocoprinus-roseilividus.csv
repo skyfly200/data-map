@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+138a55ee-cd22-41fa-bd72-1ff7f7c3cbbc,332776340,2025-12-20 12:35:00-08:00,2025-12-20,-122.2881036097,45.3194407757,226.0,,5.6,10.6,8.4,5.5,,1015.9,Leucocoprinus roseilividus,"Clackamas County, OR, USA",0
+94070942-1b2c-4a75-9d6f-63e5c1535154,251477635,2024-11-10 09:05:20-08:00,2024-11-10,-122.2821283333,45.30637,289.0,,10.0,13.9,,19.2,,1012.3,Leucocoprinus roseilividus,"SE Tracy Rd, Estacada, OR, US",0
+34f95d2e-7bec-40ba-a66b-945bdf854fc3,247065928,2024-10-12 16:01:07-07:00,2024-10-12,-122.2996574997,45.4880955,80.0,,8.9,24.4,0.0,4.0,,1017.8,Leucocoprinus roseilividus,"Gresham, OR 97080, USA",0
+b25b10c0-9b15-4728-a321-0093839dd2e1,68282635,2021-01-17 16:17:18-10:00,2021-01-17,-122.2683494819,45.4656478804,127.0,,6.7,10.6,,1.8,,1031.9,Leucocoprinus roseilividus,"Corbett, Corbett, OR, US",0

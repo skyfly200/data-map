@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6525eff7-066e-4dd7-b4bc-81a620e294b9,71194589,2021-03-13 14:22:38+00:00,2021-03-13,-122.1794268116,45.5129315965,484.0,,0.6,17.2,0.0,4.0,,1022.3,Mycena sanguinolenta,"Corbett, OR 97019, USA",1

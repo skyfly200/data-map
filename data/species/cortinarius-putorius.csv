@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+051994bb-51cb-4ddf-9571-a21df5163e4e,101919651,2021-11-25 09:25:29-08:00,2021-11-25,-121.9394916667,45.2808916667,567.0,,6.1,13.9,,8.8,,1025.8,Cortinarius putorius,"Mount Hood National Forest, Welches, OR, US",3

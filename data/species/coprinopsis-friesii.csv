@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2441882e-2932-40b5-a398-618f68782bc1,80216077,2021-05-25 02:23:13-07:00,2021-05-25,-121.965788193,45.6365594019,10.0,,13.3,16.1,,2.8,,1019.9,Coprinopsis friesii,"North Bonneville, WA, USA",1
