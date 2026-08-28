@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a6b4af6a-9d4a-49a5-a696-5c31a5d3ce50,191017532,2023-11-13 12:26:00-08:00,2023-11-13,-121.3145055556,45.7175138889,257.0,,3.3,14.4,0.0,8.6,,1016.5,Cortinarius brunneofibrillosus,"Klickitat County, WA, USA",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c02a9f14-d082-419c-a1ec-6d8421c5dbde,101670109,2021-11-21 08:40:07-08:00,2021-11-21,-121.9395666667,45.2631,640.0,,1.1,8.3,0.0,10.5,,1028.3,Lepiota castanea,"Mount Hood National Forest, Welches, OR, US",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4b60a4d0-5c65-4beb-a277-54b8b6709b00,191539493,2023-11-19 10:38:01-08:00,2023-11-19,-121.3168920949,45.7142261977,156.0,,2.2,11.1,,14.1,,1025.0,Cortinarius perplexus,"Lyle, WA 98635, USA",2

@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0038ae32-36d9-45d3-83da-6eb7a0295814,187819646,2023-10-14 16:54:02-07:00,2023-10-14,-122.1092611667,45.3638033333,457.0,,13.3,17.8,,6.7,,1016.6,Hypholoma dispersum,"E Terra Fern Dr, Sandy, OR, US",2
+25d39608-798f-4c7d-ac72-443878781cac,100453657,2021-11-06 08:48:33-07:00,2021-11-06,-121.9391466667,45.2700416667,559.0,,6.1,11.1,,12.6,,1015.8,Hypholoma dispersum,"Mount Hood National Forest, Welches, OR, US",2
+5f7f73f7-93b9-41c1-a4c1-fe0589f20983,63460639,2020-10-24 14:15:39-07:00,2020-10-24,-121.9103696467,45.3120407244,646.0,,6.7,14.4,,17.2,,1020.2,Hypholoma dispersum,"Oregon, US",1
+64e847d2-934b-4745-b2a9-d7bf255a639c,61751508,2020-10-03 11:59:58-07:00,2020-10-03,-121.8629506108,45.5061194853,1211.0,,12.8,25.0,0.0,1.9,,1017.8,Hypholoma dispersum,"Oregon, US",1

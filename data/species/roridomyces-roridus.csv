@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+eb2213d9-2e0c-46a6-84d4-1281a97877a4,56338831,2020-08-12 16:55:00-07:00,2020-08-12,-122.0827461616,45.5415272134,906.0,,13.3,23.3,,5.4,,1017.4,Roridomyces roridus,"Multnomah County, OR, USA",1

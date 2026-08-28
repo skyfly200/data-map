@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a96ccf10-dc74-43d7-9b30-51c122407fce,42142427,2019-10-14 06:45:00-07:00,2019-10-14,-121.6538235453,45.087917769,1466.0,,,,,,,,Phlegmacium pini,"Oregon, US",0

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0a72a0ab-dfd6-4d94-8980-32e778c7cdba,341321410,2026-03-04 14:29:00-08:00,2026-03-04,-122.2266502244,45.3075353935,370.0,,8.0,13.0,3.4,13.3,,1015.8,Mycena hudsoniana,"Clackamas County, OR, USA",1
+1a95e159-8f78-473a-b4ff-6506d595e7ac,208840197,2024-02-24 14:20:00-08:00,2024-02-24,-122.2252016006,45.3074163406,370.0,,1.7,13.3,0.0,2.6,,1021.7,Mycena hudsoniana,"Clackamas County, OR, USA",2

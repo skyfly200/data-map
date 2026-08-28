@@ -1,2 +1,4 @@
 uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 463cb0f4-a91d-4255-a3ac-48565c515689,130740244,2022-08-13 17:26:16-06:00,2022-08-13,-105.8882420918,39.5960909542,3054.0,,4.1,14.2,4.8,5.4,,1023.8,Tricholoma dulciolens,"Colorado, US",2
+806a6188-9973-408b-a57a-a4705f2a6014,324669810,2025-10-31 15:49:36-07:00,2025-10-31,-121.8446116667,45.1172445,1092.0,,,,,,,,Tricholoma dulciolens,"Mt. Hood National Forest, Estacada, OR, US",1
+296045dd-4ec2-4b1f-9e10-e1fe0721b46f,116830653,2021-10-14,2021-10-14,-122.095,45.2379,1090.0,,10.0,13.3,,3.8,,1023.7,Tricholoma dulciolens,"Clackamas River Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",2

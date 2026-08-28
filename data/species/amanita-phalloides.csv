@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ec48737e-ea6d-49cf-9d75-e35e29e1411b,324624824,2025-11-02 13:24:49-08:00,2025-11-02,-122.3029166667,45.48768,72.0,,6.0,15.0,3.3,4.1,,1026.0,Amanita phalloides,"Oxbow Regional Park, Gresham, OR, US",1
+2ab6d4d7-3921-42d3-8a6d-8345bc67ff4a,189142437,2023-10-27 11:31:16-07:00,2023-10-27,-122.2013164116,45.5956293051,285.0,,2.2,12.8,0.0,6.5,,1026.9,Amanita phalloides,"Oregon, US",2
+3b297f7c-1a5f-4381-a746-4fab9453087a,189142374,2023-10-27 11:13:14-07:00,2023-10-27,-122.2533336339,45.5914903943,256.0,,2.2,12.8,0.0,6.5,,1026.9,Amanita phalloides,"Oregon, US",2
+27ed9645-273c-41a0-bd97-d0884a885d98,63222579,2020-10-21 13:01:00-07:00,2020-10-21,-122.2791396112,45.4306654389,252.0,,6.1,15.0,,4.5,,1021.8,Amanita phalloides,"Oregon, US",2

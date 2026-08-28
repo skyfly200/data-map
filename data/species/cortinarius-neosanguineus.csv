@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2208147c-e4a1-435f-b4fd-d4ed70da0ffc,251225649,2024-11-09 15:01:00-08:00,2024-11-09,-121.8808072265,45.2969646217,599.0,,8.3,13.3,0.0,7.7,,1015.8,Cortinarius neosanguineus,"Clackamas County, OR, USA",3

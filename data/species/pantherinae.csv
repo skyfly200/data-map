@@ -1,3 +1,4 @@
 uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 c52cf787-cf4f-41a4-be8c-d4553be63d1a,15993479,2018-08-26 10:15:00-06:00,2018-08-26,-105.3544181,39.24622697,2494.0,,,,,,,,Pantherinae,"Jefferson County, CO, USA",2
 b1d6bc4b-38d4-45a9-a135-8637cdccb3b0,15937618,2018-08-26 19:11:00-10:00,2018-08-26,-105.3544181,39.24622697,2494.0,,,,,,,,Pantherinae,"Jefferson County, CO, USA",2
+14d37571-2934-4d0a-8925-5e1628090ac5,172278946,2017-05-13,2017-05-13,-122.0736,45.5881,107.0,,8.3,12.8,,8.1,,1016.5,Pantherinae,"Colombia River Gorge, Oregon, USA",1

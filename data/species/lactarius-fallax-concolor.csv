@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f806eb11-cc33-4471-b579-979f007acb42,188483290,2023-10-18 15:56:00-07:00,2023-10-18,-121.8663,45.300286,713.0,,8.8,20.3,0.0,4.8,,1019.7,Lactarius fallax concolor,"Clackamas County, OR, USA",1
+dfebf444-52e2-453e-ae32-de179df867a1,64796459,2020-10-24 14:10:44-07:00,2020-10-24,-121.8133906263,45.2881750811,1263.0,,,,,,,,Lactarius fallax concolor,"Oregon, US",2
+eb08ebac-5fdc-42a2-aac7-8fb6de18e0fb,63495561,2020-10-24 14:05:00-07:00,2020-10-24,-121.8094830418,45.2917452181,1352.0,,,,,,,,Lactarius fallax concolor,"Oregon, US",0
+a735b0cc-88e1-48d3-9aa9-baa9cf85dc51,16987283,2018-09-26,2018-09-26,-121.795,45.30895,1029.0,,,,,,,,Lactarius fallax concolor,"Barlow Trail, Laurel Ridge, Government Camp, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",1

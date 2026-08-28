@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+61cdb8fd-96bd-41d6-b3cf-33d98bab658d,239715327,2024-09-03 17:28:27-07:00,2024-09-03,-121.698295,45.23022,1212.0,,,,,,,,Russula fragrantissima,"Zigzag Ranger Station, Government Camp, OR, US",1
+5ca36cdd-282e-4ee5-8977-dab668078ecd,237191981,2024-08-21 12:39:49-07:00,2024-08-21,-121.7934388889,45.3135416667,1001.0,,13.0,24.3,0.0,12.6,,1016.3,Russula fragrantissima,"MT HOOD PRKDL, OR 97041, USA",1
+146949e3-d4b0-4b51-897b-2ebe542d5b78,137113407,2022-09-30 11:14:35-07:00,2022-09-30,-121.6839059959,45.2778264998,1288.0,,11.8,23.6,0.0,4.6,,1019.8,Russula fragrantissima,"Mt. Hood Park Division Recreation Area, Mount Hood Parkdale, OR, US",1
+bc63d710-5af1-4f54-bca5-eba639b5a517,136325209,2022-09-24 12:04:32-07:00,2022-09-24,-121.7018310524,45.281988657,1146.0,,9.7,26.5,0.0,3.8,,1021.1,Russula fragrantissima,"TIMBRLINE LDG, OR 97028, USA",1
+2ae07f89-7b65-4ee5-a555-8250dcdd94c0,92186175,2021-08-22 13:45:03-07:00,2021-08-22,-121.938575,45.25687,733.0,,15.0,20.0,,4.4,,1013.0,Russula fragrantissima,"Salmon-Huckleberry Wilderness, Welches, OR, US",1
+d94a5d48-90b4-44d2-85b4-08cbf5e65c30,15096706,2018-08-02,2018-08-02,-121.795,45.30895,1029.0,,,,,,,,Russula fragrantissima,"Barlow Trail, Laurel Ridge, Government Camp, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4a8eca09-4f45-4664-b46a-eb1ddf91bc97,311265352,2024-09-29 14:50:44-07:00,2024-09-29,-122.1324517333,45.4462756444,290.0,,8.9,20.0,0.0,2.7,,1024.6,Russula foetens,"Oregon, US",2

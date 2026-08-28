@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b402fcfd-7e37-4bd2-acb8-c50b782dc97c,190583453,2023-11-07 12:49:48-08:00,2023-11-07,-121.6809219722,45.791147,544.0,,7.5,10.9,8.4,17.2,,1018.7,Leucocoprinus atrodiscus,"Cook, WA 98605, USA",1

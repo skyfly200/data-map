@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+190978b3-29f5-4f9f-aee8-ca052d4ba863,324882860,2025-11-03 12:07:06-08:00,2025-11-03,-121.9394126765,45.2861336889,554.0,,8.0,12.0,0.7,23.4,,1012.2,Ampulloclitocybe clavipes,"Zigzag Ranger Station, Welches, OR, US",1
+3d1492cb-df8a-46ce-84d3-20636a7148fd,254369987,2024-12-06 20:12:00-08:00,2024-12-06,-122.2284621149,45.3072870558,413.0,,3.9,6.7,0.0,34.3,,1026.4,Ampulloclitocybe clavipes,"Clackamas County, US-OR, US",1

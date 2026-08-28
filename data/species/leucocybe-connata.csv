@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a0944150-fbdc-49a7-92bd-af5654c9c56b,260729990,2024-11-04 10:50:00-08:00,2024-11-04,-121.9609135,45.3281745,407.0,,7.8,12.8,,8.3,,1022.5,Leucocybe connata,"E Elk Park Rd, Welches, OR, US",1
+ce9ec5ae-5137-4921-986e-dc64d6afd36e,247381174,2024-10-12 13:51:48-07:00,2024-10-12,-121.88813,44.9867583333,693.0,,,,,,,,Leucocybe connata,"Mt. Hood National Forest, Estacada, OR, US",1
+b55a4a51-3467-4c5e-8169-f53e42db80bf,63866197,2020-10-17 14:52:00-10:00,2020-10-17,-121.9396027778,45.2696583333,537.0,,12.8,17.8,0.8,3.4,,1022.1,Leucocybe connata,"Clackamas, Oregon, United States",1

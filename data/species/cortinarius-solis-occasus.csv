@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+95b2e93b-a249-42a3-b60f-4c700b9d5414,63222413,2020-10-21 14:07:59-07:00,2020-10-21,-121.8415237125,45.2320085722,981.0,,,,,,,,Cortinarius solis-occasus,"Oregon, US",1

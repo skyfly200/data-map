@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+7cee7182-ee6d-4201-85d3-132535e4acb3,80216453,2021-05-11 10:10:33-07:00,2021-05-11,-121.8080722913,45.7313278028,163.0,,,,,,,,Deconica inquilina,"Carson, WA, USA",1

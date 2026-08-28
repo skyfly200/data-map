@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+13272e23-2db1-4f97-ba39-b0f06d347cba,385551665,2026-07-26 18:32:46-07:00,2026-07-26,-121.909875,45.3229833333,534.0,,17.8,26.7,0.2,3.5,,,Amanita breckonii,"Mt. Hood Park Division Recreation Area, Rhododendron, OR, US",1
+68f8bf59-f7d7-4959-adfa-7e2306b4fcb0,385064475,2026-07-23 10:56:22-07:00,2026-07-23,-121.9949474015,45.3498620832,373.0,,18.9,27.2,0.0,2.2,,,Amanita breckonii,"Main Park Rd, Welches, OR, US",1
+6f5fd970-6dd3-4da0-9a91-e87fa597f38d,382439363,2026-07-17 15:43:32-07:00,2026-07-17,-121.8970938027,45.3722977671,547.0,,9.0,26.0,0.0,5.7,,,Amanita breckonii,"Clackamas County, US-OR, US",1

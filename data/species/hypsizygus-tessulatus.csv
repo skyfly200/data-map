@@ -1,2 +1,7 @@
 uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 072fd735-cf5b-4ea7-81ba-23b9ee97e3b5,313671201,2025-09-13 14:53:17-06:00,2025-09-13,-106.3947533,35.8964514997,2844.0,,12.0,16.0,2.0,7.4,,1022.8,Hypsizygus tessulatus,"Los Alamos County, NM, USA",1
+054355c6-5c2d-41b7-9834-00a33d538508,327070033,2025-10-10 15:59:59-07:00,2025-10-10,-121.574105,45.3368116667,1116.0,,8.0,15.0,0.5,1.9,,,Hypsizygus tessulatus,"Robin Hood Ramp Ski Trail, Mount Hood Parkdale, OR, US",1
+e9684d73-287a-4934-b576-b28592a6db97,322528912,2025-10-22 13:37:48-07:00,2025-10-22,-121.8324813992,45.3068380199,780.0,,2.0,17.0,0.0,1.5,,1017.7,Hypsizygus tessulatus,"Rhododendron, OR 97049, USA",1
+094404c2-d8ab-4bad-ae79-5f3d696b16e3,321525073,2025-10-17 13:03:01-07:00,2025-10-17,-121.5777583333,45.404695,1015.0,,7.0,16.0,0.0,4.4,,1019.4,Hypsizygus tessulatus,"Mt. Hood Park Division Recreation Area, Mount Hood Parkdale, OR, US",2
+9673703b-b3db-405d-a9e9-438ecc058f86,251255254,2024-11-10 12:56:01-08:00,2024-11-10,-121.880455,45.31005,636.0,,6.9,10.3,5.7,5.0,,1014.6,Hypsizygus tessulatus,"Mt. Hood Park Division Recreation Area, Rhododendron, OR, US",1
+414df4fe-a20a-49b1-9d0c-686ff52d1523,249703787,2024-10-29 11:36:08-07:00,2024-10-29,-121.8704789133,45.3788871691,626.0,,3.1,11.8,0.1,10.0,,1018.8,Hypsizygus tessulatus,"Clackamas County, US-OR, US",1

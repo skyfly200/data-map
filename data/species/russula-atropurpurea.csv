@@ -1,2 +1,3 @@
 uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 794ff3c1-b4c9-4d3c-9f1d-7aaf2bf00dfa,234540654,2024-08-07 11:46:22-06:00,2024-08-07,-105.7850033333,35.8037083333,3337.0,,17.2,34.4,0.0,16.8,,1012.0,Russula atropurpurea,"Santa Fe National Forest, Tererro, NM, US",1
+6ad5a541-46cf-465e-95e9-c76a5715e5c5,247162335,2024-10-12 14:59:20-07:00,2024-10-12,-121.941925,45.293945,509.0,,8.9,24.4,0.0,4.0,,1017.8,Russula atropurpurea,"Zigzag Ranger Station, Government Camp, OR, US",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+bb77b970-4bea-43c5-b8ad-a4b49d0d00d0,61751866,2020-10-03 15:28:16-07:00,2020-10-03,-121.8169252067,45.4867050144,967.0,,12.8,25.0,0.0,1.9,,1017.8,Rubroboletus pulcherrimus,"Oregon, US",1

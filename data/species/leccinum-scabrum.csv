@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1905eace-252b-4ed5-9e1b-d48a9bd075d9,326696097,2025-11-15 14:07:35-08:00,2025-11-15,-121.5140924847,45.7157485818,27.0,,7.0,16.0,0.1,2.2,,1013.7,Leccinum scabrum,"Portway Ave, Hood River, OR, US",1
+f8f178b2-b1d6-477d-8d64-6868dea9c3f0,188938431,2023-10-25 09:31:07-07:00,2023-10-25,-121.5199583333,45.7021166667,147.0,,4.1,9.0,15.0,6.4,,1011.8,Leccinum scabrum,"Columbia River Gorge National Scenic Area, Hood River, OR, US",1
+eb70f1b4-fc25-4266-bd6b-3f71d6b76f82,186000815,2023-10-02 14:32:27-07:00,2023-10-02,-122.176803,45.3686879722,388.0,,10.6,16.1,,5.1,,1018.0,Leccinum scabrum,"Bigfoot RV Park, Oregon 97055, USA",1

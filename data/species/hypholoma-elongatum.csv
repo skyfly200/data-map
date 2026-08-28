@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1c8ec31b-515a-4871-9bec-a87c0d738acb,243261106,2024-09-21 17:17:47-07:00,2024-09-21,-121.715095,45.2946366667,1282.0,,8.4,23.7,0.0,5.2,,1020.6,Hypholoma elongatum,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
+65e07b43-2865-4834-b234-c2ac454be97b,139377929,2022-10-15 17:11:00-07:00,2022-10-15,-121.7381652107,45.2790580315,1143.0,,10.2,24.3,0.0,5.6,,1016.2,Hypholoma elongatum,"Clackamas County, OR, USA",2

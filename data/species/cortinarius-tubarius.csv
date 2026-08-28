@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+442131e9-7eba-4d4f-beb2-4825101b2ac3,243726853,2024-09-21 17:24:39-07:00,2024-09-21,-121.7154,45.2946666667,1282.0,,8.4,23.7,0.0,5.2,,1020.6,Cortinarius tubarius,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",2

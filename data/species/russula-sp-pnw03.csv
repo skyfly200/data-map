@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+eb81fe52-edf2-4edf-80df-d84e6f66c419,191018279,2023-11-13 12:30:00-08:00,2023-11-13,-121.314525,45.7176638889,257.0,,3.3,14.4,0.0,8.6,,1016.5,Russula sp. 'PNW03',"Klickitat County, WA, USA",2

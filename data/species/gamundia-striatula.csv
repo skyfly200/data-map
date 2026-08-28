@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+92a2cd62-7612-47bb-ac7c-4b09352612cf,337006926,2026-02-01 13:07:42-08:00,2026-02-01,-122.1258590743,45.5749679715,40.0,,7.0,14.0,2.7,11.7,,1021.2,Gamundia striatula,"Benson State Recreation Area, I-84, Cascade Locks, OR 97014, USA",1

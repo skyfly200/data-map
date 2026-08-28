@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+79f0c89f-7a15-4c4e-8960-2742bf6f6f09,242222773,2024-09-15 15:37:01-07:00,2024-09-15,-121.8134551495,45.5039181817,1026.0,,11.3,21.2,0.0,11.3,,1012.3,Hypholoma sp. 'PNW03',"Cascade Locks, OR 97014, USA",1

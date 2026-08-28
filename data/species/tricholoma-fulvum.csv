@@ -1,3 +1,5 @@
 uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 769186a9-6c3e-450d-8d90-cb089faf27e4,152857193,2022-09-17 13:10:00-06:00,2022-09-17,-105.536595,40.035367,2970.0,,12.0,26.0,1.7,7.1,,1015.2,Tricholoma fulvum,"Denver Botanic Gardens, Denver, CO, US",2
 641c38c8-864d-4aed-ad9e-7a0f668d5b9d,129562708,2022-08-03,2022-08-03,-105.7591,39.5575,3059.0,,4.6,14.7,3.9,8.8,,1021.5,Tricholoma fulvum,"Colorado, Park Co., Pike National Forest, Geneva Creek, on CR 1038",1
+4b847124-95f1-46cf-bdf2-a97c4bbf33a8,326883789,2025-11-16 12:32:00-08:00,2025-11-16,-122.2316981497,45.308890715,377.0,,8.0,12.0,0.0,5.2,,1002.7,Tricholoma fulvum,"Clackamas County, OR, USA",1
+14d2ef57-4e91-44be-86db-558708c30b3e,228278479,2023-11-05 13:23:00-08:00,2023-11-05,-122.2327567374,45.3094902676,377.0,,8.3,16.1,,8.2,,1010.3,Tricholoma fulvum,"Clackamas County, OR, USA",1

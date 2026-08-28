@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ffe1d727-3c4c-4431-9ff9-55af32f594e8,378949989,2026-07-06 15:54:10-07:00,2026-07-06,-121.9955681018,45.1246056109,1323.0,,,,,,,,Morchella exuberans,"Oregon, US",1
+84b7daf9-0c71-4134-808c-48de962186d0,109288053,2021-05-21,2021-05-21,-122.2276831046,45.1661339538,790.0,,5.6,16.7,0.0,3.8,,1022.6,Morchella exuberans,"Estacada, OR 97023, USA",3
+e890745f-6b1e-4e53-be01-ec941fb1c0d9,80334405,2021-05-24 22:02:18-07:00,2021-05-24,-122.2319685008,45.312590021,396.0,,11.1,16.1,,4.1,,1019.4,Morchella exuberans,"Oregon, US",2

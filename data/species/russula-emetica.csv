@@ -3,3 +3,4 @@ uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,winds
 24a7c59b-1511-4100-8397-183f5f4538fb,288537877,2025-06-10 12:47:23-06:00,2025-06-10,-105.2730712891,39.9808692932,1850.0,,12.0,32.0,0.0,7.0,,1018.0,Russula emetica,Boulder,1
 71cff881-a2c0-4ab6-a386-7e7a5eefd5e6,240779968,2024-09-07 16:39:33-06:00,2024-09-07,-106.47663,39.2451216667,3399.0,,1.1,21.1,0.0,9.0,,1019.8,Russula emetica,"Pike and San Isabel National Forests, Twin Lakes, CO, US",1
 00da643b-c47e-4bc1-810f-8af22937a6b7,238873526,2024-07-19 13:50:58-06:00,2024-07-19,-108.1889335625,37.4795651762,2919.0,,16.0,33.0,0.3,10.5,,1025.1,Russula emetica,"San Juan National Forest - Headquarters, Mancos, CO, US",1
+0502e5e2-45ce-47bb-bdd0-5b59172bf534,243426548,2024-09-18 14:22:31-07:00,2024-09-18,-121.6811966667,45.2817783333,1228.0,,13.5,21.8,0.0,13.5,,1013.5,Russula emetica,"Mt. Hood Park Division Recreation Area, Mount Hood Parkdale, OR, US",1

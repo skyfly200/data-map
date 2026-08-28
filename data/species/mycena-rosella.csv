@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+09fd2345-e07e-4219-a1b3-280ea2266e11,34881665,2019-10-20,2019-10-20,-121.81,45.31605,916.0,,,,,,,,Mycena rosella,"SW Mount Hood, Clackamas Co., Oregon, USA",1
+84f3991f-ab34-428e-9a8d-b03b405e9a3f,33972520,2019-10-06 13:22:56-07:00,2019-10-06,-121.7770641112,45.3056533495,1132.0,,,,,,,,Mycena rosella,"Mt. Hood National Forest, Government Camp, OR, US",1

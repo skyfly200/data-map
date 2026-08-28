@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9806ccd5-6ff2-4f8a-a623-9b7d0515a3b4,267829169,2025-03-29 13:15:00-07:00,2025-03-29,-121.55303,45.7255,30.0,,2.3,12.8,0.2,8.5,,1017.5,Cortinarius sp. 'CA03',"Skamania County, WA, USA",3

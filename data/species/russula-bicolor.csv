@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+79eafc74-7741-473d-b095-3fb347a5583f,205605886,2023-10-30 19:52:00-07:00,2023-10-30,-122.0167482,45.3762302,356.0,,6.1,13.3,0.0,32.6,,1025.6,Russula bicolor,"E Rufus Ridge Ln, Brightwood, OR, US",1

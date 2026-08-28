@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0fa9773c-8120-4ae6-b743-b8dd2a5a5cdb,63495573,2020-10-24 15:48:00-07:00,2020-10-24,-121.8026450944,45.3575761052,1095.0,,,,,,,,Thaxterogaster pluvius,"Oregon, US",1
+c941196e-d624-4237-8d0e-bce9c50730e3,63449268,2020-10-24 16:20:41-07:00,2020-10-24,-121.9282473527,45.3620602646,484.0,,6.7,14.4,,17.2,,1020.2,Thaxterogaster pluvius,"Oregon, US",2
+b628ae88-c94e-4769-97de-b281ebbc3a33,63449179,2020-10-24 16:24:22-07:00,2020-10-24,-121.8023673344,45.3876046066,878.0,,,,,,,,Thaxterogaster pluvius,"Oregon, US",2
+bb950e19-c733-4d97-acd1-35df5d5aea81,63448898,2020-10-24 16:36:26-07:00,2020-10-24,-121.8323472743,45.3757723656,783.0,,6.7,14.4,,17.2,,1020.2,Thaxterogaster pluvius,"Oregon, US",2

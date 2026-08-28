@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+727415a6-a39d-4f6e-9068-f35a1cc624bd,258906850,2025-01-18 13:58:00-08:00,2025-01-18,-121.9086340486,45.3384550847,579.0,,0.0,8.3,0.0,13.2,,1031.1,Clitocybe crenulata,"Clackamas County, OR, USA",3

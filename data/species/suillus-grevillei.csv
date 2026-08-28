@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+89b96caf-27fb-4ac4-80ce-47f0c261c410,65241974,2016-09-25,2016-09-25,-121.6781,45.1717,1097.0,,,,,,,,Suillus grevillei,"Mount Hood National Forest, Clackamas Co., Oregon, USA",1
+69819bd8-452e-47f1-a63a-b8ac4dbb17c9,65237515,2013-10-04,2013-10-04,-121.7,45.3515,2309.0,,,,,,,,Suillus grevillei,"Mount Hood, Mount Hood National Forest, Oregon, USA",1
+41167631-3763-4fb2-901f-94b5b6876639,65237508,2013-10-04,2013-10-04,-121.7,45.3515,2309.0,,,,,,,,Suillus grevillei,"Mount Hood, Mount Hood National Forest, Oregon, USA",1

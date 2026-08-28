@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fd7c7bc6-6076-41da-9075-01d0e6cf152b,296554042,2025-07-09 10:30:35-07:00,2025-07-09,-122.1145401001,45.575553894,245.0,,14.4,26.7,0.0,4.6,,1020.6,Ganoderma brownii,Corbett,1
+dd3c6ae4-c33a-4cdd-af6b-49eec5bb507e,248185639,2024-10-19 15:07:52-07:00,2024-10-19,-122.2882349,45.4890297,40.0,,12.2,22.8,,5.8,,1023.4,Ganoderma brownii,"Multnomah County, OR, USA",1
+6ccc9c8c-e303-4565-893f-6c2bf5fac0d4,88969162,2021-07-27 19:39:48-05:00,2021-07-27,-121.9391867106,45.2782758291,555.0,,17.2,31.1,0.0,5.3,,1016.4,Ganoderma brownii,"Clackamas County, US-OR, US",1

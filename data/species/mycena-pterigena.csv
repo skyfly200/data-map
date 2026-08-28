@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2b797a58-2f3f-4820-9cac-0d645b93aad7,187314518,2023-10-11 14:39:46-07:00,2023-10-11,-122.2910616667,45.3244133333,201.0,,13.3,18.3,,18.3,,1006.3,Mycena pterigena,"Eagle Fern Park, Eagle Creek, OR, US",1
+dc821809-6347-4108-a9b6-a7defe05d596,63774322,2020-10-23 13:31:00-07:00,2020-10-23,-121.9469561686,45.259543429,619.0,,5.6,14.4,,11.4,,1018.6,Mycena pterigena,"Oregon, US",1
+075dc409-aa31-4360-84c8-ea0dde94dcf7,63357519,2020-10-23 13:30:16-07:00,2020-10-23,-121.9816310762,45.2325606448,1061.0,,5.6,14.4,,11.4,,1018.6,Mycena pterigena,"Oregon, US",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c436108a-304a-4784-8bbb-14e1e2865e10,34854735,2019-10-20 14:40:03-07:00,2019-10-20,-121.9346393645,45.2681703606,646.0,,6.1,14.4,,5.1,,1018.9,Leucocoprinus flammeotinctus,"Welches, OR 97067, USA",1

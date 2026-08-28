@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8c237d5f-77dc-44a6-b111-3588d975ee84,35188758,2019-11-01 11:21:36-07:00,2019-11-01,-122.0756078884,45.1083949425,433.0,,,,,,,,Phlegmacium ponderosum,"Estacada, OR 97023, USA",1

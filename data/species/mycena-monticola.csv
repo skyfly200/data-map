@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2a323370-825e-43bf-a189-67dbc582dcd2,322530424,2025-10-20 12:26:35-07:00,2025-10-20,-121.75557,45.1942366667,1182.0,,,,,,,,Mycena monticola,"Zigzag Ranger Station, Government Camp, OR, US",1
+1b1e4892-2258-4a08-b753-d50005bc01a8,99761272,2021-10-28 15:52:38-07:00,2021-10-28,-121.73591837,45.2800867,1121.0,,,,,,,,Mycena monticola,"Clackamas County, US-OR, US",2

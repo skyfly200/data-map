@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4ca89251-dc59-45d9-9885-6b5fabc3e0b3,325251515,2025-11-06 12:44:00-08:00,2025-11-06,-122.2285509053,45.3070541292,413.0,,9.0,17.0,5.7,9.1,,1014.1,Tricholoma atroviolaceum,"Clackamas County, OR, USA",1
+949475e8-1fce-4bfa-af07-b5902ed8038a,4575085,2016-11-13 10:26:58-08:00,2016-11-13,-121.8162,45.3138966667,882.0,,,,,,,,Tricholoma atroviolaceum,"Mt. Hood National Forest, Rhododendron, OR, US",4
+d178436c-8610-4371-80ae-3e939eee2599,3593066,2013-10-23,2013-10-23,-121.7,45.3515,2309.0,,,,,,,,Tricholoma atroviolaceum,"Mount Hood, Mount Hood National Forest, Oregon, USA",3

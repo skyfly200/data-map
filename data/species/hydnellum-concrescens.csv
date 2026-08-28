@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+32f447a5-471f-4e5c-af8a-d6b668fa496f,63555732,2020-10-17 13:42:22-07:00,2020-10-17,-121.758835,45.303392,1171.0,,,,,,,,Hydnellum concrescens,"TIMBRLINE LDG, OR 97028, USA",1

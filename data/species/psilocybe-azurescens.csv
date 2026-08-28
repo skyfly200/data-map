@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6c164d0d-69fc-4acd-9af7-1174ca85fbab,192864660,2023-12-01 08:19:24-08:00,2023-12-01,-121.4386349443,45.7214787965,685.0,,-1.7,7.0,18.0,9.6,,1011.3,Psilocybe azurescens,"Oregon, US",2

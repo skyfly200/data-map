@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d7bbff35-38b3-4bcd-8ce7-9434991b6b40,261292814,2024-12-28 14:52:00-08:00,2024-12-28,-122.2260184498,45.3068052669,370.0,,8.9,12.8,,13.6,,1010.9,Mycena laevigata,"Clackamas County, OR, USA",1
+57f70989-454c-488d-b28d-c9b2ee8c8b62,146998707,2023-01-20 14:33:36-08:00,2023-01-20,-122.3123369805,45.3375491455,172.0,,1.1,5.0,0.0,2.8,,1032.4,Mycena laevigata,"SE Eagle Fern Rd, Eagle Creek, OR, US",1

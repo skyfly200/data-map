@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+39abe3df-4bdd-4d8b-98aa-c5fea73570d8,197953740,2022-11-09 14:24:00-08:00,2022-11-09,-122.306145,45.5011431,48.0,,-1.1,10.0,0.0,2.1,,1019.0,Pholiota limonella,"Oxbow Regional Park, 3010 SE Oxbow Pkwy, Gresham, OR 97080, USA",1

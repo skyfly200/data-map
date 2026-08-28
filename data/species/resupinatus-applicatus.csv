@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e3439dba-9bac-4224-8b5a-26e6f2fbc649,79378543,2021-05-15 15:45:20-07:00,2021-05-15,-121.457069,45.4067719722,1191.0,,13.9,31.1,0.0,17.4,,1013.7,Resupinatus applicatus,"Dufur, OR 97021, USA",2

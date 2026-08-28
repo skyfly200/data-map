@@ -1,0 +1,12 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6af50b1c-a66c-4dfb-8959-7420f400d18e,248408623,2024-10-20 14:11:18-07:00,2024-10-20,-122.2691333333,45.4059666667,210.0,,8.3,21.1,,8.3,,1015.5,Leucoagaricus rubrotinctoides,"Sandy, OR, US",0
+b4c36175-ab92-4f51-9267-80d2d827519c,248377559,2024-10-20 12:16:29-07:00,2024-10-20,-122.1988666667,45.5857466667,392.0,,8.3,21.1,,8.3,,1015.5,Leucoagaricus rubrotinctoides,"Cape Horn Trail, Washougal, WA, US",0
+85a7ea06-f495-4d6b-9b11-105060365cf9,247047903,2024-10-12 17:37:47-07:00,2024-10-12,-122.2911533333,45.3250366667,192.0,,8.9,24.4,0.0,4.0,,1017.8,Leucoagaricus rubrotinctoides,"Eagle Fern Park, Eagle Creek, OR, US",1
+1da8d012-01bc-4a3c-8b59-18f6df677667,243004188,2024-09-20 12:06:34-07:00,2024-09-20,-122.166059023,45.5510453315,467.0,,11.1,22.8,0.0,4.7,,1020.0,Leucoagaricus rubrotinctoides,"Columbia River Gorge National Scenic Area, Corbett, OR, US",0
+74a2bf74-f6ba-4038-9aeb-92066f249ac8,186771743,2023-10-07 13:34:40-07:00,2023-10-07,-121.9945216667,45.34943,373.0,,18.3,28.3,0.0,25.4,,1012.4,Leucoagaricus rubrotinctoides,"Wildwood Recreation Site, Welches, OR, US",0
+380af96e-c51c-4d32-8618-dfd0b3f749e1,63495560,2020-10-24 13:52:00-07:00,2020-10-24,-121.9048012752,45.288450976,1171.0,,6.7,14.4,,17.2,,1020.2,Leucoagaricus rubrotinctoides,"Oregon, US",2
+175b860c-1f76-46f1-96d7-5abb3a4d2ba6,63097369,2020-10-18 11:30:33-07:00,2020-10-18,-122.2830498324,45.327096512,185.0,,12.8,19.4,,8.3,,1020.0,Leucoagaricus rubrotinctoides,"97022, Eagle Creek, OR, US",1
+4729abbb-a3f0-4013-8d53-20e21408c28c,63040271,2020-10-18 17:22:54-07:00,2020-10-18,-122.2185438126,45.5354082086,209.0,,12.8,19.4,,8.3,,1020.0,Leucoagaricus rubrotinctoides,"Corbett, OR 97019, USA",0
+716dd750-9594-4015-8891-bdf736a277c2,33285700,2019-09-23 12:49:44-07:00,2019-09-23,-122.2187583333,45.5326283333,213.0,,13.3,20.6,0.0,3.4,,1022.6,Leucoagaricus rubrotinctoides,"Corbett, Corbett, OR, US",1
+56131348-9eae-419b-ad48-39b972b06e4a,16987240,2018-09-26,2018-09-26,-121.9395,45.29935,484.0,,9.4,28.3,0.0,3.6,,1019.4,Leucoagaricus rubrotinctoides,"Salmon River Trail, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",0
+731115ca-5644-431e-8917-1c4bcc1af2c0,16783775,2018-09-20,2018-09-20,-121.795,45.30895,1029.0,,,,,,,,Leucoagaricus rubrotinctoides,"Barlow Trail, Laurel Ridge, Government Camp, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",0
