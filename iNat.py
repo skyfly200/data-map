@@ -119,9 +119,29 @@ def _resolve_location_from_env(default_lat=40.0, default_lng=-105.0):
     lng = _read_float_env('INAT_LNG', 'LNG', 'LON', default=default_lng)
     return lat, lng
 
-def _slugify(value):
-    slug = re.sub(r'[^a-zA-Z0-9]+', '-', str(value).strip().lower()).strip('-')
-    return slug or 'mushroom'
+def _parse_locations_with_radius(env_value: str, default_radius: float) -> list[dict]:
+    """Parse a semi‑colon separated list of `lat,lng[,radius]` strings.
+    Returns a list of dictionaries with keys 'lat', 'lng', 'radius'.
+    Missing radius defaults to `default_radius`.
+    """
+    locations = []
+    if not env_value:
+        return locations
+    for entry in env_value.split(";"):
+        entry = entry.strip()
+        if not entry:
+            continue
+        parts = entry.split(",")
+        try:
+            lat = float(parts[0])
+            lng = float(parts[1])
+            rad = float(parts[2]) if len(parts) > 2 else default_radius
+            locations.append({"lat": lat, "lng": lng, "radius": rad})
+        except Exception:
+            print(f"[!] Invalid location entry ignored: {entry}")
+    return locations
+
+
 
 
 def render_progress_bar(current, total, width=20):
