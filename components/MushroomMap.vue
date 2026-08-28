@@ -34,6 +34,20 @@
         <input type="checkbox" v-model="showFiltered" />
         Include excluded water / non-terrestrial rows
       </label>
+
+      <!-- Overlay controls -->
+      <div class="overlay-controls" style="margin-top:8px;">
+        <div v-for="(url, name) in overlayDefs" :key="name" class="overlay-item">
+          <label>
+            <input type="checkbox" v-model="activeOverlays[name]" @change="toggleOverlay(name)" />
+            {{ name }}
+          </label>
+        </div>
+        <div class="custom-overlay" style="margin-top:4px;">
+          <input v-model="customOverlayUrl" placeholder="Custom overlay GeoJSON URL" style="width:200px;" />
+          <button @click="addCustomOverlay(customOverlayUrl)" :disabled="!customOverlayUrl">Add</button>
+        </div>
+      </div>
     </div>
 
     <!-- Legend (categorical swatches or a sequential gradient) -->
@@ -113,6 +127,54 @@ const locateError = ref('')
 let map, geoLayer, L, userLayer, selectedMarker
 
 // Holds enriched observation info (photos, description, etc.) fetched from iNaturalist API
+
+// Overlay management definitions
+const overlayDefs = ref({
+  // Example static overlay: name -> URL of GeoJSON
+  // 'NDVI Layer': '/data/ndvi.geojson',
+});
+const activeOverlays = ref({});
+const overlayLayers = {};
+
+function loadOverlay(name, url) {
+  fetch(url)
+    .then(r => r.json())
+    .then(geo => {
+  if (!map || !L) { console.warn('Map not initialized; cannot load overlay', name); return; }
+        style: { color: '#ff7800', weight: 2, opacity: 0.6 },
+        onEachFeature: (f, l) => {
+          if (f.properties && f.properties.name) {
+            l.bindPopup(f.properties.name);
+          }
+        },
+      }).addTo(map);
+      overlayLayers[name] = layer;
+    })
+    .catch(e => console.error('Failed to load overlay', name, e));
+}
+
+function toggleOverlay(name) {
+  if (activeOverlays.value[name]) {
+    const url = overlayDefs.value[name];
+    if (url) loadOverlay(name, url);
+  } else {
+    const layer = overlayLayers[name];
+    if (layer && map) {
+      map.removeLayer(layer);
+      delete overlayLayers[name];
+    }
+  }
+}
+
+function addCustomOverlay(url) {
+  const name = `Custom ${Object.keys(overlayDefs.value).length + 1}`;
+  overlayDefs.value[name] = url;
+  activeOverlays.value[name] = true;
+  loadOverlay(name, url);
+}
+
+// UI state for custom overlay URL input
+const customOverlayUrl = ref('');
 const observationInfo = ref(null)
 watch(selected, async (s) => {
   if (s) {
