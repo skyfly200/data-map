@@ -20,6 +20,6 @@
     "vega": "^5",
     "vega-lite": "^5",
     "vega-embed": "^6",
-    "vue-vega": "^3",
-
+    "vue-vega": "^3"
+  }
 }
