@@ -113,7 +113,7 @@ const maxIntensity = computed(() => {
 
 const calendars = computed(() => {
   const idx = cov.value?.date_index || {}
-  const years = [...new Set(Object.keys(idx).map((d) => d.slice(0, 4)))].sort()
+  const years = [...new Set(Object.keys(idx).map((d) => d.slice(0, 4)))].sort((a, b) => Number(b) - Number(a))
   return years.map((year) => {
     const y = Number(year)
     const start = new Date(Date.UTC(y, 0, 1))
