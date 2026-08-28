@@ -34,6 +34,13 @@
         </div>
       </div>
 
+      <PlusCodeInput @update-plus-codes="handlePlusCodes" />
+      <div class="charts">
+        <CoverageTemporalChart :plus-codes="plusCodes" />
+        <CoverageNDVIChart :plus-codes="plusCodes" />
+        <CoverageRichnessChart :plus-codes="plusCodes" />
+      </div>
+
       <template v-if="matrixDates.length">
         <div class="cal-head">
           <h3 class="section">Coverage by date</h3>
@@ -66,10 +73,17 @@
 
 <script setup>
 import { PALETTE, UNCLUSTERED } from '~/composables/useObservations'
+import { ref, computed, onMounted } from 'vue'
+import PlusCodeInput from '~/components/PlusCodeInput.vue'
+import CoverageTemporalChart from '~/components/CoverageTemporalChart.vue'
+import CoverageNDVIChart from '~/components/CoverageNDVIChart.vue'
+import CoverageRichnessChart from '~/components/CoverageRichnessChart.vue'
 
-useHead({ title: 'Raster coverage · data-map' })
+const plusCodes = ref('')
+function handlePlusCodes(codes) {
+  plusCodes.value = codes
+}
 
-const cov = ref(null)
 const error = ref(false)
 
 onMounted(async () => {
