@@ -61,6 +61,12 @@ export async function fetchObservationDetails(id) {
   }
 }
 
+export function inatUrl(obs) {
+  if (!obs) return null
+  const id = obs.inat_id ?? obs.uuid
+  return id ? `https://www.inaturalist.org/observations/${id}` : null
+}
+
 
 const num1 = (v) => Number(v).toFixed(1)
 const num2 = (v) => Number(v).toFixed(2)
