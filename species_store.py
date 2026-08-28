@@ -93,7 +93,7 @@ def store_counts(base=SPECIES_DIR):
     counts = {}
     for path in list_species_files(base):
         try:
-            counts[os.path.splitext(os.path.basename(path))[0]] = sum(1 for _ in open(path)) - 1
+            counts[os.path.splitext(os.path.basename(path))[0]] = sum(1 for _ in open(path, encoding='utf-8', errors='ignore')) - 1
         except OSError:
             pass
     return counts
