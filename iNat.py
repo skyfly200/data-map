@@ -416,9 +416,10 @@ def main():
     print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km (per_page={per_page}, max_per_species={max_observations or 'unlimited'}, parallel_workers={parallel_fetches}, refresh_all={refresh_all})...")
     frames = []
     total_species = len(species_list)
+    completed_species = 0
 
     def fetch_single_species(species_name, species_index):
-        print(f"\n[{species_index}/{total_species}] {species_name} {render_progress_bar(species_index, total_species)}")
+        # Per-species start progress omitted; overall progress will be displayed after each species finishes.
 
         species_total = get_species_observation_total(
             taxon_name=species_name,
@@ -430,11 +431,8 @@ def main():
         if max_observations and species_total > max_observations:
             species_total = max_observations
 
-        def progress_callback(current, total, species_name=species_name):
-            if total <= 0:
-                return
-            print(f"\r  {format_observation_progress(species_name, current, total, width=20)}", end='', flush=True)
-
+        # Suppress per-observation progress bar; only final new count will be displayed.
+        progress_callback = lambda current, total, species_name=species_name: None
         df_species = fetch_inat_data(
             taxon_name=species_name,
             quality_grade=quality_grade,
@@ -452,7 +450,7 @@ def main():
         if not refresh_all and df_species is not None and not df_species.empty:
             df_species = df_species[~df_species['inat_id'].astype(str).isin(existing_inat_ids)] if 'inat_id' in df_species.columns else df_species
             count = len(df_species)
-        print(f"  -> {species_name}: {count} new observations fetched")
+            print(f"  {count}")
         return df_species
 
     with ThreadPoolExecutor(max_workers=max(1, parallel_fetches)) as executor:
