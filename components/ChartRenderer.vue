@@ -70,7 +70,7 @@ function labelOf(key) {
   return f.label
 }
 function catLabel(key) { return (ALL_CATEGORY.find((f) => f.key === key) || { label: key }).label }
-export function formatAspect(v) {
+function formatAspect(v) {
   if (v === null || v === undefined || !Number.isFinite(Number(v))) return ''
   const deg = Math.round(((Number(v) % 360) + 360) % 360)
   const DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']

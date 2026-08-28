@@ -417,15 +417,22 @@ def main():
         species_list = ['morchella']
 
     quality_grade = getenv_with_file('INAT_QUALITY_GRADE', default=(getenv_with_file('QUALITY_GRADE', default='research', env_file=env_file)), env_file=env_file)
-    lat, lng = _resolve_location_from_env(default_lat=40.0, default_lng=-105.0)
-    radius = _read_float_env('INAT_RADIUS', 'RADIUS', default=500.0)
+
+    # Parse multiple locations with optional per‑location radius
+    default_radius = _read_float_env('INAT_RADIUS', 'RADIUS', default=500.0)
+    locations = _parse_locations_with_radius(os.getenv('INAT_LOCATIONS'), default_radius)
+    if not locations:
+        # Fallback to legacy single‑location variables for backward compatibility
+        lat, lng = _resolve_location_from_env(default_lat=40.0, default_lng=-105.0)
+        locations = [{'lat': lat, 'lng': lng, 'radius': default_radius}]
+
     per_page = resolve_inat_page_size({**load_env_file(env_file), **os.environ})
     max_observations = int(getenv_with_file('INAT_MAX_OBSERVATIONS_PER_SPECIES', default=(getenv_with_file('MAX_OBSERVATIONS_PER_SPECIES', default='0', env_file=env_file)), env_file=env_file) or 0)
     parallel_fetches = get_parallel_fetch_workers({**load_env_file(env_file), **os.environ})
     refresh_all = should_refresh_all()
     existing_inat_ids = set()
     if not refresh_all:
-        # Incremental: skip observations already in the per-species store.
+        # Incremental: skip observations already in the per‑species store.
         existing_df = store.load_all(store.SPECIES_DIR)
         if 'inat_id' in existing_df.columns:
             existing_inat_ids = {str(v) for v in existing_df['inat_id'].dropna().tolist()}
@@ -433,10 +440,54 @@ def main():
     else:
         print('Full refresh enabled: REFRESH_ALL=1, reloading all observations.')
 
-    print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km (per_page={per_page}, max_per_species={max_observations or 'unlimited'}, parallel_workers={parallel_fetches}, refresh_all={refresh_all})...")
     frames = []
-    total_species = len(species_list)
-    completed_species = 0
+    for loc in locations:
+        lat = loc['lat']
+        lng = loc['lng']
+        radius = loc['radius']
+        print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km (per_page={per_page}, max_per_species={max_observations or 'unlimited'}, parallel_workers={parallel_fetches}, refresh_all={refresh_all})...")
+        def fetch_single_species(species_name, species_index):
+            # Per‑species start progress omitted; overall progress will be displayed after each species finishes.
+            species_total = get_species_observation_total(
+                taxon_name=species_name,
+                quality_grade=quality_grade,
+                lat=lat,
+                lng=lng,
+                radius=radius,
+            )
+            if max_observations and species_total > max_observations:
+                species_total = max_observations
+            # Suppress per‑observation progress bar; only final new count will be displayed.
+            progress_callback = lambda current, total, species_name=species_name: None
+            df_species = fetch_inat_data(
+                taxon_name=species_name,
+                quality_grade=quality_grade,
+                lat=lat,
+                lng=lng,
+                radius=radius,
+                per_page=per_page,
+                max_observations=max_observations or None,
+                progress_callback=progress_callback,
+                total_count=species_total,
+                existing_ids=existing_inat_ids,
+            )
+            # Directly report new observations count
+            new_count = 0 if df_species is None else len(df_species)
+            if not refresh_all and df_species is not None and not df_species.empty:
+                df_species = df_species[~df_species['inat_id'].astype(str).isin(existing_inat_ids)] if 'inat_id' in df_species.columns else df_species
+                new_count = len(df_species)
+            print(f"{species_name}: {new_count} new observations fetched")
+            return df_species
+        with ThreadPoolExecutor(max_workers=max(1, parallel_fetches)) as executor:
+            future_map = {executor.submit(fetch_single_species, species, idx): species for idx, species in enumerate(species_list, start=1)}
+            for future in as_completed(future_map):
+                species_name = future_map[future]
+                try:
+                    df_species = future.result()
+                    if df_species is not None and not df_species.empty:
+                        frames.append(df_species)
+                except Exception as e:
+                    print(f"[!] Error fetching taxon '{species_name}': {e}")
 
     def fetch_single_species(species_name, species_index):
         # Per-species start progress omitted; overall progress will be displayed after each species finishes.
@@ -465,12 +516,15 @@ def main():
             total_count=species_total,
             existing_ids=existing_inat_ids,
         )
-        print()
-        count = len(df_species) if df_species is not None else 0
+        # Directly report new observations count
+        if df_species is None:
+            new_count = 0
+        else:
+            new_count = len(df_species)
         if not refresh_all and df_species is not None and not df_species.empty:
             df_species = df_species[~df_species['inat_id'].astype(str).isin(existing_inat_ids)] if 'inat_id' in df_species.columns else df_species
-            count = len(df_species)
-            print(f"  {count}")
+            new_count = len(df_species)
+        print(f"{species_name}: {new_count} new observations fetched")
         return df_species
 
     with ThreadPoolExecutor(max_workers=max(1, parallel_fetches)) as executor:
