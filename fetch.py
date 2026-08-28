@@ -4,6 +4,7 @@ import math
 import os
 import gzip
 import shutil
+import sys
 import threading
 import time
 import zipfile
@@ -16,6 +17,10 @@ import pandas as pd
 import requests
 
 import species_store as store
+
+if sys.platform == 'win32' and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 # When the independent download sources run concurrently, their logs interleave.
 # Serialize prints and tag every line with its source so the output stays legible.
@@ -359,6 +364,14 @@ def fetch_chirps_precip_worker(date_str, output_dir="precip/"):
     except Exception as e:
         _remove_stale_chirps_files(gz_path, out_path)
         return "error", date_str, str(e)
+
+
+# Backwards compatibility wrapper for single-date calls and tests
+def fetch_chirps_precip(date_str, output_dir="precip/"):
+    status, _, path_or_err = fetch_chirps_precip_worker(date_str, output_dir=output_dir)
+    if status in ("downloaded", "cached"):
+        return path_or_err
+    return None
 
 
 def get_unique_dates(df):

@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -10,6 +11,10 @@ from datetime import datetime
 import requests
 
 import species_store as store
+
+if sys.platform == 'win32' and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 # https://www.inaturalist.org/observations?subview=map
 
@@ -37,11 +42,18 @@ def getenv_with_file(key, default=None, *, env_file=None):
     return os.getenv(key, default)
 
 def get_elevation(lat, lon):
-    key = (round(float(lat), 4), round(float(lon), 4))
+    if lat is None or lon is None:
+        return None
+    try:
+        flat = round(float(lat), 4)
+        flon = round(float(lon), 4)
+    except (ValueError, TypeError):
+        return None
+    key = (flat, flon)
     if key in _ELEVATION_CACHE:
         return _ELEVATION_CACHE[key]
 
-    url = f"https://api.open-elevation.com/api/v1/lookup?locations={lat},{lon}"
+    url = f"https://api.open-elevation.com/api/v1/lookup?locations={flat},{flon}"
     try:
         r = requests.get(url, timeout=15)
         if r.ok:
@@ -265,6 +277,20 @@ def get_species_observation_total(taxon_name='morchella', quality_grade='researc
         return 0
 
 
+def _get_observations_with_retry(max_retries=3, **kwargs):
+    for attempt in range(1, max_retries + 1):
+        try:
+            return get_observations(**kwargs)
+        except Exception as err:
+            if attempt == max_retries:
+                taxon = kwargs.get('taxon_name')
+                page = kwargs.get('page', 1)
+                print(f"\n[!] iNaturalist query failed for taxon '{taxon}' on page {page}: {err}")
+                return None
+            time.sleep(1.0 * attempt)
+    return None
+
+
 def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, per_page=200, max_observations=None, progress_callback=None, total_count=None, existing_ids=None):
     observations = []
     page = 1
@@ -276,7 +302,8 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
     seen_ids = set(str(item) for item in (existing_ids or []))
 
     while True:
-        results = get_observations(
+        results = _get_observations_with_retry(
+            max_retries=3,
             taxon_name=taxon_name,
             lat=lat,
             lng=lng,
@@ -287,12 +314,16 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
             per_page=per_page,
             page=page,
         )
+        if not results:
+            break
 
         raw_results = results.get('results', []) if isinstance(results, dict) else []
         if not raw_results:
             break
 
         for obs in raw_results:
+            if not isinstance(obs, dict):
+                continue
             if max_allowed is not None and len(observations) >= max_allowed:
                 return pd.DataFrame(observations)
 
@@ -315,20 +346,28 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
             else:
                 date = None
 
-            coords = obs['geojson']['coordinates'] if 'geojson' in obs else [None, None]
-            elevation = get_elevation(coords[1], coords[0])
-            weather = get_weather(coords[1], coords[0], date) if coords[0] and coords[1] and date else {}
+            geojson = obs.get('geojson') or {}
+            coords = geojson.get('coordinates') if isinstance(geojson, dict) else None
+            if not coords or not isinstance(coords, (list, tuple)) or len(coords) < 2:
+                coords = [None, None]
+
+            lon_val, lat_val = coords[0], coords[1]
+            has_coords = lon_val is not None and lat_val is not None
+
+            elevation = get_elevation(lat_val, lon_val) if has_coords else None
+            weather = get_weather(lat_val, lon_val, date) if has_coords and date else {}
             if not isinstance(weather, dict):
                 weather = {}
-                print(f"Unexpected weather data type: {type(weather)}")
+
+            species_name_found = (obs.get('taxon') or {}).get('name', '') if isinstance(obs.get('taxon'), dict) else ''
 
             observations.append({
                 'uuid': obs.get('uuid'),
                 'inat_id': obs.get('id'),
                 'timestamp': timestamp,
                 'date': date,
-                'lon': coords[0],
-                'lat': coords[1],
+                'lon': lon_val,
+                'lat': lat_val,
                 'elevation': elevation,
                 'tavg': weather.get('tavg', None),
                 'tmin': weather.get('tmin', None),
@@ -337,7 +376,7 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
                 'windspeed': weather.get('wspd', None),
                 'winddirection': weather.get('wdir', None),
                 'presure': weather.get('pres', None),
-                'species': obs.get('taxon', {}).get('name', ''),
+                'species': species_name_found or taxon_name,
                 'location': obs.get('place_guess', ''),
                 'num_identification_agreements': obs.get('num_identification_agreements', 0),
             })
@@ -422,9 +461,13 @@ def main():
             for index, species in enumerate(species_list, start=1)
         }
         for future in as_completed(future_map):
-            df_species = future.result()
-            if df_species is not None and not df_species.empty:
-                frames.append(df_species)
+            species_name = future_map[future]
+            try:
+                df_species = future.result()
+                if df_species is not None and not df_species.empty:
+                    frames.append(df_species)
+            except Exception as e:
+                print(f"[!] Error fetching taxon '{species_name}': {e}")
 
     if not frames:
         print('No new observations found; leaving the existing canonical dataset unchanged.')

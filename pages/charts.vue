@@ -419,6 +419,9 @@ const speciesData = computed(() => {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 16px;
 }
+.grid > * {
+  min-width: 0;
+}
 .note { margin: 8px 0 0; font-size: 0.78rem; color: var(--muted); }
 .msg { padding: 16px; color: #555; }
 .msg.error { color: #b00020; }

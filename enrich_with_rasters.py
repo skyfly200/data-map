@@ -10,8 +10,13 @@ import numpy as np
 import math
 import os
 import shutil
+import sys
 
 import species_store as store
+
+if sys.platform == 'win32' and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 
 def stage_output_path(input_path, suffix, output_dir='.'):
