@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5e1c7808-6c9e-47a0-8889-577381af53d9,317414692,2025-09-28 14:54:51-06:00,2025-09-28,-107.0541396657,38.7417568511,2611.0,,8.0,18.0,0.9,11.7,,1026.2,Cortinarius aptecohaerens,"Gunnison County, US-CO, US",2
+1a2b3f51-b78b-4def-973c-02cfdd2d7a83,191737386,2023-08-19 00:08:30-06:00,2023-08-19,-107.9463211932,37.949957701,2731.0,,12.0,26.0,2.4,9.5,,1031.9,Cortinarius aptecohaerens,"Colorado, US",3

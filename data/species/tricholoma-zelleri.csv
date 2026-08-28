@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c63d972e-5063-4ab3-b053-8c72437bbf22,91600894,2021-08-07 14:23:13-06:00,2021-08-07,-106.0713958611,39.8531265,2664.0,,8.0,13.0,0.0,20.1,,1034.3,Tricholoma zelleri,"Parshall, CO 80468, USA",1

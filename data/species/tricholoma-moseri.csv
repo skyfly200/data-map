@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+219625fc-5852-4c63-bcc4-05a05fabd492,221441112,2024-06-08 17:39:51-06:00,2024-06-08,-106.4391470701,39.6021721843,2372.0,,8.0,15.0,1.7,18.0,,1033.5,Tricholoma moseri,"Minturn, CO, USA",1
+294adb77-dd74-45c2-8f35-e654e99a4881,178601087,2023-08-15 12:31:39-06:00,2023-08-15,-107.8204716667,37.9382966667,2669.0,,11.0,22.0,5.3,5.2,,1037.5,Tricholoma moseri,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",1
+46477a04-9342-4178-9731-df87d1e35969,99313833,2021-10-20 16:58:30-06:00,2021-10-20,-107.2278888889,39.4649527778,2045.0,,-5.0,13.3,0.0,9.3,,1028.9,Tricholoma moseri,"Carbondale, CO 81623, USA",1

@@ -1,0 +1,21 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6736fc83-7b43-4d19-bff2-17be40d63ce3,388295064,2026-08-01 15:19:00-06:00,2026-08-01,-105.5945873319,36.0070604936,3452.0,,,,,,,,Hydnellum aurantiacum,"New Mexico, US",1
+f4d106fa-32a2-4a98-813d-fb2f0875ab7f,386984592,2026-07-31 09:35:00-06:00,2026-07-31,-105.5251166667,36.1341555556,2571.0,,6.7,27.5,5.7,3.9,,,Hydnellum aurantiacum,"Taos County, NM, USA",1
+713f36f2-ea12-41b7-bee2-bdc3b2924285,312383648,2025-09-07 17:49:11-06:00,2025-09-07,-105.596105,39.9512616667,2751.0,,-0.6,10.2,1.0,13.7,,1024.6,Hydnellum aurantiacum,"Hessie Rd, Nederland, CO, US",1
+72dad5c5-ffe2-415b-aa1d-b7524b2e9468,307276952,2025-08-17 18:03:11-06:00,2025-08-17,-105.3368533333,39.342575,2242.0,,5.1,21.0,0.0,5.4,,1017.6,Hydnellum aurantiacum,"Pike and San Isabel National Forests, Bailey, CO, US",1
+1724b17a-faab-403d-bcf5-5d38604a04fe,305065297,2025-08-09 14:57:44-06:00,2025-08-09,-106.8304133333,39.6433533333,2012.0,,12.2,29.4,0.0,11.1,,1013.3,Hydnellum aurantiacum,"Capitol St, Eagle, CO, US",2
+f62f4d9c-c11b-46f7-8c0e-9d8a03701ce7,304844022,2025-08-08 14:39:43-06:00,2025-08-08,-105.1123337936,39.1573998181,2323.0,,14.1,35.1,0.0,17.7,,1008.3,Hydnellum aurantiacum,"Pike and San Isabel National Forests, Sedalia, CO, US",1
+e649f4b2-63c2-437d-abe3-cb63ce913b4a,240257681,2024-09-06 17:50:00-06:00,2024-09-06,-105.768722865,39.773128591,2911.0,,-3.6,13.4,0.0,9.4,,1028.6,Hydnellum aurantiacum,"Clear Creek County, CO, USA",2
+4b411519-b48c-46f4-a0c0-ef5873820d28,237541416,2024-08-23 11:55:07-06:00,2024-08-23,-106.70147,39.1182971667,2911.0,,10.6,21.1,,8.5,,1016.3,Hydnellum aurantiacum,"White River National Forest, Aspen, CO, US",1
+ca7a6fb2-0b58-4957-a6e5-f4fef3aaed4e,236621564,2024-08-18 14:38:36-06:00,2024-08-18,-107.8243128118,37.8550121917,2983.0,,11.0,20.0,5.6,5.4,,1035.5,Hydnellum aurantiacum,"San Miguel County, US-CO, US",2
+18fbe8f6-e0b7-4909-9595-8ea29d3cfd2a,235964164,2024-08-07 12:53:00-06:00,2024-08-07,-105.79335,35.7965861111,3419.0,,17.2,34.4,0.0,16.8,,1012.0,Hydnellum aurantiacum,"Santa Fe County, NM, USA",1
+bd3dcf0a-0b9f-4002-a81a-03a073edc624,181855397,2023-08-29 18:48:31-06:00,2023-08-29,-105.6767229981,39.6638577031,3278.0,,0.8,13.6,0.0,9.7,,1025.3,Hydnellum aurantiacum,"Colorado, US",1
+adf606e9-3f18-41bd-ab46-1b9b8ee21e43,181853781,2023-09-03 14:59:55-06:00,2023-09-03,-105.8685530484,39.6531052011,3494.0,,2.0,14.7,2.1,9.8,,1019.8,Hydnellum aurantiacum,"Colorado, US",2
+9eb52b6a-6b20-4264-a832-16efc01d8691,134376951,2022-09-04 19:15:27-06:00,2022-09-04,-105.4465992058,39.7706863431,2349.0,,1.8,16.3,0.0,8.6,,1022.8,Hydnellum aurantiacum,"Colorado, US",1
+14f4a2dd-6e18-4f69-b5bf-3776c056d04e,134247425,2022-09-08 18:41:00-06:00,2022-09-08,-105.5926435954,39.9500501856,2755.0,,3.6,16.6,2.9,7.2,,1017.6,Hydnellum aurantiacum,"Hessie Rd, Nederland, CO, US",1
+e4672a11-7df5-4471-820d-3dcde89cabdf,132964170,2022-08-28 15:48:00-06:00,2022-08-28,-107.3949965575,40.8203877062,2938.0,,-18.0,27.1,0.0,20.2,,1017.9,Hydnellum aurantiacum,"Moffat County, CO, USA",1
+ce84d68b-2ff5-4a43-bd09-dd96cc6a910b,130648653,2022-08-12 16:12:06-06:00,2022-08-12,-105.490476,39.9352166,2591.0,,20.0,33.0,0.0,6.7,,1023.0,Hydnellum aurantiacum,"Colorado, US",2
+7c8c0080-4896-41c5-8d39-4e0131fc5c22,129908570,2022-08-07 11:38:39-06:00,2022-08-07,-105.3782583333,39.1742383333,2477.0,,7.7,20.4,1.3,7.1,,1020.5,Hydnellum aurantiacum,"Pike and San Isabel National Forests, Sedalia, CO, US",1
+ab9cb175-c983-4b5f-8295-cbd27ede5fc0,128070939,2022-07-25 16:54:13-06:00,2022-07-25,-105.735895,40.0997278333,2616.0,,11.5,25.5,0.0,5.0,,1028.3,Hydnellum aurantiacum,"Arapaho & Roosevelt National Forests Pawnee National Grassland, Granby, CO, US",1
+638fdabf-0c7d-4e8b-bee3-8163293a8853,91250033,2021-08-14 15:05:52-06:00,2021-08-14,-105.7951333333,39.9052166667,2766.0,,6.0,28.3,0.0,7.2,,1033.2,Hydnellum aurantiacum,"Arapaho & Roosevelt National Forests Pawnee National Grassland, Winter Park, CO, US",2
+94607aa2-910f-4e5e-b964-f94b8067648a,91188925,2021-08-14 15:28:28-06:00,2021-08-14,-105.7952033333,39.9061366667,2766.0,,6.0,28.3,0.0,7.2,,1033.2,Hydnellum aurantiacum,"Arapaho & Roosevelt National Forests Pawnee National Grassland, Winter Park, CO, US",1

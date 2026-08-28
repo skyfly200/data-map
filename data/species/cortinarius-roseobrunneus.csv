@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+80d4dc86-a273-4ed9-bb44-a2aaf7613f1d,317419529,2025-09-28 11:49:06-06:00,2025-09-28,-107.1007662992,38.7947533804,2806.0,,8.0,18.0,0.9,11.7,,1026.2,Cortinarius roseobrunneus,"Gunnison County, US-CO, US",2

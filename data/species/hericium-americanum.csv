@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+40d8db08-5add-4311-adc9-4786e30e4d9a,20219602,2017-08-27 17:22:00-10:00,2017-08-27,-107.9681472222,37.9124722222,2815.0,,11.3,26.5,,7.3,,,Hericium americanum,"San Miguel County, CO, USA",2

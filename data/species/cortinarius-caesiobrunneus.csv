@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4f21e195-07e3-4f3a-ba3e-2dc4d0d5bee1,319034081,2025-10-05 16:24:02-06:00,2025-10-05,-106.6384106674,38.8554419965,3419.0,,3.0,15.0,1.8,8.2,,1011.7,Cortinarius caesiobrunneus,"Gunnison County, US-CO, US",3

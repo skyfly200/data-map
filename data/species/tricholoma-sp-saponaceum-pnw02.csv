@@ -1,0 +1,13 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6981ffbe-b239-4b09-9f30-6d3a8b393d89,324012169,2025-08-07,2025-08-07,-105.0307348743,39.104600944,2822.0,,14.5,34.0,0.0,18.4,,1013.4,Tricholoma sp. 'saponaceum-PNW02',"Woodland Park, CO 80863, USA",4
+aadcd304-b3b3-41f6-9920-2bd0f66ce374,316594715,2025-09-24,2025-09-24,-105.8048452152,35.7937191931,3107.0,,6.0,22.0,0.0,11.8,,1029.1,Tricholoma sp. 'saponaceum-PNW02',"Santa Fe County, NM, USA",2
+c321ad1b-444f-4d02-9f82-ba827a92e488,312297520,2025-09-07 11:16:01-06:00,2025-09-07,-105.5020159997,39.4057152,2440.0,,1.8,15.6,0.8,11.2,,1020.5,Tricholoma sp. 'saponaceum-PNW02',"Bailey, CO 80421, USA",2
+af55b61d-b8f6-4233-81bf-6e0bd2a9002a,308359460,2025-08-22 13:29:46-06:00,2025-08-22,-104.8722536089,38.6047844503,1926.0,,14.9,30.9,4.0,16.1,,1018.5,Tricholoma sp. 'saponaceum-PNW02',"Colorado, US",2
+9bf106c9-41f8-4b64-8f3a-749c237885b8,305557653,2025-08-11 10:14:24-06:00,2025-08-11,-105.4459932808,36.6103894294,3228.0,,5.0,22.5,0.5,8.0,,1029.0,Tricholoma sp. 'saponaceum-PNW02',"Carson National Forest, Taos, NM, US",2
+9259b2bb-471a-46c3-a7e6-0e35780ef19d,305215379,2025-08-08,2025-08-08,-105.7777850702,39.7983193575,3454.0,,5.0,14.7,0.0,18.7,,1017.0,Tricholoma sp. 'saponaceum-PNW02',"Empire, CO 80438, USA",2
+5bf263e7-ae5b-4d84-9ffc-3b4efec408b1,299041179,2025-07-18 10:20:00-06:00,2025-07-18,-105.79987222,35.79671111,3238.0,,16.1,31.7,0.0,12.3,,1013.8,Tricholoma sp. 'saponaceum-PNW02',"Santa Fe, New Mexico, United States",2
+3a7e9c82-a541-45b7-b5ab-f6ed04f0f4e8,239882462,2024-09-04 13:37:10-06:00,2024-09-04,-107.993845,39.0047416667,2951.0,,15.1,31.1,0.0,11.0,,1016.9,Tricholoma sp. 'saponaceum-PNW02',"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",4
+8308b1fa-40f1-4c21-adbe-e3666bfcfe81,237223572,2024-08-20 11:15:00-06:00,2024-08-20,-106.400925,38.8112361111,3524.0,,4.1,23.6,0.9,7.9,,1022.5,Tricholoma sp. 'saponaceum-PNW02',"Chaffee County, CO, USA",2
+0fbef6a0-ac02-43fc-8675-90d003b6913f,229815801,2024-07-16 17:36:43-06:00,2024-07-16,-107.5526612932,38.2407936895,2772.0,,16.7,31.7,0.0,12.1,,1014.4,Tricholoma sp. 'saponaceum-PNW02',"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",3
+35253cf4-4ca7-4e84-ab1c-9deaeb803a37,178094777,2023-08-12 15:34:42-06:00,2023-08-12,-105.549095,40.0356721667,3081.0,,17.0,28.0,0.0,8.5,,1019.7,Tricholoma sp. 'saponaceum-PNW02',"Ward, CO, US",5
+a1e52a4f-eb04-491b-b1fc-6694d89513b8,178053430,2023-08-12 13:24:26-06:00,2023-08-12,-105.5785009531,40.0472561129,3332.0,,7.6,22.4,1.2,6.2,,1029.1,Tricholoma sp. 'saponaceum-PNW02',"Boulder County, US-CO, US",3

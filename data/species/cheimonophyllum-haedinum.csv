@@ -1,0 +1,9 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0440b207-db08-4d63-8c18-79f350346ba0,384064824,2026-07-22 10:47:59-06:00,2026-07-22,-105.6591836,39.6770683,2950.0,,6.0,13.0,1.8,9.9,,,Cheimonophyllum haedinum,"Golden, CO 80439, USA",2
+1b77442b-6feb-4583-9750-519f48d8dfc2,320022416,2025-10-10 12:35:10-06:00,2025-10-10,-105.7930367846,35.7956688596,3365.0,,11.7,22.2,0.8,6.7,,,Cheimonophyllum haedinum,"Tererro, NM, US",1
+60b7a1d6-fb26-4c44-9add-289b02d8690c,316866036,2025-09-25 17:53:14-06:00,2025-09-25,-105.5407457778,40.1572132258,2949.0,,8.0,26.0,0.0,3.8,,1023.0,Cheimonophyllum haedinum,"Colorado, US",1
+52e65fb2-21bd-45a5-bf88-109cb68317ea,243505986,2024-09-22 18:50:50-06:00,2024-09-22,-105.7580678266,39.9142678183,2951.0,,-4.0,5.2,3.0,8.5,,1021.2,Cheimonophyllum haedinum,"Colorado, US",1
+a80fb6ea-adad-49d6-853b-604815d88cba,238527118,2024-08-28 17:54:56-06:00,2024-08-28,-107.997345,39.0089388833,2965.0,,15.0,33.9,0.0,13.0,,1012.4,Cheimonophyllum haedinum,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",2
+bbb841a0-025e-47be-8a44-d5a48fbf2d77,236620981,2024-08-18 12:22:38-06:00,2024-08-18,-107.8258027007,37.8546202464,2981.0,,11.0,20.0,5.6,5.4,,1035.5,Cheimonophyllum haedinum,"San Miguel County, US-CO, US",1
+38f3e0c9-c53e-4db6-8a30-848d1c3581cd,131519942,2022-08-19 11:04:44-06:00,2022-08-19,-107.8259711336,37.85451717,2981.0,,10.0,17.0,7.5,3.4,,1030.0,Cheimonophyllum haedinum,"San Miguel County, US-CO, US",2
+a6f1c1a6-6777-4751-b713-76457377701b,58125750,2020-08-30 09:50:38-06:00,2020-08-30,-105.5102833879,39.5283808132,2825.0,,,,,,,,Cheimonophyllum haedinum,"Colorado, US",1

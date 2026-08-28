@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+7a2daf7d-ccf6-4379-af3c-97d6367a4c0a,307619107,2025-08-19 11:28:17-06:00,2025-08-19,-105.3400783333,39.63237,2191.0,,16.0,34.0,0.0,10.8,,1026.4,Pleurotus sp. 'pulmonarius-PNW02',"Jefferson County, US-CO, US",2
+70e6d96e-b049-4bcb-978a-221e959a59d4,237420484,2024-08-22 18:03:00-06:00,2024-08-22,-105.4460604094,40.1975099003,2460.0,,17.3,31.8,1.9,5.5,,1021.3,Pleurotus sp. 'pulmonarius-PNW02',"Colorado, US",2
+7036986a-a814-4e36-89f0-b45b2efea92b,237419730,2024-08-22 12:23:06-06:00,2024-08-22,-105.4081789007,39.8608260933,2803.0,,18.0,30.0,2.5,9.2,,1021.2,Pleurotus sp. 'pulmonarius-PNW02',"Colorado, US",3
