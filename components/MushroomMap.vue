@@ -140,13 +140,14 @@ function loadOverlay(name, url) {
   fetch(url)
     .then(r => r.json())
     .then(geo => {
-  if (!map || !L) { console.warn('Map not initialized; cannot load overlay', name); return; }
+      if (!map || !L) { console.warn('Map not initialized; cannot load overlay', name); return; }
+      const layer = L.geoJSON(geo, {
         style: { color: '#ff7800', weight: 2, opacity: 0.6 },
         onEachFeature: (f, l) => {
           if (f.properties && f.properties.name) {
             l.bindPopup(f.properties.name);
           }
-        },
+        }
       }).addTo(map);
       overlayLayers[name] = layer;
     })
