@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -16,8 +17,6 @@ import utils.olc as olc_utils
 if sys.platform == 'win32' and hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
-
-# https://www.inaturalist.org/observations?subview=map
 
 _ELEVATION_CACHE = {}
 _WEATHER_CACHE = {}
@@ -120,34 +119,7 @@ def _resolve_location_from_env(default_lat=40.0, default_lng=-105.0):
     lng = _read_float_env('INAT_LNG', 'LNG', 'LON', default=default_lng)
     return lat, lng
 
-def parse_plus_codes(env_value: str, default_radius: float) -> list[dict]:
-    """Parse a semicolon‑separated list of Open Location Codes (plus‑codes).
-
-    Each entry can be ``pluscode`` or ``pluscode,radius``. The radius defaults
-    to ``default_radius`` (the same value used for lat/lng locations). The
-    function returns a list of dicts with ``lat``, ``lng`` and ``radius`` keys.
-    """
-    locations = []
-    if not env_value:
-        return locations
-    for entry in env_value.split(";"):
-        entry = entry.strip()
-        if not entry:
-            continue
-        parts = entry.split(",")
-        try:
-            plus = parts[0]
-            lat, lng = olc_utils.decode_olc(plus)
-            rad = float(parts[1]) if len(parts) > 1 else default_radius
-            locations.append({"lat": lat, "lng": lng, "radius": rad})
-        except Exception as exc:
-            print(f"[!] Invalid plus‑code entry ignored: {entry} ({exc})")
-    return locations
-
-    """Parse a semi‑colon separated list of `lat,lng[,radius]` strings.
-    Returns a list of dictionaries with keys 'lat', 'lng', 'radius'.
-    Missing radius defaults to `default_radius`.
-    """
+def _parse_locations_with_radius(env_value: str, default_radius: float) -> list[dict]:
     locations = []
     if not env_value:
         return locations
@@ -165,8 +137,23 @@ def parse_plus_codes(env_value: str, default_radius: float) -> list[dict]:
             print(f"[!] Invalid location entry ignored: {entry}")
     return locations
 
-
-
+def parse_plus_codes(env_value: str, default_radius: float) -> list[dict]:
+    locations = []
+    if not env_value:
+        return locations
+    for entry in env_value.split(";"):
+        entry = entry.strip()
+        if not entry:
+            continue
+        parts = entry.split(",")
+        try:
+            plus = parts[0]
+            lat, lng = olc_utils.decode_olc(plus)
+            rad = float(parts[1]) if len(parts) > 1 else default_radius
+            locations.append({"lat": lat, "lng": lng, "radius": rad})
+        except Exception as exc:
+            print(f"[!] Invalid plus-code entry ignored: {entry} ({exc})")
+    return locations
 
 def render_progress_bar(current, total, width=20):
     if total <= 0:
@@ -175,10 +162,8 @@ def render_progress_bar(current, total, width=20):
     bar = '#' * filled + '-' * (width - filled)
     return f'[{bar}] {current}/{total}'
 
-
 def format_observation_progress(species, current, total, width=20):
     return f'{species} {render_progress_bar(current, total, width=width)}'
-
 
 def parse_species_list(species_value):
     if species_value is None:
@@ -198,14 +183,12 @@ def parse_species_list(species_value):
         cleaned.append(value)
     return cleaned
 
-
 def _coerce_int(value, default, *, minimum=1):
     try:
         parsed = int(value)
     except (TypeError, ValueError):
         return default
     return parsed if parsed >= minimum else default
-
 
 def resolve_inat_page_size(env=None):
     values = {**os.environ, **(env or {})}
@@ -218,7 +201,6 @@ def resolve_inat_page_size(env=None):
             return parsed
     return 200
 
-
 def get_parallel_fetch_workers(env=None):
     values = {**os.environ, **(env or {})}
     for key in ('INAT_PARALLEL_FETCHES', 'PARALLEL_FETCHES', 'FETCH_WORKERS'):
@@ -229,7 +211,6 @@ def get_parallel_fetch_workers(env=None):
         if parsed > 0:
             return parsed
     return 3
-
 
 def should_refresh_all(env=None):
     values = {**(env or {})}
@@ -256,7 +237,6 @@ def should_refresh_all(env=None):
             return False
     return False
 
-
 def _existing_observation_ids(path):
     try:
         df = pd.read_csv(path)
@@ -267,7 +247,6 @@ def _existing_observation_ids(path):
         if column in df.columns:
             ids.extend(df[column].dropna().astype(str).tolist())
     return {str(item) for item in ids}
-
 
 def filter_new_observations(fresh_rows, existing_rows=None):
     seen = set()
@@ -293,13 +272,6 @@ def filter_new_observations(fresh_rows, existing_rows=None):
         new_rows.append(item)
     return new_rows
 
-
-def _unique_output_base(prefix='mushroom_observations', species='morchella', lat=40.0, lng=-105.0, radius=500.0):
-    timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
-    species_list = parse_species_list(species)
-    slug = '-'.join(_slugify(s) for s in species_list) if species_list else 'mushroom'
-    return f"{prefix}_{slug}_{lat}_{lng}_{radius}_{timestamp}"
-
 def get_species_observation_total(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0):
     try:
         response = get_observations(
@@ -320,7 +292,6 @@ def get_species_observation_total(taxon_name='morchella', quality_grade='researc
     except Exception:
         return 0
 
-
 def _get_observations_with_retry(max_retries=3, **kwargs):
     for attempt in range(1, max_retries + 1):
         try:
@@ -333,7 +304,6 @@ def _get_observations_with_retry(max_retries=3, **kwargs):
                 return None
             time.sleep(1.0 * attempt)
     return None
-
 
 def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, per_page=200, max_observations=None, progress_callback=None, total_count=None, existing_ids=None):
     observations = []
@@ -443,21 +413,14 @@ def main():
 
     quality_grade = getenv_with_file('INAT_QUALITY_GRADE', default=(getenv_with_file('QUALITY_GRADE', default='research', env_file=env_file)), env_file=env_file)
 
-    # Parse multiple locations with optional per‑location radius
-    # Parse multiple locations with optional per‑location radius
     default_radius = _read_float_env('INAT_RADIUS', 'RADIUS', default=500.0)
     locations = _parse_locations_with_radius(os.getenv('INAT_LOCATIONS'), default_radius)
-    # Plus‑code support – parse OLC strings and merge
     plus_locations = parse_plus_codes(os.getenv('INAT_PLUS_CODES'), default_radius)
     if plus_locations:
         locations.extend(plus_locations)
     if not locations:
-        # Fallback to legacy single‑location variables for backward compatibility
         lat, lng = _resolve_location_from_env(default_lat=40.0, default_lng=-105.0)
         locations = [{'lat': lat, 'lng': lng, 'radius': default_radius}]
-
-
-
 
     per_page = resolve_inat_page_size({**load_env_file(env_file), **os.environ})
     max_observations = int(getenv_with_file('INAT_MAX_OBSERVATIONS_PER_SPECIES', default=(getenv_with_file('MAX_OBSERVATIONS_PER_SPECIES', default='0', env_file=env_file)), env_file=env_file) or 0)
@@ -465,7 +428,6 @@ def main():
     refresh_all = should_refresh_all()
     existing_inat_ids = set()
     if not refresh_all:
-        # Incremental: skip observations already in the per‑species store.
         existing_df = store.load_all(store.SPECIES_DIR)
         if 'inat_id' in existing_df.columns:
             existing_inat_ids = {str(v) for v in existing_df['inat_id'].dropna().tolist()}
@@ -479,40 +441,41 @@ def main():
         lng = loc['lng']
         radius = loc['radius']
         print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km (per_page={per_page}, max_per_species={max_observations or 'unlimited'}, parallel_workers={parallel_fetches}, refresh_all={refresh_all})...")
-        def fetch_single_species(species_name, species_index):
-            # Per‑species start progress omitted; overall progress will be displayed after each species finishes.
+        
+        def fetch_single_species(species_name, target_lat=lat, target_lng=lng, target_radius=radius):
             species_total = get_species_observation_total(
                 taxon_name=species_name,
                 quality_grade=quality_grade,
-                lat=lat,
-                lng=lng,
-                radius=radius,
+                lat=target_lat,
+                lng=target_lng,
+                radius=target_radius,
             )
             if max_observations and species_total > max_observations:
                 species_total = max_observations
-            # Suppress per‑observation progress bar; only final new count will be displayed.
+
             progress_callback = lambda current, total, species_name=species_name: None
             df_species = fetch_inat_data(
                 taxon_name=species_name,
                 quality_grade=quality_grade,
-                lat=lat,
-                lng=lng,
-                radius=radius,
+                lat=target_lat,
+                lng=target_lng,
+                radius=target_radius,
                 per_page=per_page,
                 max_observations=max_observations or None,
                 progress_callback=progress_callback,
                 total_count=species_total,
                 existing_ids=existing_inat_ids,
             )
-            # Directly report new observations count
+            
             new_count = 0 if df_species is None else len(df_species)
             if not refresh_all and df_species is not None and not df_species.empty:
                 df_species = df_species[~df_species['inat_id'].astype(str).isin(existing_inat_ids)] if 'inat_id' in df_species.columns else df_species
                 new_count = len(df_species)
             print(f"{species_name}: {new_count} new observations fetched")
             return df_species
+
         with ThreadPoolExecutor(max_workers=max(1, parallel_fetches)) as executor:
-            future_map = {executor.submit(fetch_single_species, species, idx): species for idx, species in enumerate(species_list, start=1)}
+            future_map = {executor.submit(fetch_single_species, species): species for species in species_list}
             for future in as_completed(future_map):
                 species_name = future_map[future]
                 try:
@@ -522,58 +485,6 @@ def main():
                 except Exception as e:
                     print(f"[!] Error fetching taxon '{species_name}': {e}")
 
-    def fetch_single_species(species_name, species_index):
-        # Per-species start progress omitted; overall progress will be displayed after each species finishes.
-
-        species_total = get_species_observation_total(
-            taxon_name=species_name,
-            quality_grade=quality_grade,
-            lat=lat,
-            lng=lng,
-            radius=radius,
-        )
-        if max_observations and species_total > max_observations:
-            species_total = max_observations
-
-        # Suppress per-observation progress bar; only final new count will be displayed.
-        progress_callback = lambda current, total, species_name=species_name: None
-        df_species = fetch_inat_data(
-            taxon_name=species_name,
-            quality_grade=quality_grade,
-            lat=lat,
-            lng=lng,
-            radius=radius,
-            per_page=per_page,
-            max_observations=max_observations or None,
-            progress_callback=progress_callback,
-            total_count=species_total,
-            existing_ids=existing_inat_ids,
-        )
-        # Directly report new observations count
-        if df_species is None:
-            new_count = 0
-        else:
-            new_count = len(df_species)
-        if not refresh_all and df_species is not None and not df_species.empty:
-            df_species = df_species[~df_species['inat_id'].astype(str).isin(existing_inat_ids)] if 'inat_id' in df_species.columns else df_species
-            new_count = len(df_species)
-        print(f"{species_name}: {new_count} new observations fetched")
-        return df_species
-
-    with ThreadPoolExecutor(max_workers=max(1, parallel_fetches)) as executor:
-        future_map = {
-            executor.submit(fetch_single_species, species, index): species
-            for index, species in enumerate(species_list, start=1)
-        }
-        for future in as_completed(future_map):
-            species_name = future_map[future]
-            try:
-                df_species = future.result()
-                if df_species is not None and not df_species.empty:
-                    frames.append(df_species)
-            except Exception as e:
-                print(f"[!] Error fetching taxon '{species_name}': {e}")
-
     if not frames:
         print('No new observations found; leaving the existing canonical dataset unchanged.')
         return
@@ -581,19 +492,11 @@ def main():
     df_inat = pd.concat(frames, ignore_index=True)
     print("Data fetched successfully.")
 
-    # Write into the per-species store: one CSV per species under data/species/.
-    # Incremental runs merge with existing files (de-duped on uuid); a full
-    # refresh overwrites each fetched species' file.
     written = store.write_split(df_inat, base=store.SPECIES_DIR, merge=not refresh_all)
-    # Write per‑species per‑tile GeoJSON files for fast map tiling
     store.write_geojson_tiles(df_inat)
     total = sum(written.values())
     print(f"Saved {len(df_inat)} fetched observation(s) into {len(written)} species file(s) "
           f"under {store.SPECIES_DIR}/ ({total} rows on disk after merge/dedup).")
-    total = sum(written.values())
-    print(f"Saved {len(df_inat)} fetched observation(s) into {len(written)} species file(s) "
-          f"under {store.SPECIES_DIR}/ ({total} rows on disk after merge/dedup).")
-
 
 if __name__ == "__main__":
     main()
