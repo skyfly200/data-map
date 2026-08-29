@@ -69,6 +69,9 @@
     <transition name="slide">
       <aside v-if="selected" class="drawer">
         <button class="close" aria-label="Close" @click="selected = null">×</button>
+        <div v-if="observationInfo && observationInfo.photos && observationInfo.photos.length" class="photos">
+          <img v-for="p in observationInfo.photos" :src="p.url" :alt="'Observation photo'" class="obs-photo" />
+        </div>
         <h3><em>{{ selected.species || 'Observation' }}</em></h3>
         <dl class="meta">
           <div v-if="selected.date"><dt>Observed</dt><dd>{{ selected.date }}</dd></div>
@@ -77,9 +80,6 @@
           <div v-if="hasValue(selected.land_cover_label)"><dt>Land cover</dt><dd>{{ selected.land_cover_label }}</dd></div>
           <div v-if="hasValue(selected.cluster)"><dt>Cluster</dt><dd><span class="chip" :style="{ background: colorFor(selected.cluster) }">{{ selected.cluster }}</span></dd></div>
         </dl>
-        <div v-if="observationInfo && observationInfo.photos && observationInfo.photos.length" class="photos">
-          <img v-for="p in observationInfo.photos" :src="p.url" :alt="'Observation photo'" class="obs-photo" />
-        </div>
         <div v-if="observationInfo && observationInfo.description" class="description">
           {{ observationInfo.description }}
         </div>
