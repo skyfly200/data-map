@@ -8,7 +8,7 @@
       <span v-if="cov" class="generated">updated {{ cov.generated.replace('T', ' ').replace('Z', ' UTC') }}</span>
     </div>
 
-    <p v-if="error" class="msg">No coverage summary found. Run <code>python raster_coverage.py</code> after the pipeline.</p>
+    <p v-if="error" class="msg">No coverage summary found</p>
     <p v-else-if="!cov" class="msg">Loading…</p>
 
     <template v-else>
