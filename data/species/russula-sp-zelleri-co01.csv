@@ -1,5 +1,7 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-fa558070-85fb-4b3b-a808-9967dc02689f,317415976,2025-09-28 13:53:33-06:00,2025-09-28,-107.0965491652,38.7036558465,2937.0,,8.0,18.0,0.9,11.7,,1026.2,Russula sp. 'zelleri-CO01',"Gunnison County, US-CO, US",2
-b5efd0a5-8910-4b66-be7a-16dbbcdae5c8,312298854,2025-09-07 11:24:29-06:00,2025-09-07,-105.5020370278,39.4057540833,2440.0,,1.8,15.6,0.8,11.2,,1020.5,Russula sp. 'zelleri-CO01',"Bailey, CO 80421, USA",2
-fdc99abc-a400-4e5f-896b-4308ca2f3f8a,237420193,2024-08-22 15:08:15-06:00,2024-08-22,-105.6825979645,39.8138772225,3365.0,,3.6,11.4,9.5,9.6,,1022.9,Russula sp. 'zelleri-CO01',"Colorado, US",2
-f6e4062d-527d-4a22-8d1e-d013fc50810a,234132669,2024-08-05 21:06:14-06:00,2024-08-05,-108.0087569317,39.014515782,3101.0,,18.6,33.8,0.0,10.2,,1015.0,Russula sp. 'zelleri-CO01',"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+fa558070-85fb-4b3b-a808-9967dc02689f,317415976,2025-09-28 13:53:33-06:00,2025-09-28,-107.0965491652,38.7036558465,2937.0,,8.0,18.0,0.9,11.7,,1026.2,Russula sp. 'zelleri-CO01',"Gunnison County, US-CO, US",2,
+b5efd0a5-8910-4b66-be7a-16dbbcdae5c8,312298854,2025-09-07 11:24:29-06:00,2025-09-07,-105.5020370278,39.4057540833,2440.0,,1.8,15.6,0.8,11.2,,1020.5,Russula sp. 'zelleri-CO01',"Bailey, CO 80421, USA",2,
+fdc99abc-a400-4e5f-896b-4308ca2f3f8a,237420193,2024-08-22 15:08:15-06:00,2024-08-22,-105.6825979645,39.8138772225,3365.0,,3.6,11.4,9.5,9.6,,1022.9,Russula sp. 'zelleri-CO01',"Colorado, US",2,
+f6e4062d-527d-4a22-8d1e-d013fc50810a,234132669,2024-08-05 21:06:14-06:00,2024-08-05,-108.0087569317,39.014515782,3101.0,,18.6,33.8,0.0,10.2,,1015.0,Russula sp. 'zelleri-CO01',"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",2,
+8fe09f72-679e-4da8-89f7-002568a2aeeb,383962314,2026-07-18 09:51:00-06:00,2026-07-18,-105.6400466516,35.6839388377,2816.0,,13.9,29.4,3.5,5.6,,,Russula sp. 'zelleri-CO01',"New Mexico, US",1,857PM9M5+
+9189ef02-33a6-4fb3-a1e2-5e63b18e1e7b,378509367,2026-06-30 13:21:00-06:00,2026-06-30,-105.8339403916,35.7167228246,2707.0,,15.6,31.1,0.0,10.7,,,Russula sp. 'zelleri-CO01',"New Mexico, US",1,857PP588+
