@@ -69,10 +69,21 @@
     <transition name="slide">
       <aside v-if="selected" class="drawer">
         <button class="close" aria-label="Close" @click="selected = null">×</button>
-        <div v-if="observationInfo && observationInfo.photos && observationInfo.photos.length" class="photos">
-          <img v-for="p in observationInfo.photos" :src="p.url" :alt="'Observation photo'" class="obs-photo" />
-        </div>
         <h3><em>{{ selected.species || 'Observation' }}</em></h3>
+
+        <!-- Image Carousel -->
+        <div v-if="images.length > 0" class="carousel">
+          <div class="carousel-viewport">
+            <img :src="images[currentImageIndex]" :alt="`Observation image ${currentImageIndex + 1}`" class="carousel-image" />
+          </div>
+          <button v-if="images.length > 1" class="carousel-nav prev" aria-label="Previous image" @click="prevImage">‹</button>
+          <button v-if="images.length > 1" class="carousel-nav next" aria-label="Next image" @click="nextImage">›</button>
+          <div v-if="images.length > 1" class="carousel-indicators">
+            <span v-for="(img, idx) in images" :key="idx" class="indicator" :class="{ active: idx === currentImageIndex }" @click="currentImageIndex = idx"></span>
+          </div>
+          <div class="image-counter">{{ currentImageIndex + 1 }} / {{ images.length }}</div>
+        </div>
+
         <dl class="meta">
           <div v-if="selected.date"><dt>Observed</dt><dd>{{ selected.date }}</dd></div>
           <div v-if="selected.location"><dt>Location</dt><dd>{{ selected.location }}</dd></div>
@@ -180,12 +191,20 @@ function addCustomOverlay(url) {
 // UI state for custom overlay URL input
 const customOverlayUrl = ref('');
 const observationInfo = ref(null)
+// Carousel state
+const currentImageIndex = ref(0)
+const images = ref([])
 watch(selected, async (s) => {
+  currentImageIndex.value = 0
+  images.value = []
+  observationInfo.value = null
   if (s) {
     const id = s.inat_id ?? s.uuid
-    observationInfo.value = await fetchObservationDetails(id)
-  } else {
-    observationInfo.value = null
+    const details = await fetchObservationDetails(id)
+    observationInfo.value = details
+    if (details?.photos) {
+      images.value = details.photos.map(p => p.url || p.original_url || p.square_url)
+    }
   }
 })
 
@@ -311,6 +330,14 @@ function radiusFor(props) {
   const v = props[sizeBy.value]
   if (!hasValue(v)) return 3
   return 4 + 9 * ((Number(v) - s.lo) / ((s.hi - s.lo) || 1)) // 4 … 13
+}
+
+function prevImage() {
+  currentImageIndex.value = (currentImageIndex.value - 1 + images.value.length) % images.value.length
+}
+
+function nextImage() {
+  currentImageIndex.value = (currentImageIndex.value + 1) % images.value.length
 }
 
 // Re-style markers when the colouring or sizing changes.
@@ -555,4 +582,86 @@ onBeforeUnmount(() => { if (map) map.remove() })
 
 .slide-enter-active, .slide-leave-active { transition: transform 0.2s ease; }
 .slide-enter-from, .slide-leave-to { transform: translateX(100%); }
+
+/* Carousel styles */
+.carousel {
+  position: relative;
+  margin: 0 0 14px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+}
+.carousel-viewport {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carousel-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 1.5rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.carousel-nav:hover {
+  background: rgba(0, 0, 0, 0.75);
+}
+.carousel-nav.prev {
+  left: 8px;
+}
+.carousel-nav.next {
+  right: 8px;
+}
+.carousel-indicators {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+}
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.indicator:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+.indicator.active {
+  background: #fff;
+  transform: scale(1.2);
+}
+.image-counter {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
 </style>
