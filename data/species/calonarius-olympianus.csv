@@ -1,3 +1,5 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-5bd3f059-ed88-43e3-a527-1171a7fcf136,326643411,2025-10-31 14:47:37-07:00,2025-10-31,-121.8468116667,45.1184278333,1099.0,,,,,,,,Calonarius olympianus,"Mt. Hood National Forest, Estacada, OR, US",1
-8d2b9c74-0143-46f2-9111-41ab921b5d16,195721984,2019-10-12 09:30:00-07:00,2019-10-12,-121.8425300788,45.3417113853,1383.0,,10.0,16.7,0.0,21.9,,1015.0,Calonarius olympianus,"Oregon, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+5bd3f059-ed88-43e3-a527-1171a7fcf136,326643411,2025-10-31 14:47:37-07:00,2025-10-31,-121.8468116667,45.1184278333,1099.0,,,,,,,,Calonarius olympianus,"Mt. Hood National Forest, Estacada, OR, US",1,
+8d2b9c74-0143-46f2-9111-41ab921b5d16,195721984,2019-10-12 09:30:00-07:00,2019-10-12,-121.8425300788,45.3417113853,1383.0,,10.0,16.7,0.0,21.9,,1015.0,Calonarius olympianus,"Oregon, US",1,
+c6b3873e-f56d-4ccf-8cb9-045c7de8af68,145670733,2018-10-26 00:00:00-07:00,2018-10-26,-122.119745,44.715934,515.0,,,,,,,,Calonarius olympianus,"N. Santiam Hwy, OR 22, South of Detroit OR.  Linn, Linn, Oregon",3,84PVPV8J+
+6e49647c-954c-4e0d-b09e-b8bcebbbdd0c,17869017,2018-10-26 13:27:59-07:00,2018-10-26,-121.9608944523,44.633213837,1082.0,,,,,,,,Calonarius olympianus,"Oregon, US",1,84PWJ2MQ+

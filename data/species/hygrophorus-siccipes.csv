@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+375d08da-f692-4a7b-a415-9f3a651adb16,322316146,2025-10-20 16:14:10-07:00,2025-10-20,-121.7730783333,45.2025283333,84QW663G+,1178.0,,,,,,,,Hygrophorus siccipes,"Zigzag Ranger Station, Government Camp, OR, US",1
+42a7e70c-152f-4911-8832-c6bca2a873a8,35108892,2019-10-19 12:28:52-07:00,2019-10-19,-121.806820035,45.3208151702,84QW85CV+,1119.0,,,,,,,,Hygrophorus siccipes,"Zigzag, OR 97049, USA",2

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cd5c6cb5-88bb-400a-90f8-a936c918a031,139084886,2022-10-16 16:53:00-07:00,2022-10-16,-121.7302166667,45.2790444444,84QW77H9+,1110.0,,9.3,23.9,0.0,5.9,,1017.1,Hygrophorus agathosmoides,"Clackamas County, OR, USA",1

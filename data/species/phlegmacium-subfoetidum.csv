@@ -1,2 +1,3 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-6e63ab4d-6d38-4f17-9920-d251c5f95f79,250724557,2024-11-04 13:32:29-08:00,2024-11-04,-121.6169771353,45.6089502662,310.0,,7.5,10.8,2.9,15.8,,1020.9,Phlegmacium subfoetidum,"Washington, US",0
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+6e63ab4d-6d38-4f17-9920-d251c5f95f79,250724557,2024-11-04 13:32:29-08:00,2024-11-04,-121.6169771353,45.6089502662,310.0,,7.5,10.8,2.9,15.8,,1020.9,Phlegmacium subfoetidum,"Washington, US",0,
+b63eb545-c5d4-4550-a95d-258091742386,9569966,1990-11-02,1990-11-02,-121.972,44.7827,690.0,,,,,,,,Phlegmacium subfoetidum,"Breitenbush, Marion Co., Oregon, USA",0,84PWQ2MH+

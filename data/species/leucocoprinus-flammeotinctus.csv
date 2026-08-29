@@ -1,2 +1,3 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-c436108a-304a-4784-8bbb-14e1e2865e10,34854735,2019-10-20 14:40:03-07:00,2019-10-20,-121.9346393645,45.2681703606,646.0,,6.1,14.4,,5.1,,1018.9,Leucocoprinus flammeotinctus,"Welches, OR 97067, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+c436108a-304a-4784-8bbb-14e1e2865e10,34854735,2019-10-20 14:40:03-07:00,2019-10-20,-121.9346393645,45.2681703606,646.0,,6.1,14.4,,5.1,,1018.9,Leucocoprinus flammeotinctus,"Welches, OR 97067, USA",1,
+b4c8cf7d-fe0d-4575-b5a7-5cc81ad6dd71,35035111,2019-10-19 12:32:00-07:00,2019-10-19,-121.9758287,44.7814124,680.0,,,,,,,,Leucocoprinus flammeotinctus,"53000 Breitenbush Rd SE, Detroit, OR 97342, USA",1,84PWQ2JF+

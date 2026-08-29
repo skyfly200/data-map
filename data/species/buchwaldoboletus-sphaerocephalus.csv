@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+bbc10ca9-d8de-4def-b2fc-92ab2e4ed01c,182118683,2023-09-06 16:35:00-07:00,2023-09-06,-122.5156933355,45.1786748009,84QV5FHM+,127.0,,10.0,25.0,0.0,5.1,,1015.4,Buchwaldoboletus sphaerocephalus,"Clackamas County, US-OR, US",2

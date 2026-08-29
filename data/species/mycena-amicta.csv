@@ -1,6 +1,7 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-4da40c4c-8b95-4ee1-828a-858f8c3925eb,125564759,2022-07-08 12:32:09-07:00,2022-07-08,-121.6964530945,45.7172811528,809.0,,13.9,26.7,0.0,9.8,,1018.4,Mycena amicta,"Columbia River Gorge National Scenic Area - Headquarters, Bingen, WA, US",1
-db1a69c0-43c7-43b7-9182-1ed3696cdba8,37050954,2019-11-20 15:58:00-10:00,2019-11-20,-122.007601993,45.2952000912,1188.0,,6.1,14.4,0.0,7.9,,1017.6,Mycena amicta,"Oregon, US",1
-e7c08a92-6e30-4217-be72-e24448b2bac3,19797960,2019-01-14,2019-01-14,-121.81,45.31605,916.0,,,,,,,,Mycena amicta,"SW Mount Hood, Clackamas Co., Oregon, USA",1
-1bdf13a9-4b2e-4997-a322-e820bc659a38,16987234,2018-09-26,2018-09-26,-121.9395,45.29935,484.0,,9.4,28.3,0.0,3.6,,1019.4,Mycena amicta,"Salmon River Trail, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",1
-680c576a-4a4b-44c1-897e-4c39e24d4718,16217232,2016-10-09 12:36:00-07:00,2016-10-09,-121.9166077461,45.2665083442,713.0,,11.1,16.7,,9.1,,,Mycena amicta,"Clackamas County, OR, USA",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+4da40c4c-8b95-4ee1-828a-858f8c3925eb,125564759,2022-07-08 12:32:09-07:00,2022-07-08,-121.6964530945,45.7172811528,809.0,,13.9,26.7,0.0,9.8,,1018.4,Mycena amicta,"Columbia River Gorge National Scenic Area - Headquarters, Bingen, WA, US",1,
+db1a69c0-43c7-43b7-9182-1ed3696cdba8,37050954,2019-11-20 15:58:00-10:00,2019-11-20,-122.007601993,45.2952000912,1188.0,,6.1,14.4,0.0,7.9,,1017.6,Mycena amicta,"Oregon, US",1,
+e7c08a92-6e30-4217-be72-e24448b2bac3,19797960,2019-01-14,2019-01-14,-121.81,45.31605,916.0,,,,,,,,Mycena amicta,"SW Mount Hood, Clackamas Co., Oregon, USA",1,
+1bdf13a9-4b2e-4997-a322-e820bc659a38,16987234,2018-09-26,2018-09-26,-121.9395,45.29935,484.0,,9.4,28.3,0.0,3.6,,1019.4,Mycena amicta,"Salmon River Trail, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",1,
+680c576a-4a4b-44c1-897e-4c39e24d4718,16217232,2016-10-09 12:36:00-07:00,2016-10-09,-121.9166077461,45.2665083442,713.0,,11.1,16.7,,9.1,,,Mycena amicta,"Clackamas County, OR, USA",2,
+bbd90c71-bb17-49ee-b464-9eec2c15156b,58449830,2020-05-28 11:21:52-07:00,2020-05-28,-122.267572,44.842823,575.0,,,,,,,,Mycena amicta,"Gates, OR 97346, USA",2,84PVRPVJ+

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f8c9f34b-56a1-401a-b3b6-1233944ddf09,316320064,2025-09-20 16:40:56-07:00,2025-09-20,-122.4846633333,45.0333166667,84QV2GM8+,235.0,,11.0,26.0,0.0,6.8,,1015.0,Tetrapyrgos nigripes,"S Molalla Forest Rd, Molalla, OR, US",1

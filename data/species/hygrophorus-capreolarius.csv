@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a8ae6a9f-167d-4f57-8e96-a7ecbaa1d559,99497629,2021-10-26 12:10:39-07:00,2021-10-26,-121.5377258231,45.4084353475,84QWCF56+,1310.0,,8.3,16.1,0.3,13.6,,1009.7,Hygrophorus capreolarius,"Hood River County, US-OR, US",1

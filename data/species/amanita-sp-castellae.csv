@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cf0f675d-6579-4da9-aafb-ce84fc546ded,191152945,2023-11-15 14:51:31-08:00,2023-11-15,-122.4856301725,45.0772404242,84QV3GG7+,177.0,,6.1,11.7,,4.7,,1013.7,Amanita sp. 'castellae',"S Dickey Prairie Rd, Molalla, OR, US",2

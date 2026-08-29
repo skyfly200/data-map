@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+10227651-e318-42f7-baa5-6848bf45cfe0,63372305,2020-10-21 14:04:21-07:00,2020-10-21,-121.9631333286,45.2097910395,84QW625P+,1103.0,,,,,,,,Hygrophorus camarophyllus,"Oregon, US",2
+38c220b1-5e3d-4048-aa3b-1655cc93ae9b,35552979,2019-11-10 16:11:07+00:00,2019-11-10,-121.8625793457,45.3024330139,84QW842P+,686.0,,,,,,,,Hygrophorus camarophyllus,"Zigzag, OR 97049, USA",1
+2b7d034a-ff73-40ec-a0c3-65340c03cd17,35019354,2019-10-05,2019-10-05,-121.81,45.31605,84QW858R+,916.0,,,,,,,,Hygrophorus camarophyllus,"SW Mount Hood, Clackamas Co., Oregon, USA",2
+29e62863-749b-497f-a383-69ce5321013a,33971420,2019-10-06 13:01:14-07:00,2019-10-06,-121.778486604,45.3054124117,84QW864C+,1132.0,,,,,,,,Hygrophorus camarophyllus,"Mt. Hood National Forest, Government Camp, OR, US",1

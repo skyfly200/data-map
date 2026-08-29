@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d702de15-18fa-4097-ae8d-170ac035cb2f,205141721,2024-04-02 09:59:55-07:00,2024-04-02,-122.3061450943,45.5011429784,84QVGM2V+,48.0,,5.6,24.4,,7.3,,1022.6,Coprinopsis longipes,"Gresham, OR 97080, USA",0
+dcd33108-e5aa-4f66-98e6-f204a3479729,152334171,2023-03-25 13:24:43-07:00,2023-03-25,-121.9777689502,45.6328264882,84QWJ2MC+,28.0,,2.8,9.4,,6.1,,1026.1,Coprinopsis longipes,"North Bonneville, WA, USA",0
+e399e2aa-9edf-472c-be89-67ddf6336a9c,147239210,2023-01-23 12:14:10-08:00,2023-01-23,-122.2904995811,45.325053832,84QV8PG5+,192.0,,2.8,9.4,0.0,4.0,,1032.9,Coprinopsis longipes,"Eagle Fern Park, Eagle Creek, OR, US",0
+0e84816b-83d4-43a7-beac-04c950d8e951,141946094,2022-11-13 14:09:33-08:00,2022-11-13,-122.1991116667,45.5707083333,84QVHRC2+,149.0,,-0.6,8.3,0.0,5.0,,1028.0,Coprinopsis longipes,"Columbia River Gorge National Scenic Area - Headquarters, Washougal, WA, US",1

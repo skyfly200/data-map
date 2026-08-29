@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+afb80823-6363-450b-8c98-80ea4e3dc1b6,321995593,2025-10-18 11:48:00-07:00,2025-10-18,-121.9476544132,44.9219049778,84PWW3C2+,1268.0,,,,,,,,Cortinarius boulderensis,"Clackamas County, OR, USA",1
+8e5436aa-7415-4e5d-bba1-fc9c3d02aebc,145670735,2018-10-26 00:00:00-07:00,2018-10-26,-122.405979,44.756049,84PVQH4V+,290.0,,12.2,17.2,5.6,12.2,,1018.4,Cortinarius boulderensis,"N. Santiam Hwy, OR 22, South of Detroit OR.  Linn, Linn, Oregon",1

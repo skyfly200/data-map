@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+896d9936-337a-4e6f-aae5-71c09873c3ad,249114389,2024-10-25 16:30:56-07:00,2024-10-25,-121.9839083333,44.5819383333,84PWH2J8+,848.0,,,,,,,,Armillaria ostoyae,"Willamette National Forest, Idanha, OR, US",1
+1cbb17ad-def5-4b69-b94d-063a5d7dd1c3,247206555,2024-09-20 16:35:20-07:00,2024-09-20,-121.6565638889,45.3255527778,84QW88GV+,1588.0,,10.8,19.5,0.0,16.6,,1017.7,Armillaria ostoyae,"MT HOOD PRKDL, OR 97041, USA",1
+57587c36-5076-4e66-8e27-72ae0ce4b6eb,243427840,2024-09-18 12:30:21-07:00,2024-09-18,-121.702645,45.315195,84QW878W+,1615.0,,13.5,21.8,0.0,13.5,,1013.5,Armillaria ostoyae,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
+84bb53d1-c0e1-45c7-b455-d49ef645a6c7,242696117,2024-09-18 12:31:00-07:00,2024-09-18,-121.7024533333,45.3152666667,84QW878X+,1615.0,,13.5,21.8,0.0,13.5,,1013.5,Armillaria ostoyae,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
+d55905d7-cc95-460e-b798-e67c7fa8b655,151067504,2021-11-10 14:23:00-08:00,2021-11-10,-122.2180203,45.5362717,84QVGQPJ+,163.0,,6.1,12.2,,12.2,,1025.2,Armillaria ostoyae,"Multnomah County, OR, USA",1

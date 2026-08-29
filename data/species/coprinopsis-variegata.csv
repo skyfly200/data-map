@@ -1,5 +1,6 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-ea921356-4815-4470-9e15-504351319a9f,385414868,2026-07-26 12:03:22-05:00,2026-07-26,-99.8362661549,39.8672482863,710.0,,24.0,43.0,0.0,8.1,,1008.2,Coprinopsis variegata,United States,1
-cd951398-d734-427f-a17c-6848b7045885,159705814,2023-05-04 12:43:04-06:00,2023-05-04,-105.1198873431,40.3580399172,1541.0,,9.4,22.2,0.0,15.0,,1006.0,Coprinopsis variegata,"Colorado, US",1
-faf0e38d-e7cb-4410-8844-8910d65e4a3d,81381252,2021-06-02 19:04:04-06:00,2021-06-02,-105.0686539722,39.7494969722,1642.0,,9.9,23.3,,8.4,,1015.3,Coprinopsis variegata,"Edgewater, CO 80214, USA",1
-acf625f4-4e17-41d7-bb49-d1f9969815db,46013010,2020-05-15 13:46:11-06:00,2020-05-15,-104.7202,40.40930833,1469.0,,10.0,20.0,,12.0,,1014.3,Coprinopsis variegata,"26th Ave, Greeley, CO, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+ea921356-4815-4470-9e15-504351319a9f,385414868,2026-07-26 12:03:22-05:00,2026-07-26,-99.8362661549,39.8672482863,710.0,,24.0,43.0,0.0,8.1,,1008.2,Coprinopsis variegata,United States,1,
+cd951398-d734-427f-a17c-6848b7045885,159705814,2023-05-04 12:43:04-06:00,2023-05-04,-105.1198873431,40.3580399172,1541.0,,9.4,22.2,0.0,15.0,,1006.0,Coprinopsis variegata,"Colorado, US",1,
+faf0e38d-e7cb-4410-8844-8910d65e4a3d,81381252,2021-06-02 19:04:04-06:00,2021-06-02,-105.0686539722,39.7494969722,1642.0,,9.9,23.3,,8.4,,1015.3,Coprinopsis variegata,"Edgewater, CO 80214, USA",1,
+acf625f4-4e17-41d7-bb49-d1f9969815db,46013010,2020-05-15 13:46:11-06:00,2020-05-15,-104.7202,40.40930833,1469.0,,10.0,20.0,,12.0,,1014.3,Coprinopsis variegata,"26th Ave, Greeley, CO, US",1,
+c0677f84-2cac-42f5-b9aa-38deacfcd455,173229958,2023-05-19 10:51:08-07:00,2023-05-19,-122.3470373824,45.5161742024,24.0,,13.9,27.8,0.0,5.9,,1017.5,Coprinopsis variegata,"Multnomah County, US-OR, US",1,84QVGM83+

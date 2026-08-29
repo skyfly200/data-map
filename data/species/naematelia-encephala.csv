@@ -1,0 +1,9 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+667a4a0c-6ab0-42db-b751-49250a443a85,255297537,2024-12-15 12:27:09-08:00,2024-12-15,-122.0063388833,45.649755,84QVJXXV+,621.0,,5.0,9.4,,12.5,,1021.5,Naematelia encephala,"Beacon Rock State Park, Stevenson, WA, US",1
+036630ff-233f-47b1-bce8-2bd81f9e99c2,194782094,2023-12-24 12:05:09-08:00,2023-12-24,-121.955445,45.6688833333,84QWM29V+,184.0,,-1.2,2.3,0.0,7.5,,1027.0,Naematelia encephala,"Columbia River Gorge National Scenic Area, Stevenson, WA, US",1
+42fc63c0-3e69-441b-8849-cce9f6fe5f91,156927026,2023-04-25 12:24:00-07:00,2023-04-25,-122.041404129,45.2929780966,84QV7XV5+,1320.0,,5.6,20.0,0.0,4.2,,1023.4,Naematelia encephala,"Zigzag Ranger Station, Estacada, OR, US",1
+00bedfaf-bf62-401a-aa2d-804b2b742bd1,145716195,2020-01-14 01:04:51-08:00,2020-01-14,-122.3736736756,45.2417424172,84QV6JRG+,344.0,,0.0,5.0,,9.3,,1016.5,Naematelia encephala,"S Shady Forest Ln, Beavercreek, OR, US",1
+a1386380-6677-484c-9f69-5b255334f601,109256736,2022-03-22 14:53:25-07:00,2022-03-22,-122.3743841395,45.2452012865,84QV6JWG+,359.0,,10.6,20.0,0.0,6.5,,1027.4,Naematelia encephala,"Beavercreek, OR, US",1
+881569d9-b15a-4054-944f-bed1ea6116f7,67551751,2021-01-03 16:16:53-10:00,2021-01-03,-122.0262029722,45.640822,84QVJXRF+,309.0,,6.1,12.2,,14.7,,1014.2,Naematelia encephala,"Stevenson, WA 98648, USA",1
+3bc032b0-c9fd-4490-a2ee-573653503b65,41151294,2020-01-14 01:04:51+00:00,2020-01-14,-122.3763030755,45.2466575762,84QV6JWF+,333.0,,0.0,5.0,,9.3,,1016.5,Naematelia encephala,"Beavercreek, OR, US",1
+c885d277-56b6-47e2-8e46-99fd305aeaea,37558781,2020-01-11 14:22:32-08:00,2020-01-11,-121.9556287267,45.2835270004,84QW72MV+,810.0,,6.1,8.3,,22.0,,1014.6,Naematelia encephala,"Oregon, US",1

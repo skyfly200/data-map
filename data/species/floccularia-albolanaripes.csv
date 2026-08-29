@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+840126bd-2183-4be5-9b12-75c6454c9d52,326924149,2025-11-16 11:57:19-08:00,2025-11-16,-122.1124805556,44.69635,84PVMVWQ+,650.0,,,,,,,,Floccularia albolanaripes,"Idanha, OR 97350, USA",2
+87191586-389f-417d-9385-40ed6c03c8e4,326924129,2025-11-16 10:39:55-08:00,2025-11-16,-122.1121722222,44.6963694444,84PVMVWQ+,669.0,,,,,,,,Floccularia albolanaripes,"Detroit, OR 97342, USA",2
+ea03d6a5-bf16-4ce0-960a-f184740eecef,326400074,2025-11-11 13:00:48-08:00,2025-11-11,-122.112625,44.69625,84PVMVWP+,650.0,,,,,,,,Floccularia albolanaripes,"Idanha, OR, US",2
+464f68b7-0ad6-439d-a7f6-eef4ea428cdf,146808744,2013-10-20 13:17:00-07:00,2013-10-20,-122.139326856,44.7616857171,84PVQV66+,792.0,,,,,,,,Floccularia albolanaripes,"Marion County, OR, USA",2
+4d04bb62-c2fb-4df0-955f-a2b29ebc427d,66551093,2020-12-12 08:15:20-08:00,2020-12-12,-122.355995,45.299295,84QV7JXV+,135.0,,1.1,7.8,,22.7,,1020.6,Floccularia albolanaripes,"Milo McIver State Park, Estacada, OR, US",2
+c6e018f6-5d2f-43d6-87f1-55418ba702d3,65560767,2020-11-23 11:09:13+00:00,2020-11-23,-122.4849383333,45.0701945,84QV3GC8+,284.0,,5.0,9.4,,7.3,,1018.9,Floccularia albolanaripes,"Molalla, OR, US",2
+a480471d-3583-4d97-bdf1-3cf71e3b21cb,35034925,2019-10-20 15:31:00-07:00,2019-10-20,-121.9906132384,44.7819932545,84PWQ2J5+,702.0,,,,,,,,Floccularia albolanaripes,"Marion County, OR, USA",1

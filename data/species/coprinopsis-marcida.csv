@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b4f4bb03-e5b7-48df-b26f-ec4027b4a4dd,191152090,2023-11-15 13:36:39-08:00,2023-11-15,-122.4848993442,45.077610903,84QV3GH8+,202.0,,6.1,11.7,,4.7,,1013.7,Coprinopsis marcida,"S Dickey Prairie Rd, Molalla, OR, US",4

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4d62e8b1-5fd9-4bc5-9e40-cb2137eaf67c,359047350,2026-05-06 14:06:31-07:00,2026-05-06,-122.4813216667,45.1811783333,84QV5GJ9+,214.0,,12.2,21.1,0.0,3.8,,,Ophiocordyceps variabilis,"Molalla, OR, US",1

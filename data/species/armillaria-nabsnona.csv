@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e8d5ad8d-4f17-49f9-a8e9-1a3f3b7edfda,220308414,2023-10-21 16:38:09-07:00,2023-10-21,-122.2723383333,45.304795,84QV8P3H+,221.0,,12.8,16.7,0.3,2.0,,1011.7,Armillaria nabsnona,"SE Camp Rd, Estacada, OR, US",1
+c3e37cd0-018f-4622-81bf-d1578fc26b7c,17021159,2018-09-27,2018-09-27,-121.9395,45.29935,84QW73X6+,484.0,,10.0,28.3,0.0,3.1,,1014.3,Armillaria nabsnona,"Salmon River Trail, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",2

@@ -1,6 +1,8 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-f652f4b2-5ae9-450d-b4bb-3d0cea4ee769,327282457,2025-11-19 11:20:43-08:00,2025-11-19,-122.2646006942,45.4014070298,237.0,,2.0,12.0,0.0,22.0,,1014.2,Xerocomellus zelleri,"Sandy, OR 97055, USA",1
-1f40a715-a39b-4beb-9133-72bc81298ce0,268250851,2024-10-11 16:01:54-07:00,2024-10-11,-121.7423466667,45.2693116667,1127.0,,7.0,17.1,0.0,7.0,,1019.0,Xerocomellus zelleri,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
-e2c3bb41-afd8-4261-8633-3216bf58bba3,190032833,2023-11-04 15:11:21-07:00,2023-11-04,-121.8683783333,45.30357,684.0,,8.7,15.2,34.9,6.3,,1012.7,Xerocomellus zelleri,"Mt. Hood Park Division Recreation Area, Rhododendron, OR, US",1
-2924c585-0f6f-490f-88ac-c6804697912c,189131373,2023-09-28 12:19:42-07:00,2023-09-28,-121.9429990356,45.306379706,485.0,,12.2,19.4,,1.9,,1018.3,Xerocomellus zelleri,"Zigzag Ranger Station, Government Camp, OR, US",1
-2b47b4d1-db62-4bb6-9760-eb8e564eeabb,65658006,2020-11-26 13:36:20+00:00,2020-11-26,-121.8124556914,45.3143183767,905.0,,,,,,,,Xerocomellus zelleri,"Zigzag, OR 97049, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+f652f4b2-5ae9-450d-b4bb-3d0cea4ee769,327282457,2025-11-19 11:20:43-08:00,2025-11-19,-122.2646006942,45.4014070298,237.0,,2.0,12.0,0.0,22.0,,1014.2,Xerocomellus zelleri,"Sandy, OR 97055, USA",1,
+1f40a715-a39b-4beb-9133-72bc81298ce0,268250851,2024-10-11 16:01:54-07:00,2024-10-11,-121.7423466667,45.2693116667,1127.0,,7.0,17.1,0.0,7.0,,1019.0,Xerocomellus zelleri,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1,
+e2c3bb41-afd8-4261-8633-3216bf58bba3,190032833,2023-11-04 15:11:21-07:00,2023-11-04,-121.8683783333,45.30357,684.0,,8.7,15.2,34.9,6.3,,1012.7,Xerocomellus zelleri,"Mt. Hood Park Division Recreation Area, Rhododendron, OR, US",1,
+2924c585-0f6f-490f-88ac-c6804697912c,189131373,2023-09-28 12:19:42-07:00,2023-09-28,-121.9429990356,45.306379706,485.0,,12.2,19.4,,1.9,,1018.3,Xerocomellus zelleri,"Zigzag Ranger Station, Government Camp, OR, US",1,
+2b47b4d1-db62-4bb6-9760-eb8e564eeabb,65658006,2020-11-26 13:36:20+00:00,2020-11-26,-121.8124556914,45.3143183767,905.0,,,,,,,,Xerocomellus zelleri,"Zigzag, OR 97049, USA",1,
+7c9ecf40-da79-4eb5-947b-5e22ec1b7be4,250857371,2024-11-02 15:59:23-07:00,2024-11-02,-122.4257535482,44.754414621,285.0,,8.9,12.8,4.8,12.2,,1011.2,Xerocomellus zelleri,"Garden Ln, Gates, OR, US",1,84PVQH3F+
+58e0a36c-9b37-478c-97f3-b932f10f7547,444354,2013-10-22,2013-10-22,-122.2,44.8,980.0,,,,,,,,Xerocomellus zelleri,"Opal Creek, OR",2,84PVRR22+

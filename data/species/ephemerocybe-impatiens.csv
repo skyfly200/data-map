@@ -1,2 +1,3 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-c00499bb-795f-4d0b-b165-440272adfc89,317950770,2025-09-30 10:38:28-07:00,2025-09-30,-122.2185966667,45.5349616667,209.0,,10.0,22.0,1.1,9.2,,1008.6,Ephemerocybe impatiens,"Latourell Creek, Corbett, OR, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+c00499bb-795f-4d0b-b165-440272adfc89,317950770,2025-09-30 10:38:28-07:00,2025-09-30,-122.2185966667,45.5349616667,209.0,,10.0,22.0,1.1,9.2,,1008.6,Ephemerocybe impatiens,"Latourell Creek, Corbett, OR, US",1,
+211bd5fa-cdbb-4b1a-a78f-4663c72692e0,215376643,2024-05-12 14:12:34-07:00,2024-05-12,-121.9876196,44.69101128,641.0,,,,,,,,Ephemerocybe impatiens,"Linn County, US-OR, US",2,84PWM2R6+

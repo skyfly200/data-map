@@ -1,2 +1,4 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-8c237d5f-77dc-44a6-b111-3588d975ee84,35188758,2019-11-01 11:21:36-07:00,2019-11-01,-122.0756078884,45.1083949425,433.0,,,,,,,,Phlegmacium ponderosum,"Estacada, OR 97023, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+8c237d5f-77dc-44a6-b111-3588d975ee84,35188758,2019-11-01 11:21:36-07:00,2019-11-01,-122.0756078884,45.1083949425,433.0,,,,,,,,Phlegmacium ponderosum,"Estacada, OR 97023, USA",1,
+13c401f9-dc8f-4576-9f7b-ac3bef764eaf,146807652,2013-10-18 10:13:00-07:00,2013-10-18,-122.1394985174,44.7925148347,1319.0,,,,,,,,Phlegmacium ponderosum,"Marion County, OR, USA",0,84PVQVV6+
+1152fd6d-dbea-4a05-8a23-74fdce53b499,65237579,2013-10-20,2013-10-20,-122.2095,44.8442,680.0,,,,,,,,Phlegmacium ponderosum,"Opal Creek Wilderness and Scenic Recreation Area, Willamette National Forest, Marion Co., Oregon, USA",0,84PVRQVR+

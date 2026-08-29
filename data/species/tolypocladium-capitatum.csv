@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9552d440-22ea-4288-a373-ee49e786bbfc,71195682,2021-03-13 16:07:07+00:00,2021-03-13,-122.1810971573,45.5137722204,84QVGR79+,484.0,,0.6,17.2,0.0,4.0,,1022.3,Tolypocladium capitatum,"Corbett, OR 97019, USA",1
+95ecd44d-52c1-4b34-bbcd-9e8c5aa1844d,34768327,2019-10-21 12:40:43-07:00,2019-10-21,-121.8669433594,45.3003578186,84QW842M+,708.0,,,,,,,,Tolypocladium capitatum,"Zigzag, OR 97049, USA",1

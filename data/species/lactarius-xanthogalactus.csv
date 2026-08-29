@@ -1,4 +1,5 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-d81f9bb8-de55-4a8e-b9a7-26ac07f454db,328874656,2025-11-29 14:38:58-08:00,2025-11-29,-121.9235166667,45.0931388333,793.0,,,,,,,,Lactarius xanthogalactus,"Estacada, OR, US",1
-bd7c1d89-571a-46c4-ad41-a54f78352bb1,193557858,2023-12-09 14:34:49-08:00,2023-12-09,-121.856125,45.2849666667,655.0,,-0.1,2.4,13.9,5.8,,1029.3,Lactarius xanthogalactus,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
-915adc85-a4bb-4a00-92d5-28e33fc11a89,101919818,2021-11-25 12:32:08-08:00,2021-11-25,-121.93895,45.2821466667,600.0,,6.1,13.9,,8.8,,1025.8,Lactarius xanthogalactus,"Mount Hood National Forest, Welches, OR, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+d81f9bb8-de55-4a8e-b9a7-26ac07f454db,328874656,2025-11-29 14:38:58-08:00,2025-11-29,-121.9235166667,45.0931388333,793.0,,,,,,,,Lactarius xanthogalactus,"Estacada, OR, US",1,
+bd7c1d89-571a-46c4-ad41-a54f78352bb1,193557858,2023-12-09 14:34:49-08:00,2023-12-09,-121.856125,45.2849666667,655.0,,-0.1,2.4,13.9,5.8,,1029.3,Lactarius xanthogalactus,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1,
+915adc85-a4bb-4a00-92d5-28e33fc11a89,101919818,2021-11-25 12:32:08-08:00,2021-11-25,-121.93895,45.2821466667,600.0,,6.1,13.9,,8.8,,1025.8,Lactarius xanthogalactus,"Mount Hood National Forest, Welches, OR, US",2,
+a74f9df6-1c0b-4182-9840-646e0e532d40,141646315,2015-11-10 23:23:00-08:00,2015-11-10,-121.8998592352,44.6314861802,1573.0,,,,,,,,Lactarius xanthogalactus,"Linn County, OR, USA",1,84PWJ4J2+

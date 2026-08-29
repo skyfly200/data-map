@@ -1,4 +1,6 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-bf90ebaa-a622-4353-9b3f-e9756d356ea7,34000266,2019-10-06 15:26:09-07:00,2019-10-06,-121.9933197262,45.3171200896,1182.0,,5.0,21.1,,3.3,,1024.4,Lactarius pallescens,"Oregon, US",1
-2d7aed17-7d0c-49f6-bf71-441042deeeca,32627563,2019-09-11 12:19:00-07:00,2019-09-11,-121.7309919261,45.2690368312,1191.0,,,,,,,,Lactarius pallescens,"Clackamas County, OR, USA",3
-1384552a-af00-4987-81ba-4f07a51e83b2,30295309,2019-08-05 16:34:01-07:00,2019-08-05,-121.7390966667,45.2671466667,1112.0,,,,,,,,Lactarius pallescens,"Mt. Hood National Forest, Government Camp, OR, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+bf90ebaa-a622-4353-9b3f-e9756d356ea7,34000266,2019-10-06 15:26:09-07:00,2019-10-06,-121.9933197262,45.3171200896,1182.0,,5.0,21.1,,3.3,,1024.4,Lactarius pallescens,"Oregon, US",1,
+2d7aed17-7d0c-49f6-bf71-441042deeeca,32627563,2019-09-11 12:19:00-07:00,2019-09-11,-121.7309919261,45.2690368312,1191.0,,,,,,,,Lactarius pallescens,"Clackamas County, OR, USA",3,
+1384552a-af00-4987-81ba-4f07a51e83b2,30295309,2019-08-05 16:34:01-07:00,2019-08-05,-121.7390966667,45.2671466667,1112.0,,,,,,,,Lactarius pallescens,"Mt. Hood National Forest, Government Camp, OR, US",2,
+ba344720-8dbb-4d03-9a4a-d7c4ce96f3c3,3555820,2015-10-15,2015-10-15,-121.993,44.775,762.0,,,,,,,,Lactarius pallescens,"Breitenbush Hot Springs, Breitenbush, Oregon, USA",2,84PWQ2G4+
+e4ac8d80-a4f1-4aa1-b6b7-1471313e2846,478811,2013-10-23 12:06:47-07:00,2013-10-23,-122.16852,44.790141,1247.0,,,,,,,,Lactarius pallescens,"Willamette National Forest, Detroit, OR, US",1,84PVQRRJ+

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ee8aa03b-cce5-460f-a1bc-c7f4e53e595b,159450338,2020-10-20 14:28:54-07:00,2020-10-20,-122.313595,45.225636,84QV6MGP+,375.0,,8.9,17.8,0.0,3.6,,1022.2,Amanita farinosa,"Estacada, OR 97023, USA",1

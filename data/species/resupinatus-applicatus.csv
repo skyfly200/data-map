@@ -1,2 +1,4 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-e3439dba-9bac-4224-8b5a-26e6f2fbc649,79378543,2021-05-15 15:45:20-07:00,2021-05-15,-121.457069,45.4067719722,1191.0,,13.9,31.1,0.0,17.4,,1013.7,Resupinatus applicatus,"Dufur, OR 97021, USA",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+e3439dba-9bac-4224-8b5a-26e6f2fbc649,79378543,2021-05-15 15:45:20-07:00,2021-05-15,-121.457069,45.4067719722,1191.0,,13.9,31.1,0.0,17.4,,1013.7,Resupinatus applicatus,"Dufur, OR 97021, USA",2,
+fea65891-6668-4a15-9e9f-f217b330c157,68953347,2021-01-28 02:12:19+00:00,2021-01-28,-122.3709254114,45.2968185936,168.0,,5.0,9.4,,9.3,,1006.1,Resupinatus applicatus,"Milo McIver State Park, Estacada, OR, US",2,84QV7JWH+
+6720779a-5145-42ac-9dc5-523a803a5254,41213467,2020-04-01 01:41:15-07:00,2020-04-01,-122.3744484085,45.244989722,359.0,,3.9,8.3,,11.0,,1019.1,Resupinatus applicatus,"Beavercreek, OR, US",1,84QV6JVG+

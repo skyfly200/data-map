@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+eb140a72-1d80-482d-b8f5-05ce3eefbcdb,188861711,2023-10-15 15:35:00-07:00,2023-10-15,-121.9081742418,44.8167362438,84PWR38R+,1264.0,,,,,,,,Mycena epipterygia epipterygia,"Marion County, OR, USA",2

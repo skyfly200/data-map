@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5b570bd8-5c58-489f-bb47-ba0d1ea56f2c,223153688,2024-06-15 14:24:00-07:00,2024-06-15,-121.4508304432,45.270715833,84QW7GCX+,1043.0,,10.0,17.8,,20.6,,1018.8,Hygrophorus caeruleus,"Wasco County, US-OR, US",1
+943e4a46-9c79-41aa-941e-00defa1e1222,162595161,2023-05-19 15:16:04-07:00,2023-05-19,-121.4831342403,45.1155515488,84QW4G88+,916.0,,,,,,,,Hygrophorus caeruleus,"Oregon, US",1
+bcbb7011-3c53-44cd-9014-9d0fe39c3819,137095326,2022-06-16,2022-06-16,-121.4648,45.1877,84QW5GQP+,944.0,,,,,,,,Hygrophorus caeruleus,"Barlow Ranger District portion in Wasco Co., Mount Hood National Forest, Wasco Co., Oregon, USA",1
+27633ad3-d443-4ac1-915a-3036b7a0a31b,125259114,2022-06-11 14:37:51-07:00,2022-06-11,-121.5898462953,45.4543221749,84QWFC36+,853.0,,12.7,20.8,7.3,8.4,,1013.0,Hygrophorus caeruleus,"Wasco County, US-OR, US",1
+44b084a6-ca15-4d30-920c-63aa09a86c96,46805475,2020-05-21 17:30:07-07:00,2020-05-21,-121.4513443276,45.4072001172,84QWCG4X+,1171.0,,9.4,16.7,,28.6,,1015.9,Hygrophorus caeruleus,"Mt. Hood National Forest, Dufur, OR, US",2
+308f622e-1654-480e-9623-b15f31450150,18808429,2002-05-11 12:20:00-07:00,2002-05-11,-121.6209451417,44.5746234674,84PWH9FH+,825.0,,,,,,,,Hygrophorus caeruleus,"Jefferson County, OR, USA",2

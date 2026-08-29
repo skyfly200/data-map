@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+071abe2d-ace6-4dd3-817d-b6f026ce0041,348866170,2026-03-09 10:10:00-07:00,2026-03-09,-122.1775141566,45.5098085682,84QVGR5C+,486.0,,2.0,10.0,3.7,5.3,,1020.4,Trichaptum abietinum,"E Donahue Rd, Corbett, OR, US",1
+052f2508-9176-40a7-ba84-c551633c10b9,145716286,2020-01-14 01:51:52-08:00,2020-01-14,-122.3736736756,45.2417424172,84QV6JRG+,344.0,,0.0,5.0,,9.3,,1016.5,Trichaptum abietinum,"S Shady Forest Ln, Beavercreek, OR, US",1
+728ef0aa-8366-4187-88af-c2aa3dfcdd4d,104778640,2022-01-11 12:09:40+00:00,2022-01-11,-122.3741533333,45.245245,84QV6JWG+,359.0,,5.6,14.4,3.9,6.7,,1025.8,Trichaptum abietinum,"Beavercreek, OR, US",1

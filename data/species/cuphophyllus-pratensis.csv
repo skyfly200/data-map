@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9021f7ab-247d-438c-89ed-6eaa0b44db27,69236616,2021-02-06 12:45:18+00:00,2021-02-06,-122.2891299846,45.4920193284,84QVFPR6+,128.0,,5.0,9.4,,15.0,,1023.2,Cuphophyllus pratensis,"Oxbow Regional Park, Gresham, OR, US",1

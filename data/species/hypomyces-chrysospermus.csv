@@ -1,0 +1,9 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d9ab907a-b7f5-4544-b595-c19f76533c3f,321964324,2025-10-19 13:58:32-07:00,2025-10-19,-122.293795,45.4962366667,84QVFPW4+,33.0,,10.0,17.0,0.5,13.6,,1017.5,Hypomyces chrysospermus,"Oxbow Regional Park, Gresham, OR, US",1
+9b782cc0-c225-4edf-b790-067456e9f88d,297922773,2023-10-08 12:52:52-07:00,2023-10-08,-122.4325783333,45.245225,84QV6HW8+,421.0,,10.6,26.1,0.0,2.3,,1010.0,Hypomyces chrysospermus,"S Upper Highland Rd, Beavercreek, OR, US",1
+d728d1da-e7c5-4b75-b17a-0f1b9d1aadd2,246805357,2024-10-09 11:25:33-07:00,2024-10-09,-121.906507,45.3224044997,84QW83CV+,543.0,,11.1,20.0,,4.6,,1018.8,Hypomyces chrysospermus,"Rhododendron, OR 97049, USA",1
+20f0e7e1-3239-4559-bf40-63bd86ec7915,137099385,2022-09-23,2022-09-23,-121.7286,45.2773,84QW77GC+,1102.0,,11.6,24.4,0.0,9.6,,1019.5,Hypomyces chrysospermus,"Zigzag Ranger District portion in Clackamas Co., Mount Hood National Forest, Clackamas Co., Oregon, USA",1
+5a060af8-7226-41c7-b9c4-5380753c8c08,98543545,2021-10-17 13:51:25-07:00,2021-10-17,-121.9421306421,45.3404691077,84QW83R5+,569.0,,7.8,17.2,0.0,4.6,,1007.1,Hypomyces chrysospermus,"Mt. Hood Park Division Recreation Area, Rhododendron, OR, US",2
+0333adba-4dab-4760-84d3-e8f41bed396f,94682696,2021-09-12 14:58:00-07:00,2021-09-12,-121.7242953284,45.3786175689,84QW97HG+,2246.0,,,,,,,,Hypomyces chrysospermus,"Oregon, US",1
+d96fed43-3e19-4f02-ab0b-9da13e08e398,90360571,2020-10-22 16:03:32-07:00,2020-10-22,-122.5122903149,45.2702369355,84QV7FCQ+,209.0,,1.1,14.4,0.0,6.9,,1027.4,Hypomyces chrysospermus,"Oregon, US",1
+59c7859d-2aa7-4634-9d59-9908706545a6,4242587,2016-09-30 19:35:00+10:00,2016-09-30,-121.8077372295,45.3159780232,84QW858R+,925.0,,,,,,,,Hypomyces chrysospermus,"Clackamas County, US-OR, US",3

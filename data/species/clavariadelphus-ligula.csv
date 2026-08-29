@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5ec19d30-5c96-40ec-be65-c9ce1a7e6508,125259352,2022-06-15 12:38:07-07:00,2022-06-15,-121.4145080339,45.464298457,84QWFH7P+,956.0,,7.6,20.7,0.5,4.0,,1015.3,Clavariadelphus ligula,"Wasco County, US-OR, US",1
+6b62cfe9-3550-4ae1-b656-5035dd6aad70,98257955,2021-10-14 15:38:17-07:00,2021-10-14,-122.4426947669,44.8621821453,84PVVH64+,1048.0,,10.0,15.6,1.8,14.4,,1023.5,Clavariadelphus ligula,"Lyons, OR, US",3

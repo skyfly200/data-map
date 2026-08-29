@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e40dfeab-e958-4db0-bd59-ac541b2ec23f,4450806,2016-10-26 15:36:57-07:00,2016-10-26,-122.1884693765,44.8524654704,84PVVR26+,772.0,,,,,,,,Cortinarius californicus,"Marion County, US-OR, US",3

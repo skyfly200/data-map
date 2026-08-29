@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+21a095b7-8238-466f-a3a3-1e4d6f79a670,315594291,2025-09-19 17:58:00-07:00,2025-09-19,-121.8982367898,44.5609071009,84PWH462+,1280.0,,,,,,,,Russula idahoensis,"Oregon, US",2

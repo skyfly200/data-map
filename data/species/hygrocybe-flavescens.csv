@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+270c1446-f909-459e-aed5-abb4bd897e97,335580277,2026-01-19 14:10:37-08:00,2026-01-19,-122.5039277778,45.2810305556,84QV7FJW+,185.0,,-4.0,9.0,0.0,6.6,,1025.3,Hygrocybe flavescens,"Beavercreek, OR, USA",1
+eac47ae6-9f57-4049-b736-ad49d77d6938,259084095,2025-01-20 12:08:23-08:00,2025-01-20,-122.2639351711,45.4011294816,84QVCP2P+,274.0,,2.2,7.2,0.0,29.1,,1033.1,Hygrocybe flavescens,"Sandy, OR 97055, USA",1
+9a53019d-c468-497c-934b-2f876ab9ea01,257289077,2025-01-03 14:02:37-08:00,2025-01-03,-122.3007059935,45.4880934767,84QVFMQX+,79.0,,5.6,7.8,18.9,29.2,,1009.4,Hygrocybe flavescens,"Multnomah County, US-OR, US",2
+d75de205-48c5-4b87-9798-e55462737e8e,144877870,2021-04-01 16:35:53-07:00,2021-04-01,-122.5182360249,45.2584416554,84QV7F5J+,231.0,,4.4,19.4,0.0,4.0,,1014.3,Hygrocybe flavescens,"S Powder Rd, Beavercreek, OR, US",1
+520f162b-cf6f-4604-bbf0-31cd7ae0caac,102222618,2021-11-28 13:28:57+00:00,2021-11-28,-122.5243701202,45.2483459123,84QV6FXG+,223.0,,12.2,16.1,0.0,14.7,,1022.3,Hygrocybe flavescens,"S Brockway Rd, Oregon City, OR, US",2
+f85170a5-cd15-4a95-8446-1277d533f1f3,65490021,2020-11-23 04:15:22+00:00,2020-11-23,-122.3503283333,45.4972,84QVFJWX+,123.0,,5.6,10.6,,5.4,,1018.6,Hygrocybe flavescens,"SE Division Dr, Troutdale, OR, US",1
+ba392f11-a6d4-40fe-85ed-366de01d91a2,39030044,2020-02-19 14:28:00-08:00,2020-02-19,-122.297275,45.4840466667,84QVFPM3+,223.0,,5.0,11.1,0.0,32.8,,1024.8,Hygrocybe flavescens,"Oxbow Regional Park, OR, USA",1

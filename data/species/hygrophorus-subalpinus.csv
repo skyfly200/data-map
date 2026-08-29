@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+027d4de7-4f8f-4c8f-90ae-dfb873f7b3a6,287486320,2025-05-31 10:49:22-07:00,2025-05-31,-121.4802116667,45.3967583333,84QW9GW9+,1371.0,,10.0,23.0,0.0,3.4,,1017.5,Hygrophorus subalpinus,"Mt. Hood National Forest, Dufur, OR, US",1
+909489cf-e8e3-4d30-9ab7-3801f08feee6,78846377,2021-05-06 15:16:56-07:00,2021-05-06,-121.5199776464,45.2188330915,84QW6F9J+,1258.0,,,,,,,,Hygrophorus subalpinus,"Mt. Hood National Forest, Maupin, OR, US",1
+db6cc907-2b2f-4f63-8f24-a57a27304dee,45731551,2020-05-08 12:46:47-07:00,2020-05-08,-121.5197499482,45.2190761619,84QW6F9J+,1258.0,,,,,,,,Hygrophorus subalpinus,"Mt. Hood National Forest, Maupin, OR, US",1
+43472fa3-5229-49f3-8341-81f25860e018,35651953,2019-06-01,2019-06-01,-121.81,45.31605,84QW858R+,916.0,,,,,,,,Hygrophorus subalpinus,"SW Mount Hood, Clackamas Co., Oregon, USA",1

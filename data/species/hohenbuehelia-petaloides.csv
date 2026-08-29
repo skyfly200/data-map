@@ -1,8 +1,9 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-7de71a30-41b9-4666-b96b-4994f47c87c1,392680067,2026-08-19 09:02:31-06:00,2026-08-19,-106.373895,42.808455,1607.0,,,,,,,,Hohenbuehelia petaloides,"Fox, Casper, WY, US",1
-00f9f851-eff6-4b46-bf36-18110f0fdf2e,375660894,2026-06-26 15:53:58-06:00,2026-06-26,-105.2564166667,40.0009611117,1632.0,,13.0,31.0,1.5,3.1,,,Hohenbuehelia petaloides,"29th St, Boulder, CO, US",1
-ca0f6088-3159-481b-bb2f-18208ff48d4b,295175410,2025-07-04 12:19:24-06:00,2025-07-04,-105.7530364722,36.4953536944,2131.0,,13.1,29.0,0.0,12.8,,1014.3,Hohenbuehelia petaloides,"US-64 & Lava Lane, New Mexico 87529, USA",1
-3cfd6fa4-956a-44e6-b25b-549e8098eac9,225995867,2024-06-29 12:31:48-06:00,2024-06-29,-109.5615616667,40.4777416667,1671.0,,13.3,33.3,0.0,10.2,,1012.2,Hohenbuehelia petaloides,"W 1500 N St, Vernal, UT, US",1
-7bfb8a80-ea91-42bd-a89c-7d6b433c8790,177113300,2023-08-06 08:21:16-06:00,2023-08-06,-104.907325,38.784795,2386.0,,14.0,18.0,1.4,11.9,,1028.1,Hohenbuehelia petaloides,"Pike and San Isabel National Forests, Manitou Springs, CO, US",1
-49c172c4-9ea5-4b8a-8287-b5fe9ab265d5,77827392,2021-05-07 16:14:00-06:00,2021-05-07,-105.1148826205,39.993303234,1629.0,,4.3,28.1,0.0,5.8,,1014.4,Hohenbuehelia petaloides,"Lafayette, CO, USA",1
-8c8b2c0b-add3-4535-a90b-e9679340a638,18867471,2018-10-08 17:23:43-06:00,2018-10-08,-104.9593583333,39.72417,1629.0,,0.8,5.2,,14.1,,1013.1,Hohenbuehelia petaloides,"2301–2399 E 5th Ave, Denver, CO, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+7de71a30-41b9-4666-b96b-4994f47c87c1,392680067,2026-08-19 09:02:31-06:00,2026-08-19,-106.373895,42.808455,1607.0,,,,,,,,Hohenbuehelia petaloides,"Fox, Casper, WY, US",1,
+00f9f851-eff6-4b46-bf36-18110f0fdf2e,375660894,2026-06-26 15:53:58-06:00,2026-06-26,-105.2564166667,40.0009611117,1632.0,,13.0,31.0,1.5,3.1,,,Hohenbuehelia petaloides,"29th St, Boulder, CO, US",1,
+ca0f6088-3159-481b-bb2f-18208ff48d4b,295175410,2025-07-04 12:19:24-06:00,2025-07-04,-105.7530364722,36.4953536944,2131.0,,13.1,29.0,0.0,12.8,,1014.3,Hohenbuehelia petaloides,"US-64 & Lava Lane, New Mexico 87529, USA",1,
+3cfd6fa4-956a-44e6-b25b-549e8098eac9,225995867,2024-06-29 12:31:48-06:00,2024-06-29,-109.5615616667,40.4777416667,1671.0,,13.3,33.3,0.0,10.2,,1012.2,Hohenbuehelia petaloides,"W 1500 N St, Vernal, UT, US",1,
+7bfb8a80-ea91-42bd-a89c-7d6b433c8790,177113300,2023-08-06 08:21:16-06:00,2023-08-06,-104.907325,38.784795,2386.0,,14.0,18.0,1.4,11.9,,1028.1,Hohenbuehelia petaloides,"Pike and San Isabel National Forests, Manitou Springs, CO, US",1,
+49c172c4-9ea5-4b8a-8287-b5fe9ab265d5,77827392,2021-05-07 16:14:00-06:00,2021-05-07,-105.1148826205,39.993303234,1629.0,,4.3,28.1,0.0,5.8,,1014.4,Hohenbuehelia petaloides,"Lafayette, CO, USA",1,
+8c8b2c0b-add3-4535-a90b-e9679340a638,18867471,2018-10-08 17:23:43-06:00,2018-10-08,-104.9593583333,39.72417,1629.0,,0.8,5.2,,14.1,,1013.1,Hohenbuehelia petaloides,"2301–2399 E 5th Ave, Denver, CO, US",1,
+f565483b-ab3d-4992-bfdd-8b094fad5d2a,307429651,2025-08-18 12:08:02-07:00,2025-08-18,-122.3692,45.2960216667,129.0,,16.7,26.1,0.0,6.1,,1016.3,Hohenbuehelia petaloides,"Milo McIver State Park, Estacada, OR, US",1,84QV7JWJ+

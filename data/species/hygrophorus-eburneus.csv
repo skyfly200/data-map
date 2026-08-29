@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e2ea2519-1bab-4ec2-8154-a79aeebda342,259658819,2024-12-14 14:03:17-08:00,2024-12-14,-122.3649717285,45.4798980336,84QVFJHP+,155.0,,5.6,11.1,,14.8,,1009.4,Hygrophorus eburneus,"Oregon, US",1

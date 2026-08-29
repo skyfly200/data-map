@@ -1,2 +1,4 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-400b593d-8bfa-40ce-bbfa-2cb5786dcc82,253436906,2024-11-12 07:08:06-08:00,2024-11-12,-122.3077329045,45.4113990919,211.0,,10.0,14.4,,14.6,,1015.4,Psilocybe cyanescens,"Oregon, US",4
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+400b593d-8bfa-40ce-bbfa-2cb5786dcc82,253436906,2024-11-12 07:08:06-08:00,2024-11-12,-122.3077329045,45.4113990919,211.0,,10.0,14.4,,14.6,,1015.4,Psilocybe cyanescens,"Oregon, US",4,
+1476c866-be8f-4bd0-a0ed-df34968fab0b,330767831,2025-11-21,2025-11-21,-122.4298867223,45.441594842,176.0,,1.0,11.0,0.0,2.6,,1024.5,Psilocybe cyanescens,"Oregon, US",1,84QVCHRC+
+a7af50be-bb28-4ccb-b49b-66f3bbcb9945,143539864,2022-12-02 18:15:03-08:00,2022-12-02,-122.4476962094,45.4471012493,243.0,,0.6,6.1,,17.1,,1017.6,Psilocybe cyanescens,"Oregon, US",4,84QVCHW2+
