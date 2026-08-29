@@ -375,6 +375,10 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
 
             species_name_found = (obs.get('taxon') or {}).get('name', '') if isinstance(obs.get('taxon'), dict) else ''
 
+            genus_name_found = ''
+            if species_name_found:
+                genus_name_found = species_name_found.split()[0] if species_name_found else ''
+
             observations.append({
                 'uuid': obs.get('uuid'),
                 'inat_id': obs.get('id'),
@@ -392,6 +396,7 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
                 'winddirection': weather.get('wdir', None),
                 'presure': weather.get('pres', None),
                 'species': species_name_found or taxon_name,
+                'genus': genus_name_found or (taxon_name.split()[0] if taxon_name else ''),
                 'location': obs.get('place_guess', ''),
                 'num_identification_agreements': obs.get('num_identification_agreements', 0),
             })
@@ -492,10 +497,15 @@ def main():
     df_inat = pd.concat(frames, ignore_index=True)
     print("Data fetched successfully.")
 
-    written = store.write_split(df_inat, base=store.SPECIES_DIR, merge=not refresh_all)
+    # Check GROUP_BY env var to determine how to split files
+    group_by = os.getenv('GROUP_BY', 'genus')
+    key_column = group_by if group_by in df_inat.columns else 'species'
+
+    written = store.write_split(df_inat, base=store.SPECIES_DIR, key=key_column, merge=not refresh_all)
+
     store.write_geojson_tiles(df_inat)
     total = sum(written.values())
-    print(f"Saved {len(df_inat)} fetched observation(s) into {len(written)} species file(s) "
+    print(f"Saved {len(df_inat)} fetched observation(s) into {len(written)} {key_column} file(s) "
           f"under {store.SPECIES_DIR}/ ({total} rows on disk after merge/dedup).")
 
 if __name__ == "__main__":

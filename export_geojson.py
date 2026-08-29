@@ -176,9 +176,10 @@ def rebuild_from_species_dir(data_dir=os.path.join('public', 'data')):
         json.dump({"type": "FeatureCollection", "features": all_features}, f)
 
     entries.sort(key=lambda e: e["count"], reverse=True)
+    group_label = "genus" if entries and any(e['id'] == _slugify((e.get('label', '').split()[0] if e.get('label') else '')) for e in entries) else "species"
     manifest = [{
         "id": "all",
-        "label": f"All species ({len(all_features)})",
+        "label": f"All {group_label}s ({len(all_features)})",
         "path": "/data/observations.geojson",
         "count": len(all_features),
     }] + entries
@@ -188,33 +189,38 @@ def rebuild_from_species_dir(data_dir=os.path.join('public', 'data')):
         json.dump(manifest, f, indent=2)
 
     print(f"✅ Rebuilt combined ({len(all_features)} features) + manifest "
-          f"({len(manifest)} datasets) from {len(entries)} species files")
+          f"({len(manifest)} datasets) from {len(entries)} {group_label} files")
     return manifest
 
 
-def export_all(df, data_dir=os.path.join('public', 'data'), combined_path=None):
-    """Write one GeoJSON per species, then rebuild the combined dataset and
+def export_all(df, data_dir=os.path.join('public', 'data'), combined_path=None, group_by='genus'):
+    """Write one GeoJSON per species/genus, then rebuild the combined dataset and
     manifest from the union of everything on disk.
 
     Layout served by the frontend:
         public/data/observations.geojson        – all species combined
-        public/data/species/<slug>.geojson       – one per species
+        public/data/species/<slug>.geojson       – one per species/genus
         public/data/datasets.json                – manifest the UI reads
+
+    Args:
+        group_by: 'species' or 'genus' to control grouping
     """
     data_dir = data_dir or os.path.join('public', 'data')
     species_dir = os.path.join(data_dir, 'species')
     os.makedirs(species_dir, exist_ok=True)
 
-    if "species" in df.columns:
-        counts = df["species"].fillna("Unknown").value_counts()
-        for species, count in counts.items():
-            slug = _slugify(species)
+    group_col = group_by if group_by in df.columns else 'species'
+
+    if group_col in df.columns:
+        counts = df[group_col].fillna("Unknown").value_counts()
+        for group_name, count in counts.items():
+            slug = _slugify(group_name)
             rel = f"/data/species/{slug}.geojson"
-            n = _write_geojson(df[df["species"].fillna("Unknown") == species],
+            n = _write_geojson(df[df[group_col].fillna("Unknown") == group_name],
                                os.path.join(species_dir, f"{slug}.geojson"))
-            print(f"   ✓ {species}: {n} → {rel}")
+            print(f"   ✓ {group_name}: {n} → {rel}")
     else:
-        # No species column — write the whole frame as a single species file so
+        # No group column — write the whole frame as a single file so
         # the union rebuild still has something to combine.
         _write_geojson(df, os.path.join(species_dir, 'unknown.geojson'))
 
@@ -240,6 +246,9 @@ def build_parser():
     parser.add_argument("--reconcile-only", action="store_true",
                         help="Skip the CSV; just rebuild observations.geojson + "
                              "datasets.json from the existing species/ files.")
+    parser.add_argument("--group-by", default=os.getenv('GROUP_BY', 'genus'),
+                        choices=['species', 'genus'],
+                        help="Group output files by 'species' or 'genus' (default: genus, or GROUP_BY env var)")
     return parser
 
 

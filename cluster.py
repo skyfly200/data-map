@@ -99,8 +99,11 @@ def main():
             raise SystemExit(f"No enriched CSVs in {store.ENRICHED_DIR}/. Run enrich_with_rasters.py first.")
         print(f"📂 Loaded {len(df)} enriched rows from {store.ENRICHED_DIR}/ ({df['species'].nunique()} species).")
         df = cluster_environmental(df, n_clusters=args.clusters)
-        written = store.write_split(df, base=store.ENRICHED_DIR, merge=False)
-        print(f"💾 Wrote cluster labels back into {len(written)} species file(s) under {store.ENRICHED_DIR}/.")
+        # Use GROUP_BY env var to determine grouping for enriched files too
+        group_by = os.getenv('GROUP_BY', 'genus')
+        key_column = group_by if group_by in df.columns else 'species'
+        written = store.write_split(df, base=store.ENRICHED_DIR, key=key_column, merge=False)
+        print(f"💾 Wrote cluster labels back into {len(written)} {key_column} file(s) under {store.ENRICHED_DIR}/.")
         print("✅ Done.")
         return
 

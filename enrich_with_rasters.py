@@ -792,12 +792,14 @@ if __name__ == "__main__":
     if store_mode:
         # Split the completed frame into per-species enriched files, drop the
         # combined checkpoint, and mark the run complete.
-        written = store.write_split(df, base=store.ENRICHED_DIR, merge=False)
+        group_by = os.getenv('GROUP_BY', 'genus')
+        key_column = group_by if group_by in df.columns else 'species'
+        written = store.write_split(df, base=store.ENRICHED_DIR, key=key_column, merge=False)
         if os.path.exists(checkpoint_file):
             os.remove(checkpoint_file)
         open(done_marker, 'w').close()
         print(f"\nDone ✅  Enriched {len(df)} rows → {store.ENRICHED_DIR}/ "
-              f"({len(written)} species files).")
+              f"({len(written)} {key_column} files).")
     else:
         open(done_marker, 'w').close()
         print(f"\nDone ✅  Enriched data saved to {output_file}")

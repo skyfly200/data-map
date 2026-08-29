@@ -90,7 +90,9 @@ def migrate(root='.', dry_run=False, delete=False):
             print(f"  (dry-run) would write {species_n} file(s) under {base}/")
             return
         # Fresh store: write=merge False so a re-run replaces rather than stacks.
-        written = store.write_split(merged, base=base, merge=False)
+        group_by = os.getenv('GROUP_BY', 'genus')
+        key_column = group_by if group_by in merged.columns else 'species'
+        written = store.write_split(merged, base=base, key=key_column, merge=False)
         print(f"  ✅ wrote {len(written)} file(s) under {base}/ "
               f"({sum(written.values())} rows total)")
 
