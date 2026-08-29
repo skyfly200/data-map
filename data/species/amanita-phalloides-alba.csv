@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+55589dd6-e15f-4933-9732-eaab3a606ef0,4575186,2016-11-14 12:30:59-08:00,2016-11-14,-122.840325,45.4992133333,84QVF5X5+,70.0,,11.7,13.9,,13.0,,1015.7,Amanita phalloides alba,"Tualatin Hills Nature Reserve, Beaverton, OR, US",2

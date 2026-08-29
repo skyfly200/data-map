@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+327bc348-129d-49b4-8c38-ce1f9dbf5441,333685324,2026-01-05 14:40:14-08:00,2026-01-05,-122.6877248009,45.4912025077,84QVF8R6+,181.0,,1.7,10.0,0.0,3.6,,1014.3,Hygrocybe cuspidata,"Marquam Trail, Portland, OR, US",2

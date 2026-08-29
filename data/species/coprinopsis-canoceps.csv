@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+02998188-492a-42d2-b312-2ab54bcf8977,251135301,2024-10-16 15:32:42-07:00,2024-10-16,-122.7843416667,45.579875,84QVH6H8+,283.0,,11.7,17.8,,5.5,,1016.8,Coprinopsis canoceps,"Linnton, Portland, OR, USA",1

@@ -1,2 +1,9 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-39abe3df-4bdd-4d8b-98aa-c5fea73570d8,197953740,2022-11-09 14:24:00-08:00,2022-11-09,-122.306145,45.5011431,48.0,,-1.1,10.0,0.0,2.1,,1019.0,Pholiota limonella,"Oxbow Regional Park, 3010 SE Oxbow Pkwy, Gresham, OR 97080, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+39abe3df-4bdd-4d8b-98aa-c5fea73570d8,197953740,2022-11-09 14:24:00-08:00,2022-11-09,-122.306145,45.5011431,48.0,,-1.1,10.0,0.0,2.1,,1019.0,Pholiota limonella,"Oxbow Regional Park, 3010 SE Oxbow Pkwy, Gresham, OR 97080, USA",1,
+fdf31371-164e-4515-a3c3-525dced57749,187331027,2023-10-11 16:29:38-07:00,2023-10-11,-122.4012833333,45.596975,70.0,,13.3,18.3,,18.3,,1006.3,Pholiota limonella,"Camas, WA, USA",1,84QVHHWX+
+08498f7e-a259-476d-8d9f-05e197f517cf,141721282,2022-11-11 10:08:52-08:00,2022-11-11,-122.6970216667,45.49767,241.0,,2.8,9.4,0.0,18.4,,1019.8,Pholiota limonella,"Marquam Nature Park, Portland, OR, US",1,84QVF8X3+
+4a8b8ed6-69c3-49c3-9d34-c65bbff5d6a9,141225398,2022-11-05 19:38:58-07:00,2022-11-05,-122.5392713,45.4747847,80.0,,7.8,13.3,0.8,12.6,,1013.9,Pholiota limonella,"Portland, OR 97266, USA",1,84QVFFF6+
+3cf72adf-ea77-431c-a6fe-fc6b239ed057,60397444,2020-09-21 18:24:50-07:00,2020-09-21,-122.731301,45.5381369722,273.0,,12.8,23.3,0.0,2.0,,1014.3,Pholiota limonella,"Portland, OR 97210, USA",1,84QVG7Q9+
+7c6871ad-488c-4e75-b3a3-7622173528a9,51988725,2018-10-09 11:50:06-07:00,2018-10-09,-122.6489099719,45.569717737,43.0,,10.6,18.3,0.0,10.4,,1013.5,Pholiota limonella,"Oregon, US",1,84QVH992+
+9ed2070f-96a1-4a1b-beaf-60d0cd60970e,35721447,2019-11-15 15:39:32+00:00,2019-11-15,-122.73993,45.54208333,286.0,,6.1,13.9,,6.4,,1021.2,Pholiota limonella,"Forest Park, Portland, OR, US",1,84QVG7R6+
+6d7230a8-98d5-4041-8a08-856fd45a8111,8836021,2017-11-15 10:05:00-08:00,2017-11-15,-122.613711739,45.6331542134,68.0,,6.7,13.3,,13.6,,1005.9,Pholiota limonella,"Northcrest, Vancouver, WA 98661, USA",1,84QVJ9MP+

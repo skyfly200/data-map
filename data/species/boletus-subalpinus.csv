@@ -1,3 +1,6 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-12dc2b02-fd58-4018-9b8e-33f0e036e694,304845651,2025-08-08 15:13:00-07:00,2025-08-08,-122.1197573349,45.2420986904,964.0,,11.1,27.2,0.0,3.8,,1021.1,Boletus subalpinus,"Clackamas County, OR, USA",1
-36c05016-ca85-4e64-8a79-16e26a149646,224090161,2024-06-19 16:52:44-07:00,2024-06-19,-121.5789188757,45.0450346812,1056.0,,,,,,,,Boletus subalpinus,"Wasco County, US-OR, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+12dc2b02-fd58-4018-9b8e-33f0e036e694,304845651,2025-08-08 15:13:00-07:00,2025-08-08,-122.1197573349,45.2420986904,964.0,,11.1,27.2,0.0,3.8,,1021.1,Boletus subalpinus,"Clackamas County, OR, USA",1,
+36c05016-ca85-4e64-8a79-16e26a149646,224090161,2024-06-19 16:52:44-07:00,2024-06-19,-121.5789188757,45.0450346812,1056.0,,,,,,,,Boletus subalpinus,"Wasco County, US-OR, US",1,
+aa405162-ec95-4a29-a289-f14f10b3dbfd,329180495,2025-10-29 01:01:00-07:00,2025-10-29,-121.858814271,45.8945748189,741.0,,3.0,15.0,0.0,2.0,,1028.5,Boletus subalpinus,"Skamania County, WA, USA",1,84QWV4VR+
+461e04cb-35ef-48bc-a332-3fb0dd2d8adb,319841328,2025-10-09 10:29:09-07:00,2025-10-09,-121.9690920426,45.8997662081,415.0,,10.0,18.0,4.6,0.8,,1012.8,Boletus subalpinus,"Carson, WA, US",1,84QWV2XJ+
+e221be23-de89-4f9c-8f2c-e7c0703fd3cf,91817663,2021-08-19 12:32:27-07:00,2021-08-19,-121.8983075,44.21506592,1513.0,,,,,,,,Boletus subalpinus,"Lane County, US-OR, US",2,84PW6482+

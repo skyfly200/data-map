@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+30df6307-a829-4109-baa5-7f2f073622ea,13680395,2018-06-22 14:04:00-07:00,2018-06-22,-122.5524625,45.6574711,84QVMC4X+,62.0,,15.6,24.4,0.0,10.4,,1021.3,Marasmius curreyi,"4913 NE 118th Ct, Vancouver, WA 98682, USA",2

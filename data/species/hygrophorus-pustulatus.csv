@@ -1,2 +1,3 @@
 uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 9229c166-635b-4b78-b1a7-9d0c8b9c5a78,139080806,2022-10-14 14:51:00-07:00,2022-10-14,-121.6228722222,45.3198305556,84QW899G+,1324.0,,11.4,23.8,0.0,2.4,,1016.1,Hygrophorus pustulatus,"Hood River County, OR, USA",1
+093b13d5-7531-42ae-8c38-b7c4985051dd,188738558,2023-10-22 15:41:59-07:00,2023-10-22,-122.3042427376,44.366220084,84PV9M8W+,1234.0,,,,,,,,Hygrophorus pustulatus,"Linn County, US-OR, US",1

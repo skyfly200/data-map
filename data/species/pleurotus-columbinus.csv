@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9cfbb6b5-c6f7-4d04-9299-03061c86ad26,327185149,2025-11-18 16:18:17-08:00,2025-11-18,-122.3376783333,45.594325,84QVHMV6+,59.0,,4.0,10.0,0.0,0.8,,1020.5,Pleurotus columbinus,"SE 327th Ave, Washougal, WA, US",1

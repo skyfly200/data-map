@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ec22ae14-e679-434d-9dc6-b1c4a6fbfe89,191398173,2023-11-18 11:59:00-08:00,2023-11-18,-121.4959807614,45.9161852958,84QWWG83+,420.0,,3.4,6.5,7.6,8.3,,1013.0,Cortinarius subobtusus,"Washington, US",2

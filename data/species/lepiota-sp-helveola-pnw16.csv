@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5e486f6c-fd55-41cd-a5f0-170f08b577be,190975984,2023-11-13 14:17:41-08:00,2023-11-13,-122.6618249045,44.8729619353,84PVV8FQ+,534.0,,6.1,12.8,0.8,8.6,,1016.1,Lepiota sp. 'helveola-PNW16',"Silver Ridge Rd SE, Sublimity, OR, US",3

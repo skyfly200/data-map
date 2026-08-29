@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+31e1fc1c-16e4-4457-b407-aedac047c3e2,249669655,2024-10-16 11:31:31-07:00,2024-10-16,-121.6993866667,45.9096966667,84QWW852+,919.0,,8.6,14.1,0.7,12.2,,1015.4,Hygrocybe coccineocrenata,"S Prairie Rd, Carson, WA, US",1

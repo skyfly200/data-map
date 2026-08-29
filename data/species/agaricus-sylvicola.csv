@@ -1,2 +1,3 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-a9dfc4ff-98c2-4aeb-bd2b-8f86371f7b04,304076963,2025-08-05 12:03:02-06:00,2025-08-05,-103.8923716667,44.3988883333,1390.0,,17.0,27.8,2.3,11.5,,1016.6,Agaricus sylvicola,"Black Hills National Forest, Spearfish, SD, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+a9dfc4ff-98c2-4aeb-bd2b-8f86371f7b04,304076963,2025-08-05 12:03:02-06:00,2025-08-05,-103.8923716667,44.3988883333,1390.0,,17.0,27.8,2.3,11.5,,1016.6,Agaricus sylvicola,"Black Hills National Forest, Spearfish, SD, US",1,
+748d281d-4272-4c42-a81f-34ca33e48ef5,244603758,2024-09-28 16:42:40-07:00,2024-09-28,-122.6250517,45.4791608997,50.0,,12.2,23.9,0.0,11.2,,1012.5,Agaricus sylvicola,"Eastmoreland, Portland, OR 97202, USA",1,84QVF9HF+

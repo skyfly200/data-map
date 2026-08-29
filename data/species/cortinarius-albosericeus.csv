@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4f1d5106-9a9c-42b9-a9f6-b464d64c412a,191524298,2023-11-19 14:40:08-08:00,2023-11-19,-121.2192018545,45.8560172707,84QWVQ4J+,658.0,,2.2,11.1,,14.1,,1025.0,Cortinarius albosericeus,"Washington, US",2

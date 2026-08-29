@@ -1,2 +1,8 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-f7611231-a210-4dcb-8027-fb7b5cbe200b,191622246,2023-11-19 12:10:36-08:00,2023-11-19,-121.4066383333,45.7119633333,326.0,,3.4,8.2,3.8,15.9,,1025.6,Suillellus amygdalinus,"Columbia River Gorge National Scenic Area, White Salmon, WA, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+f7611231-a210-4dcb-8027-fb7b5cbe200b,191622246,2023-11-19 12:10:36-08:00,2023-11-19,-121.4066383333,45.7119633333,326.0,,3.4,8.2,3.8,15.9,,1025.6,Suillellus amygdalinus,"Columbia River Gorge National Scenic Area, White Salmon, WA, US",1,
+92fb1481-4586-482e-a891-d93f21c74e56,322261111,2025-10-21 09:56:00-07:00,2025-10-21,-121.5159,45.8105,322.0,,3.0,17.0,0.0,0.4,,1021.3,Suillellus amygdalinus,"Klickitat County, WA, USA",1,84QWRF6M+
+2bc9f1cc-5ae4-4cc9-82a9-4b44fde50010,191901710,2023-11-20 07:09:44-08:00,2023-11-20,-121.5123727591,45.8104329302,271.0,,1.2,10.0,0.0,9.5,,1034.2,Suillellus amygdalinus,"White Salmon, WA 98672, USA",1,84QWRF6Q+
+6a505650-b485-4283-92b9-203605695d5a,99557228,2021-10-27 10:30:52-07:00,2021-10-27,-122.5974966667,45.3841166667,22.0,,10.6,13.9,,9.5,,1023.9,Suillellus amygdalinus,"Portland Ave, Gladstone, OR, US",1,84QV9CM3+
+31525ee6-0547-41be-b81a-b5a26773d025,97935539,2021-10-11 13:42:57-07:00,2021-10-11,-122.7110966667,45.5841333333,37.0,,2.8,14.4,0.3,3.5,,1024.6,Suillellus amygdalinus,"N Wayland Ave, Portland, OR, US",2,84QVH7MQ+
+5113505b-fb84-4b5c-af61-6a644f697198,17295080,2018-10-07 14:13:00-07:00,2018-10-07,-122.6692480405,45.6302330849,31.0,,6.1,12.8,,1.2,,1022.4,Suillellus amygdalinus,"Esther Short, Vancouver, WA, USA",2,84QVJ8JJ+
+38516a84-6599-4fcc-a092-d65e2541c316,8554411,2017-10-21 15:01:00-07:00,2017-10-21,-122.6716063,45.6318397,27.0,,8.9,16.1,,15.0,,1011.3,Suillellus amygdalinus,"Vancouver, WA, USA",1,84QVJ8JH+

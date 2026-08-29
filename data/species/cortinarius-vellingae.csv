@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8c409c02-1365-4fcd-9697-86635ce8f266,192250140,2023-10-28 15:22:00-07:00,2023-10-28,-121.5157472222,45.8100083333,84QWRF6M+,296.0,,-0.7,8.2,0.0,10.0,,1034.4,Cortinarius vellingae,"Klickitat County, WA, USA",1
+c6fb5624-3fb5-4706-a767-276e10403ef8,191402172,2023-11-18 12:34:21-08:00,2023-11-18,-121.5338656501,45.843574225,84QWRFV8+,460.0,,3.4,6.5,7.6,8.3,,1013.0,Cortinarius vellingae,"Washington, US",3
+853dca6d-8985-46df-b994-88168dbb0493,191396299,2023-11-18 11:39:45-08:00,2023-11-18,-121.4758407166,45.8802845619,84QWVGJF+,525.0,,3.4,6.5,7.6,8.3,,1013.0,Cortinarius vellingae,"Washington, US",2
+785da5f3-bb42-4748-98dd-7e272d5b00fd,190521170,2023-11-08 10:32:00-08:00,2023-11-08,-121.5190305556,45.8069555556,84QWRF4J+,296.0,,3.3,12.3,0.0,7.6,,1029.3,Cortinarius vellingae,"Klickitat County, WA, USA",3

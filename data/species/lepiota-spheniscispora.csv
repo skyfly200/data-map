@@ -1,2 +1,3 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-6b2f89ff-d7eb-4270-b3ea-0244554cd00b,235440096,2024-08-10 09:54:47-06:00,2024-08-10,-104.9853944444,38.7362361111,3076.0,,12.0,21.7,0.2,12.8,,1025.7,Lepiota spheniscispora,"Manitou Springs, CO 80829, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+6b2f89ff-d7eb-4270-b3ea-0244554cd00b,235440096,2024-08-10 09:54:47-06:00,2024-08-10,-104.9853944444,38.7362361111,3076.0,,12.0,21.7,0.2,12.8,,1025.7,Lepiota spheniscispora,"Manitou Springs, CO 80829, USA",1,
+e1e8fb43-4d99-4e0d-a14f-7fc51ce96a3c,188564087,2023-10-21 10:44:00-07:00,2023-10-21,-121.4141944444,45.8440583333,283.0,,11.1,21.1,0.0,6.7,,1010.7,Lepiota spheniscispora,"Klickitat County, WA, USA",4,84QWRHVP+

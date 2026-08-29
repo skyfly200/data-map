@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5d2ac0d9-24a1-4a20-ae86-fb079860ed63,250857910,2024-11-07 15:09:16-08:00,2024-11-07,-121.9770735875,45.8699963123,84QWV29F+,341.0,,0.6,11.6,0.0,7.8,,1027.8,Tricholoma nigrum,"Carson, WA 98610, USA",1

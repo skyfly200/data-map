@@ -1,2 +1,4 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-5a95bcea-8fd3-484a-a869-d7676197d6d4,33348050,2018-10-01 10:58:26-07:00,2018-10-01,-121.73282,45.2836216667,1149.0,,,,,,,,Amanita muscaria formosa,"Mt. Hood National Forest, Government Camp, OR, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+5a95bcea-8fd3-484a-a869-d7676197d6d4,33348050,2018-10-01 10:58:26-07:00,2018-10-01,-121.73282,45.2836216667,1149.0,,,,,,,,Amanita muscaria formosa,"Mt. Hood National Forest, Government Camp, OR, US",2,
+1a4d8ca8-b3d2-4b03-be47-5f9fec7848c8,249723489,2024-10-19 08:36:00-07:00,2024-10-19,-122.767409062,45.2994619587,60.0,,11.7,21.1,,6.6,,1023.5,Amanita muscaria formosa,"Wilsonville, OR, USA",1,84QV76XM+
+f00caf0a-ceca-4c4a-aafd-f5289e307abc,102021486,2021-11-11 14:13:48+00:00,2021-11-11,-122.7308366667,45.479205,106.0,,10.0,16.7,37.8,15.1,,1021.8,Amanita muscaria formosa,"SW Illinois St, Portland, OR, US",4,84QVF7H9+

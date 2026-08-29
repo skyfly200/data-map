@@ -1,6 +1,12 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-a8ddbe4f-03ff-4a74-8f8e-ee6449a56256,237194954,2024-08-18 13:56:00-06:00,2024-08-18,-105.8104861111,35.7738138889,2979.0,,16.1,33.3,0.0,13.0,,1014.2,Tricholoma pardinum,"Santa Fe County, NM, USA",1
-62bb8cf6-b10a-499c-81fe-991d297298cd,183283648,2023-09-14 15:31:55-06:00,2023-09-14,-105.7869837997,39.734018473,3571.0,,-1.7,5.7,5.7,7.9,,1021.2,Tricholoma pardinum,"Colorado, US",1
-bea778d2-904e-4cf5-a170-913220fc7381,91184456,2021-08-14 12:57:54+00:00,2021-08-14,-105.7713472222,39.8226611111,3282.0,,6.0,28.3,0.0,7.2,,1033.2,Tricholoma pardinum,"Winter Park, CO 80482, USA",2
-ba68fcf6-0fe7-4bd4-a972-c80a9e01e7ec,328860242,2025-11-29 13:58:00-08:00,2025-11-29,-121.8375472222,45.6802,214.0,,1.0,5.0,0.0,1.2,,1024.9,Tricholoma pardinum,"Hood River County, OR, USA",1
-96821a69-afe4-419e-b788-1080addbb528,324099088,2025-10-30 12:14:00-07:00,2025-10-30,-122.1163466464,45.2389183876,1029.0,,6.0,14.0,0.0,26.6,,1021.2,Tricholoma pardinum,"Clackamas County, OR, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+a8ddbe4f-03ff-4a74-8f8e-ee6449a56256,237194954,2024-08-18 13:56:00-06:00,2024-08-18,-105.8104861111,35.7738138889,2979.0,,16.1,33.3,0.0,13.0,,1014.2,Tricholoma pardinum,"Santa Fe County, NM, USA",1,
+62bb8cf6-b10a-499c-81fe-991d297298cd,183283648,2023-09-14 15:31:55-06:00,2023-09-14,-105.7869837997,39.734018473,3571.0,,-1.7,5.7,5.7,7.9,,1021.2,Tricholoma pardinum,"Colorado, US",1,
+bea778d2-904e-4cf5-a170-913220fc7381,91184456,2021-08-14 12:57:54+00:00,2021-08-14,-105.7713472222,39.8226611111,3282.0,,6.0,28.3,0.0,7.2,,1033.2,Tricholoma pardinum,"Winter Park, CO 80482, USA",2,
+ba68fcf6-0fe7-4bd4-a972-c80a9e01e7ec,328860242,2025-11-29 13:58:00-08:00,2025-11-29,-121.8375472222,45.6802,214.0,,1.0,5.0,0.0,1.2,,1024.9,Tricholoma pardinum,"Hood River County, OR, USA",1,
+96821a69-afe4-419e-b788-1080addbb528,324099088,2025-10-30 12:14:00-07:00,2025-10-30,-122.1163466464,45.2389183876,1029.0,,6.0,14.0,0.0,26.6,,1021.2,Tricholoma pardinum,"Clackamas County, OR, USA",1,
+0e79477c-9ae9-499e-b4e6-fc3b5c8a4a37,142714039,2022-11-23 15:03:39-08:00,2022-11-23,-121.6963948309,44.4790569548,989.0,,-2.0,10.0,0.0,7.8,,1028.3,Tricholoma pardinum,"Camp Sherman, OR 97730, USA",1,84PWF8H3+
+beeb5ee5-82d5-4272-a2d9-f812129fb4cf,37635765,2013-10-12,2013-10-12,-121.883,45.9804,972.0,,,,,,,,Tricholoma pardinum,"Gifford Pinchot National Forest portion in Skamania Co., Washington, USA",2,84QWX4J8+
+694e9201-5e37-4856-aab9-6a8c704f8596,37087825,2019-10-27 13:11:00-10:00,2019-10-27,-121.9513850609,45.8705493643,744.0,,2.2,15.0,,5.8,,1029.3,Tricholoma pardinum,"Skamania County, US-WA, US",1,84QWV2CX+
+f19debe2-6d6d-4bfd-a780-0c617e5be453,37087803,2019-10-27 10:29:00-10:00,2019-10-27,-121.9965379958,45.8540205988,613.0,,2.2,15.0,,5.8,,1029.3,Tricholoma pardinum,"Skamania County, US-WA, US",1,84QWV233+
+2310e017-5935-451c-a81f-28ec10faef7b,35076992,2019-10-25 16:40:00-07:00,2019-10-25,-121.9994444444,44.3447222222,870.0,,,,,,,,Tricholoma pardinum,"Koosah Falls area, Linn County, OR, USA",3,84PW82V2+
+b29118fe-5f59-41d4-a739-1a25b4694185,18623855,2018-11-24 12:49:38-08:00,2018-11-24,-122.184211731,44.2908744812,776.0,,,,,,,,Tricholoma pardinum,"NF-15, Blue River, OR 97413, USA",2,84PV7RR8+

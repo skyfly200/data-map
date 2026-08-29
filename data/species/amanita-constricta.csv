@@ -1,2 +1,8 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-013b5852-0285-4183-b97a-9e0266a0744b,87791772,2021-07-17 09:07:50-07:00,2021-07-17,-121.8760383333,45.27362,1353.0,,,,,,,,Amanita constricta,"Mt. Hood National Forest, Rhododendron, OR, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+013b5852-0285-4183-b97a-9e0266a0744b,87791772,2021-07-17 09:07:50-07:00,2021-07-17,-121.8760383333,45.27362,1353.0,,,,,,,,Amanita constricta,"Mt. Hood National Forest, Rhododendron, OR, US",1,
+77bb354b-ecb8-4e5b-8182-b4205916a4e7,329354179,2025-12-03 10:08:49-08:00,2025-12-03,-122.5900707,45.5141878,161.0,,3.0,7.0,0.0,1.9,,1027.9,Amanita constricta,"Multnomah County, US-OR, US",1,84QVGC75+
+c8ec613d-6816-43dc-9517-6785beb42e67,141413322,2022-11-07 15:49:01-08:00,2022-11-07,-122.6875998074,45.4481067504,73.0,,2.8,7.2,3.0,14.4,,1003.6,Amanita constricta,"SW Comus Ct, Portland, OR, US",1,84QVC8X6+
+c6e1891b-8fc0-48f4-a906-7e01f8346242,102286382,2021-11-30 15:33:00-08:00,2021-11-30,-122.7607152884,44.9196618792,246.0,,8.9,15.0,0.0,12.2,,1025.6,Amanita constricta,"Marion County, US-OR, US",1,84PVW69Q+
+9c5dfc7f-3231-43e3-a6a5-0a1ddab6aac6,67596831,2019-10-12 09:37:37-07:00,2019-10-12,-122.7600466667,45.56432,178.0,,2.8,16.1,,0.2,,1015.2,Amanita constricta,"Forest Park Conservancy, Portland, OR, US",2,84QVH67Q+
+1187e500-421c-422a-86c3-ac41009f3cf2,64071749,2020-11-02 14:06:46+00:00,2020-11-02,-122.6958,45.49944667,203.0,,2.8,18.9,0.0,8.6,,1019.6,Amanita constricta,"Marquam Nature Park, Portland, OR, US",1,84QVF8X3+
+39e6ad6f-00b9-4038-9d7e-58effdce36cf,32993653,2019-09-16 18:10:32-07:00,2019-09-16,-122.6404409242,44.8629579579,457.0,,11.7,20.0,6.6,13.7,,1010.6,Amanita constricta,"Silver Falls State Park, Silverton, OR, US",1,84PVV975+

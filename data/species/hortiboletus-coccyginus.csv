@@ -1,4 +1,19 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-2ad97c8e-8d9d-4210-ab2c-fabfcdea6395,246406298,2024-10-08 13:08:49-07:00,2024-10-08,-122.2928288487,45.4897778202,118.0,,11.1,21.7,,2.8,,1014.7,Hortiboletus coccyginus,"Oxbow Regional Park, Gresham, OR, US",1
-4a7ddbce-6cf8-4d0b-8cbb-75e6d0857638,246405756,2024-10-08 11:10:20-07:00,2024-10-08,-122.2882821691,45.4947224306,76.0,,11.1,21.7,,2.8,,1014.7,Hortiboletus coccyginus,"Multnomah County, US-OR, US",1
-6d21b9a2-03cf-47f9-bb10-7bcbbe6db1a4,192616167,2023-10-21 16:00:00-07:00,2023-10-21,-122.2874816414,45.4922459104,128.0,,12.8,16.7,0.3,2.0,,1011.7,Hortiboletus coccyginus,"Multnomah County, OR, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+2ad97c8e-8d9d-4210-ab2c-fabfcdea6395,246406298,2024-10-08 13:08:49-07:00,2024-10-08,-122.2928288487,45.4897778202,118.0,,11.1,21.7,,2.8,,1014.7,Hortiboletus coccyginus,"Oxbow Regional Park, Gresham, OR, US",1,
+4a7ddbce-6cf8-4d0b-8cbb-75e6d0857638,246405756,2024-10-08 11:10:20-07:00,2024-10-08,-122.2882821691,45.4947224306,76.0,,11.1,21.7,,2.8,,1014.7,Hortiboletus coccyginus,"Multnomah County, US-OR, US",1,
+6d21b9a2-03cf-47f9-bb10-7bcbbe6db1a4,192616167,2023-10-21 16:00:00-07:00,2023-10-21,-122.2874816414,45.4922459104,128.0,,12.8,16.7,0.3,2.0,,1011.7,Hortiboletus coccyginus,"Multnomah County, OR, USA",1,
+02d4cb0b-d5ff-4e0f-99ec-6687e683520e,369060646,2026-06-06 10:18:00-07:00,2026-06-06,-122.726277,45.617073,12.0,,11.1,17.8,1.0,6.0,,,Hortiboletus coccyginus,"5300 Block N Marine, Portland, OR 97217, USA",1,84QVJ78F+
+5e7729aa-ff14-4930-ac71-1b3e4cc7f09c,287672919,2025-06-07 10:53:44-07:00,2025-06-07,-122.72643,45.616612,0.0,,12.8,30.0,0.0,8.4,,1016.1,Hortiboletus coccyginus,"St. Johns, Portland, OR, USA",1,84QVJ78F+
+ecae9b39-0ed3-4b9a-9b75-dceccfc1f55e,280947658,2025-05-13 14:41:26-07:00,2025-05-13,-122.765145,45.6476216667,17.0,,8.3,16.1,0.3,3.9,,1018.5,Hortiboletus coccyginus,"Kelley Point Park, Portland, OR, US",1,84QVJ6XM+
+b82fa561-2a64-43ed-93bd-72312021874a,251615975,2024-11-13 13:53:09-08:00,2024-11-13,-122.7643666667,45.6432383333,11.0,,10.0,12.8,,11.9,,1005.6,Hortiboletus coccyginus,"Kelley Point Park, Portland, OR, US",2,84QVJ6VP+
+3ea65418-b4d7-4495-9588-366d63557c02,248694362,2024-10-22 16:28:20-07:00,2024-10-22,-122.6605216667,45.593075,6.0,,5.0,16.1,0.0,4.3,,1025.8,Hortiboletus coccyginus,"Columbia Children's Arboretum, Portland, OR, US",3,84QVH8VQ+
+e3fec505-d978-4e65-bbfe-04f4debff6d7,52772266,2020-07-11 16:51:54-07:00,2020-07-11,-122.6254697889,45.3814831836,48.0,,11.7,25.6,0.0,6.3,,1020.0,Hortiboletus coccyginus,"West Linn, OR, USA",1,84QV99JF+
+7a051812-086e-49de-9361-22e60b2c007a,47237872,2020-05-24 15:54:19-07:00,2020-05-24,-122.7647333333,45.6461111111,17.0,,10.0,23.3,0.0,5.8,,1021.3,Hortiboletus coccyginus,"St. Johns, Portland, OR, USA",1,84QVJ6WP+
+66beda8c-84e4-4917-baa9-108779c65426,34098569,2019-10-08 18:24:13-07:00,2019-10-08,-122.6304036849,45.482600695,39.0,,4.4,15.6,0.5,13.7,,1015.9,Hortiboletus coccyginus,"Reed College, Portland, OR, US",1,84QVF9M9+
+13e69d39-853d-4980-af3e-210d11479f37,28514404,2019-07-09 06:50:34-07:00,2019-07-09,-122.7658996582,45.6451530457,20.0,,15.0,22.2,,3.2,,1015.3,Hortiboletus coccyginus,"St. Johns, Portland, OR, USA",1,84QVJ6WM+
+669587f1-ead1-4a07-8c86-e44ba570b412,26647303,2019-06-08 12:45:30-07:00,2019-06-08,-122.3612833333,45.55827,8.0,,10.6,20.0,,4.1,,1028.2,Hortiboletus coccyginus,"97060, Troutdale, OR, US",1,84QVHJ5Q+
+fb8f09a2-942f-4c8b-ab27-606dab82a57c,26004866,2019-05-29 09:03:41-07:00,2019-05-29,-122.6478110358,45.4356250686,10.0,,11.7,25.0,0.0,8.3,,1016.4,Hortiboletus coccyginus,"Elk Rock Island, Portland, OR, US",2,84QVC9P2+
+ce54655a-6062-49fe-a4da-99722092ea26,25369034,2019-05-18 10:28:16-07:00,2019-05-18,-122.3824234009,45.5519828796,11.0,,9.4,21.7,,14.2,,1007.8,Hortiboletus coccyginus,"Wood Village, OR 97060, USA",2,84QVHJ29+
+fe6ad2ce-d8e1-4105-be98-d0839765b4e4,17368814,2018-10-09 11:00:00-07:00,2018-10-09,-122.7667173464,45.6446584594,10.0,,10.6,17.8,,7.9,,1013.4,Hortiboletus coccyginus,"Multnomah, Oregon, United States",2,84QVJ6VM+
+22e6e985-9244-48b5-87e4-8d8f988bfc39,14350286,2018-06-30 18:19:14-07:00,2018-06-30,-122.7671883333,45.64373,9.0,,13.9,23.9,0.0,8.4,,1022.6,Hortiboletus coccyginus,"Kelley Point Park, Portland, OR, US",1,84QVJ6VM+
+2ff67970-f3a9-40db-8713-e6ac46a52478,13936132,2018-06-30 16:29:33-07:00,2018-06-30,-122.73203949,45.6164259431,1.0,,13.9,23.9,0.0,8.4,,1022.6,Hortiboletus coccyginus,"Smith and Bybee Wetlands Natural Area, Portland, OR, US",1,84QVJ789+

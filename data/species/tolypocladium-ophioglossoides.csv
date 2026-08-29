@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+23d21898-1b1d-422c-b512-69c9308a7e25,140308807,2022-10-08 12:26:00-07:00,2022-10-08,-122.2612821286,44.3594380571,84PV9P5Q+,1185.0,,,,,,,,Tolypocladium ophioglossoides,"Linn County, OR, USA",2
+0c028809-a103-4462-8823-5385c56dc4a4,138552330,2022-10-08 12:07:00-07:00,2022-10-08,-122.2675058588,44.3589624718,84PV9P5J+,1206.0,,,,,,,,Tolypocladium ophioglossoides,"Linn County, OR, USA",1

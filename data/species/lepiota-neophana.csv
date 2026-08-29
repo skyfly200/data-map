@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+40a261ec-38a0-43dc-b396-661bd612cec8,25488188,2018-11-22 12:47:02-08:00,2018-11-22,-122.7165083333,45.5193116667,84QVG79M+,243.0,,5.6,10.6,15.0,19.1,,1005.9,Lepiota neophana,"Washington Park, Portland, OR, US",2

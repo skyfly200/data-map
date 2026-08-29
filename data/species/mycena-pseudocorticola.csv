@@ -1,0 +1,10 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5f960b16-2cd5-424f-999b-33d950c98c31,253451689,2024-11-25 12:08:13-08:00,2024-11-25,-122.6965624094,45.5309620816,84QVG8J3+,46.0,,3.9,11.1,0.0,11.9,,1013.9,Mycena pseudocorticola,"Nob Hill, Portland, OR, USA",1
+5c8a36a2-cbba-483b-96a4-4c4f715005d2,194588357,2023-12-21 13:39:24-08:00,2023-12-21,-122.674634,45.57189,84QVH8CG+,55.0,,0.0,10.0,0.0,1.4,,1018.4,Mycena pseudocorticola,"N Albina & Dekum, Portland, OR 97217, USA",1
+7463b01b-b8ed-4079-a845-309fe150a761,194463518,2023-12-20 11:02:11-08:00,2023-12-20,-123.0192638333,45.0254888333,84QR2XGJ+,55.0,,1.7,10.6,0.0,2.9,,1012.8,Mycena pseudocorticola,"Parkmeadow Dr NE, Keizer, OR, US",1
+de7b4d9c-6384-4e2d-bbd8-09fc9a35ad3a,192141807,2023-11-25 16:42:55-08:00,2023-11-25,-122.6943894848,45.5734216104,84QVH8F4+,55.0,,-3.3,10.6,0.0,3.3,,1027.5,Mycena pseudocorticola,"Arbor Lodge, Portland, OR 97217, USA",1
+c0654162-109e-445b-bfb8-22061682af08,192141252,2023-11-25 16:27:10-08:00,2023-11-25,-122.6940173283,45.573013011,84QVH8F4+,55.0,,-3.3,10.6,0.0,3.3,,1027.5,Mycena pseudocorticola,"Arbor Lodge, Portland, OR 97217, USA",1
+8951316c-56ef-4f0b-8a9f-c74de5a6384d,66899734,2020-12-14 14:59:30-10:00,2020-12-14,-122.6642269722,45.5430009722,84QVG8VP+,61.0,,5.0,9.4,0.0,11.2,,1025.1,Mycena pseudocorticola,"Eliot, Portland, OR, USA",1
+b92d6907-9387-4291-b465-1292e604837a,36959845,2019-12-25 14:44:35-10:00,2019-12-25,-122.76023833,45.60284667,84QVJ63Q+,30.0,,0.0,6.1,,6.8,,1014.5,Mycena pseudocorticola,"Pier Park, Portland, OR, US",1
+25ee57e5-ed7f-4d7b-a57b-362ea2461eb0,36896201,2019-12-23 13:50:50+00:00,2019-12-23,-122.6966113073,45.4966949555,84QVF8W3+,241.0,,1.7,8.9,2.3,6.8,,1015.3,Mycena pseudocorticola,"Marquam Nature Park, Portland, OR, US",2
+547dadbf-9596-4995-a63c-632bc4fb2e03,8993981,2017-11-29 10:00:20-08:00,2017-11-29,-122.7069473267,45.575553894,84QVH7GV+,52.0,,3.9,10.6,0.0,1.9,,1028.8,Mycena pseudocorticola,"7211-7225 N Fowler Ave, Portland, OR 97217, USA",1

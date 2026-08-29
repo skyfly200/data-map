@@ -1,2 +1,10 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-50ede960-7584-4f43-9525-07c9e4ab513b,246275352,2024-10-07 18:11:00-07:00,2024-10-07,-122.2286990786,45.3080498026,413.0,,8.9,27.2,0.0,2.5,,1015.9,Russula pseudotsugarum,"Clackamas County, OR, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+50ede960-7584-4f43-9525-07c9e4ab513b,246275352,2024-10-07 18:11:00-07:00,2024-10-07,-122.2286990786,45.3080498026,413.0,,8.9,27.2,0.0,2.5,,1015.9,Russula pseudotsugarum,"Clackamas County, OR, USA",1,
+24dfcebc-4c11-44ea-bd4c-831373b653d1,17488137,2018-10-13 21:56:40-07:00,2018-10-13,-122.9132509512,44.90053711,148.0,,5.6,22.8,0.0,13.3,,1019.9,Russula pseudotsugarum,"2887 74th Ave SE, Salem, OR, US",1,84PVW32P+
+76a492a0-9c31-46b4-986f-610dfb3257e6,17477917,2018-10-13 14:21:28-07:00,2018-10-13,-122.9126057942,44.9003184272,148.0,,5.6,22.8,0.0,13.3,,1019.9,Russula pseudotsugarum,"Shangri-la School, Salem, OR, US",1,84PVW32P+
+e5b7875e-1e48-4995-8f47-e951c72b4fa1,17477882,2018-10-13 14:11:24-07:00,2018-10-13,-122.9125825842,44.9003093029,148.0,,5.6,22.8,0.0,13.3,,1019.9,Russula pseudotsugarum,"Shangri-la School, Salem, OR, US",1,84PVW32P+
+6510553d-3bcd-439f-aa84-1d5bf0d60a1f,17471976,2018-10-13 11:41:00-07:00,2018-10-13,-122.9125498495,44.9002957501,148.0,,5.6,22.8,0.0,13.3,,1019.9,Russula pseudotsugarum,"Shangri-la School, Salem, OR, US",1,84PVW32P+
+3f883b82-5102-48d6-9d57-75459da75861,17471886,2018-10-13 11:32:38-07:00,2018-10-13,-122.9125495961,44.900296744,148.0,,5.6,22.8,0.0,13.3,,1019.9,Russula pseudotsugarum,"Shangri-la School, Salem, OR, US",1,84PVW32P+
+45be6185-06d8-4cfd-9938-dedc6618012e,17471818,2018-10-13 11:26:03-07:00,2018-10-13,-122.9130075407,44.900355516,148.0,,5.6,22.8,0.0,13.3,,1019.9,Russula pseudotsugarum,"Shangri-la School, Salem, OR, US",1,84PVW32P+
+9bcbe587-2682-4ee2-ac0f-3c26bce45bc0,17471781,2018-10-13 11:21:37-07:00,2018-10-13,-122.9125328994,44.9002906076,148.0,,5.6,22.8,0.0,13.3,,1019.9,Russula pseudotsugarum,"Shangri-la School, Salem, OR, US",1,84PVW32P+
+afe050b3-8ca3-4b94-93be-1c3d590fb70f,17471693,2018-10-13 11:13:43-07:00,2018-10-13,-122.9133548868,44.9005618785,148.0,,5.6,22.8,0.0,13.3,,1019.9,Russula pseudotsugarum,"Shangri-la School, Salem, OR, US",1,84PVW32P+

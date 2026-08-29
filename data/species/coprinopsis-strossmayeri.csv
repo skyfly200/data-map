@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9793a41f-28a6-435c-8f34-967bfc258198,274286600,2025-04-26 11:23:37-07:00,2025-04-26,-122.762398,45.649286,84QVJ6XQ+,24.0,,9.4,18.3,0.0,9.6,,1013.6,Coprinopsis strossmayeri,"J6XP+C2 Picnic Area B, Portland, OR 97203, USA",1
+89747561-b158-49cd-b20d-730eacad4848,217949123,2024-05-23 13:36:20-07:00,2024-05-23,-122.766075,45.6428383333,84QVJ6VM+,18.0,,8.9,17.8,0.0,3.4,,1020.9,Coprinopsis strossmayeri,"Kelley Point Park, Portland, OR, US",2

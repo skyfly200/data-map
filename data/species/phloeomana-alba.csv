@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fa46f01b-b39f-4b3a-b54c-583d5c8e3a91,274291372,2025-04-26 11:53:28-07:00,2025-04-26,-122.764642,45.646116,84QVJ6WP+,17.0,,9.4,18.3,0.0,9.6,,1013.6,Phloeomana alba,"St. Johns, Portland, OR, USA",2
+d2087550-f8b4-4cf2-98b9-7bd350edc507,256327409,2024-12-26 14:57:07-08:00,2024-12-26,-122.7154616667,45.5183116667,84QVG79M+,239.0,,7.2,12.8,20.8,20.9,,1003.3,Phloeomana alba,"Hoyt Arboretum, Portland, OR, US",3

@@ -1,3 +1,7 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-c4982c57-75d0-4595-a126-11461d05ec9b,232067680,2024-07-03 11:03:00-06:00,2024-07-03,-105.8048781703,35.7958059976,3124.0,,14.4,29.4,0.0,10.6,,1011.9,Paralepista flaccida,"Santa Fe County, NM, USA",1
-f9ed4b79-2755-4afd-a76f-1d8c142effad,100454448,2021-11-06 11:39:27-07:00,2021-11-06,-121.9419416667,45.2630583333,613.0,,6.1,11.1,,12.6,,1015.8,Paralepista flaccida,"Mount Hood National Forest, Welches, OR, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+c4982c57-75d0-4595-a126-11461d05ec9b,232067680,2024-07-03 11:03:00-06:00,2024-07-03,-105.8048781703,35.7958059976,3124.0,,14.4,29.4,0.0,10.6,,1011.9,Paralepista flaccida,"Santa Fe County, NM, USA",1,
+f9ed4b79-2755-4afd-a76f-1d8c142effad,100454448,2021-11-06 11:39:27-07:00,2021-11-06,-121.9419416667,45.2630583333,613.0,,6.1,11.1,,12.6,,1015.8,Paralepista flaccida,"Mount Hood National Forest, Welches, OR, US",1,
+b663c205-efa4-4f9c-8894-8ed69d5be96a,191647512,2023-11-19 13:43:33-08:00,2023-11-19,-122.816575,45.61413,160.0,,2.2,12.2,,4.0,,1027.8,Paralepista flaccida,"NW Newberry Rd, Portland, OR, US",1,84QVJ57M+
+723e33e7-de8b-4e89-b350-10806481f428,99417803,2021-10-25 13:39:41-07:00,2021-10-25,-122.768349722,45.5709807657,184.0,,11.7,14.4,,15.3,,1000.0,Paralepista flaccida,Forest Park,1,84QVH6CJ+
+617cc4ee-d7e1-41a0-9eca-a1ca89b5bc57,66281685,2020-12-05 09:24:00-08:00,2020-12-05,-122.7600666667,45.5645805556,156.0,,0.6,7.8,,11.8,,1021.1,Paralepista flaccida,"Northwest Portland, Portland, OR, USA",2,84QVH67Q+
+07e85eb5-ad42-4ff0-9567-e42689819419,36961544,2019-12-25 16:13:06-10:00,2019-12-25,-122.75893333,45.604105,30.0,,0.0,6.1,,6.8,,1014.5,Paralepista flaccida,"Pier Park, Portland, OR, US",1,84QVJ63R+

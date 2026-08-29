@@ -1,3 +1,4 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-7c494162-5990-44e4-b07a-dd8fea4a846d,98206134,2021-08-25 13:29:32-06:00,2021-08-25,-105.8097506315,39.484900017,3043.0,,,,,,,,Sarcodon squamosus,"Dillon, CO 80435, USA",2
-ae0b469b-ccdd-484d-9ec3-d44cd214a668,3593081,2013-10-23,2013-10-23,-121.7,45.3515,2309.0,,,,,,,,Sarcodon squamosus,"Mount Hood, Mount Hood National Forest, Oregon, USA",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+7c494162-5990-44e4-b07a-dd8fea4a846d,98206134,2021-08-25 13:29:32-06:00,2021-08-25,-105.8097506315,39.484900017,3043.0,,,,,,,,Sarcodon squamosus,"Dillon, CO 80435, USA",2,
+ae0b469b-ccdd-484d-9ec3-d44cd214a668,3593081,2013-10-23,2013-10-23,-121.7,45.3515,2309.0,,,,,,,,Sarcodon squamosus,"Mount Hood, Mount Hood National Forest, Oregon, USA",2,
+3028d958-59c4-4d5e-bf15-3d884560b1d0,99983872,2021-10-30 16:30:29-07:00,2021-10-30,-121.9913709367,44.3710052943,963.0,,,,,,,,Sarcodon squamosus,"Willamette National Forest, Foster, OR, US",2,84PW92C5+

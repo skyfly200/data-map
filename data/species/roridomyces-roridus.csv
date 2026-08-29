@@ -1,2 +1,3 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-eb2213d9-2e0c-46a6-84d4-1281a97877a4,56338831,2020-08-12 16:55:00-07:00,2020-08-12,-122.0827461616,45.5415272134,906.0,,13.3,23.3,,5.4,,1017.4,Roridomyces roridus,"Multnomah County, OR, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+eb2213d9-2e0c-46a6-84d4-1281a97877a4,56338831,2020-08-12 16:55:00-07:00,2020-08-12,-122.0827461616,45.5415272134,906.0,,13.3,23.3,,5.4,,1017.4,Roridomyces roridus,"Multnomah County, OR, USA",1,
+f98f68ae-d5c8-4964-8366-c7278e6d2982,28482093,2019-07-08 11:08:00-07:00,2019-07-08,-122.2451030701,45.7405868873,1144.0,,13.9,25.0,0.0,4.0,,1015.0,Roridomyces roridus,"Skamania County, WA, USA",5,84QVPQR3+

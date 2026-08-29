@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+81af0d6e-4dc8-4bac-806d-fe8f465dbf0d,258286755,2025-01-05 12:19:00-08:00,2025-01-05,-122.6783853,45.515232,84QVG88C+,43.0,,8.9,12.8,2.0,7.9,,1023.3,Mycena corticola,"Portland, OR, USA",1
+f1b06895-0811-435d-b652-8b0f8aeb881f,101562235,2021-11-20 09:15:34-08:00,2021-11-20,-122.6746,45.43375,84QVC8MG+,62.0,,2.2,11.7,0.0,1.8,,1032.7,Mycena corticola,"Tryon Creek State Natural Area, Portland, OR, US",1
+30ce688b-b568-424f-bbea-b55d669bd915,66596390,2020-12-14 14:53:02+00:00,2020-12-14,-122.6643392,45.5428593997,84QVG8VP+,61.0,,5.0,9.4,0.0,11.2,,1025.1,Mycena corticola,"Eliot, Portland, OR, USA",1
+39384c13-4b9f-4bdb-b87f-05b7d05d532a,36959726,2019-12-25 14:43:34-10:00,2019-12-25,-122.76020833,45.60283333,84QVJ63Q+,30.0,,0.0,6.1,,6.8,,1014.5,Mycena corticola,"Pier Park, Portland, OR, US",1
+ba5dbc38-0182-461a-8a04-48bd61500ef8,9221131,2017-12-20 15:59:01-08:00,2017-12-20,-122.6876869259,45.5142469323,84QVG876+,52.0,,-1.0,7.8,0.8,14.0,,1021.7,Mycena corticola,"Portland State University, Portland, OR, US",1
+f7dfd8d4-8396-4406-8a45-d21c5e29cf64,8959722,2017-11-27 16:09:59-08:00,2017-11-27,-122.7958366667,45.4845616667,84QVF6M3+,58.0,,2.2,7.2,,2.8,,1019.6,Mycena corticola,"Griffith Park, Beaverton, OR, US",2

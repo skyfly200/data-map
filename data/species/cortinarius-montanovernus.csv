@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fae8250f-cced-4ce7-aad9-12647b2ddc6a,273235480,2025-04-24 11:05:00-07:00,2025-04-24,-121.43589,45.82825,84QWRHH7+,242.0,,1.0,23.0,0.0,2.8,,1014.6,Cortinarius montanovernus,"Klickitat County, WA, USA",1

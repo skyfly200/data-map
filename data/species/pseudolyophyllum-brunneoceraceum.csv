@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b34f05a1-baab-4146-82c7-61da3eaa0891,189058383,2023-10-18 15:43:04-07:00,2023-10-18,-122.7713527778,45.5757694444,84QVH6GH+,269.0,,6.7,22.2,0.0,1.6,,1019.0,Pseudolyophyllum brunneoceraceum,"Linnton, Portland, OR, USA",4

@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+03a41c47-50c1-4e7e-9b50-e9986ac9eac9,269232881,2024-11-08 15:07:51-08:00,2024-11-08,-122.8851616667,45.2497133333,84QV64X7+,33.0,,2.2,13.3,0.0,0.0,,1020.5,Rubroboletus eastwoodiae,"Champoeg State Heritage Area, Saint Paul, OR, US",1
+1f7a9fcb-b610-4c86-9856-56e72f55cf8f,191434430,2023-11-18 13:48:04-08:00,2023-11-18,-121.5518026131,45.9195923434,84QWWC9X+,1017.0,,3.4,6.5,7.6,8.3,,1013.0,Rubroboletus eastwoodiae,"Washington, US",1
+fe8084ff-293e-44fa-93b9-8303ba3e0c05,188565800,2023-10-21 14:22:00-07:00,2023-10-21,-121.5160305556,45.8099611111,84QWRF5M+,296.0,,11.1,21.1,0.0,6.7,,1010.7,Rubroboletus eastwoodiae,"Klickitat County, WA, USA",3
+482123c3-a12d-451f-b034-af2f4db6391e,98328519,2021-10-15 15:47:14-07:00,2021-10-15,-123.0126888833,44.9592866667,84PRXX5P+,55.0,,5.0,19.4,0.0,5.0,,1022.2,Rubroboletus eastwoodiae,"Salem, OR, US",2

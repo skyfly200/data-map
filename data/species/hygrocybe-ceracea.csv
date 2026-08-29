@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ca0b847e-9b01-4582-9f74-87df11866105,255717947,2024-12-20 15:07:38-08:00,2024-12-20,-122.6039236878,45.5139269215,84QVG97W+,94.0,,6.7,12.8,0.0,10.8,,1016.2,Hygrocybe ceracea,"SE 58th Ave, Portland, OR, US",1
+33667ec6-2d1f-4f76-a7f9-2d5a09dab7ef,67106650,2020-12-26 14:21:33-08:00,2020-12-26,-122.7826383333,45.4894416667,84QVF6Q8+,69.0,,5.0,10.0,,12.7,,1015.9,Hygrocybe ceracea,"SW 103rd Ct, Beaverton, OR, US",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2ae96964-5ff7-4023-bd15-778983ffa4bf,17477866,2018-10-13 14:09:10-07:00,2018-10-13,-122.912569051,44.9003045038,84PVW32P+,148.0,,5.6,22.8,0.0,13.3,,1019.9,Russula graminea,"Shangri-la School, Salem, OR, US",1

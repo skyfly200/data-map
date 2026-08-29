@@ -1,2 +1,3 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-26300637-0054-45cd-b1e0-85c1d0fde655,236337841,2024-08-17 08:44:23-06:00,2024-08-17,-108.0624790584,37.6337344665,2626.0,,12.0,23.0,4.9,9.4,,1034.5,Russula versicolor,"Montezuma County, US-CO, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+26300637-0054-45cd-b1e0-85c1d0fde655,236337841,2024-08-17 08:44:23-06:00,2024-08-17,-108.0624790584,37.6337344665,2626.0,,12.0,23.0,4.9,9.4,,1034.5,Russula versicolor,"Montezuma County, US-CO, US",2,
+278c576e-3d4e-42f1-9b6c-9878fbd38966,298273839,2025-07-15 12:35:19-07:00,2025-07-15,-122.8298116667,45.5105166667,72.0,,9.4,32.2,0.0,8.5,,1014.2,Russula versicolor,"SW Walker Rd, Beaverton, OR, US",3,84QVG56C+

@@ -5,3 +5,6 @@ uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,winds
 89ad0521-1aca-41ef-a01e-f5fe6c28a236,29148882,2019-07-19 15:46:33-07:00,2019-07-19,-121.9417033333,45.276325,573.0,,11.1,25.0,0.0,6.5,,1018.6,Mycena oregonensis,"Mt. Hood National Forest, Welches, OR, US",5,
 35d17371-0b6e-4e76-aa8a-e7b5efd71553,18335658,2018-11-01,2018-11-01,-121.81,45.31605,916.0,,,,,,,,Mycena oregonensis,"SW Mount Hood, Clackamas Co., Oregon, USA",2,
 317b3624-c046-4450-ad7b-d3452f127993,97869842,2021-10-10 16:47:23-07:00,2021-10-10,-121.9795009,44.5757456997,883.0,,,,,,,,Mycena oregonensis,"Lower Downing Creek Falls, Downing Creek, Oregon, OR, USA",1,84PWH2GC+
+b5ccbfb9-62f6-4db1-bbd0-8ea7bee76676,322319339,2025-10-21 16:09:38-07:00,2025-10-21,-122.6790916667,45.4498133333,125.0,,6.0,18.0,0.0,5.4,,1020.2,Mycena oregonensis,"Tryon Creek State Natural Area, Portland, OR, US",2,84QVC8XC+
+fba15234-f7d7-43f6-87f0-b813d9728b59,249857310,2024-10-26 13:33:21-07:00,2024-10-26,-121.93737874,45.95001533,513.0,,5.7,16.9,0.0,4.4,,1016.6,Mycena oregonensis,"Skamania County, US-WA, US",1,84QWX327+
+c78fb9d4-71e8-4c57-a635-2e7a8421f64f,67119381,2019-09-25 12:16:00-10:00,2019-09-25,-122.1453276125,44.2815912239,1565.0,,,,,,,,Mycena oregonensis,"Carpenter Mountain, Linn County, OR, USA",1,84PV7VJ3+
