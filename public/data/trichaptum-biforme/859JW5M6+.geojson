@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "508b38ce-0ce9-4fff-9a66-74dcd52c3657",
+        "inat_id": 92175004,
+        "timestamp": "2021-08-22T15:22:59-06:00",
+        "date": "2021-08-22",
+        "olc": "859JW5M6+",
+        "elevation": 3119.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 22.0,
+        "precipitation": 0.0,
+        "windspeed": 8.8,
+        "winddirection": null,
+        "presure": 1027.4,
+        "species": "Trichaptum biforme",
+        "location": "San Miguel County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8389497997,
+          37.9338279997
+        ]
+      }
+    }
+  ]
+}

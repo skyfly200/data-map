@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "479c1c35-ed7a-4766-bb81-2a9221c88d82",
+        "inat_id": 7486610,
+        "timestamp": "2017-08-12T18:23:11-06:00",
+        "date": "2017-08-12",
+        "olc": "85FPXQH3+",
+        "elevation": 1665.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 27.0,
+        "precipitation": null,
+        "windspeed": 4.8,
+        "winddirection": null,
+        "presure": null,
+        "species": "Marasmius oreades",
+        "location": "1020 Toedtli Dr, Boulder, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2458883333,
+          39.9794466667
+        ]
+      }
+    }
+  ]
+}

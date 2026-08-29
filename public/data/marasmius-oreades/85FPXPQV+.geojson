@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "155a73b9-08d0-4e54-aeb8-d74630585871",
+        "inat_id": 284951159,
+        "timestamp": "2025-05-28T18:30:12-06:00",
+        "date": "2025-05-28",
+        "olc": "85FPXPQV+",
+        "elevation": 1649.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 19.0,
+        "precipitation": 5.2,
+        "windspeed": 6.9,
+        "winddirection": null,
+        "presure": 1021.0,
+        "species": "Marasmius oreades",
+        "location": "Boulder",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2559738159,
+          39.9895858765
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5f729276-7eba-413b-bf17-76a5528b6e62",
+        "inat_id": 287380971,
+        "timestamp": "2025-06-06T10:38:29-06:00",
+        "date": "2025-06-06",
+        "olc": "85FPXP8Q+",
+        "elevation": 1771.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 20.0,
+        "precipitation": 2.3,
+        "windspeed": 6.6,
+        "winddirection": null,
+        "presure": 1019.6,
+        "species": "Marasmius oreades",
+        "location": "Shanahan-North Fork Trail, Boulder, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.262,
+          39.9663616667
+        ]
+      }
+    }
+  ]
+}

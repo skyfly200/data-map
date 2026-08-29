@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "85247569-a909-4f08-a0c7-3219a2b0ffe4",
+        "inat_id": 91747112,
+        "timestamp": "2021-08-16T12:06:11-06:00",
+        "date": "2021-08-16",
+        "olc": "85CJVX8X+",
+        "elevation": 2943.0,
+        "tavg": null,
+        "tmin": 8.3,
+        "tmax": 26.7,
+        "precipitation": null,
+        "windspeed": 7.6,
+        "winddirection": null,
+        "presure": 1017.4,
+        "species": "Hypomyces chrysospermus",
+        "location": "Crested Butte, CO 81224, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.0024247095,
+          38.8651354651
+        ]
+      }
+    }
+  ]
+}

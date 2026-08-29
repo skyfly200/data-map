@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8eff3721-7553-4a47-a4a3-85e606bdcd41",
+        "inat_id": 256701086,
+        "timestamp": "2024-12-29T14:33:43-07:00",
+        "date": "2024-12-29",
+        "olc": "85GP8CV9+",
+        "elevation": 2446.0,
+        "tavg": null,
+        "tmin": -0.4,
+        "tmax": 5.7,
+        "precipitation": 4.3,
+        "windspeed": 12.6,
+        "winddirection": null,
+        "presure": 1015.4,
+        "species": "Trichaptum abietinum",
+        "location": "Tuxedo Park, Colorado 80517, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.581344,
+          40.3446479722
+        ]
+      }
+    }
+  ]
+}

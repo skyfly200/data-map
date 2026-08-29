@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "971474a3-201b-40f7-bf78-02fb24026a91",
+        "inat_id": 177745607,
+        "timestamp": "2023-07-03T09:47:00-06:00",
+        "date": "2023-07-03",
+        "olc": "859JFQPV+",
+        "elevation": 2490.0,
+        "tavg": null,
+        "tmin": 7.0,
+        "tmax": 30.0,
+        "precipitation": 0.2,
+        "windspeed": 9.7,
+        "winddirection": null,
+        "presure": 1025.4,
+        "species": "Fomitopsis schrenkii",
+        "location": "Hinsdale County, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.2056194444,
+          37.4868361111
+        ]
+      }
+    }
+  ]
+}

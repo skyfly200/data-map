@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6309e856-fcd2-4308-a46d-4e197108cf56",
+        "inat_id": 1985818,
+        "timestamp": "2015-09-23T17:46:10-06:00",
+        "date": "2015-09-23",
+        "olc": "85FQM2WG+",
+        "elevation": 1624.0,
+        "tavg": null,
+        "tmin": 13.9,
+        "tmax": 26.1,
+        "precipitation": null,
+        "windspeed": 10.7,
+        "winddirection": null,
+        "presure": 1013.5,
+        "species": "Marasmius oreades",
+        "location": "Denver County, US-CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.97322,
+          39.6970583333
+        ]
+      }
+    }
+  ]
+}

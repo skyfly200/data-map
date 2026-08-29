@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "baa14dfc-95a5-4aff-8ee5-02467128c21d",
+        "inat_id": 238018193,
+        "timestamp": "2024-08-25T16:09:14-06:00",
+        "date": "2024-08-25",
+        "olc": "857MVJW4+",
+        "elevation": 2835.0,
+        "tavg": null,
+        "tmin": 13.2,
+        "tmax": 26.7,
+        "precipitation": null,
+        "windspeed": 9.8,
+        "winddirection": null,
+        "presure": 1021.6,
+        "species": "Fomitopsis schrenkii",
+        "location": "Los Alamos County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3935418054,
+          35.8969167689
+        ]
+      }
+    }
+  ]
+}

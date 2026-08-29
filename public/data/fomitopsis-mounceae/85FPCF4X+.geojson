@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "58fe4103-971d-44d5-8c5d-3c8d1897fd60",
+        "inat_id": 312303209,
+        "timestamp": "2025-09-07T11:41:02-06:00",
+        "date": "2025-09-07",
+        "olc": "85FPCF4X+",
+        "elevation": 2428.0,
+        "tavg": null,
+        "tmin": 1.8,
+        "tmax": 15.6,
+        "precipitation": 0.8,
+        "windspeed": 11.2,
+        "winddirection": null,
+        "presure": 1020.5,
+        "species": "Fomitopsis mounceae",
+        "location": "Bailey, CO 80421, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5015551997,
+          39.4063647997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0f0a83b7-360b-4411-9869-0040ca5bf2ce",
+        "inat_id": 312294648,
+        "timestamp": "2025-09-07T10:59:47-06:00",
+        "date": "2025-09-07",
+        "olc": "85FPCF4X+",
+        "elevation": 2444.0,
+        "tavg": null,
+        "tmin": 1.8,
+        "tmax": 15.6,
+        "precipitation": 0.8,
+        "windspeed": 11.2,
+        "winddirection": null,
+        "presure": 1020.5,
+        "species": "Fomitopsis mounceae",
+        "location": "Bailey, CO 80421, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5022964444,
+          39.4051322778
+        ]
+      }
+    }
+  ]
+}

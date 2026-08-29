@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7094f4b8-3a8c-4ca0-966e-fe2eb8ddd97b",
+        "inat_id": 240257410,
+        "timestamp": "2024-09-06T16:58:00-06:00",
+        "date": "2024-09-06",
+        "olc": "85FPR6GH+",
+        "elevation": 3374.0,
+        "tavg": null,
+        "tmin": -3.6,
+        "tmax": 13.4,
+        "precipitation": 0.0,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1028.6,
+        "species": "Clavariadelphus ligula",
+        "location": "Berthoud Pass Grand County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7711261243,
+          39.8266738139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e61a3723-0e4e-40cd-b77c-08e57ab7dbc4",
+        "inat_id": 240256354,
+        "timestamp": "2024-09-06T16:12:00-06:00",
+        "date": "2024-09-06",
+        "olc": "85FPR6GH+",
+        "elevation": 3374.0,
+        "tavg": null,
+        "tmin": -3.6,
+        "tmax": 13.4,
+        "precipitation": 0.0,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1028.6,
+        "species": "Clavariadelphus ligula",
+        "location": "Berthoud Pass Grand County, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7711261243,
+          39.8266738139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "015f785e-2676-46f5-ac57-fee54641193a",
+        "inat_id": 237775507,
+        "timestamp": "2024-08-24T15:24:00-06:00",
+        "date": "2024-08-24",
+        "olc": "85FPR6GH+",
+        "elevation": 3374.0,
+        "tavg": null,
+        "tmin": 2.9,
+        "tmax": 14.4,
+        "precipitation": 4.3,
+        "windspeed": 14.6,
+        "winddirection": null,
+        "presure": 1021.5,
+        "species": "Clavariadelphus ligula",
+        "location": "Berthoud Pass Grand County, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7711261243,
+          39.8266738139
+        ]
+      }
+    }
+  ]
+}

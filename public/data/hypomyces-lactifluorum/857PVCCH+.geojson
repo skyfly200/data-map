@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "95c859b3-0e3d-4d27-ad6e-e583d21236a5",
+        "inat_id": 305448350,
+        "timestamp": "2025-08-09T17:41:39-06:00",
+        "date": "2025-08-09",
+        "olc": "857PVCCH+",
+        "elevation": 2852.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 32.2,
+        "precipitation": 0.0,
+        "windspeed": 14.8,
+        "winddirection": null,
+        "presure": 1009.4,
+        "species": "Hypomyces lactifluorum",
+        "location": "Santa Fe National Forest, Tererro, NM, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5724633333,
+          35.8703783333
+        ]
+      }
+    }
+  ]
+}

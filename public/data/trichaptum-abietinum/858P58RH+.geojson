@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "17d94ad8-3e27-4af1-a9cf-c0e3b45f33c8",
+        "inat_id": 90352738,
+        "timestamp": "2021-08-07T18:18:11-06:00",
+        "date": "2021-08-07",
+        "olc": "858P58RH+",
+        "elevation": 2276.0,
+        "tavg": null,
+        "tmin": 13.3,
+        "tmax": 30.0,
+        "precipitation": 0.0,
+        "windspeed": 16.8,
+        "winddirection": null,
+        "presure": 1014.9,
+        "species": "Trichaptum abietinum",
+        "location": "Vadito",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.670848079,
+          36.1911664327
+        ]
+      }
+    }
+  ]
+}

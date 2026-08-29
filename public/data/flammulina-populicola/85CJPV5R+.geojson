@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7be56735-3238-41e8-b0fb-880af20b5557",
+        "inat_id": 312078308,
+        "timestamp": "2025-09-06T14:11:58-06:00",
+        "date": "2025-09-06",
+        "olc": "85CJPV5R+",
+        "elevation": 3411.0,
+        "tavg": null,
+        "tmin": 3.0,
+        "tmax": 23.0,
+        "precipitation": 0.4,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1028.3,
+        "species": "Flammulina populicola",
+        "location": "Gunnison County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1088509606,
+          38.7094030489
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8ae01fae-6fd7-4511-8dbd-03e49cb00c6f",
+        "inat_id": 287317566,
+        "timestamp": "2025-06-06T09:01:18-06:00",
+        "date": "2025-06-06",
+        "olc": "85GQC6RJ+",
+        "elevation": 1431.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 18.3,
+        "precipitation": 3.8,
+        "windspeed": 8.8,
+        "winddirection": null,
+        "presure": 1017.8,
+        "species": "Marasmius oreades",
+        "location": "Greeley, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.7699493077,
+          40.4412286682
+        ]
+      }
+    }
+  ]
+}

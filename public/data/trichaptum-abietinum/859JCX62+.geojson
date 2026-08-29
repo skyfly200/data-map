@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "09fff49b-69f8-4276-8ee5-da334b48344f",
+        "inat_id": 300597886,
+        "timestamp": "2025-07-21T15:07:01-06:00",
+        "date": "2025-07-21",
+        "olc": "859JCX62+",
+        "elevation": 2789.0,
+        "tavg": null,
+        "tmin": 10.2,
+        "tmax": 25.8,
+        "precipitation": 2.9,
+        "windspeed": 7.5,
+        "winddirection": null,
+        "presure": 1015.1,
+        "species": "Trichaptum abietinum",
+        "location": "Fourmile Stock Drive, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.0489278333,
+          37.4112366667
+        ]
+      }
+    }
+  ]
+}

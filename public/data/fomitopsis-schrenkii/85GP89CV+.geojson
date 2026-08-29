@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "93b0a941-6bf9-45df-87bd-4a3be16855b0",
+        "inat_id": 321904460,
+        "timestamp": "2025-10-13T10:33:00-06:00",
+        "date": "2025-10-13",
+        "olc": "85GP89CV+",
+        "elevation": 2660.0,
+        "tavg": null,
+        "tmin": -2.0,
+        "tmax": 16.0,
+        "precipitation": 1.7,
+        "windspeed": 4.3,
+        "winddirection": null,
+        "presure": 1019.9,
+        "species": "Fomitopsis schrenkii",
+        "location": "Larimer County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.607307409,
+          40.3205413472
+        ]
+      }
+    }
+  ]
+}

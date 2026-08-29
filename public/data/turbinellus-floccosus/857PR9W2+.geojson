@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "002f356c-563a-4b69-a1da-6d58e63fef98",
+        "inat_id": 235242966,
+        "timestamp": "2024-08-11T11:25:03-06:00",
+        "date": "2024-08-11",
+        "olc": "857PR9W2+",
+        "elevation": 2945.0,
+        "tavg": null,
+        "tmin": 18.9,
+        "tmax": 31.1,
+        "precipitation": null,
+        "windspeed": 15.6,
+        "winddirection": null,
+        "presure": 1014.4,
+        "species": "Turbinellus floccosus",
+        "location": "San Miguel County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6499079329,
+          35.847437956
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c3e8f1f5-0fc0-494b-9802-78a750978c5a",
+        "inat_id": 183599459,
+        "timestamp": "2023-09-16T11:21:42-06:00",
+        "date": "2023-09-16",
+        "olc": "85CGFQCX+",
+        "elevation": 3023.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "La Sal, UT, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.20002,
+          38.4706166667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d79ef6a3-ac77-4797-b704-1ffd3583b166",
+        "inat_id": 305379121,
+        "timestamp": "2025-08-10T13:40:27-06:00",
+        "date": "2025-08-10",
+        "olc": "85MRXJ5M+",
+        "elevation": 1397.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 26.7,
+        "precipitation": 1.0,
+        "windspeed": 10.4,
+        "winddirection": null,
+        "presure": 1018.2,
+        "species": "Hypomyces lactifluorum",
+        "location": "Flume Trail, Rapid City, SD, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.3666166667,
+          43.9595633333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c0d363da-6ea1-4466-b009-d108f8d028c4",
+        "inat_id": 300497212,
+        "timestamp": "2025-07-23T08:59:22-06:00",
+        "date": "2025-07-23",
+        "olc": "85MRXJ5M+",
+        "elevation": 1375.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 26.7,
+        "precipitation": 15.5,
+        "windspeed": 21.6,
+        "winddirection": null,
+        "presure": 1013.6,
+        "species": "Hypomyces lactifluorum",
+        "location": "Mount Rushmore, SD, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.36686027,
+          43.95806069
+        ]
+      }
+    }
+  ]
+}

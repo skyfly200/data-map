@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7e6966f2-7dbc-4022-b059-83dd9b6102be",
+        "inat_id": 173838581,
+        "timestamp": "2023-07-19T11:21:14-06:00",
+        "date": "2023-07-19",
+        "olc": "85FPMHM5+",
+        "elevation": 2731.0,
+        "tavg": null,
+        "tmin": 2.9,
+        "tmax": 13.7,
+        "precipitation": 11.5,
+        "windspeed": 11.7,
+        "winddirection": null,
+        "presure": 1025.8,
+        "species": "Hygrophorus purpurascens",
+        "location": "Evergreen, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4419851187,
+          39.6847603424
+        ]
+      }
+    }
+  ]
+}

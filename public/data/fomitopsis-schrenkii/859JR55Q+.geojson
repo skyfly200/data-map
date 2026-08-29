@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "55a938ba-c7f8-4640-9e7f-b204f004b4b3",
+        "inat_id": 321667231,
+        "timestamp": "2024-07-18T13:48:00-06:00",
+        "date": "2024-07-18",
+        "olc": "859JR55Q+",
+        "elevation": 3768.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 23.0,
+        "precipitation": 16.7,
+        "windspeed": 7.3,
+        "winddirection": null,
+        "presure": 1035.6,
+        "species": "Fomitopsis schrenkii",
+        "location": "Ice Lake Basin, Colorado 81301, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8117311,
+          37.8094399
+        ]
+      }
+    }
+  ]
+}

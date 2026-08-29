@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "bbb53336-e3c4-4a7a-a5c8-91f113f54aef",
+        "inat_id": 153174272,
+        "timestamp": "2010-09-19T18:27:00-06:00",
+        "date": "2010-09-19",
+        "olc": "85FPV6RP+",
+        "elevation": 2762.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 36.0,
+        "precipitation": null,
+        "windspeed": 3.4,
+        "winddirection": null,
+        "presure": null,
+        "species": "Catathelasma ventricosum",
+        "location": "Winter Park, CO 80482, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7630624,
+          39.8916537
+        ]
+      }
+    }
+  ]
+}

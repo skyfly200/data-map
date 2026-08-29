@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a656aa7b-1dca-452f-a9a5-f654157d8395",
+        "inat_id": 131617543,
+        "timestamp": "2022-08-20T12:25:32-06:00",
+        "date": "2022-08-20",
+        "olc": "85FMFX4R+",
+        "elevation": 3278.0,
+        "tavg": null,
+        "tmin": 7.2,
+        "tmax": 14.4,
+        "precipitation": null,
+        "windspeed": 9.0,
+        "winddirection": null,
+        "presure": 1016.3,
+        "species": "Hygrophorus chrysodon",
+        "location": "White River National Forest, Breckenridge, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.0096708407,
+          39.4571948505
+        ]
+      }
+    }
+  ]
+}

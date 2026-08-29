@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "48f259b3-dba4-4a59-b977-cc4e8629d60b",
+        "inat_id": 131164347,
+        "timestamp": "2022-08-16T13:05:23-06:00",
+        "date": "2022-08-16",
+        "olc": "859HQXRF+",
+        "elevation": 3093.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 17.0,
+        "precipitation": 16.4,
+        "windspeed": 3.4,
+        "winddirection": null,
+        "presure": 1030.8,
+        "species": "Clavariadelphus truncatus",
+        "location": "San Juan National Forest headquarters, Dolores, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.0256888333,
+          37.7920616667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "85e083b0-95cf-41e2-9558-4214e61dc9a3",
+        "inat_id": 350780156,
+        "timestamp": "2026-04-17T15:39:29-06:00",
+        "date": "2026-04-17",
+        "olc": "85CMJRGM+",
+        "elevation": 2801.0,
+        "tavg": null,
+        "tmin": -2.4,
+        "tmax": 10.6,
+        "precipitation": 0.0,
+        "windspeed": 14.5,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Salida, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.1674633333,
+          38.6274466667
+        ]
+      }
+    }
+  ]
+}

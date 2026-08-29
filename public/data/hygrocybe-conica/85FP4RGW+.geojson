@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3a05c2e4-f1e8-4580-9b5e-ccef18f3d11b",
+        "inat_id": 197613211,
+        "timestamp": "2022-08-15T17:24:09-06:00",
+        "date": "2022-08-15",
+        "olc": "85FP4RGW+",
+        "elevation": 2393.0,
+        "tavg": null,
+        "tmin": 6.8,
+        "tmax": 19.2,
+        "precipitation": 7.6,
+        "windspeed": 6.2,
+        "winddirection": null,
+        "presure": 1018.5,
+        "species": "Hygrocybe conica",
+        "location": "Pike and San Isabel National Forests, Woodland Park, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1543195,
+          39.1270028333
+        ]
+      }
+    }
+  ]
+}

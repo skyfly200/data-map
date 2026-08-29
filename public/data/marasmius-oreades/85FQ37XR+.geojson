@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7a7582bd-a6dc-4b8a-9f69-4ebba11e9146",
+        "inat_id": 311801723,
+        "timestamp": "2025-08-31T09:42:11-06:00",
+        "date": "2025-08-31",
+        "olc": "85FQ37XR+",
+        "elevation": 2264.0,
+        "tavg": null,
+        "tmin": 7.0,
+        "tmax": 22.0,
+        "precipitation": 0.0,
+        "windspeed": 10.6,
+        "winddirection": null,
+        "presure": 1030.8,
+        "species": "Marasmius oreades",
+        "location": "Walker Rd, Colorado Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.7078528572,
+          39.0994035856
+        ]
+      }
+    }
+  ]
+}

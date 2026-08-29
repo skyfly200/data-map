@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2a1863af-5246-404b-9826-e4427622b980",
+        "inat_id": 307853059,
+        "timestamp": "2025-08-20T11:59:49-06:00",
+        "date": "2025-08-20",
+        "olc": "857PQ5WX+",
+        "elevation": 3169.0,
+        "tavg": null,
+        "tmin": 14.4,
+        "tmax": 31.1,
+        "precipitation": 0.0,
+        "windspeed": 16.2,
+        "winddirection": null,
+        "presure": 1017.5,
+        "species": "Clavariadelphus ligula",
+        "location": "NM-475, Tererro, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8017473338,
+          35.795129707
+        ]
+      }
+    }
+  ]
+}

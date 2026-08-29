@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "af18738d-72fc-4ecd-ad8f-6966cea397b1",
+        "inat_id": 221615403,
+        "timestamp": "2024-06-09T11:25:42-06:00",
+        "date": "2024-06-09",
+        "olc": "85FQ27RH+",
+        "elevation": 2314.0,
+        "tavg": null,
+        "tmin": 9.4,
+        "tmax": 24.0,
+        "precipitation": null,
+        "windspeed": 17.1,
+        "winddirection": null,
+        "presure": 1013.9,
+        "species": "Trichaptum abietinum",
+        "location": "Holmes Rd, Colorado Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.7208727618,
+          39.0408203099
+        ]
+      }
+    }
+  ]
+}

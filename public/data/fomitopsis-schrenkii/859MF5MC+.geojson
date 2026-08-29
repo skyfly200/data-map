@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "35e26b59-628e-48b7-87ab-b20f9d09e774",
+        "inat_id": 310951186,
+        "timestamp": "2025-09-01T15:31:13-06:00",
+        "date": "2025-09-01",
+        "olc": "859MF5MC+",
+        "elevation": 3143.0,
+        "tavg": null,
+        "tmin": 4.0,
+        "tmax": 17.0,
+        "precipitation": 0.8,
+        "windspeed": 13.3,
+        "winddirection": null,
+        "presure": 1042.6,
+        "species": "Fomitopsis schrenkii",
+        "location": "Wolf Creek Road, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.8281033333,
+          37.48398
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7ecc3d42-16cd-4706-8b16-91f651c4cad3",
+        "inat_id": 310951048,
+        "timestamp": "2025-09-01T15:22:43-06:00",
+        "date": "2025-09-01",
+        "olc": "859MF5MC+",
+        "elevation": 3143.0,
+        "tavg": null,
+        "tmin": 4.0,
+        "tmax": 17.0,
+        "precipitation": 0.8,
+        "windspeed": 13.3,
+        "winddirection": null,
+        "presure": 1042.6,
+        "species": "Fomitopsis schrenkii",
+        "location": "Wolf Creek Road, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.8282083333,
+          37.48407
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "626de633-a021-44d2-962c-0fa57f7f71ff",
+        "inat_id": 304350418,
+        "timestamp": "2025-08-06T13:06:40-06:00",
+        "date": "2025-08-06",
+        "olc": "859MF5MC+",
+        "elevation": 3143.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 17.0,
+        "precipitation": 2.4,
+        "windspeed": 12.4,
+        "winddirection": null,
+        "presure": 1045.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Wolf Creek Road, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.8279633333,
+          37.4838633333
+        ]
+      }
+    }
+  ]
+}

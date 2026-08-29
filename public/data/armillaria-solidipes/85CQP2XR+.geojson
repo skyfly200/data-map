@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4f11f4f7-0632-44a4-971b-a66456335734",
+        "inat_id": 309395798,
+        "timestamp": "2025-08-26T11:23:16-06:00",
+        "date": "2025-08-26",
+        "olc": "85CQP2XR+",
+        "elevation": 3070.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 15.0,
+        "precipitation": 3.2,
+        "windspeed": 9.6,
+        "winddirection": null,
+        "presure": 1027.7,
+        "species": "Armillaria solidipes",
+        "location": "Manitou Springs, CO 80829, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9590699,
+          38.7477469997
+        ]
+      }
+    }
+  ]
+}

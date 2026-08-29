@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+843e0971-00c4-4086-988c-912da72c9a09,309419679,2025-08-26 14:02:18-06:00,2025-08-26,-104.94512307,38.73661341,85CQP3P3+,3031.0,,13.0,15.0,3.2,9.6,,1027.7,Clavariadelphus sachalinensis,"Teller County, US-CO, US",1
+b52772c4-f703-4250-b7f8-bcf19d290d97,239279247,2024-09-01 13:15:17-06:00,2024-09-01,-105.7987719815,35.8006623051,857PR622+,3269.0,,12.8,28.3,0.0,15.5,,1018.2,Clavariadelphus sachalinensis,"Santa Fe County, US-NM, US",2
+d412efdd-646e-4543-8ccf-16d011a76c88,238351214,2024-08-27 09:29:40-06:00,2024-08-27,-107.3833305,38.1503642,85CJ5J28+,3149.0,,,,,,,,Clavariadelphus sachalinensis,"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",3
+fa6f3821-ea4a-4a63-9749-b2f340afe48e,236399800,2024-08-17 13:29:30-06:00,2024-08-17,-107.8587716667,37.8801283333,859JV4JR+,3275.0,,12.0,23.0,4.9,9.4,,1034.5,Clavariadelphus sachalinensis,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",2
+e181b971-3660-4598-85a2-8ba76da0c094,131836384,2022-08-13 15:20:41-06:00,2022-08-13,-106.0814221667,39.3854783333,85FM9WP9+,3430.0,,5.0,22.2,,6.6,,1018.1,Clavariadelphus sachalinensis,"White River National Forest, Breckenridge, CO, US",1
+183f3bd4-af8c-4ff5-9ca4-b9400a9512be,131514764,2022-08-19 11:29:20-06:00,2022-08-19,-107.82626014,37.85507501,859JV54F+,2981.0,,10.0,17.0,7.5,3.4,,1030.0,Clavariadelphus sachalinensis,"San Miguel County, US-CO, US",2
+1dc48e66-2c0a-422a-a45b-6e0046a4819f,5179346,2014-08-29 06:55:00-07:00,2014-08-29,-107.2451019287,37.7012752749,859JPQ23+,3003.0,,2.0,13.0,,17.0,,,Clavariadelphus sachalinensis,"Hinsdale County, CO, USA",2

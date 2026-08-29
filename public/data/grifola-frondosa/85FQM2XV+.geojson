@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c440d5a1-f7a1-4e2e-a6a1-18560c1e90bd",
+        "inat_id": 246057363,
+        "timestamp": "2024-10-06T17:28:28-06:00",
+        "date": "2024-10-06",
+        "olc": "85FQM2XV+",
+        "elevation": 1638.0,
+        "tavg": null,
+        "tmin": 10.5,
+        "tmax": 22.6,
+        "precipitation": 0.0,
+        "windspeed": 9.3,
+        "winddirection": null,
+        "presure": 1022.0,
+        "species": "Grifola frondosa",
+        "location": "Belcaro, Denver, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9566690251,
+          39.6984735973
+        ]
+      }
+    }
+  ]
+}

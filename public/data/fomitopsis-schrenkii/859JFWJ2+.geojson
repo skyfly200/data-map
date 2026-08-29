@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a1148518-9c01-4d14-9949-8c1210ba99dd",
+        "inat_id": 328847617,
+        "timestamp": "2025-11-29T11:49:45-07:00",
+        "date": "2025-11-29",
+        "olc": "859JFWJ2+",
+        "elevation": 2568.0,
+        "tavg": null,
+        "tmin": -6.0,
+        "tmax": 8.0,
+        "precipitation": 0.0,
+        "windspeed": 5.8,
+        "winddirection": null,
+        "presure": 1019.8,
+        "species": "Fomitopsis schrenkii",
+        "location": "Piedra Falls Trail, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.0979833333,
+          37.4820666667
+        ]
+      }
+    }
+  ]
+}

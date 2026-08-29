@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9ce0229a-4281-4414-b9ce-c7369ad5f16b",
+        "inat_id": 55977315,
+        "timestamp": "2020-08-09T17:59:18-06:00",
+        "date": "2020-08-09",
+        "olc": "85MRXJX3+",
+        "elevation": 1410.0,
+        "tavg": null,
+        "tmin": 13.9,
+        "tmax": 28.9,
+        "precipitation": 0.0,
+        "windspeed": 20.2,
+        "winddirection": null,
+        "presure": 1012.1,
+        "species": "Hypomyces lactifluorum",
+        "location": "Mount Rushmore UT, SD, USA",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.39513374,
+          43.99967984
+        ]
+      }
+    }
+  ]
+}

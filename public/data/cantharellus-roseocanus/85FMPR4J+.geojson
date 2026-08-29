@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "75931b31-0c86-4640-8a9f-c73ce71f7636",
+        "inat_id": 129383613,
+        "timestamp": "2022-08-02T09:59:09-06:00",
+        "date": "2022-08-02",
+        "olc": "85FMPR4J+",
+        "elevation": 2937.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 18.0,
+        "precipitation": 3.9,
+        "windspeed": 16.4,
+        "winddirection": null,
+        "presure": 1038.5,
+        "species": "Cantharellus roseocanus",
+        "location": "White River National Forest, Silverthorne, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.1688289137,
+          39.7066560799
+        ]
+      }
+    }
+  ]
+}

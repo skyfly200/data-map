@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e1ad6a13-38d8-494a-864b-73de012fa578",
+        "inat_id": 299689268,
+        "timestamp": "2025-07-20T18:02:57-06:00",
+        "date": "2025-07-20",
+        "olc": "85FQ9CM8+",
+        "elevation": 2008.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 28.0,
+        "precipitation": 0.0,
+        "windspeed": 12.7,
+        "winddirection": null,
+        "presure": 1024.5,
+        "species": "Hypomyces lactifluorum",
+        "location": "Thistlewood Ct, Elizabeth, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.5827430316,
+          39.3842466403
+        ]
+      }
+    }
+  ]
+}

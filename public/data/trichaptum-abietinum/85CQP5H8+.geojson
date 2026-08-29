@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "55c8d539-41f6-4440-af69-36fb2f0c5dce",
+        "inat_id": 85705172,
+        "timestamp": "2021-06-28T09:55:00-06:00",
+        "date": "2021-06-28",
+        "olc": "85CQP5H8+",
+        "elevation": 1909.0,
+        "tavg": null,
+        "tmin": 11.8,
+        "tmax": 20.4,
+        "precipitation": null,
+        "windspeed": 13.0,
+        "winddirection": null,
+        "presure": 1025.6,
+        "species": "Trichaptum abietinum",
+        "location": "410 JL Ranch Heights Rd, Colorado Springs, CO 80926, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.83288,
+          38.7291548
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "55dcc583-ccec-4a4e-9455-6f9e0d718070",
+        "inat_id": 129615085,
+        "timestamp": "2022-08-05T17:18:18-06:00",
+        "date": "2022-08-05",
+        "olc": "85FPHJ78+",
+        "elevation": 2580.0,
+        "tavg": null,
+        "tmin": 5.9,
+        "tmax": 16.7,
+        "precipitation": 10.5,
+        "windspeed": 6.1,
+        "winddirection": null,
+        "presure": 1020.2,
+        "species": "Hydnum repandum",
+        "location": "Shadow Mountain, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.38440178,
+          39.56496218
+        ]
+      }
+    }
+  ]
+}

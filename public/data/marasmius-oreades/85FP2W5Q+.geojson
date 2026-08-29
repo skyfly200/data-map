@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "fcddb38c-8c18-412e-8da4-b07786c1ff12",
+        "inat_id": 393968846,
+        "timestamp": "2026-08-23T17:26:42-06:00",
+        "date": "2026-08-23",
+        "olc": "85FP2W5Q+",
+        "elevation": 2553.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 27.4,
+        "precipitation": 9.2,
+        "windspeed": 5.2,
+        "winddirection": null,
+        "presure": null,
+        "species": "Marasmius oreades",
+        "location": "Columbine Village Dr, Woodland Park, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.061908052,
+          39.0081822733
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c938f848-22b5-4ba8-8b04-bac81003d058",
+        "inat_id": 38951445,
+        "timestamp": "2018-08-18",
+        "date": "2018-08-18",
+        "olc": "859JW5R7+",
+        "elevation": 2652.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 21.0,
+        "precipitation": null,
+        "windspeed": 7.3,
+        "winddirection": null,
+        "presure": null,
+        "species": "Albatrellopsis confluens",
+        "location": "Telluride, Colorado, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.836,
+          37.9421
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9aa62101-7d7a-4e42-8deb-678aa3df51c9",
+        "inat_id": 72644362,
+        "timestamp": "2021-04-01T13:24:12-06:00",
+        "date": "2021-04-01",
+        "olc": "85PR3QJ9+",
+        "elevation": 992.0,
+        "tavg": null,
+        "tmin": -6.6,
+        "tmax": 22.2,
+        "precipitation": 0.0,
+        "windspeed": 13.7,
+        "winddirection": null,
+        "presure": 1020.9,
+        "species": "Fomitopsis schrenkii",
+        "location": "Rapid City",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.2310152054,
+          44.0804500304
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "51c16064-0d77-43f5-92bd-fbd24a0aab50",
+        "inat_id": 89379369,
+        "timestamp": "2021-07-28T08:53:00-04:00",
+        "date": "2021-07-28",
+        "olc": "85CJVQCR+",
+        "elevation": 2940.0,
+        "tavg": null,
+        "tmin": 12.8,
+        "tmax": 28.9,
+        "precipitation": null,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1020.0,
+        "species": "Hygrocybe conica",
+        "location": "Gunnison County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.2077369053,
+          38.871715302
+        ]
+      }
+    }
+  ]
+}

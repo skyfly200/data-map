@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0a7e154e-507f-480e-b5ab-35ac4a27d843",
+        "inat_id": 121343772,
+        "timestamp": "2022-06-11T09:55:38-06:00",
+        "date": "2022-06-11",
+        "olc": "85PR3QC6+",
+        "elevation": 1017.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 28.0,
+        "precipitation": 6.5,
+        "windspeed": 17.0,
+        "winddirection": null,
+        "presure": 1008.7,
+        "species": "Marasmius oreades",
+        "location": "11th St, Rapid City, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.2381133333,
+          44.0715305
+        ]
+      }
+    }
+  ]
+}

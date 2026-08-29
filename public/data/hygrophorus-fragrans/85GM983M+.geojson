@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6c022a1c-57ed-41cb-afa5-20198871eb9c",
+        "inat_id": 132191836,
+        "timestamp": "2022-08-24T13:00:53-06:00",
+        "date": "2022-08-24",
+        "olc": "85GM983M+",
+        "elevation": 3022.0,
+        "tavg": null,
+        "tmin": 7.5,
+        "tmax": 27.7,
+        "precipitation": 0.0,
+        "windspeed": 5.3,
+        "winddirection": null,
+        "presure": 1024.3,
+        "species": "Hygrophorus fragrans",
+        "location": "Colorado, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.6666414133,
+          40.3546634734
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ba703df3-da34-46e1-be5f-05cba5f2280a",
+        "inat_id": 136387229,
+        "timestamp": "2022-08-19T10:40:49-06:00",
+        "date": "2022-08-19",
+        "olc": "859JV4XC+",
+        "elevation": 3008.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 17.0,
+        "precipitation": 7.5,
+        "windspeed": 3.4,
+        "winddirection": null,
+        "presure": 1030.0,
+        "species": "Albatrellopsis confluens",
+        "location": "Mountain Village, CO 81435, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8793209791,
+          37.8994086867
+        ]
+      }
+    }
+  ]
+}

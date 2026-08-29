@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e482f9e4-e265-4745-8f69-228f3261d20f",
+        "inat_id": 285153275,
+        "timestamp": "2025-05-27T12:59:00-06:00",
+        "date": "2025-05-27",
+        "olc": "857PQ5XX+",
+        "elevation": 3208.0,
+        "tavg": null,
+        "tmin": 6.1,
+        "tmax": 25.6,
+        "precipitation": 0.0,
+        "windspeed": 13.1,
+        "winddirection": null,
+        "presure": 1015.3,
+        "species": "Hypomyces chrysospermus",
+        "location": "Santa Fe County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8004388889,
+          35.7998305556
+        ]
+      }
+    }
+  ]
+}

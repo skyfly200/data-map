@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b8d8ac10-cf21-4146-ab5b-f4847ec81b53",
+        "inat_id": 30499661,
+        "timestamp": "2019-08-09T14:03:27-06:00",
+        "date": "2019-08-09",
+        "olc": "85PR3Q9C+",
+        "elevation": 1013.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 30.6,
+        "precipitation": 3.6,
+        "windspeed": 12.2,
+        "winddirection": null,
+        "presure": 1010.4,
+        "species": "Hypomyces lactifluorum",
+        "location": "624 Saint Andrew St, Rapid City, SD, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.2293903735,
+          44.0687058913
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "781045f3-70f0-49c4-978e-acdbdb71881e",
+        "inat_id": 30499614,
+        "timestamp": "2019-08-09T14:02:46-06:00",
+        "date": "2019-08-09",
+        "olc": "85PR3Q9C+",
+        "elevation": 1013.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 30.6,
+        "precipitation": 3.6,
+        "windspeed": 12.2,
+        "winddirection": null,
+        "presure": 1010.4,
+        "species": "Hypomyces lactifluorum",
+        "location": "624 Saint Andrew St, Rapid City, SD, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.2293524873,
+          44.0686997306
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d17ce267-56bc-4534-9ffc-35c151431a40",
+        "inat_id": 236158195,
+        "timestamp": "2024-08-10T11:31:26-06:00",
+        "date": "2024-08-10",
+        "olc": "85CJ257G+",
+        "elevation": 3252.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 21.0,
+        "precipitation": 15.5,
+        "windspeed": 5.6,
+        "winddirection": null,
+        "presure": 1034.2,
+        "species": "Albatrellopsis confluens",
+        "location": "Ouray County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.822765,
+          38.01432
+        ]
+      }
+    }
+  ]
+}

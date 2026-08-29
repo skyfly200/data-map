@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0eb27665-c0de-4b69-88d6-08bb43a4644d",
+        "inat_id": 299734772,
+        "timestamp": "2025-07-20T19:25:10-06:00",
+        "date": "2025-07-20",
+        "olc": "85FPVFGP+",
+        "elevation": 2822.0,
+        "tavg": null,
+        "tmin": 3.1,
+        "tmax": 13.9,
+        "precipitation": 0.4,
+        "windspeed": 10.7,
+        "winddirection": null,
+        "presure": 1019.8,
+        "species": "Fomitopsis schrenkii",
+        "location": "Gilpin County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5140259603,
+          39.8772234225
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1f4efdd9-c3d3-4480-8fa7-cedc377c9cb1",
+        "inat_id": 299713800,
+        "timestamp": "2025-07-20T19:25:10-06:00",
+        "date": "2025-07-20",
+        "olc": "85FPVFGP+",
+        "elevation": 2822.0,
+        "tavg": null,
+        "tmin": 3.1,
+        "tmax": 13.9,
+        "precipitation": 0.4,
+        "windspeed": 10.7,
+        "winddirection": null,
+        "presure": 1019.8,
+        "species": "Fomitopsis schrenkii",
+        "location": "Gilpin County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5139895152,
+          39.8772712079
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8b3dd6c2-f4d8-47c9-809a-578d19972f4c",
+        "inat_id": 281838095,
+        "timestamp": "2025-05-17T07:47:15-06:00",
+        "date": "2025-05-17",
+        "olc": "85FPVFGP+",
+        "elevation": 2822.0,
+        "tavg": null,
+        "tmin": -8.7,
+        "tmax": 2.5,
+        "precipitation": 0.7,
+        "windspeed": 12.7,
+        "winddirection": null,
+        "presure": 1012.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Gilpin County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5139280903,
+          39.8772691835
+        ]
+      }
+    }
+  ]
+}

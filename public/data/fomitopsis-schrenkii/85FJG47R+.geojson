@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0e716b7e-33ab-4614-84fd-75efeb579337",
+        "inat_id": 251802288,
+        "timestamp": "2024-10-13T14:14:38-06:00",
+        "date": "2024-10-13",
+        "olc": "85FJG47R+",
+        "elevation": 1600.0,
+        "tavg": null,
+        "tmin": 4.4,
+        "tmax": 25.6,
+        "precipitation": null,
+        "windspeed": 3.5,
+        "winddirection": null,
+        "presure": 1020.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Rifle, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8583966667,
+          39.5131116667
+        ]
+      }
+    }
+  ]
+}

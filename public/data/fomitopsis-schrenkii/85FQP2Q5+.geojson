@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0644d2a3-6e42-47d4-994b-8a37189b10de",
+        "inat_id": 336420414,
+        "timestamp": "2025-10-09",
+        "date": "2025-10-09",
+        "olc": "85FQP2Q5+",
+        "elevation": 1603.0,
+        "tavg": null,
+        "tmin": 10.4,
+        "tmax": 25.3,
+        "precipitation": 0.0,
+        "windspeed": 9.5,
+        "winddirection": null,
+        "presure": 1019.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Cherokee St & W 14th Ave, Denver, CO 80202, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9902512878,
+          39.7387983044
+        ]
+      }
+    }
+  ]
+}

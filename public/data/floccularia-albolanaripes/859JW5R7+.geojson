@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e05c44e1-d569-40b6-bf1a-40e85f83ff7f",
+        "inat_id": 40349070,
+        "timestamp": "2018-08-15",
+        "date": "2018-08-15",
+        "olc": "859JW5R7+",
+        "elevation": 2652.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 21.0,
+        "precipitation": null,
+        "windspeed": 6.6,
+        "winddirection": null,
+        "presure": null,
+        "species": "Floccularia albolanaripes",
+        "location": "Telluride, Colorado, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.836,
+          37.9421
+        ]
+      }
+    }
+  ]
+}

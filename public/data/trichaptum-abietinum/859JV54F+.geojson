@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "48d21006-807f-4ad5-9f5d-775defc3a087",
+        "inat_id": 131493049,
+        "timestamp": "2022-08-19T11:44:08-06:00",
+        "date": "2022-08-19",
+        "olc": "859JV54F+",
+        "elevation": 2981.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 17.0,
+        "precipitation": 7.5,
+        "windspeed": 3.4,
+        "winddirection": null,
+        "presure": 1030.0,
+        "species": "Trichaptum abietinum",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8258833333,
+          37.85503
+        ]
+      }
+    }
+  ]
+}

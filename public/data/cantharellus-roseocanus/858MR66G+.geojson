@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f2e6210e-c7b2-441f-8d0f-07c6fdb8b611",
+        "inat_id": 135829811,
+        "timestamp": "2022-08-24T18:25:41-06:00",
+        "date": "2022-08-24",
+        "olc": "858MR66G+",
+        "elevation": 2495.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Cantharellus roseocanus",
+        "location": "United States",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.7732149734,
+          36.8107333343
+        ]
+      }
+    }
+  ]
+}

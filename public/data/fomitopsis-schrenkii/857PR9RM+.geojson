@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1ae65712-64a7-43da-924e-71ad366cfce2",
+        "inat_id": 229970793,
+        "timestamp": "2024-07-14T13:18:36-06:00",
+        "date": "2024-07-14",
+        "olc": "857PR9RM+",
+        "elevation": 2918.0,
+        "tavg": null,
+        "tmin": 14.4,
+        "tmax": 31.7,
+        "precipitation": 0.0,
+        "windspeed": 11.8,
+        "winddirection": null,
+        "presure": 1016.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Tererro, NM 87573, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6165083333,
+          35.8402277778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "edd6f45d-c5b4-47b4-8a47-bba22884b900",
+        "inat_id": 229970647,
+        "timestamp": "2024-07-14T13:26:33-06:00",
+        "date": "2024-07-14",
+        "olc": "857PR9RM+",
+        "elevation": 2891.0,
+        "tavg": null,
+        "tmin": 14.4,
+        "tmax": 31.7,
+        "precipitation": 0.0,
+        "windspeed": 11.8,
+        "winddirection": null,
+        "presure": 1016.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Tererro, NM 87573, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6169472222,
+          35.8413138889
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "825f9bbe-f3d3-41b9-be58-36bf9266a568",
+        "inat_id": 241027296,
+        "timestamp": "2024-09-08T12:29:55-06:00",
+        "date": "2024-09-08",
+        "olc": "85FMRW87+",
+        "elevation": 3129.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 17.0,
+        "precipitation": 1.5,
+        "windspeed": 9.6,
+        "winddirection": null,
+        "presure": 1038.7,
+        "species": "Scutiger ellisii",
+        "location": "Ute Pass, Parshall, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.0873861667,
+          39.81575
+        ]
+      }
+    }
+  ]
+}

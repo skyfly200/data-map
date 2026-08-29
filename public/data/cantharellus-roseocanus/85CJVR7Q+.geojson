@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "078c92a0-f2f6-4cb6-a1b5-810989ecb675",
+        "inat_id": 90172251,
+        "timestamp": "2021-08-04T16:45:00-04:00",
+        "date": "2021-08-04",
+        "olc": "85CJVR7Q+",
+        "elevation": 2706.0,
+        "tavg": null,
+        "tmin": 7.8,
+        "tmax": 25.0,
+        "precipitation": 0.0,
+        "windspeed": 6.9,
+        "winddirection": null,
+        "presure": 1021.8,
+        "species": "Cantharellus roseocanus",
+        "location": "Gunnison, CO 81230, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1615297,
+          38.862947
+        ]
+      }
+    }
+  ]
+}

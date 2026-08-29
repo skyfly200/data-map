@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2228789c-11b7-4d73-81a0-0cfa32b70a35",
+        "inat_id": 57685135,
+        "timestamp": "2015-08-17T13:22:00-06:00",
+        "date": "2015-08-17",
+        "olc": "859JJ8MV+",
+        "elevation": 3619.0,
+        "tavg": null,
+        "tmin": 12.7,
+        "tmax": 22.7,
+        "precipitation": null,
+        "windspeed": 7.1,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "La Plata County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6566437114,
+          37.6339943429
+        ]
+      }
+    }
+  ]
+}

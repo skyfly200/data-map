@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "caadc61d-0aff-4ba7-bbdd-923661c679c9",
+        "inat_id": 232098074,
+        "timestamp": "2024-07-25T14:37:14-06:00",
+        "date": "2024-07-25",
+        "olc": "858PCMM4+",
+        "elevation": 2832.0,
+        "tavg": null,
+        "tmin": 4.1,
+        "tmax": 23.8,
+        "precipitation": 1.6,
+        "windspeed": 3.3,
+        "winddirection": null,
+        "presure": 1035.0,
+        "species": "Clavariadelphus truncatus",
+        "location": "Taos, NM 87571, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3439565,
+          36.4329879
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "54d549e6-662e-4b3b-9ff8-ce7e38253701",
+        "inat_id": 239248030,
+        "timestamp": "2024-09-01T12:31:14-06:00",
+        "date": "2024-09-01",
+        "olc": "85CJVR9R+",
+        "elevation": 2759.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": 7.4,
+        "winddirection": null,
+        "presure": 1023.6,
+        "species": "Flammulina velutipes",
+        "location": "Gunnison County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1596445,
+          38.8694166667
+        ]
+      }
+    }
+  ]
+}

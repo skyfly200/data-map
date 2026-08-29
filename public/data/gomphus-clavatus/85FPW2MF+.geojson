@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "be2c7cf6-0300-40b2-85ad-a4c7b502b0cb",
+        "inat_id": 91219503,
+        "timestamp": "2021-08-14T15:25:47-06:00",
+        "date": "2021-08-14",
+        "olc": "85FPW2MF+",
+        "elevation": 3039.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 28.3,
+        "precipitation": 0.0,
+        "windspeed": 7.2,
+        "winddirection": null,
+        "presure": 1033.2,
+        "species": "Gomphus clavatus",
+        "location": "Arapaho & Roosevelt National Forests Pawnee National Grassland, Parshall, CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.9761883333,
+          39.9329033333
+        ]
+      }
+    }
+  ]
+}

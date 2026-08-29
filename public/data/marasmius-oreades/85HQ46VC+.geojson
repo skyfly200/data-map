@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6c2d5e46-c8a0-4ede-a4e4-8ed2230f3131",
+        "inat_id": 54750573,
+        "timestamp": "2020-07-29T11:07:03-06:00",
+        "date": "2020-07-29",
+        "olc": "85HQ46VC+",
+        "elevation": 1854.0,
+        "tavg": null,
+        "tmin": 13.3,
+        "tmax": 27.8,
+        "precipitation": 0.0,
+        "windspeed": 19.8,
+        "winddirection": null,
+        "presure": 1012.3,
+        "species": "Marasmius oreades",
+        "location": "Laurel Dr, Cheyenne, WY, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.7787626275,
+          41.1439651251
+        ]
+      }
+    }
+  ]
+}

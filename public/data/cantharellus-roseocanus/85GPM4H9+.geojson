@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2863cded-0a69-4e67-ba8d-d218a61569ba",
+        "inat_id": 130961828,
+        "timestamp": "2022-08-15T07:50:36-06:00",
+        "date": "2022-08-15",
+        "olc": "85GPM4H9+",
+        "elevation": 3062.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 19.2,
+        "precipitation": 2.6,
+        "windspeed": 6.5,
+        "winddirection": null,
+        "presure": 1019.2,
+        "species": "Cantharellus roseocanus",
+        "location": "Arapaho & Roosevelt National Forests Pawnee National Grassland, Bellvue, CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8811921385,
+          40.6798698976
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ea315dd9-c9e0-44b7-babe-9f3f269853d7",
+        "inat_id": 92275860,
+        "timestamp": "2021-08-21T11:46:16+00:00",
+        "date": "2021-08-21",
+        "olc": "85FPG77R+",
+        "elevation": 2978.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Albatrellopsis confluens",
+        "location": "Pike and San Isabel National Forests, Bailey, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7080833333,
+          39.5133133333
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0bd32587-074e-4192-b476-816a9dc5d064",
+        "inat_id": 329299364,
+        "timestamp": "2025-09-01T14:48:43-06:00",
+        "date": "2025-09-01",
+        "olc": "85FPGC6J+",
+        "elevation": 2858.0,
+        "tavg": null,
+        "tmin": -2.2,
+        "tmax": 10.0,
+        "precipitation": 0.0,
+        "windspeed": 11.4,
+        "winddirection": null,
+        "presure": 1027.5,
+        "species": "Flammulina populicola",
+        "location": "Rosalle Trail, Bailey, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5690121465,
+          39.5108530485
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a0a09d08-714f-48b9-be3d-014e2c51fbd7",
+        "inat_id": 310377118,
+        "timestamp": "2025-08-30T14:09:32-06:00",
+        "date": "2025-08-30",
+        "olc": "85FPGC6J+",
+        "elevation": 2854.0,
+        "tavg": null,
+        "tmin": -1.4,
+        "tmax": 7.2,
+        "precipitation": 1.5,
+        "windspeed": 11.0,
+        "winddirection": null,
+        "presure": 1025.0,
+        "species": "Flammulina populicola",
+        "location": "Rosalle Trail, Bailey, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5681133333,
+          39.5105783333
+        ]
+      }
+    }
+  ]
+}

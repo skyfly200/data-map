@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "60a6174e-e31e-422f-b1d7-271dfea77430",
+        "inat_id": 312765257,
+        "timestamp": "2025-09-08T09:41:00-06:00",
+        "date": "2025-09-08",
+        "olc": "857PP5H6+",
+        "elevation": 2548.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 28.0,
+        "precipitation": 0.0,
+        "windspeed": 9.0,
+        "winddirection": null,
+        "presure": 1025.2,
+        "species": "Hygrophorus siccipes",
+        "location": "Santa Fe County, NM, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8392416667,
+          35.7278111111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e87f91aa-21f7-4152-b36e-77853b356f91",
+        "inat_id": 309775887,
+        "timestamp": "2025-08-27T09:44:00-06:00",
+        "date": "2025-08-27",
+        "olc": "857PP5H6+",
+        "elevation": 2548.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 26.0,
+        "precipitation": 1.6,
+        "windspeed": 10.3,
+        "winddirection": null,
+        "presure": 1026.5,
+        "species": "Hygrophorus siccipes",
+        "location": "Santa Fe, New Mexico, United States",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.83903611,
+          35.72812778
+        ]
+      }
+    }
+  ]
+}

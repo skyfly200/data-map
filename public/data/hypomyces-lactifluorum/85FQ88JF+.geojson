@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "66b11db9-4a8f-428d-b00a-7e23ccd4fc72",
+        "inat_id": 236751731,
+        "timestamp": "2024-08-19T11:08:39-06:00",
+        "date": "2024-08-19",
+        "olc": "85FQ88JF+",
+        "elevation": 2052.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 29.0,
+        "precipitation": 1.6,
+        "windspeed": 11.8,
+        "winddirection": null,
+        "presure": 1029.4,
+        "species": "Hypomyces lactifluorum",
+        "location": "Gold Camp Way, Franktown, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.676720969,
+          39.3315141278
+        ]
+      }
+    }
+  ]
+}

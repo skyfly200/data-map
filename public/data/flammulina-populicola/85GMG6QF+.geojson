@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "84597287-c126-4ad2-bc03-d6e22697b9ec",
+        "inat_id": 182730226,
+        "timestamp": "2023-09-10T13:59:30-06:00",
+        "date": "2023-09-10",
+        "olc": "85GMG6QF+",
+        "elevation": 2535.0,
+        "tavg": null,
+        "tmin": 11.4,
+        "tmax": 23.6,
+        "precipitation": 0.3,
+        "windspeed": 6.5,
+        "winddirection": null,
+        "presure": 1026.2,
+        "species": "Flammulina populicola",
+        "location": "Steamboat Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.7772527367,
+          40.5375068396
+        ]
+      }
+    }
+  ]
+}

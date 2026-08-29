@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "aeb313e8-b224-4002-9add-1aafcc3e380e",
+        "inat_id": 180386171,
+        "timestamp": "2023-08-26T15:33:20-06:00",
+        "date": "2023-08-26",
+        "olc": "85FMPR3F+",
+        "elevation": 2994.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 18.0,
+        "precipitation": 1.4,
+        "windspeed": 13.6,
+        "winddirection": null,
+        "presure": 1041.0,
+        "species": "Fomitopsis schrenkii",
+        "location": "White River National Forest, Silverthorne, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.17643,
+          39.70488
+        ]
+      }
+    }
+  ]
+}

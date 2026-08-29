@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "07742624-2564-461a-9fdb-897142c746ce",
+        "inat_id": 4042125,
+        "timestamp": "2016-09-05T13:49:50-06:00",
+        "date": "2016-09-05",
+        "olc": "85FMFWJM+",
+        "elevation": 3020.0,
+        "tavg": null,
+        "tmin": 0.6,
+        "tmax": 19.4,
+        "precipitation": 0.0,
+        "windspeed": 11.3,
+        "winddirection": null,
+        "presure": 1007.8,
+        "species": "Hygrophorus purpurascens",
+        "location": "Breckenridge Ski Area, Breckenridge, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.065053763,
+          39.4821338402
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "93a835a1-6155-4fe9-ade0-9ed857c2d3e3",
+        "inat_id": 240826416,
+        "timestamp": "2024-09-09T13:10:55-06:00",
+        "date": "2024-09-09",
+        "olc": "859GP6G5+",
+        "elevation": 2518.0,
+        "tavg": null,
+        "tmin": 13.5,
+        "tmax": 29.5,
+        "precipitation": 0.0,
+        "windspeed": 10.0,
+        "winddirection": null,
+        "presure": 1024.0,
+        "species": "Armillaria ostoyae",
+        "location": "Manti-La Sal National Forest, Monticello, UT, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.7902517715,
+          37.7256903141
+        ]
+      }
+    }
+  ]
+}

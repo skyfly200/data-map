@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1392f96e-9574-4632-8992-a3145ef75634",
+        "inat_id": 231448959,
+        "timestamp": "2024-07-16T13:55:00-06:00",
+        "date": "2024-07-16",
+        "olc": "85CJ324J+",
+        "elevation": 2830.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 26.0,
+        "precipitation": 9.1,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1032.5,
+        "species": "Rhizopogon sp. 'subbadius-CA01'",
+        "location": "San Miguel County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9676824769,
+          38.0550647919
+        ]
+      }
+    }
+  ]
+}

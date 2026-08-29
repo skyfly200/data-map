@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d0499bb5-d87e-4e97-abf5-f8d3161f025a",
+        "inat_id": 273478465,
+        "timestamp": "2025-04-25T10:33:49-06:00",
+        "date": "2025-04-25",
+        "olc": "857MRFX9+",
+        "elevation": 2714.0,
+        "tavg": null,
+        "tmin": 7.7,
+        "tmax": 21.7,
+        "precipitation": 0.0,
+        "windspeed": 13.7,
+        "winddirection": null,
+        "presure": 1019.5,
+        "species": "Trichaptum abietinum",
+        "location": "Jemez Springs, NM 87025, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.5319788,
+          35.8477000997
+        ]
+      }
+    }
+  ]
+}

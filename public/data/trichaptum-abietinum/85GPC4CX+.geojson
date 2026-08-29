@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8d95900b-2614-4bd3-90d0-d482373e18dd",
+        "inat_id": 304135066,
+        "timestamp": "2025-07-31T08:59:00-06:00",
+        "date": "2025-07-31",
+        "olc": "85GPC4CX+",
+        "elevation": 2794.0,
+        "tavg": null,
+        "tmin": 3.7,
+        "tmax": 25.6,
+        "precipitation": 1.3,
+        "windspeed": 8.4,
+        "winddirection": null,
+        "presure": 1034.2,
+        "species": "Trichaptum abietinum",
+        "location": "Grand County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8504266667,
+          40.4208416667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "bb8d96c1-8fa7-4beb-9fb3-3d1c526e14dc",
+        "inat_id": 291081727,
+        "timestamp": "2025-06-19T12:13:47-06:00",
+        "date": "2025-06-19",
+        "olc": "85GPC4CX+",
+        "elevation": 2797.0,
+        "tavg": null,
+        "tmin": 3.1,
+        "tmax": 28.0,
+        "precipitation": 0.0,
+        "windspeed": 6.8,
+        "winddirection": null,
+        "presure": 1027.1,
+        "species": "Trichaptum abietinum",
+        "location": "Rocky Mountain, Rocky Mountain National Park, Rocky Mountain National Park, Grand County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8503596,
+          40.42222299
+        ]
+      }
+    }
+  ]
+}

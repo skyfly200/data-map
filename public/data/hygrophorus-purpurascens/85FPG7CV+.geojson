@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f2eae5e3-0e46-4dfb-8023-96b0bc54ef8b",
+        "inat_id": 92275937,
+        "timestamp": "2021-08-21T17:35:18+00:00",
+        "date": "2021-08-21",
+        "olc": "85FPG7CV+",
+        "elevation": 3038.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrophorus purpurascens",
+        "location": "Pike and San Isabel National Forests, Bailey, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7051866667,
+          39.5201866667
+        ]
+      }
+    }
+  ]
+}

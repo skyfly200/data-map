@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1956f31b-7b9a-4bc5-b220-97c02c8f6df5",
+        "inat_id": 134385232,
+        "timestamp": "2022-08-20T12:32:31-06:00",
+        "date": "2022-08-20",
+        "olc": "859JR4J9+",
+        "elevation": 2982.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 17.0,
+        "precipitation": 13.8,
+        "windspeed": 5.1,
+        "winddirection": null,
+        "presure": 1029.5,
+        "species": "Clavariadelphus truncatus",
+        "location": "Ophir, CO 81426, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8805388889,
+          37.8318333333
+        ]
+      }
+    }
+  ]
+}

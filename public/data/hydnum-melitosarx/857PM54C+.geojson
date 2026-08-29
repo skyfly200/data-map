@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "37e414b3-354a-4c3c-9d4f-7f5b038e0702",
+        "inat_id": 233346666,
+        "timestamp": "2024-07-31T10:12:00-06:00",
+        "date": "2024-07-31",
+        "olc": "857PM54C+",
+        "elevation": 2557.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 36.7,
+        "precipitation": 0.0,
+        "windspeed": 11.1,
+        "winddirection": null,
+        "presure": 1009.7,
+        "species": "Hydnum melitosarx",
+        "location": "New Mexico, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8285471046,
+          35.6557948894
+        ]
+      }
+    }
+  ]
+}

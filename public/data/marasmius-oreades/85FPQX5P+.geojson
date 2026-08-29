@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d1b00f02-cdb5-4177-84a1-99bd52677e24",
+        "inat_id": 50496318,
+        "timestamp": "2020-06-21T18:36:00-06:00",
+        "date": "2020-06-21",
+        "olc": "85FPQX5P+",
+        "elevation": 1613.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 28.5,
+        "precipitation": null,
+        "windspeed": 14.0,
+        "winddirection": null,
+        "presure": 1010.4,
+        "species": "Marasmius oreades",
+        "location": "W 30th Ave, Denver, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0133966635,
+          39.7595419677
+        ]
+      }
+    }
+  ]
+}

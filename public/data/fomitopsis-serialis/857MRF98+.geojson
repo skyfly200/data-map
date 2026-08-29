@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2877c600-3a56-47eb-b459-ef80a760b29b",
+        "inat_id": 319681030,
+        "timestamp": "2025-10-08T16:41:41-06:00",
+        "date": "2025-10-08",
+        "olc": "857MRF98+",
+        "elevation": 2581.0,
+        "tavg": null,
+        "tmin": 10.6,
+        "tmax": 19.3,
+        "precipitation": 3.3,
+        "windspeed": 7.8,
+        "winddirection": null,
+        "presure": 1024.1,
+        "species": "Fomitopsis serialis",
+        "location": "E Fork Trail, Jemez Springs, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.5328916667,
+          35.817745
+        ]
+      }
+    }
+  ]
+}

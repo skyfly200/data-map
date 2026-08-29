@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "aa646653-2c99-4f0e-94db-f3ead30c7d24",
+        "inat_id": 268135429,
+        "timestamp": "2023-08-13T10:33:08-06:00",
+        "date": "2023-08-13",
+        "olc": "85MRVG77+",
+        "elevation": 1695.0,
+        "tavg": null,
+        "tmin": 8.9,
+        "tmax": 17.2,
+        "precipitation": null,
+        "windspeed": 13.7,
+        "winddirection": null,
+        "presure": 1019.2,
+        "species": "Hygrocybe conica",
+        "location": "Keystone",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4866104126,
+          43.8645896912
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "43ee52ae-8574-4825-aff0-5da6480522d4",
+        "inat_id": 236849900,
+        "timestamp": "2024-08-19T19:54:48-06:00",
+        "date": "2024-08-19",
+        "olc": "85CQQ4Q4+",
+        "elevation": 2228.0,
+        "tavg": null,
+        "tmin": 18.0,
+        "tmax": 28.0,
+        "precipitation": 0.9,
+        "windspeed": 9.3,
+        "winddirection": null,
+        "presure": 1024.8,
+        "species": "Mycetinis scorodonius",
+        "location": "El Paso County, US-CO, US",
+        "num_identification_agreements": 5
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.89333699,
+          38.78954806
+        ]
+      }
+    }
+  ]
+}

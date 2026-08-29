@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "40bc9360-6de8-4110-ad8a-f15bb99e8bca",
+        "inat_id": 55332072,
+        "timestamp": "2020-08-01T06:36:45-06:00",
+        "date": "2020-08-01",
+        "olc": "85FM5HM8+",
+        "elevation": 3552.0,
+        "tavg": null,
+        "tmin": 2.8,
+        "tmax": 23.3,
+        "precipitation": 0.5,
+        "windspeed": 9.6,
+        "winddirection": null,
+        "presure": null,
+        "species": "Albatrellopsis confluens",
+        "location": "Pike and San Isabel National Forests, Twin Lakes, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.4336136142,
+          39.183375889
+        ]
+      }
+    }
+  ]
+}

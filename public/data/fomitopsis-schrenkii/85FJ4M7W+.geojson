@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0f224056-a358-43fe-9403-4a2e1d6e2130",
+        "inat_id": 281875045,
+        "timestamp": "2025-05-17T10:03:00-06:00",
+        "date": "2025-05-17",
+        "olc": "85FJ4M7W+",
+        "elevation": 2789.0,
+        "tavg": null,
+        "tmin": 0.0,
+        "tmax": 11.0,
+        "precipitation": 0.0,
+        "windspeed": 11.8,
+        "winddirection": null,
+        "presure": 1008.6,
+        "species": "Fomitopsis schrenkii",
+        "location": "Gunnison County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.3029915442,
+          39.1149894873
+        ]
+      }
+    }
+  ]
+}

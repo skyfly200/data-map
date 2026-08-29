@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "592f9b5a-0aa7-46aa-96ab-5dd88f5acf10",
+        "inat_id": 310601206,
+        "timestamp": "2025-08-31T11:00:32-06:00",
+        "date": "2025-08-31",
+        "olc": "85FPMP7F+",
+        "elevation": 2093.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 27.0,
+        "precipitation": 0.0,
+        "windspeed": 8.4,
+        "winddirection": null,
+        "presure": 1027.3,
+        "species": "Clavariadelphus ligula",
+        "location": "Kerr Gulch, Golden, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.275985,
+          39.66384
+        ]
+      }
+    }
+  ]
+}

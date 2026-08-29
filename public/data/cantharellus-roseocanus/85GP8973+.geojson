@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "75e5658a-4288-4300-b7da-3ec78a1f4ac4",
+        "inat_id": 133031214,
+        "timestamp": "2022-08-30T18:54:42-06:00",
+        "date": "2022-08-30",
+        "olc": "85GP8973+",
+        "elevation": 2905.0,
+        "tavg": null,
+        "tmin": 5.1,
+        "tmax": 27.0,
+        "precipitation": 0.0,
+        "windspeed": 3.6,
+        "winddirection": null,
+        "presure": 1033.5,
+        "species": "Cantharellus roseocanus",
+        "location": "Rocky Mountain National Park, Estes Park, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.64688,
+          40.313725
+        ]
+      }
+    }
+  ]
+}

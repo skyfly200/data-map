@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3b7e19fa-8b3a-4c66-b572-ec086ecb0f0b",
+        "inat_id": 27038596,
+        "timestamp": "2019-06-15T11:11:09-06:00",
+        "date": "2019-06-15",
+        "olc": "85PR6JHV+",
+        "elevation": 1096.0,
+        "tavg": null,
+        "tmin": 10.6,
+        "tmax": 23.9,
+        "precipitation": 0.0,
+        "windspeed": 23.4,
+        "winddirection": null,
+        "presure": 1011.1,
+        "species": "Fomitopsis schrenkii",
+        "location": "57769, Piedmont, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.355295,
+          44.2295416667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d7c7ab79-a961-4628-98e4-153eb65486b2",
+        "inat_id": 133947817,
+        "timestamp": "2022-09-06T13:25:22-06:00",
+        "date": "2022-09-06",
+        "olc": "85PR3QGV+",
+        "elevation": 977.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 35.0,
+        "precipitation": 0.0,
+        "windspeed": 12.6,
+        "winddirection": null,
+        "presure": 1018.3,
+        "species": "Laetiporus cincinnatus",
+        "location": "The South Dakota School of Mines & Technology, Rapid City, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.2072161228,
+          44.0753093832
+        ]
+      }
+    }
+  ]
+}

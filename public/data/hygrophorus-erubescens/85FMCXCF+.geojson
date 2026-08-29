@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c50dbeb8-125a-4e82-8444-6e303328a266",
+        "inat_id": 244927376,
+        "timestamp": "2024-09-29T12:45:37-06:00",
+        "date": "2024-09-29",
+        "olc": "85FMCXCF+",
+        "elevation": 3332.0,
+        "tavg": null,
+        "tmin": 2.8,
+        "tmax": 22.2,
+        "precipitation": 0.0,
+        "windspeed": 7.8,
+        "winddirection": null,
+        "presure": 1018.4,
+        "species": "Hygrophorus erubescens",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.026562109,
+          39.4218295754
+        ]
+      }
+    }
+  ]
+}

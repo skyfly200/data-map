@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9db98ea9-8caf-4d69-b3a1-45700c486c5d",
+        "inat_id": 288538344,
+        "timestamp": "2025-06-10T12:49:13-06:00",
+        "date": "2025-06-10",
+        "olc": "85FPXPHG+",
+        "elevation": 1858.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 32.0,
+        "precipitation": 0.0,
+        "windspeed": 7.0,
+        "winddirection": null,
+        "presure": 1018.0,
+        "species": "Hygrophorus siccipes",
+        "location": "Boulder",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2730484009,
+          39.9791069031
+        ]
+      }
+    }
+  ]
+}

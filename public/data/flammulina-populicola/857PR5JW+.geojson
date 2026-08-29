@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ed8cf0d5-3033-4d68-989a-d3a85132f970",
+        "inat_id": 232372040,
+        "timestamp": "2024-07-28T11:02:06-06:00",
+        "date": "2024-07-28",
+        "olc": "857PR5JW+",
+        "elevation": 2852.0,
+        "tavg": null,
+        "tmin": 16.1,
+        "tmax": 35.6,
+        "precipitation": null,
+        "windspeed": 15.5,
+        "winddirection": null,
+        "presure": 1008.7,
+        "species": "Flammulina populicola",
+        "location": "Santa Fe County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8030310273,
+          35.8301480001
+        ]
+      }
+    }
+  ]
+}

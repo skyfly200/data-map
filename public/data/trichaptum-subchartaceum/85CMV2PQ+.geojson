@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f4590346-e0d4-4311-b997-8e4d73af8867",
+        "inat_id": 279801352,
+        "timestamp": "2025-05-09T15:39:50-06:00",
+        "date": "2025-05-09",
+        "olc": "85CMV2PQ+",
+        "elevation": 2846.0,
+        "tavg": null,
+        "tmin": 2.2,
+        "tmax": 18.3,
+        "precipitation": 2.5,
+        "windspeed": 12.5,
+        "winddirection": null,
+        "presure": 1022.6,
+        "species": "Trichaptum subchartaceum",
+        "location": "Crested Butte Mountain Resort, Crested Butte, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.961525,
+          38.8855783333
+        ]
+      }
+    }
+  ]
+}

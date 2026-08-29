@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1d6bda9d-c2c1-4c3e-9227-6c565240ed3f",
+        "inat_id": 132578327,
+        "timestamp": "2022-08-24T15:22:48-06:00",
+        "date": "2022-08-24",
+        "olc": "858PHHXP+",
+        "elevation": 3300.0,
+        "tavg": null,
+        "tmin": 6.3,
+        "tmax": 21.0,
+        "precipitation": 2.3,
+        "windspeed": 3.8,
+        "winddirection": null,
+        "presure": 1030.6,
+        "species": "Cantharellus roseocanus",
+        "location": "Taos Ski Valley, NM 87525, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4132373258,
+          36.597775542
+        ]
+      }
+    }
+  ]
+}

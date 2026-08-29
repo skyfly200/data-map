@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2d964f77-ffa6-483e-8762-de5497735863",
+        "inat_id": 386666190,
+        "timestamp": "2026-07-29T18:49:13-06:00",
+        "date": "2026-07-29",
+        "olc": "85HM9QF7+",
+        "elevation": 3210.0,
+        "tavg": null,
+        "tmin": 13.9,
+        "tmax": 26.6,
+        "precipitation": 4.8,
+        "windspeed": 14.5,
+        "winddirection": null,
+        "presure": 1013.0,
+        "species": "Hygrophorus subalpinus",
+        "location": "Centennial, WY 82055, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.235478,
+          41.3741109722
+        ]
+      }
+    }
+  ]
+}

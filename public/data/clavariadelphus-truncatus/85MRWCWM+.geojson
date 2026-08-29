@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4a530325-f368-4dab-be0b-45ec4ade5dcb",
+        "inat_id": 28754385,
+        "timestamp": "2019-07-13T10:32:12-06:00",
+        "date": "2019-07-13",
+        "olc": "85MRWCWM+",
+        "elevation": 1600.0,
+        "tavg": null,
+        "tmin": 18.3,
+        "tmax": 27.2,
+        "precipitation": null,
+        "windspeed": 10.8,
+        "winddirection": null,
+        "presure": 1014.6,
+        "species": "Clavariadelphus truncatus",
+        "location": "Pennington County, US-SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.567338945,
+          43.9465567835
+        ]
+      }
+    }
+  ]
+}

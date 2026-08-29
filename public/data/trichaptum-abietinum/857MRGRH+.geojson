@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5a2d1834-6611-4c3c-84d4-ba17b33ea0b7",
+        "inat_id": 275762807,
+        "timestamp": "2025-04-27T15:25:20-06:00",
+        "date": "2025-04-27",
+        "olc": "857MRGRH+",
+        "elevation": 2738.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 20.5,
+        "precipitation": 0.0,
+        "windspeed": 25.1,
+        "winddirection": null,
+        "presure": 1014.7,
+        "species": "Trichaptum abietinum",
+        "location": "Valles Caldera National Preserve, Jemez Springs, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.4702155953,
+          35.8400105497
+        ]
+      }
+    }
+  ]
+}

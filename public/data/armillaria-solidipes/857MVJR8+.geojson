@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0a6c2f46-0770-4bf0-a451-c1b9e4b7ca94",
+        "inat_id": 316854395,
+        "timestamp": "2025-09-26T17:41:52-06:00",
+        "date": "2025-09-26",
+        "olc": "857MVJR8+",
+        "elevation": 2795.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 21.0,
+        "precipitation": 0.4,
+        "windspeed": 9.3,
+        "winddirection": null,
+        "presure": 1022.5,
+        "species": "Armillaria solidipes",
+        "location": "Los Alamos County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3825027997,
+          35.8917860997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "46db065e-8300-453e-8ba7-17d781bcc1d3",
+        "inat_id": 315609714,
+        "timestamp": "2025-09-21T13:05:32-06:00",
+        "date": "2025-09-21",
+        "olc": "857MVJR8+",
+        "elevation": 2813.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 8.9,
+        "winddirection": null,
+        "presure": 1022.8,
+        "species": "Armillaria solidipes",
+        "location": "Los Alamos County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3840608,
+          35.8919676
+        ]
+      }
+    }
+  ]
+}

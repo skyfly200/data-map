@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "32ea7ccd-dd58-4751-aee2-0d9c0313b7c7",
+        "inat_id": 243263065,
+        "timestamp": "2022-08-06T13:26:00-06:00",
+        "date": "2022-08-06",
+        "olc": "85CMX3V4+",
+        "elevation": 3313.0,
+        "tavg": null,
+        "tmin": 12.8,
+        "tmax": 28.3,
+        "precipitation": 0.0,
+        "windspeed": 7.9,
+        "winddirection": null,
+        "presure": 1012.3,
+        "species": "Cantharellus roseocanus",
+        "location": "Gunnison County, CO, USA",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.944702,
+          38.992786
+        ]
+      }
+    }
+  ]
+}

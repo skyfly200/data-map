@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "12613749-f82d-457c-a293-0b840daf26f1",
+        "inat_id": 387622015,
+        "timestamp": "2026-08-02T12:38:08-06:00",
+        "date": "2026-08-02",
+        "olc": "85GP5WH6+",
+        "elevation": 1528.0,
+        "tavg": null,
+        "tmin": 13.9,
+        "tmax": 38.0,
+        "precipitation": 0.0,
+        "windspeed": 2.5,
+        "winddirection": null,
+        "presure": null,
+        "species": "Marasmius oreades",
+        "location": "Lashley St & Elk Pl, Longmont, CO 80504, EE. UU.",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.08882842,
+          40.17886741
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f942322d-b9a4-4763-b31d-3359f7a1d521",
+        "inat_id": 89937769,
+        "timestamp": "2021-08-04",
+        "date": "2021-08-04",
+        "olc": "859JM48X+",
+        "elevation": 3424.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 21.0,
+        "precipitation": 0.0,
+        "windspeed": 4.2,
+        "winddirection": null,
+        "presure": 1033.0,
+        "species": "Hypomyces chrysospermus",
+        "location": "San Juan County, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8514836729,
+          37.6650175443
+        ]
+      }
+    }
+  ]
+}

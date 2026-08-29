@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6d9b0e05-2e6f-4324-a5bc-8182902d50c4",
+        "inat_id": 312794727,
+        "timestamp": "2025-09-08T12:58:00-06:00",
+        "date": "2025-09-08",
+        "olc": "857PQ6W2+",
+        "elevation": 3238.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 28.0,
+        "precipitation": 0.0,
+        "windspeed": 9.0,
+        "winddirection": null,
+        "presure": 1025.2,
+        "species": "Floccularia albolanaripes",
+        "location": "Santa Fe, New Mexico, United States",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.79914167,
+          35.79592778
+        ]
+      }
+    }
+  ]
+}

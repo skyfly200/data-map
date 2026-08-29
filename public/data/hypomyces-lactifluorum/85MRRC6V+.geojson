@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "97698ed0-08e6-47d4-b6d6-7d147e269fc8",
+        "inat_id": 301587976,
+        "timestamp": "2025-07-27T09:30:49-06:00",
+        "date": "2025-07-27",
+        "olc": "85MRRC6V+",
+        "elevation": 1687.0,
+        "tavg": null,
+        "tmin": 15.6,
+        "tmax": 31.1,
+        "precipitation": 0.0,
+        "windspeed": 10.8,
+        "winddirection": null,
+        "presure": 1012.5,
+        "species": "Hypomyces lactifluorum",
+        "location": "Custer County, US-SD, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.55746222,
+          43.81065208
+        ]
+      }
+    }
+  ]
+}

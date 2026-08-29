@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e3ff9e3b-fc3f-4417-bda8-ffdf100825e1",
+        "inat_id": 129732529,
+        "timestamp": "2022-08-06T08:59:00-06:00",
+        "date": "2022-08-06",
+        "olc": "85FPFJW9+",
+        "elevation": 2511.0,
+        "tavg": null,
+        "tmin": 19.4,
+        "tmax": 32.2,
+        "precipitation": 1.4,
+        "windspeed": 11.0,
+        "winddirection": null,
+        "presure": 1013.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "12102 S Elk Creek Rd, Pine, CO 80470, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3820619,
+          39.4969148
+        ]
+      }
+    }
+  ]
+}

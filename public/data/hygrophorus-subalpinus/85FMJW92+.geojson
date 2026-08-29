@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "21c03e46-2af0-4d18-aae4-3b052c12f9ea",
+        "inat_id": 48476186,
+        "timestamp": "2020-06-04T15:14:37-06:00",
+        "date": "2020-06-04",
+        "olc": "85FMJW92+",
+        "elevation": 2916.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 15.0,
+        "precipitation": null,
+        "windspeed": 18.2,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrophorus subalpinus",
+        "location": "Wildernest, CO 80498, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.09951341,
+          39.6199684
+        ]
+      }
+    }
+  ]
+}

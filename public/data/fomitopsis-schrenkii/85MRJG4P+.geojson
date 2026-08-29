@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8e5e7f34-228b-4fa8-bf03-3dbebf4d292a",
+        "inat_id": 4174678,
+        "timestamp": "2016-09-19T10:50:27-06:00",
+        "date": "2016-09-19",
+        "olc": "85MRJG4P+",
+        "elevation": 1343.0,
+        "tavg": null,
+        "tmin": 7.8,
+        "tmax": 23.3,
+        "precipitation": 0.0,
+        "windspeed": 7.9,
+        "winddirection": null,
+        "presure": 1015.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Wind Cave National Park, Buffalo Gap, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4637527888,
+          43.6074422245
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b807151f-a0e5-4b12-92cc-6723424bb7f2",
+        "inat_id": 290246700,
+        "timestamp": "2025-06-16T14:25:10-06:00",
+        "date": "2025-06-16",
+        "olc": "85GP6FGG+",
+        "elevation": 2521.0,
+        "tavg": null,
+        "tmin": 13.3,
+        "tmax": 35.4,
+        "precipitation": 0.2,
+        "windspeed": 7.9,
+        "winddirection": null,
+        "presure": 1016.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Allenspark, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5228859997,
+          40.2255589
+        ]
+      }
+    }
+  ]
+}

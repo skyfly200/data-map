@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "30b84b6f-055d-4e9a-a81d-668ba1d48e54",
+        "inat_id": 279588457,
+        "timestamp": "2025-05-08T17:57:37-06:00",
+        "date": "2025-05-08",
+        "olc": "85FPXQ89+",
+        "elevation": 1654.0,
+        "tavg": null,
+        "tmin": 4.0,
+        "tmax": 20.0,
+        "precipitation": 0.0,
+        "windspeed": 5.1,
+        "winddirection": null,
+        "presure": 1024.0,
+        "species": "Marasmius oreades",
+        "location": "Boulder, Colorado 80305, EE. UU.",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.23025024,
+          39.96679149
+        ]
+      }
+    }
+  ]
+}

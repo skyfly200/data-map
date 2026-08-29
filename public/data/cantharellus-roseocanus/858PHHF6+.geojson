@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "84c45146-956f-451e-91b2-5aa727b4c2f9",
+        "inat_id": 3977854,
+        "timestamp": "2016-08-26T10:37:17-06:00",
+        "date": "2016-08-26",
+        "olc": "858PHHF6+",
+        "elevation": 3181.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": 8.1,
+        "winddirection": null,
+        "presure": null,
+        "species": "Cantharellus roseocanus",
+        "location": "Carson National Forest, Valdez, NM, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4376916667,
+          36.57287
+        ]
+      }
+    }
+  ]
+}

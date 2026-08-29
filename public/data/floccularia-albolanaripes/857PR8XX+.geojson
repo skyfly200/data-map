@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "33121f03-6d82-4478-aa3f-b527e0b6c9d7",
+        "inat_id": 235235520,
+        "timestamp": "2024-08-11T11:08:52-06:00",
+        "date": "2024-08-11",
+        "olc": "857PR8XX+",
+        "elevation": 2865.0,
+        "tavg": null,
+        "tmin": 18.9,
+        "tmax": 31.1,
+        "precipitation": null,
+        "windspeed": 15.6,
+        "winddirection": null,
+        "presure": 1014.4,
+        "species": "Floccularia albolanaripes",
+        "location": "San Miguel County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6509781327,
+          35.8476945705
+        ]
+      }
+    }
+  ]
+}

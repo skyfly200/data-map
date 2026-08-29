@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a6086b96-afcb-4655-b513-5256f3ab5a8b",
+        "inat_id": 234047283,
+        "timestamp": "2024-08-05T13:33:30-06:00",
+        "date": "2024-08-05",
+        "olc": "859HFV9W+",
+        "elevation": 3310.0,
+        "tavg": null,
+        "tmin": 13.9,
+        "tmax": 33.9,
+        "precipitation": 0.0,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1015.9,
+        "species": "Albatrellus ovinus",
+        "location": "San Juan National Forest - Headquarters, Dolores, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.1041028333,
+          37.46957
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f62da975-a90f-4594-ae1c-03934e5fe05a",
+        "inat_id": 306480076,
+        "timestamp": "2025-08-14T12:25:00-06:00",
+        "date": "2025-08-14",
+        "olc": "859JR46F+",
+        "elevation": 3111.0,
+        "tavg": null,
+        "tmin": 14.0,
+        "tmax": 23.0,
+        "precipitation": 1.2,
+        "windspeed": 9.1,
+        "winddirection": null,
+        "presure": 1030.5,
+        "species": "Armillaria sinapina",
+        "location": "San Miguel, Colorado, United States",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.87688333,
+          37.81242778
+        ]
+      }
+    }
+  ]
+}

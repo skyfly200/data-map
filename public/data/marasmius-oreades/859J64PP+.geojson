@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1485c864-c2b5-4b1f-bb76-3394209c983f",
+        "inat_id": 321179694,
+        "timestamp": "2025-10-15T17:54:48-06:00",
+        "date": "2025-10-15",
+        "olc": "859J64PP+",
+        "elevation": 2020.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 21.0,
+        "precipitation": 22.9,
+        "windspeed": 13.1,
+        "winddirection": null,
+        "presure": 1018.2,
+        "species": "Marasmius oreades",
+        "location": "Durango, CO 81301, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.86365073,
+          37.23535731
+        ]
+      }
+    }
+  ]
+}

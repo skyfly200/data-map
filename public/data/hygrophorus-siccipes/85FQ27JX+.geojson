@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "70b9df28-7271-4afd-97b3-4e933d2398bc",
+        "inat_id": 347180492,
+        "timestamp": "2025-09-19T14:57:06-06:00",
+        "date": "2025-09-19",
+        "olc": "85FQ27JX+",
+        "elevation": 2296.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 24.0,
+        "precipitation": 0.0,
+        "windspeed": 8.2,
+        "winddirection": null,
+        "presure": 1022.2,
+        "species": "Hygrophorus siccipes",
+        "location": "Black Forest Rd, Colorado Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.7005675337,
+          39.0314418253
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "bce62603-1cc5-485b-bb35-b9aacdc520d1",
+        "inat_id": 235628740,
+        "timestamp": "2024-08-04T08:44:16-06:00",
+        "date": "2024-08-04",
+        "olc": "859JR666+",
+        "elevation": 3408.0,
+        "tavg": null,
+        "tmin": 14.0,
+        "tmax": 25.0,
+        "precipitation": 0.7,
+        "windspeed": 8.3,
+        "winddirection": null,
+        "presure": 1032.9,
+        "species": "Trichaptum abietinum",
+        "location": "San Juan National Forest - Headquarters, Silverton, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.7880383333,
+          37.8114883333
+        ]
+      }
+    }
+  ]
+}

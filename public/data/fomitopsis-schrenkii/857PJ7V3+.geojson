@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2b9d4ddf-fea2-49b8-a109-5e7995ea13ad",
+        "inat_id": 326112876,
+        "timestamp": "2025-11-11T13:01:00-07:00",
+        "date": "2025-11-11",
+        "olc": "857PJ7V3+",
+        "elevation": 2506.0,
+        "tavg": null,
+        "tmin": -2.0,
+        "tmax": 19.0,
+        "precipitation": 0.0,
+        "windspeed": 13.7,
+        "winddirection": null,
+        "presure": 1025.1,
+        "species": "Fomitopsis schrenkii",
+        "location": "Santa Fe County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7455647222,
+          35.6448713889
+        ]
+      }
+    }
+  ]
+}

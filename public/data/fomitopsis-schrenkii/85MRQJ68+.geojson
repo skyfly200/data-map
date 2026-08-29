@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b0bdd0e4-60cd-4e51-aad7-761a1b2aed9e",
+        "inat_id": 304076096,
+        "timestamp": "2025-08-04T13:39:20-06:00",
+        "date": "2025-08-04",
+        "olc": "85MRQJ68+",
+        "elevation": 1368.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 25.6,
+        "precipitation": 0.6,
+        "windspeed": 11.5,
+        "winddirection": null,
+        "presure": 1015.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Custer State Park, Custer, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.3840416667,
+          43.7606083333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2e2e310c-b641-4a65-b920-2c6a875aedf6",
+        "inat_id": 301289629,
+        "timestamp": "2025-07-18T09:24:44-06:00",
+        "date": "2025-07-18",
+        "olc": "85MRQJ68+",
+        "elevation": 1407.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 24.4,
+        "precipitation": 0.0,
+        "windspeed": 13.3,
+        "winddirection": null,
+        "presure": 1013.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Crazy Horse, SD 57730, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.3838453,
+          43.7603373
+        ]
+      }
+    }
+  ]
+}

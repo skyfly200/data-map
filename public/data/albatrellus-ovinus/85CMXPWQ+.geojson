@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5eeaaa35-8910-4970-859e-3481c6cb007c",
+        "inat_id": 239732402,
+        "timestamp": "2024-09-02T12:00:25-06:00",
+        "date": "2024-09-02",
+        "olc": "85CMXPWQ+",
+        "elevation": 2910.0,
+        "tavg": null,
+        "tmin": 4.2,
+        "tmax": 26.6,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Albatrellus ovinus",
+        "location": "Pike and San Isabel National Forests, Granite, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.260718015,
+          38.9960806235
+        ]
+      }
+    }
+  ]
+}

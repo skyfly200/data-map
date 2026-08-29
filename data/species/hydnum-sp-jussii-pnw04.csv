@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c2805f29-db64-4d47-b2eb-c982972c8525,304402758,2025-08-06 16:59:50-06:00,2025-08-06,-104.976346011,39.1205230422,85FQ42CF+,2593.0,,16.4,33.9,0.0,15.0,,1015.4,Hydnum sp. 'jussii-PNW04',"Colorado, US",3

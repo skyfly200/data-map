@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b1c3100f-7cdc-482e-a139-442892443877",
+        "inat_id": 285113423,
+        "timestamp": "2025-05-29T11:07:37-06:00",
+        "date": "2025-05-29",
+        "olc": "85GP7RQP+",
+        "elevation": 1587.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 21.4,
+        "precipitation": 4.2,
+        "windspeed": 2.3,
+        "winddirection": null,
+        "presure": 1023.8,
+        "species": "Marasmius oreades",
+        "location": "Live Oak Ct, Berthoud, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1639853994,
+          40.2890172732
+        ]
+      }
+    }
+  ]
+}

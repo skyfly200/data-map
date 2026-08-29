@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "85f3a24e-e3e8-4589-a6e8-ae6c36ca0837",
+        "inat_id": 243503501,
+        "timestamp": "2024-07-14T18:33:23-06:00",
+        "date": "2024-07-14",
+        "olc": "857MVMM3+",
+        "elevation": 2323.0,
+        "tavg": null,
+        "tmin": 19.7,
+        "tmax": 31.3,
+        "precipitation": 0.0,
+        "windspeed": 11.6,
+        "winddirection": null,
+        "presure": 1030.0,
+        "species": "Albatrellus ovinus",
+        "location": "New Mexico, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.347114699,
+          35.8830299339
+        ]
+      }
+    }
+  ]
+}

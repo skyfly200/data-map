@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "213fd170-5a9a-4f78-ae8c-169c4b086817",
+        "inat_id": 306102973,
+        "timestamp": "2025-08-13T11:54:29-06:00",
+        "date": "2025-08-13",
+        "olc": "85GP4G25+",
+        "elevation": 2735.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 38.0,
+        "precipitation": 0.0,
+        "windspeed": 4.9,
+        "winddirection": null,
+        "presure": 1017.0,
+        "species": "Fomitopsis schrenkii",
+        "location": "County Road 96, Ward, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.49102,
+          40.1015166667
+        ]
+      }
+    }
+  ]
+}

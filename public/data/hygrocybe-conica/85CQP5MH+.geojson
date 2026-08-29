@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "09aa15b5-1d84-45ca-946d-fd4e47ca1e77",
+        "inat_id": 289922408,
+        "timestamp": "2025-06-15T13:19:02-06:00",
+        "date": "2025-06-15",
+        "olc": "85CQP5MH+",
+        "elevation": 1870.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 25.0,
+        "precipitation": 0.2,
+        "windspeed": 13.9,
+        "winddirection": null,
+        "presure": 1024.2,
+        "species": "Hygrocybe conica",
+        "location": "Colorado Springs",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8222808838,
+          38.7346611023
+        ]
+      }
+    }
+  ]
+}

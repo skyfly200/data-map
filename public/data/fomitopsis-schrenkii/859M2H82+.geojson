@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "11a79bd5-b4b9-460c-93e1-a07e488b2e46",
+        "inat_id": 298581842,
+        "timestamp": "2025-07-15T12:30:34-06:00",
+        "date": "2025-07-15",
+        "olc": "859M2H82+",
+        "elevation": 3097.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Continental Divide National Scenic Trail, Antonito, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.4483116667,
+          37.0159861167
+        ]
+      }
+    }
+  ]
+}

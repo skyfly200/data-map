@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3c33bed0-8b91-46c7-8b21-64581cc93139",
+        "inat_id": 242276854,
+        "timestamp": "2024-09-15T10:52:08-06:00",
+        "date": "2024-09-15",
+        "olc": "85GMR2P6+",
+        "elevation": 2593.0,
+        "tavg": null,
+        "tmin": 3.5,
+        "tmax": 22.2,
+        "precipitation": 0.0,
+        "windspeed": 3.5,
+        "winddirection": null,
+        "presure": 1020.8,
+        "species": "Scutiger ellisii",
+        "location": "Hahns Peak Lake, Clark, CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.9881794812,
+          40.8353559341
+        ]
+      }
+    }
+  ]
+}

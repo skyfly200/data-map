@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "474c995a-83ae-4d84-a7da-bebc60db4afe",
+        "inat_id": 227527891,
+        "timestamp": "2024-07-02T13:14:07-06:00",
+        "date": "2024-07-02",
+        "olc": "85FJ2243+",
+        "elevation": 2951.0,
+        "tavg": null,
+        "tmin": 14.7,
+        "tmax": 29.3,
+        "precipitation": 9.4,
+        "windspeed": 12.3,
+        "winddirection": null,
+        "presure": 1011.7,
+        "species": "Cantharellus roseocanus",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9953,
+          39.0053638833
+        ]
+      }
+    }
+  ]
+}

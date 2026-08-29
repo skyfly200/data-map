@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1a8692a3-6876-4dcc-a588-dad19d5ac95e",
+        "inat_id": 303263802,
+        "timestamp": "2025-08-02T16:08:09-06:00",
+        "date": "2025-08-02",
+        "olc": "85FP7V9Q+",
+        "elevation": 2786.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 28.9,
+        "precipitation": 0.4,
+        "windspeed": 12.9,
+        "winddirection": null,
+        "presure": 1020.0,
+        "species": "Hygrocybe conica",
+        "location": "Douglas County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1100722,
+          39.2687497
+        ]
+      }
+    }
+  ]
+}

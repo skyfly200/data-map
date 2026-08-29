@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "817734d1-ebca-4006-983c-5b8c3f1ef0c2",
+        "inat_id": 235322418,
+        "timestamp": "2024-08-10T13:09:08-06:00",
+        "date": "2024-08-10",
+        "olc": "859M4J66+",
+        "elevation": 2865.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Clavariadelphus truncatus",
+        "location": "Rio Grande National Forest, Antonito, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3883366667,
+          37.1119388333
+        ]
+      }
+    }
+  ]
+}

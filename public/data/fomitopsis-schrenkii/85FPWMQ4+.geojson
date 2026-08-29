@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1faf8381-3fd2-4d90-b391-5066d5f1a4a8",
+        "inat_id": 305130961,
+        "timestamp": "2025-07-05T13:12:41-06:00",
+        "date": "2025-07-05",
+        "olc": "85FPWMQ4+",
+        "elevation": 2082.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 34.0,
+        "precipitation": 3.9,
+        "windspeed": 8.9,
+        "winddirection": null,
+        "presure": 1022.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Golden, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3429716667,
+          39.938075
+        ]
+      }
+    }
+  ]
+}

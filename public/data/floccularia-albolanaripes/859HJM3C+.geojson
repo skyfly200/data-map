@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ad4a6138-2392-4148-b1f3-71b3d908566a",
+        "inat_id": 91701302,
+        "timestamp": "2021-08-17T11:12:06-06:00",
+        "date": "2021-08-17",
+        "olc": "859HJM3C+",
+        "elevation": 2690.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Floccularia albolanaripes",
+        "location": "San Juan National Forest, Dolores, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.3280166955,
+          37.6025583137
+        ]
+      }
+    }
+  ]
+}

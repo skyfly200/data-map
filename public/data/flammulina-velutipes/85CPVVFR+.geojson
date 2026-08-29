@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4f823835-4a23-4559-9f1c-f4c5135fcfc8",
+        "inat_id": 142110913,
+        "timestamp": "2022-07-15T10:13:14-06:00",
+        "date": "2022-07-15",
+        "olc": "85CPVVFR+",
+        "elevation": 3217.0,
+        "tavg": null,
+        "tmin": 18.2,
+        "tmax": 33.9,
+        "precipitation": 0.1,
+        "windspeed": 9.8,
+        "winddirection": null,
+        "presure": 1015.8,
+        "species": "Flammulina velutipes",
+        "location": "Pike and San Isabel National Forests, Woodland Park, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1083495938,
+          38.8745582002
+        ]
+      }
+    }
+  ]
+}

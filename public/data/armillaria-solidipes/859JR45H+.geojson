@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "63f22a8a-112f-443e-92c4-99694fdf3b6b",
+        "inat_id": 306101156,
+        "timestamp": "2025-08-13T10:29:32-06:00",
+        "date": "2025-08-13",
+        "olc": "859JR45H+",
+        "elevation": 3083.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": 1031.2,
+        "species": "Armillaria solidipes",
+        "location": "Ophir, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8717283333,
+          37.8086133333
+        ]
+      }
+    }
+  ]
+}

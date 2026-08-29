@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e4af844b-27c0-4f09-9051-1e1b72040411,237047503,2024-08-20 19:00:34-06:00,2024-08-20,-108.0085111023,39.0159230757,85FH2X8R+,3097.0,,16.5,34.3,0.0,10.5,,1016.9,Hygrophorus pustulatoides,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",2
+fbbb8c6e-150f-46e9-901a-d53372d66389,237023575,2024-08-20 16:46:18-06:00,2024-08-20,-107.9976366667,39.0060416667,85FJ2242+,2967.0,,16.5,34.3,0.0,10.5,,1016.9,Hygrophorus pustulatoides,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",2

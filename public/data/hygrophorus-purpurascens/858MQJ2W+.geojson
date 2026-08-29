@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "738d2874-10d5-40bf-ac58-b11cea403553",
+        "inat_id": 135829888,
+        "timestamp": "2022-08-25T10:05:32-06:00",
+        "date": "2022-08-25",
+        "olc": "858MQJ2W+",
+        "elevation": 2878.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrophorus purpurascens",
+        "location": "Rio Arriba County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3536111931,
+          36.7517044986
+        ]
+      }
+    }
+  ]
+}

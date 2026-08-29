@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f604a40c-bc57-456e-a1b0-e5762ceeb55d",
+        "inat_id": 301345325,
+        "timestamp": "2025-07-25T13:21:34-06:00",
+        "date": "2025-07-25",
+        "olc": "85CPXRCJ+",
+        "elevation": 2795.0,
+        "tavg": null,
+        "tmin": 10.8,
+        "tmax": 28.8,
+        "precipitation": 1.6,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1014.3,
+        "species": "Flammulina populicola",
+        "location": "Pike and San Isabel National Forests, Divide, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1687866667,
+          38.9724383333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c91b3f5d-dc58-45af-8ca3-bcb7dd07f23e",
+        "inat_id": 15357842,
+        "timestamp": "2018-08-12T08:42:14-06:00",
+        "date": "2018-08-12",
+        "olc": "85CPXRCJ+",
+        "elevation": 2795.0,
+        "tavg": null,
+        "tmin": 7.3,
+        "tmax": 26.3,
+        "precipitation": null,
+        "windspeed": 14.5,
+        "winddirection": null,
+        "presure": 1016.7,
+        "species": "Flammulina populicola",
+        "location": "Teller County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1688583803,
+          38.9723512919
+        ]
+      }
+    }
+  ]
+}

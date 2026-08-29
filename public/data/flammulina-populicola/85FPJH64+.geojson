@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "cc90ff20-e078-466e-97ce-f0dabcb3344c",
+        "inat_id": 179183733,
+        "timestamp": "2023-08-18T11:02:26-06:00",
+        "date": "2023-08-18",
+        "olc": "85FPJH64+",
+        "elevation": 2476.0,
+        "tavg": null,
+        "tmin": 5.7,
+        "tmax": 15.1,
+        "precipitation": 2.8,
+        "windspeed": 15.2,
+        "winddirection": null,
+        "presure": 1020.2,
+        "species": "Flammulina populicola",
+        "location": "Ranch Trail, Evergreen, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4432415273,
+          39.6113948289
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "748b7271-584a-4659-8a49-d73436915ed3",
+        "inat_id": 165852289,
+        "timestamp": "2023-06-05T19:21:04-06:00",
+        "date": "2023-06-05",
+        "olc": "85FPJH64+",
+        "elevation": 2476.0,
+        "tavg": null,
+        "tmin": -3.7,
+        "tmax": 4.9,
+        "precipitation": 5.4,
+        "windspeed": 9.6,
+        "winddirection": null,
+        "presure": 1021.0,
+        "species": "Flammulina populicola",
+        "location": "Ranch Trail, Evergreen, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4431603717,
+          39.6113739912
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "469a5da2-418a-4ba8-89d3-a8922368295e",
+        "inat_id": 160863593,
+        "timestamp": "2022-08-15T18:35:41-06:00",
+        "date": "2022-08-15",
+        "olc": "85FPJH64+",
+        "elevation": 2476.0,
+        "tavg": null,
+        "tmin": 3.0,
+        "tmax": 12.9,
+        "precipitation": 4.1,
+        "windspeed": 5.7,
+        "winddirection": null,
+        "presure": 1021.6,
+        "species": "Flammulina populicola",
+        "location": "Ranch Trail, Evergreen, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4431943566,
+          39.6113569608
+        ]
+      }
+    }
+  ]
+}

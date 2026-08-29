@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "317346c2-9e60-4388-b065-97186cc44e34",
+        "inat_id": 388004073,
+        "timestamp": "2026-07-30T13:36:00-06:00",
+        "date": "2026-07-30",
+        "olc": "858P3FG6+",
+        "elevation": 3445.0,
+        "tavg": null,
+        "tmin": 16.9,
+        "tmax": 32.5,
+        "precipitation": 1.1,
+        "windspeed": 10.4,
+        "winddirection": null,
+        "presure": 1014.5,
+        "species": "Armillaria solidipes",
+        "location": "New Mexico, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5391103585,
+          36.0755170631
+        ]
+      }
+    }
+  ]
+}

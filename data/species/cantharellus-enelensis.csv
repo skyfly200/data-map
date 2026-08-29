@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9a529da1-49f5-4b17-88d0-36e03fc45052,311074512,2025-09-02 09:30:50-06:00,2025-09-02,-103.56073246,43.80645662,85MRRC4Q+,1665.0,,12.0,26.0,0.0,9.2,,1025.8,Cantharellus enelensis,"Crazy Horse, SD 57730, USA",1

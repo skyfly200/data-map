@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c5c094ae-1a1f-408d-8d24-07af17c020ac",
+        "inat_id": 310318018,
+        "timestamp": "2025-08-30T13:33:38-06:00",
+        "date": "2025-08-30",
+        "olc": "85FJ22R6+",
+        "elevation": 3135.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 31.0,
+        "precipitation": 0.0,
+        "windspeed": 8.5,
+        "winddirection": null,
+        "presure": 1024.1,
+        "species": "Collybia tuberosa",
+        "location": "Cedaredge, CO 81413, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9879207,
+          39.0420441997
+        ]
+      }
+    }
+  ]
+}

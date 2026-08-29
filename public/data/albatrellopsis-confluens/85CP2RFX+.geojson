@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8eb672bd-b65c-43fb-809b-c5903484d19b",
+        "inat_id": 143133724,
+        "timestamp": "2022-09-07T14:47:51-06:00",
+        "date": "2022-09-07",
+        "olc": "85CP2RFX+",
+        "elevation": 3103.0,
+        "tavg": null,
+        "tmin": 17.5,
+        "tmax": 34.9,
+        "precipitation": 0.0,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": 1016.8,
+        "species": "Albatrellopsis confluens",
+        "location": "Mammoth Gulch",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1524944231,
+          38.0241707268
+        ]
+      }
+    }
+  ]
+}

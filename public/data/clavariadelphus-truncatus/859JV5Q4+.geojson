@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0672a810-03d0-4757-bce2-8d628f943914",
+        "inat_id": 131777200,
+        "timestamp": "2021-08-18T11:43:00-06:00",
+        "date": "2021-08-18",
+        "olc": "859JV5Q4+",
+        "elevation": 3436.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 21.0,
+        "precipitation": 7.6,
+        "windspeed": 4.9,
+        "winddirection": null,
+        "presure": 1025.8,
+        "species": "Clavariadelphus truncatus",
+        "location": "Alta Lakes, Colorado 81435, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8432074,
+          37.8883932
+        ]
+      }
+    }
+  ]
+}

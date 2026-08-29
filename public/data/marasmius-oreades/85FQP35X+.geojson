@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7bdc4aaa-812b-4562-8824-c066dc25aeb1",
+        "inat_id": 310013735,
+        "timestamp": "2025-08-29T10:11:20-06:00",
+        "date": "2025-08-29",
+        "olc": "85FQP35X+",
+        "elevation": 1656.0,
+        "tavg": null,
+        "tmin": 14.1,
+        "tmax": 24.5,
+        "precipitation": 3.0,
+        "windspeed": 11.3,
+        "winddirection": null,
+        "presure": 1016.9,
+        "species": "Marasmius oreades",
+        "location": "Windsor, Denver, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9020538056,
+          39.7084083333
+        ]
+      }
+    }
+  ]
+}

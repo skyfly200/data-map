@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b3414887-6d7f-4233-8ef0-b6e826ad4bab",
+        "inat_id": 327326070,
+        "timestamp": "2025-09-13T16:57:00-06:00",
+        "date": "2025-09-13",
+        "olc": "85PR6GJG+",
+        "elevation": 1350.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 29.0,
+        "precipitation": 3.0,
+        "windspeed": 17.4,
+        "winddirection": null,
+        "presure": 1011.8,
+        "species": "Hydnum subtilior",
+        "location": "Lawrence County, SD, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.47435,
+          44.2301638889
+        ]
+      }
+    }
+  ]
+}

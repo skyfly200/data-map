@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7dbcdcaf-6d22-4c9f-80cc-65f47be6d64e",
+        "inat_id": 300586737,
+        "timestamp": "2025-07-23T16:10:16-06:00",
+        "date": "2025-07-23",
+        "olc": "85MRJGG8+",
+        "elevation": 1453.0,
+        "tavg": null,
+        "tmin": 10.6,
+        "tmax": 21.1,
+        "precipitation": 7.2,
+        "windspeed": 10.6,
+        "winddirection": null,
+        "presure": 1013.4,
+        "species": "Hypomyces lactifluorum",
+        "location": "Rankin Ridge Trail, Custer, SD, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.484,
+          43.6256616667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8995df51-4064-4dcb-bfb2-502455eb33a8",
+        "inat_id": 29687460,
+        "timestamp": "2019-07-27T12:09:32-06:00",
+        "date": "2019-07-27",
+        "olc": "85MRJGG8+",
+        "elevation": 1517.0,
+        "tavg": null,
+        "tmin": 12.2,
+        "tmax": 23.9,
+        "precipitation": null,
+        "windspeed": 7.5,
+        "winddirection": null,
+        "presure": 1016.9,
+        "species": "Hypomyces lactifluorum",
+        "location": "Wind Cave National Park, Custer, SD, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4825133333,
+          43.626525
+        ]
+      }
+    }
+  ]
+}

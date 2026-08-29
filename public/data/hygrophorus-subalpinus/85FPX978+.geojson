@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "cbd8b2f3-1b07-4359-8aa7-e06861b44495",
+        "inat_id": 291680031,
+        "timestamp": "2025-06-21T09:39:13-06:00",
+        "date": "2025-06-21",
+        "olc": "85FPX978+",
+        "elevation": 2983.0,
+        "tavg": null,
+        "tmin": 6.3,
+        "tmax": 17.3,
+        "precipitation": 0.0,
+        "windspeed": 19.9,
+        "winddirection": null,
+        "presure": 1006.7,
+        "species": "Hygrophorus subalpinus",
+        "location": "Nederland, CO 80466, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6327805556,
+          39.9631333333
+        ]
+      }
+    }
+  ]
+}

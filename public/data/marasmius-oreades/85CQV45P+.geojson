@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "bb8904d1-964d-4e28-9296-719dc8489a92",
+        "inat_id": 387554042,
+        "timestamp": "2026-08-02T09:14:09-06:00",
+        "date": "2026-08-02",
+        "olc": "85CQV45P+",
+        "elevation": 1901.0,
+        "tavg": null,
+        "tmin": 13.4,
+        "tmax": 34.5,
+        "precipitation": 0.0,
+        "windspeed": 7.4,
+        "winddirection": null,
+        "presure": null,
+        "species": "Marasmius oreades",
+        "location": "Castle Rd, Colorado Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8638324872,
+          38.8585550176
+        ]
+      }
+    }
+  ]
+}

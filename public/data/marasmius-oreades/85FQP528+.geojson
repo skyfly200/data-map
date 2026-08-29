@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5347abcd-bd35-487c-960f-238608e93aa3",
+        "inat_id": 292885959,
+        "timestamp": "2025-06-26T08:21:05-06:00",
+        "date": "2025-06-26",
+        "olc": "85FQP528+",
+        "elevation": 1708.0,
+        "tavg": null,
+        "tmin": 11.3,
+        "tmax": 29.9,
+        "precipitation": 0.0,
+        "windspeed": 11.9,
+        "winddirection": null,
+        "presure": 1012.8,
+        "species": "Marasmius oreades",
+        "location": "S Victor Way, Aurora, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8346614586,
+          39.7009405208
+        ]
+      }
+    }
+  ]
+}

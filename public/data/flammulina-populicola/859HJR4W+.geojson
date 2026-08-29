@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5f2e3532-a37f-45bf-903d-ddff9b4c3611",
+        "inat_id": 382787571,
+        "timestamp": "2026-07-18T16:13:50-06:00",
+        "date": "2026-07-18",
+        "olc": "859HJR4W+",
+        "elevation": 2623.0,
+        "tavg": null,
+        "tmin": 8.2,
+        "tmax": 23.0,
+        "precipitation": 1.8,
+        "windspeed": 4.9,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "Priest Gulch Trail, Dolores, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.1527416667,
+          37.6058616667
+        ]
+      }
+    }
+  ]
+}

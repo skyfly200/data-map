@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a768e2ec-0e2a-4019-b41b-76d570257d34",
+        "inat_id": 354747436,
+        "timestamp": "2026-04-25T12:02:54-06:00",
+        "date": "2026-04-25",
+        "olc": "85CQQ3QH+",
+        "elevation": 2413.0,
+        "tavg": null,
+        "tmin": 2.3,
+        "tmax": 17.6,
+        "precipitation": 1.2,
+        "windspeed": 18.8,
+        "winddirection": null,
+        "presure": 1005.4,
+        "species": "Fomitopsis schrenkii",
+        "location": "Pike and San Isabel National Forests, Colorado Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9207083333,
+          38.7883116667
+        ]
+      }
+    }
+  ]
+}

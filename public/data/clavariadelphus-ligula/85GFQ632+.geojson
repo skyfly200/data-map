@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2894818c-3f35-4370-acbe-6695377820ea",
+        "inat_id": 393957242,
+        "timestamp": "2026-08-23T11:04:28-06:00",
+        "date": "2026-08-23",
+        "olc": "85GFQ632+",
+        "elevation": 2908.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Clavariadelphus ligula",
+        "location": "Bear River, WY 82930, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.7984166667,
+          40.7542805556
+        ]
+      }
+    }
+  ]
+}

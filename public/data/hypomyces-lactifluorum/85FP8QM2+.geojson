@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "12608274-181c-43d5-80f2-b1cd069e918e",
+        "inat_id": 182460256,
+        "timestamp": "2023-09-09T07:35:47-06:00",
+        "date": "2023-09-09",
+        "olc": "85FP8QM2+",
+        "elevation": 2308.0,
+        "tavg": null,
+        "tmin": 4.1,
+        "tmax": 18.6,
+        "precipitation": 0.2,
+        "windspeed": 10.8,
+        "winddirection": null,
+        "presure": 1021.8,
+        "species": "Hypomyces lactifluorum",
+        "location": "Pine",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2478256226,
+          39.3328514099
+        ]
+      }
+    }
+  ]
+}

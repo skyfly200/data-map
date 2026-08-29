@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4187c0b7-b5bb-4637-81cc-47a5f753bbeb",
+        "inat_id": 390657009,
+        "timestamp": "2026-08-08T13:31:02-06:00",
+        "date": "2026-08-08",
+        "olc": "857MRF98+",
+        "elevation": 2620.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 31.2,
+        "precipitation": 6.0,
+        "windspeed": 7.8,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "East Fork Jemez River, Jemez Springs, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.5334083333,
+          35.8187033333
+        ]
+      }
+    }
+  ]
+}

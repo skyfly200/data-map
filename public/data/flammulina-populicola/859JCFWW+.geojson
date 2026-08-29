@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a6411fcd-3371-4994-9017-d97902556248",
+        "inat_id": 7002109,
+        "timestamp": "2016-08-12",
+        "date": "2016-08-12",
+        "olc": "859JCFWW+",
+        "elevation": 2426.0,
+        "tavg": null,
+        "tmin": 9.4,
+        "tmax": 28.3,
+        "precipitation": 0.0,
+        "windspeed": 11.8,
+        "winddirection": null,
+        "presure": 1016.1,
+        "species": "Flammulina populicola",
+        "location": "Pine River Campground, Bayfield, Colorado, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.505,
+          37.4471
+        ]
+      }
+    }
+  ]
+}

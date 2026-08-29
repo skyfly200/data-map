@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0323e844-517b-4bb9-a60c-ec78b72b7449",
+        "inat_id": 309419742,
+        "timestamp": "2025-08-26T14:30:11-06:00",
+        "date": "2025-08-26",
+        "olc": "85CQP3P3+",
+        "elevation": 3031.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 15.0,
+        "precipitation": 3.2,
+        "windspeed": 9.6,
+        "winddirection": null,
+        "presure": 1027.7,
+        "species": "Hydnum melitosarx",
+        "location": "Teller County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.94581379,
+          38.73693956
+        ]
+      }
+    }
+  ]
+}

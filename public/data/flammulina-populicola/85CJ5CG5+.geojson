@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1c0120e3-ab24-43c3-ae03-03b359fa5723",
+        "inat_id": 267288019,
+        "timestamp": "2024-08-27T12:03:52-06:00",
+        "date": "2024-08-27",
+        "olc": "85CJ5CG5+",
+        "elevation": 2836.0,
+        "tavg": null,
+        "tmin": 2.8,
+        "tmax": 21.0,
+        "precipitation": null,
+        "windspeed": 9.1,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Ridgway, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.5919883333,
+          38.1758833333
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c36495db-484c-48ae-9697-edee9d888a06",
+        "inat_id": 333085817,
+        "timestamp": "2026-01-01T14:24:20-07:00",
+        "date": "2026-01-01",
+        "olc": "859JCVW7+",
+        "elevation": 2550.0,
+        "tavg": null,
+        "tmin": -1.0,
+        "tmax": 4.0,
+        "precipitation": 1.7,
+        "windspeed": 4.5,
+        "winddirection": null,
+        "presure": 1023.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Pagosa Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1363611667,
+          37.4455466667
+        ]
+      }
+    }
+  ]
+}

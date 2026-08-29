@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ed6310ba-d412-4bab-a728-d94a18a3ba5f",
+        "inat_id": 165921882,
+        "timestamp": "2023-06-05T13:51:28-06:00",
+        "date": "2023-06-05",
+        "olc": "85FPJQ87+",
+        "elevation": 2098.0,
+        "tavg": null,
+        "tmin": 10.6,
+        "tmax": 20.0,
+        "precipitation": null,
+        "windspeed": 7.8,
+        "winddirection": null,
+        "presure": 1019.5,
+        "species": "Hygrocybe conica",
+        "location": "Indian Hills, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2366363257,
+          39.6151415479
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8bd9f380-454f-4d29-b5b5-d5c7150ef301",
+        "inat_id": 391654672,
+        "timestamp": "2026-08-15T08:02:10-06:00",
+        "date": "2026-08-15",
+        "olc": "859JV53F+",
+        "elevation": 3028.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 20.0,
+        "precipitation": 1.4,
+        "windspeed": 3.7,
+        "winddirection": null,
+        "presure": null,
+        "species": "Paragymnopus perforans",
+        "location": "Ophir, CO 81426, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8272833333,
+          37.8541055556
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8baac6cf-4e95-4ee8-abbd-fd3d42935643",
+        "inat_id": 302940296,
+        "timestamp": "2025-06-27T13:57:49-06:00",
+        "date": "2025-06-27",
+        "olc": "85PR59C5+",
+        "elevation": 1764.0,
+        "tavg": null,
+        "tmin": 14.0,
+        "tmax": 29.0,
+        "precipitation": 0.0,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1013.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Lawrence County, US-SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.6407867554,
+          44.1721015486
+        ]
+      }
+    }
+  ]
+}

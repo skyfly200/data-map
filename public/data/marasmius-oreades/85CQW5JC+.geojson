@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1d968eff-d94c-4c7b-aa22-bf33a9afde7c",
+        "inat_id": 167974077,
+        "timestamp": "2023-06-17T16:22:00-06:00",
+        "date": "2023-06-17",
+        "olc": "85CQW5JC+",
+        "elevation": 1944.0,
+        "tavg": null,
+        "tmin": 6.1,
+        "tmax": 16.6,
+        "precipitation": null,
+        "windspeed": 10.0,
+        "winddirection": null,
+        "presure": 1014.9,
+        "species": "Marasmius oreades",
+        "location": "Colorado Springs",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8291244507,
+          38.9301147461
+        ]
+      }
+    }
+  ]
+}

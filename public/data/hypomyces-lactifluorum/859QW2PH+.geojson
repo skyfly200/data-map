@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d1b0b076-4b9c-4732-82d3-219566919557",
+        "inat_id": 222120289,
+        "timestamp": "2023-08-05T18:40:01-06:00",
+        "date": "2023-08-05",
+        "olc": "859QW2PH+",
+        "elevation": 2325.0,
+        "tavg": null,
+        "tmin": 16.2,
+        "tmax": 30.9,
+        "precipitation": 0.2,
+        "windspeed": 14.2,
+        "winddirection": null,
+        "presure": 1015.2,
+        "species": "Hypomyces lactifluorum",
+        "location": "Rye, CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9714670567,
+          37.936708509
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ce0fa8ca-a664-4cb7-b565-5a22a5d4af2b",
+        "inat_id": 292265442,
+        "timestamp": "2025-06-23T17:58:35-06:00",
+        "date": "2025-06-23",
+        "olc": "85FJ22RH+",
+        "elevation": 3160.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 33.4,
+        "precipitation": 0.0,
+        "windspeed": 11.5,
+        "winddirection": null,
+        "presure": 1018.0,
+        "species": "Hygrophorus subalpinus",
+        "location": "Cedaredge, CO 81413, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.97245,
+          39.0408944444
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e30e779b-fde9-41a3-9180-10de0a0a2858",
+        "inat_id": 308360323,
+        "timestamp": "2025-08-22T14:04:24-06:00",
+        "date": "2025-08-22",
+        "olc": "85CQP4P7+",
+        "elevation": 2716.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 28.0,
+        "precipitation": 1.1,
+        "windspeed": 18.0,
+        "winddirection": null,
+        "presure": 1027.6,
+        "species": "Hygrophorus fuscoalboides",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8862932772,
+          38.7367935453
+        ]
+      }
+    }
+  ]
+}

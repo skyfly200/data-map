@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f0eef7c3-4df5-491d-9e37-397208b6c30a,312359050,2025-09-07 19:44:16-06:00,2025-09-07,-104.8820448227,38.7038230775,85CQP439+,2441.0,,14.0,23.0,1.8,9.6,,1025.2,Hygrophorus sp. 'IN04',"Colorado, US",2

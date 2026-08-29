@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9eef781a-7ea6-4ae8-82fb-d54acd2ba18a",
+        "inat_id": 46531087,
+        "timestamp": "2020-05-13T11:17:13-06:00",
+        "date": "2020-05-13",
+        "olc": "85PR86Q7+",
+        "elevation": 1611.0,
+        "tavg": null,
+        "tmin": 5.0,
+        "tmax": 15.0,
+        "precipitation": null,
+        "windspeed": 13.8,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Central City, SD 57754, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.785092,
+          44.3385999722
+        ]
+      }
+    }
+  ]
+}

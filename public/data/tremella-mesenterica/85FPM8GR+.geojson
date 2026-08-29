@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "26e686a0-5ce0-41cd-b68b-56b1810bbc00",
+        "inat_id": 384064758,
+        "timestamp": "2026-07-22T10:44:47-06:00",
+        "date": "2026-07-22",
+        "olc": "85FPM8GR+",
+        "elevation": 2973.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 13.0,
+        "precipitation": 1.8,
+        "windspeed": 9.9,
+        "winddirection": null,
+        "presure": null,
+        "species": "Tremella mesenterica",
+        "location": "Golden, CO 80439, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6592289997,
+          39.6769840997
+        ]
+      }
+    }
+  ]
+}

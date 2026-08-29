@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2cf90b7c-ed81-4622-b65e-d56de7157b37",
+        "inat_id": 135829904,
+        "timestamp": "2022-08-25T10:09:48-06:00",
+        "date": "2022-08-25",
+        "olc": "858MPQGW+",
+        "elevation": 2784.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Floccularia albolanaripes",
+        "location": "Rio Arriba County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.2040454853,
+          36.7258781776
+        ]
+      }
+    }
+  ]
+}

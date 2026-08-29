@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3cf6c8c4-23ef-4861-977a-966a2f053dba",
+        "inat_id": 220964955,
+        "timestamp": "2024-06-05T16:10:03-06:00",
+        "date": "2024-06-05",
+        "olc": "858MMQR8+",
+        "elevation": 3019.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Tierra Amarilla, NM 87575, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.2346976995,
+          36.6908852654
+        ]
+      }
+    }
+  ]
+}

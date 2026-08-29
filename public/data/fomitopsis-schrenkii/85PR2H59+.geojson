@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "23204915-8464-440b-b78e-8586d9200f4a",
+        "inat_id": 23054329,
+        "timestamp": "2019-04-24T11:21:00-06:00",
+        "date": "2019-04-24",
+        "olc": "85PR2H59+",
+        "elevation": 1505.0,
+        "tavg": null,
+        "tmin": 7.2,
+        "tmax": 20.0,
+        "precipitation": 2.3,
+        "windspeed": 20.2,
+        "winddirection": null,
+        "presure": 1011.1,
+        "species": "Fomitopsis schrenkii",
+        "location": "Pennington County, SD, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4304984385,
+          44.0076404807
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a9d0dbba-c39a-459e-ad71-e539a2a38cac",
+        "inat_id": 23054327,
+        "timestamp": "2019-04-24T09:55:00-06:00",
+        "date": "2019-04-24",
+        "olc": "85PR2H59+",
+        "elevation": 1505.0,
+        "tavg": null,
+        "tmin": 7.2,
+        "tmax": 20.0,
+        "precipitation": 2.3,
+        "windspeed": 20.2,
+        "winddirection": null,
+        "presure": 1011.1,
+        "species": "Fomitopsis schrenkii",
+        "location": "Pennington County, SD, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4304984385,
+          44.0076404807
+        ]
+      }
+    }
+  ]
+}

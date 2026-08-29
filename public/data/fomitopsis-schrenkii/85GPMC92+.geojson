@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "74475f58-fc03-44e6-9167-5ca03f702da0",
+        "inat_id": 369582309,
+        "timestamp": "2026-06-06T09:38:05-06:00",
+        "date": "2026-06-06",
+        "olc": "85GPMC92+",
+        "elevation": 2695.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Crown Point Rd, Bellvue, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5998916667,
+          40.66993
+        ]
+      }
+    }
+  ]
+}

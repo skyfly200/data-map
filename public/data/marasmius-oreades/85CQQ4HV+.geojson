@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "001cc13b-e5b3-4f0d-9190-2d1327c20005",
+        "inat_id": 285795971,
+        "timestamp": "2025-05-31T17:36:39-06:00",
+        "date": "2025-05-31",
+        "olc": "85CQQ4HV+",
+        "elevation": 1979.0,
+        "tavg": null,
+        "tmin": 14.0,
+        "tmax": 22.4,
+        "precipitation": 0.1,
+        "windspeed": 14.9,
+        "winddirection": null,
+        "presure": 1024.1,
+        "species": "Marasmius oreades",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8561722089,
+          38.7798516483
+        ]
+      }
+    }
+  ]
+}

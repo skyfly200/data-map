@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c1dc1ba5-5b39-443a-9a07-52e505899c15",
+        "inat_id": 229817313,
+        "timestamp": "2024-07-16T17:47:19-06:00",
+        "date": "2024-07-16",
+        "olc": "85CJ6FW5+",
+        "elevation": 2708.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 31.7,
+        "precipitation": 0.0,
+        "windspeed": 12.1,
+        "winddirection": null,
+        "presure": 1014.4,
+        "species": "Flammulina populicola",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.54023,
+          38.2470466667
+        ]
+      }
+    }
+  ]
+}

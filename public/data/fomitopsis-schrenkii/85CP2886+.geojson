@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "61122736-34c8-45f3-851d-810337060393",
+        "inat_id": 217190574,
+        "timestamp": "2024-05-16T17:28:00-06:00",
+        "date": "2024-05-16",
+        "olc": "85CP2886+",
+        "elevation": 2602.0,
+        "tavg": null,
+        "tmin": 5.0,
+        "tmax": 17.0,
+        "precipitation": 0.0,
+        "windspeed": 7.0,
+        "winddirection": null,
+        "presure": 1012.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Saguache County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.68875,
+          38.0164983333
+        ]
+      }
+    }
+  ]
+}

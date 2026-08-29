@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0953c068-9c50-4639-95c1-402ff49c4c1c",
+        "inat_id": 304583564,
+        "timestamp": "2025-08-07T13:23:40-06:00",
+        "date": "2025-08-07",
+        "olc": "85FQ4245+",
+        "elevation": 2697.0,
+        "tavg": null,
+        "tmin": 14.5,
+        "tmax": 34.0,
+        "precipitation": 0.0,
+        "windspeed": 18.4,
+        "winddirection": null,
+        "presure": 1013.4,
+        "species": "Clavariadelphus truncatus",
+        "location": "Woodland Park, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9908533333,
+          39.1066888333
+        ]
+      }
+    }
+  ]
+}

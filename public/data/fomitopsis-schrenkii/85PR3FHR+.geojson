@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6de190c5-cb4c-4441-8ea9-4aa2a03b13a6",
+        "inat_id": 226524390,
+        "timestamp": "2024-06-26",
+        "date": "2024-06-26",
+        "olc": "85PR3FHR+",
+        "elevation": 1398.0,
+        "tavg": null,
+        "tmin": 14.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 16.7,
+        "winddirection": null,
+        "presure": 1018.0,
+        "species": "Fomitopsis schrenkii",
+        "location": "Silver City, SD 57702, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.5075449198,
+          44.0786812001
+        ]
+      }
+    }
+  ]
+}

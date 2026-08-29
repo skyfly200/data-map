@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "80f6a2af-f98e-45fc-afb8-f16ccda39785",
+        "inat_id": 55548088,
+        "timestamp": "2020-08-04T13:29:09-06:00",
+        "date": "2020-08-04",
+        "olc": "85MRW6CR+",
+        "elevation": 2157.0,
+        "tavg": null,
+        "tmin": 12.2,
+        "tmax": 24.4,
+        "precipitation": 0.0,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": 1014.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Crazy Horse, SD 57730, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.759861,
+          43.921599
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2c23d34b-cd2f-4c13-b5c6-40179db5e373",
+        "inat_id": 55111746,
+        "timestamp": "2020-08-01T09:33:30-06:00",
+        "date": "2020-08-01",
+        "olc": "85GPJ3VQ+",
+        "elevation": 3032.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Jelm, WY 82063, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.9101564,
+          40.6432203
+        ]
+      }
+    }
+  ]
+}

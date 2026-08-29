@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "53a1fd70-af09-4e28-a650-25e94531f92c",
+        "inat_id": 392301906,
+        "timestamp": "2026-08-17T16:49:52-06:00",
+        "date": "2026-08-17",
+        "olc": "859HHRF9+",
+        "elevation": 2461.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 24.0,
+        "precipitation": 0.0,
+        "windspeed": 5.0,
+        "winddirection": null,
+        "presure": null,
+        "species": "Trichaptum biforme",
+        "location": "Bear Creek Trail, Dolores, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.182275,
+          37.5743533333
+        ]
+      }
+    }
+  ]
+}

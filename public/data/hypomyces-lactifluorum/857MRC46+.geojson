@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c0087506-a784-4cba-97b0-50ccae628f53",
+        "inat_id": 235110623,
+        "timestamp": "2024-07-31T18:59:38-06:00",
+        "date": "2024-07-31",
+        "olc": "857MRC46+",
+        "elevation": 2457.0,
+        "tavg": null,
+        "tmin": 17.1,
+        "tmax": 29.2,
+        "precipitation": 0.9,
+        "windspeed": 10.5,
+        "winddirection": null,
+        "presure": 1014.1,
+        "species": "Hypomyces lactifluorum",
+        "location": "Santa Fe National Forest, Jemez Springs, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.5890716667,
+          35.8058616667
+        ]
+      }
+    }
+  ]
+}

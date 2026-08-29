@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "18668de4-e876-448f-9425-9103a9f14fd9",
+        "inat_id": 293867850,
+        "timestamp": "2025-06-29T13:33:03-06:00",
+        "date": "2025-06-29",
+        "olc": "857MVMMX+",
+        "elevation": 2235.0,
+        "tavg": null,
+        "tmin": 17.2,
+        "tmax": 30.4,
+        "precipitation": 0.7,
+        "windspeed": 9.9,
+        "winddirection": null,
+        "presure": 1024.5,
+        "species": "Marasmius oreades",
+        "location": "Los Alamos, NM 87544, USA",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3001368997,
+          35.8828069997
+        ]
+      }
+    }
+  ]
+}

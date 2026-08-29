@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "80ae0001-4e45-42d4-a185-c721ab205924",
+        "inat_id": 91705273,
+        "timestamp": "2021-08-17T17:57:56-06:00",
+        "date": "2021-08-17",
+        "olc": "859MMJHW+",
+        "elevation": 2407.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 17.0,
+        "precipitation": 1.0,
+        "windspeed": 5.8,
+        "winddirection": null,
+        "presure": 1035.4,
+        "species": "Cantharellus roseocanus",
+        "location": "Del Norte",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3533683494,
+          37.6789223232
+        ]
+      }
+    }
+  ]
+}

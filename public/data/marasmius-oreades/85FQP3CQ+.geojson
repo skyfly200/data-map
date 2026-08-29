@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c811efbc-d196-47da-ad6f-443eae59c040",
+        "inat_id": 302430760,
+        "timestamp": "2025-07-30T09:10:12-06:00",
+        "date": "2025-07-30",
+        "olc": "85FQP3CQ+",
+        "elevation": 1641.0,
+        "tavg": null,
+        "tmin": 16.8,
+        "tmax": 25.1,
+        "precipitation": 1.0,
+        "windspeed": 13.1,
+        "winddirection": null,
+        "presure": 1019.6,
+        "species": "Marasmius oreades",
+        "location": "E Fourth Ave, Denver, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.91095,
+          39.7213783333
+        ]
+      }
+    }
+  ]
+}

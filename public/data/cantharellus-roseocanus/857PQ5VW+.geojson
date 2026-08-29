@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b1d5d718-6f34-419f-a007-f7b971dd953a",
+        "inat_id": 311283769,
+        "timestamp": "2025-09-01T12:10:09-06:00",
+        "date": "2025-09-01",
+        "olc": "857PQ5VW+",
+        "elevation": 3143.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 27.0,
+        "precipitation": 0.0,
+        "windspeed": 12.5,
+        "winddirection": null,
+        "presure": 1029.0,
+        "species": "Cantharellus roseocanus",
+        "location": "NM-475, Tererro, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8033002391,
+          35.7940106134
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f2587526-65cd-4e56-b7e3-55625004d531",
+        "inat_id": 131938703,
+        "timestamp": "2022-08-21T11:37:56-06:00",
+        "date": "2022-08-21",
+        "olc": "859JW4V3+",
+        "elevation": 2490.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 17.0,
+        "precipitation": 1.7,
+        "windspeed": 4.5,
+        "winddirection": null,
+        "presure": 1031.4,
+        "species": "Armillaria ostoyae",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8966715757,
+          37.9444601001
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a290df58-b4da-48a1-b93c-7591383193d0",
+        "inat_id": 286895226,
+        "timestamp": "2025-06-04T15:04:15-06:00",
+        "date": "2025-06-04",
+        "olc": "85FQM3WC+",
+        "elevation": 1650.0,
+        "tavg": null,
+        "tmin": 9.6,
+        "tmax": 18.3,
+        "precipitation": 1.5,
+        "windspeed": 12.4,
+        "winddirection": null,
+        "presure": 1013.7,
+        "species": "Marasmius oreades",
+        "location": "E Kansas Dr, Denver, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.928695,
+          39.6955133333
+        ]
+      }
+    }
+  ]
+}

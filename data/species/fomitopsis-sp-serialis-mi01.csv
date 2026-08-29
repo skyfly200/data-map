@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+61e70192-bf39-42ef-a452-0696c13031c8,242804592,2024-09-18 11:39:45-06:00,2024-09-18,-105.7514148082,39.4142735992,85FPC67X+,3063.0,,-2.7,9.0,0.0,18.8,,1013.2,Fomitopsis sp. 'serialis-MI01',"Park County, US-CO, US",2

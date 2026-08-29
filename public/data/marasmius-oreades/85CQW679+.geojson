@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "467a4828-4013-41fb-86a5-fc75de9b587b",
+        "inat_id": 307864799,
+        "timestamp": "2025-06-02T15:24:58-06:00",
+        "date": "2025-06-02",
+        "olc": "85CQW679+",
+        "elevation": 2012.0,
+        "tavg": null,
+        "tmin": 9.1,
+        "tmax": 25.9,
+        "precipitation": 4.6,
+        "windspeed": 14.1,
+        "winddirection": null,
+        "presure": 1006.7,
+        "species": "Marasmius oreades",
+        "location": "Trinity Cir, Colorado Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.7808383333,
+          38.914045
+        ]
+      }
+    }
+  ]
+}

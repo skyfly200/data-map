@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1ba14ed0-6369-4b34-ab16-f944e5a42c51",
+        "inat_id": 241045018,
+        "timestamp": "2024-09-10T14:14:56-06:00",
+        "date": "2024-09-10",
+        "olc": "859P8XXG+",
+        "elevation": 3435.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 16.0,
+        "precipitation": 1.9,
+        "windspeed": 11.6,
+        "winddirection": null,
+        "presure": 1034.9,
+        "species": "Hypomyces lactifluorum",
+        "location": "Pike and San Isabel National Forests, Aguilar, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0245583333,
+          37.34872
+        ]
+      }
+    }
+  ]
+}

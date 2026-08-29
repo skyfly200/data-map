@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "45d46da2-56d3-46a2-bd60-1ddf2d1fb60d",
+        "inat_id": 269388506,
+        "timestamp": "2024-08-13T10:52:31-06:00",
+        "date": "2024-08-13",
+        "olc": "859MF6G7+",
+        "elevation": 3204.0,
+        "tavg": null,
+        "tmin": 5.0,
+        "tmax": 12.0,
+        "precipitation": 10.2,
+        "windspeed": 17.8,
+        "winddirection": null,
+        "presure": 1037.2,
+        "species": "Armillaria solidipes",
+        "location": "Rio Grande National Forest, Creede, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.7856969279,
+          37.4751323844
+        ]
+      }
+    }
+  ]
+}

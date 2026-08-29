@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6b00f90e-12bb-43fc-a677-2f2c2700c8ae",
+        "inat_id": 232990988,
+        "timestamp": "2024-07-31T13:53:03-06:00",
+        "date": "2024-07-31",
+        "olc": "85CJ5J28+",
+        "elevation": 3149.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Albatrellus ovinus",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.3833305,
+          38.1503642
+        ]
+      }
+    }
+  ]
+}

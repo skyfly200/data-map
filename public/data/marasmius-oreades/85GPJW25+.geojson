@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "80d78142-3984-4514-8b3b-3ca0fa02f6e4",
+        "inat_id": 280045790,
+        "timestamp": "2025-05-10T14:14:38-06:00",
+        "date": "2025-05-10",
+        "olc": "85GPJW25+",
+        "elevation": 1519.0,
+        "tavg": null,
+        "tmin": 7.8,
+        "tmax": 26.1,
+        "precipitation": 0.0,
+        "windspeed": 8.6,
+        "winddirection": null,
+        "presure": 1021.0,
+        "species": "Marasmius oreades",
+        "location": "JW26+WG McMurry Natural Area, Fort Collins, CO 80524, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0902192295,
+          40.6022532635
+        ]
+      }
+    }
+  ]
+}

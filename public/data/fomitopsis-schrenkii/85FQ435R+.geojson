@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d7512070-6f00-4c41-ba34-be11d2b079d5",
+        "inat_id": 27127153,
+        "timestamp": "2019-06-16T12:55:36-06:00",
+        "date": "2019-06-16",
+        "olc": "85FQ435R+",
+        "elevation": 2207.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 23.4,
+        "precipitation": null,
+        "windspeed": 14.4,
+        "winddirection": null,
+        "presure": 1013.8,
+        "species": "Fomitopsis schrenkii",
+        "location": "794 3rd St, Palmer Lake, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9085781828,
+          39.1095731018
+        ]
+      }
+    }
+  ]
+}

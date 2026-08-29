@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "485dc8ba-5fe5-475a-9ae8-4bc9f510274d",
+        "inat_id": 301285468,
+        "timestamp": "2025-07-18T11:15:56-06:00",
+        "date": "2025-07-18",
+        "olc": "85MRQJ83+",
+        "elevation": 1332.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 24.4,
+        "precipitation": 0.0,
+        "windspeed": 13.3,
+        "winddirection": null,
+        "presure": 1013.2,
+        "species": "Laetiporus cincinnatus",
+        "location": "Crazy Horse, SD 57730, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.3963784,
+          43.7661883
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6628278f-d383-42f6-a15f-ba0c3380829a",
+        "inat_id": 308549513,
+        "timestamp": "2025-08-23T10:42:34-06:00",
+        "date": "2025-08-23",
+        "olc": "85MRVMC2+",
+        "elevation": 1183.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 18.9,
+        "precipitation": null,
+        "windspeed": 6.8,
+        "winddirection": null,
+        "presure": 1024.5,
+        "species": "Fomitopsis betulina",
+        "location": "Pennington County, US-SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.3478750288,
+          43.8719704379
+        ]
+      }
+    }
+  ]
+}

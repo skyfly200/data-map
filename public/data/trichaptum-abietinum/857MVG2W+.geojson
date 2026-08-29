@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "74ebc8b3-9306-46a4-b7a9-eeac5c6eb2ad",
+        "inat_id": 320053592,
+        "timestamp": "2025-10-10T12:40:58-06:00",
+        "date": "2025-10-10",
+        "olc": "857MVG2W+",
+        "elevation": 2681.0,
+        "tavg": null,
+        "tmin": 12.3,
+        "tmax": 21.0,
+        "precipitation": 0.1,
+        "windspeed": 5.6,
+        "winddirection": null,
+        "presure": null,
+        "species": "Trichaptum abietinum",
+        "location": "Valles Caldera National Preserve, Sandoval County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.4548380001,
+          35.8506062655
+        ]
+      }
+    }
+  ]
+}

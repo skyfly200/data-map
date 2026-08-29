@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "14d2d201-e6c3-45c6-bd91-1ffac023371c",
+        "inat_id": 132884293,
+        "timestamp": "2022-08-23T16:43:57-06:00",
+        "date": "2022-08-23",
+        "olc": "857MRHWH+",
+        "elevation": 2734.0,
+        "tavg": null,
+        "tmin": 13.1,
+        "tmax": 21.7,
+        "precipitation": 9.8,
+        "windspeed": 9.3,
+        "winddirection": null,
+        "presure": 1026.2,
+        "species": "Hygrophorus siccipes",
+        "location": "Bandelier National Monument, Pena Blanca, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.420425,
+          35.84595
+        ]
+      }
+    }
+  ]
+}

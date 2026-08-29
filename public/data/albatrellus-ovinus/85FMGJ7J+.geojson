@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "38b9672d-197b-409e-8522-159a3b062f8e",
+        "inat_id": 232404290,
+        "timestamp": "2024-07-28T19:17:11-06:00",
+        "date": "2024-07-28",
+        "olc": "85FMGJ7J+",
+        "elevation": 2654.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 18.0,
+        "precipitation": 0.0,
+        "windspeed": 23.1,
+        "winddirection": null,
+        "presure": 1035.0,
+        "species": "Albatrellus ovinus",
+        "location": "White River National Forest, Red Cliff, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3694833333,
+          39.5129966667
+        ]
+      }
+    }
+  ]
+}

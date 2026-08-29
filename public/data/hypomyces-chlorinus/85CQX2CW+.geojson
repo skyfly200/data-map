@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "516363f7-ee19-4f7e-8866-b965ec9971eb",
+        "inat_id": 176228307,
+        "timestamp": "2023-08-01T18:13:52-06:00",
+        "date": "2023-08-01",
+        "olc": "85CQX2CW+",
+        "elevation": 2662.0,
+        "tavg": null,
+        "tmin": 14.8,
+        "tmax": 25.8,
+        "precipitation": null,
+        "windspeed": 10.5,
+        "winddirection": null,
+        "presure": 1016.7,
+        "species": "Hypomyces chlorinus",
+        "location": "Colorado, US",
+        "num_identification_agreements": 0
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9537464041,
+          38.9712837463
+        ]
+      }
+    }
+  ]
+}

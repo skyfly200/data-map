@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9bcf46b4-2a99-4348-9c14-ed08ae207014",
+        "inat_id": 168915210,
+        "timestamp": "2023-06-17T19:20:14-06:00",
+        "date": "2023-06-17",
+        "olc": "85FQJ5WM+",
+        "elevation": 1752.0,
+        "tavg": null,
+        "tmin": 8.4,
+        "tmax": 20.4,
+        "precipitation": null,
+        "windspeed": 7.7,
+        "winddirection": null,
+        "presure": 1013.5,
+        "species": "Marasmius oreades",
+        "location": "Meadow Hills, Aurora, CO 80014, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.815708,
+          39.6456069722
+        ]
+      }
+    }
+  ]
+}

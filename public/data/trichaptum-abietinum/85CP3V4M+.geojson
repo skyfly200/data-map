@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ef55d3a7-e2ee-4057-ad94-42b836f01109",
+        "inat_id": 180385953,
+        "timestamp": "2023-08-26T16:35:49-06:00",
+        "date": "2023-08-26",
+        "olc": "85CP3V4M+",
+        "elevation": 2822.0,
+        "tavg": null,
+        "tmin": 16.8,
+        "tmax": 24.7,
+        "precipitation": 0.8,
+        "windspeed": 8.5,
+        "winddirection": null,
+        "presure": 1021.8,
+        "species": "Trichaptum abietinum",
+        "location": "Rye, CO 81069, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1156817749,
+          38.0559502264
+        ]
+      }
+    }
+  ]
+}

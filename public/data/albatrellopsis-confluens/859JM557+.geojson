@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "08eb9583-9d7e-4d2e-a091-e89f0127abfd",
+        "inat_id": 90935351,
+        "timestamp": "2021-08-12T14:12:01+00:00",
+        "date": "2021-08-12",
+        "olc": "859JM557+",
+        "elevation": 3279.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 6.7,
+        "winddirection": null,
+        "presure": 1031.3,
+        "species": "Albatrellopsis confluens",
+        "location": "San Juan County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8359055556,
+          37.6595638889
+        ]
+      }
+    }
+  ]
+}

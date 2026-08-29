@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "65933b15-15a6-4122-a99b-c31c59b19151",
+        "inat_id": 323293648,
+        "timestamp": "2025-10-24T12:19:00-06:00",
+        "date": "2025-10-24",
+        "olc": "857PM3HH+",
+        "elevation": 2171.0,
+        "tavg": null,
+        "tmin": 3.0,
+        "tmax": 16.0,
+        "precipitation": 0.4,
+        "windspeed": 13.7,
+        "winddirection": null,
+        "presure": 1019.2,
+        "species": "Armillaria gallica",
+        "location": "Santa Fe, New Mexico, United States",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.92084444,
+          35.67965278
+        ]
+      }
+    }
+  ]
+}

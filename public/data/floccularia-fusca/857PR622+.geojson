@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "12a8ea72-ddf8-4744-a855-98f55b372491",
+        "inat_id": 241024775,
+        "timestamp": "2024-09-03T11:59:00-06:00",
+        "date": "2024-09-03",
+        "olc": "857PR622+",
+        "elevation": 3269.0,
+        "tavg": null,
+        "tmin": 9.4,
+        "tmax": 29.4,
+        "precipitation": 0.0,
+        "windspeed": 12.3,
+        "winddirection": null,
+        "presure": 1017.3,
+        "species": "Floccularia fusca",
+        "location": "Santa Fe County, NM, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7989055556,
+          35.8001888889
+        ]
+      }
+    }
+  ]
+}

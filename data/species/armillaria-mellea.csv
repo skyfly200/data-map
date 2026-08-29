@@ -1,3 +1,7 @@
 uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 c17230c1-09a0-4a96-8998-7ac072a4b2bd,198115079,2023-10-16 11:23:15-07:00,2023-10-16,-121.9660333333,45.3349,84QW82MM+,402.0,,13.9,21.7,,11.9,,1015.1,Armillaria mellea,"Mt. Hood Oregon Resort, Welches, OR, US",1
 b3c8b420-0cbe-4188-8378-5c633ce9cd46,192616924,2023-10-21 16:10:00-07:00,2023-10-21,-122.2918089365,45.494334393,84QVFPV5+,56.0,,12.8,16.7,0.3,2.0,,1011.7,Armillaria mellea,"Multnomah County, OR, USA",1
+80c976d5-d18b-42cb-9990-eaf2503f0bd5,390673399,2026-08-12 12:05:46-06:00,2026-08-12,-105.7853195997,39.8100305,85FPR667+,3391.0,,5.0,13.0,7.9,8.2,,,Armillaria mellea,"Winter Park, CO 80482, USA",1
+aca7c460-16cb-4cdd-a19b-f6abe0b67baf,237988704,2024-08-24 13:44:25-06:00,2024-08-24,-108.1871728693,37.4644340884,859HFR77+,2692.0,,16.0,25.0,25.0,15.0,,1024.9,Armillaria mellea,"Colorado, US",1
+3b995dea-5dfc-499c-8c2d-d30240d35b09,181263163,2023-09-01 15:35:25-06:00,2023-09-01,-107.9880218506,39.0460205078,85FJ22W6+,3231.0,,18.4,34.2,0.0,9.4,,1019.2,Armillaria mellea,"Delta County, US-CO, US",1
+2c350e4e-de00-486d-b6fa-a0548fab275c,134249755,2022-09-08 19:35:16-06:00,2022-09-08,-105.5891686791,39.9493936023,85FPWCX6+,2757.0,,3.6,16.6,2.9,7.2,,1017.6,Armillaria mellea,"Hessie Rd, Nederland, CO, US",1

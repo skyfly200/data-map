@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4b11af93-0893-44fb-97d3-17b0236c0c17",
+        "inat_id": 309507695,
+        "timestamp": "2025-08-25T18:21:21-06:00",
+        "date": "2025-08-25",
+        "olc": "85FJ493M+",
+        "elevation": 2932.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 16.0,
+        "precipitation": 9.5,
+        "windspeed": 7.9,
+        "winddirection": null,
+        "presure": 1020.3,
+        "species": "Collybia tuberosa",
+        "location": "Paonia, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6162866667,
+          39.1028555
+        ]
+      }
+    }
+  ]
+}

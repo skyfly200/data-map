@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c46d205a-2bc4-4ef2-b90e-361fa9ca7533",
+        "inat_id": 91174638,
+        "timestamp": "2021-08-14T09:19:45-06:00",
+        "date": "2021-08-14",
+        "olc": "85FPQ6VF+",
+        "elevation": 3447.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 28.3,
+        "precipitation": 0.0,
+        "windspeed": 7.2,
+        "winddirection": null,
+        "presure": 1033.2,
+        "species": "Albatrellopsis confluens",
+        "location": "Parshall, CO 80468, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.77554358,
+          39.79487674
+        ]
+      }
+    }
+  ]
+}

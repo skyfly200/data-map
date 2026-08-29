@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2580c8a8-e0ec-4245-b2c0-85bb37340163",
+        "inat_id": 132310788,
+        "timestamp": "2022-08-18",
+        "date": "2022-08-18",
+        "olc": "859JR36V+",
+        "elevation": 3123.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 23.0,
+        "precipitation": 0.6,
+        "windspeed": 6.6,
+        "winddirection": null,
+        "presure": 1032.2,
+        "species": "Cantharellus roseocanus",
+        "location": "Lizard Head Pass",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9061782733,
+          37.8111406816
+        ]
+      }
+    }
+  ]
+}

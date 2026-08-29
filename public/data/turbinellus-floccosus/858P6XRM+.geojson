@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "55873f7f-1755-478f-be60-a87ee879c787",
+        "inat_id": 9415549,
+        "timestamp": "2017-08-04T11:56:06-07:00",
+        "date": "2017-08-04",
+        "olc": "858P6XRM+",
+        "elevation": 2371.0,
+        "tavg": null,
+        "tmin": 4.2,
+        "tmax": 21.9,
+        "precipitation": null,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": null,
+        "species": "Turbinellus floccosus",
+        "location": "87734, Ocate, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0165333333,
+          36.24208
+        ]
+      }
+    }
+  ]
+}

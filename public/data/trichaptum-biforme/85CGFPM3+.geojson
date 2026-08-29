@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e5b4d853-be8f-4812-b518-1965943aae5b",
+        "inat_id": 161753447,
+        "timestamp": "2023-05-14T15:04:07-06:00",
+        "date": "2023-05-14",
+        "olc": "85CGFPM3+",
+        "elevation": 2626.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Trichaptum biforme",
+        "location": "Manti-La Sal National Forest, Moab, UT, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.2965083333,
+          38.4829533333
+        ]
+      }
+    }
+  ]
+}

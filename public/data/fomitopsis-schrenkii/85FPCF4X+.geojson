@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ddf8e4c9-a0dc-49ba-8218-82b2fa2cf9cd",
+        "inat_id": 312300112,
+        "timestamp": "2025-09-07T11:26:27-06:00",
+        "date": "2025-09-07",
+        "olc": "85FPCF4X+",
+        "elevation": 2440.0,
+        "tavg": null,
+        "tmin": 1.8,
+        "tmax": 15.6,
+        "precipitation": 0.8,
+        "windspeed": 11.2,
+        "winddirection": null,
+        "presure": 1020.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Bailey, CO 80421, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.50189,
+          39.4060433
+        ]
+      }
+    }
+  ]
+}

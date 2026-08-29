@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "37975a91-7d89-4af2-b11e-057e5ea3b64e",
+        "inat_id": 16175570,
+        "timestamp": "2018-08-25T17:06:09-06:00",
+        "date": "2018-08-25",
+        "olc": "858PPJ23+",
+        "elevation": 2644.0,
+        "tavg": null,
+        "tmin": 5.0,
+        "tmax": 21.5,
+        "precipitation": null,
+        "windspeed": 4.8,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "Carson National Forest, Red River, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3959283333,
+          36.702155
+        ]
+      }
+    }
+  ]
+}

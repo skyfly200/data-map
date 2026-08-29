@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "44a204ab-9d76-409f-832c-0dc9a102a9ac",
+        "inat_id": 244839499,
+        "timestamp": "2024-09-29T13:56:37-06:00",
+        "date": "2024-09-29",
+        "olc": "85CJVRJF+",
+        "elevation": 2686.0,
+        "tavg": null,
+        "tmin": 3.9,
+        "tmax": 25.6,
+        "precipitation": 0.0,
+        "windspeed": 4.4,
+        "winddirection": null,
+        "presure": 1021.5,
+        "species": "Armillaria solidipes",
+        "location": "Somerset, CO 81434, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.176685,
+          38.8807139722
+        ]
+      }
+    }
+  ]
+}

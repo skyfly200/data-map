@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a92da40b-253a-4013-b2e1-794d227ecefc",
+        "inat_id": 135751796,
+        "timestamp": "2022-09-19T15:23:58-06:00",
+        "date": "2022-09-19",
+        "olc": "85GP3CHH+",
+        "elevation": 3163.0,
+        "tavg": null,
+        "tmin": 1.2,
+        "tmax": 24.2,
+        "precipitation": 0.0,
+        "windspeed": 7.4,
+        "winddirection": null,
+        "presure": 1026.3,
+        "species": "Albatrellus ovinus",
+        "location": "Brainard Lake Rd, Ward, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5707116667,
+          40.0777278333
+        ]
+      }
+    }
+  ]
+}

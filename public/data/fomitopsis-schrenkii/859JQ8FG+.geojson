@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f6caef07-205d-4c32-9b15-2f1658948b3f",
+        "inat_id": 298745497,
+        "timestamp": "2025-07-17T12:33:56-06:00",
+        "date": "2025-07-17",
+        "olc": "859JQ8FG+",
+        "elevation": 3187.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 20.0,
+        "precipitation": 9.3,
+        "windspeed": 5.1,
+        "winddirection": null,
+        "presure": 1030.1,
+        "species": "Fomitopsis schrenkii",
+        "location": "San Juan County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6738333333,
+          37.7726666667
+        ]
+      }
+    }
+  ]
+}

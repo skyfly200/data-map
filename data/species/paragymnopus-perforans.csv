@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8bd9f380-454f-4d29-b5b5-d5c7150ef301,391654672,2026-08-15 08:02:10-06:00,2026-08-15,-107.8272833333,37.8541055556,859JV53F+,3028.0,,8.0,20.0,1.4,3.7,,,Paragymnopus perforans,"Ophir, CO 81426, USA",1

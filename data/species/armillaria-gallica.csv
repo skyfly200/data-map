@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+65933b15-15a6-4122-a99b-c31c59b19151,323293648,2025-10-24 12:19:00-06:00,2025-10-24,-105.92084444,35.67965278,857PM3HH+,2171.0,,3.0,16.0,0.4,13.7,,1019.2,Armillaria gallica,"Santa Fe, New Mexico, United States",1

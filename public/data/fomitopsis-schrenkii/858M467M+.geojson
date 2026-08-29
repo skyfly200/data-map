@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b1033b2a-d8b9-403e-b68c-7e2a011adb08",
+        "inat_id": 385939827,
+        "timestamp": "2026-07-26T13:48:22-06:00",
+        "date": "2026-07-26",
+        "olc": "858M467M+",
+        "elevation": 2825.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Rio Arriba County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.7656250934,
+          36.114745966
+        ]
+      }
+    }
+  ]
+}

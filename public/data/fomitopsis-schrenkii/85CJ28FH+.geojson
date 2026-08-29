@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a7ac1408-db52-4316-8b0b-14b6e38b8d00",
+        "inat_id": 50036182,
+        "timestamp": "2020-06-17T10:26:21-06:00",
+        "date": "2020-06-17",
+        "olc": "85CJ28FH+",
+        "elevation": 2383.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 22.0,
+        "precipitation": null,
+        "windspeed": 17.4,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Ouray",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6714487746,
+          38.0228747075
+        ]
+      }
+    }
+  ]
+}

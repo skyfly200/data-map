@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9cdd3f7e-bf2d-4ca0-9df1-45b2932abd58",
+        "inat_id": 284925255,
+        "timestamp": "2025-05-28T16:00:09-06:00",
+        "date": "2025-05-28",
+        "olc": "85GPHRJF+",
+        "elevation": 1655.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 18.9,
+        "precipitation": 5.5,
+        "windspeed": 9.9,
+        "winddirection": null,
+        "presure": 1017.3,
+        "species": "Marasmius oreades",
+        "location": "Larimer County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.17526226,
+          40.58130058
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0e6ab8a7-0024-4577-ad76-d10f964e79b9",
+        "inat_id": 309617163,
+        "timestamp": "2025-08-27T18:23:31-06:00",
+        "date": "2025-08-27",
+        "olc": "85GP5WG7+",
+        "elevation": 1528.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 27.0,
+        "precipitation": 6.2,
+        "windspeed": 8.4,
+        "winddirection": null,
+        "presure": 1022.4,
+        "species": "Marasmius oreades",
+        "location": "Clark Centennial Community Park, Longmont, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0866916667,
+          40.1761583333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "50911af7-0f1b-4142-80ee-f1be0af4dd4f",
+        "inat_id": 307396243,
+        "timestamp": "2025-08-18T17:53:34-06:00",
+        "date": "2025-08-18",
+        "olc": "85GP5WG7+",
+        "elevation": 1528.0,
+        "tavg": null,
+        "tmin": 16.4,
+        "tmax": 34.5,
+        "precipitation": 0.0,
+        "windspeed": 6.3,
+        "winddirection": null,
+        "presure": 1023.0,
+        "species": "Marasmius oreades",
+        "location": "Longmont, Colorado, EE. UU.",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.08600185,
+          40.17659197
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d9969764-12ad-4d3e-97d0-928f38b13d05",
+        "inat_id": 288603811,
+        "timestamp": "2025-06-10T17:34:40-06:00",
+        "date": "2025-06-10",
+        "olc": "85GP5WG7+",
+        "elevation": 1527.0,
+        "tavg": null,
+        "tmin": 9.7,
+        "tmax": 34.0,
+        "precipitation": 0.1,
+        "windspeed": 5.8,
+        "winddirection": null,
+        "presure": 1018.3,
+        "species": "Marasmius oreades",
+        "location": "Longmont, Colorado, EE. UU.",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.08548055,
+          40.17714058
+        ]
+      }
+    }
+  ]
+}

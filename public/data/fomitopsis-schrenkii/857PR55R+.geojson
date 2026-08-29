@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3bbfbfea-3a2c-4e52-a277-e8120ff28288",
+        "inat_id": 307171352,
+        "timestamp": "2025-08-17T14:11:52-06:00",
+        "date": "2025-08-17",
+        "olc": "857PR55R+",
+        "elevation": 3117.0,
+        "tavg": null,
+        "tmin": 13.3,
+        "tmax": 31.1,
+        "precipitation": 0.0,
+        "windspeed": 12.2,
+        "winddirection": null,
+        "presure": 1012.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Tererro, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8085903217,
+          35.8086519076
+        ]
+      }
+    }
+  ]
+}

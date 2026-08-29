@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1fd57ad8-e76e-4845-9736-74d00faf7279",
+        "inat_id": 312047355,
+        "timestamp": "2025-09-06T10:43:04-06:00",
+        "date": "2025-09-06",
+        "olc": "85FP5XQ3+",
+        "elevation": 2723.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 22.0,
+        "precipitation": 0.0,
+        "windspeed": 13.7,
+        "winddirection": null,
+        "presure": 1023.9,
+        "species": "Hygrophorus sp. 'chrysodon-CA01'",
+        "location": "Douglas County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.04634936,
+          39.18980897
+        ]
+      }
+    }
+  ]
+}

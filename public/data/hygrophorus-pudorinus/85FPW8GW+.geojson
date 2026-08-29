@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1937c02c-07ec-4d05-880c-cd7fa8e0c5dd",
+        "inat_id": 136527803,
+        "timestamp": "2022-09-25T16:27:12-06:00",
+        "date": "2022-09-25",
+        "olc": "85FPW8GW+",
+        "elevation": 3270.0,
+        "tavg": null,
+        "tmin": -2.7,
+        "tmax": 10.6,
+        "precipitation": 0.0,
+        "windspeed": 6.3,
+        "winddirection": null,
+        "presure": 1026.1,
+        "species": "Hygrophorus pudorinus",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6535931648,
+          39.9270351596
+        ]
+      }
+    }
+  ]
+}

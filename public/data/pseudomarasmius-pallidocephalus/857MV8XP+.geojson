@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "bcde74fe-eff9-44d5-894f-c2798eea915b",
+        "inat_id": 235109364,
+        "timestamp": "2024-08-10T09:51:35-06:00",
+        "date": "2024-08-10",
+        "olc": "857MV8XP+",
+        "elevation": 2671.0,
+        "tavg": null,
+        "tmin": 15.5,
+        "tmax": 22.0,
+        "precipitation": null,
+        "windspeed": 6.4,
+        "winddirection": null,
+        "presure": 1029.9,
+        "species": "Pseudomarasmius pallidocephalus",
+        "location": "Santa Fe National Forest, Jemez Springs, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.6640083333,
+          35.898475
+        ]
+      }
+    }
+  ]
+}

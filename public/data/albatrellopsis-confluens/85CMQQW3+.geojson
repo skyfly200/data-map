@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0352c93c-7c62-4179-8f1f-f85313e6fc36",
+        "inat_id": 235574412,
+        "timestamp": "2024-08-12T10:19:07-06:00",
+        "date": "2024-08-12",
+        "olc": "85CMQQW3+",
+        "elevation": 2761.0,
+        "tavg": null,
+        "tmin": 5.9,
+        "tmax": 17.9,
+        "precipitation": 26.4,
+        "windspeed": 8.9,
+        "winddirection": null,
+        "presure": 1020.4,
+        "species": "Albatrellopsis confluens",
+        "location": "Pike and San Isabel National Forests, Nathrop, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.2454371428,
+          38.7968279292
+        ]
+      }
+    }
+  ]
+}

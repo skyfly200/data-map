@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "69a0bf3f-84a2-4b7d-bedf-f979575be4f0",
+        "inat_id": 359855075,
+        "timestamp": "2024-08-11T09:43:47-06:00",
+        "date": "2024-08-11",
+        "olc": "85FPJ3XF+",
+        "elevation": 3369.0,
+        "tavg": null,
+        "tmin": 1.9,
+        "tmax": 12.1,
+        "precipitation": 7.3,
+        "windspeed": 15.7,
+        "winddirection": null,
+        "presure": 1022.8,
+        "species": "Hygrophorus purpurascens",
+        "location": "White River National Forest, Keystone, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.9251633333,
+          39.6496916667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "460b8ca9-b18f-4756-bf2b-76ec5e9fed5b",
+        "inat_id": 244162935,
+        "timestamp": "2024-09-26T11:05:35-06:00",
+        "date": "2024-09-26",
+        "olc": "85FPM5JV+",
+        "elevation": 3133.0,
+        "tavg": null,
+        "tmin": 3.8,
+        "tmax": 13.7,
+        "precipitation": 0.0,
+        "windspeed": 11.3,
+        "winddirection": null,
+        "presure": 1019.4,
+        "species": "Hygrophorus sp. 'chrysodon-CA01'",
+        "location": "Grizzly Gulch, Silver Plume, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8067159394,
+          39.6803316165
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2a86c9e3-13fd-46ee-b3f3-af5a97b840f9",
+        "inat_id": 269115098,
+        "timestamp": "2025-04-02T09:34:20-06:00",
+        "date": "2025-04-02",
+        "olc": "859J8VXG+",
+        "elevation": 2473.0,
+        "tavg": null,
+        "tmin": -12.0,
+        "tmax": 5.0,
+        "precipitation": 0.3,
+        "windspeed": 9.2,
+        "winddirection": null,
+        "presure": 1006.0,
+        "species": "Fomitopsis schrenkii",
+        "location": "San Juan National Forest - Headquarters, Pagosa Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1232373836,
+          37.3481143018
+        ]
+      }
+    }
+  ]
+}

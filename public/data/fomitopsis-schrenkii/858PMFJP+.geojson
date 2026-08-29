@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f5d30fcc-015e-4b76-a297-99aa12925196",
+        "inat_id": 221922097,
+        "timestamp": "2024-06-08T10:29:00-06:00",
+        "date": "2024-06-08",
+        "olc": "858PMFJP+",
+        "elevation": 2404.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 31.7,
+        "precipitation": 0.0,
+        "windspeed": 14.0,
+        "winddirection": null,
+        "presure": 1013.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Columbine Campground, 184 NM-38, Red River, NM 87558, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5144977,
+          36.6805799
+        ]
+      }
+    }
+  ]
+}

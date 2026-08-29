@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a9b662b6-c2f4-4f31-b6c6-4d50617814af",
+        "inat_id": 131622400,
+        "timestamp": "2022-08-20T09:42:44-06:00",
+        "date": "2022-08-20",
+        "olc": "85GP89M9+",
+        "elevation": 2756.0,
+        "tavg": null,
+        "tmin": 6.6,
+        "tmax": 22.2,
+        "precipitation": 6.7,
+        "windspeed": 5.3,
+        "winddirection": null,
+        "presure": 1027.6,
+        "species": "Fomitopsis schrenkii",
+        "location": "Estes Park, CO 80517, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6314138889,
+          40.3345166667
+        ]
+      }
+    }
+  ]
+}

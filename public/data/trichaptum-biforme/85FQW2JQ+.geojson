@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "be31f1c9-6289-445d-8449-2a1621f30378",
+        "inat_id": 187375296,
+        "timestamp": "2023-10-13T09:46:09-06:00",
+        "date": "2023-10-13",
+        "olc": "85FQW2JQ+",
+        "elevation": 1607.0,
+        "tavg": null,
+        "tmin": 0.5,
+        "tmax": 13.2,
+        "precipitation": 0.4,
+        "windspeed": 10.2,
+        "winddirection": null,
+        "presure": 1021.1,
+        "species": "Trichaptum biforme",
+        "location": "Signal Ditch Trail, Thornton, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9610042091,
+          39.9319695648
+        ]
+      }
+    }
+  ]
+}

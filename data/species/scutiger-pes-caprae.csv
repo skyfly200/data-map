@@ -1,2 +1,4 @@
 uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 ece56d92-1985-4dd0-87f1-e3c205c955c6,204034447,2023-10-01 15:04:45-07:00,2023-10-01,-121.8675852129,44.6242050423,84PWJ4FJ+,1656.0,,,,,,,,Scutiger pes-caprae,"Willamette National Forest, Idanha, OR, US",1
+00e83cb9-f60a-4b11-8265-5640a4fea13c,181798561,2023-09-03 12:06:37-06:00,2023-09-03,-105.5905253033,40.0799286394,85GP3CH5+,3309.0,,6.5,21.2,8.6,4.6,,1027.5,Scutiger pes-caprae,"Colorado, US",1
+871f384e-815c-4532-857e-08e640917916,60046224,2010-08-15,2010-08-15,-105.7635,39.89235,85FPV6RP+,2762.0,,17.0,30.0,,7.6,,,Scutiger pes-caprae,"YMCA Snow Mountain Ranch, Winter Park, Colorado, USA",2

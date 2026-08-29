@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "af743730-6d48-4c2f-bf7e-446114000096",
+        "inat_id": 243615270,
+        "timestamp": "2024-09-22T15:57:19-06:00",
+        "date": "2024-09-22",
+        "olc": "857PR63H+",
+        "elevation": 3597.0,
+        "tavg": null,
+        "tmin": 8.9,
+        "tmax": 20.6,
+        "precipitation": 0.0,
+        "windspeed": 12.1,
+        "winddirection": null,
+        "presure": 1014.7,
+        "species": "Albatrellopsis confluens",
+        "location": "Santa Fe National Forest, Tererro, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7708083802,
+          35.8028671258
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2fd0997c-d7b7-4ce3-b6bd-2843784ffd02",
+        "inat_id": 88684858,
+        "timestamp": "2021-07-25T11:24:59-06:00",
+        "date": "2021-07-25",
+        "olc": "858MPQ48+",
+        "elevation": 2973.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Turbinellus floccosus",
+        "location": "Hopewell Lake",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.2341957912,
+          36.7062854931
+        ]
+      }
+    }
+  ]
+}

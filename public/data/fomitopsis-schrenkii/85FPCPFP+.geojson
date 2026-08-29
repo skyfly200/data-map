@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "74a41ce7-2dec-4115-9a9a-a8f2c302d882",
+        "inat_id": 174353543,
+        "timestamp": "2023-07-21T18:00:07-06:00",
+        "date": "2023-07-21",
+        "olc": "85FPCPFP+",
+        "elevation": 2335.0,
+        "tavg": null,
+        "tmin": 12.8,
+        "tmax": 27.2,
+        "precipitation": null,
+        "windspeed": 8.8,
+        "winddirection": null,
+        "presure": 1021.7,
+        "species": "Fomitopsis schrenkii",
+        "location": "Pine Grove, Conifer, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.264145,
+          39.4231
+        ]
+      }
+    }
+  ]
+}

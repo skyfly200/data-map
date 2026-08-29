@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "490e3d55-4d10-4134-82e7-b7665d89556d",
+        "inat_id": 235375577,
+        "timestamp": "2024-08-11T11:51:35-06:00",
+        "date": "2024-08-11",
+        "olc": "857PQ5CV+",
+        "elevation": 3025.0,
+        "tavg": null,
+        "tmin": 18.9,
+        "tmax": 31.1,
+        "precipitation": null,
+        "windspeed": 15.6,
+        "winddirection": null,
+        "presure": 1014.4,
+        "species": "Armillaria ostoyae",
+        "location": "Santa Fe County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8060672622,
+          35.7709735034
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a867f066-45f4-4f72-b5ff-90aa3bfdd883",
+        "inat_id": 7881499,
+        "timestamp": "2017-09-11T10:29:00-06:00",
+        "date": "2017-09-11",
+        "olc": "85FQ65MG+",
+        "elevation": 2153.0,
+        "tavg": null,
+        "tmin": 12.1,
+        "tmax": 27.4,
+        "precipitation": null,
+        "windspeed": 10.1,
+        "winddirection": null,
+        "presure": 1019.5,
+        "species": "Hypomyces lactifluorum",
+        "location": "Douglas County, CO, USA",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8245048523,
+          39.2333168692
+        ]
+      }
+    }
+  ]
+}

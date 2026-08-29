@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c8c42121-ff52-44b0-bae1-cbbd4f82c5c5",
+        "inat_id": 133953013,
+        "timestamp": "2022-08-26",
+        "date": "2022-08-26",
+        "olc": "85FM7HM3+",
+        "elevation": 3068.0,
+        "tavg": null,
+        "tmin": 5.6,
+        "tmax": 13.9,
+        "precipitation": null,
+        "windspeed": 6.5,
+        "winddirection": null,
+        "presure": 1017.6,
+        "species": "Albatrellus ovinus",
+        "location": "Colorado. Lake Co., San Isabel National Forest, West end of Turquoise Lake, Timberline Lake trailhead.",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.4468,
+          39.2848
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e4886879-b655-4471-96ee-10cdebd85bf4",
+        "inat_id": 11436985,
+        "timestamp": "2018-04-25T14:53:28-06:00",
+        "date": "2018-04-25",
+        "olc": "85FQ438G+",
+        "elevation": 2257.0,
+        "tavg": null,
+        "tmin": -6.3,
+        "tmax": 16.6,
+        "precipitation": null,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1025.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Palmer Lake, CO  80133, Palmer Lake, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.923582181,
+          39.116661702
+        ]
+      }
+    }
+  ]
+}

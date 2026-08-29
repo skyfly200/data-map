@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5a09eb8d-b928-42ad-a2ef-2086f122be6a",
+        "inat_id": 238142813,
+        "timestamp": "2024-08-21T13:29:22-06:00",
+        "date": "2024-08-21",
+        "olc": "85FJ396H+",
+        "elevation": 2895.0,
+        "tavg": null,
+        "tmin": 9.2,
+        "tmax": 19.0,
+        "precipitation": 12.2,
+        "windspeed": 11.8,
+        "winddirection": null,
+        "presure": 1019.6,
+        "species": "Floccularia luteovirens",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Paonia, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6222383333,
+          39.0617305
+        ]
+      }
+    }
+  ]
+}

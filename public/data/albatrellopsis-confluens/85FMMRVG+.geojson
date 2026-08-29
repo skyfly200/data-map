@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "dabc2bb2-9930-4464-9524-124a8ee44135",
+        "inat_id": 237946373,
+        "timestamp": "2024-08-24T20:00:52-06:00",
+        "date": "2024-08-24",
+        "olc": "85FMMRVG+",
+        "elevation": 3016.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 15.0,
+        "precipitation": 2.4,
+        "windspeed": 16.7,
+        "winddirection": null,
+        "presure": 1038.2,
+        "species": "Albatrellopsis confluens",
+        "location": "White River National Forest, Silverthorne, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.1743831619,
+          39.6943450892
+        ]
+      }
+    }
+  ]
+}

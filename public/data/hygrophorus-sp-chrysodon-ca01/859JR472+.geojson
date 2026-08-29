@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6a4396e5-ddd8-42c2-924c-15cade8b87da",
+        "inat_id": 236175059,
+        "timestamp": "2024-08-16T14:39:43-06:00",
+        "date": "2024-08-16",
+        "olc": "859JR472+",
+        "elevation": 3083.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 25.0,
+        "precipitation": 0.0,
+        "windspeed": 11.9,
+        "winddirection": null,
+        "presure": 1033.2,
+        "species": "Hygrophorus sp. 'chrysodon-CA01'",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.89965,
+          37.8146033333
+        ]
+      }
+    }
+  ]
+}

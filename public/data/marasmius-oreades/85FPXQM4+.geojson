@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ccf22883-3400-402e-b991-b83402f29dad",
+        "inat_id": 298342267,
+        "timestamp": "2025-07-15T12:24:25-06:00",
+        "date": "2025-07-15",
+        "olc": "85FPXQM4+",
+        "elevation": 1651.0,
+        "tavg": null,
+        "tmin": 18.0,
+        "tmax": 34.0,
+        "precipitation": 0.0,
+        "windspeed": 10.7,
+        "winddirection": null,
+        "presure": 1016.9,
+        "species": "Marasmius oreades",
+        "location": "S 45th St, Boulder, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.24292,
+          39.9839333333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3b62bb59-f907-4672-857f-105a5d6b630e",
+        "inat_id": 139505791,
+        "timestamp": "2022-10-02T12:44:14-06:00",
+        "date": "2022-10-02",
+        "olc": "85FPXQM4+",
+        "elevation": 1651.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 23.0,
+        "precipitation": 0.8,
+        "windspeed": 3.2,
+        "winddirection": null,
+        "presure": 1021.6,
+        "species": "Marasmius oreades",
+        "location": "S 45th St, Boulder, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2425083333,
+          39.9837333333
+        ]
+      }
+    }
+  ]
+}

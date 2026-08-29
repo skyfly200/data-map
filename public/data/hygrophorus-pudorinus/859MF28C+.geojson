@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e42ec68b-d8ab-41d8-8dce-4db77bb8fa27",
+        "inat_id": 86992499,
+        "timestamp": "2019-01-19",
+        "date": "2019-01-19",
+        "olc": "859MF28C+",
+        "elevation": 3560.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrophorus pudorinus",
+        "location": "Weminuche Wilderness, Colorado, USA",
+        "num_identification_agreements": 5
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.978932,
+          37.466673
+        ]
+      }
+    }
+  ]
+}

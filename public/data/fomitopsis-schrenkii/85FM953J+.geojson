@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d4051d43-ee9a-463d-99ef-005e17424c3b",
+        "inat_id": 367339998,
+        "timestamp": "2026-05-30T07:53:19-06:00",
+        "date": "2026-05-30",
+        "olc": "85FM953J+",
+        "elevation": 2390.0,
+        "tavg": null,
+        "tmin": 2.2,
+        "tmax": 16.7,
+        "precipitation": 1.1,
+        "windspeed": 5.8,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Rocky Fork Trail, Meredith, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.817895,
+          39.3535716667
+        ]
+      }
+    }
+  ]
+}

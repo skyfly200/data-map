@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "31c700b4-7355-4714-913a-efa5093f7c55",
+        "inat_id": 243263066,
+        "timestamp": "2022-08-06T13:32:00-06:00",
+        "date": "2022-08-06",
+        "olc": "85CMX3V4+",
+        "elevation": 3331.0,
+        "tavg": null,
+        "tmin": 12.8,
+        "tmax": 28.3,
+        "precipitation": 0.0,
+        "windspeed": 7.9,
+        "winddirection": null,
+        "presure": 1012.3,
+        "species": "Albatrellopsis confluens",
+        "location": "Gunnison County, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.944304,
+          38.99389
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1f689135-8d02-439c-9125-43947dcc9b2b",
+        "inat_id": 132489491,
+        "timestamp": "2022-08-26T19:14:15-06:00",
+        "date": "2022-08-26",
+        "olc": "85CMV283+",
+        "elevation": 2852.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 18.3,
+        "precipitation": null,
+        "windspeed": 6.3,
+        "winddirection": null,
+        "presure": 1020.7,
+        "species": "Cantharellus roseocanus",
+        "location": "Crested Butte, CO 81224, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.99702162,
+          38.86519383
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "cdee9ed6-4760-452b-8011-eef10e1c2ad7",
+        "inat_id": 132488802,
+        "timestamp": "2022-08-26T19:08:21-06:00",
+        "date": "2022-08-26",
+        "olc": "85CMV283+",
+        "elevation": 2852.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 18.3,
+        "precipitation": null,
+        "windspeed": 6.3,
+        "winddirection": null,
+        "presure": 1020.7,
+        "species": "Cantharellus roseocanus",
+        "location": "Crested Butte, CO 81224, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.99720746,
+          38.86553825
+        ]
+      }
+    }
+  ]
+}

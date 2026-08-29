@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7305a3a7-90d5-42ab-9abd-e2de7bffe913",
+        "inat_id": 294771187,
+        "timestamp": "2025-07-01T15:32:51-06:00",
+        "date": "2025-07-01",
+        "olc": "85GMJ9W8+",
+        "elevation": 3005.0,
+        "tavg": null,
+        "tmin": 9.2,
+        "tmax": 30.2,
+        "precipitation": 0.0,
+        "windspeed": 5.4,
+        "winddirection": null,
+        "presure": 1024.6,
+        "species": "Fomitopsis schrenkii",
+        "location": "Rainbow Lakes Trail, Walden, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.6334,
+          40.6464833333
+        ]
+      }
+    }
+  ]
+}

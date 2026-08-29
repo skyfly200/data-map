@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "dd2f6c5b-81c1-47a7-bf54-2e561c20b0df",
+        "inat_id": 131145899,
+        "timestamp": "2022-08-16T19:04:20-06:00",
+        "date": "2022-08-16",
+        "olc": "85CQR6P9+",
+        "elevation": 1872.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 23.3,
+        "precipitation": 25.7,
+        "windspeed": 10.8,
+        "winddirection": null,
+        "presure": 1019.1,
+        "species": "Marasmius oreades",
+        "location": "E Bijou St, Colorado Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.7800319849,
+          38.8362540916
+        ]
+      }
+    }
+  ]
+}

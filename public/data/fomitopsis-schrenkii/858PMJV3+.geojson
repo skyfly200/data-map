@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b18a4202-718f-4aa7-b20d-48089a650c9d",
+        "inat_id": 314897878,
+        "timestamp": "2025-08-22T17:51:27-06:00",
+        "date": "2025-08-22",
+        "olc": "858PMJV3+",
+        "elevation": 2688.0,
+        "tavg": null,
+        "tmin": 2.1,
+        "tmax": 28.4,
+        "precipitation": 0.0,
+        "windspeed": 5.9,
+        "winddirection": null,
+        "presure": 1032.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Carson National Forest, Red River, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3950666667,
+          36.69485
+        ]
+      }
+    }
+  ]
+}

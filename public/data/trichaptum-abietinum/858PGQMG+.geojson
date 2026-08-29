@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d1a9087c-5dc1-43b7-9d3c-095c26370a38",
+        "inat_id": 240551319,
+        "timestamp": "2024-09-06T10:53:57-06:00",
+        "date": "2024-09-06",
+        "olc": "858PGQMG+",
+        "elevation": 2488.0,
+        "tavg": null,
+        "tmin": 3.9,
+        "tmax": 20.9,
+        "precipitation": 0.0,
+        "windspeed": 2.9,
+        "winddirection": null,
+        "presure": 1036.8,
+        "species": "Trichaptum abietinum",
+        "location": "Cimarron Canyon State Park, Ute Park, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2241533333,
+          36.5338883333
+        ]
+      }
+    }
+  ]
+}

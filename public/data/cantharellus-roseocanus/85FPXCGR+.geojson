@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a289ba1f-89d7-4637-9e82-90daef77ef77",
+        "inat_id": 133399251,
+        "timestamp": "2022-09-01T19:05:46-06:00",
+        "date": "2022-09-01",
+        "olc": "85FPXCGR+",
+        "elevation": 2887.0,
+        "tavg": null,
+        "tmin": 1.0,
+        "tmax": 13.4,
+        "precipitation": 0.2,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": 1021.7,
+        "species": "Cantharellus roseocanus",
+        "location": "Caribou Rd, Nederland, CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.557777852,
+          39.9759388281
+        ]
+      }
+    }
+  ]
+}

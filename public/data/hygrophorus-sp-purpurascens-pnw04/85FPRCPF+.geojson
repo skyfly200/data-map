@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "fc254005-857b-42b8-a099-6cb41e2cb962",
+        "inat_id": 237419702,
+        "timestamp": "2024-08-22T12:12:44-06:00",
+        "date": "2024-08-22",
+        "olc": "85FPRCPF+",
+        "elevation": 2850.0,
+        "tavg": null,
+        "tmin": 3.6,
+        "tmax": 11.4,
+        "precipitation": 9.5,
+        "windspeed": 9.6,
+        "winddirection": null,
+        "presure": 1022.9,
+        "species": "Hygrophorus sp. 'purpurascens-PNW04'",
+        "location": "Colorado, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5766375935,
+          39.8359260667
+        ]
+      }
+    }
+  ]
+}

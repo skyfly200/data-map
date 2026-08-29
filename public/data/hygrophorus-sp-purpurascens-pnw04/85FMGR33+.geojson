@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d2375750-27c6-4317-834a-42c3c5f5a3d8",
+        "inat_id": 234199444,
+        "timestamp": "2024-08-06T13:00:04-06:00",
+        "date": "2024-08-06",
+        "olc": "85FMGR33+",
+        "elevation": 3108.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 20.0,
+        "precipitation": 1.8,
+        "windspeed": 15.8,
+        "winddirection": null,
+        "presure": 1043.4,
+        "species": "Hygrophorus sp. 'purpurascens-PNW04'",
+        "location": "White River National Forest, Frisco, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.19722,
+          39.5045866667
+        ]
+      }
+    }
+  ]
+}

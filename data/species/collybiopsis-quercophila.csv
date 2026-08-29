@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c238fb99-c93c-4ac7-8e78-3ac4f196e3e6,95072448,2021-09-16 12:39:55-06:00,2021-09-16,-104.9621597976,39.7319997254,85FQP2JQ+,1646.0,,15.0,31.4,,12.0,,1006.2,Collybiopsis quercophila,"Denver Botanic Gardens, Denver, CO, US",1

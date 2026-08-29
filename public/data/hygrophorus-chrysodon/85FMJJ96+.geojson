@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "fd3c4fe9-98e5-41bd-80d4-af0d648489f4",
+        "inat_id": 131246457,
+        "timestamp": "2022-08-17T11:54:14-06:00",
+        "date": "2022-08-17",
+        "olc": "85FMJJ96+",
+        "elevation": 3136.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 18.0,
+        "precipitation": 0.0,
+        "windspeed": 7.2,
+        "winddirection": null,
+        "presure": 1039.7,
+        "species": "Hygrophorus chrysodon",
+        "location": "White River National Forest, Basalt, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.38948,
+          39.619745
+        ]
+      }
+    }
+  ]
+}

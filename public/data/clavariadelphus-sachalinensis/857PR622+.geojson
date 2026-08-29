@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b52772c4-f703-4250-b7f8-bcf19d290d97",
+        "inat_id": 239279247,
+        "timestamp": "2024-09-01T13:15:17-06:00",
+        "date": "2024-09-01",
+        "olc": "857PR622+",
+        "elevation": 3269.0,
+        "tavg": null,
+        "tmin": 12.8,
+        "tmax": 28.3,
+        "precipitation": 0.0,
+        "windspeed": 15.5,
+        "winddirection": null,
+        "presure": 1018.2,
+        "species": "Clavariadelphus sachalinensis",
+        "location": "Santa Fe County, US-NM, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7987719815,
+          35.8006623051
+        ]
+      }
+    }
+  ]
+}

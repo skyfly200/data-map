@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c36f90e6-9ac0-4e06-b0c3-c32a3b5e684c",
+        "inat_id": 40349098,
+        "timestamp": "2018-08-16",
+        "date": "2018-08-16",
+        "olc": "859JW5R7+",
+        "elevation": 2652.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 23.0,
+        "precipitation": null,
+        "windspeed": 6.2,
+        "winddirection": null,
+        "presure": null,
+        "species": "Catathelasma ventricosum",
+        "location": "Telluride, Colorado, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.836,
+          37.9421
+        ]
+      }
+    }
+  ]
+}

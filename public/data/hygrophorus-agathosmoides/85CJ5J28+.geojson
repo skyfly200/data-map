@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2b515308-0fbc-4a43-9639-21e5207ee275",
+        "inat_id": 232991741,
+        "timestamp": "2024-07-31T14:21:07-06:00",
+        "date": "2024-07-31",
+        "olc": "85CJ5J28+",
+        "elevation": 3149.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrophorus agathosmoides",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.3833305,
+          38.1503642
+        ]
+      }
+    }
+  ]
+}

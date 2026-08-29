@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "655edfbe-e531-4589-963c-ba7dd5f0b9a0",
+        "inat_id": 47756031,
+        "timestamp": "2020-05-29T12:00:53-06:00",
+        "date": "2020-05-29",
+        "olc": "85PR97C8+",
+        "elevation": 1477.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 21.0,
+        "precipitation": null,
+        "windspeed": 17.6,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "McGovern Hill Rd, Deadwood, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.7329427619,
+          44.371391628
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "865b4c52-a440-4240-a6fb-d2b677d7169f",
+        "inat_id": 246834489,
+        "timestamp": "2024-10-11T15:38:27-06:00",
+        "date": "2024-10-11",
+        "olc": "85HRV8CJ+",
+        "elevation": 1186.0,
+        "tavg": null,
+        "tmin": 8.3,
+        "tmax": 20.6,
+        "precipitation": 0.0,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1020.7,
+        "species": "Flammulina velutipes",
+        "location": "Scottsbluff",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.6691741943,
+          41.8708877563
+        ]
+      }
+    }
+  ]
+}

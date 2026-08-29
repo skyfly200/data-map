@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "88366b5a-fc40-4c86-a1c8-0af39cc34b2e",
+        "inat_id": 110977794,
+        "timestamp": "2021-08-04T19:34:01-06:00",
+        "date": "2021-08-04",
+        "olc": "85FQ2FQP+",
+        "elevation": 2117.0,
+        "tavg": null,
+        "tmin": 14.1,
+        "tmax": 24.5,
+        "precipitation": 1.0,
+        "windspeed": 15.5,
+        "winddirection": null,
+        "presure": 1027.4,
+        "species": "Hypomyces lactifluorum",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.5136156886,
+          39.0394748439
+        ]
+      }
+    }
+  ]
+}

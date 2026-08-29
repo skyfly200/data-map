@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0615ac10-3c65-450b-8f0d-7b912db95ab4",
+        "inat_id": 269074787,
+        "timestamp": "2025-04-06T15:06:24-06:00",
+        "date": "2025-04-06",
+        "olc": "85GPMM94+",
+        "elevation": 1962.0,
+        "tavg": null,
+        "tmin": -4.4,
+        "tmax": 16.7,
+        "precipitation": 0.0,
+        "windspeed": 11.9,
+        "winddirection": null,
+        "presure": 1020.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Young Gulch Trail, Bellvue, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3444133333,
+          40.6682883333
+        ]
+      }
+    }
+  ]
+}

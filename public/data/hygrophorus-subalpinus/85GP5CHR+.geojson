@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "69851c12-d28b-4b67-afe3-fadcabec4f8b",
+        "inat_id": 379483303,
+        "timestamp": "2026-07-07T16:38:00-06:00",
+        "date": "2026-07-07",
+        "olc": "85GP5CHR+",
+        "elevation": 3282.0,
+        "tavg": null,
+        "tmin": 7.1,
+        "tmax": 27.5,
+        "precipitation": 1.8,
+        "windspeed": 4.5,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrophorus subalpinus",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5594002401,
+          40.178679006
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c5e1f0eb-42fb-44c1-9b60-177f76eb8265",
+        "inat_id": 177228526,
+        "timestamp": "2023-08-06T09:54:09-06:00",
+        "date": "2023-08-06",
+        "olc": "85FPXHMW+",
+        "elevation": 2492.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 20.0,
+        "precipitation": 2.5,
+        "windspeed": 4.4,
+        "winddirection": null,
+        "presure": 1026.0,
+        "species": "Cantharellus roseocanus",
+        "location": "Nederland, CO 80466, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4030485,
+          39.9844188333
+        ]
+      }
+    }
+  ]
+}

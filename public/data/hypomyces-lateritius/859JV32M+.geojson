@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b1364bc8-efcf-4430-a4a5-89de1548092b",
+        "inat_id": 131939100,
+        "timestamp": "2022-08-19T12:24:03-06:00",
+        "date": "2022-08-19",
+        "olc": "859JV32M+",
+        "elevation": 3212.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 17.0,
+        "precipitation": 7.5,
+        "windspeed": 3.4,
+        "winddirection": null,
+        "presure": 1030.0,
+        "species": "Hypomyces lateritius",
+        "location": "Colorado, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9161706123,
+          37.8516662899
+        ]
+      }
+    }
+  ]
+}

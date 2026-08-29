@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "88f3edc3-cc28-4915-95a1-84a9403df2f2",
+        "inat_id": 306758457,
+        "timestamp": "2025-08-16T09:40:48-06:00",
+        "date": "2025-08-16",
+        "olc": "85MRQJ76+",
+        "elevation": 1303.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 25.0,
+        "precipitation": 0.8,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1012.2,
+        "species": "Laetiporus cincinnatus",
+        "location": "Custer State Park, Custer, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.3875583333,
+          43.7642033333
+        ]
+      }
+    }
+  ]
+}

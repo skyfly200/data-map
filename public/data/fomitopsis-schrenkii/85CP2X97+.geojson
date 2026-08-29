@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4a0b43e6-98eb-4ae9-8108-f99d07538e3a",
+        "inat_id": 180384399,
+        "timestamp": "2023-08-26T13:18:33-06:00",
+        "date": "2023-08-26",
+        "olc": "85CP2X97+",
+        "elevation": 2736.0,
+        "tavg": null,
+        "tmin": 15.8,
+        "tmax": 22.4,
+        "precipitation": 0.3,
+        "windspeed": 10.4,
+        "winddirection": null,
+        "presure": 1022.6,
+        "species": "Fomitopsis schrenkii",
+        "location": "Beulah Valley, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0374353677,
+          38.0188528607
+        ]
+      }
+    }
+  ]
+}

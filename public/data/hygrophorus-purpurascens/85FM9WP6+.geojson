@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "04681272-413e-4fa1-a792-5040b07b9193",
+        "inat_id": 130551537,
+        "timestamp": "2022-08-10",
+        "date": "2022-08-10",
+        "olc": "85FM9WP6+",
+        "elevation": 3473.0,
+        "tavg": null,
+        "tmin": 5.0,
+        "tmax": 23.3,
+        "precipitation": 0.0,
+        "windspeed": 8.6,
+        "winddirection": null,
+        "presure": 1019.7,
+        "species": "Hygrophorus purpurascens",
+        "location": "Colorado, Park Co., Blue Lakes, 500 ft south of eastern Blue Lakes car park.",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.0884,
+          39.3863
+        ]
+      }
+    }
+  ]
+}

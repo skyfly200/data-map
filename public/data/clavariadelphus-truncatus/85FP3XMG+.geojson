@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "02fa5ed2-35ac-413f-b89c-05e5e7cf80ad",
+        "inat_id": 182093616,
+        "timestamp": "2023-09-04T11:25:45-06:00",
+        "date": "2023-09-04",
+        "olc": "85FP3XMG+",
+        "elevation": 2808.0,
+        "tavg": null,
+        "tmin": 11.2,
+        "tmax": 29.9,
+        "precipitation": 0.0,
+        "windspeed": 16.6,
+        "winddirection": null,
+        "presure": 1003.4,
+        "species": "Clavariadelphus truncatus",
+        "location": "Colorado Springs, CO 80921, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0238979235,
+          39.0840830693
+        ]
+      }
+    }
+  ]
+}

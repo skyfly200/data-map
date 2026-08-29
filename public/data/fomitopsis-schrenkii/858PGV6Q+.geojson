@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4fa75a69-7a27-4dd7-afaa-e0851e232321",
+        "inat_id": 169445083,
+        "timestamp": "2023-06-25T11:46:14-06:00",
+        "date": "2023-06-25",
+        "olc": "858PGV6Q+",
+        "elevation": 2914.0,
+        "tavg": null,
+        "tmin": -4.5,
+        "tmax": 25.9,
+        "precipitation": 0.0,
+        "windspeed": 10.5,
+        "winddirection": null,
+        "presure": 1029.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Cimarron, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1116028333,
+          36.5113633333
+        ]
+      }
+    }
+  ]
+}

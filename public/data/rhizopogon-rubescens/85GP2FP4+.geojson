@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ffccf822-3048-4fe7-a9bc-d0429cbeffff",
+        "inat_id": 7322797,
+        "timestamp": "2017-08-01T14:27:40-06:00",
+        "date": "2017-08-01",
+        "olc": "85GP2FP4+",
+        "elevation": 3023.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 31.0,
+        "precipitation": null,
+        "windspeed": 3.8,
+        "winddirection": null,
+        "presure": null,
+        "species": "Rhizopogon rubescens",
+        "location": "CU Boulder Mountain Research Center, Boulder County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.54348,
+          40.03603
+        ]
+      }
+    }
+  ]
+}

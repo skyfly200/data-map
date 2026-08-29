@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ab09ee3c-995d-4cb3-a353-9978a786f7d2",
+        "inat_id": 132699777,
+        "timestamp": "2022-08-28T11:03:34-06:00",
+        "date": "2022-08-28",
+        "olc": "85GP2C6J+",
+        "elevation": 3061.0,
+        "tavg": null,
+        "tmin": 2.8,
+        "tmax": 12.1,
+        "precipitation": 2.9,
+        "windspeed": 11.9,
+        "winddirection": null,
+        "presure": 1016.2,
+        "species": "Albatrellopsis confluens",
+        "location": "Nederland, CO 80466, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5688966,
+          40.0104899997
+        ]
+      }
+    }
+  ]
+}

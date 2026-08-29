@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "37a9dd06-bddb-4c10-94b6-5fa8e691c668",
+        "inat_id": 236570784,
+        "timestamp": "2024-08-17T09:56:00-06:00",
+        "date": "2024-08-17",
+        "olc": "85FJ23W3+",
+        "elevation": 3111.0,
+        "tavg": null,
+        "tmin": 16.2,
+        "tmax": 33.8,
+        "precipitation": 0.3,
+        "windspeed": 11.0,
+        "winddirection": null,
+        "presure": 1014.8,
+        "species": "Cantharellus roseocanus",
+        "location": "Delta County, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9451955488,
+          39.0468796928
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c55e58fd-d70a-494b-8b4c-f8a88ae7dd2d",
+        "inat_id": 237611051,
+        "timestamp": "2024-08-23T10:31:02-06:00",
+        "date": "2024-08-23",
+        "olc": "85GPG4V6+",
+        "elevation": 3190.0,
+        "tavg": null,
+        "tmin": 8.9,
+        "tmax": 22.7,
+        "precipitation": 0.0,
+        "windspeed": 12.8,
+        "winddirection": null,
+        "presure": 1017.1,
+        "species": "Scutiger ellisii",
+        "location": "Montgomery Pass, Bellvue, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.888405,
+          40.5435783333
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b7e9c144-06ed-416a-a51e-13ad90593fd9",
+        "inat_id": 111966154,
+        "timestamp": "2022-04-18T10:08:16-06:00",
+        "date": "2022-04-18",
+        "olc": "85MRRGWP+",
+        "elevation": 1617.0,
+        "tavg": null,
+        "tmin": -5.6,
+        "tmax": 7.8,
+        "precipitation": 0.0,
+        "windspeed": 10.6,
+        "winddirection": null,
+        "presure": 1024.7,
+        "species": "Fomitopsis schrenkii",
+        "location": "Black Hills National Forest, Custer, SD, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.46395,
+          43.8458966667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "64dc5c36-beb4-45db-b789-9ce13740af9f",
+        "inat_id": 310944596,
+        "timestamp": "2025-09-01T08:51:30-06:00",
+        "date": "2025-09-01",
+        "olc": "857PR656+",
+        "elevation": 3249.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 27.0,
+        "precipitation": 0.0,
+        "windspeed": 12.5,
+        "winddirection": null,
+        "presure": 1029.0,
+        "species": "Flammulina populicola",
+        "location": "Santa Fe National Forest, Tererro, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.78962,
+          35.8097583333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "fd59059c-a5cc-45cc-8173-68fef6847522",
+        "inat_id": 235346700,
+        "timestamp": "2024-08-10T13:00:07-06:00",
+        "date": "2024-08-10",
+        "olc": "857PR656+",
+        "elevation": 3249.0,
+        "tavg": null,
+        "tmin": 17.2,
+        "tmax": 28.3,
+        "precipitation": null,
+        "windspeed": 11.2,
+        "winddirection": null,
+        "presure": 1017.7,
+        "species": "Flammulina populicola",
+        "location": "Santa Fe National Forest, Tererro, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7898416667,
+          35.8098533333
+        ]
+      }
+    }
+  ]
+}

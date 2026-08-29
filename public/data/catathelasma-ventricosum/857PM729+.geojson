@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8ef33722-5df1-4706-a677-d622d5aa16c7",
+        "inat_id": 316121372,
+        "timestamp": "2025-09-02",
+        "date": "2025-09-02",
+        "olc": "857PM729+",
+        "elevation": 2594.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 28.0,
+        "precipitation": 0.4,
+        "windspeed": 11.8,
+        "winddirection": null,
+        "presure": 1029.0,
+        "species": "Catathelasma ventricosum",
+        "location": "New Mexico, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7304947824,
+          35.6523027789
+        ]
+      }
+    }
+  ]
+}

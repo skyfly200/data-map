@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "66060092-8963-4a6c-b50f-a7eb0449e54f",
+        "inat_id": 320513938,
+        "timestamp": "2025-10-12T10:51:41-06:00",
+        "date": "2025-10-12",
+        "olc": "85FPGC5J+",
+        "elevation": 2872.0,
+        "tavg": null,
+        "tmin": -7.5,
+        "tmax": 0.0,
+        "precipitation": 2.7,
+        "windspeed": 20.1,
+        "winddirection": null,
+        "presure": 1011.0,
+        "species": "Hygrophorus erubescens",
+        "location": "Bailey, CO 80421, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5682580997,
+          39.5096667997
+        ]
+      }
+    }
+  ]
+}

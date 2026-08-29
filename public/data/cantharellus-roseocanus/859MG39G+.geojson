@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "85065cc5-8dad-4343-aa6c-027c50ff2fc6",
+        "inat_id": 99603227,
+        "timestamp": "2008-08-15T16:38:00-06:00",
+        "date": "2008-08-15",
+        "olc": "859MG39G+",
+        "elevation": 3185.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": 20.1,
+        "winddirection": null,
+        "presure": null,
+        "species": "Cantharellus roseocanus",
+        "location": "Mineral County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.9243796849,
+          37.5193183595
+        ]
+      }
+    }
+  ]
+}

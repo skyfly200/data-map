@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a88f7bce-939b-4d27-8022-0ed1f984c653",
+        "inat_id": 235798480,
+        "timestamp": "2024-08-13T15:33:20-06:00",
+        "date": "2024-08-13",
+        "olc": "85FQG29P+",
+        "elevation": 1854.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 28.3,
+        "precipitation": null,
+        "windspeed": 10.9,
+        "winddirection": null,
+        "presure": 1013.8,
+        "species": "Marasmius oreades",
+        "location": "Mountain Vista High School, Highlands Ranch, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9633783333,
+          39.5194033333
+        ]
+      }
+    }
+  ]
+}

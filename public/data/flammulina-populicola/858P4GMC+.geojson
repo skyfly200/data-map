@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d4ffbd91-90b7-4f1a-b040-d49455303b7d",
+        "inat_id": 387348503,
+        "timestamp": "2026-08-01T09:43:48-06:00",
+        "date": "2026-08-01",
+        "olc": "858P4GMC+",
+        "elevation": 2710.0,
+        "tavg": null,
+        "tmin": 8.7,
+        "tmax": 24.1,
+        "precipitation": 2.7,
+        "windspeed": 3.2,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "Vadito, NM, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.477905,
+          36.1326
+        ]
+      }
+    }
+  ]
+}

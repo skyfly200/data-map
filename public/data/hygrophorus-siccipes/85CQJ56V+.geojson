@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "57685ed5-19ff-4043-8688-5392bddd5e19",
+        "inat_id": 312605549,
+        "timestamp": "2025-09-08T16:56:13-06:00",
+        "date": "2025-09-08",
+        "olc": "85CQJ56V+",
+        "elevation": 1806.0,
+        "tavg": null,
+        "tmin": 11.9,
+        "tmax": 28.0,
+        "precipitation": 1.6,
+        "windspeed": 11.9,
+        "winddirection": null,
+        "presure": 1021.0,
+        "species": "Hygrophorus siccipes",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8051002462,
+          38.6115611062
+        ]
+      }
+    }
+  ]
+}

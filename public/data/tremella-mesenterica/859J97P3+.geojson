@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f2140e63-d44c-4766-98be-bbcc5a6fc933",
+        "inat_id": 125355488,
+        "timestamp": "2022-07-04T11:27:00-06:00",
+        "date": "2022-07-04",
+        "olc": "859J97P3+",
+        "elevation": 2803.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 29.4,
+        "precipitation": 0.0,
+        "windspeed": 8.7,
+        "winddirection": null,
+        "presure": 1014.9,
+        "species": "Tremella mesenterica",
+        "location": "La Plata County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.7458583333,
+          37.3873861111
+        ]
+      }
+    }
+  ]
+}

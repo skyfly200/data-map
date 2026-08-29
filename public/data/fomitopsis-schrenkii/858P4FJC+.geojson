@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b8a24e9b-f049-4fe2-9a35-91829680bdc8",
+        "inat_id": 387290836,
+        "timestamp": "2026-08-01T10:05:47-06:00",
+        "date": "2026-08-01",
+        "olc": "858P4FJC+",
+        "elevation": 2596.0,
+        "tavg": null,
+        "tmin": 14.5,
+        "tmax": 29.6,
+        "precipitation": 2.4,
+        "windspeed": 11.8,
+        "winddirection": null,
+        "presure": 1019.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Vadito, NM 87579, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5282822996,
+          36.1316026436
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d1c2e743-fdd1-48b9-bef4-651b4159c3b8",
+        "inat_id": 387283918,
+        "timestamp": "2026-08-01T09:55:26-06:00",
+        "date": "2026-08-01",
+        "olc": "858P4FJC+",
+        "elevation": 2596.0,
+        "tavg": null,
+        "tmin": 14.5,
+        "tmax": 29.6,
+        "precipitation": 2.4,
+        "windspeed": 11.8,
+        "winddirection": null,
+        "presure": 1019.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Vadito, NM 87579, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5281,
+          36.132125
+        ]
+      }
+    }
+  ]
+}

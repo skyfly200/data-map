@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5fc7e599-a4b0-406d-a316-d1dad3a2ebf2",
+        "inat_id": 126940833,
+        "timestamp": "2022-07-17T11:37:35-06:00",
+        "date": "2022-07-17",
+        "olc": "85FQ4F9Q+",
+        "elevation": 2150.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 28.0,
+        "precipitation": 0.1,
+        "windspeed": 13.8,
+        "winddirection": null,
+        "presure": 1027.7,
+        "species": "Fomitopsis schrenkii",
+        "location": "Falcon, CO 80831, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.511025,
+          39.1198555556
+        ]
+      }
+    }
+  ]
+}

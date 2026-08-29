@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "28687b78-52fb-43a9-8dac-49bec5c95ec1",
+        "inat_id": 315631278,
+        "timestamp": "2025-09-21T13:32:13-06:00",
+        "date": "2025-09-21",
+        "olc": "857MVJR8+",
+        "elevation": 2865.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 8.9,
+        "winddirection": null,
+        "presure": 1022.8,
+        "species": "Flammulina populicola",
+        "location": "Los Alamos County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3849723,
+          35.8912150997
+        ]
+      }
+    }
+  ]
+}

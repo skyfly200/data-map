@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "11f99d21-50df-4a10-8b2c-6ddf5871ad8b",
+        "inat_id": 60626262,
+        "timestamp": "2020-09-24T11:05:27-06:00",
+        "date": "2020-09-24",
+        "olc": "85GP2QW3+",
+        "elevation": 1626.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 32.0,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Marasmius oreades",
+        "location": "Four Mile Creek, Boulder, CO 80301, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2459805556,
+          40.0471055556
+        ]
+      }
+    }
+  ]
+}

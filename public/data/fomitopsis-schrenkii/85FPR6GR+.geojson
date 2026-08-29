@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "065dec2e-4b20-4333-b7a1-9c8323294433",
+        "inat_id": 180341575,
+        "timestamp": "2023-08-26T11:36:22-06:00",
+        "date": "2023-08-26",
+        "olc": "85FPR6GR+",
+        "elevation": 2999.0,
+        "tavg": null,
+        "tmin": 2.6,
+        "tmax": 12.6,
+        "precipitation": 8.1,
+        "windspeed": 8.7,
+        "winddirection": null,
+        "presure": 1025.8,
+        "species": "Fomitopsis schrenkii",
+        "location": "US-40, Granby, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.758575,
+          39.8267366667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "16da03e1-3f6a-479c-8f0c-3411846c543d",
+        "inat_id": 270276913,
+        "timestamp": "2025-04-13T11:28:20-06:00",
+        "date": "2025-04-13",
+        "olc": "85GP4HG5+",
+        "elevation": 2547.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 20.0,
+        "precipitation": 4.0,
+        "windspeed": 12.9,
+        "winddirection": null,
+        "presure": 1014.4,
+        "species": "Fomitopsis schrenkii",
+        "location": "Boulder County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4407344,
+          40.12704629
+        ]
+      }
+    }
+  ]
+}

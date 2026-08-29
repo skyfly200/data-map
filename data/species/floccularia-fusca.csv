@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+12a8ea72-ddf8-4744-a855-98f55b372491,241024775,2024-09-03 11:59:00-06:00,2024-09-03,-105.7989055556,35.8001888889,857PR622+,3269.0,,9.4,29.4,0.0,12.3,,1017.3,Floccularia fusca,"Santa Fe County, NM, USA",2
+8f29b03d-d1c1-45c0-9824-c5cfaa4d61d8,240185852,2024-08-16 09:49:45-06:00,2024-08-16,-105.8015653125,35.7958707363,857PQ5WX+,3166.0,,16.7,34.4,,11.2,,1012.5,Floccularia fusca,"Ski Santa Fe, Tererro, NM, US",1
+be0c0a14-d7e8-447d-b974-18bbff5b2304,130868036,2022-07-21,2022-07-21,-105.8116,39.6688,85FPM59Q+,3250.0,,4.6,16.2,3.6,7.5,,1021.2,Floccularia fusca,"Colorado. Clear Creek Co., Arapahoe-Roosevelt National Forest, along Grizzly Gulch Rd., ca 1 mile from jct. with Stevens Gulch Rd.",1
+98c3ede7-3c9e-440a-bebd-9831901ace4d,9570903,1992-08-13,1992-08-13,-105.283,36.3936,858P9PV8+,2562.0,,,,,,,,Floccularia fusca,"Angel Fire, New Mexico, USA",1

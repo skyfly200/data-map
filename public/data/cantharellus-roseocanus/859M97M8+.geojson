@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8058d7ae-8f25-41a2-8fcd-2eb09a052d06",
+        "inat_id": 239471029,
+        "timestamp": "2024-09-01T14:30:00-06:00",
+        "date": "2024-09-01",
+        "olc": "859M97M8+",
+        "elevation": 3031.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 14.0,
+        "precipitation": null,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": null,
+        "species": "Cantharellus roseocanus",
+        "location": "Archuleta County, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.7343138842,
+          37.3836864781
+        ]
+      }
+    }
+  ]
+}
