@@ -167,7 +167,33 @@ def download_era5_worker(date_str, output_dir="soil/"):
 
     dataset = "reanalysis-era5-land"
     request = {
-        "variable": ["volumetric_soil_water_layer_1"],
+        "variable": [
+            "volumetric_soil_water_layer_1",  # Existing: Soil moisture (0-7cm)
+            "volumetric_soil_water_layer_2",  # Soil moisture (7-28cm)
+            "volumetric_soil_water_layer_3",  # Soil moisture (28-100cm)
+            "volumetric_soil_water_layer_4",  # Soil moisture (100-289cm)
+            "soil_temperature_level_1",       # see above
+            "soil_temperature_level_2",       # see above
+            "soil_temperature_level_3",       # see above
+            "soil_temperature_level_4",       # see above
+            "2m_temperature",                 # Air temperature at 2 meters
+            "surface_pressure",
+            "total_precipitation",            # Accumulated precipitation
+            "surface_solar_radiation_downwards", # Solar radiation
+            "thermal_radiation_downwards",
+            "evaporation",
+            "relative_humidity_2m",           # Relative humidity
+            "10m_u_component_of_wind",        # Wind U component
+            "10m_v_component_of_wind",        # Wind V component
+            "skin_temperature",               # Surface skin temperature
+            "snow_depth",                     # Snow depth
+            "snow_water_equivalent",
+            "forest_fraction",
+            "crop_fraction",
+            "grass_fraction",
+            "shrub_fraction",
+            "bare_ground_fraction",
+        ],
         "year": year,
         "month": month,
         "day": [day],
