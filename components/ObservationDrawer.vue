@@ -3,6 +3,20 @@
     <aside v-if="selected" class="drawer">
       <button class="close" aria-label="Close" @click="$emit('close')">×</button>
       <h3><em>{{ selected.species || 'Observation' }}</em></h3>
+
+      <!-- Image Carousel -->
+      <div v-if="images.length > 0" class="carousel">
+        <div class="carousel-viewport">
+          <img :src="images[currentImageIndex]" :alt="`Observation image ${currentImageIndex + 1}`" class="carousel-image" />
+        </div>
+        <button v-if="images.length > 1" class="carousel-nav prev" aria-label="Previous image" @click="prevImage">‹</button>
+        <button v-if="images.length > 1" class="carousel-nav next" aria-label="Next image" @click="nextImage">›</button>
+        <div v-if="images.length > 1" class="carousel-indicators">
+          <span v-for="(img, idx) in images" :key="idx" class="indicator" :class="{ active: idx === currentImageIndex }" @click="currentImageIndex = idx"></span>
+        </div>
+        <div class="image-counter">{{ currentImageIndex + 1 }} / {{ images.length }}</div>
+      </div>
+
       <dl class="meta">
         <div v-if="selected.date"><dt>Observed</dt><dd>{{ selected.date }}</dd></div>
         <div v-if="selected.location"><dt>Location</dt><dd>{{ selected.location }}</dd></div>
@@ -20,7 +34,8 @@
 </template>
 
 <script setup>
-import { colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { ref, computed, watch } from 'vue'
+import { colorFor, hasValue, inatUrl, useObservations, fetchObservationDetails } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 
 const props = defineProps({
