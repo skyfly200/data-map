@@ -7,7 +7,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { Vega } from 'vue-vega'
+import vueVega from 'vue-vega'
 
 const props = defineProps({
   plusCodes: { type: String, default: '' }
