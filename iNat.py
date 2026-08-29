@@ -425,24 +425,6 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
                 'location': obs.get('place_guess', ''),
                 'num_identification_agreements': obs.get('num_identification_agreements', 0),
             })
-                'uuid': obs.get('uuid'),
-                'inat_id': obs.get('id'),
-                'timestamp': timestamp,
-                'date': date,
-                'lon': lon_val,
-                'lat': lat_val,
-                'elevation': elevation,
-                'tavg': weather.get('tavg', None),
-                'tmin': weather.get('tmin', None),
-                'tmax': weather.get('tmax', None),
-                'precipitation': weather.get('prcp', None),
-                'windspeed': weather.get('wspd', None),
-                'winddirection': weather.get('wdir', None),
-                'presure': weather.get('pres', None),
-                'species': species_name_found or taxon_name,
-                'location': obs.get('place_guess', ''),
-                'num_identification_agreements': obs.get('num_identification_agreements', 0),
-            })
 
         if max_allowed is not None and len(observations) >= max_allowed:
             break
