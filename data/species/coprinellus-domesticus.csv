@@ -1,4 +1,13 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-3b9226d2-e803-4dc2-9a3f-8cbe46804c55,320498047,2025-10-12 11:15:37-06:00,2025-10-12,-105.3433972222,41.1695944444,2458.0,,0.9,9.8,0.0,38.2,,1008.6,Coprinellus domesticus,"Buford, WY 82052, USA",1
-84b1f468-0003-4bd6-a96f-308c07a27d8b,168384224,2023-06-19 16:08:10-06:00,2023-06-19,-104.739437,40.4179794,1455.0,,11.1,32.8,0.0,10.2,,1005.5,Coprinellus domesticus,"Evans, CO 80634, USA",1
-9cccd1eb-1cb5-4a62-9180-8d616ea57bc5,85161789,2021-06-30 20:51:44-05:00,2021-06-30,-100.011505127,37.7708435059,806.0,,,,,,,,Coprinellus domesticus,Dodge City,1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+3b9226d2-e803-4dc2-9a3f-8cbe46804c55,320498047,2025-10-12 11:15:37-06:00,2025-10-12,-105.3433972222,41.1695944444,2458.0,,0.9,9.8,0.0,38.2,,1008.6,Coprinellus domesticus,"Buford, WY 82052, USA",1,
+84b1f468-0003-4bd6-a96f-308c07a27d8b,168384224,2023-06-19 16:08:10-06:00,2023-06-19,-104.739437,40.4179794,1455.0,,11.1,32.8,0.0,10.2,,1005.5,Coprinellus domesticus,"Evans, CO 80634, USA",1,
+9cccd1eb-1cb5-4a62-9180-8d616ea57bc5,85161789,2021-06-30 20:51:44-05:00,2021-06-30,-100.011505127,37.7708435059,806.0,,,,,,,,Coprinellus domesticus,Dodge City,1,
+03e0b62e-0daf-42d3-b494-0c72a4c3273c,268118447,2025-04-01 12:46:03-07:00,2025-04-01,-122.6108811939,45.5763711496,8.0,,3.3,13.3,0.3,6.1,,1010.3,Coprinellus domesticus,"NE Buffalo St, Portland, OR, US",1,84QVH9GQ+
+28f94ff9-9208-4c00-a858-0827fe8a208a,212731820,2024-05-01 14:33:07-07:00,2024-05-01,-122.314475,45.5630033333,11.0,,2.8,12.2,1.1,6.4,,1022.9,Coprinellus domesticus,"Steigerwald Lake National Wildlife Refuge, Washougal, WA, US",1,84QVHM7P+
+7eadd495-dc79-4af2-9e2b-ddd201b3bc71,98673784,2021-10-18 16:23:53-07:00,2021-10-18,-122.726487,45.6168679722,12.0,,6.1,14.4,0.0,3.5,,1014.8,Coprinellus domesticus,"St. Johns, Portland, OR, USA",1,84QVJ78F+
+f0cb7631-e3c7-4b52-88ef-b7814242257f,65457026,2020-11-22 14:25:38-10:00,2020-11-22,-122.7666159722,45.6431299722,18.0,,0.0,7.8,2.4,4.5,,1017.6,Coprinellus domesticus,"St. Johns, Portland, OR, USA",1,84QVJ6VM+
+65585156-1854-4ea4-8082-98b38feaf389,41976257,2020-04-10 17:17:00-10:00,2020-04-10,-122.7244339001,45.6317541826,14.0,,5.0,21.1,0.0,8.5,,1018.4,Coprinellus domesticus,"Oregon, US",3,84QVJ7JG+
+743da33c-27e6-439a-96f6-d7e042fe53aa,41959773,2020-04-11 14:57:56-07:00,2020-04-11,-122.7647833333,45.6456555556,20.0,,5.0,16.7,0.0,7.1,,1020.6,Coprinellus domesticus,"St. Johns, Portland, OR, USA",1,84QVJ6WP+
+00a6d791-b218-487a-bc7c-c9a699018628,41508990,2020-04-05 16:42:16-07:00,2020-04-05,-122.7656589722,45.6456459722,20.0,,4.4,17.8,,7.5,,1001.6,Coprinellus domesticus,"St. Johns, Portland, OR, USA",1,84QVJ6WM+
+8f016705-70df-45a2-940b-685a9dbd3ec1,25345452,2019-05-18 10:56:32-07:00,2019-05-18,-122.3805230544,45.5517385017,6.0,,9.4,21.7,,14.2,,1007.8,Coprinellus domesticus,"Wood Village, OR 97060, USA",1,84QVHJ29+
+308c9684-df10-4fab-b823-70b68783166d,25323809,2019-05-18 09:36:49-07:00,2019-05-18,-122.3751678467,45.5472640991,17.0,,9.4,21.7,,14.2,,1007.8,Coprinellus domesticus,"Wood Village, OR 97060, USA",1,84QVGJWF+

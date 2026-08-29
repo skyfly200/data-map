@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+befa0da4-4955-4c86-a2ea-5d968cc8abd6,220054355,2024-06-01 12:54:00-07:00,2024-06-01,-122.3768693121,44.3721019814,84PV9JCF+,699.0,,,,,,,,Pseudolaccaria fellea,"Linn County, OR, USA",2
+c43b26d2-23ec-437b-b1d3-f0e99e1dcc70,84021354,2021-06-20 17:51:00-07:00,2021-06-20,-122.0975057364,44.4103460099,84PVCW62+,1568.0,,,,,,,,Pseudolaccaria fellea,"Linn County, OR, USA",2

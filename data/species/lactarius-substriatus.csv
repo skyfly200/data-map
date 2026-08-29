@@ -1,2 +1,3 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-b1dabd37-6d2e-4c15-9654-a99588cc281e,341048111,2026-03-02 14:25:00-08:00,2026-03-02,-122.2272015212,45.3064361704,413.0,,7.0,17.0,0.0,10.0,,1019.3,Lactarius substriatus,"Clackamas County, OR, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+b1dabd37-6d2e-4c15-9654-a99588cc281e,341048111,2026-03-02 14:25:00-08:00,2026-03-02,-122.2272015212,45.3064361704,413.0,,7.0,17.0,0.0,10.0,,1019.3,Lactarius substriatus,"Clackamas County, OR, USA",1,
+07893e93-a09a-4134-b622-e6f29afb94a7,36050148,2019-11-22 15:57:46-10:00,2019-11-22,-122.76280333,45.55168833,303.0,,-1.7,10.0,,1.1,,1024.4,Lactarius substriatus,"Wildwood Trail, Portland, OR, US",1,84QVH62P+

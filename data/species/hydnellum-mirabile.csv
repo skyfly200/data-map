@@ -1,2 +1,4 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-ac4b83a0-799a-4604-9aa7-701deabe4c05,32627559,2019-09-11 17:51:00-07:00,2019-09-11,-121.7313778283,45.2682251957,1167.0,,,,,,,,Hydnellum mirabile,"Clackamas County, OR, USA",3
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+ac4b83a0-799a-4604-9aa7-701deabe4c05,32627559,2019-09-11 17:51:00-07:00,2019-09-11,-121.7313778283,45.2682251957,1167.0,,,,,,,,Hydnellum mirabile,"Clackamas County, OR, USA",3,
+7b6f44ca-d7c3-4fb8-8abe-f92531a596c1,137383822,2022-10-01 16:58:31-07:00,2022-10-01,-121.9790289178,44.4969456049,1116.0,,,,,,,,Hydnellum mirabile,"Sisters, OR 97759, USA",3,84PWF2WC+
+cd9a5164-5c66-47c8-a84a-72a5392d24ed,57523296,2020-08-23 16:54:14-07:00,2020-08-23,-121.8326678127,46.0026053305,1328.0,,,,,,,,Hydnellum mirabile,"Skamania County, WA, USA",1,84RW2538+

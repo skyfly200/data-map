@@ -1,2 +1,5 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-82238b10-d34d-46c9-b880-f87f8e3541c8,235230296,2024-08-11 17:26:30-06:00,2024-08-11,-104.9365386963,39.6602783203,1673.0,,14.4,29.4,0.0,15.0,,1015.9,Hortiboletus rubellus,Denver,1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+82238b10-d34d-46c9-b880-f87f8e3541c8,235230296,2024-08-11 17:26:30-06:00,2024-08-11,-104.9365386963,39.6602783203,1673.0,,14.4,29.4,0.0,15.0,,1015.9,Hortiboletus rubellus,Denver,1,
+b02648b3-8533-415b-ab7d-bf27b5383274,324655320,2025-11-02 15:52:04-08:00,2025-11-02,-122.7231133333,45.6182783333,15.0,,4.0,14.0,0.0,3.1,,1026.8,Hortiboletus rubellus,"Marine Drive Trail, Portland, OR, US",1,84QVJ79G+
+3a9bdebb-5a4d-4a92-9641-dfc4b8f7966a,321158033,2025-10-15 15:59:00-07:00,2025-10-15,-122.6266095613,45.3817376278,48.0,,3.0,17.0,0.0,4.1,,1018.4,Hortiboletus rubellus,"West Linn, OR, USA",1,84QV99JF+
+b7c68ddb-59b2-4ca9-a4d8-dadc440e70b8,240486520,2023-09-06 18:45:47-07:00,2023-09-06,-122.8448380529,45.519398621,62.0,,7.8,23.9,0.0,6.2,,1015.1,Hortiboletus rubellus,"NW Schendel Ave, Beaverton, OR, US",1,84QVG594+

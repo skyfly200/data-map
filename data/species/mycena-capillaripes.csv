@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d3320951-5bd2-4884-ab7c-f647010ebf25,98290608,2021-10-15 09:57:09-07:00,2021-10-15,-122.7886656805,45.4903643949,84QVF6R6+,59.0,,7.2,15.6,0.0,3.3,,1022.3,Mycena capillaripes,"Oregon, US",1
+ee7bf603-a15b-4407-893d-c622f6485bf1,97191835,2021-10-04 15:27:40-07:00,2021-10-04,-122.7256866667,45.5748366667,84QVH7FF+,50.0,,10.0,20.0,0.0,6.1,,1012.9,Mycena capillaripes,"University of Portland, Portland, OR, US",1
+ff6b2968-5ef2-46b9-94bf-297aff1e84b8,19314259,2018-12-30 10:54:39-08:00,2018-12-30,-122.6307966667,45.5170783333,84QVG989+,52.0,,1.1,10.0,1.0,10.4,,1023.9,Mycena capillaripes,"3342 SE Morrison St, Portland, OR, US",2

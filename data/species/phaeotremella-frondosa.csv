@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+bf211e68-99d9-4b69-8460-2f18702897a8,69279466,2021-02-06 15:52:07-10:00,2021-02-06,-122.8803879722,45.4389589722,84QVC4Q9+,82.0,,0.0,8.9,,9.2,,1023.2,Phaeotremella frondosa,"Aloha, OR 97007, USA",1

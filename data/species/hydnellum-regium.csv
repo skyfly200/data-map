@@ -1,8 +1,11 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-e690c757-c89f-43d5-897c-4c3e932f29af,130779295,2022-08-13 10:06:47-06:00,2022-08-13,-105.6491703496,39.899487983,2852.0,,4.1,14.2,4.8,5.4,,1023.8,Hydnellum regium,"Gilpin County, US-CO, US",3
-7b160522-a27a-4e23-bb46-94ee421fbb23,303314431,2025-08-02 14:16:36-07:00,2025-08-02,-121.7535059497,45.3455390361,1635.0,,13.0,28.4,0.0,10.5,,1020.7,Hydnellum regium,"Paradise Park Trail, Rhododendron, OR, US",1
-e6940bfd-7dc6-48dc-8b4a-d3973a1fb609,242966752,2024-09-20 11:20:25-07:00,2024-09-20,-121.6925133333,45.2834583333,1152.0,,10.8,19.5,0.0,16.6,,1017.7,Hydnellum regium,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
-fb8b1613-d9a4-4e91-bd64-8180ecabbcf8,242773713,2024-09-02 16:30:00-07:00,2024-09-02,-121.512725,45.3927194444,1384.0,,18.9,26.1,,29.2,,1010.3,Hydnellum regium,"Hood River County, OR, USA",1
-ef240710-4c7d-4502-9538-f4daaa71a6a5,139080818,2022-10-14 15:22:00-07:00,2022-10-14,-121.6222833333,45.3189583333,1324.0,,11.4,23.8,0.0,2.4,,1016.1,Hydnellum regium,"Hood River, Oregon, United States",1
-f0dffbfb-cd80-4070-a116-2c94fcc175ca,137153583,2022-09-28 16:58:58-07:00,2022-09-28,-121.6222465217,45.3188515507,1324.0,,14.1,22.9,3.2,10.4,,1014.9,Hydnellum regium,"Hood River County, US-OR, US",2
-354d8f67-a3b5-431a-8baf-64063bf68d11,94682675,2021-09-12 12:01:00-07:00,2021-09-12,-121.7448539383,45.29706682,1225.0,,,,,,,,Hydnellum regium,"Oregon, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+e690c757-c89f-43d5-897c-4c3e932f29af,130779295,2022-08-13 10:06:47-06:00,2022-08-13,-105.6491703496,39.899487983,2852.0,,4.1,14.2,4.8,5.4,,1023.8,Hydnellum regium,"Gilpin County, US-CO, US",3,
+7b160522-a27a-4e23-bb46-94ee421fbb23,303314431,2025-08-02 14:16:36-07:00,2025-08-02,-121.7535059497,45.3455390361,1635.0,,13.0,28.4,0.0,10.5,,1020.7,Hydnellum regium,"Paradise Park Trail, Rhododendron, OR, US",1,
+e6940bfd-7dc6-48dc-8b4a-d3973a1fb609,242966752,2024-09-20 11:20:25-07:00,2024-09-20,-121.6925133333,45.2834583333,1152.0,,10.8,19.5,0.0,16.6,,1017.7,Hydnellum regium,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1,
+fb8b1613-d9a4-4e91-bd64-8180ecabbcf8,242773713,2024-09-02 16:30:00-07:00,2024-09-02,-121.512725,45.3927194444,1384.0,,18.9,26.1,,29.2,,1010.3,Hydnellum regium,"Hood River County, OR, USA",1,
+ef240710-4c7d-4502-9538-f4daaa71a6a5,139080818,2022-10-14 15:22:00-07:00,2022-10-14,-121.6222833333,45.3189583333,1324.0,,11.4,23.8,0.0,2.4,,1016.1,Hydnellum regium,"Hood River, Oregon, United States",1,
+f0dffbfb-cd80-4070-a116-2c94fcc175ca,137153583,2022-09-28 16:58:58-07:00,2022-09-28,-121.6222465217,45.3188515507,1324.0,,14.1,22.9,3.2,10.4,,1014.9,Hydnellum regium,"Hood River County, US-OR, US",2,
+354d8f67-a3b5-431a-8baf-64063bf68d11,94682675,2021-09-12 12:01:00-07:00,2021-09-12,-121.7448539383,45.29706682,1225.0,,,,,,,,Hydnellum regium,"Oregon, US",1,
+dfeec386-17a7-4224-af54-e7c03ea4cf4b,250080029,2024-10-16 10:53:01-07:00,2024-10-16,-121.6966466667,45.9107283333,916.0,,8.6,14.1,0.7,12.2,,1015.4,Hydnellum regium,"Carson, WA, US",1,84QWW863+
+c9d097af-be98-4bb2-af75-2292e8a3d6cb,137118734,2022-09-30 14:27:59-07:00,2022-09-30,-121.9847756346,44.5058990457,1132.0,,,,,,,,Hydnellum regium,"Linn County, US-OR, US",1,84PWG248+
+dcf038f3-6c7c-419f-b31f-e56031aed89e,33875161,2019-10-03 14:09:00-07:00,2019-10-03,-121.8363569098,44.4004670672,1434.0,,,,,,,,Hydnellum regium,"Oregon, US",4,84PWC527+

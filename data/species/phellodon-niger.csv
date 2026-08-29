@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+af833136-c0b4-442c-a133-7af94c5a5080,62541576,2020-10-13 14:38:46-07:00,2020-10-13,-121.92872,45.97220192,84QWX3CC+,774.0,,,,,,,,Phellodon niger,"Skamania County, US-WA, US",1

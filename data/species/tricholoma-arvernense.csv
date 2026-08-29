@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+576b71fa-75d9-4d0f-96cb-819e8ac79e62,252679555,2024-10-16 13:09:27-07:00,2024-10-16,-121.7549571767,45.9462873086,84QWW6WW+,1102.0,,8.6,14.1,0.7,12.2,,1015.4,Tricholoma arvernense,"Skamania County, WA, USA",1
+1e746d7b-5ac9-4f1a-b0ea-94ae8db421da,247688879,2024-10-16 13:04:32-07:00,2024-10-16,-121.70344999,45.91586677,84QWW78W+,923.0,,8.6,14.1,0.7,12.2,,1015.4,Tricholoma arvernense,"Skamania County, US-WA, US",1
+0eed14a3-e415-4d60-8438-4b59b7d165ee,247688804,2024-10-16 12:58:07-07:00,2024-10-16,-121.70342269,45.91567709,84QWW78W+,923.0,,8.6,14.1,0.7,12.2,,1015.4,Tricholoma arvernense,"Skamania County, US-WA, US",2
+aeb97255-f023-481d-b575-611bae58b18d,145010822,2018-10-13 15:23:00-07:00,2018-10-13,-122.0211184506,44.5173808297,84PVGX8H+,1099.0,,,,,,,,Tricholoma arvernense,"Near Parrish Lake Road, Linn County, OR, USA",1
+c42985fd-9232-4749-9de1-5eb93415ef36,37635838,2013-10-12,2013-10-12,-121.883,45.9804,84QWX4J8+,972.0,,,,,,,,Tricholoma arvernense,"Gifford Pinchot National Forest portion in Skamania Co., Washington, USA",2
+ec3f8b2a-7b8c-43b5-88a2-60f7bf9b3403,35076693,2019-10-25 11:26:00-07:00,2019-10-25,-122.1549038382,44.5421447347,84PVGRRW+,1154.0,,,,,,,,Tricholoma arvernense,"Oregon, US",3
+5252c7b4-fa7f-43f8-83dd-fa90928fd199,17450944,2018-10-12 13:22:58-07:00,2018-10-12,-122.029725,44.5207883333,84PVGXCC+,1135.0,,,,,,,,Tricholoma arvernense,"Willamette National Forest, Idanha, OR, US",3

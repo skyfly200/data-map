@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fcbfbe2a-2aa0-45dc-895d-b15da7ed01f2,247007386,2024-10-12 12:56:59-07:00,2024-10-12,-122.6475287018,45.5306840192,84QVG9J2+,39.0,,8.3,25.0,0.0,4.7,,1018.0,Russula delica,"Oregon, US",1

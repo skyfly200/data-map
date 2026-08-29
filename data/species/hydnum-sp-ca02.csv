@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+77d5b000-8c93-42ea-81d1-00c7ea43cac5,322712716,2025-10-23 23:32:00-07:00,2025-10-23,-122.4484676375,44.6086338751,84PVJH52+,1069.0,,,,,,,,Hydnum sp. 'CA02',"Linn County, OR, USA",1

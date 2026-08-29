@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+679fb754-c748-4ecb-a8ff-e5e6ff78f16e,99405434,2021-10-25 14:12:01-07:00,2021-10-25,-122.7333339722,45.541488,84QVG7R8+,275.0,,11.7,14.4,,15.3,,1000.0,Cystolepiota seminuda,"Portland, OR 97210, USA",1

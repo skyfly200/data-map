@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+222945ed-5822-4819-9406-76a66c09a507,194171788,2023-12-08 10:45:00-08:00,2023-12-08,-122.6569611111,45.5737,84QVH8FV+,38.0,,3.9,9.4,0.0,5.8,,1028.1,Marasmius calhouniae,"Northeast Portland, Portland, OR, USA",1

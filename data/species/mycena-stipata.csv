@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+62e274ae-bf6e-4f5a-869f-af2e364c96c2,42185209,2020-04-13 18:23:17-07:00,2020-04-13,-122.6995789722,45.502872,84QVG832+,198.0,,2.2,20.0,0.0,9.4,,1027.9,Mycena stipata,"Portland, OR 97201, USA",1
+e0d59460-a053-4034-9de2-8b899b256145,34123909,2019-10-09 10:49:59-07:00,2019-10-09,-122.3955655,45.5163772,84QVGJ83+,92.0,,2.2,13.9,0.0,3.7,,1026.2,Mycena stipata,"Northeast, Gresham, OR, USA",1

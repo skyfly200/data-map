@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cfa915c1-d7f2-4f66-96b7-be6f33722720,146791913,2023-01-16 16:26:51-08:00,2023-01-16,-122.3362883333,44.4040033333,84PVCM37+,466.0,,,,,,,,Tricholoma aurantio-olivaceum,"Willamette National Forest, Cascadia, OR, US",1

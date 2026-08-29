@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e540b28c-6d9e-4645-9c18-be0b1acdf209,258092883,2025-01-09 13:59:35-08:00,2025-01-09,-122.765925,45.6480944444,84QVJ6XM+,5.0,,0.0,9.4,0.0,6.4,,1030.6,Fomitopsis malicola,"St. Johns, Portland, OR, USA",1
+6d77f520-5d1f-4767-b41c-00b9f3bd51e1,76367300,2021-05-01 14:38:06-07:00,2021-05-01,-122.763039,45.647949,84QVJ6XP+,15.0,,10.6,16.7,0.3,12.5,,1020.7,Fomitopsis malicola,"St. Johns, Portland, OR, USA",2

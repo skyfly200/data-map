@@ -1,2 +1,3 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-6f87e24e-454a-472c-b390-d72875a416a4,239071376,2024-08-29 13:34:00-06:00,2024-08-29,-105.7970666667,35.8008222222,3319.0,,15.6,28.9,0.0,12.1,,1014.3,Lactarius torminosus,"Santa Fe County, NM, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+6f87e24e-454a-472c-b390-d72875a416a4,239071376,2024-08-29 13:34:00-06:00,2024-08-29,-105.7970666667,35.8008222222,3319.0,,15.6,28.9,0.0,12.1,,1014.3,Lactarius torminosus,"Santa Fe County, NM, USA",1,
+cf1a6003-a647-4425-ac67-8905fbb2e9f8,184648652,2023-09-23 16:39:00-07:00,2023-09-23,-121.9716866113,44.5010150328,1099.0,,,,,,,,Lactarius torminosus,"Linn County, OR, USA",1,84PWG22H+

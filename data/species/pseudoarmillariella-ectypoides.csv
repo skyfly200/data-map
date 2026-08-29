@@ -1,3 +1,4 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-e26e6226-1861-4956-9c13-7845cc254496,308292695,2025-08-22 09:16:29-07:00,2025-08-22,-121.9428939722,45.3085746667,513.0,,12.2,37.8,0.0,7.4,,1012.8,Pseudoarmillariella ectypoides,"Rhododendron, OR 97049, USA",1
-b4ec1ad7-43de-48d5-822b-a36269b799b4,53518741,2020-06-27 17:11:34+00:00,2020-06-27,-121.587555,45.49923333,594.0,,15.6,23.9,,34.8,,1011.4,Pseudoarmillariella ectypoides,"Cooper Spur Rd, Mount Hood Parkdale, OR, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+e26e6226-1861-4956-9c13-7845cc254496,308292695,2025-08-22 09:16:29-07:00,2025-08-22,-121.9428939722,45.3085746667,513.0,,12.2,37.8,0.0,7.4,,1012.8,Pseudoarmillariella ectypoides,"Rhododendron, OR 97049, USA",1,
+b4ec1ad7-43de-48d5-822b-a36269b799b4,53518741,2020-06-27 17:11:34+00:00,2020-06-27,-121.587555,45.49923333,594.0,,15.6,23.9,,34.8,,1011.4,Pseudoarmillariella ectypoides,"Cooper Spur Rd, Mount Hood Parkdale, OR, US",2,
+83ca0117-61fd-460b-8e21-4c9233b78bce,317360141,2025-09-27 15:14:30-07:00,2025-09-27,-122.2019583333,45.9414583333,435.0,,8.0,27.0,0.0,3.0,,1009.9,Pseudoarmillariella ectypoides,"Amboy, WA 98601, USA",1,84QVWQRX+

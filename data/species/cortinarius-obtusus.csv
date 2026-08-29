@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ac364055-dddd-4806-b21d-196e4a763dbb,100120026,2021-10-29 17:35:57-07:00,2021-10-29,-122.7149416667,45.5179033333,84QVG79P+,239.0,,6.1,16.7,10.4,10.1,,1018.4,Cortinarius obtusus,"Hoyt Arboretum, Portland, OR, US",1

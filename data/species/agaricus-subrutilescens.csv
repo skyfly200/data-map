@@ -1,8 +1,15 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-86a6c25d-bec8-465a-b929-d7a2bb4578af,254120824,2024-12-02 12:18:31-08:00,2024-12-02,-121.9923033333,45.3499966667,392.0,,4.4,7.8,0.0,24.7,,1026.4,Agaricus subrutilescens,"Wildwood Recreation Site, Welches, OR, US",1
-a1c2ea79-57b1-4196-943a-a501d60b3317,249711004,2024-10-29 11:54:18-07:00,2024-10-29,-122.058059,45.0325279722,479.0,,,,,,,,Agaricus subrutilescens,"Estacada, OR 97023, USA",1
-943a56d9-0b1f-445c-aebb-683286661118,248406264,2024-10-20 15:35:08-07:00,2024-10-20,-121.9392466667,45.297795,507.0,,8.3,21.1,,8.3,,1015.5,Agaricus subrutilescens,"Zigzag Ranger Station, Welches, OR, US",2
-5e3d6072-9a38-4850-af49-173908e4aec5,189321681,2023-10-28 14:03:38-07:00,2023-10-28,-122.0990445,45.298605,534.0,,3.9,12.2,0.0,19.5,,1031.7,Agaricus subrutilescens,"Eagle Creek, Sandy, OR, US",1
-cdbe1e3e-6b35-458f-93ae-74d67f3a424a,187989191,2023-10-17 13:25:34-07:00,2023-10-17,-122.1873866667,45.20582,686.0,,10.6,19.4,0.0,2.8,,1021.6,Agaricus subrutilescens,"Mt. Hood National Forest, Estacada, OR, US",1
-9d29f3c8-0096-449a-bfb7-ecbfe39b6286,187314892,2023-10-11 14:32:05-07:00,2023-10-11,-122.289305,45.3244533333,181.0,,13.3,18.3,,18.3,,1006.3,Agaricus subrutilescens,"Eagle Fern Park, Eagle Creek, OR, US",2
-e419b925-3e42-4ef0-ba0d-209e8dcb8302,186868529,2023-10-08 10:34:48-07:00,2023-10-08,-122.1189853179,45.2533694916,874.0,,12.8,27.8,0.0,3.2,,1009.6,Agaricus subrutilescens,"Oregon, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+86a6c25d-bec8-465a-b929-d7a2bb4578af,254120824,2024-12-02 12:18:31-08:00,2024-12-02,-121.9923033333,45.3499966667,392.0,,4.4,7.8,0.0,24.7,,1026.4,Agaricus subrutilescens,"Wildwood Recreation Site, Welches, OR, US",1,
+a1c2ea79-57b1-4196-943a-a501d60b3317,249711004,2024-10-29 11:54:18-07:00,2024-10-29,-122.058059,45.0325279722,479.0,,,,,,,,Agaricus subrutilescens,"Estacada, OR 97023, USA",1,
+943a56d9-0b1f-445c-aebb-683286661118,248406264,2024-10-20 15:35:08-07:00,2024-10-20,-121.9392466667,45.297795,507.0,,8.3,21.1,,8.3,,1015.5,Agaricus subrutilescens,"Zigzag Ranger Station, Welches, OR, US",2,
+5e3d6072-9a38-4850-af49-173908e4aec5,189321681,2023-10-28 14:03:38-07:00,2023-10-28,-122.0990445,45.298605,534.0,,3.9,12.2,0.0,19.5,,1031.7,Agaricus subrutilescens,"Eagle Creek, Sandy, OR, US",1,
+cdbe1e3e-6b35-458f-93ae-74d67f3a424a,187989191,2023-10-17 13:25:34-07:00,2023-10-17,-122.1873866667,45.20582,686.0,,10.6,19.4,0.0,2.8,,1021.6,Agaricus subrutilescens,"Mt. Hood National Forest, Estacada, OR, US",1,
+9d29f3c8-0096-449a-bfb7-ecbfe39b6286,187314892,2023-10-11 14:32:05-07:00,2023-10-11,-122.289305,45.3244533333,181.0,,13.3,18.3,,18.3,,1006.3,Agaricus subrutilescens,"Eagle Fern Park, Eagle Creek, OR, US",2,
+e419b925-3e42-4ef0-ba0d-209e8dcb8302,186868529,2023-10-08 10:34:48-07:00,2023-10-08,-122.1189853179,45.2533694916,874.0,,12.8,27.8,0.0,3.2,,1009.6,Agaricus subrutilescens,"Oregon, US",1,
+04137cd2-f878-4af1-be4e-030f6b57c2d3,327818234,2025-11-07 15:10:18-08:00,2025-11-07,-122.498606,45.479989,126.0,,6.9,14.0,1.8,5.2,,1022.6,Agaricus subrutilescens,"Pleasant Valley, Portland, OR, USA",1,84QVFGH2+
+d487d6a4-0ccc-4047-b449-b7f448a02e17,251931735,2024-11-15 13:40:06-08:00,2024-11-15,-122.7750166667,45.57555,274.0,,2.2,10.0,0.0,1.8,,1020.1,Agaricus subrutilescens,"Linnton, Portland, OR, USA",1,84QVH6GF+
+604e8ab8-2705-4a80-bc2f-f49b4201805a,248263361,2024-10-19 16:01:14-07:00,2024-10-19,-122.62175856,44.88458492,483.0,,11.1,23.3,0.0,9.0,,1023.1,Agaricus subrutilescens,"Marion County, US-OR, US",1,84PVV9MH+
+7efe3516-e078-434c-9894-4169569ef5d8,188324794,2023-10-20 18:01:55-07:00,2023-10-20,-122.7949487858,44.6254204121,140.0,,9.4,18.3,0.0,5.0,,1014.6,Agaricus subrutilescens,"Scio, OR 97374, USA",1,84PVJ6G4+
+a65e590e-386c-4fae-9536-7ea66e5e2282,187564177,2023-10-14 14:51:34-07:00,2023-10-14,-122.5124666667,45.4914366667,130.0,,13.3,17.8,,6.7,,1016.6,Agaricus subrutilescens,"Powell Butte Nature Park, Portland, OR, US",1,84QVFFRQ+
+5ab2c5a2-486d-41ca-9d6f-7cf49c63c73f,141997147,2022-11-13 13:12:50-08:00,2022-11-13,-122.0415161737,44.2641105596,663.0,,,,,,,,Agaricus subrutilescens,"Linn County, US-OR, US",1,84PV7X75+
+f918fe9b-41d5-428d-aa8d-edf9c8ed1ae6,17489161,2018-10-13 23:31:23-07:00,2018-10-13,-122.9131635892,44.900551053,148.0,,5.6,22.8,0.0,13.3,,1019.9,Agaricus subrutilescens,"2887 74th Ave SE, Salem, OR, US",1,84PVW32P+

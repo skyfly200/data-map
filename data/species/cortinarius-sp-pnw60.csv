@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a783c94b-7c2b-4c09-b142-94da1d529b63,191396749,2023-11-18 11:50:24-08:00,2023-11-18,-121.4211322589,45.8478559571,84QWRHXH+,448.0,,3.4,6.5,7.6,8.3,,1013.0,Cortinarius sp. 'PNW60',"Washington, US",2

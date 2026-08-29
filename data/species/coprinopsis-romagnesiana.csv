@@ -1,4 +1,7 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-557cfa80-6f1e-49cd-9556-21f0e95f8067,315727782,2025-09-21 12:15:18-06:00,2025-09-21,-106.39592,35.89558,2896.0,,13.0,26.0,0.0,8.9,,1022.8,Coprinopsis romagnesiana,"Pajarito Mountain Ski Area, Los Alamos, NM, US",1
-04546324-e5d9-4c6c-b311-b00bc96fc046,231479560,2024-07-10 11:41:00-06:00,2024-07-10,-105.8057096551,35.793952401,3124.0,,13.9,31.7,,12.5,,1015.2,Coprinopsis romagnesiana,"Santa Fe County, NM, USA",2
-be675d01-baa1-4517-a22d-be846adaaaa6,229814674,2024-07-16 16:57:24-06:00,2024-07-16,-107.5490590566,38.2353977907,2773.0,,16.7,31.7,0.0,12.1,,1014.4,Coprinopsis romagnesiana,"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+557cfa80-6f1e-49cd-9556-21f0e95f8067,315727782,2025-09-21 12:15:18-06:00,2025-09-21,-106.39592,35.89558,2896.0,,13.0,26.0,0.0,8.9,,1022.8,Coprinopsis romagnesiana,"Pajarito Mountain Ski Area, Los Alamos, NM, US",1,
+04546324-e5d9-4c6c-b311-b00bc96fc046,231479560,2024-07-10 11:41:00-06:00,2024-07-10,-105.8057096551,35.793952401,3124.0,,13.9,31.7,,12.5,,1015.2,Coprinopsis romagnesiana,"Santa Fe County, NM, USA",2,
+be675d01-baa1-4517-a22d-be846adaaaa6,229814674,2024-07-16 16:57:24-06:00,2024-07-16,-107.5490590566,38.2353977907,2773.0,,16.7,31.7,0.0,12.1,,1014.4,Coprinopsis romagnesiana,"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",2,
+b32207d8-f701-444d-8566-f616e75ac577,287672291,2025-06-07 10:48:47-07:00,2025-06-07,-122.726031,45.616532,0.0,,12.8,30.0,0.0,8.4,,1016.1,Coprinopsis romagnesiana,"St. Johns, Portland, OR, USA",1,84QVJ78F+
+3f8f1f89-2e23-48d6-bab6-103c1c37cb49,164681650,2023-05-30 12:14:46-07:00,2023-05-30,-122.7258123467,45.6163250496,0.0,,10.0,19.4,0.0,11.9,,1017.2,Coprinopsis romagnesiana,"St. Johns, Portland, OR, US",1,84QVJ78F+
+af685fd5-dc71-4202-b0a7-b358c71acdf0,49514071,2020-06-13 11:38:10-07:00,2020-06-13,-122.7734861111,45.5797861111,207.0,,11.7,15.6,,3.8,,1015.5,Coprinopsis romagnesiana,"Northwest Portland, Portland, OR, USA",1,84QVH6HG+

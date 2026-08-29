@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a8befc56-16a2-4c4b-949f-b7809a9927d4,191419104,2023-11-18 13:13:12-08:00,2023-11-18,-121.5177609,45.80739417,84QWRF4J+,287.0,,3.4,6.5,7.6,8.3,,1013.0,Calonarius intricatus,"White Salmon, WA 98672, USA",2

@@ -1,3 +1,5 @@
 uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 375b922f-7ad2-425a-873e-1132bf547ead,65873587,2020-11-29 15:56:12+00:00,2020-11-29,-121.9436866667,45.2828783333,84QW73M4+,504.0,,4.4,11.1,0.0,23.2,,1022.7,Clavariadelphus mucronatus,"Mt. Hood National Forest, Welches, OR, US",1
 66b755bf-3b37-47c7-ad3b-559a21872b60,135829567,2022-08-24 10:51:33-06:00,2022-08-24,-106.8883333088,37.1907477439,859M54R6+,2325.0,,10.0,24.0,0.1,8.3,,1028.0,Clavariadelphus mucronatus,United States,1
+3fe07871-1d98-4bf3-9a7a-ea15b46f9d01,34676964,2019-10-04 09:56:22-07:00,2019-10-04,-121.6482598243,45.9665571526,84QWX982+,913.0,,,,,,,,Clavariadelphus mucronatus,"Skamania County, US-WA, US",3
+a90d1e38-573c-4e69-b9f8-2446660e709b,33861712,2019-10-04 09:54:57-07:00,2019-10-04,-121.64823045,45.96661858,84QWX982+,913.0,,,,,,,,Clavariadelphus mucronatus,"Skamania County, US-WA, US",1

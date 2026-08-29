@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+80ac83c2-07a1-45c7-80f8-7568dc875d2d,17488159,2018-10-13 22:04:24-07:00,2018-10-13,-122.9132362829,44.9004809093,84PVW32P+,148.0,,5.6,22.8,0.0,13.3,,1019.9,Phlegmacium albescens,"2887 74th Ave SE, Salem, OR, US",5

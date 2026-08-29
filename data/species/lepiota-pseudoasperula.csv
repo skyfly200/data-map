@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fd5771d5-5a15-47d3-8d1f-6f4c744572fb,251283960,2024-10-24 12:38:36-07:00,2024-10-24,-122.7859555556,45.5780027778,84QVH6H7+,287.0,,3.3,14.4,0.0,3.7,,1025.2,Lepiota pseudoasperula,"Linnton, Portland, OR, USA",1

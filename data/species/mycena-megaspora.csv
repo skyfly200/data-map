@@ -1,3 +1,5 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-e2139cc8-7454-4c3d-9753-ab6fcb75ae8a,319057163,2025-10-04 13:39:39-07:00,2025-10-04,-121.8435283333,45.1443138333,1239.0,,,,,,,,Mycena megaspora,"Mt. Hood National Forest, Estacada, OR, US",1
-a09a9626-f8b6-48eb-bcc6-642403468cca,138935833,2022-10-15 12:42:11-07:00,2022-10-15,-121.7386399582,45.2749970909,1134.0,,10.2,24.3,0.0,5.6,,1016.2,Mycena megaspora,"TIMBRLINE LDG, OR 97028, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+e2139cc8-7454-4c3d-9753-ab6fcb75ae8a,319057163,2025-10-04 13:39:39-07:00,2025-10-04,-121.8435283333,45.1443138333,1239.0,,,,,,,,Mycena megaspora,"Mt. Hood National Forest, Estacada, OR, US",1,
+a09a9626-f8b6-48eb-bcc6-642403468cca,138935833,2022-10-15 12:42:11-07:00,2022-10-15,-121.7386399582,45.2749970909,1134.0,,10.2,24.3,0.0,5.6,,1016.2,Mycena megaspora,"TIMBRLINE LDG, OR 97028, USA",1,
+aba84279-498f-48f4-af99-8ab00b85cda0,99501297,2021-10-23 11:32:33-07:00,2021-10-23,-122.0755734936,44.5325024522,1032.0,,,,,,,,Mycena megaspora,"Parish Lake, Idanha, OR, US",1,84PVGWMF+
+e1818766-5967-4ae4-a088-33f8b7b793ab,62529542,2020-10-12 11:31:49-07:00,2020-10-12,-122.081696624,44.5329489351,1035.0,,,,,,,,Mycena megaspora,"Willamette National Forest, Idanha, OR, US",2,84PVGWM9+

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+3752101f-dfb1-4739-b61e-24f4b2e76ff6,4574878,2016-11-12 15:31:01-08:00,2016-11-12,-122.71495,45.514295,84QVG77P+,253.0,,9.4,17.8,1.8,15.5,,1017.9,Mycena,"Washington Park, Portland, OR, US",3

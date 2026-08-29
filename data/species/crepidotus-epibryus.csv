@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+bc923385-1e3e-4da8-85b8-95c5e1697bb7,36049960,2019-11-22 15:48:14-10:00,2019-11-22,-122.762855,45.55165833,84QVH62P+,303.0,,-1.7,10.0,,1.1,,1024.4,Crepidotus epibryus,"Wildwood Trail, Portland, OR, US",1

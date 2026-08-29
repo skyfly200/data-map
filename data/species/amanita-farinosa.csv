@@ -1,2 +1,3 @@
 uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 ee8aa03b-cce5-460f-a1bc-c7f4e53e595b,159450338,2020-10-20 14:28:54-07:00,2020-10-20,-122.313595,45.225636,84QV6MGP+,375.0,,8.9,17.8,0.0,3.6,,1022.2,Amanita farinosa,"Estacada, OR 97023, USA",1
+741e373e-9d71-4f15-846c-dd5a6c8871d1,63544715,2020-10-25 16:44:39-07:00,2020-10-25,-122.6485474992,44.8728278079,84PVV9F2+,438.0,,-0.5,10.0,0.0,20.2,,1029.4,Amanita farinosa,"Silver Falls State Park, Silverton, OR, US",2

@@ -1,3 +1,4 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-9bff1e60-f88c-478b-83cb-b51339aed603,65243368,2018-04-25,2018-04-25,-121.5015,45.1305,1019.0,,,,,,,,Clitocybe squamulosa montana,"McCubbins Gulch, Barlow Ranger District, Mount Hood National Forest, Wasco Co., Oregon, USA",1
-7cffca94-2f01-470e-b434-510b3fe75039,47489237,2020-05-26 11:11:49-07:00,2020-05-26,-121.5226224544,45.1193007839,1021.0,,,,,,,,Clitocybe squamulosa montana,"Mt. Hood National Forest, Maupin, OR, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+9bff1e60-f88c-478b-83cb-b51339aed603,65243368,2018-04-25,2018-04-25,-121.5015,45.1305,1019.0,,,,,,,,Clitocybe squamulosa montana,"McCubbins Gulch, Barlow Ranger District, Mount Hood National Forest, Wasco Co., Oregon, USA",1,
+7cffca94-2f01-470e-b434-510b3fe75039,47489237,2020-05-26 11:11:49-07:00,2020-05-26,-121.5226224544,45.1193007839,1021.0,,,,,,,,Clitocybe squamulosa montana,"Mt. Hood National Forest, Maupin, OR, US",1,
+5ed16755-6039-4631-a496-a03cccef2432,47215766,2020-05-23 13:19:00-07:00,2020-05-23,-121.9773529313,44.52980265,1178.0,,,,,,,,Clitocybe squamulosa montana,"Oregon, US",1,84PWG2HF+

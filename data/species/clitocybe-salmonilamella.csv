@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+350d2060-a90a-468c-b901-2e99e8a86751,251216378,2024-10-16 16:28:56-07:00,2024-10-16,-122.7829611111,45.5771472222,84QVH6G8+,262.0,,11.7,17.8,,5.5,,1016.8,Clitocybe salmonilamella,"Linnton, Portland, OR, USA",1
+acf0078c-74c6-437b-bf0a-b387d10cd70e,251208985,2024-10-16 15:52:06-07:00,2024-10-16,-122.7834166667,45.578775,84QVH6H8+,287.0,,11.7,17.8,,5.5,,1016.8,Clitocybe salmonilamella,"Linnton, Portland, OR, USA",1
+a8bd0eef-9f92-4cbe-b994-49711ecc5b30,99416113,2021-10-25 12:07:56-07:00,2021-10-25,-122.768349722,45.5709807657,84QVH6CJ+,184.0,,11.7,14.4,,15.3,,1000.0,Clitocybe salmonilamella,Forest Park,1
+ec25df8d-cddf-4463-9c6a-226504c78bdc,35713847,2019-11-15 11:51:51+00:00,2019-11-15,-122.735205,45.54105,84QVG7R7+,275.0,,6.1,13.9,,6.4,,1021.2,Clitocybe salmonilamella,"Forest Park, Portland, OR, US",2
+4149a1da-e60c-45dc-a821-cd5f26b357ee,17471967,2018-10-13 11:39:42-07:00,2018-10-13,-122.9125274364,44.9002878656,84PVW32P+,148.0,,5.6,22.8,0.0,13.3,,1019.9,Clitocybe salmonilamella,"Shangri-la School, Salem, OR, US",2

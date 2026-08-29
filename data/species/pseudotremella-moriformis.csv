@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b690488b-22f7-451c-9852-96001ab93d94,147170726,2023-01-16 13:43:22-08:00,2023-01-16,-122.87554,45.449821,84QVC4XF+,196.0,,1.7,9.4,,5.2,,1007.7,Pseudotremella moriformis,"Beaverton, OR 97007, USA",1
+2a1042f1-ddb3-4942-aa98-f2756afbd495,68132757,2021-01-09 16:02:30-08:00,2021-01-09,-122.5977033333,45.5146783333,84QVGC72+,162.0,,1.7,8.9,0.0,13.7,,1025.7,Pseudotremella moriformis,"Mt. Tabor Park, Portland, OR, US",1
+037b5af6-8df5-44db-a5db-54fe36b22e8e,67830857,2021-01-09 16:11:17-10:00,2021-01-09,-122.5982235745,45.5141786663,84QVGC72+,124.0,,1.7,8.9,0.0,13.7,,1025.7,Pseudotremella moriformis,"Mt. Tabor, Portland, OR, USA",2
+f29ccf55-db4f-4ce7-8994-7ee4d8caeef1,67830718,2021-01-09 16:02:28-10:00,2021-01-09,-122.5981407613,45.5138972087,84QVGC72+,124.0,,1.7,8.9,0.0,13.7,,1025.7,Pseudotremella moriformis,"Mt. Tabor, Portland, OR, USA",2

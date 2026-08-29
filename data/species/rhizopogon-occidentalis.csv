@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+3a7ac98b-391a-4f3d-9769-b1e312f4050b,242906779,2024-09-20 09:56:02-07:00,2024-09-20,-121.6153836531,44.3287519226,84PW89HM+,1013.0,,5.0,23.0,0.0,11.5,,1018.3,Rhizopogon occidentalis,"Deschutes National Forest, Sisters, OR, US",1
+959c5712-f24c-4189-a37c-d9fd6b49af7f,229251720,2024-07-13 08:11:59-07:00,2024-07-13,-122.6569861111,45.5749222222,84QVH8FV+,38.0,,16.1,34.4,0.0,9.7,,1014.5,Rhizopogon occidentalis,"Woodlawn, Portland, OR 97211, USA",1
+7a994615-e8a5-4e16-8668-e63d4785137f,191770760,2023-11-19 10:37:00-08:00,2023-11-19,-121.3162638889,45.7149083333,84QWPM7M+,195.0,,2.2,11.1,,14.1,,1025.0,Rhizopogon occidentalis,"Klickitat County, WA, USA",1
+e934faee-990e-4e4c-8e2a-2ede24d76e53,191313157,2023-11-05 12:14:18-08:00,2023-11-05,-122.8678979722,45.5259339722,84QVG4GJ+,61.0,,6.7,15.6,16.2,9.3,,1009.8,Rhizopogon occidentalis,"AmberGlen, Hillsboro, OR, USA",1
+fc17319b-58b7-4e53-856f-ee0c10650a1e,188973820,2023-10-25 13:41:41-07:00,2023-10-25,-122.040274603,44.2578860008,84PV7X55+,628.0,,,,,,,,Rhizopogon occidentalis,"Linn County, US-OR, US",1

@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9ef5b429-7246-4361-8efe-86d693a5744d,191644146,2023-11-20 20:10:13-08:00,2023-11-20,-121.5835282593,45.8689130692,84QWVC98+,1077.0,,1.2,10.0,0.0,9.5,,1034.2,Phlegmacium aurescens,"Washington, US",2
+c45ed2b8-a9c4-4cdb-9eff-8950862764db,191402052,2023-11-18 12:18:17-08:00,2023-11-18,-121.4042766432,45.8445179224,84QWRHVW+,458.0,,3.4,6.5,7.6,8.3,,1013.0,Phlegmacium aurescens,"Washington, US",2
+c317eec5-39c5-4e05-b577-8da5d2279a8a,98837086,2020-11-28,2020-11-28,-121.896226,45.942852,84QWW4V3+,812.0,,,,,,,,Phlegmacium aurescens,"Skamania County, WA",0

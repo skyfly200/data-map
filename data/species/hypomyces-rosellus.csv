@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8cf13d4b-67be-4b7e-a47e-91cb9133629a,189148298,2023-10-22 14:44:00-07:00,2023-10-22,-122.3557611111,45.5543944444,84QVHJ3V+,6.0,,12.8,17.2,0.0,1.4,,1011.6,Hypomyces rosellus,"Multnomah County, OR, USA",3
+5fb9bbe5-919a-4879-aebc-0aa84c03a0d7,35722579,2019-11-15 11:26:02+00:00,2019-11-15,-122.735523507,45.5410513785,84QVG7R7+,261.0,,6.1,13.9,,6.4,,1021.2,Hypomyces rosellus,"Portland, OR 97210, USA",1

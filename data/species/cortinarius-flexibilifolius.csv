@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f711b1f2-7681-488f-b92f-6af8d360cdda,189812765,2023-11-02 17:34:47-07:00,2023-11-02,-122.6178389376,45.4986492442,84QVF9XJ+,63.0,,10.0,20.0,1.5,17.6,,1015.2,Cortinarius flexibilifolius,"Oregon, US",2

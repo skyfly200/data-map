@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8f058b8b-a18a-43de-b0f5-5950fe3a7bf1,328456697,2025-10-21 23:20:00-07:00,2025-10-21,-122.7177112282,45.2735655645,84QV77FJ+,27.0,,6.0,18.0,0.0,3.8,,1020.2,Psilocybe semilanceata,"Oregon, US",1
+357e68d8-bf4a-41b1-9722-b6944c57cb2b,251239999,2024-11-10 11:55:54-08:00,2024-11-10,-122.7352497983,45.3071461426,84QV8747+,62.0,,7.8,12.8,,2.9,,1012.3,Psilocybe semilanceata,"Oregon, US",3
+419c973e-0e31-42e0-a3ec-bb0908ded67a,250466749,2024-11-03 10:05:00-08:00,2024-11-03,-122.6709121056,45.2932620442,84QV78VH+,29.0,,7.8,14.4,0.3,6.8,,1023.0,Psilocybe semilanceata,"Oregon, US",5
+a53c84f3-eb9c-4bf6-ba61-ee788bd8afd0,250466747,2024-11-03 10:05:00-08:00,2024-11-03,-122.7095790085,45.3890759296,84QV97QR+,100.0,,7.8,14.4,0.3,6.8,,1023.0,Psilocybe semilanceata,"Oregon, US",4
+66ed5bd5-a239-4de5-9cd8-47e7af83699b,248804090,2024-10-21 14:16:11-07:00,2024-10-21,-122.7420478456,45.3537833337,84QV9735+,127.0,,7.2,15.6,,8.2,,1018.8,Psilocybe semilanceata,"Oregon, US",4

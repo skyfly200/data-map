@@ -1,6 +1,14 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-7f0c056d-f23c-4d8b-b682-e78319c23913,350344769,2026-03-14 18:39:51-06:00,2026-03-14,-105.1285933303,39.7747962829,1656.0,,11.0,23.0,0.0,27.0,,1006.5,Hohenbuehelia mastrucata,"Prospect Park Trail, Wheat Ridge, CO, US",1
-ace6a660-1662-4bec-b8f9-78c3acd7368a,235639331,2024-08-13 17:08:05-06:00,2024-08-13,-107.7524033333,38.15435,2129.0,,10.0,18.0,15.2,7.5,,1031.3,Hohenbuehelia mastrucata,"US-550, Ridgway, CO, US",3
-a7aa7e03-5170-4455-ba70-6fe70c71264e,55029622,2020-07-31 07:15:00-06:00,2020-07-31,-105.422731272,41.2526770281,2561.0,,,,,12.5,,,Hohenbuehelia mastrucata,"Albany County, WY, USA",1
-63acac53-9acf-4cac-b548-31c2f99792e7,32447823,2019-07-26 20:01:07-06:00,2019-07-26,-105.2990111317,39.4923067812,2608.0,,18.3,32.2,,11.4,,1015.8,Hohenbuehelia mastrucata,"Colorado, US",2
-f3ff5942-40a3-407c-99a6-51db1b1f2e10,10240890,2018-03-13 16:53:59-06:00,2018-03-13,-105.2920133333,39.9972216667,1814.0,,-1.0,13.0,,4.3,,,Hohenbuehelia mastrucata,"Boulder Mountain Park, Boulder, CO, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+7f0c056d-f23c-4d8b-b682-e78319c23913,350344769,2026-03-14 18:39:51-06:00,2026-03-14,-105.1285933303,39.7747962829,1656.0,,11.0,23.0,0.0,27.0,,1006.5,Hohenbuehelia mastrucata,"Prospect Park Trail, Wheat Ridge, CO, US",1,
+ace6a660-1662-4bec-b8f9-78c3acd7368a,235639331,2024-08-13 17:08:05-06:00,2024-08-13,-107.7524033333,38.15435,2129.0,,10.0,18.0,15.2,7.5,,1031.3,Hohenbuehelia mastrucata,"US-550, Ridgway, CO, US",3,
+a7aa7e03-5170-4455-ba70-6fe70c71264e,55029622,2020-07-31 07:15:00-06:00,2020-07-31,-105.422731272,41.2526770281,2561.0,,,,,12.5,,,Hohenbuehelia mastrucata,"Albany County, WY, USA",1,
+63acac53-9acf-4cac-b548-31c2f99792e7,32447823,2019-07-26 20:01:07-06:00,2019-07-26,-105.2990111317,39.4923067812,2608.0,,18.3,32.2,,11.4,,1015.8,Hohenbuehelia mastrucata,"Colorado, US",2,
+f3ff5942-40a3-407c-99a6-51db1b1f2e10,10240890,2018-03-13 16:53:59-06:00,2018-03-13,-105.2920133333,39.9972216667,1814.0,,-1.0,13.0,,4.3,,,Hohenbuehelia mastrucata,"Boulder Mountain Park, Boulder, CO, US",1,
+4d9f9826-d78f-42ea-af76-6d4911c98b81,159363722,2023-04-30 14:43:19-07:00,2023-04-30,-122.763482,45.646781,15.0,,10.0,17.8,0.0,7.5,,1014.2,Hohenbuehelia mastrucata,"St. Johns, Portland, OR, USA",1,84QVJ6WP+
+5995e9e5-ce87-41f3-9960-03723a5fbf33,24618928,2019-05-05 12:32:06-07:00,2019-05-05,-122.7610015869,45.6485900879,24.0,,7.8,23.9,0.0,9.0,,1011.4,Hohenbuehelia mastrucata,"8499 N Kelley Point Park Rd, Portland, OR 97203, USA",2,84QVJ6XQ+
+70d69c6d-a8ad-4a62-a470-42b494b17782,22566080,2019-04-15 12:52:20-07:00,2019-04-15,-122.7638092041,45.6479873657,14.0,,3.3,11.7,,5.6,,1009.4,Hohenbuehelia mastrucata,"8491 N Kelley Point Park Rd, Portland, OR 97203, USA",2,84QVJ6XP+
+501d8f02-de37-498b-b099-b0e4fa55b47d,18669776,2018-11-26 09:50:00-08:00,2018-11-26,-122.7608979128,45.646543339,22.0,,7.2,10.0,,16.3,,1015.3,Hohenbuehelia mastrucata,"St. Johns, Portland, OR, USA",1,84QVJ6WQ+
+003a84a1-9323-4872-b03c-2e56c8a20a09,11348754,2018-04-22 08:33:00-07:00,2018-04-22,-122.7634541877,45.6482584029,14.0,,5.0,17.8,0.0,9.3,,1026.6,Hohenbuehelia mastrucata,"North Portland, Portland, OR, USA",1,84QVJ6XP+
+98deb330-c3ff-4682-8a94-aa8069fea6b9,10736188,2018-04-09 09:55:00-07:00,2018-04-09,-122.7643386461,45.6460191775,15.0,,4.4,18.3,0.0,4.1,,1020.6,Hohenbuehelia mastrucata,"North Portland, Portland, OR, USA",1,84QVJ6WP+
+39cf6103-5ede-4cfc-acd1-bd32c4d21dbd,9075714,2017-12-04 08:35:00-08:00,2017-12-04,-122.763513783,45.6479240488,15.0,,2.8,7.2,,2.9,,1034.0,Hohenbuehelia mastrucata,"North Portland, Portland, OR, USA",1,84QVJ6XP+
+83c980d0-9a4b-45f7-9f15-a964b8644442,8734394,2016-04-19 14:41:00-07:00,2016-04-19,-122.7629041672,45.6476290165,15.0,,10.0,30.6,0.0,3.2,,1013.4,Hohenbuehelia mastrucata,"North Portland, Portland, OR, USA",1,84QVJ6XP+

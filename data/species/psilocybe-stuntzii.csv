@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5cc27836-38c0-4f02-a932-a919ea361db2,337919072,2025-11-28 12:42:10-08:00,2025-11-28,-122.6783854142,45.5150549818,84QVG88C+,43.0,,8.0,12.0,0.0,17.5,,1021.2,Psilocybe stuntzii,"SW Madison & 4th, Portland, OR 97204, USA",5
+e4541779-2927-404f-b950-345df02e016e,253212831,2024-11-26 13:29:36-08:00,2024-11-26,-122.5847763938,45.4842181677,84QVFCM8+,71.0,,4.4,8.9,1.3,4.7,,1021.7,Psilocybe stuntzii,"SE Steele St, Portland, OR, US",6
+050417bc-db1e-4fa4-b84e-8ff67dba9c10,189924728,2023-10-25 18:50:49-07:00,2023-10-25,-122.88239985,44.819516532,84PVR499+,109.0,,3.3,8.9,7.6,12.6,,1011.6,Psilocybe stuntzii,"Oregon, US",3
+8494ca46-95c1-46cb-8dd0-84dd67964c31,98666533,2021-10-18 17:59:26-07:00,2021-10-18,-122.7945783333,45.3128866667,84QV8674+,67.0,,9.4,14.4,0.0,3.7,,1015.0,Psilocybe stuntzii,"SW Collina Ln, Wilsonville, OR, US",2
+5bb98a0f-078d-4330-87be-779769bf2bf9,63443292,2020-10-24 12:00:46-07:00,2020-10-24,-122.6752066612,45.6373196451,84QVJ8PF+,28.0,,6.1,10.6,,10.9,,1020.2,Psilocybe stuntzii,"Hough, Vancouver, WA 98660, USA",3

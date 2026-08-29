@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f2147cc0-18a2-476e-a4b7-21a126cdf939,62528812,2020-10-12 15:49:17-07:00,2020-10-12,-122.0415808251,44.5260295594,84PVGXG5+,1125.0,,,,,,,,Cortinarius aurantiobasis,"Willamette National Forest, Idanha, OR, US",2

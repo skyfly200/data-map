@@ -1,3 +1,5 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-88b60878-40f4-45da-94be-8aa4a86536ea,185248473,2023-09-27 18:32:06-06:00,2023-09-27,-105.5680579722,40.207292,2601.0,,-1.3,23.4,0.0,4.1,,1026.7,Lactarius glyciosmus,"Allenspark, CO 80510, USA",1
-2179a4aa-e9f8-4b19-9524-c1ca2ba116f7,145675072,2015-08-23 23:35:00-06:00,2015-08-23,-105.6185272,40.0693832,3326.0,,,,,3.4,,,Lactarius glyciosmus,"Lake Isabelle, Colorado 80466, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+88b60878-40f4-45da-94be-8aa4a86536ea,185248473,2023-09-27 18:32:06-06:00,2023-09-27,-105.5680579722,40.207292,2601.0,,-1.3,23.4,0.0,4.1,,1026.7,Lactarius glyciosmus,"Allenspark, CO 80510, USA",1,
+2179a4aa-e9f8-4b19-9524-c1ca2ba116f7,145675072,2015-08-23 23:35:00-06:00,2015-08-23,-105.6185272,40.0693832,3326.0,,,,,3.4,,,Lactarius glyciosmus,"Lake Isabelle, Colorado 80466, USA",1,
+45eb245a-c1d4-4c2b-9428-ead099a37328,189772758,2023-11-02 10:17:49-07:00,2023-11-02,-122.7867798507,45.4347840882,48.0,,9.4,18.3,,10.5,,1014.9,Lactarius glyciosmus,"Bull Mountain, Tigard, OR, USA",1,84QVC6M7+
+4cf4ea01-9938-4171-b888-a9ea8690c6f3,44924068,2020-05-03 16:25:00-10:00,2020-05-03,-122.7146722222,45.5125194444,253.0,,7.2,15.0,5.8,9.4,,1024.6,Lactarius glyciosmus,"Southwest Portland, Portland, OR, USA",1,84QVG77P+

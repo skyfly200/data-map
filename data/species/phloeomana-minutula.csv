@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+13b95d5f-f90e-4f2e-9260-278ae7516bd6,65242051,2016-10-16,2016-10-16,-122.721,45.3666,84QV978H+,120.0,,10.6,13.9,,22.6,,997.8,Phloeomana minutula,"Stafford, Clackamas Co., Oregon, USA",1

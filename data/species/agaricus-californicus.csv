@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+18283140-bcdd-4078-a654-8457aa32a5c5,323710184,2025-10-28 11:34:30-07:00,2025-10-28,-122.7251067045,45.5595288211,84QVH75F+,3.0,,6.0,14.0,2.7,9.1,,1023.2,Agaricus californicus,"Oregon, US",1
+d7eaddad-f90c-487a-b7c9-d46c939bdcc8,247997843,2024-10-17 11:40:10-07:00,2024-10-17,-122.9555784796,45.0137339874,84QV227V+,49.0,,8.3,17.2,7.4,10.8,,1019.0,Agaricus californicus,"Salem, OR, US",1

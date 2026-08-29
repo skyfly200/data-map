@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a898c478-4d5c-4aec-8c53-cb8003e5dd87,338248226,2026-01-10 13:55:00-08:00,2026-01-10,-122.5547192155,45.4748872013,84QVFCFW+,64.0,,1.7,10.6,0.0,7.2,,1031.4,Coprinopsis stercorea,"Southeast Portland, Portland, OR, USA",1

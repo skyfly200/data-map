@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+01d80035-de0e-4997-9928-eb8f1d8f9596,326562651,2025-11-12 16:10:41-08:00,2025-11-12,-122.7564611111,45.6046888889,84QVJ63V+,35.0,,8.0,16.0,0.1,5.1,,1011.0,Lepiota sp. 'castaneidisca-PNW14',"St. Johns, Portland, OR, USA",1

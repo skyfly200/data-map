@@ -1,13 +1,16 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-53007140-0f4d-47e6-913f-5f5e9a91db68,235655500,2024-08-13 11:33:36-06:00,2024-08-13,-107.8943060807,37.6032882965,3117.0,,10.0,18.0,15.2,7.5,,1031.3,Lactarius scrobiculatus,"Colorado, US",1
-8b5e068a-8e77-480a-a9cf-31bdaf399c86,178075870,2023-08-12 14:32:59-06:00,2023-08-12,-105.5710883655,40.0414075059,3250.0,,17.0,28.0,0.0,8.5,,1019.7,Lactarius scrobiculatus,"Boulder County, US-CO, US",2
-e3f4dede-8ae0-4faa-a759-541ac03a0ceb,175385871,2023-07-24 11:50:36-06:00,2023-07-24,-105.4475466667,39.674995,2838.0,,5.1,18.3,1.7,11.4,,1023.5,Lactarius scrobiculatus,"Mestaa’ėhehe Pass, Evergreen, CO, US",1
-e0f05501-ac34-42f3-a1ec-6062940ac5bb,131519443,2022-08-19 08:39:59-06:00,2022-08-19,-107.8468386468,37.7965440104,3298.0,,10.0,17.0,7.5,3.4,,1030.0,Lactarius scrobiculatus,"San Miguel County, US-CO, US",1
-10efb901-5a77-44bc-99e3-c21122366b2d,40349103,2018-08-16,2018-08-16,-107.836,37.9421,2652.0,,11.0,23.0,,6.2,,,Lactarius scrobiculatus,"Telluride, Colorado, USA",1
-2c83718d-ac35-4155-b87d-f010d1816598,31634263,2019-08-27 14:00:10-06:00,2019-08-27,-107.87716581,37.91587087,2940.0,,10.0,24.0,,11.2,,,Lactarius scrobiculatus,"San Miguel County, US-CO, US",1
-4edb7b3f-63fe-4f79-94c5-0ddf3e43fd41,310683553,2025-08-31 14:36:16-07:00,2025-08-31,-121.5401404445,45.2062000739,1151.0,,,,,,,,Lactarius scrobiculatus,"Oregon, US",1
-7d024066-3d04-458e-ab98-18eeba6a050d,242625435,2024-09-15 16:49:06-07:00,2024-09-15,-121.7391133333,45.2733116667,1105.0,,11.3,21.2,0.0,11.3,,1012.3,Lactarius scrobiculatus,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
-0e2bf495-512f-498e-a9dd-ca562df5c596,177620877,2023-08-06 14:30:00-07:00,2023-08-06,-121.7919722222,45.313425,1001.0,,17.9,28.0,0.0,14.6,,1020.2,Lactarius scrobiculatus,"Clackamas County, OR, USA",1
-b8aaee6a-c1b5-4675-8135-92c7a3df6f75,143771258,2022-10-10 10:38:53-07:00,2022-10-10,-121.741120729,45.2849282772,1127.0,,11.6,25.2,0.0,10.5,,1016.6,Lactarius scrobiculatus,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
-a73f1381-4348-4415-a268-313a5c0fd61e,136364068,2022-09-24 14:35:56-07:00,2022-09-24,-121.60575,45.41325,1206.0,,9.7,26.5,0.0,3.8,,1021.1,Lactarius scrobiculatus,"Mt. Hood National Forest, Mount Hood Parkdale, OR, US",1
-13fd9754-ef6f-4217-9cad-7cc4a0d83ff1,33971763,2019-10-06 13:13:02-07:00,2019-10-06,-121.7781353184,45.3055969812,1132.0,,,,,,,,Lactarius scrobiculatus,"Mt. Hood National Forest, Government Camp, OR, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+53007140-0f4d-47e6-913f-5f5e9a91db68,235655500,2024-08-13 11:33:36-06:00,2024-08-13,-107.8943060807,37.6032882965,3117.0,,10.0,18.0,15.2,7.5,,1031.3,Lactarius scrobiculatus,"Colorado, US",1,
+8b5e068a-8e77-480a-a9cf-31bdaf399c86,178075870,2023-08-12 14:32:59-06:00,2023-08-12,-105.5710883655,40.0414075059,3250.0,,17.0,28.0,0.0,8.5,,1019.7,Lactarius scrobiculatus,"Boulder County, US-CO, US",2,
+e3f4dede-8ae0-4faa-a759-541ac03a0ceb,175385871,2023-07-24 11:50:36-06:00,2023-07-24,-105.4475466667,39.674995,2838.0,,5.1,18.3,1.7,11.4,,1023.5,Lactarius scrobiculatus,"Mestaa’ėhehe Pass, Evergreen, CO, US",1,
+e0f05501-ac34-42f3-a1ec-6062940ac5bb,131519443,2022-08-19 08:39:59-06:00,2022-08-19,-107.8468386468,37.7965440104,3298.0,,10.0,17.0,7.5,3.4,,1030.0,Lactarius scrobiculatus,"San Miguel County, US-CO, US",1,
+10efb901-5a77-44bc-99e3-c21122366b2d,40349103,2018-08-16,2018-08-16,-107.836,37.9421,2652.0,,11.0,23.0,,6.2,,,Lactarius scrobiculatus,"Telluride, Colorado, USA",1,
+2c83718d-ac35-4155-b87d-f010d1816598,31634263,2019-08-27 14:00:10-06:00,2019-08-27,-107.87716581,37.91587087,2940.0,,10.0,24.0,,11.2,,,Lactarius scrobiculatus,"San Miguel County, US-CO, US",1,
+4edb7b3f-63fe-4f79-94c5-0ddf3e43fd41,310683553,2025-08-31 14:36:16-07:00,2025-08-31,-121.5401404445,45.2062000739,1151.0,,,,,,,,Lactarius scrobiculatus,"Oregon, US",1,
+7d024066-3d04-458e-ab98-18eeba6a050d,242625435,2024-09-15 16:49:06-07:00,2024-09-15,-121.7391133333,45.2733116667,1105.0,,11.3,21.2,0.0,11.3,,1012.3,Lactarius scrobiculatus,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1,
+0e2bf495-512f-498e-a9dd-ca562df5c596,177620877,2023-08-06 14:30:00-07:00,2023-08-06,-121.7919722222,45.313425,1001.0,,17.9,28.0,0.0,14.6,,1020.2,Lactarius scrobiculatus,"Clackamas County, OR, USA",1,
+b8aaee6a-c1b5-4675-8135-92c7a3df6f75,143771258,2022-10-10 10:38:53-07:00,2022-10-10,-121.741120729,45.2849282772,1127.0,,11.6,25.2,0.0,10.5,,1016.6,Lactarius scrobiculatus,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1,
+a73f1381-4348-4415-a268-313a5c0fd61e,136364068,2022-09-24 14:35:56-07:00,2022-09-24,-121.60575,45.41325,1206.0,,9.7,26.5,0.0,3.8,,1021.1,Lactarius scrobiculatus,"Mt. Hood National Forest, Mount Hood Parkdale, OR, US",1,
+13fd9754-ef6f-4217-9cad-7cc4a0d83ff1,33971763,2019-10-06 13:13:02-07:00,2019-10-06,-121.7781353184,45.3055969812,1132.0,,,,,,,,Lactarius scrobiculatus,"Mt. Hood National Forest, Government Camp, OR, US",1,
+38cb9326-c14c-4ac2-b5f4-4a03bdd76491,310956372,2025-08-31 13:00:57-07:00,2025-08-31,-121.8121991553,45.9457428961,1294.0,,15.8,29.1,0.0,8.9,,1014.8,Lactarius scrobiculatus,"Skamania County, US-WA, US",1,84QWW5WQ+
+36259536-5e25-4022-98d8-c8da1ec87dd3,243441961,2024-09-21 11:57:33-07:00,2024-09-21,-121.8281466667,46.00435,1319.0,,8.4,23.7,0.0,5.2,,1020.6,Lactarius scrobiculatus,"Thomas Lake Trail, Carson, WA, US",1,84RW253C+
+39a129b1-9bac-41c2-85ca-58e50454caa3,137592103,2022-09-30 16:25:00-07:00,2022-09-30,-121.9763710907,44.4940370764,1134.0,,,,,,,,Lactarius scrobiculatus,"Linn County, OR, USA",1,84PWF2VF+

@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+49e88a76-516f-4b3b-b17f-4359d2d6bc6d,247348323,2024-10-13 10:21:08-07:00,2024-10-13,-121.7597685431,44.4967233902,84PWF6WR+,1304.0,,,,,,,,Russula similaris,"Oregon, US",1
+ae75c056-3f74-4386-ae63-2d2deaaeb31f,184898425,2023-09-24 13:59:13-07:00,2023-09-24,-121.8082569558,44.2471811797,84PW65WR+,1613.0,,,,,,,,Russula similaris,"Oregon, US",2
+2d733d2a-6129-42b5-96c1-ad83368ceece,180582598,2023-08-26 07:03:10-07:00,2023-08-26,-121.6305083333,44.3107533333,84PW8969+,1046.0,,12.0,32.0,0.0,11.4,,1018.5,Russula similaris,"Deschutes National Forest, Sisters, OR, US",2

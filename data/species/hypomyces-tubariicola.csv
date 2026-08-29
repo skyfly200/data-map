@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+83e43574-bbf2-4750-b185-1a1c13f909c4,19739072,2017-02-28,2017-02-28,-122.6543970779,45.6534122054,84QVM83W+,39.0,,1.1,10.0,,5.1,,1019.7,Hypomyces tubariicola,"4208 NE 18th Ct, Vancouver, WA 98663, USA",1

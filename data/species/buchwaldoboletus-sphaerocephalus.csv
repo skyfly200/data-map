@@ -1,2 +1,5 @@
 uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 bbc10ca9-d8de-4def-b2fc-92ab2e4ed01c,182118683,2023-09-06 16:35:00-07:00,2023-09-06,-122.5156933355,45.1786748009,84QV5FHM+,127.0,,10.0,25.0,0.0,5.1,,1015.4,Buchwaldoboletus sphaerocephalus,"Clackamas County, US-OR, US",2
+3526bb9b-0cc3-4d16-8519-6f6448098e42,318096096,2025-10-01 16:50:22-07:00,2025-10-01,-122.6421356201,45.5528259277,84QVH935+,77.0,,14.0,17.0,11.5,15.6,,1012.5,Buchwaldoboletus sphaerocephalus,Portland,1
+3055e3dc-323e-46fc-84b9-dfbc30f79172,318083996,2025-09-30 18:07:00-07:00,2025-09-30,-121.533175,45.98566,84QWXFP8+,592.0,,6.0,19.0,2.4,3.2,,1009.4,Buchwaldoboletus sphaerocephalus,"Klickitat County, WA, USA",2
+9f349b48-dabf-403e-beec-232a08073756,302190008,2025-07-29 08:50:00-07:00,2025-07-29,-123.01583055,45.0372388333,84QR2XPM+,54.0,,12.8,33.3,0.0,7.2,,1018.6,Buchwaldoboletus sphaerocephalus,"Jays Dr NE, Keizer, OR, US",2

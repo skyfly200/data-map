@@ -1,2 +1,3 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-abf37931-9490-40d1-acda-6e5401c8c72f,345394771,2026-03-26 16:43:00-07:00,2026-03-26,-122.2253453037,45.3084680539,383.0,,-1.0,15.0,0.0,5.4,,1032.5,Rhizocybe vermicularis,"Clackamas County, OR, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+abf37931-9490-40d1-acda-6e5401c8c72f,345394771,2026-03-26 16:43:00-07:00,2026-03-26,-122.2253453037,45.3084680539,383.0,,-1.0,15.0,0.0,5.4,,1032.5,Rhizocybe vermicularis,"Clackamas County, OR, USA",1,
+0dde5393-f135-485e-861e-0d1a0f31de01,43814837,2020-04-26 10:15:25-07:00,2020-04-26,-121.9676501267,45.8716095034,489.0,,5.0,20.6,,6.1,,1018.7,Rhizocybe vermicularis,"Gifford Pinchot National Forest, Carson, WA, US",2,84QWV2CJ+

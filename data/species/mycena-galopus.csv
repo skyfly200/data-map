@@ -1,2 +1,4 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-1e176964-9587-490d-b88d-abf4de974a79,179050473,2023-08-18 11:43:44-06:00,2023-08-18,-107.9362790287,37.7953407447,3077.0,,11.0,22.0,3.3,5.9,,1032.5,Mycena galopus,"Durango, CO 81301, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+1e176964-9587-490d-b88d-abf4de974a79,179050473,2023-08-18 11:43:44-06:00,2023-08-18,-107.9362790287,37.7953407447,3077.0,,11.0,22.0,3.3,5.9,,1032.5,Mycena galopus,"Durango, CO 81301, USA",1,
+e1dd550f-120c-44de-aedd-41b5abb27c0e,212492593,2024-04-30 19:18:49-07:00,2024-04-30,-122.7904283333,45.4339166667,64.0,,5.6,11.7,,12.0,,1019.9,Mycena galopus,"Dirksen Nature Park, Tigard, OR, US",1,84QVC6M5+
+0710c098-2649-4ea1-8dea-fd52d4375c26,17478524,2018-10-13 12:10:17-07:00,2018-10-13,-121.9833829814,44.4989126036,1114.0,,,,,,,,Mycena galopus,"Linn County, US-OR, US",1,84PWF2X8+

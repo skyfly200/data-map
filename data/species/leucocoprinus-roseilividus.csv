@@ -1,5 +1,13 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-138a55ee-cd22-41fa-bd72-1ff7f7c3cbbc,332776340,2025-12-20 12:35:00-08:00,2025-12-20,-122.2881036097,45.3194407757,226.0,,5.6,10.6,8.4,5.5,,1015.9,Leucocoprinus roseilividus,"Clackamas County, OR, USA",0
-94070942-1b2c-4a75-9d6f-63e5c1535154,251477635,2024-11-10 09:05:20-08:00,2024-11-10,-122.2821283333,45.30637,289.0,,10.0,13.9,,19.2,,1012.3,Leucocoprinus roseilividus,"SE Tracy Rd, Estacada, OR, US",0
-34f95d2e-7bec-40ba-a66b-945bdf854fc3,247065928,2024-10-12 16:01:07-07:00,2024-10-12,-122.2996574997,45.4880955,80.0,,8.9,24.4,0.0,4.0,,1017.8,Leucocoprinus roseilividus,"Gresham, OR 97080, USA",0
-b25b10c0-9b15-4728-a321-0093839dd2e1,68282635,2021-01-17 16:17:18-10:00,2021-01-17,-122.2683494819,45.4656478804,127.0,,6.7,10.6,,1.8,,1031.9,Leucocoprinus roseilividus,"Corbett, Corbett, OR, US",0
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+138a55ee-cd22-41fa-bd72-1ff7f7c3cbbc,332776340,2025-12-20 12:35:00-08:00,2025-12-20,-122.2881036097,45.3194407757,226.0,,5.6,10.6,8.4,5.5,,1015.9,Leucocoprinus roseilividus,"Clackamas County, OR, USA",0,
+94070942-1b2c-4a75-9d6f-63e5c1535154,251477635,2024-11-10 09:05:20-08:00,2024-11-10,-122.2821283333,45.30637,289.0,,10.0,13.9,,19.2,,1012.3,Leucocoprinus roseilividus,"SE Tracy Rd, Estacada, OR, US",0,
+34f95d2e-7bec-40ba-a66b-945bdf854fc3,247065928,2024-10-12 16:01:07-07:00,2024-10-12,-122.2996574997,45.4880955,80.0,,8.9,24.4,0.0,4.0,,1017.8,Leucocoprinus roseilividus,"Gresham, OR 97080, USA",0,
+b25b10c0-9b15-4728-a321-0093839dd2e1,68282635,2021-01-17 16:17:18-10:00,2021-01-17,-122.2683494819,45.4656478804,127.0,,6.7,10.6,,1.8,,1031.9,Leucocoprinus roseilividus,"Corbett, Corbett, OR, US",0,
+cba43217-f34c-4bba-b987-5eea198999aa,320540157,2025-10-12 13:27:13-07:00,2025-10-12,-122.7170595154,45.5186662913,219.0,,8.0,13.0,2.0,9.5,,1012.0,Leucocoprinus roseilividus,"Arlington Heights, Portland, OR, USA",0,84QVG79M+
+f2414585-7d76-4c79-a64d-cd6a759e5234,252065132,2024-11-16 13:30:54-08:00,2024-11-16,-122.704545,45.5192216667,137.0,,2.2,10.0,6.1,9.0,,1017.1,Leucocoprinus roseilividus,"Washington Park, Portland, OR, US",0,84QVG79W+
+ba26411f-fbaa-4fda-8db2-ccd5ddb45de8,251219834,2024-10-16 16:50:59-07:00,2024-10-16,-122.7819888889,45.5783694444,262.0,,11.7,17.8,,5.5,,1016.8,Leucocoprinus roseilividus,"Linnton, Portland, OR, USA",1,84QVH6H9+
+6d9a4e70-0526-4880-8417-c5512bca9fda,251083653,2024-10-12 13:22:37-07:00,2024-10-12,-122.7715527778,45.5727388889,294.0,,7.2,24.4,0.0,2.4,,1018.5,Leucocoprinus roseilividus,"Linnton, Portland, OR, USA",1,84QVH6FH+
+8b96ad1a-cf31-4836-b763-d655f3d36342,250996101,2024-11-07 10:43:00-08:00,2024-11-07,-122.6591277778,44.8799222222,386.0,,2.2,16.7,0.0,3.2,,1023.2,Leucocoprinus roseilividus,"Marion County, OR, USA",0,84PVV8HR+
+ea275a31-4603-402c-be7d-b9a1f9c0042e,246706808,2024-10-10 15:32:24-07:00,2024-10-10,-122.3930833997,45.5134471,79.0,,6.7,21.1,0.0,4.7,,1019.9,Leucocoprinus roseilividus,"Northeast, Gresham, OR, USA",0,84QVGJ74+
+275ef26e-1ba8-41e4-b760-4e3f7d6e0326,63574250,2020-10-25 09:07:18-07:00,2020-10-25,-122.38720833,45.831025,218.0,,3.9,8.9,0.0,24.9,,1031.8,Leucocoprinus roseilividus,"NE Lucia Falls Rd, Yacolt, WA, US",0,84QVRJJ7+
+6de6ac9d-45cf-4d26-ae41-c84cdd7f3a23,18346137,2018-11-11 09:25:30-08:00,2018-11-11,-122.8455283333,45.4978966667,62.0,,-2.2,13.9,0.0,11.6,,1028.5,Leucocoprinus roseilividus,"Tualatin Hills Nature Reserve, Beaverton, OR, US",0,84QVF5X3+

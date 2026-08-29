@@ -1,3 +1,8 @@
 uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
 4a99a195-cc95-459b-b6c7-d1763bf14fbb,139080804,2022-10-14 14:43:00-07:00,2022-10-14,-121.6220333333,45.3198888889,1324.0,,11.4,23.8,0.0,2.4,,1016.1,Hygrophoropsis rufa,"Hood River, Oregon, United States",1,
 ea360667-3bf3-4c16-ae11-d3cf44b54566,99838970,2021-10-30 11:51:29-07:00,2021-10-30,-122.5300666667,45.2462366667,150.0,,7.2,16.7,0.0,20.8,,1015.6,Hygrophoropsis rufa,"Mulino, OR, US",1,84QV6FW9+
+d7e00e04-f12f-4458-9d9a-2dc323293af9,189819721,2023-10-31 15:07:42-07:00,2023-10-31,-122.3733005673,44.3709145843,711.0,,,,,,,,Hygrophoropsis rufa,"Cascadia, OR 97329, USA",1,84PV9JCG+
+b14fa8d8-2931-4ebc-810f-dee71421b3c0,61837994,2020-10-05 18:09:52-07:00,2020-10-05,-122.052834,45.853051,638.0,,11.1,23.9,0.0,3.5,,1021.7,Hygrophoropsis rufa,"Carson, WA 98610, USA",2,84QVVW3W+
+7a09e691-4d3e-4eba-b0aa-26c4fb54b4eb,17808048,2018-10-13 15:11:00-07:00,2018-10-13,-122.6271972999,44.8464869651,569.0,,5.6,22.8,0.0,13.3,,1019.9,Hygrophoropsis rufa,"Marion County, OR, USA",2,84PVR9WF+
+a3eb822c-cc58-4b88-b68a-9aadf809d04d,17499897,2018-10-13 10:12:00-05:00,2018-10-13,-122.5889805556,44.6310666667,1187.0,,5.6,22.8,0.0,13.3,,1019.9,Hygrophoropsis rufa,"Linn County, OR, USA",2,84PVJCJ6+
+d197683e-3b34-45c7-ada8-834c2e0467bd,17474171,2018-10-13 10:04:35-07:00,2018-10-13,-122.58905548,44.63170035,1198.0,,5.6,22.8,0.0,13.3,,1019.9,Hygrophoropsis rufa,"Linn County, US-OR, US",2,84PVJCJ6+

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6fe482c9-3678-48e3-bfc6-4f5793674be5,271530769,2025-04-16 02:41:04-07:00,2025-04-16,-122.6795047902,45.4524499497,84QVF82C+,120.0,,7.8,21.1,0.0,10.4,,1016.7,Psilocybe subaeruginascens,"Oregon, US",3

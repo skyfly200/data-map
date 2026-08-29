@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a888c47f-a316-40e3-a462-059648200dab,251470722,2024-10-26 17:03:12-07:00,2024-10-26,-121.9562666667,45.8956055556,84QWV2WV+,407.0,,5.7,16.9,0.0,4.4,,1016.6,Hydnellum sp. 'PNW07',"Skamania County, WA, USA",1

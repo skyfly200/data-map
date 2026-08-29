@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b557eaa1-6be0-444b-8290-1d206e7d8b58,328725336,2025-11-15 14:38:27-08:00,2025-11-15,-122.840788,45.497572,84QVF5X5+,68.0,,8.0,15.0,0.0,8.8,,1012.8,Lactarius flexuosus,"Cooper Mountain - Aloha North, Beaverton, OR, USA",1
+fce39bbe-b7f2-40dc-b38a-ed94436c4ecd,326732750,2025-11-15 16:28:00-08:00,2025-11-15,-122.7249126176,45.6171494829,84QVJ78G+,15.0,,9.0,16.0,0.2,6.0,,1013.7,Lactarius flexuosus,"St. Johns, Portland, OR, USA",1

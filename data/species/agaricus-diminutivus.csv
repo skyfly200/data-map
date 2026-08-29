@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+129fe6ce-cc5c-4c3b-bda7-7fe899f2f56c,322716051,2025-10-23 22:48:04-07:00,2025-10-23,-122.6727220948,45.3382932671,84QV88QG+,176.0,,9.0,17.0,0.0,2.1,,1019.6,Agaricus diminutivus,"Oregon, US",1

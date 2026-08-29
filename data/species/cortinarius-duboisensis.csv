@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e163d7a1-5105-477d-bf21-ef9aa3e10d3b,191530974,2023-11-19 15:34:03-08:00,2023-11-19,-121.4290880354,45.9577088636,84QWXH5C+,647.0,,3.4,8.2,3.8,15.9,,1025.6,Cortinarius duboisensis,"Washington, US",2

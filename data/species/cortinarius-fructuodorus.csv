@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0813c4d6-908c-431d-8996-b85cfce6470d,17478828,2018-10-13 15:27:53-07:00,2018-10-13,-122.9135730677,44.900400904,84PVW32P+,148.0,,5.6,22.8,0.0,13.3,,1019.9,Cortinarius fructuodorus,"Shangri-la School, Salem, OR, US",4
