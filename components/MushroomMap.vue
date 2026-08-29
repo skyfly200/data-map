@@ -203,7 +203,7 @@ watch(selected, async (s) => {
     const details = await fetchObservationDetails(id)
     observationInfo.value = details
     if (details?.photos) {
-      images.value = details.photos.map(p => p.large_url || p.url || p.original_url || p.square_url)
+      images.value = details.photos.map(p => p.url || p.original_url || p.square_url || p.large_url)
     }
   }
 })
