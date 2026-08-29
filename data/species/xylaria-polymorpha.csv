@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+89bf5ea2-8c00-44fb-a403-ab53addfa513,112776929,2022-04-24 12:18:05-07:00,2022-04-24,-122.2184333333,45.5366722222,84QVGQPJ+,163.0,,3.3,21.1,0.0,5.9,,1021.5,Xylaria polymorpha,"Corbett, OR 97019, USA",2

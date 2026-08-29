@@ -1,4 +1,5 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-3d3c6aa4-dbcd-4e9c-853f-4cf21cb1ed45,383169756,2026-07-19 19:06:26-06:00,2026-07-19,-108.0391166667,37.795355,3101.0,,11.0,23.7,0.4,5.8,,,Pyrrhulomyces astragalinus,"Dolores, CO, US",1
-2aa5ea44-b391-4686-9b1a-090f082b9c6f,187740424,2023-10-14 11:55:26-07:00,2023-10-14,-122.0997916667,45.56863,478.0,,13.3,17.8,,6.7,,1016.6,Pyrrhulomyces astragalinus,"Zigzag Ranger Station, Corbett, OR, US",1
-d4175017-d0ac-43a6-8e53-de07f3197593,64796721,2020-10-24 14:17:22-07:00,2020-10-24,-121.8703843076,45.3854488228,628.0,,6.7,14.4,,17.2,,1020.2,Pyrrhulomyces astragalinus,"Oregon, US",3
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+3d3c6aa4-dbcd-4e9c-853f-4cf21cb1ed45,383169756,2026-07-19 19:06:26-06:00,2026-07-19,-108.0391166667,37.795355,3101.0,,11.0,23.7,0.4,5.8,,,Pyrrhulomyces astragalinus,"Dolores, CO, US",1,
+2aa5ea44-b391-4686-9b1a-090f082b9c6f,187740424,2023-10-14 11:55:26-07:00,2023-10-14,-122.0997916667,45.56863,478.0,,13.3,17.8,,6.7,,1016.6,Pyrrhulomyces astragalinus,"Zigzag Ranger Station, Corbett, OR, US",1,
+d4175017-d0ac-43a6-8e53-de07f3197593,64796721,2020-10-24 14:17:22-07:00,2020-10-24,-121.8703843076,45.3854488228,628.0,,6.7,14.4,,17.2,,1020.2,Pyrrhulomyces astragalinus,"Oregon, US",3,
+764643a7-0fd0-4d0c-8cc0-48c7f931eece,324772818,2025-11-02 15:25:00-08:00,2025-11-02,-122.30575,45.1393083333,1093.0,,5.0,14.0,0.1,9.6,,1026.0,Pyrrhulomyces astragalinus,"Clackamas County, OR, USA",1,84QV4MQV+

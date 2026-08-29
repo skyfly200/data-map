@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1fa7080e-1f7a-4c73-bd10-8fdaabc376bc,244604558,2024-09-28 14:42:54-07:00,2024-09-28,-122.5601833333,45.2399805556,84QV6CQQ+,154.0,,10.0,23.3,0.0,7.6,,1012.8,Mycena stylobates,"Mulino, OR, USA",2

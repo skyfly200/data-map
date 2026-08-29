@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+375b922f-7ad2-425a-873e-1132bf547ead,65873587,2020-11-29 15:56:12+00:00,2020-11-29,-121.9436866667,45.2828783333,84QW73M4+,504.0,,4.4,11.1,0.0,23.2,,1022.7,Clavariadelphus mucronatus,"Mt. Hood National Forest, Welches, OR, US",1

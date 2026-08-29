@@ -1,7 +1,8 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-78a8b791-c64f-4977-875d-e0e60d4925ce,175419665,2023-05-17 12:38:41-07:00,2023-05-17,-121.7770444444,45.7100027778,32.0,,12.4,30.2,0.0,7.0,,1013.8,Tricholoma vernaticum,"Home Valley Store, Washington 98648, USA",1
-a1db8d3f-0888-4a80-acbf-0c491e3701c5,65244525,2019-05-16,2019-05-16,-121.4775,45.1974,1015.0,,,,,,,,Tricholoma vernaticum,"Rock Creek OHV Riding Area, Barlow Ranger District, Mount Hood National Forest, Wasco Co., Oregon, USA",1
-ecf279a7-895e-43b3-8993-d79a561e70ac,65240997,2016-04-27,2016-04-27,-121.4764,45.2001,970.0,,,,,,,,Tricholoma vernaticum,"Barlow Ranger District, Mount Hood National Forest, Hood River and Wasco Cos., Oregon, USA",1
-f8103f53-4784-48e4-bb69-34e5eafa9433,65236539,2013-06-01,2013-06-01,-121.4655,45.40185,1311.0,,9.4,26.7,0.0,13.9,,1019.1,Tricholoma vernaticum,"NF Road 44 -- aka Dufur Valley Rd., Barlow Ranger District and Hood River Ranger District, Mount Hood National Forest, Hood River Co., Oregon, USA",1
-31f6b047-734f-4ee3-b34d-6a5e1963325d,45649462,2020-05-11 13:33:00-10:00,2020-05-11,-121.5892139005,45.0785786704,1139.0,,,,,,,,Tricholoma vernaticum,"Oregon, US",3
-a9397624-7569-4b29-8263-50a7b609d7b5,45518424,2020-05-09 13:15:00-10:00,2020-05-09,-121.5778188223,45.0670650911,1182.0,,,,,,,,Tricholoma vernaticum,"Oregon, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+78a8b791-c64f-4977-875d-e0e60d4925ce,175419665,2023-05-17 12:38:41-07:00,2023-05-17,-121.7770444444,45.7100027778,32.0,,12.4,30.2,0.0,7.0,,1013.8,Tricholoma vernaticum,"Home Valley Store, Washington 98648, USA",1,
+a1db8d3f-0888-4a80-acbf-0c491e3701c5,65244525,2019-05-16,2019-05-16,-121.4775,45.1974,1015.0,,,,,,,,Tricholoma vernaticum,"Rock Creek OHV Riding Area, Barlow Ranger District, Mount Hood National Forest, Wasco Co., Oregon, USA",1,
+ecf279a7-895e-43b3-8993-d79a561e70ac,65240997,2016-04-27,2016-04-27,-121.4764,45.2001,970.0,,,,,,,,Tricholoma vernaticum,"Barlow Ranger District, Mount Hood National Forest, Hood River and Wasco Cos., Oregon, USA",1,
+f8103f53-4784-48e4-bb69-34e5eafa9433,65236539,2013-06-01,2013-06-01,-121.4655,45.40185,1311.0,,9.4,26.7,0.0,13.9,,1019.1,Tricholoma vernaticum,"NF Road 44 -- aka Dufur Valley Rd., Barlow Ranger District and Hood River Ranger District, Mount Hood National Forest, Hood River Co., Oregon, USA",1,
+31f6b047-734f-4ee3-b34d-6a5e1963325d,45649462,2020-05-11 13:33:00-10:00,2020-05-11,-121.5892139005,45.0785786704,1139.0,,,,,,,,Tricholoma vernaticum,"Oregon, US",3,
+a9397624-7569-4b29-8263-50a7b609d7b5,45518424,2020-05-09 13:15:00-10:00,2020-05-09,-121.5778188223,45.0670650911,1182.0,,,,,,,,Tricholoma vernaticum,"Oregon, US",2,
+96d04052-ccba-4f27-a22b-854f8a09fa62,279346746,2025-05-07 13:52:40-07:00,2025-05-07,-121.6157383214,44.5602679192,897.0,,3.0,25.0,0.0,12.2,,1016.2,Tricholoma vernaticum,"Oregon, US",1,84PWH96M+

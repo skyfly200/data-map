@@ -1,6 +1,7 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-c6c0500e-b0cd-46bb-998f-8a6c5a49641a,363884036,2026-05-17 10:32:36-06:00,2026-05-17,-104.8966533333,38.734045,2616.0,,9.0,19.0,5.3,10.7,,,Coprinellus disseminatus,"Old Stage Rd, Colorado Springs, CO, US",1
-9801155e-8ad7-4cbe-929f-58c11fb67c52,286629632,2025-05-10 16:10:15-06:00,2025-05-10,-105.0252311087,39.5109914534,1685.0,,6.7,23.9,0.0,10.3,,1022.6,Coprinellus disseminatus,"Littleton, CO, US",1
-f95975b5-1612-47b2-ba78-c2d4a3d58d26,282151802,2025-05-11 16:03:01-06:00,2025-05-11,-105.0338856706,39.5218387923,1679.0,,10.0,26.7,1.1,17.7,,1014.3,Coprinellus disseminatus,"Chatfield State Park, Littleton, CO, US",1
-5e5381e4-a3c3-4ace-a3c5-387ebe8e9e52,186920690,2023-09-18 17:40:38-06:00,2023-09-18,-105.0805666667,40.5799966667,1528.0,,12.8,28.9,0.0,9.3,,1011.3,Coprinellus disseminatus,"S Howes St, Fort Collins, CO, US",1
-ea8ab403-51d7-4aac-a773-2472b3cd3c28,165987601,2023-06-06 17:43:06-06:00,2023-06-06,-104.9998397827,39.7221679688,1604.0,,11.4,23.7,0.8,9.1,,1014.0,Coprinellus disseminatus,Denver,1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+c6c0500e-b0cd-46bb-998f-8a6c5a49641a,363884036,2026-05-17 10:32:36-06:00,2026-05-17,-104.8966533333,38.734045,2616.0,,9.0,19.0,5.3,10.7,,,Coprinellus disseminatus,"Old Stage Rd, Colorado Springs, CO, US",1,
+9801155e-8ad7-4cbe-929f-58c11fb67c52,286629632,2025-05-10 16:10:15-06:00,2025-05-10,-105.0252311087,39.5109914534,1685.0,,6.7,23.9,0.0,10.3,,1022.6,Coprinellus disseminatus,"Littleton, CO, US",1,
+f95975b5-1612-47b2-ba78-c2d4a3d58d26,282151802,2025-05-11 16:03:01-06:00,2025-05-11,-105.0338856706,39.5218387923,1679.0,,10.0,26.7,1.1,17.7,,1014.3,Coprinellus disseminatus,"Chatfield State Park, Littleton, CO, US",1,
+5e5381e4-a3c3-4ace-a3c5-387ebe8e9e52,186920690,2023-09-18 17:40:38-06:00,2023-09-18,-105.0805666667,40.5799966667,1528.0,,12.8,28.9,0.0,9.3,,1011.3,Coprinellus disseminatus,"S Howes St, Fort Collins, CO, US",1,
+ea8ab403-51d7-4aac-a773-2472b3cd3c28,165987601,2023-06-06 17:43:06-06:00,2023-06-06,-104.9998397827,39.7221679688,1604.0,,11.4,23.7,0.8,9.1,,1014.0,Coprinellus disseminatus,Denver,1,
+2fe66f26-5db0-4b18-a46a-355071448e19,51801860,2020-05-13 07:49:53-07:00,2020-05-13,-122.4620198591,44.9619027225,396.0,,10.0,17.2,,13.6,,1012.6,Coprinellus disseminatus,"Molalla, OR, US",1,84PVXG6Q+

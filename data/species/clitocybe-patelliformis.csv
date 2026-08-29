@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9570668f-2c1b-4972-bf31-6453ebc4f24b,191151393,2023-11-15 12:28:30-08:00,2023-11-15,-122.4849837823,45.0758597592,84QV3GG8+,206.0,,6.1,11.7,,4.7,,1013.7,Clitocybe patelliformis,"S Dickey Prairie Rd, Molalla, OR, US",2

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+54610d5f-2c5d-41c2-a738-1a03ea9a7cf8,180452886,2023-08-01 12:49:00-07:00,2023-08-01,-121.7361305556,45.2751166667,84QW77G7+,1115.0,,13.0,32.2,0.0,12.0,,1016.0,Fomitopsis betulina,"Clackamas County, OR, USA",1

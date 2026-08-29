@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f7537ab8-7734-49cf-bdff-b0a6f4855ef6,172560814,2023-07-09 11:13:00-07:00,2023-07-09,-122.4068098181,45.3834770508,84QV9HMV+,79.0,,14.4,28.9,0.0,5.2,,1012.9,Sporophagomyces chrysostomus,"Clackamas County, OR, USA",2

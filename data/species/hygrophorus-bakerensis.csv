@@ -1,0 +1,10 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fb3339f5-3913-4259-8465-dd730699e360,323955009,2025-10-29 12:49:58-07:00,2025-10-29,-121.9112783333,45.0084833333,84QW235Q+,664.0,,,,,,,,Hygrophorus bakerensis,"Mt. Hood National Forest, Estacada, OR, US",1
+7b73d1a6-3e39-4a96-8094-98848d8cf3a8,190849389,2023-11-07 16:00:00-08:00,2023-11-07,-121.6561238228,45.0749413624,84QW38FV+,1538.0,,,,,,,,Hygrophorus bakerensis,"Oregon, US",1
+414c5ccf-2c37-49d3-8c5c-3662ad827932,101976890,2021-11-26 10:33:15-08:00,2021-11-26,-122.0253221667,45.6627833333,84QVMX7F+,745.0,,8.3,11.1,,3.9,,1024.1,Hygrophorus bakerensis,"Beacon Rock State Park, Stevenson, WA, US",1
+76311b6d-7bd2-41ee-bc66-a230da20cc12,100122980,2021-10-31 13:09:59-07:00,2021-10-31,-121.7373116667,45.2686716667,84QW7797+,1112.0,,,,,,,,Hygrophorus bakerensis,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1
+eba0ae52-e362-4211-afc2-e7d70841cacc,37151231,2019-10-21 13:23:00-10:00,2019-10-21,-121.8804460575,45.2232811604,84QW64F9+,947.0,,,,,,,,Hygrophorus bakerensis,"Oregon, US",1
+0e699354-2eff-4e41-8ea4-21191e9cd742,37050955,2019-11-20 16:06:00-10:00,2019-11-20,-122.0478116559,45.2543188598,84QV7X32+,1171.0,,6.1,14.4,0.0,7.9,,1017.6,Hygrophorus bakerensis,"Oregon, US",1
+1dc8cf95-5c9e-4bca-a515-ce07450959a0,35188859,2019-11-01 12:11:15-07:00,2019-11-01,-121.8997099623,45.0109476642,84QW2462+,683.0,,,,,,,,Hygrophorus bakerensis,"Clackamas County, OR, USA",1
+3adbc97f-667f-48e9-b12e-e14b45551269,18336075,2018-11-04,2018-11-04,-121.81,45.31605,84QW858R+,916.0,,,,,,,,Hygrophorus bakerensis,"SW Mount Hood, Clackamas Co., Oregon, USA",1
+949dc2b4-49d9-44e9-b8a3-6382c7ad836b,18335709,2018-11-02,2018-11-02,-121.81,45.31605,84QW858R+,916.0,,,,,,,,Hygrophorus bakerensis,"SW Mount Hood, Clackamas Co., Oregon, USA",1

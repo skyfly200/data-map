@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c0947e73-6f8e-4896-912a-1578c6128dce,290755382,2025-05-30 14:26:00-07:00,2025-05-30,-121.7908916916,45.0325336637,84QW26M5+,1288.0,,,,,,,,Hypomyces aurantius,"Clackamas County, OR, USA",1
+35222195-ec62-44af-b8f1-7476d321940e,227916885,2023-12-14 18:21:00-08:00,2023-12-14,-122.2266523284,45.3087134998,84QV8Q5F+,383.0,,8.3,10.6,,28.7,,1021.4,Hypomyces aurantius,"Clackamas County, OR, USA",1
+6a5936db-6e20-4809-a36c-ec8e978c1ace,193084739,2023-11-23 13:48:00-08:00,2023-11-23,-121.9397824677,45.2970614838,84QW73W6+,469.0,,1.7,13.3,0.0,3.2,,1027.3,Hypomyces aurantius,"Clackamas County, OR, USA",1
+6e472636-9dcc-44f6-909e-64b349a15525,44657071,2020-05-01 12:25:00-07:00,2020-05-01,-121.826638038,45.3204743026,84QW85CF+,862.0,,,,,,,,Hypomyces aurantius,"Clackamas County, OR, USA",3
+1ca686cc-95ca-4af2-9bf9-60a929950dbb,27476751,2019-06-02 15:12:48-07:00,2019-06-02,-121.58058,45.1432333333,84QW4CV9+,961.0,,,,,,,,Hypomyces aurantius,"Mt. Hood National Forest, Maupin, OR, US",2

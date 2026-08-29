@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5e1b2ca0-78cb-4329-95d1-0a7fa8003ef2,317473664,2025-09-28 12:54:04-07:00,2025-09-28,-121.7820474878,45.3297053542,84QW86H9+,1254.0,,7.0,25.0,0.0,2.6,,1008.6,Boletopsis grisea,"Mt Hood, OR 97041, USA",1
+3ed4c681-0e94-4161-963d-9a516ed90dab,250695617,2024-11-05 10:53:00-08:00,2024-11-05,-121.7870182697,45.6698491338,84QWM697+,977.0,,4.3,9.8,0.0,14.2,,1026.0,Boletopsis grisea,"Washington, US",1
+bf0c13ec-fbeb-40f3-ac06-d5c7d75e353e,249264815,2024-10-25 12:22:06-07:00,2024-10-25,-121.944017,45.0027759722,84QW2334+,1154.0,,,,,,,,Boletopsis grisea,"Clackamas County, OR, USA",1
+ce2e823d-a435-4f2c-84ca-f5797124e088,249084787,2024-10-25 15:52:12-07:00,2024-10-25,-121.7976268,45.3082855,84QW8652+,1026.0,,3.5,13.0,0.0,10.0,,1018.6,Boletopsis grisea,"Rhododendron, OR 97049, USA",1
+699367da-29b3-47f6-acc0-131576b9c7b7,246200654,2024-10-07 10:27:33-07:00,2024-10-07,-121.879529,45.32002145,84QW84CC+,807.0,,8.3,23.4,0.0,5.8,,1017.5,Boletopsis grisea,"Mt. Hood Park Division Recreation Area, Rhododendron, OR, US",1
+47cdf7ba-bae2-4db1-867f-9967c79c95b5,245851167,2024-10-05 15:31:00-07:00,2024-10-05,-121.7707133333,45.30703,84QW864H+,1163.0,,6.7,20.1,0.0,7.1,,1023.0,Boletopsis grisea,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1

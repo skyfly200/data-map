@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+38cf4a9c-12c6-46bd-bb5d-4ba4425dfa0e,195801591,2024-01-04 13:33:43-08:00,2024-01-04,-121.9402616667,45.3028716667,84QW8335+,472.0,,3.3,8.9,,6.7,,1023.1,Hygrocybe punicea,"Zigzag Ranger Station, Welches, OR, US",1
+b15b972c-7534-4d07-9edd-3f118cf52dbe,66551041,2020-12-12 11:36:53-08:00,2020-12-12,-122.38913,45.3130583333,84QV8J76+,129.0,,1.1,7.8,,22.7,,1020.6,Hygrocybe punicea,"Milo McIver State Park, Eagle Creek, OR, US",1

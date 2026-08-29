@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2b6746c2-b3f4-4932-8d0b-89f9ea32348b,259101712,2025-01-20 13:09:57-08:00,2025-01-20,-122.2907025275,45.3217317258,84QV8PC5+,247.0,,2.2,7.2,0.0,29.1,,1033.1,Hygrocybe coccinea,"Eagle Fern Park, Eagle Creek, OR, US",2
+2dcefefd-7336-492d-93f8-fd4b79f381a1,248180451,2024-10-19 14:22:13-07:00,2024-10-19,-121.9404883333,45.3029333333,84QW8335+,472.0,,12.2,22.8,,5.8,,1023.4,Hygrocybe coccinea,"Zigzag Ranger Station, Government Camp, OR, US",1
+e64c1408-67c5-4b2f-a184-8cba0535bd49,102373619,2021-12-02 13:00:09+00:00,2021-12-02,-122.26583,45.4015783333,84QVCP2M+,237.0,,7.2,13.3,0.0,5.8,,1025.4,Hygrocybe coccinea,"Sandy, OR, US",1
+c604cf84-b531-4e07-b42b-4be48a16306e,68222970,2020-12-31 19:43:02+00:00,2020-12-31,-122.2583272171,45.3958078841,84QV9PWR+,302.0,,8.3,11.7,,16.0,,1019.7,Hygrocybe coccinea,"Meinig Memorial Park, Sandy, OR, US",1

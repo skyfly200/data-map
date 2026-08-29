@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8def2b81-585b-4aa3-8fbc-68b694a2cfa4,35189192,2019-11-01 16:59:56-07:00,2019-11-01,-122.1188201904,45.2305297852,84QV6VJJ+,947.0,,6.1,12.8,0.0,32.6,,1028.1,Hygrophorus erubescens,"Estacada, OR 97023, USA",1

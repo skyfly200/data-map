@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+70e912a9-bd8e-4f14-b516-95f85538316a,191153404,2023-11-15 15:19:11-08:00,2023-11-15,-122.4849145044,45.0767610965,84QV3GG8+,206.0,,6.1,11.7,,4.7,,1013.7,Lepiota sp. 'PNW15',"S Dickey Prairie Rd, Molalla, OR, US",1

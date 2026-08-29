@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c6776d6f-fbb3-4da9-9337-91f77a8e696d,187753646,2023-10-15 13:24:18-07:00,2023-10-15,-121.9040916667,44.8185883333,84PWR39W+,1299.0,,,,,,,,Mycena quiniaultensis,"Mt. Hood National Forest, Lyons, OR, US",1

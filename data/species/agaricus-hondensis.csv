@@ -1,3 +1,4 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-b26c5611-bfed-447f-95e4-fd321bf4a8a9,331033744,2025-12-16 14:40:00-08:00,2025-12-16,-122.2251956284,45.3112069284,411.0,,11.0,16.0,2.0,11.2,,1012.5,Agaricus hondensis,"Clackamas County, OR, USA",1
-7eaae0e7-9a86-4be4-b875-e7334cc62e32,325956977,2025-11-10 16:09:00-08:00,2025-11-10,-122.2259312325,45.3099642572,383.0,,8.0,13.0,0.2,6.7,,1024.3,Agaricus hondensis,"Clackamas County, OR, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+b26c5611-bfed-447f-95e4-fd321bf4a8a9,331033744,2025-12-16 14:40:00-08:00,2025-12-16,-122.2251956284,45.3112069284,411.0,,11.0,16.0,2.0,11.2,,1012.5,Agaricus hondensis,"Clackamas County, OR, USA",1,
+7eaae0e7-9a86-4be4-b875-e7334cc62e32,325956977,2025-11-10 16:09:00-08:00,2025-11-10,-122.2259312325,45.3099642572,383.0,,8.0,13.0,0.2,6.7,,1024.3,Agaricus hondensis,"Clackamas County, OR, USA",1,
+dc09f1ed-8b62-4a11-879d-26bcb9e7a49a,34739597,2019-10-17 15:26:20-07:00,2019-10-17,-121.96882,44.7723966667,741.0,,,,,,,,Agaricus hondensis,"Marion County, US-OR, US",2,84PWQ2CJ+

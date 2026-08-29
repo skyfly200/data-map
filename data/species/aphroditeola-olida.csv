@@ -1,13 +1,14 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-91a32d0e-cf46-4f86-b8b7-72f721666da5,315656856,2025-09-20 18:44:15-06:00,2025-09-20,-105.6116834601,39.8832646619,3026.0,,-1.3,7.8,0.7,11.6,,1021.3,Aphroditeola olida,"Mammoth Gulch Rd, Black Hawk, CO, US",1
-c86c6cd3-e148-43ac-b7db-a682d23c52b3,394263781,2026-08-24 14:25:46-06:00,2026-08-24,-107.8818390207,37.8393687435,2913.0,,,,,,,,Aphroditeola olida,"San Miguel County, US-CO, US",1
-93d375eb-e9e7-4bd1-9312-5902d4966968,301433350,2025-07-23 11:46:15-06:00,2025-07-23,-105.6314178573,39.6486912655,3529.0,,3.2,12.3,2.8,11.6,,1019.5,Aphroditeola olida,"Colorado, US",1
-182875c4-c881-44e6-a399-8dbefc51dbc1,240255221,2024-09-06 15:40:00-06:00,2024-09-06,-105.7711261243,39.8266738139,3374.0,,-3.6,13.4,0.0,9.4,,1028.6,Aphroditeola olida,"Berthoud Pass Grand County, CO, USA",2
-2002d4fd-fddd-4e61-87d6-ec3eed59bb68,232790895,2024-07-30 13:44:22-06:00,2024-07-30,-105.4274068947,39.4538017736,2561.0,,6.1,22.4,0.0,12.5,,1014.0,Aphroditeola olida,"Colorado, US",2
-b0c6f569-9854-4553-bc69-242b45e30c3b,180082270,2023-08-24 17:35:52-06:00,2023-08-24,-105.722531082,39.933228895,3049.0,,5.2,13.6,16.3,7.5,,1022.4,Aphroditeola olida,"Colorado, US",2
-1641afce-892a-499f-b6ff-283d965142a6,178907121,2023-08-17 15:54:02-06:00,2023-08-17,-107.8061952,37.9322944,2708.0,,11.0,25.0,5.5,7.2,,1033.4,Aphroditeola olida,"Firecracker Hill - Winter Sledding Hill, R1030096080, Telluride, CO 81435, USA",2
-1c3b7ecf-8c68-4f07-be9f-162db86ae4cf,130552559,2022-08-10,2022-08-10,-106.0884,39.3863,3473.0,,5.0,23.3,0.0,8.6,,1019.7,Aphroditeola olida,"Colorado, Park Co., Blue Lakes, 500 ft south of eastern Blue Lakes car park.",1
-61bb74ca-830e-42d4-a138-caa6f7665198,3550185,2014-08-15,2014-08-15,-107.8855,37.8238,2958.0,,,,,7.1,,,Aphroditeola olida,"Trout Lake, San Juan Co., Colorado, USA",3
-ab0035c1-9456-4875-8769-a3a706c05f68,194040221,2023-10-21 15:34:00-07:00,2023-10-21,-121.68264271,45.260075955,1281.0,,11.1,21.1,0.0,6.7,,1010.7,Aphroditeola olida,"Palmeteer Trail, Hood River County, OR, USA",1
-0df8ef8e-dc87-4528-984c-862d4e8331e3,188858241,2023-10-24 16:36:35-07:00,2023-10-24,-122.0891388305,45.5306247541,1200.0,,10.0,12.2,11.1,5.7,,1013.4,Aphroditeola olida,"Zigzag Ranger Station, Corbett, OR, US",1
-79f6731e-47d6-4f94-b942-b99fee342195,104324610,2021-11-20 13:09:20-08:00,2021-11-20,-121.8729066476,45.2996611369,672.0,,1.7,11.7,0.0,1.8,,1032.6,Aphroditeola olida,"Rhododendron, OR 97049, USA",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+91a32d0e-cf46-4f86-b8b7-72f721666da5,315656856,2025-09-20 18:44:15-06:00,2025-09-20,-105.6116834601,39.8832646619,3026.0,,-1.3,7.8,0.7,11.6,,1021.3,Aphroditeola olida,"Mammoth Gulch Rd, Black Hawk, CO, US",1,
+c86c6cd3-e148-43ac-b7db-a682d23c52b3,394263781,2026-08-24 14:25:46-06:00,2026-08-24,-107.8818390207,37.8393687435,2913.0,,,,,,,,Aphroditeola olida,"San Miguel County, US-CO, US",1,
+93d375eb-e9e7-4bd1-9312-5902d4966968,301433350,2025-07-23 11:46:15-06:00,2025-07-23,-105.6314178573,39.6486912655,3529.0,,3.2,12.3,2.8,11.6,,1019.5,Aphroditeola olida,"Colorado, US",1,
+182875c4-c881-44e6-a399-8dbefc51dbc1,240255221,2024-09-06 15:40:00-06:00,2024-09-06,-105.7711261243,39.8266738139,3374.0,,-3.6,13.4,0.0,9.4,,1028.6,Aphroditeola olida,"Berthoud Pass Grand County, CO, USA",2,
+2002d4fd-fddd-4e61-87d6-ec3eed59bb68,232790895,2024-07-30 13:44:22-06:00,2024-07-30,-105.4274068947,39.4538017736,2561.0,,6.1,22.4,0.0,12.5,,1014.0,Aphroditeola olida,"Colorado, US",2,
+b0c6f569-9854-4553-bc69-242b45e30c3b,180082270,2023-08-24 17:35:52-06:00,2023-08-24,-105.722531082,39.933228895,3049.0,,5.2,13.6,16.3,7.5,,1022.4,Aphroditeola olida,"Colorado, US",2,
+1641afce-892a-499f-b6ff-283d965142a6,178907121,2023-08-17 15:54:02-06:00,2023-08-17,-107.8061952,37.9322944,2708.0,,11.0,25.0,5.5,7.2,,1033.4,Aphroditeola olida,"Firecracker Hill - Winter Sledding Hill, R1030096080, Telluride, CO 81435, USA",2,
+1c3b7ecf-8c68-4f07-be9f-162db86ae4cf,130552559,2022-08-10,2022-08-10,-106.0884,39.3863,3473.0,,5.0,23.3,0.0,8.6,,1019.7,Aphroditeola olida,"Colorado, Park Co., Blue Lakes, 500 ft south of eastern Blue Lakes car park.",1,
+61bb74ca-830e-42d4-a138-caa6f7665198,3550185,2014-08-15,2014-08-15,-107.8855,37.8238,2958.0,,,,,7.1,,,Aphroditeola olida,"Trout Lake, San Juan Co., Colorado, USA",3,
+ab0035c1-9456-4875-8769-a3a706c05f68,194040221,2023-10-21 15:34:00-07:00,2023-10-21,-121.68264271,45.260075955,1281.0,,11.1,21.1,0.0,6.7,,1010.7,Aphroditeola olida,"Palmeteer Trail, Hood River County, OR, USA",1,
+0df8ef8e-dc87-4528-984c-862d4e8331e3,188858241,2023-10-24 16:36:35-07:00,2023-10-24,-122.0891388305,45.5306247541,1200.0,,10.0,12.2,11.1,5.7,,1013.4,Aphroditeola olida,"Zigzag Ranger Station, Corbett, OR, US",1,
+79f6731e-47d6-4f94-b942-b99fee342195,104324610,2021-11-20 13:09:20-08:00,2021-11-20,-121.8729066476,45.2996611369,672.0,,1.7,11.7,0.0,1.8,,1032.6,Aphroditeola olida,"Rhododendron, OR 97049, USA",2,
+37509076-79b2-4fc3-b671-ad1a1012a14a,34739337,2019-10-17 14:39:12-07:00,2019-10-17,-121.973105,44.7769866667,729.0,,,,,,,,Aphroditeola olida,"Marion County, US-OR, US",2,84PWQ2GG+

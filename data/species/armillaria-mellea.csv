@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c17230c1-09a0-4a96-8998-7ac072a4b2bd,198115079,2023-10-16 11:23:15-07:00,2023-10-16,-121.9660333333,45.3349,84QW82MM+,402.0,,13.9,21.7,,11.9,,1015.1,Armillaria mellea,"Mt. Hood Oregon Resort, Welches, OR, US",1
+b3c8b420-0cbe-4188-8378-5c633ce9cd46,192616924,2023-10-21 16:10:00-07:00,2023-10-21,-122.2918089365,45.494334393,84QVFPV5+,56.0,,12.8,16.7,0.3,2.0,,1011.7,Armillaria mellea,"Multnomah County, OR, USA",1

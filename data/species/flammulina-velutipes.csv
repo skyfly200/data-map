@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cd8e0e38-6477-4e4b-9bcf-c9a309551eae,145931870,2022-12-30 13:55:13-08:00,2022-12-30,-122.1155083333,45.6155366667,84QVJV8M+,290.0,,5.0,12.2,,7.9,,1003.1,Flammulina velutipes,"Columbia River Gorge National Scenic Area - Headquarters, Washougal, WA, US",1
+398fbd5c-f95f-4fea-97ee-2025ff13dad3,9441323,2017-11-12 12:39:45-08:00,2017-11-12,-122.39338,45.2978133333,84QV7JX4+,213.0,,9.4,12.2,,28.5,,1013.2,Flammulina velutipes,"21311 S Jubb Rd, Estacada, OR, US",1

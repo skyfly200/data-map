@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a60fc74c-e546-4546-891d-c059b3455fa2,140476465,2022-10-29 17:08:10-07:00,2022-10-29,-122.3736318833,45.2417551582,84QV6JRG+,344.0,,11.1,14.4,,3.7,,1025.5,Deconica horizontalis,"S Shady Forest Ln, Beavercreek, OR, US",1
+7e9c4f54-d111-4bd6-bd5b-c88c6571a230,64908792,2020-11-12 14:18:46+00:00,2020-11-12,-122.518355,45.250705,84QV7F2J+,156.0,,0.6,10.0,,7.9,,1016.8,Deconica horizontalis,"S Brockway Rd, Oregon City, OR, US",1
+130d8da2-bdef-43b3-98c8-37b7a069da96,63116262,2020-10-15 02:16:32-07:00,2020-10-15,-122.3748512768,45.2431604696,84QV6JVG+,344.0,,6.1,17.8,0.0,6.7,,1033.8,Deconica horizontalis,"S Shady Forest Ln, Beavercreek, OR, US",1
+b544c38f-1756-41d2-814f-ca7cb9bcfa0f,18287064,2018-10-13,2018-10-13,-122.565898,45.237627,84QV6CQM+,182.0,,7.2,21.7,0.0,14.4,,1020.8,Deconica horizontalis,"14761 S Buckner Creek Rd, Mulino, OR 97042, USA",2

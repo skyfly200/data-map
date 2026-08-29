@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b58c84f3-96c9-4600-a770-bd8d32556deb,35111293,2019-10-20 13:37:46-07:00,2019-10-20,-121.9129775092,45.2667113777,84QW738P+,754.0,,6.1,14.4,,5.1,,1018.9,Hydnum washingtonianum,"Zigzag, OR 97049, USA",1

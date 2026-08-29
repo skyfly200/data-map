@@ -1,0 +1,10 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+08d6a52f-341c-4a33-bf4c-9b9a5f919939,377648566,2026-07-02 13:53:10-07:00,2026-07-02,-122.112175,45.576675,84QVHVGQ+,287.0,,12.8,22.8,0.0,1.9,,,Naematelia aurantia,"Corbett, OR, US",1
+4ef48f54-3b00-46b2-ad2c-150c14431704,341541140,2026-03-05 10:49:25-08:00,2026-03-05,-122.264143469,45.2504175622,84QV7P2P+,387.0,,6.0,11.0,1.2,7.2,,1027.9,Naematelia aurantia,"Oregon, US",1
+0b24140a-df76-4b26-9e75-9efc56571a1b,334890240,2026-01-15 15:04:55-08:00,2026-01-15,-121.879529,45.32002145,84QW84CC+,807.0,,1.0,6.0,0.0,1.8,,1034.7,Naematelia aurantia,"Mt. Hood Park Division Recreation Area, Rhododendron, OR, US",1
+b8dc53ad-3a5b-4cff-8a38-78bef596a7c0,258957328,2024-11-16 14:11:02-08:00,2024-11-16,-122.0394699,45.6108303,84QVJX66+,5.0,,2.8,10.0,,5.5,,1017.2,Naematelia aurantia,"Skamania County, WA, USA",1
+98e36ef1-14ee-4769-92f2-7eb519cb1bd5,255734324,2024-12-15 13:35:14-08:00,2024-12-15,-121.9544194444,45.3403444444,84QW82RW+,438.0,,5.0,9.4,,12.5,,1021.5,Naematelia aurantia,"Welches, Mt Hood Village, OR 97067, USA",1
+d8ed35a7-b9cf-4ef6-b9ee-74457d23d451,252808238,2024-11-23 13:04:17-08:00,2024-11-23,-122.0724805,45.58683,84QVHWPH+,165.0,,5.0,11.1,,4.5,,1008.5,Naematelia aurantia,"Zigzag Ranger Station, Corbett, OR, US",2
+489a5e54-5d34-435a-8a1b-d43aa700f476,251812011,2024-11-15 13:26:17-08:00,2024-11-15,-122.3209694637,45.3349045965,84QV8MMH+,112.0,,5.0,9.4,0.3,3.1,,1019.5,Naematelia aurantia,"SE Eagle Fern Rd, Eagle Creek, OR, US",1
+def04b3d-ad0b-4c62-b254-b381cfa0fee4,145069322,2022-12-25 13:26:36-08:00,2022-12-25,-122.373725,45.2418716667,84QV6JRG+,344.0,,3.9,10.0,,4.3,,1022.2,Naematelia aurantia,"S Shady Forest Ln, Beavercreek, OR, US",1
+e111a5f0-c8b8-418b-a15b-346bd7f19d78,37320631,2020-01-05 15:53:58+00:00,2020-01-05,-122.4129614447,45.4507243596,84QVFH2P+,139.0,,5.0,8.9,,12.5,,1028.8,Naematelia aurantia,"Oregon, US",1

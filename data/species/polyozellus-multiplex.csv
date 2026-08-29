@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0027289b-9976-447b-ab0d-e1c098e50f4e,137815774,2022-10-06 11:37:35-07:00,2022-10-06,-121.5837055556,45.3411333333,84QW8CR8+,1127.0,,13.7,27.0,0.0,4.0,,1020.5,Polyozellus multiplex,"MT HOOD PRKDL, OR 97041, USA",1

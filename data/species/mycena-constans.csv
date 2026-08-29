@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ca28bc93-b9e8-4410-8679-bb2339b66afa,244590932,2024-09-28 14:51:09-07:00,2024-09-28,-122.5605777778,45.2399722222,84QV6CQQ+,153.0,,10.0,23.3,0.0,7.6,,1012.8,Mycena constans,"Mulino, OR, USA",2

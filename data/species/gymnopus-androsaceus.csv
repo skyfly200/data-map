@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ee12e42e-ba23-4edd-a463-b9c3d79ab713,340227809,2026-02-25 12:49:00-08:00,2026-02-25,-122.2251945197,45.3084916124,84QV8Q5F+,383.0,,1.1,10.6,0.0,1.4,,,Gymnopus androsaceus,"Clackamas County, OR, USA",1
+ac2b1fb4-2d09-4cfe-b8b2-c709b40fe366,100566850,2021-11-06 11:23:15-07:00,2021-11-06,-121.941995,45.26315,84QW7375+,613.0,,6.1,11.1,,12.6,,1015.8,Gymnopus androsaceus,"Mount Hood National Forest, Welches, OR, US",1

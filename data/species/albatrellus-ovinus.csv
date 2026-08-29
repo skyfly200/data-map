@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c2554795-7b09-4891-97fc-d3be85bf2b4c,244626688,2024-09-28 14:52:42-07:00,2024-09-28,-121.5243333333,45.4193277778,84QWCF9G+,1326.0,,11.8,26.0,0.3,11.0,,1011.9,Albatrellus ovinus,"MT HOOD PRKDL, OR 97041, USA",1
+6871ce41-3725-4754-95d6-547879fe22aa,243426213,2024-09-18 14:19:30-07:00,2024-09-18,-121.6809916667,45.2819133333,84QW78J9+,1228.0,,13.5,21.8,0.0,13.5,,1013.5,Albatrellus ovinus,"Mt. Hood Park Division Recreation Area, Mount Hood Parkdale, OR, US",1
+b12b9c0d-9dd1-423f-82be-5c5e22716b4c,236402782,2024-08-17 13:16:52-07:00,2024-08-17,-121.7603876618,45.2298230071,84QW66HQ+,1105.0,,,,,,,,Albatrellus ovinus,"Oregon, US",1
+c4980e69-6839-456b-8de5-b3173613ba84,137152475,2022-09-28 15:44:50-07:00,2022-09-28,-121.6219326077,45.3197506749,84QW899H+,1324.0,,14.1,22.9,3.2,10.4,,1014.9,Albatrellus ovinus,"Hood River County, US-OR, US",1
+8d4828cc-c8e0-460a-8f9e-5de168f97eb0,136208160,2022-09-23 10:25:44-07:00,2022-09-23,-121.622005608,45.3182935529,84QW899H+,1321.0,,11.6,24.4,0.0,9.6,,1019.5,Albatrellus ovinus,"Mt. Hood Park Division Recreation Area, Mount Hood Parkdale, OR, US",1

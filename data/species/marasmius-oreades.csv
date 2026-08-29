@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a574e4fc-62e3-499b-89a1-29ad8d7fdb99,207878382,2024-04-17 11:46:35-07:00,2024-04-17,-121.8983125314,45.6669224285,84QWM482+,19.0,,0.2,14.2,0.0,8.4,,1028.7,Marasmius oreades,"Hood River County, US-OR, Lewis and Clark National Historic Trail, US",1
+a915c2a1-6bf2-45ca-804a-085158abf63b,99007421,2021-10-22 11:58:22-07:00,2021-10-22,-122.2115727505,45.3805337364,84QV9QJQ+,370.0,,10.6,15.0,,5.4,,1010.1,Marasmius oreades,"Oregon, US",2

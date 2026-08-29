@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+93956717-1038-4796-b3ee-e0c8c5055c3c,331216551,2025-12-18 09:52:18-08:00,2025-12-18,-122.2741466667,45.542725,84QVGPVG+,0.0,,4.0,14.0,1.5,19.4,,1005.2,Beauveria bassiana,"Columbia River, Corbett, OR, US",1
+7627cd15-0fab-4b64-a075-5274384eaf43,222506086,2024-06-12 12:38:00-07:00,2024-06-12,-121.5520857244,45.3981134889,84QW9CXX+,1215.0,,8.2,22.8,0.0,13.6,,1019.4,Beauveria bassiana,"Hood River County, OR, USA",1
+d36a462f-3900-4166-bca0-ada4b0a24e9b,199176222,2024-02-12 16:21:30-08:00,2024-02-12,-121.9765919722,44.7821209722,84PWQ2JF+,680.0,,,,,,,,Beauveria bassiana,"Detroit, OR 97342, USA",1
+b18a678a-8567-4bf4-8291-43c5b73f9af2,117010145,2022-05-14 11:15:48-07:00,2022-05-14,-122.2533537405,45.3826541849,84QV9PMW+,325.0,,10.0,21.7,,15.0,,1018.0,Beauveria bassiana,"SE Jacoby Rd, Sandy, OR, US",1

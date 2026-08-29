@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8c4612df-fa06-4639-ad73-ba5b9d85845a,309114871,2025-08-17 15:36:49-07:00,2025-08-17,-121.6178133333,45.3452416667,84QW89WJ+,1553.0,,12.0,26.0,0.0,4.8,,1015.1,Hygrocybe turunda,"Mt. Hood Park Division Recreation Area, Mount Hood Parkdale, OR, US",1

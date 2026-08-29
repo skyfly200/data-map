@@ -1,6 +1,8 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-eb99e8c8-e6b3-44b7-820e-ba4f232a5616,168945939,2023-06-22 15:56:25-06:00,2023-06-22,-105.25422,41.1970666667,2286.0,,9.7,16.7,2.9,19.6,,1016.1,Amanita pantherina,"Curt Gowdy State Park, Cheyenne, WY, US",1
-85bac817-bd2b-4b45-961f-cd113d5dac25,45208235,2020-05-07 21:34:13+00:00,2020-05-07,-121.9624679743,45.6387350539,24.0,,3.9,23.3,,13.1,,1025.8,Amanita pantherina,North Bonneville,1
-81058b9f-652c-4a3f-9852-d66418de4292,31549343,2019-08-10 13:34:00-07:00,2019-08-10,-121.6631916667,45.3290833333,1646.0,,,,,,,,Amanita pantherina,"Hood River, Oregon, United States",2
-dd9c5115-6ffb-4981-bb54-d92144074f45,26871044,2019-06-08 13:54:43-07:00,2019-06-08,-122.1750333333,45.2113283333,586.0,,10.6,20.0,,4.1,,1028.2,Amanita pantherina,"Mt. Hood National Forest, Estacada, OR, US",1
-814eaa38-51a1-4091-9421-1d74af6e553e,13063579,2018-06-01 14:31:22-07:00,2018-06-01,-121.9176395551,45.3479024883,695.0,,11.1,21.1,0.0,4.3,,1022.6,Amanita pantherina,"Oregon, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+eb99e8c8-e6b3-44b7-820e-ba4f232a5616,168945939,2023-06-22 15:56:25-06:00,2023-06-22,-105.25422,41.1970666667,2286.0,,9.7,16.7,2.9,19.6,,1016.1,Amanita pantherina,"Curt Gowdy State Park, Cheyenne, WY, US",1,
+85bac817-bd2b-4b45-961f-cd113d5dac25,45208235,2020-05-07 21:34:13+00:00,2020-05-07,-121.9624679743,45.6387350539,24.0,,3.9,23.3,,13.1,,1025.8,Amanita pantherina,North Bonneville,1,
+81058b9f-652c-4a3f-9852-d66418de4292,31549343,2019-08-10 13:34:00-07:00,2019-08-10,-121.6631916667,45.3290833333,1646.0,,,,,,,,Amanita pantherina,"Hood River, Oregon, United States",2,
+dd9c5115-6ffb-4981-bb54-d92144074f45,26871044,2019-06-08 13:54:43-07:00,2019-06-08,-122.1750333333,45.2113283333,586.0,,10.6,20.0,,4.1,,1028.2,Amanita pantherina,"Mt. Hood National Forest, Estacada, OR, US",1,
+814eaa38-51a1-4091-9421-1d74af6e553e,13063579,2018-06-01 14:31:22-07:00,2018-06-01,-121.9176395551,45.3479024883,695.0,,11.1,21.1,0.0,4.3,,1022.6,Amanita pantherina,"Oregon, US",1,
+8d15a22b-a2dc-44a8-afa4-15bbb7837233,41153488,2020-02-06 00:54:12+00:00,2020-02-06,-122.3743966681,45.2468313111,292.0,,10.0,13.9,0.3,17.1,,1022.5,Amanita pantherina,"Estacada, OR, US",1,84QV6JWG+
+ec4062d0-bd96-4cac-916b-4b0c6ac5e863,12311539,2018-05-09 18:38:00-07:00,2018-05-09,-122.4444299844,45.3903041175,188.0,,12.2,20.0,3.6,10.5,,1018.1,Amanita pantherina,"Damascus, OR  97089, Damascus, OR, US",1,84QV9HR4+
