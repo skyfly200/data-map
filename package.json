@@ -16,7 +16,7 @@
     "leaflet": "^1.9.4",
     "nuxt": "^3.16.2",
     "vue": "^3.5.13",
-    "openlocationcode": "^1.0.4",
+    "open-location-code": "^1.0.4",
     "vega": "^5",
     "vega-lite": "^5",
     "vega-embed": "^6",
