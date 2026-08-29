@@ -1,21 +1,21 @@
 [
   {
     "id": "all",
-    "label": "All species (10392)",
+    "label": "All species (13570)",
     "path": "/data/observations.geojson",
-    "count": 10392
+    "count": 13570
   },
   {
     "id": "amanita-muscaria",
-    "label": "Amanita muscaria (2167)",
+    "label": "Amanita muscaria (2348)",
     "path": "/data/species/amanita-muscaria.geojson",
-    "count": 2167
+    "count": 2348
   },
   {
     "id": "amanita-muscaria-flavivolvata",
-    "label": "Amanita muscaria flavivolvata (1229)",
+    "label": "Amanita muscaria flavivolvata (1264)",
     "path": "/data/species/amanita-muscaria-flavivolvata.geojson",
-    "count": 1229
+    "count": 1264
   },
   {
     "id": "boletus-rubriceps",
@@ -25,21 +25,21 @@
   },
   {
     "id": "coprinus-comatus",
-    "label": "Coprinus comatus (617)",
+    "label": "Coprinus comatus (681)",
     "path": "/data/species/coprinus-comatus.geojson",
-    "count": 617
+    "count": 681
   },
   {
     "id": "sarcodon-imbricatus",
-    "label": "Sarcodon imbricatus (344)",
+    "label": "Sarcodon imbricatus (362)",
     "path": "/data/species/sarcodon-imbricatus.geojson",
-    "count": 344
+    "count": 362
   },
   {
     "id": "coprinellus-micaceus",
-    "label": "Coprinellus micaceus (258)",
+    "label": "Coprinellus micaceus (272)",
     "path": "/data/species/coprinellus-micaceus.geojson",
-    "count": 258
+    "count": 272
   },
   {
     "id": "cerioporus-squamosus",
@@ -48,28 +48,82 @@
     "count": 238
   },
   {
+    "id": "aureoboletus-mirabilis",
+    "label": "Aureoboletus mirabilis (188)",
+    "path": "/data/species/aureoboletus-mirabilis.geojson",
+    "count": 188
+  },
+  {
+    "id": "trametes-versicolor",
+    "label": "Trametes versicolor (169)",
+    "path": "/data/species/trametes-versicolor.geojson",
+    "count": 169
+  },
+  {
+    "id": "boletus-edulis",
+    "label": "Boletus edulis (159)",
+    "path": "/data/species/boletus-edulis.geojson",
+    "count": 159
+  },
+  {
     "id": "auricularia-americana",
-    "label": "Auricularia americana (153)",
+    "label": "Auricularia americana (155)",
     "path": "/data/species/auricularia-americana.geojson",
-    "count": 153
+    "count": 155
   },
   {
     "id": "pleurotus-populinus",
-    "label": "Pleurotus populinus (150)",
+    "label": "Pleurotus populinus (153)",
     "path": "/data/species/pleurotus-populinus.geojson",
-    "count": 150
+    "count": 153
   },
   {
     "id": "chlorophyllum-rhacodes",
-    "label": "Chlorophyllum rhacodes (149)",
+    "label": "Chlorophyllum rhacodes (151)",
     "path": "/data/species/chlorophyllum-rhacodes.geojson",
-    "count": 149
+    "count": 151
   },
   {
     "id": "boletus-barrowsii",
-    "label": "Boletus barrowsii (147)",
+    "label": "Boletus barrowsii (149)",
     "path": "/data/species/boletus-barrowsii.geojson",
-    "count": 147
+    "count": 149
+  },
+  {
+    "id": "ganoderma-oregonense",
+    "label": "Ganoderma oregonense (129)",
+    "path": "/data/species/ganoderma-oregonense.geojson",
+    "count": 129
+  },
+  {
+    "id": "amanita-aprica",
+    "label": "Amanita aprica (124)",
+    "path": "/data/species/amanita-aprica.geojson",
+    "count": 124
+  },
+  {
+    "id": "amanita-pantherinoides",
+    "label": "Amanita pantherinoides (112)",
+    "path": "/data/species/amanita-pantherinoides.geojson",
+    "count": 112
+  },
+  {
+    "id": "lichenomphalia-ericetorum",
+    "label": "Lichenomphalia ericetorum (111)",
+    "path": "/data/species/lichenomphalia-ericetorum.geojson",
+    "count": 111
+  },
+  {
+    "id": "russula-brevipes",
+    "label": "Russula brevipes (103)",
+    "path": "/data/species/russula-brevipes.geojson",
+    "count": 103
+  },
+  {
+    "id": "tricholoma-murrillianum",
+    "label": "Tricholoma murrillianum (96)",
+    "path": "/data/species/tricholoma-murrillianum.geojson",
+    "count": 96
   },
   {
     "id": "phyllotopsis-nidulans",
@@ -78,69 +132,129 @@
     "count": 92
   },
   {
+    "id": "pleurotus-pulmonarius",
+    "label": "Pleurotus pulmonarius (92)",
+    "path": "/data/species/pleurotus-pulmonarius.geojson",
+    "count": 92
+  },
+  {
+    "id": "suillus-tomentosus",
+    "label": "Suillus tomentosus (91)",
+    "path": "/data/species/suillus-tomentosus.geojson",
+    "count": 91
+  },
+  {
+    "id": "hydnellum-peckii",
+    "label": "Hydnellum peckii (89)",
+    "path": "/data/species/hydnellum-peckii.geojson",
+    "count": 89
+  },
+  {
+    "id": "sarcomyxa-serotina",
+    "label": "Sarcomyxa serotina (88)",
+    "path": "/data/species/sarcomyxa-serotina.geojson",
+    "count": 88
+  },
+  {
+    "id": "pleurotus-ostreatus",
+    "label": "Pleurotus ostreatus (85)",
+    "path": "/data/species/pleurotus-ostreatus.geojson",
+    "count": 85
+  },
+  {
     "id": "agaricus-bernardii",
     "label": "Agaricus bernardii (83)",
     "path": "/data/species/agaricus-bernardii.geojson",
     "count": 83
   },
   {
-    "id": "suillus-tomentosus",
-    "label": "Suillus tomentosus (78)",
-    "path": "/data/species/suillus-tomentosus.geojson",
+    "id": "morchella-snyderi",
+    "label": "Morchella snyderi (78)",
+    "path": "/data/species/morchella-snyderi.geojson",
     "count": 78
   },
   {
-    "id": "pleurotus-ostreatus",
-    "label": "Pleurotus ostreatus (67)",
-    "path": "/data/species/pleurotus-ostreatus.geojson",
-    "count": 67
-  },
-  {
-    "id": "amanita-pantherinoides",
-    "label": "Amanita pantherinoides (64)",
-    "path": "/data/species/amanita-pantherinoides.geojson",
-    "count": 64
-  },
-  {
-    "id": "pleurotus-pulmonarius",
-    "label": "Pleurotus pulmonarius (64)",
-    "path": "/data/species/pleurotus-pulmonarius.geojson",
-    "count": 64
-  },
-  {
-    "id": "trametes-versicolor",
-    "label": "Trametes versicolor (63)",
-    "path": "/data/species/trametes-versicolor.geojson",
-    "count": 63
-  },
-  {
     "id": "hydnellum-suaveolens",
-    "label": "Hydnellum suaveolens (61)",
+    "label": "Hydnellum suaveolens (73)",
     "path": "/data/species/hydnellum-suaveolens.geojson",
-    "count": 61
+    "count": 73
+  },
+  {
+    "id": "hygrophoropsis-aurantiaca",
+    "label": "Hygrophoropsis aurantiaca (73)",
+    "path": "/data/species/hygrophoropsis-aurantiaca.geojson",
+    "count": 73
   },
   {
     "id": "clitocybe-glacialis",
-    "label": "Clitocybe glacialis (60)",
+    "label": "Clitocybe glacialis (69)",
     "path": "/data/species/clitocybe-glacialis.geojson",
-    "count": 60
+    "count": 69
   },
   {
-    "id": "suillus-brevipes",
-    "label": "Suillus brevipes (58)",
-    "path": "/data/species/suillus-brevipes.geojson",
-    "count": 58
+    "id": "ganoderma-applanatum",
+    "label": "Ganoderma applanatum (68)",
+    "path": "/data/species/ganoderma-applanatum.geojson",
+    "count": 68
+  },
+  {
+    "id": "hypholoma-fasciculare",
+    "label": "Hypholoma fasciculare (68)",
+    "path": "/data/species/hypholoma-fasciculare.geojson",
+    "count": 68
   },
   {
     "id": "morchella-americana",
-    "label": "Morchella americana (55)",
+    "label": "Morchella americana (66)",
     "path": "/data/species/morchella-americana.geojson",
-    "count": 55
+    "count": 66
+  },
+  {
+    "id": "suillus-brevipes",
+    "label": "Suillus brevipes (61)",
+    "path": "/data/species/suillus-brevipes.geojson",
+    "count": 61
   },
   {
     "id": "candolleomyces-candolleanus",
-    "label": "Candolleomyces candolleanus (53)",
+    "label": "Candolleomyces candolleanus (60)",
     "path": "/data/species/candolleomyces-candolleanus.geojson",
+    "count": 60
+  },
+  {
+    "id": "boletus-fibrillosus",
+    "label": "Boletus fibrillosus (59)",
+    "path": "/data/species/boletus-fibrillosus.geojson",
+    "count": 59
+  },
+  {
+    "id": "russula-xerampelina",
+    "label": "Russula xerampelina (58)",
+    "path": "/data/species/russula-xerampelina.geojson",
+    "count": 58
+  },
+  {
+    "id": "tricholoma-vaccinum",
+    "label": "Tricholoma vaccinum (57)",
+    "path": "/data/species/tricholoma-vaccinum.geojson",
+    "count": 57
+  },
+  {
+    "id": "boletus-smithii",
+    "label": "Boletus smithii (56)",
+    "path": "/data/species/boletus-smithii.geojson",
+    "count": 56
+  },
+  {
+    "id": "mycena-pura",
+    "label": "Mycena pura (54)",
+    "path": "/data/species/mycena-pura.geojson",
+    "count": 54
+  },
+  {
+    "id": "agaricus-campestris",
+    "label": "Agaricus campestris (53)",
+    "path": "/data/species/agaricus-campestris.geojson",
     "count": 53
   },
   {
@@ -150,58 +264,94 @@
     "count": 53
   },
   {
-    "id": "russula-brevipes",
-    "label": "Russula brevipes (53)",
-    "path": "/data/species/russula-brevipes.geojson",
-    "count": 53
-  },
-  {
-    "id": "hydnellum-peckii",
-    "label": "Hydnellum peckii (52)",
-    "path": "/data/species/hydnellum-peckii.geojson",
+    "id": "leucopaxillus-albissimus",
+    "label": "Leucopaxillus albissimus (52)",
+    "path": "/data/species/leucopaxillus-albissimus.geojson",
     "count": 52
   },
   {
-    "id": "agaricus-campestris",
-    "label": "Agaricus campestris (51)",
-    "path": "/data/species/agaricus-campestris.geojson",
+    "id": "hericium-abietis",
+    "label": "Hericium abietis (51)",
+    "path": "/data/species/hericium-abietis.geojson",
     "count": 51
-  },
-  {
-    "id": "tricholoma-vaccinum",
-    "label": "Tricholoma vaccinum (51)",
-    "path": "/data/species/tricholoma-vaccinum.geojson",
-    "count": 51
-  },
-  {
-    "id": "lactarius-deliciosus",
-    "label": "Lactarius deliciosus (48)",
-    "path": "/data/species/lactarius-deliciosus.geojson",
-    "count": 48
-  },
-  {
-    "id": "leucopaxillus-albissimus",
-    "label": "Leucopaxillus albissimus (46)",
-    "path": "/data/species/leucopaxillus-albissimus.geojson",
-    "count": 46
   },
   {
     "id": "coprinopsis-atramentaria",
-    "label": "Coprinopsis atramentaria (45)",
+    "label": "Coprinopsis atramentaria (50)",
     "path": "/data/species/coprinopsis-atramentaria.geojson",
-    "count": 45
+    "count": 50
   },
   {
-    "id": "russula-xerampelina",
-    "label": "Russula xerampelina (43)",
-    "path": "/data/species/russula-xerampelina.geojson",
-    "count": 43
+    "id": "hydnellum-caeruleum",
+    "label": "Hydnellum caeruleum (49)",
+    "path": "/data/species/hydnellum-caeruleum.geojson",
+    "count": 49
+  },
+  {
+    "id": "lactarius-deliciosus",
+    "label": "Lactarius deliciosus (49)",
+    "path": "/data/species/lactarius-deliciosus.geojson",
+    "count": 49
+  },
+  {
+    "id": "hypholoma-capnoides",
+    "label": "Hypholoma capnoides (48)",
+    "path": "/data/species/hypholoma-capnoides.geojson",
+    "count": 48
   },
   {
     "id": "laccaria-laccata",
-    "label": "Laccaria laccata (41)",
+    "label": "Laccaria laccata (48)",
     "path": "/data/species/laccaria-laccata.geojson",
-    "count": 41
+    "count": 48
+  },
+  {
+    "id": "lactarius-rubrilacteus",
+    "label": "Lactarius rubrilacteus (47)",
+    "path": "/data/species/lactarius-rubrilacteus.geojson",
+    "count": 47
+  },
+  {
+    "id": "boletus-rex-veris",
+    "label": "Boletus rex-veris (46)",
+    "path": "/data/species/boletus-rex-veris.geojson",
+    "count": 46
+  },
+  {
+    "id": "galerina-marginata",
+    "label": "Galerina marginata (46)",
+    "path": "/data/species/galerina-marginata.geojson",
+    "count": 46
+  },
+  {
+    "id": "tricholoma-focale",
+    "label": "Tricholoma focale (45)",
+    "path": "/data/species/tricholoma-focale.geojson",
+    "count": 45
+  },
+  {
+    "id": "tricholomopsis-rutilans",
+    "label": "Tricholomopsis rutilans (44)",
+    "path": "/data/species/tricholomopsis-rutilans.geojson",
+    "count": 44
+  },
+  {
+    "id": "chalciporus-piperatus",
+    "label": "Chalciporus piperatus (43)",
+    "path": "/data/species/chalciporus-piperatus.geojson",
+    "count": 43
+  },
+  {
+    "id": "leucocoprinus-leucothites",
+    "label": "Leucocoprinus leucothites (42)",
+    "path": "/data/species/leucocoprinus-leucothites.geojson",
+    "count": 42
+  },
+  {
+    "id": "hericium-coralloides",
+    "label": "Hericium coralloides (40)",
+    "path": "/data/species/hericium-coralloides.geojson",
+    "count": 40
   },
   {
     "id": "coprinopsis-nivea",
@@ -210,57 +360,87 @@
     "count": 39
   },
   {
-    "id": "morchella-snyderi",
-    "label": "Morchella snyderi (38)",
-    "path": "/data/species/morchella-snyderi.geojson",
+    "id": "hydnellum-aurantiacum",
+    "label": "Hydnellum aurantiacum (38)",
+    "path": "/data/species/hydnellum-aurantiacum.geojson",
     "count": 38
   },
   {
-    "id": "tricholomopsis-rutilans",
-    "label": "Tricholomopsis rutilans (38)",
-    "path": "/data/species/tricholomopsis-rutilans.geojson",
-    "count": 38
-  },
-  {
-    "id": "mycena-pura",
-    "label": "Mycena pura (37)",
-    "path": "/data/species/mycena-pura.geojson",
+    "id": "mycena-haematopus",
+    "label": "Mycena haematopus (37)",
+    "path": "/data/species/mycena-haematopus.geojson",
     "count": 37
   },
   {
-    "id": "boletus-edulis",
-    "label": "Boletus edulis (36)",
-    "path": "/data/species/boletus-edulis.geojson",
-    "count": 36
-  },
-  {
-    "id": "galerina-marginata",
-    "label": "Galerina marginata (36)",
-    "path": "/data/species/galerina-marginata.geojson",
-    "count": 36
-  },
-  {
-    "id": "ganoderma-applanatum",
-    "label": "Ganoderma applanatum (36)",
-    "path": "/data/species/ganoderma-applanatum.geojson",
-    "count": 36
+    "id": "tricholoma-saponaceum",
+    "label": "Tricholoma saponaceum (37)",
+    "path": "/data/species/tricholoma-saponaceum.geojson",
+    "count": 37
   },
   {
     "id": "lactarius-badiosanguineus",
-    "label": "Lactarius badiosanguineus (35)",
+    "label": "Lactarius badiosanguineus (36)",
     "path": "/data/species/lactarius-badiosanguineus.geojson",
+    "count": 36
+  },
+  {
+    "id": "mycena-strobilinoidea",
+    "label": "Mycena strobilinoidea (36)",
+    "path": "/data/species/mycena-strobilinoidea.geojson",
+    "count": 36
+  },
+  {
+    "id": "psilocybe-sp-pnw02",
+    "label": "Psilocybe sp. 'PNW02' (36)",
+    "path": "/data/species/psilocybe-sp-pnw02.geojson",
+    "count": 36
+  },
+  {
+    "id": "verpa-bohemica",
+    "label": "Verpa bohemica (36)",
+    "path": "/data/species/verpa-bohemica.geojson",
+    "count": 36
+  },
+  {
+    "id": "agrocybe-praecox",
+    "label": "Agrocybe praecox (35)",
+    "path": "/data/species/agrocybe-praecox.geojson",
     "count": 35
   },
   {
-    "id": "leucocoprinus-leucothites",
-    "label": "Leucocoprinus leucothites (35)",
-    "path": "/data/species/leucocoprinus-leucothites.geojson",
+    "id": "mycena-overholtsii",
+    "label": "Mycena overholtsii (35)",
+    "path": "/data/species/mycena-overholtsii.geojson",
     "count": 35
   },
   {
-    "id": "hericium-coralloides",
-    "label": "Hericium coralloides (33)",
-    "path": "/data/species/hericium-coralloides.geojson",
+    "id": "collybia-odora",
+    "label": "Collybia odora (34)",
+    "path": "/data/species/collybia-odora.geojson",
+    "count": 34
+  },
+  {
+    "id": "hypomyces-luteovirens",
+    "label": "Hypomyces luteovirens (33)",
+    "path": "/data/species/hypomyces-luteovirens.geojson",
+    "count": 33
+  },
+  {
+    "id": "infundibulicybe-gibba",
+    "label": "Infundibulicybe gibba (33)",
+    "path": "/data/species/infundibulicybe-gibba.geojson",
+    "count": 33
+  },
+  {
+    "id": "morchella-tridentina",
+    "label": "Morchella tridentina (33)",
+    "path": "/data/species/morchella-tridentina.geojson",
+    "count": 33
+  },
+  {
+    "id": "russula-aeruginea",
+    "label": "Russula aeruginea (33)",
+    "path": "/data/species/russula-aeruginea.geojson",
     "count": 33
   },
   {
@@ -270,57 +450,27 @@
     "count": 32
   },
   {
-    "id": "infundibulicybe-gibba",
-    "label": "Infundibulicybe gibba (32)",
-    "path": "/data/species/infundibulicybe-gibba.geojson",
-    "count": 32
-  },
-  {
-    "id": "mycena-overholtsii",
-    "label": "Mycena overholtsii (32)",
-    "path": "/data/species/mycena-overholtsii.geojson",
-    "count": 32
-  },
-  {
-    "id": "hypholoma-capnoides",
-    "label": "Hypholoma capnoides (31)",
-    "path": "/data/species/hypholoma-capnoides.geojson",
+    "id": "agrocybe-pediades",
+    "label": "Agrocybe pediades (31)",
+    "path": "/data/species/agrocybe-pediades.geojson",
     "count": 31
   },
   {
-    "id": "agrocybe-pediades",
-    "label": "Agrocybe pediades (30)",
-    "path": "/data/species/agrocybe-pediades.geojson",
-    "count": 30
-  },
-  {
-    "id": "hygrophoropsis-aurantiaca",
-    "label": "Hygrophoropsis aurantiaca (30)",
-    "path": "/data/species/hygrophoropsis-aurantiaca.geojson",
-    "count": 30
-  },
-  {
-    "id": "russula-aeruginea",
-    "label": "Russula aeruginea (30)",
-    "path": "/data/species/russula-aeruginea.geojson",
-    "count": 30
-  },
-  {
     "id": "agaricus-bitorquis",
-    "label": "Agaricus bitorquis (29)",
+    "label": "Agaricus bitorquis (30)",
     "path": "/data/species/agaricus-bitorquis.geojson",
-    "count": 29
+    "count": 30
   },
   {
-    "id": "agrocybe-praecox",
-    "label": "Agrocybe praecox (29)",
-    "path": "/data/species/agrocybe-praecox.geojson",
-    "count": 29
+    "id": "pleurocybella-porrigens",
+    "label": "Pleurocybella porrigens (30)",
+    "path": "/data/species/pleurocybella-porrigens.geojson",
+    "count": 30
   },
   {
-    "id": "hydnellum-caeruleum",
-    "label": "Hydnellum caeruleum (29)",
-    "path": "/data/species/hydnellum-caeruleum.geojson",
+    "id": "caloboletus-rubripes",
+    "label": "Caloboletus rubripes (29)",
+    "path": "/data/species/caloboletus-rubripes.geojson",
     "count": 29
   },
   {
@@ -330,15 +480,21 @@
     "count": 29
   },
   {
+    "id": "psilocybe-aztecorum",
+    "label": "Psilocybe aztecorum (29)",
+    "path": "/data/species/psilocybe-aztecorum.geojson",
+    "count": 29
+  },
+  {
     "id": "agaricus-julius",
     "label": "Agaricus julius (28)",
     "path": "/data/species/agaricus-julius.geojson",
     "count": 28
   },
   {
-    "id": "tricholoma-saponaceum",
-    "label": "Tricholoma saponaceum (28)",
-    "path": "/data/species/tricholoma-saponaceum.geojson",
+    "id": "russula-decolorans",
+    "label": "Russula decolorans (28)",
+    "path": "/data/species/russula-decolorans.geojson",
     "count": 28
   },
   {
@@ -348,22 +504,40 @@
     "count": 27
   },
   {
-    "id": "hypomyces-luteovirens",
-    "label": "Hypomyces luteovirens (27)",
-    "path": "/data/species/hypomyces-luteovirens.geojson",
-    "count": 27
-  },
-  {
-    "id": "russula-decolorans",
-    "label": "Russula decolorans (27)",
-    "path": "/data/species/russula-decolorans.geojson",
-    "count": 27
-  },
-  {
     "id": "agaricus-amicosus",
     "label": "Agaricus amicosus (26)",
     "path": "/data/species/agaricus-amicosus.geojson",
     "count": 26
+  },
+  {
+    "id": "amanita-pachycolea",
+    "label": "Amanita pachycolea (26)",
+    "path": "/data/species/amanita-pachycolea.geojson",
+    "count": 26
+  },
+  {
+    "id": "clitocybe-albirhiza",
+    "label": "Clitocybe albirhiza (26)",
+    "path": "/data/species/clitocybe-albirhiza.geojson",
+    "count": 26
+  },
+  {
+    "id": "collybia-nuda",
+    "label": "Collybia nuda (25)",
+    "path": "/data/species/collybia-nuda.geojson",
+    "count": 25
+  },
+  {
+    "id": "amanita-augusta",
+    "label": "Amanita augusta (24)",
+    "path": "/data/species/amanita-augusta.geojson",
+    "count": 24
+  },
+  {
+    "id": "coprinopsis-lagopus",
+    "label": "Coprinopsis lagopus (24)",
+    "path": "/data/species/coprinopsis-lagopus.geojson",
+    "count": 24
   },
   {
     "id": "leucocoprinus-birnbaumii",
@@ -372,9 +546,21 @@
     "count": 24
   },
   {
+    "id": "onnia-tomentosa",
+    "label": "Onnia tomentosa (24)",
+    "path": "/data/species/onnia-tomentosa.geojson",
+    "count": 24
+  },
+  {
     "id": "hypsizygus-ulmarius",
     "label": "Hypsizygus ulmarius (23)",
     "path": "/data/species/hypsizygus-ulmarius.geojson",
+    "count": 23
+  },
+  {
+    "id": "leucopaxillus-gentianeus",
+    "label": "Leucopaxillus gentianeus (23)",
+    "path": "/data/species/leucopaxillus-gentianeus.geojson",
     "count": 23
   },
   {
@@ -396,9 +582,15 @@
     "count": 22
   },
   {
-    "id": "psilocybe-aztecorum",
-    "label": "Psilocybe aztecorum (22)",
-    "path": "/data/species/psilocybe-aztecorum.geojson",
+    "id": "atheniella-aurantiidisca",
+    "label": "Atheniella aurantiidisca (22)",
+    "path": "/data/species/atheniella-aurantiidisca.geojson",
+    "count": 22
+  },
+  {
+    "id": "butyriboletus-abieticola",
+    "label": "Butyriboletus abieticola (22)",
+    "path": "/data/species/butyriboletus-abieticola.geojson",
     "count": 22
   },
   {
@@ -414,15 +606,15 @@
     "count": 22
   },
   {
-    "id": "tricholoma-focale",
-    "label": "Tricholoma focale (22)",
-    "path": "/data/species/tricholoma-focale.geojson",
+    "id": "xerocomus-subtomentosus",
+    "label": "Xerocomus subtomentosus (22)",
+    "path": "/data/species/xerocomus-subtomentosus.geojson",
     "count": 22
   },
   {
-    "id": "clitocybe-albirhiza",
-    "label": "Clitocybe albirhiza (21)",
-    "path": "/data/species/clitocybe-albirhiza.geojson",
+    "id": "lepiota-magnispora",
+    "label": "Lepiota magnispora (21)",
+    "path": "/data/species/lepiota-magnispora.geojson",
     "count": 21
   },
   {
@@ -432,28 +624,22 @@
     "count": 21
   },
   {
-    "id": "xerocomus-subtomentosus",
-    "label": "Xerocomus subtomentosus (21)",
-    "path": "/data/species/xerocomus-subtomentosus.geojson",
+    "id": "tricholoma-equestre",
+    "label": "Tricholoma equestre (21)",
+    "path": "/data/species/tricholoma-equestre.geojson",
     "count": 21
   },
   {
-    "id": "lactarius-rubrilacteus",
-    "label": "Lactarius rubrilacteus (20)",
-    "path": "/data/species/lactarius-rubrilacteus.geojson",
+    "id": "lactarius-repraesentaneus",
+    "label": "Lactarius repraesentaneus (20)",
+    "path": "/data/species/lactarius-repraesentaneus.geojson",
     "count": 20
   },
   {
-    "id": "leucopaxillus-gentianeus",
-    "label": "Leucopaxillus gentianeus (20)",
-    "path": "/data/species/leucopaxillus-gentianeus.geojson",
+    "id": "russula-olympiana",
+    "label": "Russula olympiana (20)",
+    "path": "/data/species/russula-olympiana.geojson",
     "count": 20
-  },
-  {
-    "id": "collybia-nuda",
-    "label": "Collybia nuda (19)",
-    "path": "/data/species/collybia-nuda.geojson",
-    "count": 19
   },
   {
     "id": "deconica-coprophila",
@@ -462,9 +648,9 @@
     "count": 19
   },
   {
-    "id": "hydnellum-aurantiacum",
-    "label": "Hydnellum aurantiacum (19)",
-    "path": "/data/species/hydnellum-aurantiacum.geojson",
+    "id": "infundibulicybe-squamulosa",
+    "label": "Infundibulicybe squamulosa (19)",
+    "path": "/data/species/infundibulicybe-squamulosa.geojson",
     "count": 19
   },
   {
@@ -474,57 +660,39 @@
     "count": 19
   },
   {
-    "id": "onnia-tomentosa",
-    "label": "Onnia tomentosa (19)",
-    "path": "/data/species/onnia-tomentosa.geojson",
-    "count": 19
-  },
-  {
-    "id": "lactarius-repraesentaneus",
-    "label": "Lactarius repraesentaneus (18)",
-    "path": "/data/species/lactarius-repraesentaneus.geojson",
-    "count": 18
-  },
-  {
-    "id": "russula-olympiana",
-    "label": "Russula olympiana (18)",
-    "path": "/data/species/russula-olympiana.geojson",
-    "count": 18
-  },
-  {
     "id": "agaricus-braendlei",
-    "label": "Agaricus braendlei (17)",
+    "label": "Agaricus braendlei (18)",
     "path": "/data/species/agaricus-braendlei.geojson",
-    "count": 17
+    "count": 18
   },
   {
     "id": "agaricus-xanthodermus",
-    "label": "Agaricus xanthodermus (17)",
+    "label": "Agaricus xanthodermus (18)",
     "path": "/data/species/agaricus-xanthodermus.geojson",
-    "count": 17
+    "count": 18
   },
   {
-    "id": "chalciporus-piperatus",
-    "label": "Chalciporus piperatus (17)",
-    "path": "/data/species/chalciporus-piperatus.geojson",
-    "count": 17
+    "id": "caloboletus-conifericola",
+    "label": "Caloboletus conifericola (18)",
+    "path": "/data/species/caloboletus-conifericola.geojson",
+    "count": 18
+  },
+  {
+    "id": "lyophyllum-decastes",
+    "label": "Lyophyllum decastes (18)",
+    "path": "/data/species/lyophyllum-decastes.geojson",
+    "count": 18
+  },
+  {
+    "id": "morchella-importuna",
+    "label": "Morchella importuna (18)",
+    "path": "/data/species/morchella-importuna.geojson",
+    "count": 18
   },
   {
     "id": "clitocybe-robusta",
     "label": "Clitocybe robusta (17)",
     "path": "/data/species/clitocybe-robusta.geojson",
-    "count": 17
-  },
-  {
-    "id": "collybia-odora",
-    "label": "Collybia odora (17)",
-    "path": "/data/species/collybia-odora.geojson",
-    "count": 17
-  },
-  {
-    "id": "tricholoma-equestre",
-    "label": "Tricholoma equestre (17)",
-    "path": "/data/species/tricholoma-equestre.geojson",
     "count": 17
   },
   {
@@ -534,15 +702,45 @@
     "count": 16
   },
   {
+    "id": "lactarius-rubidus",
+    "label": "Lactarius rubidus (16)",
+    "path": "/data/species/lactarius-rubidus.geojson",
+    "count": 16
+  },
+  {
     "id": "russula-sp-woo69",
     "label": "Russula sp. 'Woo69' (16)",
     "path": "/data/species/russula-sp-woo69.geojson",
     "count": 16
   },
   {
+    "id": "amanita-porphyria",
+    "label": "Amanita porphyria (15)",
+    "path": "/data/species/amanita-porphyria.geojson",
+    "count": 15
+  },
+  {
+    "id": "hericium-erinaceus",
+    "label": "Hericium erinaceus (15)",
+    "path": "/data/species/hericium-erinaceus.geojson",
+    "count": 15
+  },
+  {
+    "id": "lactarius-rufus",
+    "label": "Lactarius rufus (15)",
+    "path": "/data/species/lactarius-rufus.geojson",
+    "count": 15
+  },
+  {
     "id": "collybia-brunneocephala",
     "label": "Collybia brunneocephala (14)",
     "path": "/data/species/collybia-brunneocephala.geojson",
+    "count": 14
+  },
+  {
+    "id": "coltricia-perennis",
+    "label": "Coltricia perennis (14)",
+    "path": "/data/species/coltricia-perennis.geojson",
     "count": 14
   },
   {
@@ -552,10 +750,10 @@
     "count": 14
   },
   {
-    "id": "tricholoma-murrillianum",
-    "label": "Tricholoma murrillianum (14)",
-    "path": "/data/species/tricholoma-murrillianum.geojson",
-    "count": 14
+    "id": "amanita-smithiana",
+    "label": "Amanita smithiana (13)",
+    "path": "/data/species/amanita-smithiana.geojson",
+    "count": 13
   },
   {
     "id": "clitocybe-sp-pnw01",
@@ -564,27 +762,69 @@
     "count": 13
   },
   {
+    "id": "morchella-tomentosa",
+    "label": "Morchella tomentosa (13)",
+    "path": "/data/species/morchella-tomentosa.geojson",
+    "count": 13
+  },
+  {
+    "id": "mycena-epipterygia",
+    "label": "Mycena epipterygia (13)",
+    "path": "/data/species/mycena-epipterygia.geojson",
+    "count": 13
+  },
+  {
+    "id": "pleurotus-dryinus",
+    "label": "Pleurotus dryinus (13)",
+    "path": "/data/species/pleurotus-dryinus.geojson",
+    "count": 13
+  },
+  {
+    "id": "amanita-calyptroderma",
+    "label": "Amanita calyptroderma (12)",
+    "path": "/data/species/amanita-calyptroderma.geojson",
+    "count": 12
+  },
+  {
     "id": "aspropaxillus-giganteus",
     "label": "Aspropaxillus giganteus (12)",
     "path": "/data/species/aspropaxillus-giganteus.geojson",
     "count": 12
   },
   {
-    "id": "morchella-tomentosa",
-    "label": "Morchella tomentosa (12)",
-    "path": "/data/species/morchella-tomentosa.geojson",
+    "id": "boletus-edulis-grandedulis",
+    "label": "Boletus edulis grandedulis (12)",
+    "path": "/data/species/boletus-edulis-grandedulis.geojson",
+    "count": 12
+  },
+  {
+    "id": "boletus-oregonensis",
+    "label": "Boletus oregonensis (12)",
+    "path": "/data/species/boletus-oregonensis.geojson",
+    "count": 12
+  },
+  {
+    "id": "lactarius-pseudomucidus",
+    "label": "Lactarius pseudomucidus (12)",
+    "path": "/data/species/lactarius-pseudomucidus.geojson",
+    "count": 12
+  },
+  {
+    "id": "lactarius-scrobiculatus",
+    "label": "Lactarius scrobiculatus (12)",
+    "path": "/data/species/lactarius-scrobiculatus.geojson",
+    "count": 12
+  },
+  {
+    "id": "picipes-badius",
+    "label": "Picipes badius (12)",
+    "path": "/data/species/picipes-badius.geojson",
     "count": 12
   },
   {
     "id": "tricholoma-sp-saponaceum-pnw02",
     "label": "Tricholoma sp. 'saponaceum-PNW02' (12)",
     "path": "/data/species/tricholoma-sp-saponaceum-pnw02.geojson",
-    "count": 12
-  },
-  {
-    "id": "verpa-bohemica",
-    "label": "Verpa bohemica (12)",
-    "path": "/data/species/verpa-bohemica.geojson",
     "count": 12
   },
   {
@@ -606,27 +846,45 @@
     "count": 11
   },
   {
-    "id": "boletus-oregonensis",
-    "label": "Boletus oregonensis (11)",
-    "path": "/data/species/boletus-oregonensis.geojson",
-    "count": 11
-  },
-  {
-    "id": "coprinopsis-lagopus",
-    "label": "Coprinopsis lagopus (11)",
-    "path": "/data/species/coprinopsis-lagopus.geojson",
-    "count": 11
-  },
-  {
-    "id": "lactarius-rufus",
-    "label": "Lactarius rufus (11)",
-    "path": "/data/species/lactarius-rufus.geojson",
+    "id": "aphroditeola-olida",
+    "label": "Aphroditeola olida (11)",
+    "path": "/data/species/aphroditeola-olida.geojson",
     "count": 11
   },
   {
     "id": "lepiota-lilacea",
     "label": "Lepiota lilacea (11)",
     "path": "/data/species/lepiota-lilacea.geojson",
+    "count": 11
+  },
+  {
+    "id": "leucoagaricus-rubrotinctoides",
+    "label": "Leucoagaricus rubrotinctoides (11)",
+    "path": "/data/species/leucoagaricus-rubrotinctoides.geojson",
+    "count": 11
+  },
+  {
+    "id": "mycena-leptocephala",
+    "label": "Mycena leptocephala (11)",
+    "path": "/data/species/mycena-leptocephala.geojson",
+    "count": 11
+  },
+  {
+    "id": "mycena-purpureofusca",
+    "label": "Mycena purpureofusca (11)",
+    "path": "/data/species/mycena-purpureofusca.geojson",
+    "count": 11
+  },
+  {
+    "id": "psilocybe-pelliculosa",
+    "label": "Psilocybe pelliculosa (11)",
+    "path": "/data/species/psilocybe-pelliculosa.geojson",
+    "count": 11
+  },
+  {
+    "id": "rickenella-fibula",
+    "label": "Rickenella fibula (11)",
+    "path": "/data/species/rickenella-fibula.geojson",
     "count": 11
   },
   {
@@ -642,9 +900,39 @@
     "count": 10
   },
   {
+    "id": "amanita-silvicola",
+    "label": "Amanita silvicola (10)",
+    "path": "/data/species/amanita-silvicola.geojson",
+    "count": 10
+  },
+  {
+    "id": "atheniella-adonis",
+    "label": "Atheniella adonis (10)",
+    "path": "/data/species/atheniella-adonis.geojson",
+    "count": 10
+  },
+  {
+    "id": "morchella-brunnea",
+    "label": "Morchella brunnea (10)",
+    "path": "/data/species/morchella-brunnea.geojson",
+    "count": 10
+  },
+  {
     "id": "russula-cremoricolor",
     "label": "Russula cremoricolor (10)",
     "path": "/data/species/russula-cremoricolor.geojson",
+    "count": 10
+  },
+  {
+    "id": "russula-sanguinea",
+    "label": "Russula sanguinea (10)",
+    "path": "/data/species/russula-sanguinea.geojson",
+    "count": 10
+  },
+  {
+    "id": "tricholoma-imbricatoides",
+    "label": "Tricholoma imbricatoides (10)",
+    "path": "/data/species/tricholoma-imbricatoides.geojson",
     "count": 10
   },
   {
@@ -654,9 +942,9 @@
     "count": 9
   },
   {
-    "id": "caloboletus-rubripes",
-    "label": "Caloboletus rubripes (9)",
-    "path": "/data/species/caloboletus-rubripes.geojson",
+    "id": "chlorophyllum-brunneum",
+    "label": "Chlorophyllum brunneum (9)",
+    "path": "/data/species/chlorophyllum-brunneum.geojson",
     "count": 9
   },
   {
@@ -672,15 +960,27 @@
     "count": 9
   },
   {
-    "id": "infundibulicybe-squamulosa",
-    "label": "Infundibulicybe squamulosa (9)",
-    "path": "/data/species/infundibulicybe-squamulosa.geojson",
+    "id": "deconica-montana",
+    "label": "Deconica montana (9)",
+    "path": "/data/species/deconica-montana.geojson",
+    "count": 9
+  },
+  {
+    "id": "lactarius-controversus",
+    "label": "Lactarius controversus (9)",
+    "path": "/data/species/lactarius-controversus.geojson",
     "count": 9
   },
   {
     "id": "leucocybe-candicans",
     "label": "Leucocybe candicans (9)",
     "path": "/data/species/leucocybe-candicans.geojson",
+    "count": 9
+  },
+  {
+    "id": "morchella-norvegiensis",
+    "label": "Morchella norvegiensis (9)",
+    "path": "/data/species/morchella-norvegiensis.geojson",
     "count": 9
   },
   {
@@ -708,6 +1008,12 @@
     "count": 9
   },
   {
+    "id": "agaricus-augustus",
+    "label": "Agaricus augustus (8)",
+    "path": "/data/species/agaricus-augustus.geojson",
+    "count": 8
+  },
+  {
     "id": "agaricus-gemellatus",
     "label": "Agaricus gemellatus (8)",
     "path": "/data/species/agaricus-gemellatus.geojson",
@@ -720,21 +1026,9 @@
     "count": 8
   },
   {
-    "id": "aphroditeola-olida",
-    "label": "Aphroditeola olida (8)",
-    "path": "/data/species/aphroditeola-olida.geojson",
-    "count": 8
-  },
-  {
     "id": "cheimonophyllum-haedinum",
     "label": "Cheimonophyllum haedinum (8)",
     "path": "/data/species/cheimonophyllum-haedinum.geojson",
-    "count": 8
-  },
-  {
-    "id": "chlorophyllum-brunneum",
-    "label": "Chlorophyllum brunneum (8)",
-    "path": "/data/species/chlorophyllum-brunneum.geojson",
     "count": 8
   },
   {
@@ -744,27 +1038,45 @@
     "count": 8
   },
   {
-    "id": "mycena-leptocephala",
-    "label": "Mycena leptocephala (8)",
-    "path": "/data/species/mycena-leptocephala.geojson",
+    "id": "radix-auricularia",
+    "label": "Radix auricularia (8)",
+    "path": "/data/species/radix-auricularia.geojson",
     "count": 8
   },
   {
-    "id": "rickenella-fibula",
-    "label": "Rickenella fibula (8)",
-    "path": "/data/species/rickenella-fibula.geojson",
+    "id": "tricholoma-terreum",
+    "label": "Tricholoma terreum (8)",
+    "path": "/data/species/tricholoma-terreum.geojson",
     "count": 8
   },
   {
-    "id": "tricholoma-imbricatoides",
-    "label": "Tricholoma imbricatoides (8)",
-    "path": "/data/species/tricholoma-imbricatoides.geojson",
-    "count": 8
+    "id": "agaricus-subrutilescens",
+    "label": "Agaricus subrutilescens (7)",
+    "path": "/data/species/agaricus-subrutilescens.geojson",
+    "count": 7
   },
   {
-    "id": "lactarius-controversus",
-    "label": "Lactarius controversus (7)",
-    "path": "/data/species/lactarius-controversus.geojson",
+    "id": "clitocybe-fragrans",
+    "label": "Clitocybe fragrans (7)",
+    "path": "/data/species/clitocybe-fragrans.geojson",
+    "count": 7
+  },
+  {
+    "id": "clitopilus-prunulus",
+    "label": "Clitopilus prunulus (7)",
+    "path": "/data/species/clitopilus-prunulus.geojson",
+    "count": 7
+  },
+  {
+    "id": "hydnellum-regium",
+    "label": "Hydnellum regium (7)",
+    "path": "/data/species/hydnellum-regium.geojson",
+    "count": 7
+  },
+  {
+    "id": "hydnellum-scabrosum",
+    "label": "Hydnellum scabrosum (7)",
+    "path": "/data/species/hydnellum-scabrosum.geojson",
     "count": 7
   },
   {
@@ -780,15 +1092,15 @@
     "count": 7
   },
   {
-    "id": "lepiota-magnispora",
-    "label": "Lepiota magnispora (7)",
-    "path": "/data/species/lepiota-magnispora.geojson",
+    "id": "leucocoprinus-barssii",
+    "label": "Leucocoprinus barssii (7)",
+    "path": "/data/species/leucocoprinus-barssii.geojson",
     "count": 7
   },
   {
-    "id": "morchella-brunnea",
-    "label": "Morchella brunnea (7)",
-    "path": "/data/species/morchella-brunnea.geojson",
+    "id": "mycena-robusta",
+    "label": "Mycena robusta (7)",
+    "path": "/data/species/mycena-robusta.geojson",
     "count": 7
   },
   {
@@ -798,21 +1110,9 @@
     "count": 7
   },
   {
-    "id": "pleurotus-dryinus",
-    "label": "Pleurotus dryinus (7)",
-    "path": "/data/species/pleurotus-dryinus.geojson",
-    "count": 7
-  },
-  {
-    "id": "radix-auricularia",
-    "label": "Radix auricularia (7)",
-    "path": "/data/species/radix-auricularia.geojson",
-    "count": 7
-  },
-  {
-    "id": "russula-sanguinea",
-    "label": "Russula sanguinea (7)",
-    "path": "/data/species/russula-sanguinea.geojson",
+    "id": "russula-smithii",
+    "label": "Russula smithii (7)",
+    "path": "/data/species/russula-smithii.geojson",
     "count": 7
   },
   {
@@ -840,6 +1140,12 @@
     "count": 7
   },
   {
+    "id": "xerocomellus-mendocinensis",
+    "label": "Xerocomellus mendocinensis (7)",
+    "path": "/data/species/xerocomellus-mendocinensis.geojson",
+    "count": 7
+  },
+  {
     "id": "agaricus-chionodermus",
     "label": "Agaricus chionodermus (6)",
     "path": "/data/species/agaricus-chionodermus.geojson",
@@ -852,15 +1158,21 @@
     "count": 6
   },
   {
-    "id": "hydnellum-scabrosum",
-    "label": "Hydnellum scabrosum (6)",
-    "path": "/data/species/hydnellum-scabrosum.geojson",
+    "id": "cystodermella-granulosa",
+    "label": "Cystodermella granulosa (6)",
+    "path": "/data/species/cystodermella-granulosa.geojson",
     "count": 6
   },
   {
-    "id": "hypholoma-fasciculare",
-    "label": "Hypholoma fasciculare (6)",
-    "path": "/data/species/hypholoma-fasciculare.geojson",
+    "id": "hydnellum-fuscoindicum",
+    "label": "Hydnellum fuscoindicum (6)",
+    "path": "/data/species/hydnellum-fuscoindicum.geojson",
+    "count": 6
+  },
+  {
+    "id": "hypsizygus-tessulatus",
+    "label": "Hypsizygus tessulatus (6)",
+    "path": "/data/species/hypsizygus-tessulatus.geojson",
     "count": 6
   },
   {
@@ -870,9 +1182,21 @@
     "count": 6
   },
   {
-    "id": "lactarius-scrobiculatus",
-    "label": "Lactarius scrobiculatus (6)",
-    "path": "/data/species/lactarius-scrobiculatus.geojson",
+    "id": "lactarius-luculentus-laetus",
+    "label": "Lactarius luculentus laetus (6)",
+    "path": "/data/species/lactarius-luculentus-laetus.geojson",
+    "count": 6
+  },
+  {
+    "id": "lactarius-luculentus",
+    "label": "Lactarius luculentus (6)",
+    "path": "/data/species/lactarius-luculentus.geojson",
+    "count": 6
+  },
+  {
+    "id": "lepiota-clypeolaria",
+    "label": "Lepiota clypeolaria (6)",
+    "path": "/data/species/lepiota-clypeolaria.geojson",
     "count": 6
   },
   {
@@ -882,22 +1206,46 @@
     "count": 6
   },
   {
+    "id": "parasola-auricoma",
+    "label": "Parasola auricoma (6)",
+    "path": "/data/species/parasola-auricoma.geojson",
+    "count": 6
+  },
+  {
+    "id": "russula-adusta",
+    "label": "Russula adusta (6)",
+    "path": "/data/species/russula-adusta.geojson",
+    "count": 6
+  },
+  {
+    "id": "russula-fragrantissima",
+    "label": "Russula fragrantissima (6)",
+    "path": "/data/species/russula-fragrantissima.geojson",
+    "count": 6
+  },
+  {
     "id": "russula-gracilis",
     "label": "Russula gracilis (6)",
     "path": "/data/species/russula-gracilis.geojson",
     "count": 6
   },
   {
-    "id": "russula-smithii",
-    "label": "Russula smithii (6)",
-    "path": "/data/species/russula-smithii.geojson",
+    "id": "tricholoma-vernaticum",
+    "label": "Tricholoma vernaticum (6)",
+    "path": "/data/species/tricholoma-vernaticum.geojson",
     "count": 6
   },
   {
-    "id": "tricholoma-terreum",
-    "label": "Tricholoma terreum (6)",
-    "path": "/data/species/tricholoma-terreum.geojson",
+    "id": "tubaria-furfuracea",
+    "label": "Tubaria furfuracea (6)",
+    "path": "/data/species/tubaria-furfuracea.geojson",
     "count": 6
+  },
+  {
+    "id": "agaricus-deardorffensis",
+    "label": "Agaricus deardorffensis (5)",
+    "path": "/data/species/agaricus-deardorffensis.geojson",
+    "count": 5
   },
   {
     "id": "agaricus-sandianus",
@@ -912,15 +1260,39 @@
     "count": 5
   },
   {
+    "id": "amanita-pantherina",
+    "label": "Amanita pantherina (5)",
+    "path": "/data/species/amanita-pantherina.geojson",
+    "count": 5
+  },
+  {
     "id": "amanita-sp-barrowsii",
     "label": "Amanita sp. 'barrowsii' (5)",
     "path": "/data/species/amanita-sp-barrowsii.geojson",
     "count": 5
   },
   {
+    "id": "clitocybe-sclerotoidea",
+    "label": "Clitocybe sclerotoidea (5)",
+    "path": "/data/species/clitocybe-sclerotoidea.geojson",
+    "count": 5
+  },
+  {
+    "id": "collybia-cirrhata",
+    "label": "Collybia cirrhata (5)",
+    "path": "/data/species/collybia-cirrhata.geojson",
+    "count": 5
+  },
+  {
     "id": "collybia-irina",
     "label": "Collybia irina (5)",
     "path": "/data/species/collybia-irina.geojson",
+    "count": 5
+  },
+  {
+    "id": "coprinellus-saccharinus",
+    "label": "Coprinellus saccharinus (5)",
+    "path": "/data/species/coprinellus-saccharinus.geojson",
     "count": 5
   },
   {
@@ -948,39 +1320,27 @@
     "count": 5
   },
   {
+    "id": "lacrymaria-lacrymabunda",
+    "label": "Lacrymaria lacrymabunda (5)",
+    "path": "/data/species/lacrymaria-lacrymabunda.geojson",
+    "count": 5
+  },
+  {
     "id": "lactarius-chelidonium",
     "label": "Lactarius chelidonium (5)",
     "path": "/data/species/lactarius-chelidonium.geojson",
     "count": 5
   },
   {
-    "id": "lactarius-luculentus-laetus",
-    "label": "Lactarius luculentus laetus (5)",
-    "path": "/data/species/lactarius-luculentus-laetus.geojson",
+    "id": "morchella-populiphila",
+    "label": "Morchella populiphila (5)",
+    "path": "/data/species/morchella-populiphila.geojson",
     "count": 5
   },
   {
-    "id": "lactarius-luculentus",
-    "label": "Lactarius luculentus (5)",
-    "path": "/data/species/lactarius-luculentus.geojson",
-    "count": 5
-  },
-  {
-    "id": "lepiota-clypeolaria",
-    "label": "Lepiota clypeolaria (5)",
-    "path": "/data/species/lepiota-clypeolaria.geojson",
-    "count": 5
-  },
-  {
-    "id": "leucocoprinus-barssii",
-    "label": "Leucocoprinus barssii (5)",
-    "path": "/data/species/leucocoprinus-barssii.geojson",
-    "count": 5
-  },
-  {
-    "id": "lyophyllum-decastes",
-    "label": "Lyophyllum decastes (5)",
-    "path": "/data/species/lyophyllum-decastes.geojson",
+    "id": "mycena-amicta",
+    "label": "Mycena amicta (5)",
+    "path": "/data/species/mycena-amicta.geojson",
     "count": 5
   },
   {
@@ -990,15 +1350,15 @@
     "count": 5
   },
   {
-    "id": "picipes-badius",
-    "label": "Picipes badius (5)",
-    "path": "/data/species/picipes-badius.geojson",
+    "id": "phloeomana-speirea",
+    "label": "Phloeomana speirea (5)",
+    "path": "/data/species/phloeomana-speirea.geojson",
     "count": 5
   },
   {
-    "id": "russula-adusta",
-    "label": "Russula adusta (5)",
-    "path": "/data/species/russula-adusta.geojson",
+    "id": "russula-albonigra",
+    "label": "Russula albonigra (5)",
+    "path": "/data/species/russula-albonigra.geojson",
     "count": 5
   },
   {
@@ -1008,15 +1368,63 @@
     "count": 5
   },
   {
+    "id": "russula-benwooii",
+    "label": "Russula benwooii (5)",
+    "path": "/data/species/russula-benwooii.geojson",
+    "count": 5
+  },
+  {
     "id": "russula-claroflava",
     "label": "Russula claroflava (5)",
     "path": "/data/species/russula-claroflava.geojson",
     "count": 5
   },
   {
+    "id": "russula-emetica",
+    "label": "Russula emetica (5)",
+    "path": "/data/species/russula-emetica.geojson",
+    "count": 5
+  },
+  {
+    "id": "russula-nigricans",
+    "label": "Russula nigricans (5)",
+    "path": "/data/species/russula-nigricans.geojson",
+    "count": 5
+  },
+  {
+    "id": "tricholoma-ammophilum",
+    "label": "Tricholoma ammophilum (5)",
+    "path": "/data/species/tricholoma-ammophilum.geojson",
+    "count": 5
+  },
+  {
+    "id": "tricholoma-pardinum",
+    "label": "Tricholoma pardinum (5)",
+    "path": "/data/species/tricholoma-pardinum.geojson",
+    "count": 5
+  },
+  {
+    "id": "xerocomellus-amylosporus",
+    "label": "Xerocomellus amylosporus (5)",
+    "path": "/data/species/xerocomellus-amylosporus.geojson",
+    "count": 5
+  },
+  {
+    "id": "xerocomellus-zelleri",
+    "label": "Xerocomellus zelleri (5)",
+    "path": "/data/species/xerocomellus-zelleri.geojson",
+    "count": 5
+  },
+  {
     "id": "agaricus-iodosmus",
     "label": "Agaricus iodosmus (4)",
     "path": "/data/species/agaricus-iodosmus.geojson",
+    "count": 4
+  },
+  {
+    "id": "agaricus-moronii",
+    "label": "Agaricus moronii (4)",
+    "path": "/data/species/agaricus-moronii.geojson",
     "count": 4
   },
   {
@@ -1032,9 +1440,21 @@
     "count": 4
   },
   {
+    "id": "agaricus-porphyrocephalus-pallidus",
+    "label": "Agaricus porphyrocephalus pallidus (4)",
+    "path": "/data/species/agaricus-porphyrocephalus-pallidus.geojson",
+    "count": 4
+  },
+  {
     "id": "agaricus-subfloccosus",
     "label": "Agaricus subfloccosus (4)",
     "path": "/data/species/agaricus-subfloccosus.geojson",
+    "count": 4
+  },
+  {
+    "id": "amanita-phalloides",
+    "label": "Amanita phalloides (4)",
+    "path": "/data/species/amanita-phalloides.geojson",
     "count": 4
   },
   {
@@ -1044,15 +1464,21 @@
     "count": 4
   },
   {
+    "id": "boletus-regineus",
+    "label": "Boletus regineus (4)",
+    "path": "/data/species/boletus-regineus.geojson",
+    "count": 4
+  },
+  {
     "id": "calonarius-calojanthinus",
     "label": "Calonarius calojanthinus (4)",
     "path": "/data/species/calonarius-calojanthinus.geojson",
     "count": 4
   },
   {
-    "id": "clitocybe-fragrans",
-    "label": "Clitocybe fragrans (4)",
-    "path": "/data/species/clitocybe-fragrans.geojson",
+    "id": "clitocybe-nebularis",
+    "label": "Clitocybe nebularis (4)",
+    "path": "/data/species/clitocybe-nebularis.geojson",
     "count": 4
   },
   {
@@ -1062,9 +1488,9 @@
     "count": 4
   },
   {
-    "id": "coprinellus-saccharinus",
-    "label": "Coprinellus saccharinus (4)",
-    "path": "/data/species/coprinellus-saccharinus.geojson",
+    "id": "coprinopsis-picacea",
+    "label": "Coprinopsis picacea (4)",
+    "path": "/data/species/coprinopsis-picacea.geojson",
     "count": 4
   },
   {
@@ -1074,21 +1500,15 @@
     "count": 4
   },
   {
-    "id": "cystodermella-granulosa",
-    "label": "Cystodermella granulosa (4)",
-    "path": "/data/species/cystodermella-granulosa.geojson",
-    "count": 4
-  },
-  {
     "id": "hohenbuehelia-petaloides",
     "label": "Hohenbuehelia petaloides (4)",
     "path": "/data/species/hohenbuehelia-petaloides.geojson",
     "count": 4
   },
   {
-    "id": "lacrymaria-lacrymabunda",
-    "label": "Lacrymaria lacrymabunda (4)",
-    "path": "/data/species/lacrymaria-lacrymabunda.geojson",
+    "id": "hypholoma-dispersum",
+    "label": "Hypholoma dispersum (4)",
+    "path": "/data/species/hypholoma-dispersum.geojson",
     "count": 4
   },
   {
@@ -1098,9 +1518,39 @@
     "count": 4
   },
   {
+    "id": "lactarius-fallax-concolor",
+    "label": "Lactarius fallax concolor (4)",
+    "path": "/data/species/lactarius-fallax-concolor.geojson",
+    "count": 4
+  },
+  {
+    "id": "lactarius-fallax",
+    "label": "Lactarius fallax (4)",
+    "path": "/data/species/lactarius-fallax.geojson",
+    "count": 4
+  },
+  {
     "id": "lactarius-indigo",
     "label": "Lactarius indigo (4)",
     "path": "/data/species/lactarius-indigo.geojson",
+    "count": 4
+  },
+  {
+    "id": "lactarius-kauffmanii",
+    "label": "Lactarius kauffmanii (4)",
+    "path": "/data/species/lactarius-kauffmanii.geojson",
+    "count": 4
+  },
+  {
+    "id": "leucocoprinus-roseilividus",
+    "label": "Leucocoprinus roseilividus (4)",
+    "path": "/data/species/leucocoprinus-roseilividus.geojson",
+    "count": 4
+  },
+  {
+    "id": "macropsalliota-americana",
+    "label": "Macropsalliota americana (4)",
+    "path": "/data/species/macropsalliota-americana.geojson",
     "count": 4
   },
   {
@@ -1110,21 +1560,21 @@
     "count": 4
   },
   {
-    "id": "morchella-norvegiensis",
-    "label": "Morchella norvegiensis (4)",
-    "path": "/data/species/morchella-norvegiensis.geojson",
-    "count": 4
-  },
-  {
     "id": "morchella-punctipes",
     "label": "Morchella punctipes (4)",
     "path": "/data/species/morchella-punctipes.geojson",
     "count": 4
   },
   {
-    "id": "mycena-haematopus",
-    "label": "Mycena haematopus (4)",
-    "path": "/data/species/mycena-haematopus.geojson",
+    "id": "mycena-aurantiomarginata",
+    "label": "Mycena aurantiomarginata (4)",
+    "path": "/data/species/mycena-aurantiomarginata.geojson",
+    "count": 4
+  },
+  {
+    "id": "mycena-oregonensis",
+    "label": "Mycena oregonensis (4)",
+    "path": "/data/species/mycena-oregonensis.geojson",
     "count": 4
   },
   {
@@ -1140,15 +1590,21 @@
     "count": 4
   },
   {
-    "id": "phloeomana-speirea",
-    "label": "Phloeomana speirea (4)",
-    "path": "/data/species/phloeomana-speirea.geojson",
+    "id": "panellus-stipticus",
+    "label": "Panellus stipticus (4)",
+    "path": "/data/species/panellus-stipticus.geojson",
     "count": 4
   },
   {
-    "id": "russula-emetica",
-    "label": "Russula emetica (4)",
-    "path": "/data/species/russula-emetica.geojson",
+    "id": "pruinomycena-acicula",
+    "label": "Pruinomycena acicula (4)",
+    "path": "/data/species/pruinomycena-acicula.geojson",
+    "count": 4
+  },
+  {
+    "id": "russula-cyanoxantha",
+    "label": "Russula cyanoxantha (4)",
+    "path": "/data/species/russula-cyanoxantha.geojson",
     "count": 4
   },
   {
@@ -1182,15 +1638,33 @@
     "count": 4
   },
   {
-    "id": "tricholoma-subacutum",
-    "label": "Tricholoma subacutum (4)",
-    "path": "/data/species/tricholoma-subacutum.geojson",
+    "id": "thaxterogaster-pluvius",
+    "label": "Thaxterogaster pluvius (4)",
+    "path": "/data/species/thaxterogaster-pluvius.geojson",
     "count": 4
   },
   {
-    "id": "tubaria-furfuracea",
-    "label": "Tubaria furfuracea (4)",
-    "path": "/data/species/tubaria-furfuracea.geojson",
+    "id": "tricholoma-apium",
+    "label": "Tricholoma apium (4)",
+    "path": "/data/species/tricholoma-apium.geojson",
+    "count": 4
+  },
+  {
+    "id": "tricholoma-fulvum",
+    "label": "Tricholoma fulvum (4)",
+    "path": "/data/species/tricholoma-fulvum.geojson",
+    "count": 4
+  },
+  {
+    "id": "tricholoma-inamoenum",
+    "label": "Tricholoma inamoenum (4)",
+    "path": "/data/species/tricholoma-inamoenum.geojson",
+    "count": 4
+  },
+  {
+    "id": "tricholoma-subacutum",
+    "label": "Tricholoma subacutum (4)",
+    "path": "/data/species/tricholoma-subacutum.geojson",
     "count": 4
   },
   {
@@ -1200,15 +1674,9 @@
     "count": 3
   },
   {
-    "id": "agaricus-moronii",
-    "label": "Agaricus moronii (3)",
-    "path": "/data/species/agaricus-moronii.geojson",
-    "count": 3
-  },
-  {
-    "id": "agaricus-porphyrocephalus-pallidus",
-    "label": "Agaricus porphyrocephalus pallidus (3)",
-    "path": "/data/species/agaricus-porphyrocephalus-pallidus.geojson",
+    "id": "agaricus-inapertus",
+    "label": "Agaricus inapertus (3)",
+    "path": "/data/species/agaricus-inapertus.geojson",
     "count": 3
   },
   {
@@ -1218,9 +1686,9 @@
     "count": 3
   },
   {
-    "id": "amanita-aprica",
-    "label": "Amanita aprica (3)",
-    "path": "/data/species/amanita-aprica.geojson",
+    "id": "amanita-breckonii",
+    "label": "Amanita breckonii (3)",
+    "path": "/data/species/amanita-breckonii.geojson",
     "count": 3
   },
   {
@@ -1230,15 +1698,15 @@
     "count": 3
   },
   {
-    "id": "boletus-regineus",
-    "label": "Boletus regineus (3)",
-    "path": "/data/species/boletus-regineus.geojson",
-    "count": 3
-  },
-  {
     "id": "butyriboletus-pulchriceps",
     "label": "Butyriboletus pulchriceps (3)",
     "path": "/data/species/butyriboletus-pulchriceps.geojson",
+    "count": 3
+  },
+  {
+    "id": "callistosporium-luteo-olivaceum",
+    "label": "Callistosporium luteo-olivaceum (3)",
+    "path": "/data/species/callistosporium-luteo-olivaceum.geojson",
     "count": 3
   },
   {
@@ -1254,21 +1722,9 @@
     "count": 3
   },
   {
-    "id": "clitocybe-nebularis",
-    "label": "Clitocybe nebularis (3)",
-    "path": "/data/species/clitocybe-nebularis.geojson",
-    "count": 3
-  },
-  {
     "id": "collybia-phyllophila",
     "label": "Collybia phyllophila (3)",
     "path": "/data/species/collybia-phyllophila.geojson",
-    "count": 3
-  },
-  {
-    "id": "coprinopsis-picacea",
-    "label": "Coprinopsis picacea (3)",
-    "path": "/data/species/coprinopsis-picacea.geojson",
     "count": 3
   },
   {
@@ -1290,15 +1746,33 @@
     "count": 3
   },
   {
-    "id": "deconica-montana",
-    "label": "Deconica montana (3)",
-    "path": "/data/species/deconica-montana.geojson",
+    "id": "cystoderma-carcharias",
+    "label": "Cystoderma carcharias (3)",
+    "path": "/data/species/cystoderma-carcharias.geojson",
+    "count": 3
+  },
+  {
+    "id": "ganoderma-brownii",
+    "label": "Ganoderma brownii (3)",
+    "path": "/data/species/ganoderma-brownii.geojson",
+    "count": 3
+  },
+  {
+    "id": "ganoderma-polychromum",
+    "label": "Ganoderma polychromum (3)",
+    "path": "/data/species/ganoderma-polychromum.geojson",
     "count": 3
   },
   {
     "id": "hericium-cirrhatum",
     "label": "Hericium cirrhatum (3)",
     "path": "/data/species/hericium-cirrhatum.geojson",
+    "count": 3
+  },
+  {
+    "id": "hortiboletus-coccyginus",
+    "label": "Hortiboletus coccyginus (3)",
+    "path": "/data/species/hortiboletus-coccyginus.geojson",
     "count": 3
   },
   {
@@ -1320,6 +1794,12 @@
     "count": 3
   },
   {
+    "id": "lactarius-alpinus",
+    "label": "Lactarius alpinus (3)",
+    "path": "/data/species/lactarius-alpinus.geojson",
+    "count": 3
+  },
+  {
     "id": "lactarius-caespitosus",
     "label": "Lactarius caespitosus (3)",
     "path": "/data/species/lactarius-caespitosus.geojson",
@@ -1329,6 +1809,18 @@
     "id": "lactarius-helvus",
     "label": "Lactarius helvus (3)",
     "path": "/data/species/lactarius-helvus.geojson",
+    "count": 3
+  },
+  {
+    "id": "lactarius-occidentalis",
+    "label": "Lactarius occidentalis (3)",
+    "path": "/data/species/lactarius-occidentalis.geojson",
+    "count": 3
+  },
+  {
+    "id": "lactarius-pallescens",
+    "label": "Lactarius pallescens (3)",
+    "path": "/data/species/lactarius-pallescens.geojson",
     "count": 3
   },
   {
@@ -1344,15 +1836,33 @@
     "count": 3
   },
   {
+    "id": "lactarius-xanthogalactus",
+    "label": "Lactarius xanthogalactus (3)",
+    "path": "/data/species/lactarius-xanthogalactus.geojson",
+    "count": 3
+  },
+  {
+    "id": "leucocybe-connata",
+    "label": "Leucocybe connata (3)",
+    "path": "/data/species/leucocybe-connata.geojson",
+    "count": 3
+  },
+  {
+    "id": "mycena-metata",
+    "label": "Mycena metata (3)",
+    "path": "/data/species/mycena-metata.geojson",
+    "count": 3
+  },
+  {
     "id": "mycena-nivicola",
     "label": "Mycena nivicola (3)",
     "path": "/data/species/mycena-nivicola.geojson",
     "count": 3
   },
   {
-    "id": "mycena-robusta",
-    "label": "Mycena robusta (3)",
-    "path": "/data/species/mycena-robusta.geojson",
+    "id": "mycena-pterigena",
+    "label": "Mycena pterigena (3)",
+    "path": "/data/species/mycena-pterigena.geojson",
     "count": 3
   },
   {
@@ -1368,6 +1878,12 @@
     "count": 3
   },
   {
+    "id": "pantherinae",
+    "label": "Pantherinae (3)",
+    "path": "/data/species/pantherinae.geojson",
+    "count": 3
+  },
+  {
     "id": "pleurotus-citrinopileatus",
     "label": "Pleurotus citrinopileatus (3)",
     "path": "/data/species/pleurotus-citrinopileatus.geojson",
@@ -1380,15 +1896,27 @@
     "count": 3
   },
   {
-    "id": "russula-albonigra",
-    "label": "Russula albonigra (3)",
-    "path": "/data/species/russula-albonigra.geojson",
+    "id": "porphyrellus-porphyrosporus",
+    "label": "Porphyrellus porphyrosporus (3)",
+    "path": "/data/species/porphyrellus-porphyrosporus.geojson",
     "count": 3
   },
   {
-    "id": "russula-cyanoxantha",
-    "label": "Russula cyanoxantha (3)",
-    "path": "/data/species/russula-cyanoxantha.geojson",
+    "id": "pyrrhulomyces-astragalinus",
+    "label": "Pyrrhulomyces astragalinus (3)",
+    "path": "/data/species/pyrrhulomyces-astragalinus.geojson",
+    "count": 3
+  },
+  {
+    "id": "russula-cerolens",
+    "label": "Russula cerolens (3)",
+    "path": "/data/species/russula-cerolens.geojson",
+    "count": 3
+  },
+  {
+    "id": "russula-fragilis",
+    "label": "Russula fragilis (3)",
+    "path": "/data/species/russula-fragilis.geojson",
     "count": 3
   },
   {
@@ -1398,21 +1926,27 @@
     "count": 3
   },
   {
+    "id": "russula-sp-woo13",
+    "label": "Russula sp. 'Woo13' (3)",
+    "path": "/data/species/russula-sp-woo13.geojson",
+    "count": 3
+  },
+  {
     "id": "russula-sp-woo46",
     "label": "Russula sp. 'Woo46' (3)",
     "path": "/data/species/russula-sp-woo46.geojson",
     "count": 3
   },
   {
-    "id": "tricholoma-ammophilum",
-    "label": "Tricholoma ammophilum (3)",
-    "path": "/data/species/tricholoma-ammophilum.geojson",
+    "id": "stropharia-caerulea",
+    "label": "Stropharia caerulea (3)",
+    "path": "/data/species/stropharia-caerulea.geojson",
     "count": 3
   },
   {
-    "id": "tricholoma-inamoenum",
-    "label": "Tricholoma inamoenum (3)",
-    "path": "/data/species/tricholoma-inamoenum.geojson",
+    "id": "tricholoma-dulciolens",
+    "label": "Tricholoma dulciolens (3)",
+    "path": "/data/species/tricholoma-dulciolens.geojson",
     "count": 3
   },
   {
@@ -1420,18 +1954,6 @@
     "label": "Tricholoma moseri (3)",
     "path": "/data/species/tricholoma-moseri.geojson",
     "count": 3
-  },
-  {
-    "id": "tricholoma-pardinum",
-    "label": "Tricholoma pardinum (3)",
-    "path": "/data/species/tricholoma-pardinum.geojson",
-    "count": 3
-  },
-  {
-    "id": "agaricus-augustus",
-    "label": "Agaricus augustus (2)",
-    "path": "/data/species/agaricus-augustus.geojson",
-    "count": 2
   },
   {
     "id": "agaricus-benesii",
@@ -1449,6 +1971,12 @@
     "id": "agaricus-deserticola",
     "label": "Agaricus deserticola (2)",
     "path": "/data/species/agaricus-deserticola.geojson",
+    "count": 2
+  },
+  {
+    "id": "agaricus-hondensis",
+    "label": "Agaricus hondensis (2)",
+    "path": "/data/species/agaricus-hondensis.geojson",
     "count": 2
   },
   {
@@ -1494,15 +2022,33 @@
     "count": 2
   },
   {
+    "id": "amanita-vernicoccora",
+    "label": "Amanita vernicoccora (2)",
+    "path": "/data/species/amanita-vernicoccora.geojson",
+    "count": 2
+  },
+  {
+    "id": "ampulloclitocybe-clavipes",
+    "label": "Ampulloclitocybe clavipes (2)",
+    "path": "/data/species/ampulloclitocybe-clavipes.geojson",
+    "count": 2
+  },
+  {
     "id": "atheniella-flavoalba",
     "label": "Atheniella flavoalba (2)",
     "path": "/data/species/atheniella-flavoalba.geojson",
     "count": 2
   },
   {
-    "id": "callistosporium-luteo-olivaceum",
-    "label": "Callistosporium luteo-olivaceum (2)",
-    "path": "/data/species/callistosporium-luteo-olivaceum.geojson",
+    "id": "boletus-subalpinus",
+    "label": "Boletus subalpinus (2)",
+    "path": "/data/species/boletus-subalpinus.geojson",
+    "count": 2
+  },
+  {
+    "id": "calonarius-olympianus",
+    "label": "Calonarius olympianus (2)",
+    "path": "/data/species/calonarius-olympianus.geojson",
     "count": 2
   },
   {
@@ -1518,9 +2064,9 @@
     "count": 2
   },
   {
-    "id": "coltricia-perennis",
-    "label": "Coltricia perennis (2)",
-    "path": "/data/species/coltricia-perennis.geojson",
+    "id": "clitocybe-squamulosa-montana",
+    "label": "Clitocybe squamulosa montana (2)",
+    "path": "/data/species/clitocybe-squamulosa-montana.geojson",
     "count": 2
   },
   {
@@ -1584,9 +2130,21 @@
     "count": 2
   },
   {
+    "id": "cortinarius-politus",
+    "label": "Cortinarius politus (2)",
+    "path": "/data/species/cortinarius-politus.geojson",
+    "count": 2
+  },
+  {
     "id": "cortinarius-rufulus",
     "label": "Cortinarius rufulus (2)",
     "path": "/data/species/cortinarius-rufulus.geojson",
+    "count": 2
+  },
+  {
+    "id": "cortinarius-rumoribrunsi",
+    "label": "Cortinarius rumoribrunsi (2)",
+    "path": "/data/species/cortinarius-rumoribrunsi.geojson",
     "count": 2
   },
   {
@@ -1602,15 +2160,15 @@
     "count": 2
   },
   {
-    "id": "cortinarius-subionophyllus",
-    "label": "Cortinarius subionophyllus (2)",
-    "path": "/data/species/cortinarius-subionophyllus.geojson",
+    "id": "cortinarius-sp-harrower95",
+    "label": "Cortinarius sp. 'Harrower95' (2)",
+    "path": "/data/species/cortinarius-sp-harrower95.geojson",
     "count": 2
   },
   {
-    "id": "cystoderma-carcharias",
-    "label": "Cystoderma carcharias (2)",
-    "path": "/data/species/cystoderma-carcharias.geojson",
+    "id": "cortinarius-subionophyllus",
+    "label": "Cortinarius subionophyllus (2)",
+    "path": "/data/species/cortinarius-subionophyllus.geojson",
     "count": 2
   },
   {
@@ -1629,6 +2187,30 @@
     "id": "hydnellum-sp-caeruleum-pnw12",
     "label": "Hydnellum sp. 'caeruleum-PNW12' (2)",
     "path": "/data/species/hydnellum-sp-caeruleum-pnw12.geojson",
+    "count": 2
+  },
+  {
+    "id": "hygrocybe-miniata",
+    "label": "Hygrocybe miniata (2)",
+    "path": "/data/species/hygrocybe-miniata.geojson",
+    "count": 2
+  },
+  {
+    "id": "hypholoma-elongatum",
+    "label": "Hypholoma elongatum (2)",
+    "path": "/data/species/hypholoma-elongatum.geojson",
+    "count": 2
+  },
+  {
+    "id": "lactarius-alpinus-alpinus",
+    "label": "Lactarius alpinus alpinus (2)",
+    "path": "/data/species/lactarius-alpinus-alpinus.geojson",
+    "count": 2
+  },
+  {
+    "id": "lactarius-atrobadius",
+    "label": "Lactarius atrobadius (2)",
+    "path": "/data/species/lactarius-atrobadius.geojson",
     "count": 2
   },
   {
@@ -1662,9 +2244,21 @@
     "count": 2
   },
   {
+    "id": "lactarius-subviscidus",
+    "label": "Lactarius subviscidus (2)",
+    "path": "/data/species/lactarius-subviscidus.geojson",
+    "count": 2
+  },
+  {
     "id": "laetiporus-sulphureus",
     "label": "Laetiporus sulphureus (2)",
     "path": "/data/species/laetiporus-sulphureus.geojson",
+    "count": 2
+  },
+  {
+    "id": "lepiota-cristata",
+    "label": "Lepiota cristata (2)",
+    "path": "/data/species/lepiota-cristata.geojson",
     "count": 2
   },
   {
@@ -1674,27 +2268,57 @@
     "count": 2
   },
   {
+    "id": "leucocoprinus-cepistipes",
+    "label": "Leucocoprinus cepistipes (2)",
+    "path": "/data/species/leucocoprinus-cepistipes.geojson",
+    "count": 2
+  },
+  {
     "id": "leucocoprinus-ianthinus",
     "label": "Leucocoprinus ianthinus (2)",
     "path": "/data/species/leucocoprinus-ianthinus.geojson",
     "count": 2
   },
   {
-    "id": "morchella-importuna",
-    "label": "Morchella importuna (2)",
-    "path": "/data/species/morchella-importuna.geojson",
+    "id": "morchella-exuberans",
+    "label": "Morchella exuberans (2)",
+    "path": "/data/species/morchella-exuberans.geojson",
     "count": 2
   },
   {
-    "id": "morchella-populiphila",
-    "label": "Morchella populiphila (2)",
-    "path": "/data/species/morchella-populiphila.geojson",
+    "id": "mycena-hudsoniana",
+    "label": "Mycena hudsoniana (2)",
+    "path": "/data/species/mycena-hudsoniana.geojson",
     "count": 2
   },
   {
-    "id": "mycena-metata",
-    "label": "Mycena metata (2)",
-    "path": "/data/species/mycena-metata.geojson",
+    "id": "mycena-laevigata",
+    "label": "Mycena laevigata (2)",
+    "path": "/data/species/mycena-laevigata.geojson",
+    "count": 2
+  },
+  {
+    "id": "mycena-maculata",
+    "label": "Mycena maculata (2)",
+    "path": "/data/species/mycena-maculata.geojson",
+    "count": 2
+  },
+  {
+    "id": "mycena-megaspora",
+    "label": "Mycena megaspora (2)",
+    "path": "/data/species/mycena-megaspora.geojson",
+    "count": 2
+  },
+  {
+    "id": "mycena-monticola",
+    "label": "Mycena monticola (2)",
+    "path": "/data/species/mycena-monticola.geojson",
+    "count": 2
+  },
+  {
+    "id": "mycena-rosella",
+    "label": "Mycena rosella (2)",
+    "path": "/data/species/mycena-rosella.geojson",
     "count": 2
   },
   {
@@ -1704,15 +2328,9 @@
     "count": 2
   },
   {
-    "id": "pantherinae",
-    "label": "Pantherinae (2)",
-    "path": "/data/species/pantherinae.geojson",
-    "count": 2
-  },
-  {
-    "id": "parasola-auricoma",
-    "label": "Parasola auricoma (2)",
-    "path": "/data/species/parasola-auricoma.geojson",
+    "id": "paralepista-flaccida",
+    "label": "Paralepista flaccida (2)",
+    "path": "/data/species/paralepista-flaccida.geojson",
     "count": 2
   },
   {
@@ -1728,9 +2346,21 @@
     "count": 2
   },
   {
-    "id": "pruinomycena-acicula",
-    "label": "Pruinomycena acicula (2)",
-    "path": "/data/species/pruinomycena-acicula.geojson",
+    "id": "pseudoarmillariella-ectypoides",
+    "label": "Pseudoarmillariella ectypoides (2)",
+    "path": "/data/species/pseudoarmillariella-ectypoides.geojson",
+    "count": 2
+  },
+  {
+    "id": "pseudoclitocybe-cyathiformis",
+    "label": "Pseudoclitocybe cyathiformis (2)",
+    "path": "/data/species/pseudoclitocybe-cyathiformis.geojson",
+    "count": 2
+  },
+  {
+    "id": "psilocybe-baeocystis",
+    "label": "Psilocybe baeocystis (2)",
+    "path": "/data/species/psilocybe-baeocystis.geojson",
     "count": 2
   },
   {
@@ -1758,6 +2388,12 @@
     "count": 2
   },
   {
+    "id": "russula-atropurpurea",
+    "label": "Russula atropurpurea (2)",
+    "path": "/data/species/russula-atropurpurea.geojson",
+    "count": 2
+  },
+  {
     "id": "russula-brevipes-acrior",
     "label": "Russula brevipes acrior (2)",
     "path": "/data/species/russula-brevipes-acrior.geojson",
@@ -1770,9 +2406,9 @@
     "count": 2
   },
   {
-    "id": "russula-fragilis",
-    "label": "Russula fragilis (2)",
-    "path": "/data/species/russula-fragilis.geojson",
+    "id": "russula-crassotunicata",
+    "label": "Russula crassotunicata (2)",
+    "path": "/data/species/russula-crassotunicata.geojson",
     "count": 2
   },
   {
@@ -1800,27 +2436,21 @@
     "count": 2
   },
   {
-    "id": "russula-sp-woo13",
-    "label": "Russula sp. 'Woo13' (2)",
-    "path": "/data/species/russula-sp-woo13.geojson",
-    "count": 2
-  },
-  {
     "id": "russula-zelleri",
     "label": "Russula zelleri (2)",
     "path": "/data/species/russula-zelleri.geojson",
     "count": 2
   },
   {
-    "id": "stropharia-aeruginosa",
-    "label": "Stropharia aeruginosa (2)",
-    "path": "/data/species/stropharia-aeruginosa.geojson",
+    "id": "spodocybe-trulliformis",
+    "label": "Spodocybe trulliformis (2)",
+    "path": "/data/species/spodocybe-trulliformis.geojson",
     "count": 2
   },
   {
-    "id": "stropharia-caerulea",
-    "label": "Stropharia caerulea (2)",
-    "path": "/data/species/stropharia-caerulea.geojson",
+    "id": "stropharia-aeruginosa",
+    "label": "Stropharia aeruginosa (2)",
+    "path": "/data/species/stropharia-aeruginosa.geojson",
     "count": 2
   },
   {
@@ -1836,15 +2466,15 @@
     "count": 2
   },
   {
-    "id": "tricholoma-frondosae",
-    "label": "Tricholoma frondosae (2)",
-    "path": "/data/species/tricholoma-frondosae.geojson",
+    "id": "tricholoma-atroviolaceum",
+    "label": "Tricholoma atroviolaceum (2)",
+    "path": "/data/species/tricholoma-atroviolaceum.geojson",
     "count": 2
   },
   {
-    "id": "tricholoma-fulvum",
-    "label": "Tricholoma fulvum (2)",
-    "path": "/data/species/tricholoma-fulvum.geojson",
+    "id": "tricholoma-frondosae",
+    "label": "Tricholoma frondosae (2)",
+    "path": "/data/species/tricholoma-frondosae.geojson",
     "count": 2
   },
   {
@@ -1881,6 +2511,12 @@
     "id": "tricholoma-subannulatum",
     "label": "Tricholoma subannulatum (2)",
     "path": "/data/species/tricholoma-subannulatum.geojson",
+    "count": 2
+  },
+  {
+    "id": "tricholoma-subsejunctum",
+    "label": "Tricholoma subsejunctum (2)",
+    "path": "/data/species/tricholoma-subsejunctum.geojson",
     "count": 2
   },
   {
@@ -1926,15 +2562,15 @@
     "count": 1
   },
   {
-    "id": "agaricus-inapertus",
-    "label": "Agaricus inapertus (1)",
-    "path": "/data/species/agaricus-inapertus.geojson",
-    "count": 1
-  },
-  {
     "id": "agaricus-jacobi",
     "label": "Agaricus jacobi (1)",
     "path": "/data/species/agaricus-jacobi.geojson",
+    "count": 1
+  },
+  {
+    "id": "agaricus-moelleri",
+    "label": "Agaricus moelleri (1)",
+    "path": "/data/species/agaricus-moelleri.geojson",
     "count": 1
   },
   {
@@ -1968,15 +2604,27 @@
     "count": 1
   },
   {
-    "id": "amanita-nivalis",
-    "label": "Amanita nivalis (1)",
-    "path": "/data/species/amanita-nivalis.geojson",
+    "id": "amanita-constricta",
+    "label": "Amanita constricta (1)",
+    "path": "/data/species/amanita-constricta.geojson",
     "count": 1
   },
   {
-    "id": "amanita-pantherina",
-    "label": "Amanita pantherina (1)",
-    "path": "/data/species/amanita-pantherina.geojson",
+    "id": "amanita-muscaria-aureola",
+    "label": "Amanita muscaria aureola (1)",
+    "path": "/data/species/amanita-muscaria-aureola.geojson",
+    "count": 1
+  },
+  {
+    "id": "amanita-muscaria-formosa",
+    "label": "Amanita muscaria formosa (1)",
+    "path": "/data/species/amanita-muscaria-formosa.geojson",
+    "count": 1
+  },
+  {
+    "id": "amanita-nivalis",
+    "label": "Amanita nivalis (1)",
+    "path": "/data/species/amanita-nivalis.geojson",
     "count": 1
   },
   {
@@ -1992,6 +2640,12 @@
     "count": 1
   },
   {
+    "id": "amanita-sp-pacificogemmata",
+    "label": "Amanita sp. 'pacificogemmata' (1)",
+    "path": "/data/species/amanita-sp-pacificogemmata.geojson",
+    "count": 1
+  },
+  {
     "id": "amanita-sp-pahasapaensis",
     "label": "Amanita sp. 'pahasapaensis' (1)",
     "path": "/data/species/amanita-sp-pahasapaensis.geojson",
@@ -2001,12 +2655,6 @@
     "id": "amanita-sp-subnigra",
     "label": "Amanita sp. 'subnigra' (1)",
     "path": "/data/species/amanita-sp-subnigra.geojson",
-    "count": 1
-  },
-  {
-    "id": "atheniella-adonis",
-    "label": "Atheniella adonis (1)",
-    "path": "/data/species/atheniella-adonis.geojson",
     "count": 1
   },
   {
@@ -2022,12 +2670,6 @@
     "count": 1
   },
   {
-    "id": "boletus-edulis-grandedulis",
-    "label": "Boletus edulis grandedulis (1)",
-    "path": "/data/species/boletus-edulis-grandedulis.geojson",
-    "count": 1
-  },
-  {
     "id": "boletus-mottiae",
     "label": "Boletus mottiae (1)",
     "path": "/data/species/boletus-mottiae.geojson",
@@ -2037,6 +2679,18 @@
     "id": "boletus-pinophilus",
     "label": "Boletus pinophilus (1)",
     "path": "/data/species/boletus-pinophilus.geojson",
+    "count": 1
+  },
+  {
+    "id": "calonarius-anetholens",
+    "label": "Calonarius anetholens (1)",
+    "path": "/data/species/calonarius-anetholens.geojson",
+    "count": 1
+  },
+  {
+    "id": "calonarius-aureofulvus",
+    "label": "Calonarius aureofulvus (1)",
+    "path": "/data/species/calonarius-aureofulvus.geojson",
     "count": 1
   },
   {
@@ -2058,9 +2712,21 @@
     "count": 1
   },
   {
+    "id": "cantharellula-umbonata",
+    "label": "Cantharellula umbonata (1)",
+    "path": "/data/species/cantharellula-umbonata.geojson",
+    "count": 1
+  },
+  {
     "id": "chlorophyllum-hortense",
     "label": "Chlorophyllum hortense (1)",
     "path": "/data/species/chlorophyllum-hortense.geojson",
+    "count": 1
+  },
+  {
+    "id": "clitocybe-crenulata",
+    "label": "Clitocybe crenulata (1)",
+    "path": "/data/species/clitocybe-crenulata.geojson",
     "count": 1
   },
   {
@@ -2070,9 +2736,15 @@
     "count": 1
   },
   {
-    "id": "clitopilus-prunulus",
-    "label": "Clitopilus prunulus (1)",
-    "path": "/data/species/clitopilus-prunulus.geojson",
+    "id": "clitocybe-odora-pacifica",
+    "label": "Clitocybe odora pacifica (1)",
+    "path": "/data/species/clitocybe-odora-pacifica.geojson",
+    "count": 1
+  },
+  {
+    "id": "collybia-rivulosa",
+    "label": "Collybia rivulosa (1)",
+    "path": "/data/species/collybia-rivulosa.geojson",
     "count": 1
   },
   {
@@ -2085,6 +2757,12 @@
     "id": "coprinopsis-alopecia",
     "label": "Coprinopsis alopecia (1)",
     "path": "/data/species/coprinopsis-alopecia.geojson",
+    "count": 1
+  },
+  {
+    "id": "coprinopsis-friesii",
+    "label": "Coprinopsis friesii (1)",
+    "path": "/data/species/coprinopsis-friesii.geojson",
     "count": 1
   },
   {
@@ -2103,6 +2781,12 @@
     "id": "coprinus-sp-comatus-ca01",
     "label": "Coprinus sp. 'comatus-CA01' (1)",
     "path": "/data/species/coprinus-sp-comatus-ca01.geojson",
+    "count": 1
+  },
+  {
+    "id": "cortinarius-brunneofibrillosus",
+    "label": "Cortinarius brunneofibrillosus (1)",
+    "path": "/data/species/cortinarius-brunneofibrillosus.geojson",
     "count": 1
   },
   {
@@ -2160,6 +2844,12 @@
     "count": 1
   },
   {
+    "id": "cortinarius-neosanguineus",
+    "label": "Cortinarius neosanguineus (1)",
+    "path": "/data/species/cortinarius-neosanguineus.geojson",
+    "count": 1
+  },
+  {
     "id": "cortinarius-nigrocuspidatus",
     "label": "Cortinarius nigrocuspidatus (1)",
     "path": "/data/species/cortinarius-nigrocuspidatus.geojson",
@@ -2172,9 +2862,21 @@
     "count": 1
   },
   {
-    "id": "cortinarius-politus",
-    "label": "Cortinarius politus (1)",
-    "path": "/data/species/cortinarius-politus.geojson",
+    "id": "cortinarius-perplexus",
+    "label": "Cortinarius perplexus (1)",
+    "path": "/data/species/cortinarius-perplexus.geojson",
+    "count": 1
+  },
+  {
+    "id": "cortinarius-piceidisjungendus",
+    "label": "Cortinarius piceidisjungendus (1)",
+    "path": "/data/species/cortinarius-piceidisjungendus.geojson",
+    "count": 1
+  },
+  {
+    "id": "cortinarius-putorius",
+    "label": "Cortinarius putorius (1)",
+    "path": "/data/species/cortinarius-putorius.geojson",
     "count": 1
   },
   {
@@ -2202,6 +2904,18 @@
     "count": 1
   },
   {
+    "id": "cortinarius-solis-occasus",
+    "label": "Cortinarius solis-occasus (1)",
+    "path": "/data/species/cortinarius-solis-occasus.geojson",
+    "count": 1
+  },
+  {
+    "id": "cortinarius-sp-ca03",
+    "label": "Cortinarius sp. 'CA03' (1)",
+    "path": "/data/species/cortinarius-sp-ca03.geojson",
+    "count": 1
+  },
+  {
     "id": "cortinarius-sp-ca43",
     "label": "Cortinarius sp. 'CA43' (1)",
     "path": "/data/species/cortinarius-sp-ca43.geojson",
@@ -2214,9 +2928,21 @@
     "count": 1
   },
   {
+    "id": "cortinarius-sp-harrower112a",
+    "label": "Cortinarius sp. 'Harrower112a' (1)",
+    "path": "/data/species/cortinarius-sp-harrower112a.geojson",
+    "count": 1
+  },
+  {
     "id": "cortinarius-sp-pnw47",
     "label": "Cortinarius sp. 'PNW47' (1)",
     "path": "/data/species/cortinarius-sp-pnw47.geojson",
+    "count": 1
+  },
+  {
+    "id": "cortinarius-sp-pnw51",
+    "label": "Cortinarius sp. 'PNW51' (1)",
+    "path": "/data/species/cortinarius-sp-pnw51.geojson",
     "count": 1
   },
   {
@@ -2226,9 +2952,27 @@
     "count": 1
   },
   {
+    "id": "cortinarius-sp-pnw97",
+    "label": "Cortinarius sp. 'PNW97' (1)",
+    "path": "/data/species/cortinarius-sp-pnw97.geojson",
+    "count": 1
+  },
+  {
+    "id": "cortinarius-substriatus",
+    "label": "Cortinarius substriatus (1)",
+    "path": "/data/species/cortinarius-substriatus.geojson",
+    "count": 1
+  },
+  {
     "id": "cortinarius-trappei",
     "label": "Cortinarius trappei (1)",
     "path": "/data/species/cortinarius-trappei.geojson",
+    "count": 1
+  },
+  {
+    "id": "cortinarius-tubarius",
+    "label": "Cortinarius tubarius (1)",
+    "path": "/data/species/cortinarius-tubarius.geojson",
     "count": 1
   },
   {
@@ -2244,21 +2988,39 @@
     "count": 1
   },
   {
+    "id": "deconica-inquilina",
+    "label": "Deconica inquilina (1)",
+    "path": "/data/species/deconica-inquilina.geojson",
+    "count": 1
+  },
+  {
+    "id": "deconica-subviscida",
+    "label": "Deconica subviscida (1)",
+    "path": "/data/species/deconica-subviscida.geojson",
+    "count": 1
+  },
+  {
     "id": "deliciosi",
     "label": "Deliciosi (1)",
     "path": "/data/species/deliciosi.geojson",
     "count": 1
   },
   {
-    "id": "ganoderma-lobatum",
-    "label": "Ganoderma lobatum (1)",
-    "path": "/data/species/ganoderma-lobatum.geojson",
+    "id": "ephemerocybe-impatiens",
+    "label": "Ephemerocybe impatiens (1)",
+    "path": "/data/species/ephemerocybe-impatiens.geojson",
     "count": 1
   },
   {
-    "id": "ganoderma-polychromum",
-    "label": "Ganoderma polychromum (1)",
-    "path": "/data/species/ganoderma-polychromum.geojson",
+    "id": "gamundia-striatula",
+    "label": "Gamundia striatula (1)",
+    "path": "/data/species/gamundia-striatula.geojson",
+    "count": 1
+  },
+  {
+    "id": "ganoderma-lobatum",
+    "label": "Ganoderma lobatum (1)",
+    "path": "/data/species/ganoderma-lobatum.geojson",
     "count": 1
   },
   {
@@ -2286,15 +3048,15 @@
     "count": 1
   },
   {
-    "id": "hericium-abietis",
-    "label": "Hericium abietis (1)",
-    "path": "/data/species/hericium-abietis.geojson",
-    "count": 1
-  },
-  {
     "id": "hericium-americanum",
     "label": "Hericium americanum (1)",
     "path": "/data/species/hericium-americanum.geojson",
+    "count": 1
+  },
+  {
+    "id": "hericium-oregonense",
+    "label": "Hericium oregonense (1)",
+    "path": "/data/species/hericium-oregonense.geojson",
     "count": 1
   },
   {
@@ -2322,9 +3084,9 @@
     "count": 1
   },
   {
-    "id": "hydnellum-regium",
-    "label": "Hydnellum regium (1)",
-    "path": "/data/species/hydnellum-regium.geojson",
+    "id": "hydnellum-mirabile",
+    "label": "Hydnellum mirabile (1)",
+    "path": "/data/species/hydnellum-mirabile.geojson",
     "count": 1
   },
   {
@@ -2340,6 +3102,18 @@
     "count": 1
   },
   {
+    "id": "hygronarius-renidens",
+    "label": "Hygronarius renidens (1)",
+    "path": "/data/species/hygronarius-renidens.geojson",
+    "count": 1
+  },
+  {
+    "id": "hygrophoropsis-rufa",
+    "label": "Hygrophoropsis rufa (1)",
+    "path": "/data/species/hygrophoropsis-rufa.geojson",
+    "count": 1
+  },
+  {
     "id": "hygrophorus-russula",
     "label": "Hygrophorus russula (1)",
     "path": "/data/species/hygrophorus-russula.geojson",
@@ -2352,15 +3126,15 @@
     "count": 1
   },
   {
-    "id": "hypomyces-hyalinus",
-    "label": "Hypomyces hyalinus (1)",
-    "path": "/data/species/hypomyces-hyalinus.geojson",
+    "id": "hypholoma-sp-pnw03",
+    "label": "Hypholoma sp. 'PNW03' (1)",
+    "path": "/data/species/hypholoma-sp-pnw03.geojson",
     "count": 1
   },
   {
-    "id": "hypsizygus-tessulatus",
-    "label": "Hypsizygus tessulatus (1)",
-    "path": "/data/species/hypsizygus-tessulatus.geojson",
+    "id": "hypomyces-hyalinus",
+    "label": "Hypomyces hyalinus (1)",
+    "path": "/data/species/hypomyces-hyalinus.geojson",
     "count": 1
   },
   {
@@ -2376,15 +3150,21 @@
     "count": 1
   },
   {
-    "id": "lactarius-atrobadius",
-    "label": "Lactarius atrobadius (1)",
-    "path": "/data/species/lactarius-atrobadius.geojson",
-    "count": 1
-  },
-  {
     "id": "lactarius-barrowsii",
     "label": "Lactarius barrowsii (1)",
     "path": "/data/species/lactarius-barrowsii.geojson",
+    "count": 1
+  },
+  {
+    "id": "lactarius-crassus",
+    "label": "Lactarius crassus (1)",
+    "path": "/data/species/lactarius-crassus.geojson",
+    "count": 1
+  },
+  {
+    "id": "lactarius-cuspidoaurantiacus",
+    "label": "Lactarius cuspidoaurantiacus (1)",
+    "path": "/data/species/lactarius-cuspidoaurantiacus.geojson",
     "count": 1
   },
   {
@@ -2430,6 +3210,12 @@
     "count": 1
   },
   {
+    "id": "lactarius-substriatus",
+    "label": "Lactarius substriatus (1)",
+    "path": "/data/species/lactarius-substriatus.geojson",
+    "count": 1
+  },
+  {
     "id": "lactarius-tabidus",
     "label": "Lactarius tabidus (1)",
     "path": "/data/species/lactarius-tabidus.geojson",
@@ -2442,15 +3228,21 @@
     "count": 1
   },
   {
+    "id": "leccinum-scabrum",
+    "label": "Leccinum scabrum (1)",
+    "path": "/data/species/leccinum-scabrum.geojson",
+    "count": 1
+  },
+  {
     "id": "lentinellus-cochleatus",
     "label": "Lentinellus cochleatus (1)",
     "path": "/data/species/lentinellus-cochleatus.geojson",
     "count": 1
   },
   {
-    "id": "lepiota-cristata",
-    "label": "Lepiota cristata (1)",
-    "path": "/data/species/lepiota-cristata.geojson",
+    "id": "lepiota-castanea",
+    "label": "Lepiota castanea (1)",
+    "path": "/data/species/lepiota-castanea.geojson",
     "count": 1
   },
   {
@@ -2463,6 +3255,12 @@
     "id": "lepiota-lepida",
     "label": "Lepiota lepida (1)",
     "path": "/data/species/lepiota-lepida.geojson",
+    "count": 1
+  },
+  {
+    "id": "lepiota-sequoiarum",
+    "label": "Lepiota sequoiarum (1)",
+    "path": "/data/species/lepiota-sequoiarum.geojson",
     "count": 1
   },
   {
@@ -2502,21 +3300,21 @@
     "count": 1
   },
   {
-    "id": "leucocoprinus-cepistipes",
-    "label": "Leucocoprinus cepistipes (1)",
-    "path": "/data/species/leucocoprinus-cepistipes.geojson",
+    "id": "leucocoprinus-atrodiscus",
+    "label": "Leucocoprinus atrodiscus (1)",
+    "path": "/data/species/leucocoprinus-atrodiscus.geojson",
     "count": 1
   },
   {
-    "id": "lichenomphalia-ericetorum",
-    "label": "Lichenomphalia ericetorum (1)",
-    "path": "/data/species/lichenomphalia-ericetorum.geojson",
+    "id": "leucocoprinus-decoratus",
+    "label": "Leucocoprinus decoratus (1)",
+    "path": "/data/species/leucocoprinus-decoratus.geojson",
     "count": 1
   },
   {
-    "id": "macropsalliota-americana",
-    "label": "Macropsalliota americana (1)",
-    "path": "/data/species/macropsalliota-americana.geojson",
+    "id": "leucocoprinus-flammeotinctus",
+    "label": "Leucocoprinus flammeotinctus (1)",
+    "path": "/data/species/leucocoprinus-flammeotinctus.geojson",
     "count": 1
   },
   {
@@ -2556,21 +3354,33 @@
     "count": 1
   },
   {
+    "id": "mycena-clavicularis",
+    "label": "Mycena clavicularis (1)",
+    "path": "/data/species/mycena-clavicularis.geojson",
+    "count": 1
+  },
+  {
     "id": "mycena-galopus",
     "label": "Mycena galopus (1)",
     "path": "/data/species/mycena-galopus.geojson",
     "count": 1
   },
   {
-    "id": "mycena-oregonensis",
-    "label": "Mycena oregonensis (1)",
-    "path": "/data/species/mycena-oregonensis.geojson",
+    "id": "mycena-picta",
+    "label": "Mycena picta (1)",
+    "path": "/data/species/mycena-picta.geojson",
     "count": 1
   },
   {
-    "id": "mycena-purpureofusca",
-    "label": "Mycena purpureofusca (1)",
-    "path": "/data/species/mycena-purpureofusca.geojson",
+    "id": "mycena-rutilantiformis",
+    "label": "Mycena rutilantiformis (1)",
+    "path": "/data/species/mycena-rutilantiformis.geojson",
+    "count": 1
+  },
+  {
+    "id": "mycena-sanguinolenta",
+    "label": "Mycena sanguinolenta (1)",
+    "path": "/data/species/mycena-sanguinolenta.geojson",
     "count": 1
   },
   {
@@ -2628,18 +3438,6 @@
     "count": 1
   },
   {
-    "id": "panellus-stipticus",
-    "label": "Panellus stipticus (1)",
-    "path": "/data/species/panellus-stipticus.geojson",
-    "count": 1
-  },
-  {
-    "id": "paralepista-flaccida",
-    "label": "Paralepista flaccida (1)",
-    "path": "/data/species/paralepista-flaccida.geojson",
-    "count": 1
-  },
-  {
     "id": "parasola-lactea",
     "label": "Parasola lactea (1)",
     "path": "/data/species/parasola-lactea.geojson",
@@ -2649,6 +3447,18 @@
     "id": "phaeonematoloma-myosotis",
     "label": "Phaeonematoloma myosotis (1)",
     "path": "/data/species/phaeonematoloma-myosotis.geojson",
+    "count": 1
+  },
+  {
+    "id": "phellinus-igniarius",
+    "label": "Phellinus igniarius (1)",
+    "path": "/data/species/phellinus-igniarius.geojson",
+    "count": 1
+  },
+  {
+    "id": "phlegmacium-albofragrans",
+    "label": "Phlegmacium albofragrans (1)",
+    "path": "/data/species/phlegmacium-albofragrans.geojson",
     "count": 1
   },
   {
@@ -2670,9 +3480,33 @@
     "count": 1
   },
   {
+    "id": "phlegmacium-pini",
+    "label": "Phlegmacium pini (1)",
+    "path": "/data/species/phlegmacium-pini.geojson",
+    "count": 1
+  },
+  {
+    "id": "phlegmacium-ponderosum",
+    "label": "Phlegmacium ponderosum (1)",
+    "path": "/data/species/phlegmacium-ponderosum.geojson",
+    "count": 1
+  },
+  {
+    "id": "phlegmacium-subfoetidum",
+    "label": "Phlegmacium subfoetidum (1)",
+    "path": "/data/species/phlegmacium-subfoetidum.geojson",
+    "count": 1
+  },
+  {
     "id": "phloeomana-hiemalis",
     "label": "Phloeomana hiemalis (1)",
     "path": "/data/species/phloeomana-hiemalis.geojson",
+    "count": 1
+  },
+  {
+    "id": "pholiota-limonella",
+    "label": "Pholiota limonella (1)",
+    "path": "/data/species/pholiota-limonella.geojson",
     "count": 1
   },
   {
@@ -2694,9 +3528,21 @@
     "count": 1
   },
   {
-    "id": "psilocybe-pelliculosa",
-    "label": "Psilocybe pelliculosa (1)",
-    "path": "/data/species/psilocybe-pelliculosa.geojson",
+    "id": "psilocybe-azurescens",
+    "label": "Psilocybe azurescens (1)",
+    "path": "/data/species/psilocybe-azurescens.geojson",
+    "count": 1
+  },
+  {
+    "id": "psilocybe-cyanescens",
+    "label": "Psilocybe cyanescens (1)",
+    "path": "/data/species/psilocybe-cyanescens.geojson",
+    "count": 1
+  },
+  {
+    "id": "psilocybe-strictipes",
+    "label": "Psilocybe strictipes (1)",
+    "path": "/data/species/psilocybe-strictipes.geojson",
     "count": 1
   },
   {
@@ -2706,9 +3552,15 @@
     "count": 1
   },
   {
-    "id": "pyrrhulomyces-astragalinus",
-    "label": "Pyrrhulomyces astragalinus (1)",
-    "path": "/data/species/pyrrhulomyces-astragalinus.geojson",
+    "id": "resupinatus-applicatus",
+    "label": "Resupinatus applicatus (1)",
+    "path": "/data/species/resupinatus-applicatus.geojson",
+    "count": 1
+  },
+  {
+    "id": "rhizocybe-vermicularis",
+    "label": "Rhizocybe vermicularis (1)",
+    "path": "/data/species/rhizocybe-vermicularis.geojson",
     "count": 1
   },
   {
@@ -2718,9 +3570,15 @@
     "count": 1
   },
   {
-    "id": "russula-atropurpurea",
-    "label": "Russula atropurpurea (1)",
-    "path": "/data/species/russula-atropurpurea.geojson",
+    "id": "roridomyces-roridus",
+    "label": "Roridomyces roridus (1)",
+    "path": "/data/species/roridomyces-roridus.geojson",
+    "count": 1
+  },
+  {
+    "id": "russula-bicolor",
+    "label": "Russula bicolor (1)",
+    "path": "/data/species/russula-bicolor.geojson",
     "count": 1
   },
   {
@@ -2733,6 +3591,12 @@
     "id": "russula-densifolia",
     "label": "Russula densifolia (1)",
     "path": "/data/species/russula-densifolia.geojson",
+    "count": 1
+  },
+  {
+    "id": "russula-foetens",
+    "label": "Russula foetens (1)",
+    "path": "/data/species/russula-foetens.geojson",
     "count": 1
   },
   {
@@ -2757,6 +3621,12 @@
     "id": "russula-olivina",
     "label": "Russula olivina (1)",
     "path": "/data/species/russula-olivina.geojson",
+    "count": 1
+  },
+  {
+    "id": "russula-pseudotsugarum",
+    "label": "Russula pseudotsugarum (1)",
+    "path": "/data/species/russula-pseudotsugarum.geojson",
     "count": 1
   },
   {
@@ -2814,6 +3684,12 @@
     "count": 1
   },
   {
+    "id": "russula-sp-pnw03",
+    "label": "Russula sp. 'PNW03' (1)",
+    "path": "/data/species/russula-sp-pnw03.geojson",
+    "count": 1
+  },
+  {
     "id": "russula-sp-woo18",
     "label": "Russula sp. 'Woo18' (1)",
     "path": "/data/species/russula-sp-woo18.geojson",
@@ -2850,6 +3726,12 @@
     "count": 1
   },
   {
+    "id": "russula-vinosa",
+    "label": "Russula vinosa (1)",
+    "path": "/data/species/russula-vinosa.geojson",
+    "count": 1
+  },
+  {
     "id": "saproamanita-prairiicola",
     "label": "Saproamanita prairiicola (1)",
     "path": "/data/species/saproamanita-prairiicola.geojson",
@@ -2862,15 +3744,21 @@
     "count": 1
   },
   {
-    "id": "spodocybe-trulliformis",
-    "label": "Spodocybe trulliformis (1)",
-    "path": "/data/species/spodocybe-trulliformis.geojson",
+    "id": "suillellus-amygdalinus",
+    "label": "Suillellus amygdalinus (1)",
+    "path": "/data/species/suillellus-amygdalinus.geojson",
     "count": 1
   },
   {
     "id": "suillus-collinitus",
     "label": "Suillus collinitus (1)",
     "path": "/data/species/suillus-collinitus.geojson",
+    "count": 1
+  },
+  {
+    "id": "suillus-grevillei",
+    "label": "Suillus grevillei (1)",
+    "path": "/data/species/suillus-grevillei.geojson",
     "count": 1
   },
   {
@@ -2883,6 +3771,12 @@
     "id": "thaxterogaster-fulvo-ochrascens",
     "label": "Thaxterogaster fulvo-ochrascens (1)",
     "path": "/data/species/thaxterogaster-fulvo-ochrascens.geojson",
+    "count": 1
+  },
+  {
+    "id": "thaxterogaster-sphagnophilus",
+    "label": "Thaxterogaster sphagnophilus (1)",
+    "path": "/data/species/thaxterogaster-sphagnophilus.geojson",
     "count": 1
   },
   {
@@ -2901,12 +3795,6 @@
     "id": "tricholoma-caligatum",
     "label": "Tricholoma caligatum (1)",
     "path": "/data/species/tricholoma-caligatum.geojson",
-    "count": 1
-  },
-  {
-    "id": "tricholoma-dulciolens",
-    "label": "Tricholoma dulciolens (1)",
-    "path": "/data/species/tricholoma-dulciolens.geojson",
     "count": 1
   },
   {
@@ -2967,12 +3855,6 @@
     "id": "tricholoma-zelleri",
     "label": "Tricholoma zelleri (1)",
     "path": "/data/species/tricholoma-zelleri.geojson",
-    "count": 1
-  },
-  {
-    "id": "xerocomellus-amylosporus",
-    "label": "Xerocomellus amylosporus (1)",
-    "path": "/data/species/xerocomellus-amylosporus.geojson",
     "count": 1
   },
   {
