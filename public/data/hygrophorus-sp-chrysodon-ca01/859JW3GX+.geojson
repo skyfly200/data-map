@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "06685c83-267e-463c-ad4b-ce3df8a863a7",
+        "inat_id": 235763674,
+        "timestamp": "2024-08-14T11:00:54-06:00",
+        "date": "2024-08-14",
+        "olc": "859JW3GX+",
+        "elevation": 2508.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 20.0,
+        "precipitation": 0.1,
+        "windspeed": 7.9,
+        "winddirection": null,
+        "presure": 1032.4,
+        "species": "Hygrophorus sp. 'chrysodon-CA01'",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.900445,
+          37.9262783333
+        ]
+      }
+    }
+  ]
+}

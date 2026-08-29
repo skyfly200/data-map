@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5711763f-ecdc-4f01-a023-260c9242db2a,246096249,2024-10-06 15:33:03-06:00,2024-10-06,-104.8395581523,38.631627647,85CQJ5J6+,1983.0,,7.7,22.0,0.0,13.9,,1024.1,Trichaptum fuscoviolaceum,"Colorado, US",1

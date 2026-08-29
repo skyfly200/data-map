@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c2c4de62-7c49-4d22-817d-35239db6f7d8",
+        "inat_id": 128533086,
+        "timestamp": "2022-07-29T18:03:43-06:00",
+        "date": "2022-07-29",
+        "olc": "85PR2JVV+",
+        "elevation": 1110.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 31.0,
+        "precipitation": 0.7,
+        "windspeed": 11.2,
+        "winddirection": null,
+        "presure": 1017.6,
+        "species": "Laetiporus cincinnatus",
+        "location": "Black Hills National Forest, Rapid City, SD, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.3555790017,
+          44.0449705458
+        ]
+      }
+    }
+  ]
+}

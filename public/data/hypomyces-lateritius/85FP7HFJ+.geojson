@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b75eee63-f0a1-4f4b-a28a-fd71591a7102",
+        "inat_id": 237585249,
+        "timestamp": "2024-08-23T17:27:32-06:00",
+        "date": "2024-08-23",
+        "olc": "85FP7HFJ+",
+        "elevation": 3005.0,
+        "tavg": null,
+        "tmin": 5.3,
+        "tmax": 18.5,
+        "precipitation": 0.3,
+        "windspeed": 14.2,
+        "winddirection": null,
+        "presure": 1017.9,
+        "species": "Hypomyces lateritius",
+        "location": "Pike and San Isabel National Forests, Hartsel, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4178783333,
+          39.2727366667
+        ]
+      }
+    }
+  ]
+}

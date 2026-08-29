@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6d48a44b-fecb-4bed-81eb-c0e20e4cad85",
+        "inat_id": 371887076,
+        "timestamp": "2026-06-13T15:02:26-06:00",
+        "date": "2026-06-13",
+        "olc": "85FMF96R+",
+        "elevation": 3431.0,
+        "tavg": null,
+        "tmin": 7.2,
+        "tmax": 30.6,
+        "precipitation": 0.0,
+        "windspeed": 6.8,
+        "winddirection": null,
+        "presure": 1011.6,
+        "species": "Hygrophorus marzuolus",
+        "location": "Eagle, CO 81631, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.6084436,
+          39.4609355997
+        ]
+      }
+    }
+  ]
+}

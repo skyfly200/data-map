@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "167ed4f7-8431-4a2e-89ce-36b9ee64fc6e",
+        "inat_id": 130666612,
+        "timestamp": "2022-08-13T12:11:18-06:00",
+        "date": "2022-08-13",
+        "olc": "859JC5FH+",
+        "elevation": 2038.0,
+        "tavg": null,
+        "tmin": 14.4,
+        "tmax": 31.1,
+        "precipitation": 0.0,
+        "windspeed": 7.0,
+        "winddirection": null,
+        "presure": 1017.1,
+        "species": "Hypomyces lactifluorum",
+        "location": "Durango, CO 81301, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8224222222,
+          37.4229722222
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5bf5ef78-1f1e-4271-8530-b52095d9e1dc",
+        "inat_id": 172012945,
+        "timestamp": "2022-09-16T11:02:55-06:00",
+        "date": "2022-09-16",
+        "olc": "85CQX2GH+",
+        "elevation": 2764.0,
+        "tavg": null,
+        "tmin": 6.3,
+        "tmax": 25.2,
+        "precipitation": null,
+        "windspeed": 13.1,
+        "winddirection": null,
+        "presure": 1012.5,
+        "species": "Albatrellopsis confluens",
+        "location": "Colorado Springs, CO 80921, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9720206484,
+          38.9764096004
+        ]
+      }
+    }
+  ]
+}

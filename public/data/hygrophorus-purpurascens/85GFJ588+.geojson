@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "81b98f5d-ded9-4fa5-8337-bdefe8bf5b41",
+        "inat_id": 183016270,
+        "timestamp": "2023-09-02T15:16:35-06:00",
+        "date": "2023-09-02",
+        "olc": "85GFJ588+",
+        "elevation": 3186.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrophorus purpurascens",
+        "location": "Utah, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.8349328491,
+          40.6162576823
+        ]
+      }
+    }
+  ]
+}

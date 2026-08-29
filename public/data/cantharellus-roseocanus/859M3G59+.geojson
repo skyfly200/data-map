@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "173dd5ff-129c-440a-93fc-949ea10a564d",
+        "inat_id": 201631171,
+        "timestamp": "2021-08-06T10:55:52-06:00",
+        "date": "2021-08-06",
+        "olc": "859M3G59+",
+        "elevation": 3193.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Cantharellus roseocanus",
+        "location": "Rio Grande National Forest, Antonito, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.4806133333,
+          37.0591388333
+        ]
+      }
+    }
+  ]
+}

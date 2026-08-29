@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "475bfc71-0e33-42fc-8a3b-e66db6981d94",
+        "inat_id": 129881271,
+        "timestamp": "2022-08-07T13:35:44-06:00",
+        "date": "2022-08-07",
+        "olc": "85FPVGWG+",
+        "elevation": 2728.0,
+        "tavg": null,
+        "tmin": 18.0,
+        "tmax": 29.0,
+        "precipitation": 15.9,
+        "windspeed": 7.7,
+        "winddirection": null,
+        "presure": 1023.1,
+        "species": "Albatrellopsis confluens",
+        "location": "Arapaho & Roosevelt National Forests Pawnee National Grassland, Black Hawk, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4729916667,
+          39.8973883333
+        ]
+      }
+    }
+  ]
+}

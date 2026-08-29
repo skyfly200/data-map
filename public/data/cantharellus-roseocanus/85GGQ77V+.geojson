@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1c4c6a4a-625c-454d-bc56-0aa081fcd2f5",
+        "inat_id": 240753201,
+        "timestamp": "2024-09-08T10:41:38-06:00",
+        "date": "2024-09-08",
+        "olc": "85GGQ77V+",
+        "elevation": 2932.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 31.1,
+        "precipitation": 0.0,
+        "windspeed": 8.3,
+        "winddirection": null,
+        "presure": 1014.8,
+        "species": "Cantharellus roseocanus",
+        "location": "Naples, UT 84078, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.7067027778,
+          40.7643111111
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "05270405-8a20-41f3-966e-6fc8856f746f",
+        "inat_id": 131818928,
+        "timestamp": "2022-08-21T10:01:19-06:00",
+        "date": "2022-08-21",
+        "olc": "85FM757X+",
+        "elevation": 2951.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 20.0,
+        "precipitation": null,
+        "windspeed": 7.2,
+        "winddirection": null,
+        "presure": 1016.8,
+        "species": "Gomphus clavatus",
+        "location": "White River National Forest, Meredith, CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.8024419931,
+          39.2642653301
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "916f0922-cee3-4741-9439-23a271aab09a",
+        "inat_id": 346742373,
+        "timestamp": "2025-07-24T19:25:10-06:00",
+        "date": "2025-07-24",
+        "olc": "85FQ27GW+",
+        "elevation": 2264.0,
+        "tavg": null,
+        "tmin": 12.4,
+        "tmax": 25.3,
+        "precipitation": 1.6,
+        "windspeed": 12.6,
+        "winddirection": null,
+        "presure": 1017.1,
+        "species": "Hypomyces lactifluorum",
+        "location": "Highline Dr, Colorado Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.7047253036,
+          39.0259550444
+        ]
+      }
+    }
+  ]
+}

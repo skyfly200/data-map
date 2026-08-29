@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2877c600-3a56-47eb-b459-ef80a760b29b,319681030,2025-10-08 16:41:41-06:00,2025-10-08,-106.5328916667,35.817745,857MRF98+,2581.0,,10.6,19.3,3.3,7.8,,1024.1,Fomitopsis serialis,"E Fork Trail, Jemez Springs, NM, US",1

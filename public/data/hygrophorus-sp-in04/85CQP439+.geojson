@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f0eef7c3-4df5-491d-9e37-397208b6c30a",
+        "inat_id": 312359050,
+        "timestamp": "2025-09-07T19:44:16-06:00",
+        "date": "2025-09-07",
+        "olc": "85CQP439+",
+        "elevation": 2441.0,
+        "tavg": null,
+        "tmin": 14.0,
+        "tmax": 23.0,
+        "precipitation": 1.8,
+        "windspeed": 9.6,
+        "winddirection": null,
+        "presure": 1025.2,
+        "species": "Hygrophorus sp. 'IN04'",
+        "location": "Colorado, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8820448227,
+          38.7038230775
+        ]
+      }
+    }
+  ]
+}

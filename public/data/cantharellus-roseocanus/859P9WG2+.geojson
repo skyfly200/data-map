@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b9a85e44-c639-43bd-a4f4-9061e096a769",
+        "inat_id": 90727090,
+        "timestamp": "2021-08-10T13:43:34-06:00",
+        "date": "2021-08-10",
+        "olc": "859P9WG2+",
+        "elevation": 2651.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Cantharellus roseocanus",
+        "location": "Huerfano County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0993330104,
+          37.37585876
+        ]
+      }
+    }
+  ]
+}

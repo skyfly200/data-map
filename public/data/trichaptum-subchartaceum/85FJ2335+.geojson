@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "213c98bd-fb96-4f51-ab14-54b4fa6deba9",
+        "inat_id": 284821461,
+        "timestamp": "2025-05-22T17:29:19-06:00",
+        "date": "2025-05-22",
+        "olc": "85FJ2335+",
+        "elevation": 2682.0,
+        "tavg": null,
+        "tmin": 8.5,
+        "tmax": 33.1,
+        "precipitation": 0.0,
+        "windspeed": 13.7,
+        "winddirection": null,
+        "presure": 1017.5,
+        "species": "Trichaptum subchartaceum",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9423666667,
+          39.0046777833
+        ]
+      }
+    }
+  ]
+}

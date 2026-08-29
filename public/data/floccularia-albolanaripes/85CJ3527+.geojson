@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4cd121c1-198f-4737-9d97-481f5ce7b837",
+        "inat_id": 104356023,
+        "timestamp": "2021-07-24T12:00:00-06:00",
+        "date": "2021-07-24",
+        "olc": "85CJ3527+",
+        "elevation": 2923.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 22.0,
+        "precipitation": 12.5,
+        "windspeed": 4.0,
+        "winddirection": null,
+        "presure": 1031.4,
+        "species": "Floccularia albolanaripes",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Ridgway, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8374422767,
+          38.0519664044
+        ]
+      }
+    }
+  ]
+}

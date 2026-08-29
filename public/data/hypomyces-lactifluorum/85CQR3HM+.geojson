@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4d0c75eb-7d84-4602-a655-8659829ae335",
+        "inat_id": 90448148,
+        "timestamp": "2021-08-08T10:26:42-06:00",
+        "date": "2021-08-08",
+        "olc": "85CQR3HM+",
+        "elevation": 2288.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 32.2,
+        "precipitation": 0.0,
+        "windspeed": 9.0,
+        "winddirection": null,
+        "presure": 1010.7,
+        "species": "Hypomyces lactifluorum",
+        "location": "Wing Shadow Rd, Manitou Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.91668667,
+          38.829175
+        ]
+      }
+    }
+  ]
+}

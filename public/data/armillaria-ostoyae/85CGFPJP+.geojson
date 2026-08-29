@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "490b35ea-e991-4d37-ba4e-f4ac0b700180",
+        "inat_id": 183551437,
+        "timestamp": "2023-09-16",
+        "date": "2023-09-16",
+        "olc": "85CGFPJP+",
+        "elevation": 3037.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Armillaria ostoyae",
+        "location": "Moab, UT 84532, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.2632784694,
+          38.4808332289
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2a681a94-33aa-4345-b3d1-ec90477738d8,130700003,2022-08-13 10:35:06-06:00,2022-08-13,-105.4479050451,39.676017277,85FPMHG2+,2793.0,,4.1,14.2,4.8,5.4,,1023.8,Hygrocybe miniata miniata,"Clear Creek County, US-CO, US",1

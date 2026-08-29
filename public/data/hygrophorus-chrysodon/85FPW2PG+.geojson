@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4913cff2-f300-4d66-a893-8318984ac6fc",
+        "inat_id": 91124235,
+        "timestamp": "2021-08-13T15:09:00-04:00",
+        "date": "2021-08-13",
+        "olc": "85FPW2PG+",
+        "elevation": 3036.0,
+        "tavg": null,
+        "tmin": 7.7,
+        "tmax": 27.3,
+        "precipitation": 0.0,
+        "windspeed": 6.7,
+        "winddirection": null,
+        "presure": 1032.1,
+        "species": "Hygrophorus chrysodon",
+        "location": "Grand County, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.973654,
+          39.937107
+        ]
+      }
+    }
+  ]
+}

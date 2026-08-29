@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "86628358-d60b-49a1-8c75-dcf8e0883768",
+        "inat_id": 387025538,
+        "timestamp": "2026-07-31T13:51:51-06:00",
+        "date": "2026-07-31",
+        "olc": "858P5GP4+",
+        "elevation": 3162.0,
+        "tavg": null,
+        "tmin": 6.7,
+        "tmax": 27.5,
+        "precipitation": 5.7,
+        "windspeed": 3.9,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "Forest Service Road 442, Vadito, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.49297,
+          36.1856383333
+        ]
+      }
+    }
+  ]
+}

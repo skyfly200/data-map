@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e103d2a6-94b4-4114-af18-e58cfc87deb4",
+        "inat_id": 132243940,
+        "timestamp": "2022-08-24T13:25:00-06:00",
+        "date": "2022-08-24",
+        "olc": "85CP2VV8+",
+        "elevation": 2989.0,
+        "tavg": null,
+        "tmin": 13.2,
+        "tmax": 29.3,
+        "precipitation": 0.0,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": 1015.8,
+        "species": "Clavariadelphus ligula",
+        "location": "Custer County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1328399362,
+          38.0432647089
+        ]
+      }
+    }
+  ]
+}

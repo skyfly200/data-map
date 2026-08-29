@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d3c0dbb4-2d3e-4d26-b569-3c2148f73529",
+        "inat_id": 310397769,
+        "timestamp": "2025-08-30T11:01:16-06:00",
+        "date": "2025-08-30",
+        "olc": "85CQP3HR+",
+        "elevation": 2618.0,
+        "tavg": null,
+        "tmin": 11.3,
+        "tmax": 19.3,
+        "precipitation": 2.1,
+        "windspeed": 11.1,
+        "winddirection": null,
+        "presure": 1019.1,
+        "species": "Peckorumyces umbonatus",
+        "location": "Rock Creek, Colorado Springs, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9095611389,
+          38.7286186111
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8f5e3a4f-fe72-43a4-b67c-85cead9c8b0a",
+        "inat_id": 132587291,
+        "timestamp": "2022-08-26T16:53:38-06:00",
+        "date": "2022-08-26",
+        "olc": "85CMV2F4+",
+        "elevation": 2743.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 18.3,
+        "precipitation": null,
+        "windspeed": 6.3,
+        "winddirection": null,
+        "presure": 1020.7,
+        "species": "Trichaptum biforme",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Crested Butte, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.99427,
+          38.87303
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "78dc1faa-ff4d-438a-90e7-14375e51b9e2",
+        "inat_id": 31930828,
+        "timestamp": "2019-08-31T14:15:52-06:00",
+        "date": "2019-08-31",
+        "olc": "85MRRJ42+",
+        "elevation": 1457.0,
+        "tavg": null,
+        "tmin": 10.6,
+        "tmax": 24.4,
+        "precipitation": 0.0,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hypomyces lactifluorum",
+        "location": "Custer State Park, Custer, SD, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.398705,
+          43.8066
+        ]
+      }
+    }
+  ]
+}

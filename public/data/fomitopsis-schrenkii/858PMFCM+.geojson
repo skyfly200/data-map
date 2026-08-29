@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7a736e54-9990-49bb-a148-c5a891bcee05",
+        "inat_id": 221358245,
+        "timestamp": "2024-06-08T11:33:50-06:00",
+        "date": "2024-06-08",
+        "olc": "858PMFCM+",
+        "elevation": 2470.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 31.7,
+        "precipitation": 0.0,
+        "windspeed": 14.0,
+        "winddirection": null,
+        "presure": 1013.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Carson National Forest, Taos, NM, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5156979039,
+          36.6707826252
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "eb3247bb-c869-4411-9708-5a79a970aa1a",
+        "inat_id": 7377686,
+        "timestamp": "2017-08-06T11:34:44-06:00",
+        "date": "2017-08-06",
+        "olc": "858PMFCM+",
+        "elevation": 2470.0,
+        "tavg": null,
+        "tmin": 12.2,
+        "tmax": 24.4,
+        "precipitation": null,
+        "windspeed": 7.9,
+        "winddirection": null,
+        "presure": 1018.0,
+        "species": "Fomitopsis schrenkii",
+        "location": "Carson National Forest, Questa, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5158605707,
+          36.6706377827
+        ]
+      }
+    }
+  ]
+}

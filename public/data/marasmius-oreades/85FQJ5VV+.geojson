@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "07df8dc6-477d-4113-812c-b3d2c7b4b738",
+        "inat_id": 18867565,
+        "timestamp": "2018-09-30T17:24:23-06:00",
+        "date": "2018-09-30",
+        "olc": "85FQJ5VV+",
+        "elevation": 1742.0,
+        "tavg": null,
+        "tmin": 3.7,
+        "tmax": 18.3,
+        "precipitation": null,
+        "windspeed": 8.2,
+        "winddirection": null,
+        "presure": 1016.3,
+        "species": "Marasmius oreades",
+        "location": "Los Ninos Park, Aurora, CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8054366667,
+          39.6445283333
+        ]
+      }
+    }
+  ]
+}

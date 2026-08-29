@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0539b057-6846-410c-bd77-195ee4be4477",
+        "inat_id": 300812841,
+        "timestamp": "2025-07-24T13:47:53-06:00",
+        "date": "2025-07-24",
+        "olc": "85CPQR38+",
+        "elevation": 2930.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 24.0,
+        "precipitation": 1.3,
+        "windspeed": 10.5,
+        "winddirection": null,
+        "presure": 1026.2,
+        "species": "Marasmius oreades",
+        "location": "Cripple Creek, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1837929387,
+          38.7538861907
+        ]
+      }
+    }
+  ]
+}

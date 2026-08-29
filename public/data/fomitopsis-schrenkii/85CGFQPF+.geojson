@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5138844e-4db2-427f-827a-6d99e8a1c2dd",
+        "inat_id": 135463531,
+        "timestamp": "2022-09-17T13:09:12-06:00",
+        "date": "2022-09-17",
+        "olc": "85CGFQPF+",
+        "elevation": 3191.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Manti-La Sal National Forest, La Sal, UT, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.2257,
+          38.4873116667
+        ]
+      }
+    }
+  ]
+}

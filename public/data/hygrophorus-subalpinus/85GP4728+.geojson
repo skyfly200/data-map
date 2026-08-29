@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "bcecc58a-3c16-4716-b918-af9b1fdcc95a",
+        "inat_id": 123487341,
+        "timestamp": "2022-06-25T15:58:00-06:00",
+        "date": "2022-06-25",
+        "olc": "85GP4728+",
+        "elevation": 2556.0,
+        "tavg": null,
+        "tmin": 3.2,
+        "tmax": 23.1,
+        "precipitation": 1.4,
+        "windspeed": 8.2,
+        "winddirection": null,
+        "presure": 1030.5,
+        "species": "Hygrophorus subalpinus",
+        "location": "Arapaho & Roosevelt National Forests Pawnee National Grassland, Granby, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.733275,
+          40.1002721667
+        ]
+      }
+    }
+  ]
+}

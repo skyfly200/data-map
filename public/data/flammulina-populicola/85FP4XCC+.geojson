@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d3b66a98-5916-4ac6-89ac-e935c10eaf52",
+        "inat_id": 304609075,
+        "timestamp": "2025-08-07T11:29:24-06:00",
+        "date": "2025-08-07",
+        "olc": "85FP4XCC+",
+        "elevation": 2813.0,
+        "tavg": null,
+        "tmin": 14.5,
+        "tmax": 34.0,
+        "precipitation": 0.0,
+        "windspeed": 18.4,
+        "winddirection": null,
+        "presure": 1013.4,
+        "species": "Flammulina populicola",
+        "location": "Pike and San Isabel National Forests, Woodland Park, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0280445,
+          39.1221611667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8fd2cbb4-e05d-4ebf-b0bd-4f0bc14d3ddc",
+        "inat_id": 304581601,
+        "timestamp": "2025-08-07T11:13:47-06:00",
+        "date": "2025-08-07",
+        "olc": "85FP4XCC+",
+        "elevation": 2813.0,
+        "tavg": null,
+        "tmin": 14.5,
+        "tmax": 34.0,
+        "precipitation": 0.0,
+        "windspeed": 18.4,
+        "winddirection": null,
+        "presure": 1013.4,
+        "species": "Flammulina populicola",
+        "location": "El Paso County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0286678133,
+          39.121226985
+        ]
+      }
+    }
+  ]
+}

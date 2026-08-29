@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ab205adc-5064-468c-bab8-03f3b864d354",
+        "inat_id": 315609376,
+        "timestamp": "2025-09-21T13:19:34-06:00",
+        "date": "2025-09-21",
+        "olc": "857MVJR7+",
+        "elevation": 2813.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 8.9,
+        "winddirection": null,
+        "presure": 1022.8,
+        "species": "Hygrophorus chrysodon",
+        "location": "Los Alamos County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3854153997,
+          35.8918652997
+        ]
+      }
+    }
+  ]
+}

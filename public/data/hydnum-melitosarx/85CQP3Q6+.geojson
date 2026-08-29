@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "22af370f-d3b0-409e-8be8-598d38551b40",
+        "inat_id": 308359809,
+        "timestamp": "2025-08-22T14:50:15-06:00",
+        "date": "2025-08-22",
+        "olc": "85CQP3Q6+",
+        "elevation": 3031.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 28.0,
+        "precipitation": 1.1,
+        "windspeed": 18.0,
+        "winddirection": null,
+        "presure": 1027.6,
+        "species": "Hydnum melitosarx",
+        "location": "Colorado, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9396616859,
+          38.739561719
+        ]
+      }
+    }
+  ]
+}

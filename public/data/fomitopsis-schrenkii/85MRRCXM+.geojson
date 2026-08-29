@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a6a7f366-8dca-4b5a-90bf-4e1fa32d81bd",
+        "inat_id": 320060285,
+        "timestamp": "2025-10-07T11:08:26-06:00",
+        "date": "2025-10-07",
+        "olc": "85MRRCXM+",
+        "elevation": 1875.0,
+        "tavg": null,
+        "tmin": -1.0,
+        "tmax": 12.0,
+        "precipitation": 0.0,
+        "windspeed": 5.4,
+        "winddirection": null,
+        "presure": 1024.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Sylvan Lake Shore Trail, Custer, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.5652166667,
+          43.84782
+        ]
+      }
+    }
+  ]
+}

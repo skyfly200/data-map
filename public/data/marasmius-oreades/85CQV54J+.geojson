@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "94e3ff85-1d56-461f-a303-1c9d38be60c1",
+        "inat_id": 284270843,
+        "timestamp": "2025-05-26T09:06:17-06:00",
+        "date": "2025-05-26",
+        "olc": "85CQV54J+",
+        "elevation": 1859.0,
+        "tavg": null,
+        "tmin": 8.9,
+        "tmax": 15.6,
+        "precipitation": 3.8,
+        "windspeed": 13.7,
+        "winddirection": null,
+        "presure": 1017.9,
+        "species": "Marasmius oreades",
+        "location": "N Weber St, Colorado Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.818776937,
+          38.8572031575
+        ]
+      }
+    }
+  ]
+}

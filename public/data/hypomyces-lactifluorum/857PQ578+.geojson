@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d9d0a0a4-00eb-460e-b6cf-b5d2c4dbf927",
+        "inat_id": 232549964,
+        "timestamp": "2024-07-29T09:28:43-06:00",
+        "date": "2024-07-29",
+        "olc": "857PQ578+",
+        "elevation": 2590.0,
+        "tavg": null,
+        "tmin": 18.9,
+        "tmax": 34.4,
+        "precipitation": null,
+        "windspeed": 15.9,
+        "winddirection": null,
+        "presure": 1010.2,
+        "species": "Hypomyces lactifluorum",
+        "location": "Santa Fe National Forest, Santa Fe, NM, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8348833333,
+          35.7633283333
+        ]
+      }
+    }
+  ]
+}

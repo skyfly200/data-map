@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+516363f7-ee19-4f7e-8866-b965ec9971eb,176228307,2023-08-01 18:13:52-06:00,2023-08-01,-104.9537464041,38.9712837463,85CQX2CW+,2662.0,,14.8,25.8,,10.5,,1016.7,Hypomyces chlorinus,"Colorado, US",0

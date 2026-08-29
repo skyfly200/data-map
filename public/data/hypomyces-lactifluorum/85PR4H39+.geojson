@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "905c5640-42ee-48ab-baf0-217dc677a059",
+        "inat_id": 347283126,
+        "timestamp": "2025-08-16T17:48:00-06:00",
+        "date": "2025-08-16",
+        "olc": "85PR4H39+",
+        "elevation": 1436.0,
+        "tavg": null,
+        "tmin": 18.0,
+        "tmax": 27.0,
+        "precipitation": 3.8,
+        "windspeed": 10.6,
+        "winddirection": null,
+        "presure": 1013.6,
+        "species": "Hypomyces lactifluorum",
+        "location": "Pennington County, SD, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4317572162,
+          44.1025795476
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3410d62e-974d-4259-b739-e3474418b071",
+        "inat_id": 347283123,
+        "timestamp": "2025-08-16T17:48:00-06:00",
+        "date": "2025-08-16",
+        "olc": "85PR4H39+",
+        "elevation": 1436.0,
+        "tavg": null,
+        "tmin": 18.0,
+        "tmax": 27.0,
+        "precipitation": 3.8,
+        "windspeed": 10.6,
+        "winddirection": null,
+        "presure": 1013.6,
+        "species": "Hypomyces lactifluorum",
+        "location": "Pennington County, SD, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4324153423,
+          44.1027895998
+        ]
+      }
+    }
+  ]
+}

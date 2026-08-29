@@ -1,0 +1,117 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8c80588b-218e-4b9b-904e-553502720b4f",
+        "inat_id": 328366232,
+        "timestamp": "2024-06-11T13:32:38-06:00",
+        "date": "2024-06-11",
+        "olc": "85FPHJFG+",
+        "elevation": 2485.0,
+        "tavg": null,
+        "tmin": 0.1,
+        "tmax": 10.4,
+        "precipitation": 0.0,
+        "windspeed": 11.6,
+        "winddirection": null,
+        "presure": 1018.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Maxwell Falls Trail, Evergreen, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.37258,
+          39.5726
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f9752caa-9e92-441b-bd6f-bb6215e0c538",
+        "inat_id": 308318115,
+        "timestamp": "2025-08-22T13:29:37-06:00",
+        "date": "2025-08-22",
+        "olc": "85FPHJFG+",
+        "elevation": 2485.0,
+        "tavg": null,
+        "tmin": 2.7,
+        "tmax": 12.0,
+        "precipitation": 6.7,
+        "windspeed": 9.9,
+        "winddirection": null,
+        "presure": 1024.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Maxwell Falls Trail, Evergreen, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3726416667,
+          39.572605
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "90a49b25-5a6a-45c5-960f-71db463fa850",
+        "inat_id": 308317679,
+        "timestamp": "2025-08-22T13:28:16-06:00",
+        "date": "2025-08-22",
+        "olc": "85FPHJFG+",
+        "elevation": 2485.0,
+        "tavg": null,
+        "tmin": 2.7,
+        "tmax": 12.0,
+        "precipitation": 6.7,
+        "windspeed": 9.9,
+        "winddirection": null,
+        "presure": 1024.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Maxwell Falls Trail, Evergreen, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3726883333,
+          39.5725883333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "010daccd-4275-4d72-a634-b6975ff8ee94",
+        "inat_id": 91603267,
+        "timestamp": "2021-08-16T15:18:44-06:00",
+        "date": "2021-08-16",
+        "olc": "85FPHJFG+",
+        "elevation": 2485.0,
+        "tavg": null,
+        "tmin": 18.0,
+        "tmax": 32.0,
+        "precipitation": 0.0,
+        "windspeed": 7.1,
+        "winddirection": null,
+        "presure": 1018.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Shadow Mountain, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3726015997,
+          39.5726499
+        ]
+      }
+    }
+  ]
+}

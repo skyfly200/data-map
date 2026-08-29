@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ce2118c0-b287-4264-bb9c-e68bbfaa0622",
+        "inat_id": 81522275,
+        "timestamp": "2021-05-31T14:01:30-06:00",
+        "date": "2021-05-31",
+        "olc": "85FQQ5XQ+",
+        "elevation": 1622.0,
+        "tavg": null,
+        "tmin": 8.5,
+        "tmax": 15.9,
+        "precipitation": null,
+        "windspeed": 11.6,
+        "winddirection": null,
+        "presure": 1021.5,
+        "species": "Marasmius oreades",
+        "location": "Rocky Mountain Arsenal National Wildlife Refuge, Denver, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8122716667,
+          39.7999533333
+        ]
+      }
+    }
+  ]
+}

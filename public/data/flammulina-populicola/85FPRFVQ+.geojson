@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b1f83e1d-f823-4617-acab-241da07e57b9",
+        "inat_id": 324010158,
+        "timestamp": "2025-08-09",
+        "date": "2025-08-09",
+        "olc": "85FPRFVQ+",
+        "elevation": 2776.0,
+        "tavg": null,
+        "tmin": 1.4,
+        "tmax": 12.0,
+        "precipitation": 0.2,
+        "windspeed": 16.5,
+        "winddirection": null,
+        "presure": 1018.8,
+        "species": "Flammulina populicola",
+        "location": "Black Hawk, CO 80422, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5119999498,
+          39.8431200845
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b8660af0-66bd-4615-b300-6c44188a666d",
+        "inat_id": 134203408,
+        "timestamp": "2022-09-08T09:58:23-06:00",
+        "date": "2022-09-08",
+        "olc": "85FPJ7MR+",
+        "elevation": 3176.0,
+        "tavg": null,
+        "tmin": 3.6,
+        "tmax": 16.6,
+        "precipitation": 2.9,
+        "windspeed": 7.2,
+        "winddirection": null,
+        "presure": 1017.6,
+        "species": "Albatrellopsis confluens",
+        "location": "Idaho Springs, CO 80452, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7096388889,
+          39.6336416667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4aca11fa-3940-4bbe-a994-f0ec950d4e59",
+        "inat_id": 304098700,
+        "timestamp": "2025-07-17T09:26:05-06:00",
+        "date": "2025-07-17",
+        "olc": "85CQX8XG+",
+        "elevation": 2265.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 23.6,
+        "precipitation": 0.6,
+        "windspeed": 13.5,
+        "winddirection": null,
+        "presure": 1025.2,
+        "species": "Hygrophorus siccipes",
+        "location": "Colorado Springs, CO 80908, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.6730138889,
+          38.9996444444
+        ]
+      }
+    }
+  ]
+}

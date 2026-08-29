@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5db30001-6759-4515-8f68-25ae5e9f66e4",
+        "inat_id": 242968336,
+        "timestamp": "2024-09-04T09:32:57-06:00",
+        "date": "2024-09-04",
+        "olc": "859JP7H9+",
+        "elevation": 3133.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 23.0,
+        "precipitation": 0.4,
+        "windspeed": 10.3,
+        "winddirection": null,
+        "presure": 1034.2,
+        "species": "Floccularia albolanaripes",
+        "location": "San Juan County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.730475,
+          37.7276916667
+        ]
+      }
+    }
+  ]
+}

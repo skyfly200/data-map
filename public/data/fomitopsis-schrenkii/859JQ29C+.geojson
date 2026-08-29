@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2b9b28bf-38c7-4077-be8e-5a89298cc8ba",
+        "inat_id": 307721516,
+        "timestamp": "2025-08-13T11:36:49-06:00",
+        "date": "2025-08-13",
+        "olc": "859JQ29C+",
+        "elevation": 2860.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": 1031.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Rico, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9797216667,
+          37.7695166667
+        ]
+      }
+    }
+  ]
+}

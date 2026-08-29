@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2c9cd8e4-5afe-4f1d-b5cb-f77f958e3550",
+        "inat_id": 57298712,
+        "timestamp": "2020-08-22T11:47:19-06:00",
+        "date": "2020-08-22",
+        "olc": "85FPM978+",
+        "elevation": 3063.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Armillaria ostoyae",
+        "location": "Clear Creek County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6341710501,
+          39.6636898024
+        ]
+      }
+    }
+  ]
+}

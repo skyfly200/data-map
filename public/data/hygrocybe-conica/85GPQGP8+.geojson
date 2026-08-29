@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8b40d92c-9c5b-4666-b7c4-6adcf36ebd62",
+        "inat_id": 290465573,
+        "timestamp": "2025-06-17T11:14:47-06:00",
+        "date": "2025-06-17",
+        "olc": "85GPQGP8+",
+        "elevation": 2387.0,
+        "tavg": null,
+        "tmin": 7.9,
+        "tmax": 17.4,
+        "precipitation": 2.5,
+        "windspeed": 12.0,
+        "winddirection": null,
+        "presure": 1012.7,
+        "species": "Hygrocybe conica",
+        "location": "Girlscout Rd, Red Feather Lakes, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4843675812,
+          40.7874058793
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1faab6de-83c7-4e64-8da9-0c1c27b6aab6",
+        "inat_id": 365108055,
+        "timestamp": "2026-05-23T13:39:32-06:00",
+        "date": "2026-05-23",
+        "olc": "85CQX2WW+",
+        "elevation": 2795.0,
+        "tavg": null,
+        "tmin": 1.3,
+        "tmax": 21.2,
+        "precipitation": 0.5,
+        "windspeed": 6.1,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Schubarth Trail, Woodland Park, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9528261184,
+          38.9971739742
+        ]
+      }
+    }
+  ]
+}

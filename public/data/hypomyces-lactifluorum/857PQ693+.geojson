@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2a8f75ab-c278-42fd-ba7c-500047f21dd2",
+        "inat_id": 235824416,
+        "timestamp": "2024-08-14T09:52:00-06:00",
+        "date": "2024-08-14",
+        "olc": "857PQ693+",
+        "elevation": 3265.0,
+        "tavg": null,
+        "tmin": 15.6,
+        "tmax": 30.0,
+        "precipitation": null,
+        "windspeed": 15.7,
+        "winddirection": null,
+        "presure": 1013.9,
+        "species": "Hypomyces lactifluorum",
+        "location": "Santa Fe County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7955333333,
+          35.7692722222
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5a0ca98c-288c-4f9b-9e14-6b1eab232329",
+        "inat_id": 307449292,
+        "timestamp": "2025-08-18T14:40:00-06:00",
+        "date": "2025-08-18",
+        "olc": "858M7785+",
+        "elevation": 2634.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Trichaptum subchartaceum",
+        "location": "Mesa Alta Rd, Chama, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.7410133333,
+          36.2668916667
+        ]
+      }
+    }
+  ]
+}

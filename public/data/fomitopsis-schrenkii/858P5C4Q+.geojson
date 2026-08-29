@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5e8b3e01-85bb-42ee-99d1-6de233375d73",
+        "inat_id": 221475363,
+        "timestamp": "2024-06-07T12:13:44-06:00",
+        "date": "2024-06-07",
+        "olc": "858P5C4Q+",
+        "elevation": 2627.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 31.7,
+        "precipitation": null,
+        "windspeed": 19.9,
+        "winddirection": null,
+        "presure": 1013.4,
+        "species": "Fomitopsis schrenkii",
+        "location": "New Mexico, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5615200646,
+          36.1551381223
+        ]
+      }
+    }
+  ]
+}

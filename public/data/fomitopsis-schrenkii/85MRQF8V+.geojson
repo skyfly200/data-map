@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f36bb30f-ad85-42cf-a670-bf7cf9a2e581",
+        "inat_id": 49967905,
+        "timestamp": "2020-06-17T12:20:45-06:00",
+        "date": "2020-06-17",
+        "olc": "85MRQF8V+",
+        "elevation": 1641.0,
+        "tavg": null,
+        "tmin": 10.6,
+        "tmax": 24.4,
+        "precipitation": null,
+        "windspeed": 13.8,
+        "winddirection": null,
+        "presure": 1006.0,
+        "species": "Fomitopsis schrenkii",
+        "location": "Custer State Park, Custer, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.5069547501,
+          43.7658585096
+        ]
+      }
+    }
+  ]
+}

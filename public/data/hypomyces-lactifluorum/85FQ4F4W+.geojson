@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "616eab1e-430a-4d09-a9aa-155a2c43f242",
+        "inat_id": 111475149,
+        "timestamp": "2021-08-04T21:34:01-04:00",
+        "date": "2021-08-04",
+        "olc": "85FQ4F4W+",
+        "elevation": 2216.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 22.0,
+        "precipitation": 1.3,
+        "windspeed": 9.7,
+        "winddirection": null,
+        "presure": 1028.2,
+        "species": "Hypomyces lactifluorum",
+        "location": "Falcon, CO 80831, USA",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.5028905571,
+          39.1053572625
+        ]
+      }
+    }
+  ]
+}

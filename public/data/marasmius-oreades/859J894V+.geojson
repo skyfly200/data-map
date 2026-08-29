@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b13f4d66-d551-49d5-9024-cf208044f36c",
+        "inat_id": 226616116,
+        "timestamp": "2024-07-01T19:59:26-06:00",
+        "date": "2024-07-01",
+        "olc": "859J894V+",
+        "elevation": 2192.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 23.9,
+        "precipitation": null,
+        "windspeed": 6.4,
+        "winddirection": null,
+        "presure": 1017.0,
+        "species": "Marasmius oreades",
+        "location": "Pine River Ranch Cir, Bayfield, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6061304441,
+          37.306754044
+        ]
+      }
+    }
+  ]
+}

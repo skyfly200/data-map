@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "cdcd335c-5fa4-42a2-a273-86a57b0b377d",
+        "inat_id": 133402272,
+        "timestamp": "2022-08-28T13:31:40-06:00",
+        "date": "2022-08-28",
+        "olc": "85CMXJFG+",
+        "elevation": 3607.0,
+        "tavg": null,
+        "tmin": 3.3,
+        "tmax": 18.5,
+        "precipitation": 6.8,
+        "windspeed": 7.1,
+        "winddirection": null,
+        "presure": 1014.7,
+        "species": "Clavariadelphus ligula",
+        "location": "Pike and San Isabel National Forests, Buena Vista, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3726883333,
+          38.9727216667
+        ]
+      }
+    }
+  ]
+}

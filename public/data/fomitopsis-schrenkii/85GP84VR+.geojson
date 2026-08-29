@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d6000ab5-c4b2-451e-a82b-4df05e077e80",
+        "inat_id": 60681382,
+        "timestamp": "2020-09-23T14:04:33-06:00",
+        "date": "2020-09-23",
+        "olc": "85GP84VR+",
+        "elevation": 2696.0,
+        "tavg": null,
+        "tmin": 3.2,
+        "tmax": 22.4,
+        "precipitation": null,
+        "windspeed": 8.1,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Rocky Mountain National Park, Granby, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8590616667,
+          40.3445466667
+        ]
+      }
+    }
+  ]
+}

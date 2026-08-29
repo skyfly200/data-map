@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c208d349-459b-4d18-aed3-9b91894ec55a",
+        "inat_id": 158967396,
+        "timestamp": "2023-04-29T08:24:54-06:00",
+        "date": "2023-04-29",
+        "olc": "85FPXPX5+",
+        "elevation": 1819.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 23.0,
+        "precipitation": 0.0,
+        "windspeed": 4.9,
+        "winddirection": null,
+        "presure": 1020.0,
+        "species": "Flammulina populicola",
+        "location": "Boulder, CO 80302, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2919820324,
+          39.9980858642
+        ]
+      }
+    }
+  ]
+}

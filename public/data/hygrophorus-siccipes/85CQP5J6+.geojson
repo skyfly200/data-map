@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "357aad74-e117-421d-9584-eb8afa176a36",
+        "inat_id": 289448926,
+        "timestamp": "2025-06-13T16:50:55-06:00",
+        "date": "2025-06-13",
+        "olc": "85CQP5J6+",
+        "elevation": 2019.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 27.0,
+        "precipitation": 0.2,
+        "windspeed": 11.9,
+        "winddirection": null,
+        "presure": 1019.5,
+        "species": "Hygrophorus siccipes",
+        "location": "Cougar's Shadow Trail, Colorado Springs, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.839455,
+          38.7305216667
+        ]
+      }
+    }
+  ]
+}

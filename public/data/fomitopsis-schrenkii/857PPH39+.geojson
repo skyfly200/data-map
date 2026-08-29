@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e497b23a-ec88-43c9-871c-fc3ab171fbcd",
+        "inat_id": 358534793,
+        "timestamp": "2026-05-04T18:00:57-06:00",
+        "date": "2026-05-04",
+        "olc": "857PPH39+",
+        "elevation": 2313.0,
+        "tavg": null,
+        "tmin": 8.3,
+        "tmax": 20.6,
+        "precipitation": 0.0,
+        "windspeed": 13.0,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Forest Service Road 263, Montezuma, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4311966667,
+          35.7030716667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9dc0cfe2-1fcf-4eac-a484-4bf66ae2eba6",
+        "inat_id": 302985645,
+        "timestamp": "2025-08-01T14:51:24-06:00",
+        "date": "2025-08-01",
+        "olc": "85FPMC42+",
+        "elevation": 3283.0,
+        "tavg": null,
+        "tmin": 0.9,
+        "tmax": 12.6,
+        "precipitation": 3.6,
+        "windspeed": 11.8,
+        "winddirection": null,
+        "presure": 1026.5,
+        "species": "Albatrellopsis confluens",
+        "location": "Golden, CO 80439, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5976272,
+          39.6554891997
+        ]
+      }
+    }
+  ]
+}

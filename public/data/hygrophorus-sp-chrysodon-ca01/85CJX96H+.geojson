@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0bfb3431-3681-42f8-8cd7-f1d344cae1dc",
+        "inat_id": 231341758,
+        "timestamp": "2024-07-23T16:13:23-06:00",
+        "date": "2024-07-23",
+        "olc": "85CJX96H+",
+        "elevation": 2424.0,
+        "tavg": null,
+        "tmin": 15.6,
+        "tmax": 34.9,
+        "precipitation": 0.0,
+        "windspeed": 10.0,
+        "winddirection": null,
+        "presure": 1014.6,
+        "species": "Hygrophorus sp. 'chrysodon-CA01'",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Paonia, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6220333333,
+          38.9623216667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "69b68ebb-5866-4704-a1f0-184bc60fcbbc",
+        "inat_id": 134826423,
+        "timestamp": "2022-08-19T12:11:00-06:00",
+        "date": "2022-08-19",
+        "olc": "859JR336+",
+        "elevation": 3163.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 17.0,
+        "precipitation": 7.5,
+        "windspeed": 3.4,
+        "winddirection": null,
+        "presure": 1030.0,
+        "species": "Cantharellus roseocanus",
+        "location": "Dolores County, CO, USA",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9390429,
+          37.8029977997
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "bc138abf-9241-40f6-ab91-7490e258039e",
+        "inat_id": 277858702,
+        "timestamp": "2025-04-30T11:29:51-06:00",
+        "date": "2025-04-30",
+        "olc": "85CJ28V6+",
+        "elevation": 2560.0,
+        "tavg": null,
+        "tmin": -8.2,
+        "tmax": 8.6,
+        "precipitation": 0.0,
+        "windspeed": 9.6,
+        "winddirection": null,
+        "presure": 1020.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Ouray, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6882033333,
+          38.0429833333
+        ]
+      }
+    }
+  ]
+}

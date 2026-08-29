@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "34abd430-eed2-47c4-aadd-201d5f8ff529",
+        "inat_id": 142866339,
+        "timestamp": "2022-11-25T13:28:15-07:00",
+        "date": "2022-11-25",
+        "olc": "85CP3CJH+",
+        "elevation": 2837.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Fox Creek Dr, Coaldale, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5704803025,
+          38.0800697969
+        ]
+      }
+    }
+  ]
+}

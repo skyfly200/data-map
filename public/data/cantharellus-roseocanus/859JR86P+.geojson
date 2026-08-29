@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d1f338a1-2eb8-4e48-a347-20f24a24e707",
+        "inat_id": 291819758,
+        "timestamp": "2024-07-26T15:15:38-06:00",
+        "date": "2024-07-26",
+        "olc": "859JR86P+",
+        "elevation": 2841.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 25.0,
+        "precipitation": 5.7,
+        "windspeed": 9.6,
+        "winddirection": null,
+        "presure": 1031.7,
+        "species": "Cantharellus roseocanus",
+        "location": "Silverton, CO 81433, USA",
+        "num_identification_agreements": 4
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6645058766,
+          37.8119403505
+        ]
+      }
+    }
+  ]
+}

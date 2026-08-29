@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2b823cc9-b443-48e6-b2dc-a7c02c5af09d",
+        "inat_id": 29651556,
+        "timestamp": "2017-08-19T13:24:00-07:00",
+        "date": "2017-08-19",
+        "olc": "859HQXH3+",
+        "elevation": 3167.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": 7.7,
+        "winddirection": null,
+        "presure": null,
+        "species": "Catathelasma ventricosum",
+        "location": "Dolores County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.0453805556,
+          37.7785694444
+        ]
+      }
+    }
+  ]
+}

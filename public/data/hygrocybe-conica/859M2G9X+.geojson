@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3ad9eeaa-7beb-44dd-b614-746f4e0f06dc",
+        "inat_id": 133898790,
+        "timestamp": "2022-09-04T19:20:58-06:00",
+        "date": "2022-09-04",
+        "olc": "859M2G9X+",
+        "elevation": 3063.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrocybe conica",
+        "location": "Rio Grande National Forest, Antonito, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.4523649774,
+          37.0187073781
+        ]
+      }
+    }
+  ]
+}

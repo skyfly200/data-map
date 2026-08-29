@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1c5b3898-994b-483f-9510-0097d074a839",
+        "inat_id": 347687343,
+        "timestamp": "2026-04-05T11:47:58-06:00",
+        "date": "2026-04-05",
+        "olc": "857MRC84+",
+        "elevation": 2457.0,
+        "tavg": null,
+        "tmin": 3.3,
+        "tmax": 15.8,
+        "precipitation": 0.0,
+        "windspeed": 8.3,
+        "winddirection": null,
+        "presure": 1024.9,
+        "species": "Fomitopsis schrenkii",
+        "location": "Sandoval County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.5928235752,
+          35.8174903417
+        ]
+      }
+    }
+  ]
+}

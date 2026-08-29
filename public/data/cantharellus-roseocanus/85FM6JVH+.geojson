@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e30187d6-e663-4ead-8901-b83f2fe6e13e",
+        "inat_id": 134865172,
+        "timestamp": "2022-09-03T12:04:25-06:00",
+        "date": "2022-09-03",
+        "olc": "85FM6JVH+",
+        "elevation": 2949.0,
+        "tavg": null,
+        "tmin": 3.9,
+        "tmax": 23.9,
+        "precipitation": null,
+        "windspeed": 6.7,
+        "winddirection": null,
+        "presure": 1021.4,
+        "species": "Cantharellus roseocanus",
+        "location": "Leadville, CO 80461, USA",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.370331645,
+          39.2438717245
+        ]
+      }
+    }
+  ]
+}

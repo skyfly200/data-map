@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e172c4a8-c942-4ab7-b605-27b977618214",
+        "inat_id": 323075870,
+        "timestamp": "2025-10-25T13:54:22-06:00",
+        "date": "2025-10-25",
+        "olc": "859MF4GR+",
+        "elevation": 2947.0,
+        "tavg": null,
+        "tmin": -3.0,
+        "tmax": 6.0,
+        "precipitation": 0.0,
+        "windspeed": 14.0,
+        "winddirection": null,
+        "presure": 1029.4,
+        "species": "Trichaptum abietinum",
+        "location": "Fall Creek Rd, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.8580033333,
+          37.4769216667
+        ]
+      }
+    }
+  ]
+}

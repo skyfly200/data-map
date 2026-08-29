@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "da62a262-774b-45f2-b3fe-4706382d772e",
+        "inat_id": 96487593,
+        "timestamp": "2021-08-02T10:15:51-06:00",
+        "date": "2021-08-02",
+        "olc": "859QW2CX+",
+        "elevation": 2187.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrocybe conica",
+        "location": "Rye, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.951705,
+          37.9200966667
+        ]
+      }
+    }
+  ]
+}

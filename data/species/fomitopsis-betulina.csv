@@ -1,2 +1,4 @@
 uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
 54610d5f-2c5d-41c2-a738-1a03ea9a7cf8,180452886,2023-08-01 12:49:00-07:00,2023-08-01,-121.7361305556,45.2751166667,84QW77G7+,1115.0,,13.0,32.2,0.0,12.0,,1016.0,Fomitopsis betulina,"Clackamas County, OR, USA",1
+a9324881-e441-43f2-b255-362b25dcbbac,356117427,2026-02-17 14:34:12-07:00,2026-02-17,-103.56588,43.8474383333,85MRRCWM+,1875.0,,-4.0,10.0,0.0,20.5,,993.6,Fomitopsis betulina,"Custer State Park, Custer, SD, US",1
+6628278f-d383-42f6-a15f-ba0c3380829a,308549513,2025-08-23 10:42:34-06:00,2025-08-23,-103.3478750288,43.8719704379,85MRVMC2+,1183.0,,10.0,18.9,,6.8,,1024.5,Fomitopsis betulina,"Pennington County, US-SD, US",1

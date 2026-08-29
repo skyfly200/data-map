@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e75c88e1-5c7e-4266-bf95-236c4066a36b",
+        "inat_id": 253539759,
+        "timestamp": "2024-09-27T18:35:28-06:00",
+        "date": "2024-09-27",
+        "olc": "85CQX659+",
+        "elevation": 2053.0,
+        "tavg": null,
+        "tmin": 14.8,
+        "tmax": 28.8,
+        "precipitation": 0.0,
+        "windspeed": 17.8,
+        "winddirection": null,
+        "presure": 1014.8,
+        "species": "Marasmius oreades",
+        "location": "Briargate, Colorado Springs, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.7812656313,
+          38.9582835682
+        ]
+      }
+    }
+  ]
+}

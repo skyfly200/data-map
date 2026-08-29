@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "dde77dcd-65e8-4d5a-a457-917fe78b67c7",
+        "inat_id": 59398234,
+        "timestamp": "2018-09-07",
+        "date": "2018-09-07",
+        "olc": "85FP8PRF+",
+        "elevation": 2381.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 23.3,
+        "precipitation": 0.0,
+        "windspeed": 8.4,
+        "winddirection": null,
+        "presure": 1022.2,
+        "species": "Trichaptum biforme",
+        "location": "Jefferson, Colorado, United States",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2757861111,
+          39.34015
+        ]
+      }
+    }
+  ]
+}

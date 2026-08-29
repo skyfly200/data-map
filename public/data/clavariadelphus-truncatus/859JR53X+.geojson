@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "cef105a1-4c27-49ec-bd86-caec61295131",
+        "inat_id": 92376121,
+        "timestamp": "2021-08-21T10:37:56-06:00",
+        "date": "2021-08-21",
+        "olc": "859JR53X+",
+        "elevation": 3827.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 20.0,
+        "precipitation": 1.8,
+        "windspeed": 10.2,
+        "winddirection": null,
+        "presure": 1026.3,
+        "species": "Clavariadelphus truncatus",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8013070799,
+          37.8041159038
+        ]
+      }
+    }
+  ]
+}

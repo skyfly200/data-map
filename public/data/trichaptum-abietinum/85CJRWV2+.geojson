@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8e71fcfc-b7ca-4bde-998d-466b1a4c647c",
+        "inat_id": 304361961,
+        "timestamp": "2025-08-05T10:14:38-06:00",
+        "date": "2025-08-05",
+        "olc": "85CJRWV2+",
+        "elevation": 3080.0,
+        "tavg": null,
+        "tmin": 3.9,
+        "tmax": 28.9,
+        "precipitation": 0.0,
+        "windspeed": 11.5,
+        "winddirection": null,
+        "presure": 1020.6,
+        "species": "Trichaptum abietinum",
+        "location": "Gunnison County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.0976831628,
+          38.844132366
+        ]
+      }
+    }
+  ]
+}

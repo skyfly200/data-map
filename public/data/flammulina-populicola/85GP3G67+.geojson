@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b35f49aa-e2b2-4616-9de1-94c8a2ac39e9",
+        "inat_id": 226324370,
+        "timestamp": "2024-06-29T14:46:28-06:00",
+        "date": "2024-06-29",
+        "olc": "85GP3G67+",
+        "elevation": 2617.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 27.0,
+        "precipitation": 0.0,
+        "windspeed": 5.1,
+        "winddirection": null,
+        "presure": 1024.9,
+        "species": "Flammulina populicola",
+        "location": "Lefthand Canyon Dr, Jamestown, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4867315064,
+          40.062459566
+        ]
+      }
+    }
+  ]
+}

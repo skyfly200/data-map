@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7ec6d316-9893-4565-953b-ed6d9754eaa5",
+        "inat_id": 132217883,
+        "timestamp": "2022-08-24T11:41:10-06:00",
+        "date": "2022-08-24",
+        "olc": "85FPR6HJ+",
+        "elevation": 3186.0,
+        "tavg": null,
+        "tmin": 0.8,
+        "tmax": 12.1,
+        "precipitation": 2.9,
+        "windspeed": 6.2,
+        "winddirection": null,
+        "presure": 1022.5,
+        "species": "Hygrophorus fragrans",
+        "location": "Winter Park, CO 80482, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7682963997,
+          39.8279459
+        ]
+      }
+    }
+  ]
+}

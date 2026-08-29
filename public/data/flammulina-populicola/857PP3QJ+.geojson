@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6c3a24eb-b43d-4dd2-8556-cc601c3adaef",
+        "inat_id": 385079883,
+        "timestamp": "2026-07-25T11:36:52-06:00",
+        "date": "2026-07-25",
+        "olc": "857PP3QJ+",
+        "elevation": 2135.0,
+        "tavg": null,
+        "tmin": 18.3,
+        "tmax": 31.7,
+        "precipitation": 8.8,
+        "windspeed": 7.2,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "Tesuque, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.918034,
+          35.739887
+        ]
+      }
+    }
+  ]
+}

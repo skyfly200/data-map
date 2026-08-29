@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "85205d9f-95e9-4ab3-a345-7d102b5eb11e",
+        "inat_id": 132401246,
+        "timestamp": "2022-08-21T18:08:54-06:00",
+        "date": "2022-08-21",
+        "olc": "859JR25V+",
+        "elevation": 3385.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 17.0,
+        "precipitation": 1.7,
+        "windspeed": 4.5,
+        "winddirection": null,
+        "presure": 1031.4,
+        "species": "Fomitopsis schrenkii",
+        "location": "Dolores, CO 81323, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.955325,
+          37.8086199722
+        ]
+      }
+    }
+  ]
+}

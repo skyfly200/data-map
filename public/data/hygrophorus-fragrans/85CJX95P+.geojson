@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "372391ce-39a3-49e6-83c2-4d3c18fc65f0",
+        "inat_id": 231341420,
+        "timestamp": "2024-07-23T15:39:59-06:00",
+        "date": "2024-07-23",
+        "olc": "85CJX95P+",
+        "elevation": 2382.0,
+        "tavg": null,
+        "tmin": 15.6,
+        "tmax": 34.9,
+        "precipitation": 0.0,
+        "windspeed": 10.0,
+        "winddirection": null,
+        "presure": 1014.6,
+        "species": "Hygrophorus fragrans",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Paonia, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6144783333,
+          38.959555
+        ]
+      }
+    }
+  ]
+}

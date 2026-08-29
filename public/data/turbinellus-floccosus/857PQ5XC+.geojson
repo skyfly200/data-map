@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d9cf46b9-3436-44f8-b896-8bec76feff97",
+        "inat_id": 30368697,
+        "timestamp": "2019-08-04T13:04:45-06:00",
+        "date": "2019-08-04",
+        "olc": "857PQ5XC+",
+        "elevation": 2856.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 32.2,
+        "precipitation": null,
+        "windspeed": 19.5,
+        "winddirection": null,
+        "presure": 1016.5,
+        "species": "Turbinellus floccosus",
+        "location": "Nambe, NM 87506, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8295593262,
+          35.799331665
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "caa3cd72-265e-4b48-80f1-941aa0c288cc",
+        "inat_id": 232888560,
+        "timestamp": "2024-07-29T10:09:25-06:00",
+        "date": "2024-07-29",
+        "olc": "859JR24X+",
+        "elevation": 3316.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 25.0,
+        "precipitation": 3.4,
+        "windspeed": 9.2,
+        "winddirection": null,
+        "presure": 1031.3,
+        "species": "Albatrellopsis confluens",
+        "location": "Dolores County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9513266667,
+          37.8074883333
+        ]
+      }
+    }
+  ]
+}

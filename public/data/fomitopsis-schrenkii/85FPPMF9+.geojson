@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9fb0c958-385d-4ecf-b0b6-1274f4b102ea",
+        "inat_id": 299690897,
+        "timestamp": "2025-07-20T16:26:57-06:00",
+        "date": "2025-07-20",
+        "olc": "85FPPMF9+",
+        "elevation": 2122.0,
+        "tavg": null,
+        "tmin": 20.0,
+        "tmax": 33.0,
+        "precipitation": 0.0,
+        "windspeed": 13.2,
+        "winddirection": null,
+        "presure": 1019.8,
+        "species": "Fomitopsis schrenkii",
+        "location": "Jefferson County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3303985596,
+          39.724822998
+        ]
+      }
+    }
+  ]
+}

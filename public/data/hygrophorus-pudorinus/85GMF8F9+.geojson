@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e9fb79ac-2d03-4f22-9023-3f4762395d34",
+        "inat_id": 132880932,
+        "timestamp": "2022-08-29T16:36:37-06:00",
+        "date": "2022-08-29",
+        "olc": "85GMF8F9+",
+        "elevation": 3012.0,
+        "tavg": null,
+        "tmin": 6.4,
+        "tmax": 27.2,
+        "precipitation": 0.0,
+        "windspeed": 2.3,
+        "winddirection": null,
+        "presure": 1025.5,
+        "species": "Hygrophorus pudorinus",
+        "location": "Medicine Bow-Routt National Forest & Thunder Basin National Grassland, Steamboat Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.6821659451,
+          40.473737389
+        ]
+      }
+    }
+  ]
+}

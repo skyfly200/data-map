@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d762f7e3-5610-4c17-9199-ba366a420833",
+        "inat_id": 130062143,
+        "timestamp": "2022-08-08T13:24:33-06:00",
+        "date": "2022-08-08",
+        "olc": "85GFMH3G+",
+        "elevation": 2775.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Cantharellus roseocanus",
+        "location": "Duchesne County, UT, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.424422,
+          40.6543677
+        ]
+      }
+    }
+  ]
+}

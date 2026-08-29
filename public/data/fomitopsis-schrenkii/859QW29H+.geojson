@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "01a0b95f-8e9f-45df-be58-b28eeba5b558",
+        "inat_id": 171691356,
+        "timestamp": "2023-07-07T16:04:00-06:00",
+        "date": "2023-07-07",
+        "olc": "859QW29H+",
+        "elevation": 2339.0,
+        "tavg": null,
+        "tmin": 14.4,
+        "tmax": 27.1,
+        "precipitation": 1.7,
+        "windspeed": 14.4,
+        "winddirection": null,
+        "presure": 1013.0,
+        "species": "Fomitopsis schrenkii",
+        "location": "Pueblo County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9719248917,
+          37.9182582699
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a4389545-a74e-47f4-b1c9-cfb52c3df4a3,312121454,2025-09-06 16:12:56-06:00,2025-09-06,-105.0288722222,39.1211194444,85FP4XCC+,2813.0,,8.0,22.0,0.0,13.7,,1023.9,Coprinopsis striata,"Woodland Park, CO 80863, USA",2
+606850f3-250e-4789-865b-cf2c54953ab7,135615540,2022-09-17 11:44:30-06:00,2022-09-17,-105.53838864,40.03123671,85GP2FJ6+,2936.0,,12.0,26.0,1.7,7.1,,1015.2,Coprinopsis striata,"Boulder County, US-CO, US",6

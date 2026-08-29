@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c104b2b7-e3d7-403f-94e3-28672261d0ae",
+        "inat_id": 256468857,
+        "timestamp": "2019-08-21T15:15:25-06:00",
+        "date": "2019-08-21",
+        "olc": "857MX7MW+",
+        "elevation": 2733.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 29.3,
+        "precipitation": null,
+        "windspeed": 10.3,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hypomyces lactifluorum",
+        "location": "Sandoval County, US-NM, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.7047248133,
+          35.9839936472
+        ]
+      }
+    }
+  ]
+}

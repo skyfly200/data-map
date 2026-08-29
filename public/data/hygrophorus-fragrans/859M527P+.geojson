@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a942be28-650a-4b31-8761-9a70e4d987e3",
+        "inat_id": 135828886,
+        "timestamp": "2022-08-24T09:10:45-06:00",
+        "date": "2022-08-24",
+        "olc": "859M527P+",
+        "elevation": 2281.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 24.0,
+        "precipitation": 0.1,
+        "windspeed": 8.3,
+        "winddirection": null,
+        "presure": 1028.0,
+        "species": "Hygrophorus fragrans",
+        "location": "United States",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.964113007,
+          37.1625225647
+        ]
+      }
+    }
+  ]
+}

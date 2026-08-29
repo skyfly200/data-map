@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "46681e51-2d09-4065-ab15-d72d997644c8",
+        "inat_id": 237524441,
+        "timestamp": "2024-08-23T13:33:28-06:00",
+        "date": "2024-08-23",
+        "olc": "85GGJC92+",
+        "elevation": 2574.0,
+        "tavg": null,
+        "tmin": 13.9,
+        "tmax": 25.6,
+        "precipitation": null,
+        "windspeed": 9.2,
+        "winddirection": null,
+        "presure": 1014.1,
+        "species": "Cantharellus roseocanus",
+        "location": "Utah, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.5999090661,
+          40.6176398617
+        ]
+      }
+    }
+  ]
+}

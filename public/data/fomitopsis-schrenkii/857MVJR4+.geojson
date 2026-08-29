@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9aade5cc-8a63-45aa-8649-c1e44314001e",
+        "inat_id": 243179166,
+        "timestamp": "2024-09-21T12:22:30-06:00",
+        "date": "2024-09-21",
+        "olc": "857MVJR4+",
+        "elevation": 2886.0,
+        "tavg": null,
+        "tmin": 10.8,
+        "tmax": 21.2,
+        "precipitation": 3.4,
+        "windspeed": 15.0,
+        "winddirection": null,
+        "presure": 1019.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Pajarito Mountain, Los Alamos, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3928216667,
+          35.8918783333
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "24c51179-afcc-4d47-87b6-73460162606e",
+        "inat_id": 316843005,
+        "timestamp": "2025-09-26T11:20:00-06:00",
+        "date": "2025-09-26",
+        "olc": "857PP597+",
+        "elevation": 2670.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1021.0,
+        "species": "Armillaria solidipes",
+        "location": "Santa Fe, New Mexico, United States",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.83553333,
+          35.71958056
+        ]
+      }
+    }
+  ]
+}

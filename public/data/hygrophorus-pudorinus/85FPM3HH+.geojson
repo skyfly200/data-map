@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0b58b252-c97a-480e-b322-5a271a3f0c56",
+        "inat_id": 393691208,
+        "timestamp": "2026-08-16T11:00:45-06:00",
+        "date": "2026-08-16",
+        "olc": "85FPM3HH+",
+        "elevation": 3760.0,
+        "tavg": null,
+        "tmin": 4.0,
+        "tmax": 11.0,
+        "precipitation": 1.8,
+        "windspeed": 7.2,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrophorus pudorinus",
+        "location": "Dillon, CO 80435, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.9221962094,
+          39.678211443
+        ]
+      }
+    }
+  ]
+}

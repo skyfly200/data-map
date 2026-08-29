@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a748c402-b074-4850-8094-6306055d903e",
+        "inat_id": 290011662,
+        "timestamp": "2025-06-15T10:24:59-06:00",
+        "date": "2025-06-15",
+        "olc": "85FPCJ4W+",
+        "elevation": 2155.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 22.0,
+        "precipitation": 0.1,
+        "windspeed": 6.6,
+        "winddirection": null,
+        "presure": 1017.4,
+        "species": "Trichaptum abietinum",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3542724154,
+          39.4064739562
+        ]
+      }
+    }
+  ]
+}

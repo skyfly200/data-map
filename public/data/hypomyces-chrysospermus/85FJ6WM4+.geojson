@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4563e253-287c-47d2-ab6e-1806a67f4dee",
+        "inat_id": 227316556,
+        "timestamp": "2024-07-04T17:23:04-06:00",
+        "date": "2024-07-04",
+        "olc": "85FJ6WM4+",
+        "elevation": 3029.0,
+        "tavg": null,
+        "tmin": 4.4,
+        "tmax": 23.3,
+        "precipitation": 0.0,
+        "windspeed": 10.2,
+        "winddirection": null,
+        "presure": 1017.0,
+        "species": "Hypomyces chrysospermus",
+        "location": "Snowmass, CO 81654, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.0931416667,
+          39.2346305556
+        ]
+      }
+    }
+  ]
+}

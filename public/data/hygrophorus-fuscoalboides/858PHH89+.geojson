@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f8cfa487-2e21-4943-9588-102cacb00ced",
+        "inat_id": 4125687,
+        "timestamp": "2016-08-26T10:47:00-07:00",
+        "date": "2016-08-26",
+        "olc": "858PHH89+",
+        "elevation": 3312.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": 8.1,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrophorus fuscoalboides",
+        "location": "Taos County, NM, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.431953,
+          36.566588
+        ]
+      }
+    }
+  ]
+}

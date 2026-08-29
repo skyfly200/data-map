@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "97decba5-9537-4645-969a-0279bd4a70c4",
+        "inat_id": 235268545,
+        "timestamp": "2024-08-11T20:31:41-06:00",
+        "date": "2024-08-11",
+        "olc": "85FH2X8R+",
+        "elevation": 3097.0,
+        "tavg": null,
+        "tmin": 16.6,
+        "tmax": 30.7,
+        "precipitation": 1.2,
+        "windspeed": 10.6,
+        "winddirection": null,
+        "presure": 1016.3,
+        "species": "Collybia tuberosa",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.0086223709,
+          39.0154490126
+        ]
+      }
+    }
+  ]
+}

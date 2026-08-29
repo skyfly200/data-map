@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1f29caef-f014-423a-b302-025225e88fa5",
+        "inat_id": 169050480,
+        "timestamp": "2023-06-23T13:19:32-06:00",
+        "date": "2023-06-23",
+        "olc": "85FQP2FC+",
+        "elevation": 1609.0,
+        "tavg": null,
+        "tmin": 13.6,
+        "tmax": 29.8,
+        "precipitation": 0.0,
+        "windspeed": 15.0,
+        "winddirection": null,
+        "presure": 1008.1,
+        "species": "Marasmius oreades",
+        "location": "Alamo Placita, Denver, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9799821997,
+          39.7240378997
+        ]
+      }
+    }
+  ]
+}

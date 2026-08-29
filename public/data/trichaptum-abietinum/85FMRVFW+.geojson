@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0e3bfbe5-08e8-43e2-a6f3-5d9acdda28e9",
+        "inat_id": 300955693,
+        "timestamp": "2025-07-22T10:25:00-06:00",
+        "date": "2025-07-22",
+        "olc": "85FMRVFW+",
+        "elevation": 2925.0,
+        "tavg": null,
+        "tmin": 2.6,
+        "tmax": 17.0,
+        "precipitation": 5.0,
+        "windspeed": 8.5,
+        "winddirection": null,
+        "presure": 1026.2,
+        "species": "Trichaptum abietinum",
+        "location": "Grand County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.1040277778,
+          39.8234027778
+        ]
+      }
+    }
+  ]
+}

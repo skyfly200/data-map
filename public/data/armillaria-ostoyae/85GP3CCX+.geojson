@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a49ae46e-9da6-4d72-96d0-5ca277b77df7",
+        "inat_id": 181465082,
+        "timestamp": "2023-09-02T11:01:44-06:00",
+        "date": "2023-09-02",
+        "olc": "85GP3CCX+",
+        "elevation": 3219.0,
+        "tavg": null,
+        "tmin": 20.0,
+        "tmax": 33.0,
+        "precipitation": 0.0,
+        "windspeed": 7.7,
+        "winddirection": null,
+        "presure": 1021.0,
+        "species": "Armillaria ostoyae",
+        "location": "Ward, CO 80481, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5510381609,
+          40.0710310237
+        ]
+      }
+    }
+  ]
+}

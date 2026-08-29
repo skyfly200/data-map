@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0d3d7bae-1bc4-4824-b758-ad45f8575a6a",
+        "inat_id": 172257217,
+        "timestamp": "2023-07-10T14:29:13-06:00",
+        "date": "2023-07-10",
+        "olc": "85PR475G+",
+        "elevation": 1759.0,
+        "tavg": null,
+        "tmin": 13.3,
+        "tmax": 28.9,
+        "precipitation": 0.0,
+        "windspeed": 13.1,
+        "winddirection": null,
+        "presure": 1009.0,
+        "species": "Clavariadelphus truncatus",
+        "location": "Black Hills National Forest, Hill City, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.722983563,
+          44.1090284372
+        ]
+      }
+    }
+  ]
+}

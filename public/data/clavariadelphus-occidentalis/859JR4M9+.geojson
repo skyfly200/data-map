@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "22a7aa9f-f417-493a-be0c-0ba9f8901216",
+        "inat_id": 134304193,
+        "timestamp": "2022-08-20T11:14:20-06:00",
+        "date": "2022-08-20",
+        "olc": "859JR4M9+",
+        "elevation": 2982.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 17.0,
+        "precipitation": 13.8,
+        "windspeed": 5.1,
+        "winddirection": null,
+        "presure": 1029.5,
+        "species": "Clavariadelphus occidentalis",
+        "location": "Ophir, CO 81426, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8810944444,
+          37.8325138889
+        ]
+      }
+    }
+  ]
+}

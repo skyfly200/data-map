@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "61dbc057-735e-4450-8a06-1a21a580bd38",
+        "inat_id": 307308609,
+        "timestamp": "2025-08-16T11:38:55-06:00",
+        "date": "2025-08-16",
+        "olc": "859JW5PQ+",
+        "elevation": 2692.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 21.0,
+        "precipitation": 2.7,
+        "windspeed": 5.8,
+        "winddirection": null,
+        "presure": 1032.0,
+        "species": "Fomitopsis ochracea",
+        "location": "Telluride, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8122851998,
+          37.9374922219
+        ]
+      }
+    }
+  ]
+}

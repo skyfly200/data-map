@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b3eee057-4a76-49de-a179-09a002f088eb,310896763,2025-09-01 15:16:35-06:00,2025-09-01,-105.79403692,35.79908495,857PQ6X4+,3379.0,,12.0,27.0,0.0,12.5,,1029.0,Albatrellus subrubescens,"Santa Fe County, US-NM, US",1
+ec0777ef-e7fc-41cb-99c2-aa58d09b2ef5,235667558,2024-08-13 09:56:07-06:00,2024-08-13,-105.3924783333,36.22058,858P6JC5+,3369.0,,7.7,21.6,17.5,8.2,,1030.2,Albatrellus subrubescens,"Carson National Forest, Chacon, NM, US",1

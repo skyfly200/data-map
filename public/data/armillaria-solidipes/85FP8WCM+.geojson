@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "18b9e913-8312-4fcd-b82a-56afe7b7a1b1",
+        "inat_id": 240469998,
+        "timestamp": "2024-09-07T10:49:25-06:00",
+        "date": "2024-09-07",
+        "olc": "85FP8WCM+",
+        "elevation": 2406.0,
+        "tavg": null,
+        "tmin": 12.8,
+        "tmax": 28.9,
+        "precipitation": 0.0,
+        "windspeed": 12.7,
+        "winddirection": null,
+        "presure": 1018.1,
+        "species": "Armillaria solidipes",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0653990097,
+          39.3212749233
+        ]
+      }
+    }
+  ]
+}

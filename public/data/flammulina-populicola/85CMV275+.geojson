@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5af807d5-e993-47c3-9b21-eec81d5e6531",
+        "inat_id": 315118541,
+        "timestamp": "2025-09-15T14:41:59-06:00",
+        "date": "2025-09-15",
+        "olc": "85CMV275+",
+        "elevation": 2761.0,
+        "tavg": null,
+        "tmin": 0.0,
+        "tmax": 23.0,
+        "precipitation": 0.0,
+        "windspeed": 5.0,
+        "winddirection": null,
+        "presure": 1027.8,
+        "species": "Flammulina populicola",
+        "location": "Journey's End Rd, Crested Butte, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.991295,
+          38.8646583333
+        ]
+      }
+    }
+  ]
+}

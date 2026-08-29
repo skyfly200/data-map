@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "171dfec3-c5d7-47f5-8b6e-98fff8473910",
+        "inat_id": 81388968,
+        "timestamp": "2021-06-02T10:04:36-06:00",
+        "date": "2021-06-02",
+        "olc": "85FPV8XX+",
+        "elevation": 2866.0,
+        "tavg": null,
+        "tmin": 2.5,
+        "tmax": 18.6,
+        "precipitation": 0.3,
+        "windspeed": 3.4,
+        "winddirection": null,
+        "presure": 1025.1,
+        "species": "Trichaptum abietinum",
+        "location": "Arapaho & Roosevelt National Forests Pawnee National Grassland, Black Hawk, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6521,
+          39.8990216667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9ba293b4-9bb2-4519-a1d4-72c58f7e795a",
+        "inat_id": 288267664,
+        "timestamp": "2025-06-08T12:50:21-06:00",
+        "date": "2025-06-08",
+        "olc": "85CMRJ3F+",
+        "elevation": 3271.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 22.0,
+        "precipitation": 2.0,
+        "windspeed": 4.5,
+        "winddirection": null,
+        "presure": 1016.5,
+        "species": "Hygrophorus marzuolus",
+        "location": "Chaffee County, US-CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3755321019,
+          38.8032257225
+        ]
+      }
+    }
+  ]
+}

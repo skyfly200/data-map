@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5eeaaca5-1584-4dc5-84e3-4ab0d9e66704",
+        "inat_id": 300497488,
+        "timestamp": "2025-07-23T09:09:07-06:00",
+        "date": "2025-07-23",
+        "olc": "85MRXJ5J+",
+        "elevation": 1410.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 26.7,
+        "precipitation": 15.5,
+        "windspeed": 21.6,
+        "winddirection": null,
+        "presure": 1013.6,
+        "species": "Hypomyces lactifluorum",
+        "location": "Mount Rushmore, SD, USA",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.36933389,
+          43.95875229
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "224f27e1-d4c3-47e1-acde-8ed0635a9411",
+        "inat_id": 300497301,
+        "timestamp": "2025-07-23T09:02:29-06:00",
+        "date": "2025-07-23",
+        "olc": "85MRXJ5J+",
+        "elevation": 1375.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 26.7,
+        "precipitation": 15.5,
+        "windspeed": 21.6,
+        "winddirection": null,
+        "presure": 1013.6,
+        "species": "Hypomyces lactifluorum",
+        "location": "Mount Rushmore, SD, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.36785763,
+          43.9581251
+        ]
+      }
+    }
+  ]
+}

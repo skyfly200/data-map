@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+00e51514-82d6-4fad-90e4-9941ce2d128b,80399974,2021-05-18 12:15:00-06:00,2021-05-18,-106.8458333333,38.8257916667,85CMR5G3+,2723.0,,2.2,11.7,,7.8,,1014.1,Fomitopsis pinicola,"Gunnison County, CO, USA",1

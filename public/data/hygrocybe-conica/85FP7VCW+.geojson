@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "28aa93f7-fe79-4121-98f1-e9aad4d43314",
+        "inat_id": 129986097,
+        "timestamp": "2022-07-31T17:10:00-06:00",
+        "date": "2022-07-31",
+        "olc": "85FP7VCW+",
+        "elevation": 2711.0,
+        "tavg": null,
+        "tmin": 18.3,
+        "tmax": 31.1,
+        "precipitation": 0.0,
+        "windspeed": 12.4,
+        "winddirection": null,
+        "presure": 1015.7,
+        "species": "Hygrocybe conica",
+        "location": "Sedalia, CO 80135, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1030680165,
+          39.2714648298
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d1c59d0e-1481-4ea1-8d53-5f38de721434",
+        "inat_id": 177113083,
+        "timestamp": "2023-08-06T09:26:39-06:00",
+        "date": "2023-08-06",
+        "olc": "85CQQ3GR+",
+        "elevation": 2494.0,
+        "tavg": null,
+        "tmin": 14.0,
+        "tmax": 18.0,
+        "precipitation": 1.4,
+        "windspeed": 11.9,
+        "winddirection": null,
+        "presure": 1028.1,
+        "species": "Fomitopsis cajanderi",
+        "location": "Pike and San Isabel National Forests, Manitou Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.90818,
+          38.7762533333
+        ]
+      }
+    }
+  ]
+}

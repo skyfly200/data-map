@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "59ad78a1-0d7f-4cdf-b2c5-56816395b17e",
+        "inat_id": 306183555,
+        "timestamp": "2025-08-13T09:57:27-06:00",
+        "date": "2025-08-13",
+        "olc": "859MF5HX+",
+        "elevation": 3402.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 18.0,
+        "precipitation": 1.4,
+        "windspeed": 17.3,
+        "winddirection": null,
+        "presure": 1039.8,
+        "species": "Fomitopsis schrenkii",
+        "location": "Mineral County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.80192072,
+          37.47910319
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "00d40e7a-f536-4d91-a02b-7e0f3be02bca",
+        "inat_id": 306183539,
+        "timestamp": "2025-08-13T09:56:48-06:00",
+        "date": "2025-08-13",
+        "olc": "859MF5HX+",
+        "elevation": 3402.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 18.0,
+        "precipitation": 1.4,
+        "windspeed": 17.3,
+        "winddirection": null,
+        "presure": 1039.8,
+        "species": "Fomitopsis schrenkii",
+        "location": "Mineral County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.8019069,
+          37.47910008
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "cd5f6ee8-8fae-4584-899c-f7b8d8bb631d",
+        "inat_id": 255445349,
+        "timestamp": "2024-08-03T10:03:02-06:00",
+        "date": "2024-08-03",
+        "olc": "859MF5HX+",
+        "elevation": 3402.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 21.0,
+        "precipitation": 0.0,
+        "windspeed": 10.6,
+        "winddirection": null,
+        "presure": 1044.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "San Juan National Forest - Headquarters, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.8014597592,
+          37.4789311741
+        ]
+      }
+    }
+  ]
+}

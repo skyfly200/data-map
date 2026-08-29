@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "82ec1b81-f579-4f00-b1a0-6fa092a333fd",
+        "inat_id": 228743020,
+        "timestamp": "2024-07-10T11:18:26-06:00",
+        "date": "2024-07-10",
+        "olc": "85CQP2P8+",
+        "elevation": 3076.0,
+        "tavg": null,
+        "tmin": 19.0,
+        "tmax": 30.0,
+        "precipitation": 0.0,
+        "windspeed": 11.3,
+        "winddirection": null,
+        "presure": 1025.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Teller County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9843138889,
+          38.7371972222
+        ]
+      }
+    }
+  ]
+}

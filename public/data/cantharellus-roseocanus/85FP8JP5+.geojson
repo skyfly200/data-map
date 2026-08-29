@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e16ef414-7de8-40c1-9054-492f48e564b5",
+        "inat_id": 178189007,
+        "timestamp": "2023-08-12T11:37:29-06:00",
+        "date": "2023-08-12",
+        "olc": "85FP8JP5+",
+        "elevation": 2533.0,
+        "tavg": null,
+        "tmin": 6.3,
+        "tmax": 17.1,
+        "precipitation": 6.8,
+        "windspeed": 8.7,
+        "winddirection": null,
+        "presure": 1019.2,
+        "species": "Cantharellus roseocanus",
+        "location": "Pine, CO 80470, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3902861111,
+          39.3372444444
+        ]
+      }
+    }
+  ]
+}

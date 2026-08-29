@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "50ea8571-4a68-450a-ac66-20fa8ce2c1c7",
+        "inat_id": 179079249,
+        "timestamp": "2023-08-18T10:44:13-06:00",
+        "date": "2023-08-18",
+        "olc": "85GPFF87+",
+        "elevation": 2755.0,
+        "tavg": null,
+        "tmin": 17.2,
+        "tmax": 35.0,
+        "precipitation": 0.3,
+        "windspeed": 8.7,
+        "winddirection": null,
+        "presure": 1009.6,
+        "species": "Albatrellus ovinus",
+        "location": "Rocky Mountain National Park, Estes Park, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5362466667,
+          40.465625
+        ]
+      }
+    }
+  ]
+}

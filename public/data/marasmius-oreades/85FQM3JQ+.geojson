@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4d5d924b-4399-42ca-bc2b-885fec6b3524",
+        "inat_id": 232369791,
+        "timestamp": "2024-07-28T11:20:00-06:00",
+        "date": "2024-07-28",
+        "olc": "85FQM3JQ+",
+        "elevation": 1657.0,
+        "tavg": null,
+        "tmin": 19.0,
+        "tmax": 33.4,
+        "precipitation": 0.0,
+        "windspeed": 14.7,
+        "winddirection": null,
+        "presure": 1006.7,
+        "species": "Marasmius oreades",
+        "location": "Virginia Village, Denver, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9111513468,
+          39.682264841
+        ]
+      }
+    }
+  ]
+}

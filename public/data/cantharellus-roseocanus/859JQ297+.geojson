@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b2d65f15-2761-4699-beda-c2461a9c6242",
+        "inat_id": 132948466,
+        "timestamp": "2022-08-09T14:32:00-06:00",
+        "date": "2022-08-09",
+        "olc": "859JQ297+",
+        "elevation": 2839.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 5.6,
+        "winddirection": null,
+        "presure": 1034.0,
+        "species": "Cantharellus roseocanus",
+        "location": "Dolores, Colorado, United States",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9861361117,
+          37.768444445
+        ]
+      }
+    }
+  ]
+}

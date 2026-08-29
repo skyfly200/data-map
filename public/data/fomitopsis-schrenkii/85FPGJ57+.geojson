@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "10a7ce93-83b8-4e54-a6f1-e16ca3ed8778",
+        "inat_id": 372159417,
+        "timestamp": "2026-06-11T11:48:30-06:00",
+        "date": "2026-06-11",
+        "olc": "85FPGJ57+",
+        "elevation": 2616.0,
+        "tavg": null,
+        "tmin": -5.0,
+        "tmax": 10.0,
+        "precipitation": 0.0,
+        "windspeed": 17.0,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Staunton State Park, Pine, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3860633333,
+          39.50887
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5b2e859b-e38a-4158-9d84-0a4e8cc9fa4b",
+        "inat_id": 392841227,
+        "timestamp": "2026-08-18T18:20:59-06:00",
+        "date": "2026-08-18",
+        "olc": "859HRR79+",
+        "elevation": 3274.0,
+        "tavg": null,
+        "tmin": 7.3,
+        "tmax": 25.2,
+        "precipitation": 0.6,
+        "windspeed": 11.4,
+        "winddirection": null,
+        "presure": 1020.9,
+        "species": "Cantharellus roseocanus",
+        "location": "County Road 52, Dolores, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.1820966667,
+          37.81488
+        ]
+      }
+    }
+  ]
+}

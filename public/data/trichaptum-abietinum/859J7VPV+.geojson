@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "28409673-7dd9-4172-a8d7-ce878fc24ff4",
+        "inat_id": 332092318,
+        "timestamp": "2025-12-25T14:50:59-07:00",
+        "date": "2025-12-25",
+        "olc": "859J7VPV+",
+        "elevation": 2311.0,
+        "tavg": null,
+        "tmin": 1.0,
+        "tmax": 8.0,
+        "precipitation": 4.5,
+        "windspeed": 5.1,
+        "winddirection": null,
+        "presure": 1026.9,
+        "species": "Trichaptum abietinum",
+        "location": "Upper Rim Trail, Pagosa Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1059638333,
+          37.2857966667
+        ]
+      }
+    }
+  ]
+}

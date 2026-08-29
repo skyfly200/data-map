@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0c4c7900-3f9f-4b0c-8293-66370be4fc9c,328944363,2025-11-29 13:11:00-07:00,2025-11-29,-105.9171138889,35.6805888889,857PM3JM+,2174.0,,-1.0,12.0,0.0,15.9,,1019.1,Coprinopsis depressiceps,"Santa Fe, NM, USA",1

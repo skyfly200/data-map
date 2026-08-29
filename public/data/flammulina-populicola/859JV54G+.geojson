@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "80a66603-0531-4766-9f37-aafd6e923703",
+        "inat_id": 306872471,
+        "timestamp": "2025-08-15T12:14:21-06:00",
+        "date": "2025-08-15",
+        "olc": "859JV54G+",
+        "elevation": 2983.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 21.0,
+        "precipitation": 6.4,
+        "windspeed": 5.8,
+        "winddirection": null,
+        "presure": 1031.4,
+        "species": "Flammulina populicola",
+        "location": "Granite Ave, Ophir, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8240379311,
+          37.8550268672
+        ]
+      }
+    }
+  ]
+}

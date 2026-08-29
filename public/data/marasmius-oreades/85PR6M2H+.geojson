@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d5370df4-1a7f-4abb-b3f2-02dd2a1da138",
+        "inat_id": 698392,
+        "timestamp": "2014-05-25T19:37:48-06:00",
+        "date": "2014-05-25",
+        "olc": "85PR6M2H+",
+        "elevation": 1141.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 25.6,
+        "precipitation": 0.0,
+        "windspeed": 12.2,
+        "winddirection": null,
+        "presure": 1011.9,
+        "species": "Marasmius oreades",
+        "location": "South Dakota, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.3221756203,
+          44.2011727777
+        ]
+      }
+    }
+  ]
+}

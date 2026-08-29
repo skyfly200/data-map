@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3ab195d8-1917-4bc8-a753-161ffdea974f",
+        "inat_id": 287384556,
+        "timestamp": "2025-06-06T08:40:59-06:00",
+        "date": "2025-06-06",
+        "olc": "85FPPM2X+",
+        "elevation": 2414.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 19.0,
+        "precipitation": 4.5,
+        "windspeed": 7.6,
+        "winddirection": null,
+        "presure": 1019.5,
+        "species": "Marasmius oreades",
+        "location": "Genesee Dr, Golden, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3002916667,
+          39.7007966667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "931e3d4c-1d3f-40b2-abd7-43ee75bdff12",
+        "inat_id": 132702793,
+        "timestamp": "2022-08-28T16:24:21-06:00",
+        "date": "2022-08-28",
+        "olc": "85CPVRHF+",
+        "elevation": 2915.0,
+        "tavg": null,
+        "tmin": 19.0,
+        "tmax": 27.7,
+        "precipitation": 0.0,
+        "windspeed": 12.8,
+        "winddirection": null,
+        "presure": 1013.1,
+        "species": "Cantharellus roseocanus",
+        "location": "Mueller State Park, Divide, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1761141234,
+          38.8792839367
+        ]
+      }
+    }
+  ]
+}

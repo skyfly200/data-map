@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "fa643ffa-de20-413b-8d8a-7fa0621b7a5b",
+        "inat_id": 279957522,
+        "timestamp": "2025-05-09T13:38:56-06:00",
+        "date": "2025-05-09",
+        "olc": "85GPJVCC+",
+        "elevation": 1540.0,
+        "tavg": null,
+        "tmin": 6.1,
+        "tmax": 23.9,
+        "precipitation": 1.2,
+        "windspeed": 7.8,
+        "winddirection": null,
+        "presure": 1023.0,
+        "species": "Marasmius oreades",
+        "location": "Shady Grove Ln, Fort Collins, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1279611667,
+          40.621475
+        ]
+      }
+    }
+  ]
+}

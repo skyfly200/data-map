@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2ac1d5a0-e353-47bc-85f3-a541ade3b8fb",
+        "inat_id": 134250001,
+        "timestamp": "2022-09-08T17:05:00-06:00",
+        "date": "2022-09-08",
+        "olc": "85FPM2QJ+",
+        "elevation": 3767.0,
+        "tavg": null,
+        "tmin": 3.6,
+        "tmax": 16.6,
+        "precipitation": 2.9,
+        "windspeed": 7.2,
+        "winddirection": null,
+        "presure": 1017.6,
+        "species": "Albatrellopsis confluens",
+        "location": "Colorado, US",
+        "num_identification_agreements": 4
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.9699098202,
+          39.6896047799
+        ]
+      }
+    }
+  ]
+}

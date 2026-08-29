@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "aba37f57-7415-4e64-9533-8b2364b27a04",
+        "inat_id": 335426478,
+        "timestamp": "2026-01-19T13:21:52-07:00",
+        "date": "2026-01-19",
+        "olc": "859JCVV6+",
+        "elevation": 2552.0,
+        "tavg": null,
+        "tmin": -10.0,
+        "tmax": 9.0,
+        "precipitation": 0.0,
+        "windspeed": 5.2,
+        "winddirection": null,
+        "presure": 1022.2,
+        "species": "Trichaptum abietinum",
+        "location": "Forest Service Road 634, Pagosa Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1395555,
+          37.442595
+        ]
+      }
+    }
+  ]
+}

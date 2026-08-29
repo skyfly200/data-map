@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5d231c40-87ab-4ee8-882a-83687631f67b",
+        "inat_id": 237162977,
+        "timestamp": "2024-08-10T13:18:55-06:00",
+        "date": "2024-08-10",
+        "olc": "857MW8FP+",
+        "elevation": 2657.0,
+        "tavg": null,
+        "tmin": 15.5,
+        "tmax": 22.0,
+        "precipitation": null,
+        "windspeed": 6.4,
+        "winddirection": null,
+        "presure": 1029.9,
+        "species": "Hypomyces lactifluorum",
+        "location": "Jemez Springs, NM 87025, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.6643555556,
+          35.9244611111
+        ]
+      }
+    }
+  ]
+}

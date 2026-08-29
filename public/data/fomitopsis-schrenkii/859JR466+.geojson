@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a6d4c78b-e2e0-46c8-a620-50fd7797022a",
+        "inat_id": 132155430,
+        "timestamp": "2022-08-22T16:22:09-06:00",
+        "date": "2022-08-22",
+        "olc": "859JR466+",
+        "elevation": 3167.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 20.0,
+        "precipitation": 6.7,
+        "windspeed": 7.4,
+        "winddirection": null,
+        "presure": 1031.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.888895,
+          37.8123166667
+        ]
+      }
+    }
+  ]
+}

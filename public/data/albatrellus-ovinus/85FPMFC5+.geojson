@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c988e95b-7fcb-4446-b0d2-9a0cc81b110f",
+        "inat_id": 237993792,
+        "timestamp": "2024-08-25T20:03:00-06:00",
+        "date": "2024-08-25",
+        "olc": "85FPMFC5+",
+        "elevation": 3314.0,
+        "tavg": null,
+        "tmin": 1.5,
+        "tmax": 12.8,
+        "precipitation": 5.8,
+        "windspeed": 10.8,
+        "winddirection": null,
+        "presure": 1025.0,
+        "species": "Albatrellus ovinus",
+        "location": "Evergreen, CO 80439, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5403408408,
+          39.6709809654
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ffca138b-a5bc-4253-8cc8-6456ed9c2aa0",
+        "inat_id": 306496093,
+        "timestamp": "2025-08-13T17:05:44-06:00",
+        "date": "2025-08-13",
+        "olc": "859JW5PP+",
+        "elevation": 2675.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": 1031.2,
+        "species": "Flammulina populicola",
+        "location": "River Trail, Telluride, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8148583333,
+          37.9363716667
+        ]
+      }
+    }
+  ]
+}

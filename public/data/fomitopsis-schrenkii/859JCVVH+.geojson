@@ -1,0 +1,145 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2aa2546c-ff25-4e3a-b850-3402c307dbb6",
+        "inat_id": 351473261,
+        "timestamp": "2026-04-18T13:30:05-06:00",
+        "date": "2026-04-18",
+        "olc": "859JCVVH+",
+        "elevation": 2653.0,
+        "tavg": null,
+        "tmin": -9.0,
+        "tmax": 14.0,
+        "precipitation": 0.0,
+        "windspeed": 3.2,
+        "winddirection": null,
+        "presure": 1021.6,
+        "species": "Fomitopsis schrenkii",
+        "location": "County Road 634, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1215445,
+          37.4428383333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2ec42075-f260-4af0-a717-38ae7c9e7397",
+        "inat_id": 324629375,
+        "timestamp": "2025-11-02T11:02:22-07:00",
+        "date": "2025-11-02",
+        "olc": "859JCVVH+",
+        "elevation": 2653.0,
+        "tavg": null,
+        "tmin": -3.0,
+        "tmax": 18.0,
+        "precipitation": 0.0,
+        "windspeed": 3.6,
+        "winddirection": null,
+        "presure": 1029.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "County Road 634, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1215278333,
+          37.442805
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "20153d16-8c3d-45b3-bb2f-77a6443df3d0",
+        "inat_id": 324629311,
+        "timestamp": "2025-11-02T11:01:14-07:00",
+        "date": "2025-11-02",
+        "olc": "859JCVVH+",
+        "elevation": 2653.0,
+        "tavg": null,
+        "tmin": -3.0,
+        "tmax": 18.0,
+        "precipitation": 0.0,
+        "windspeed": 3.6,
+        "winddirection": null,
+        "presure": 1029.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "County Road 634, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1215138333,
+          37.4428116667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "aad501d1-a901-40c8-8fb8-dfc877405db8",
+        "inat_id": 324629204,
+        "timestamp": "2025-11-02T10:58:35-07:00",
+        "date": "2025-11-02",
+        "olc": "859JCVVH+",
+        "elevation": 2653.0,
+        "tavg": null,
+        "tmin": -3.0,
+        "tmax": 18.0,
+        "precipitation": 0.0,
+        "windspeed": 3.6,
+        "winddirection": null,
+        "presure": 1029.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "County Road 634, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1213611667,
+          37.4430283333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c7237112-1026-44e4-802c-69ba82553f52",
+        "inat_id": 324628996,
+        "timestamp": "2025-11-02T10:49:49-07:00",
+        "date": "2025-11-02",
+        "olc": "859JCVVH+",
+        "elevation": 2653.0,
+        "tavg": null,
+        "tmin": -3.0,
+        "tmax": 18.0,
+        "precipitation": 0.0,
+        "windspeed": 3.6,
+        "winddirection": null,
+        "presure": 1029.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "County Road 634, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1221166667,
+          37.44328
+        ]
+      }
+    }
+  ]
+}

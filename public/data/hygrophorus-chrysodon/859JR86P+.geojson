@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8599002c-9171-4356-af17-b4ea0117cfc9",
+        "inat_id": 291819411,
+        "timestamp": "2024-08-23T09:05:32-06:00",
+        "date": "2024-08-23",
+        "olc": "859JR86P+",
+        "elevation": 2841.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 20.0,
+        "precipitation": 4.0,
+        "windspeed": 7.7,
+        "winddirection": null,
+        "presure": 1028.7,
+        "species": "Hygrophorus chrysodon",
+        "location": "Silverton, CO 81433, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6645058766,
+          37.8119403505
+        ]
+      }
+    }
+  ]
+}

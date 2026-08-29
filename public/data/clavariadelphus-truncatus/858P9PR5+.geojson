@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8d1d1cc8-a95c-43c6-aadf-3904e813d9bc",
+        "inat_id": 239282649,
+        "timestamp": "2024-09-01T14:43:09-06:00",
+        "date": "2024-09-01",
+        "olc": "858P9PR5+",
+        "elevation": 2591.0,
+        "tavg": null,
+        "tmin": 1.2,
+        "tmax": 21.3,
+        "precipitation": null,
+        "windspeed": 8.3,
+        "winddirection": null,
+        "presure": null,
+        "species": "Clavariadelphus truncatus",
+        "location": "Conchas Dr, Angel Fire, NM, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2910926732,
+          36.3909875036
+        ]
+      }
+    }
+  ]
+}

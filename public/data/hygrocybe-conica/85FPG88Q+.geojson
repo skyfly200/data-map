@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "05001916-837b-497a-9a2b-f478aeccc645",
+        "inat_id": 369705525,
+        "timestamp": "2026-06-06T17:55:22-06:00",
+        "date": "2026-06-06",
+        "olc": "85FPG88Q+",
+        "elevation": 3264.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 12.0,
+        "precipitation": 1.0,
+        "windspeed": 6.7,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrocybe conica",
+        "location": "Grant, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6600033333,
+          39.5159416667
+        ]
+      }
+    }
+  ]
+}

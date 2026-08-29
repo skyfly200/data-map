@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "da927532-eaa9-4129-9d3e-833c334c886a",
+        "inat_id": 131163971,
+        "timestamp": "2022-08-16T10:48:17-06:00",
+        "date": "2022-08-16",
+        "olc": "859HHRGC+",
+        "elevation": 2465.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 17.0,
+        "precipitation": 16.4,
+        "windspeed": 3.4,
+        "winddirection": null,
+        "presure": 1030.8,
+        "species": "Trichaptum biforme",
+        "location": "San Juan National Forest headquarters, Dolores, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.178475,
+          37.5769666667
+        ]
+      }
+    }
+  ]
+}

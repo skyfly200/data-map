@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7393a1fe-0eca-444b-8eca-a35f846bbcd4",
+        "inat_id": 91362239,
+        "timestamp": "2021-08-15T14:11:43-06:00",
+        "date": "2021-08-15",
+        "olc": "85CMW4VG+",
+        "elevation": 3392.0,
+        "tavg": null,
+        "tmin": 15.6,
+        "tmax": 28.3,
+        "precipitation": null,
+        "windspeed": 14.5,
+        "winddirection": null,
+        "presure": 1013.3,
+        "species": "Cantharellus roseocanus",
+        "location": "Grand Mesa National Forest, Crested Butte, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.87352,
+          38.944855
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "80e51202-7bc4-4a5d-bd8f-d0111f954251",
+        "inat_id": 238081383,
+        "timestamp": "2024-08-26T08:33:26-06:00",
+        "date": "2024-08-26",
+        "olc": "858P9JCC+",
+        "elevation": 2540.0,
+        "tavg": null,
+        "tmin": 10.1,
+        "tmax": 19.0,
+        "precipitation": 7.3,
+        "windspeed": 9.8,
+        "winddirection": null,
+        "presure": 1026.0,
+        "species": "Marasmius oreades",
+        "location": "Taos",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3789367676,
+          36.3717956543
+        ]
+      }
+    }
+  ]
+}

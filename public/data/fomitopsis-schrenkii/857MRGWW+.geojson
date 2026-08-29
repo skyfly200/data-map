@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "94fba3fd-1149-4a8d-aade-646ad7e28a56",
+        "inat_id": 320054389,
+        "timestamp": "2025-10-10T15:56:21-06:00",
+        "date": "2025-10-10",
+        "olc": "857MRGWW+",
+        "elevation": 2908.0,
+        "tavg": null,
+        "tmin": 12.3,
+        "tmax": 21.0,
+        "precipitation": 0.1,
+        "windspeed": 5.6,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Valles Caldera National Preserve, Sandoval County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.453658888,
+          35.8467164652
+        ]
+      }
+    }
+  ]
+}

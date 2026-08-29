@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "92063985-f50a-4a60-80d3-529f395ad5c5",
+        "inat_id": 40349084,
+        "timestamp": "2018-08-18",
+        "date": "2018-08-18",
+        "olc": "859JW5R7+",
+        "elevation": 2652.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 21.0,
+        "precipitation": null,
+        "windspeed": 7.3,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "Telluride, Colorado, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.836,
+          37.9421
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d095404c-a380-471e-b60a-b69fc6a21652",
+        "inat_id": 4747242,
+        "timestamp": "2014-08-15",
+        "date": "2014-08-15",
+        "olc": "859JW5R7+",
+        "elevation": 2652.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": 7.1,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "Telluride, Colorado, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.836,
+          37.9421
+        ]
+      }
+    }
+  ]
+}

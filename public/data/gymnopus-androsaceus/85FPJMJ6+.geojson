@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9edf2d81-0feb-4a39-b84d-3b26d82c9917",
+        "inat_id": 307618927,
+        "timestamp": "2025-08-19T10:10:43-06:00",
+        "date": "2025-08-19",
+        "olc": "85FPJMJ6+",
+        "elevation": 2183.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 34.0,
+        "precipitation": 0.0,
+        "windspeed": 10.8,
+        "winddirection": null,
+        "presure": 1026.4,
+        "species": "Gymnopus androsaceus",
+        "location": "Jefferson County, US-CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.33864,
+          39.63224
+        ]
+      }
+    }
+  ]
+}

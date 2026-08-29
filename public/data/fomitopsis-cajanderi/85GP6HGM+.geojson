@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "52f90c76-f92b-434d-95c0-70ce42bf6f7e",
+        "inat_id": 286461181,
+        "timestamp": "2025-06-02T12:57:18-06:00",
+        "date": "2025-06-02",
+        "olc": "85GP6HGM+",
+        "elevation": 2169.0,
+        "tavg": null,
+        "tmin": 11.5,
+        "tmax": 25.0,
+        "precipitation": 8.7,
+        "windspeed": 6.0,
+        "winddirection": null,
+        "presure": 1013.3,
+        "species": "Fomitopsis cajanderi",
+        "location": "Lyons, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4164283333,
+          40.2268783333
+        ]
+      }
+    }
+  ]
+}

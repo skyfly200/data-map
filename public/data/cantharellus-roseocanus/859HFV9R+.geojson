@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b4ea5a97-ca79-487f-9220-da0fe3ae21ce",
+        "inat_id": 132734505,
+        "timestamp": "2022-08-28T17:52:59-06:00",
+        "date": "2022-08-28",
+        "olc": "859HFV9R+",
+        "elevation": 3199.0,
+        "tavg": null,
+        "tmin": 8.9,
+        "tmax": 28.3,
+        "precipitation": 0.0,
+        "windspeed": 9.5,
+        "winddirection": null,
+        "presure": 1012.7,
+        "species": "Cantharellus roseocanus",
+        "location": "San Juan National Forest - Headquarters, Mancos, CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.1090401001,
+          37.4683871383
+        ]
+      }
+    }
+  ]
+}

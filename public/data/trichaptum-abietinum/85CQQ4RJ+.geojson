@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "73e60ff3-ac84-41aa-8476-be8bce212272",
+        "inat_id": 277504410,
+        "timestamp": "2025-04-30T18:37:12-06:00",
+        "date": "2025-04-30",
+        "olc": "85CQQ4RJ+",
+        "elevation": 1957.0,
+        "tavg": null,
+        "tmin": 7.0,
+        "tmax": 16.0,
+        "precipitation": 1.7,
+        "windspeed": 12.8,
+        "winddirection": null,
+        "presure": 1013.6,
+        "species": "Trichaptum abietinum",
+        "location": "Colorado Springs, CO 80906, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8695277778,
+          38.7909388889
+        ]
+      }
+    }
+  ]
+}

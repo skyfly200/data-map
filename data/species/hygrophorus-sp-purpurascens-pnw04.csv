@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a4888b5e-558f-482f-8358-ffb2f73e34f9,307794990,2025-08-20 12:15:26-06:00,2025-08-20,-105.7839736667,39.8103675833,85FPR668+,3391.0,,0.7,16.0,0.0,12.5,,1024.8,Hygrophorus sp. 'purpurascens-PNW04',"Winter Park, CO 80482, USA",1
+fc254005-857b-42b8-a099-6cb41e2cb962,237419702,2024-08-22 12:12:44-06:00,2024-08-22,-105.5766375935,39.8359260667,85FPRCPF+,2850.0,,3.6,11.4,9.5,9.6,,1022.9,Hygrophorus sp. 'purpurascens-PNW04',"Colorado, US",2
+d2375750-27c6-4317-834a-42c3c5f5a3d8,234199444,2024-08-06 13:00:04-06:00,2024-08-06,-106.19722,39.5045866667,85FMGR33+,3108.0,,12.0,20.0,1.8,15.8,,1043.4,Hygrophorus sp. 'purpurascens-PNW04',"White River National Forest, Frisco, CO, US",2

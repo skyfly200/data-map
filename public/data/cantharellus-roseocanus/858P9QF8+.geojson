@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "593791a7-fd1d-4281-89a8-0904b8503152",
+        "inat_id": 312254435,
+        "timestamp": "2025-09-07T12:24:11-06:00",
+        "date": "2025-09-07",
+        "olc": "858P9QF8+",
+        "elevation": 3265.0,
+        "tavg": null,
+        "tmin": 3.0,
+        "tmax": 22.0,
+        "precipitation": 0.3,
+        "windspeed": 13.5,
+        "winddirection": null,
+        "presure": 1031.1,
+        "species": "Cantharellus roseocanus",
+        "location": "Angel Fire",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.234703064,
+          36.3744926453
+        ]
+      }
+    }
+  ]
+}

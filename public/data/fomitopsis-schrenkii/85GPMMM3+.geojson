@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0c1f2e8b-813e-48df-99d9-25f22ff974d9",
+        "inat_id": 249848485,
+        "timestamp": "2024-10-30T09:36:00-06:00",
+        "date": "2024-10-30",
+        "olc": "85GPMMM3+",
+        "elevation": 1851.0,
+        "tavg": null,
+        "tmin": 1.1,
+        "tmax": 7.2,
+        "precipitation": 2.6,
+        "windspeed": 7.9,
+        "winddirection": null,
+        "presure": 1016.4,
+        "species": "Fomitopsis schrenkii",
+        "location": "Young Gulch Trail",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3473854065,
+          40.6835019341
+        ]
+      }
+    }
+  ]
+}

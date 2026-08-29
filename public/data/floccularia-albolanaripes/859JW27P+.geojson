@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "35ea0755-e1fb-4a1b-85bc-2fd7c1b5b2c9",
+        "inat_id": 131939969,
+        "timestamp": "2022-08-18T14:48:53-06:00",
+        "date": "2022-08-18",
+        "olc": "859JW27P+",
+        "elevation": 2824.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 23.0,
+        "precipitation": 0.6,
+        "windspeed": 6.6,
+        "winddirection": null,
+        "presure": 1032.2,
+        "species": "Floccularia albolanaripes",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9647121562,
+          37.9137197586
+        ]
+      }
+    }
+  ]
+}

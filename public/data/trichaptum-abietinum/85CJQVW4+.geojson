@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d6746d59-3370-4483-80fa-3764a3e7372c",
+        "inat_id": 300573003,
+        "timestamp": "2025-07-23T11:21:18-06:00",
+        "date": "2025-07-23",
+        "olc": "85CJQVW4+",
+        "elevation": 3059.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 23.9,
+        "precipitation": 0.7,
+        "windspeed": 9.7,
+        "winddirection": null,
+        "presure": 1017.5,
+        "species": "Trichaptum abietinum",
+        "location": "Swampy Pass, Gunnison, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1434333333,
+          38.7973866667
+        ]
+      }
+    }
+  ]
+}

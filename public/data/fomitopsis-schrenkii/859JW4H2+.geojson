@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "766b9367-3d6b-47a3-bdd0-04e1d0119254",
+        "inat_id": 307313951,
+        "timestamp": "2025-08-13T17:15:32-06:00",
+        "date": "2025-08-13",
+        "olc": "859JW4H2+",
+        "elevation": 2474.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": 1031.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Telluride, CO 81435, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8988559,
+          37.9283284997
+        ]
+      }
+    }
+  ]
+}

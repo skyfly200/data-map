@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6f32e2f4-5436-4e3d-97ed-a417f0b6d3b7",
+        "inat_id": 236117203,
+        "timestamp": "2024-08-16T09:51:09-06:00",
+        "date": "2024-08-16",
+        "olc": "85MRWGGQ+",
+        "elevation": 1525.0,
+        "tavg": null,
+        "tmin": 8.9,
+        "tmax": 25.6,
+        "precipitation": 0.0,
+        "windspeed": 10.0,
+        "winddirection": null,
+        "presure": 1015.7,
+        "species": "Hypomyces lactifluorum",
+        "location": "Black Hills National Forest, Keystone, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4624007929,
+          43.9270512991
+        ]
+      }
+    }
+  ]
+}

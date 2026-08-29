@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a311c0d2-f45b-4f14-8700-7832ac960487",
+        "inat_id": 133506578,
+        "timestamp": "2022-09-03T13:15:40-06:00",
+        "date": "2022-09-03",
+        "olc": "85FMFXHG+",
+        "elevation": 3068.0,
+        "tavg": null,
+        "tmin": 3.9,
+        "tmax": 23.9,
+        "precipitation": null,
+        "windspeed": 6.7,
+        "winddirection": null,
+        "presure": 1021.4,
+        "species": "Cantharellus roseocanus",
+        "location": "White River National Forest, Breckenridge, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.0235297973,
+          39.4782550096
+        ]
+      }
+    }
+  ]
+}

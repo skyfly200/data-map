@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b6b0e590-3c95-48a9-90c8-fd04a04a38c2",
+        "inat_id": 313259509,
+        "timestamp": "2025-09-09T18:42:32-06:00",
+        "date": "2025-09-09",
+        "olc": "85CP68PF+",
+        "elevation": 2842.0,
+        "tavg": null,
+        "tmin": 8.2,
+        "tmax": 22.0,
+        "precipitation": 2.2,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1017.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Westcliffe, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.676645,
+          38.23657
+        ]
+      }
+    }
+  ]
+}

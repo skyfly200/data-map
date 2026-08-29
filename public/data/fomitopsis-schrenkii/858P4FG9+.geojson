@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "822bf430-ee6e-4adb-b821-e9b5da9347eb",
+        "inat_id": 387285778,
+        "timestamp": "2026-08-01T10:57:06-06:00",
+        "date": "2026-08-01",
+        "olc": "858P4FG9+",
+        "elevation": 2653.0,
+        "tavg": null,
+        "tmin": 14.5,
+        "tmax": 29.6,
+        "precipitation": 2.4,
+        "windspeed": 11.8,
+        "winddirection": null,
+        "presure": 1019.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Vadito, NM 87579, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5310027778,
+          36.1259388889
+        ]
+      }
+    }
+  ]
+}

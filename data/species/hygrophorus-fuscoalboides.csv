@@ -1,0 +1,9 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5aaf762a-6626-41c3-bf02-b23f83dd8542,313965984,2025-09-14 13:15:02-06:00,2025-09-14,-107.0113913594,38.8603193537,85CJVX6Q+,2949.0,,3.0,19.0,0.0,7.3,,1024.4,Hygrophorus fuscoalboides,"Gunnison County, US-CO, US",2
+186e8202-e90b-47fa-9e56-b927b0065cbf,309398946,2025-08-26 11:59:10-06:00,2025-08-26,-104.9593983997,38.7497088,85CQP2XR+,3082.0,,13.0,15.0,3.2,9.6,,1027.7,Hygrophorus fuscoalboides,"Manitou Springs, CO 80829, USA",1
+e30e779b-fde9-41a3-9180-10de0a0a2858,308360323,2025-08-22 14:04:24-06:00,2025-08-22,-104.8862932772,38.7367935453,85CQP4P7+,2716.0,,16.0,28.0,1.1,18.0,,1027.6,Hygrophorus fuscoalboides,"Colorado, US",1
+c77a567d-595d-4611-b07d-e808dcdcc99e,308359115,2025-08-22 11:29:39-06:00,2025-08-22,-104.9120712322,38.7426026111,85CQP3VQ+,2809.0,,16.0,28.0,1.1,18.0,,1027.6,Hygrophorus fuscoalboides,"Colorado, US",1
+8aa29c9d-ead4-47fd-8aa5-890035d7e2ea,244921110,2024-09-29 11:40:21-06:00,2024-09-29,-105.8014439093,35.798371518,857PQ5XX+,3208.0,,12.8,29.4,,8.2,,1015.9,Hygrophorus fuscoalboides,"Santa Fe County, US-NM, US",1
+e8b52127-8c52-41b6-8b69-a2696763224e,236673431,2024-08-18 19:27:19-06:00,2024-08-18,-106.79623907,37.4842339,859MF6M3+,3328.0,,8.0,17.0,1.4,12.9,,1043.3,Hygrophorus fuscoalboides,"Mineral County, US-CO, US",3
+286e49a9-411b-4604-b0a8-9523b6bdcbcb,236651675,2024-08-18 19:21:21-06:00,2024-08-18,-106.7962333333,37.48423,859MF6M3+,3328.0,,8.0,17.0,1.4,12.9,,1043.3,Hygrophorus fuscoalboides,"Rio Grande National Forest, Creede, CO, US",4
+f8cfa487-2e21-4943-9588-102cacb00ced,4125687,2016-08-26 10:47:00-07:00,2016-08-26,-105.431953,36.566588,858PHH89+,3312.0,,,,,8.1,,,Hygrophorus fuscoalboides,"Taos County, NM, USA",2

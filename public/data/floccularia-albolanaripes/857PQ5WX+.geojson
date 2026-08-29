@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "401218cc-eed7-40de-ab66-f2ad606a7382",
+        "inat_id": 300778931,
+        "timestamp": "2025-07-22T12:55:00-06:00",
+        "date": "2025-07-22",
+        "olc": "857PQ5WX+",
+        "elevation": 3166.0,
+        "tavg": null,
+        "tmin": 15.6,
+        "tmax": 29.4,
+        "precipitation": 4.1,
+        "windspeed": 16.0,
+        "winddirection": null,
+        "presure": 1010.6,
+        "species": "Floccularia albolanaripes",
+        "location": "Santa Fe County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8002166667,
+          35.7974666667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d9db7911-07b1-4bd5-a641-45d338d921d7",
+        "inat_id": 21274970,
+        "timestamp": "2013-09-21T15:45:00-07:00",
+        "date": "2013-09-21",
+        "olc": "85FPV7V5+",
+        "elevation": 2983.0,
+        "tavg": null,
+        "tmin": 7.0,
+        "tmax": 15.0,
+        "precipitation": null,
+        "windspeed": 21.6,
+        "winddirection": null,
+        "presure": null,
+        "species": "Cantharellus roseocanus",
+        "location": "Grand, Colorado, United States",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7418333333,
+          39.893
+        ]
+      }
+    }
+  ]
+}

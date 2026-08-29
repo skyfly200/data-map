@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2099d9af-b61d-4c97-84ff-5edbe7431b36",
+        "inat_id": 175425896,
+        "timestamp": "2023-07-28T10:25:03-06:00",
+        "date": "2023-07-28",
+        "olc": "85PR3Q94+",
+        "elevation": 1073.0,
+        "tavg": null,
+        "tmin": 18.0,
+        "tmax": 30.0,
+        "precipitation": 0.4,
+        "windspeed": 16.3,
+        "winddirection": null,
+        "presure": 1019.4,
+        "species": "Fomitopsis schrenkii",
+        "location": "Forest Dr, Rapid City, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.2429666667,
+          44.0699666667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "61034c8a-2209-4e1a-9c2e-9fecc3bdba1d",
+        "inat_id": 132575746,
+        "timestamp": "2022-08-27T09:26:00-06:00",
+        "date": "2022-08-27",
+        "olc": "85GP7F33+",
+        "elevation": 2752.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 34.6,
+        "precipitation": 0.5,
+        "windspeed": 6.7,
+        "winddirection": null,
+        "presure": 1014.5,
+        "species": "Trichaptum biforme",
+        "location": "Boulder County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5473312466,
+          40.2536356123
+        ]
+      }
+    }
+  ]
+}

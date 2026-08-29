@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1be80981-65fc-4a7d-bd18-acbb978def17",
+        "inat_id": 244762224,
+        "timestamp": "2024-09-24T12:41:00-06:00",
+        "date": "2024-09-24",
+        "olc": "85FPHJ88+",
+        "elevation": 2580.0,
+        "tavg": null,
+        "tmin": -1.5,
+        "tmax": 9.9,
+        "precipitation": 0.0,
+        "windspeed": 12.3,
+        "winddirection": null,
+        "presure": 1020.9,
+        "species": "Flammulina populicola",
+        "location": "Shadow Mountain, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3834388889,
+          39.5664277778
+        ]
+      }
+    }
+  ]
+}

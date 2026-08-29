@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "870cd59d-a30e-41fe-b42c-9d48a4551310",
+        "inat_id": 87201190,
+        "timestamp": "2021-05-31T08:13:18-06:00",
+        "date": "2021-05-31",
+        "olc": "85MRVGR8+",
+        "elevation": 1515.0,
+        "tavg": null,
+        "tmin": 2.8,
+        "tmax": 17.8,
+        "precipitation": 0.0,
+        "windspeed": 10.1,
+        "winddirection": null,
+        "presure": 1022.0,
+        "species": "Fomitopsis schrenkii",
+        "location": "Black Hills National Forest, Keystone, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4832988783,
+          43.8904125209
+        ]
+      }
+    }
+  ]
+}

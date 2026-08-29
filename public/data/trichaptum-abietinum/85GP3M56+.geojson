@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5119c7bb-e168-4ada-b9f2-9a66950f7326",
+        "inat_id": 339250240,
+        "timestamp": "2026-02-18T15:34:00-07:00",
+        "date": "2026-02-18",
+        "olc": "85GP3M56+",
+        "elevation": 1979.0,
+        "tavg": null,
+        "tmin": 0.0,
+        "tmax": 13.0,
+        "precipitation": 0.6,
+        "windspeed": 14.9,
+        "winddirection": null,
+        "presure": 998.2,
+        "species": "Trichaptum abietinum",
+        "location": "Anne U. White Trail, Colorado, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3376888,
+          40.0591809
+        ]
+      }
+    }
+  ]
+}

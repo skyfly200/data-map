@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "bec1f5d9-40e6-43eb-a177-33f1baed89df",
+        "inat_id": 29674891,
+        "timestamp": "2019-07-24T11:55:46-06:00",
+        "date": "2019-07-24",
+        "olc": "85PR4CMP+",
+        "elevation": 1600.0,
+        "tavg": null,
+        "tmin": 15.6,
+        "tmax": 33.3,
+        "precipitation": 3.3,
+        "windspeed": 16.6,
+        "winddirection": null,
+        "presure": 1013.7,
+        "species": "Hypomyces lactifluorum",
+        "location": "United States",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.5633988077,
+          44.1329093786
+        ]
+      }
+    }
+  ]
+}

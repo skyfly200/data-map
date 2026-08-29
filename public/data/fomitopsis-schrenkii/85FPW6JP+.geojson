@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c1b2bf06-9274-44e9-bec4-c522ebf7d24d",
+        "inat_id": 307547200,
+        "timestamp": "2025-08-17T11:07:08-06:00",
+        "date": "2025-08-17",
+        "olc": "85FPW6JP+",
+        "elevation": 2775.0,
+        "tavg": null,
+        "tmin": 3.0,
+        "tmax": 12.0,
+        "precipitation": 0.3,
+        "windspeed": 10.6,
+        "winddirection": null,
+        "presure": 1021.6,
+        "species": "Fomitopsis schrenkii",
+        "location": "S Fork Loop, Fraser, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.76278,
+          39.931145
+        ]
+      }
+    }
+  ]
+}

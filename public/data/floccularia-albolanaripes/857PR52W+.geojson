@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8db0aa1f-1cff-450e-b8ee-66ee1a1ae66b",
+        "inat_id": 30636572,
+        "timestamp": "2019-08-10T08:06:10-06:00",
+        "date": "2019-08-10",
+        "olc": "857PR52W+",
+        "elevation": 3288.0,
+        "tavg": null,
+        "tmin": 16.1,
+        "tmax": 27.8,
+        "precipitation": null,
+        "windspeed": 10.2,
+        "winddirection": null,
+        "presure": 1012.9,
+        "species": "Floccularia albolanaripes",
+        "location": "Nambe, NM 87506, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8025539294,
+          35.8008768828
+        ]
+      }
+    }
+  ]
+}

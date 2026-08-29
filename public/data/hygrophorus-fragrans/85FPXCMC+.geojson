@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "05f00bb0-6a76-4778-a2f5-62b7ecdf1e42",
+        "inat_id": 146378359,
+        "timestamp": "2022-09-15T13:17:57-06:00",
+        "date": "2022-09-15",
+        "olc": "85FPXCMC+",
+        "elevation": 3046.0,
+        "tavg": null,
+        "tmin": -1.6,
+        "tmax": 8.5,
+        "precipitation": 0.7,
+        "windspeed": 11.3,
+        "winddirection": null,
+        "presure": 1018.9,
+        "species": "Hygrophorus fragrans",
+        "location": "Nederland, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5788366667,
+          39.9831716667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d6519427-9dd9-452e-a1e0-4167fbbd6178",
+        "inat_id": 366433065,
+        "timestamp": "2026-05-27T11:51:00-06:00",
+        "date": "2026-05-27",
+        "olc": "857PP5G5+",
+        "elevation": 2579.0,
+        "tavg": null,
+        "tmin": 6.7,
+        "tmax": 25.0,
+        "precipitation": 0.0,
+        "windspeed": 8.1,
+        "winddirection": null,
+        "presure": null,
+        "species": "Naematelia encephala",
+        "location": "Santa Fe County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8403944444,
+          35.7267111111
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "61ab76fb-1132-4030-8f91-ffa6f47b9b90",
+        "inat_id": 89550005,
+        "timestamp": "2021-08-01T13:54:29-06:00",
+        "date": "2021-08-01",
+        "olc": "85CQX8XF+",
+        "elevation": 2273.0,
+        "tavg": null,
+        "tmin": 14.2,
+        "tmax": 21.6,
+        "precipitation": 3.0,
+        "windspeed": 11.9,
+        "winddirection": null,
+        "presure": 1033.3,
+        "species": "Hypomyces lactifluorum",
+        "location": "Burgess Rd, Colorado Springs, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.6770033333,
+          38.9992116726
+        ]
+      }
+    }
+  ]
+}

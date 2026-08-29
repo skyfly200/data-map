@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0c63124a-e9d7-48ef-b73f-6ac80cfefca6",
+        "inat_id": 325965795,
+        "timestamp": "2025-11-10T15:23:53-07:00",
+        "date": "2025-11-10",
+        "olc": "859J7VRQ+",
+        "elevation": 2332.0,
+        "tavg": null,
+        "tmin": -5.0,
+        "tmax": 15.0,
+        "precipitation": 0.0,
+        "windspeed": 4.2,
+        "winddirection": null,
+        "presure": 1033.0,
+        "species": "Trichaptum abietinum",
+        "location": "Monterosa Ct, Pagosa Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.112175,
+          37.290655
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "115f8ddc-bc9b-4489-a267-d601615fdfb7",
+        "inat_id": 355969967,
+        "timestamp": "2026-04-26T11:01:00-06:00",
+        "date": "2026-04-26",
+        "olc": "857MRFC7+",
+        "elevation": 2583.0,
+        "tavg": null,
+        "tmin": 7.8,
+        "tmax": 18.3,
+        "precipitation": 0.0,
+        "windspeed": 11.0,
+        "winddirection": null,
+        "presure": 1004.8,
+        "species": "Fomitopsis schrenkii",
+        "location": "Las Conchas trailhead, NM, USA ",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.5351017565,
+          35.8205780218
+        ]
+      }
+    }
+  ]
+}

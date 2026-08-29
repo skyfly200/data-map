@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "78113e01-dfce-4e95-ac5e-338824fa9f06",
+        "inat_id": 182766940,
+        "timestamp": "2023-09-10T12:00:00-06:00",
+        "date": "2023-09-10",
+        "olc": "85GP4G9V+",
+        "elevation": 2587.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 18.0,
+        "precipitation": 6.6,
+        "windspeed": 5.3,
+        "winddirection": null,
+        "presure": 1026.1,
+        "species": "Gomphus clavatus",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4558266276,
+          40.1199397439
+        ]
+      }
+    }
+  ]
+}

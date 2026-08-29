@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "964aed1e-ef1f-4f00-978b-f52b0c30bc1e",
+        "inat_id": 235786187,
+        "timestamp": "2024-08-12T15:31:00-06:00",
+        "date": "2024-08-12",
+        "olc": "858M35GG+",
+        "elevation": 3085.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Armillaria ostoyae",
+        "location": "Rio Arriba County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.8240047508,
+          36.0753292761
+        ]
+      }
+    }
+  ]
+}

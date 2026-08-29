@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "702445d5-d9cf-4589-a84a-a6502d3cdfd5",
+        "inat_id": 128081553,
+        "timestamp": "2022-07-22T13:30:37-06:00",
+        "date": "2022-07-22",
+        "olc": "85CMMQH3+",
+        "elevation": 4175.0,
+        "tavg": null,
+        "tmin": 6.3,
+        "tmax": 23.5,
+        "precipitation": 1.8,
+        "windspeed": 5.2,
+        "winddirection": null,
+        "presure": 1017.8,
+        "species": "Cantharellus roseocanus",
+        "location": "Pike and San Isabel National Forests, Nathrop, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.245897555,
+          38.6781949819
+        ]
+      }
+    }
+  ]
+}

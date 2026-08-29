@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2ba37319-dd60-4f26-8089-069e5458849d",
+        "inat_id": 237764500,
+        "timestamp": "2024-08-24T12:55:32-06:00",
+        "date": "2024-08-24",
+        "olc": "85FP6JXQ+",
+        "elevation": 2512.0,
+        "tavg": null,
+        "tmin": 6.1,
+        "tmax": 18.4,
+        "precipitation": 0.2,
+        "windspeed": 16.1,
+        "winddirection": null,
+        "presure": 1019.2,
+        "species": "Hypomyces lactifluorum",
+        "location": "Jefferson County, US-CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3600333333,
+          39.2479194444
+        ]
+      }
+    }
+  ]
+}

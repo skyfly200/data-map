@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "35b8c285-eff2-4d1b-92ad-4c969d2db467",
+        "inat_id": 134345621,
+        "timestamp": "2022-08-30",
+        "date": "2022-08-30",
+        "olc": "85FM6GWJ+",
+        "elevation": 3306.0,
+        "tavg": null,
+        "tmin": 2.8,
+        "tmax": 22.8,
+        "precipitation": 0.0,
+        "windspeed": 5.4,
+        "winddirection": null,
+        "presure": 1020.6,
+        "species": "Hygrophorus purpurascens",
+        "location": "Colorado. Lake Co., San Isabel National Forest, Native Lake Trailhead, SW of Lake Turquoise.",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.4692,
+          39.2472
+        ]
+      }
+    }
+  ]
+}

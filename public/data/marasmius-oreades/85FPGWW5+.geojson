@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b6e98d51-416b-4876-8852-4e51fb3c69a6",
+        "inat_id": 169827594,
+        "timestamp": "2023-06-27T11:13:43-06:00",
+        "date": "2023-06-27",
+        "olc": "85FPGWW5+",
+        "elevation": 1667.0,
+        "tavg": null,
+        "tmin": 17.2,
+        "tmax": 31.7,
+        "precipitation": 0.0,
+        "windspeed": 18.8,
+        "winddirection": null,
+        "presure": 1004.9,
+        "species": "Marasmius oreades",
+        "location": "Chatfield State Park, Littleton, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0904221667,
+          39.5472966667
+        ]
+      }
+    }
+  ]
+}

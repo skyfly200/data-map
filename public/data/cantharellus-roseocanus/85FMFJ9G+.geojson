@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "86ae3fc3-d89c-454a-8d0e-46173e4d4085",
+        "inat_id": 129547044,
+        "timestamp": "2022-07-31T17:26:05-06:00",
+        "date": "2022-07-31",
+        "olc": "85FMFJ9G+",
+        "elevation": 2702.0,
+        "tavg": null,
+        "tmin": 5.6,
+        "tmax": 20.0,
+        "precipitation": null,
+        "windspeed": 7.4,
+        "winddirection": null,
+        "presure": 1019.8,
+        "species": "Cantharellus roseocanus",
+        "location": "Red Cliff, CO 81649, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3735419139,
+          39.4687013474
+        ]
+      }
+    }
+  ]
+}

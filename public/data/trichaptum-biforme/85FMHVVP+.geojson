@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b9c762d0-f96b-436b-ad12-a4660bd22d59",
+        "inat_id": 176409403,
+        "timestamp": "2023-08-02T11:33:05-06:00",
+        "date": "2023-08-02",
+        "olc": "85FMHVVP+",
+        "elevation": 2945.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 16.0,
+        "precipitation": 6.2,
+        "windspeed": 10.9,
+        "winddirection": null,
+        "presure": 1039.7,
+        "species": "Trichaptum biforme",
+        "location": "Frisco, CO 80443, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.1136391997,
+          39.5933946997
+        ]
+      }
+    }
+  ]
+}

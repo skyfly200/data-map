@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a319e54f-e501-4258-aac3-cb8a1b0eac91",
+        "inat_id": 303071376,
+        "timestamp": "2025-07-20T10:24:54-06:00",
+        "date": "2025-07-20",
+        "olc": "85PR2JC5+",
+        "elevation": 1287.0,
+        "tavg": null,
+        "tmin": 19.0,
+        "tmax": 27.0,
+        "precipitation": 0.3,
+        "windspeed": 11.5,
+        "winddirection": null,
+        "presure": 1012.3,
+        "species": "Hypomyces lactifluorum",
+        "location": "Pennington County, US-SD, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.3909935749,
+          44.0204523318
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1eb97636-b668-4146-b809-8579dcbb1ef7",
+        "inat_id": 298745440,
+        "timestamp": "2025-07-17T11:44:57-06:00",
+        "date": "2025-07-17",
+        "olc": "859JQ845+",
+        "elevation": 3402.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 20.0,
+        "precipitation": 9.3,
+        "windspeed": 5.1,
+        "winddirection": null,
+        "presure": 1030.1,
+        "species": "Trichaptum abietinum",
+        "location": "San Juan County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6923277602,
+          37.755994309
+        ]
+      }
+    }
+  ]
+}

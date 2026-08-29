@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "53ae2427-cfb5-426f-8fb1-b8033676aeb2",
+        "inat_id": 383304828,
+        "timestamp": "2026-07-14T08:40:07-06:00",
+        "date": "2026-07-14",
+        "olc": "858PCVFV+",
+        "elevation": 2865.0,
+        "tavg": null,
+        "tmin": 2.8,
+        "tmax": 27.0,
+        "precipitation": 0.2,
+        "windspeed": 4.0,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Colfax County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1052539576,
+          36.4245065969
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "918ed3e2-4746-4223-aac3-2f5ae240fa27",
+        "inat_id": 383304784,
+        "timestamp": "2026-07-14T08:39:45-06:00",
+        "date": "2026-07-14",
+        "olc": "858PCVFV+",
+        "elevation": 2865.0,
+        "tavg": null,
+        "tmin": 2.8,
+        "tmax": 27.0,
+        "precipitation": 0.2,
+        "windspeed": 4.0,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Colfax County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1052539576,
+          36.4245065969
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "08785b61-4465-4a3b-af00-4f079884eb3a",
+        "inat_id": 383304743,
+        "timestamp": "2026-07-14T08:39:14-06:00",
+        "date": "2026-07-14",
+        "olc": "858PCVFV+",
+        "elevation": 2865.0,
+        "tavg": null,
+        "tmin": 2.8,
+        "tmax": 27.0,
+        "precipitation": 0.2,
+        "windspeed": 4.0,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Colfax County, US-NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1052539576,
+          36.4245065969
+        ]
+      }
+    }
+  ]
+}

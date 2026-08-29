@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d21d3c1d-7dd7-456c-b9a6-c2118928407c",
+        "inat_id": 288241037,
+        "timestamp": "2025-06-09T10:58:13-06:00",
+        "date": "2025-06-09",
+        "olc": "85PR3HJF+",
+        "elevation": 1438.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 27.2,
+        "precipitation": 0.0,
+        "windspeed": 19.3,
+        "winddirection": null,
+        "presure": 1013.3,
+        "species": "Hygrophorus speciosus",
+        "location": "Johnson Siding, SD 57702, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4258042648,
+          44.0803336997
+        ]
+      }
+    }
+  ]
+}

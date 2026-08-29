@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f1ec193d-8206-40ee-8f75-d3291472d602",
+        "inat_id": 235346999,
+        "timestamp": "2024-08-10T14:51:22-06:00",
+        "date": "2024-08-10",
+        "olc": "857PR66M+",
+        "elevation": 3248.0,
+        "tavg": null,
+        "tmin": 17.2,
+        "tmax": 28.3,
+        "precipitation": null,
+        "windspeed": 11.2,
+        "winddirection": null,
+        "presure": 1017.7,
+        "species": "Hygrophorus purpurascens",
+        "location": "Santa Fe National Forest, Tererro, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7653366667,
+          35.8115583333
+        ]
+      }
+    }
+  ]
+}

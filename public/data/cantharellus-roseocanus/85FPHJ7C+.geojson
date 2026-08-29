@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "733968b5-ecb2-4bc5-8d60-83f66cf421d1",
+        "inat_id": 128090444,
+        "timestamp": "2022-07-26T20:06:26-06:00",
+        "date": "2022-07-26",
+        "olc": "85FPHJ7C+",
+        "elevation": 2560.0,
+        "tavg": null,
+        "tmin": 4.6,
+        "tmax": 15.3,
+        "precipitation": 0.0,
+        "windspeed": 8.3,
+        "winddirection": null,
+        "presure": 1019.5,
+        "species": "Cantharellus roseocanus",
+        "location": "Shadow Mountain, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3777111111,
+          39.5647916667
+        ]
+      }
+    }
+  ]
+}

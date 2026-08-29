@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4cb251c8-ef5f-4166-aaa1-fbc564ec7b3f",
+        "inat_id": 50559721,
+        "timestamp": "2020-06-10T10:35:34-06:00",
+        "date": "2020-06-10",
+        "olc": "85PR3J72+",
+        "elevation": 1316.0,
+        "tavg": null,
+        "tmin": 4.4,
+        "tmax": 22.8,
+        "precipitation": 0.0,
+        "windspeed": 19.1,
+        "winddirection": null,
+        "presure": 1017.7,
+        "species": "Fomitopsis schrenkii",
+        "location": "Mount Rushmore UT, SD, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.3986249722,
+          44.0646839722
+        ]
+      }
+    }
+  ]
+}

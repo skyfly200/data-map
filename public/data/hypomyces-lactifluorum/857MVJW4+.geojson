@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "90cd8115-09c4-4ea8-9580-1725f4070221",
+        "inat_id": 238838311,
+        "timestamp": "2024-08-25T16:35:00-06:00",
+        "date": "2024-08-25",
+        "olc": "857MVJW4+",
+        "elevation": 2835.0,
+        "tavg": null,
+        "tmin": 13.2,
+        "tmax": 26.7,
+        "precipitation": null,
+        "windspeed": 9.8,
+        "winddirection": null,
+        "presure": 1021.6,
+        "species": "Hypomyces lactifluorum",
+        "location": "Los Alamos County, NM, USA",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3935611111,
+          35.8962833333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a7e8b033-cb78-47c8-a16f-a52c9b28ff5b",
+        "inat_id": 237977375,
+        "timestamp": "2024-08-25T16:31:52-06:00",
+        "date": "2024-08-25",
+        "olc": "857MVJW4+",
+        "elevation": 2835.0,
+        "tavg": null,
+        "tmin": 13.2,
+        "tmax": 26.7,
+        "precipitation": null,
+        "windspeed": 9.8,
+        "winddirection": null,
+        "presure": 1021.6,
+        "species": "Hypomyces lactifluorum",
+        "location": "Los Alamos County, NM, USA",
+        "num_identification_agreements": 5
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.39357911,
+          35.89631537
+        ]
+      }
+    }
+  ]
+}

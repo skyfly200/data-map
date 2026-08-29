@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "65f88572-2701-458d-abfa-d4a1d51cd59e",
+        "inat_id": 306356174,
+        "timestamp": "2025-08-13T10:28:17-06:00",
+        "date": "2025-08-13",
+        "olc": "859JR45H+",
+        "elevation": 3130.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": 1031.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "San Miguel County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8718766403,
+          37.8081372146
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "19d68d52-9ac4-4995-a950-fd40e9840799",
+        "inat_id": 89978970,
+        "timestamp": "2021-08-04T13:58:25-06:00",
+        "date": "2021-08-04",
+        "olc": "85FPPF6R+",
+        "elevation": 2673.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 28.0,
+        "precipitation": 0.0,
+        "windspeed": 8.8,
+        "winddirection": null,
+        "presure": 1024.1,
+        "species": "Hygrophorus erubescens",
+        "location": "Idaho Springs, CO 80452, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.509245,
+          39.7117849997
+        ]
+      }
+    }
+  ]
+}

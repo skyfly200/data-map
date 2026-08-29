@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6c005c5d-4114-4e38-b427-0ac3989ae095",
+        "inat_id": 91593717,
+        "timestamp": "2021-08-16T15:00:14-06:00",
+        "date": "2021-08-16",
+        "olc": "85FPX9V7+",
+        "elevation": 3087.0,
+        "tavg": null,
+        "tmin": 5.5,
+        "tmax": 25.5,
+        "precipitation": 0.0,
+        "windspeed": 5.4,
+        "winddirection": null,
+        "presure": 1026.8,
+        "species": "Hydnum rufescens",
+        "location": "Boulder County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6350346965,
+          39.9941078039
+        ]
+      }
+    }
+  ]
+}

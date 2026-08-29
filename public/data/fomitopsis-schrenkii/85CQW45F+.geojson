@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "06ca99ab-aae3-4443-b316-6c7911f19426",
+        "inat_id": 367648290,
+        "timestamp": "2025-10-13T11:16:43-06:00",
+        "date": "2025-10-13",
+        "olc": "85CQW45F+",
+        "elevation": 2036.0,
+        "tavg": null,
+        "tmin": 1.0,
+        "tmax": 14.0,
+        "precipitation": 0.0,
+        "windspeed": 18.0,
+        "winddirection": null,
+        "presure": 1020.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8765012823,
+          38.9081471198
+        ]
+      }
+    }
+  ]
+}

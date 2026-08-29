@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0157e16a-e9a2-46e8-ad55-f3ac5d7c4c09",
+        "inat_id": 235664759,
+        "timestamp": "2022-08-25T13:19:17-06:00",
+        "date": "2022-08-25",
+        "olc": "85FPX95F+",
+        "elevation": 2957.0,
+        "tavg": null,
+        "tmin": -1.1,
+        "tmax": 14.1,
+        "precipitation": 4.7,
+        "windspeed": 6.6,
+        "winddirection": null,
+        "presure": 1023.7,
+        "species": "Clavariadelphus truncatus",
+        "location": "Devils Thumb Bypass Trail, Nederland, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6257633333,
+          39.95913
+        ]
+      }
+    }
+  ]
+}

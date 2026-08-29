@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "473caf1e-4145-466d-acc0-69c9662be733",
+        "inat_id": 132365953,
+        "timestamp": "2021-08-18T15:13:10-06:00",
+        "date": "2021-08-18",
+        "olc": "859JR36V+",
+        "elevation": 3123.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 21.0,
+        "precipitation": 7.6,
+        "windspeed": 4.9,
+        "winddirection": null,
+        "presure": 1025.8,
+        "species": "Catathelasma ventricosum",
+        "location": "Lizard Head Pass",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9061782733,
+          37.8111406816
+        ]
+      }
+    }
+  ]
+}

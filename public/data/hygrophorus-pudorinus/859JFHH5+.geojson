@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0070893c-5152-4c29-b55a-5ee777e9f582",
+        "inat_id": 22970891,
+        "timestamp": "2016-08-19",
+        "date": "2016-08-19",
+        "olc": "859JFHH5+",
+        "elevation": 2492.0,
+        "tavg": null,
+        "tmin": 8.3,
+        "tmax": 25.6,
+        "precipitation": 0.5,
+        "windspeed": 7.1,
+        "winddirection": null,
+        "presure": 1014.6,
+        "species": "Hygrophorus pudorinus",
+        "location": "Pine River Trail, Weminuche Wilderness, Colorado, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.4425,
+          37.47905
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5edbf2e1-4eaf-447a-a581-ebaa6175c2ee",
+        "inat_id": 180907163,
+        "timestamp": "2023-08-28T09:48:35-06:00",
+        "date": "2023-08-28",
+        "olc": "85GP65V8+",
+        "elevation": 2555.0,
+        "tavg": null,
+        "tmin": 6.8,
+        "tmax": 21.5,
+        "precipitation": 4.9,
+        "windspeed": 4.2,
+        "winddirection": null,
+        "presure": 1032.0,
+        "species": "Armillaria solidipes",
+        "location": "Grand Lake, CO 80447, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.833616592,
+          40.2435349912
+        ]
+      }
+    }
+  ]
+}

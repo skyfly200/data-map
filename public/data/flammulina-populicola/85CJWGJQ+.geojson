@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c439d3db-3a82-4931-b401-5bb78cb1e668",
+        "inat_id": 178354888,
+        "timestamp": "2023-08-14T01:35:50-06:00",
+        "date": "2023-08-14",
+        "olc": "85CJWGJQ+",
+        "elevation": 2026.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.4621778428,
+          38.9323566991
+        ]
+      }
+    }
+  ]
+}

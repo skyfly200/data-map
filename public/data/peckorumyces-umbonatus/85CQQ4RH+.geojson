@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "80c364ef-a1aa-4c74-9ad5-2b8b37a526fb",
+        "inat_id": 237157991,
+        "timestamp": "2024-08-21T13:36:25-06:00",
+        "date": "2024-08-21",
+        "olc": "85CQQ4RH+",
+        "elevation": 1957.0,
+        "tavg": null,
+        "tmin": 15.5,
+        "tmax": 29.0,
+        "precipitation": 2.2,
+        "windspeed": 14.0,
+        "winddirection": null,
+        "presure": 1023.4,
+        "species": "Peckorumyces umbonatus",
+        "location": "N Cheyenne Canyon Rd, Colorado Springs, CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.870179619,
+          38.7912287969
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "56ae7223-cca7-4bd7-99e0-e70de0be18ae",
+        "inat_id": 167430704,
+        "timestamp": "2023-06-12",
+        "date": "2023-06-12",
+        "olc": "85FP8MR7+",
+        "elevation": 2264.0,
+        "tavg": null,
+        "tmin": -1.3,
+        "tmax": 10.1,
+        "precipitation": 3.5,
+        "windspeed": 10.9,
+        "winddirection": null,
+        "presure": 1014.1,
+        "species": "Gymnopus fuscopurpureus",
+        "location": "Colorado, Jefferson Co., Pike & San Isabel Nat'l Forest, 0.1 mile W of Meadows Group Campground on Redskin Rd.",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3375,
+          39.3422
+        ]
+      }
+    }
+  ]
+}

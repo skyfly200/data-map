@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8e7d2fbf-b09d-49a8-9d50-6c0664669e79",
+        "inat_id": 235786208,
+        "timestamp": "2024-08-12T14:44:00-06:00",
+        "date": "2024-08-12",
+        "olc": "858M356H+",
+        "elevation": 3030.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Armillaria solidipes",
+        "location": "Rio Arriba County, NM, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.8204519474,
+          36.0619625653
+        ]
+      }
+    }
+  ]
+}

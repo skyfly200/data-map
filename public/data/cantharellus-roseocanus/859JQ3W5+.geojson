@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9bdfc40c-92a7-41ba-95f4-f1a0294a4a2b",
+        "inat_id": 238770090,
+        "timestamp": "2024-08-29T08:30:00-06:00",
+        "date": "2024-08-29",
+        "olc": "859JQ3W5+",
+        "elevation": 3082.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 21.0,
+        "precipitation": null,
+        "windspeed": 6.7,
+        "winddirection": null,
+        "presure": null,
+        "species": "Cantharellus roseocanus",
+        "location": "San Juan National Forest - Headquarters, Dolores, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.940039,
+          37.796845
+        ]
+      }
+    }
+  ]
+}

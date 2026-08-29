@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "56c68246-cfd1-41a3-89a9-895aba813804",
+        "inat_id": 178768857,
+        "timestamp": "2023-08-14T17:10:19-06:00",
+        "date": "2023-08-14",
+        "olc": "85CQP3PM+",
+        "elevation": 2794.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 22.0,
+        "precipitation": 0.6,
+        "windspeed": 13.5,
+        "winddirection": null,
+        "presure": 1031.9,
+        "species": "Fomitopsis schrenkii",
+        "location": "El Paso County, US-CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9155203117,
+          38.7366273399
+        ]
+      }
+    }
+  ]
+}

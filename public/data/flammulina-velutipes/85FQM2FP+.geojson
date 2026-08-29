@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9689843b-46f0-4f20-8781-4d6a04cc713c",
+        "inat_id": 101004963,
+        "timestamp": "2021-11-13T07:40:15-07:00",
+        "date": "2021-11-13",
+        "olc": "85FQM2FP+",
+        "elevation": 1637.0,
+        "tavg": null,
+        "tmin": 4.0,
+        "tmax": 17.7,
+        "precipitation": null,
+        "windspeed": 18.9,
+        "winddirection": null,
+        "presure": 1019.0,
+        "species": "Flammulina velutipes",
+        "location": "S Race St, Denver, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9638896071,
+          39.6742409856
+        ]
+      }
+    }
+  ]
+}

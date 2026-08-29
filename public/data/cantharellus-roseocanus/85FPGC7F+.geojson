@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "da60a55d-2e4f-4447-a148-90a9532a6711",
+        "inat_id": 127891100,
+        "timestamp": "2022-07-25T11:33:00-06:00",
+        "date": "2022-07-25",
+        "olc": "85FPGC7F+",
+        "elevation": 2904.0,
+        "tavg": null,
+        "tmin": 2.4,
+        "tmax": 15.2,
+        "precipitation": 0.0,
+        "windspeed": 9.5,
+        "winddirection": null,
+        "presure": 1020.0,
+        "species": "Cantharellus roseocanus",
+        "location": "Bailey, CO 80421, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5760277778,
+          39.5128583333
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "49db74d0-93b5-4828-a20b-0b3a3f5f8c5c",
+        "inat_id": 182825156,
+        "timestamp": "2023-09-10T09:28:30-06:00",
+        "date": "2023-09-10",
+        "olc": "85FPFQ74+",
+        "elevation": 2332.0,
+        "tavg": null,
+        "tmin": 12.8,
+        "tmax": 19.4,
+        "precipitation": null,
+        "windspeed": 8.6,
+        "winddirection": null,
+        "presure": 1021.0,
+        "species": "Armillaria solidipes",
+        "location": "Conifer, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2437283333,
+          39.4642716667
+        ]
+      }
+    }
+  ]
+}

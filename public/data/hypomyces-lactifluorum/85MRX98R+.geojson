@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c1037ef8-c5be-4e71-bdba-ff9f30e3a310",
+        "inat_id": 304324852,
+        "timestamp": "2025-08-06T14:55:45-06:00",
+        "date": "2025-08-06",
+        "olc": "85MRX98R+",
+        "elevation": 1637.0,
+        "tavg": null,
+        "tmin": 13.3,
+        "tmax": 27.2,
+        "precipitation": 0.0,
+        "windspeed": 12.2,
+        "winddirection": null,
+        "presure": 1017.3,
+        "species": "Hypomyces lactifluorum",
+        "location": "Black Hills National Forest, Hill City, SD, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.607795,
+          43.96555
+        ]
+      }
+    }
+  ]
+}

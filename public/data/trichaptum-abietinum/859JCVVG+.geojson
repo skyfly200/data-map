@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "fcd63d96-a260-4bea-ace2-ae0e935d52a5",
+        "inat_id": 376256154,
+        "timestamp": "2026-06-27T13:54:03-06:00",
+        "date": "2026-06-27",
+        "olc": "859JCVVG+",
+        "elevation": 2653.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 27.0,
+        "precipitation": 1.1,
+        "windspeed": 8.9,
+        "winddirection": null,
+        "presure": null,
+        "species": "Trichaptum abietinum",
+        "location": "County Road 634, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1228721667,
+          37.4430783333
+        ]
+      }
+    }
+  ]
+}

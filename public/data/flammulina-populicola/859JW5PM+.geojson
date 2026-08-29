@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b838063e-5c7c-4b49-830c-dde0e83e0940",
+        "inat_id": 179009776,
+        "timestamp": "2023-08-18T10:41:08-06:00",
+        "date": "2023-08-18",
+        "olc": "859JW5PM+",
+        "elevation": 2675.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 22.0,
+        "precipitation": 3.3,
+        "windspeed": 5.9,
+        "winddirection": null,
+        "presure": 1032.5,
+        "species": "Flammulina populicola",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8153685217,
+          37.9355983932
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ccea942a-4e24-4e2d-8ede-6e1ede25f931",
+        "inat_id": 178769732,
+        "timestamp": "2023-08-16T17:17:51-06:00",
+        "date": "2023-08-16",
+        "olc": "859JW5PM+",
+        "elevation": 2675.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 26.0,
+        "precipitation": 7.0,
+        "windspeed": 6.9,
+        "winddirection": null,
+        "presure": 1034.9,
+        "species": "Flammulina populicola",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8150416667,
+          37.9363533333
+        ]
+      }
+    }
+  ]
+}

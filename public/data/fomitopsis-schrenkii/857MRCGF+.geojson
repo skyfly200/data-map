@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "80c9e3c7-82d3-43fa-a314-8569be993f25",
+        "inat_id": 250139081,
+        "timestamp": "2023-06-26T09:44:56-06:00",
+        "date": "2023-06-26",
+        "olc": "857MRCGF+",
+        "elevation": 2506.0,
+        "tavg": null,
+        "tmin": 20.6,
+        "tmax": 30.9,
+        "precipitation": null,
+        "windspeed": 16.2,
+        "winddirection": null,
+        "presure": 1024.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Santa Fe National Forest, Jemez Springs, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.576775,
+          35.8270216667
+        ]
+      }
+    }
+  ]
+}

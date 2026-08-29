@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e660d83b-bf1e-433f-90a5-c00d163758ff",
+        "inat_id": 234605885,
+        "timestamp": "2024-08-08T17:33:38-06:00",
+        "date": "2024-08-08",
+        "olc": "858P9PW7+",
+        "elevation": 2566.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 19.5,
+        "precipitation": 17.0,
+        "windspeed": 3.3,
+        "winddirection": null,
+        "presure": 1031.6,
+        "species": "Hygrocybe flavescens",
+        "location": "NM-434, Angel Fire, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.286255,
+          36.3950083333
+        ]
+      }
+    }
+  ]
+}

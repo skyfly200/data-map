@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "06a5db69-3f82-4b97-bab0-6a367d3f588f",
+        "inat_id": 131655702,
+        "timestamp": "2022-08-20T12:07:09-06:00",
+        "date": "2022-08-20",
+        "olc": "85FPX6GC+",
+        "elevation": 2626.0,
+        "tavg": null,
+        "tmin": 6.6,
+        "tmax": 22.2,
+        "precipitation": 6.7,
+        "windspeed": 5.3,
+        "winddirection": null,
+        "presure": 1027.6,
+        "species": "Albatrellopsis confluens",
+        "location": "CR-83, Granby, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7796119694,
+          39.9756702453
+        ]
+      }
+    }
+  ]
+}

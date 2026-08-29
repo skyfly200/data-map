@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "669e4849-bbbf-4987-a217-3d85c9ce2d68",
+        "inat_id": 239278282,
+        "timestamp": "2024-08-02T09:14:53-06:00",
+        "date": "2024-08-02",
+        "olc": "857PQ528+",
+        "elevation": 2669.0,
+        "tavg": null,
+        "tmin": 17.8,
+        "tmax": 32.2,
+        "precipitation": null,
+        "windspeed": 13.1,
+        "winddirection": null,
+        "presure": 1019.8,
+        "species": "Flammulina populicola",
+        "location": "Santa Fe National Forest, Santa Fe, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8340616667,
+          35.7512083333
+        ]
+      }
+    }
+  ]
+}

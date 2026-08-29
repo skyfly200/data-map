@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "df3aeeb6-eafb-48d5-b812-a1b904d5bfa8",
+        "inat_id": 131887549,
+        "timestamp": "2022-08-21T09:12:24-06:00",
+        "date": "2022-08-21",
+        "olc": "85FMFRP9+",
+        "elevation": 3333.0,
+        "tavg": null,
+        "tmin": 7.2,
+        "tmax": 15.0,
+        "precipitation": null,
+        "windspeed": 4.7,
+        "winddirection": null,
+        "presure": 1018.4,
+        "species": "Clavariadelphus truncatus",
+        "location": "White River National Forest, Frisco, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.1819533333,
+          39.4856866667
+        ]
+      }
+    }
+  ]
+}

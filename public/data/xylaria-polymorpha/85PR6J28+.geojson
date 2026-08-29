@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0b750d8f-4a6b-4c15-8fd9-30e296af9a4d",
+        "inat_id": 77293718,
+        "timestamp": "2021-05-03T11:55:33-06:00",
+        "date": "2021-05-03",
+        "olc": "85PR6J28+",
+        "elevation": 1151.0,
+        "tavg": null,
+        "tmin": 0.6,
+        "tmax": 15.0,
+        "precipitation": 0.0,
+        "windspeed": 21.2,
+        "winddirection": null,
+        "presure": 1017.9,
+        "species": "Xylaria polymorpha",
+        "location": "Black Hills National Forest, Piedmont, SD, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.383545,
+          44.2023116667
+        ]
+      }
+    }
+  ]
+}

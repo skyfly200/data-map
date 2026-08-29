@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a8425926-fdda-47d4-a0a4-860cb21de835",
+        "inat_id": 170330367,
+        "timestamp": "2023-06-30T13:55:17-06:00",
+        "date": "2023-06-30",
+        "olc": "85PR78R8+",
+        "elevation": 1632.0,
+        "tavg": null,
+        "tmin": 11.8,
+        "tmax": 22.9,
+        "precipitation": 1.4,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": 1015.8,
+        "species": "Hypomyces lactifluorum",
+        "location": "Black Hills National Forest, Deadwood, SD, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.6838136961,
+          44.2918943898
+        ]
+      }
+    }
+  ]
+}

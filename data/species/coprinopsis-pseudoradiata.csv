@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8efe998f-4488-4c17-bbbd-4a98dfe24223,136861669,2022-09-28 12:57:38-06:00,2022-09-28,-105.6342746,39.66484593,85FPM978+,3093.0,,-3.4,9.9,0.0,7.1,,1026.9,Coprinopsis pseudoradiata,"Clear Creek County, US-CO, US",3

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "bb1ff478-62c8-4ec2-a4a5-c0dc867ac609",
+        "inat_id": 312081619,
+        "timestamp": "2025-09-06T14:39:22-06:00",
+        "date": "2025-09-06",
+        "olc": "85CJPRXM+",
+        "elevation": 3268.0,
+        "tavg": null,
+        "tmin": 3.0,
+        "tmax": 23.0,
+        "precipitation": 0.4,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1028.3,
+        "species": "Hygrophorus agathosmoides",
+        "location": "Gunnison County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1666182964,
+          38.7477825687
+        ]
+      }
+    }
+  ]
+}

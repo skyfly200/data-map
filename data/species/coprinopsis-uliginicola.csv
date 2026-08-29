@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+06dad425-9dcb-4a08-ae5c-a7d243338447,4315145,2016-08-27 12:09:00-07:00,2016-08-27,-105.77669,36.2895,858P76QF+,1933.0,,6.0,23.0,,10.0,,,Coprinopsis uliginicola,"Taos County, NM, USA",2

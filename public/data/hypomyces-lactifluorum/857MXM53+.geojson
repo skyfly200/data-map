@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1160fd78-158a-444c-a6f4-faef05b10ec5",
+        "inat_id": 90491176,
+        "timestamp": "2021-08-08T12:28:03-06:00",
+        "date": "2021-08-08",
+        "olc": "857MXM53+",
+        "elevation": 2739.0,
+        "tavg": null,
+        "tmin": 15.8,
+        "tmax": 29.4,
+        "precipitation": 0.0,
+        "windspeed": 6.9,
+        "winddirection": null,
+        "presure": 1023.7,
+        "species": "Hypomyces lactifluorum",
+        "location": "New Mexico, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3452930069,
+          35.9595935538
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a6b5ded3-a0c5-40c5-84d4-7b34ec869177",
+        "inat_id": 132694673,
+        "timestamp": "2022-08-27T10:44:22-06:00",
+        "date": "2022-08-27",
+        "olc": "85CGFP8Q+",
+        "elevation": 3137.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Tremella mesenterica",
+        "location": "Moab, UT 84532, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.2601444444,
+          38.4657277778
+        ]
+      }
+    }
+  ]
+}

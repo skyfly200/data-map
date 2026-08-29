@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a1dd7eec-5bff-4f4d-8923-fd3d6cf59847",
+        "inat_id": 198689897,
+        "timestamp": "2023-08-12T12:00:00-06:00",
+        "date": "2023-08-12",
+        "olc": "85GP2FJ8+",
+        "elevation": 2902.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 28.0,
+        "precipitation": 0.0,
+        "windspeed": 8.5,
+        "winddirection": null,
+        "presure": 1019.7,
+        "species": "Albatrellopsis flettii",
+        "location": "County Road 116, Nederland, CO, US",
+        "num_identification_agreements": 5
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5333729198,
+          40.0318227228
+        ]
+      }
+    }
+  ]
+}

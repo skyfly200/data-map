@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2041b654-0ea5-467f-a674-7166db3f4cc3,183114377,2023-09-10 08:36:06-06:00,2023-09-10,-104.8229860514,38.7084687468,85CQP55G+,1915.0,,11.0,22.0,5.3,13.2,,1026.8,Coprinopsis pachyderma,"Rock Creek, Colorado Springs, CO, USA",2

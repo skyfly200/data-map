@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "74a688b6-8395-4ee2-9899-1e1df23082da",
+        "inat_id": 316840951,
+        "timestamp": "2025-09-26",
+        "date": "2025-09-26",
+        "olc": "857PQ5FH+",
+        "elevation": 2846.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1021.0,
+        "species": "Hydnum subtilior",
+        "location": "New Mexico, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8218661885,
+          35.7734501339
+        ]
+      }
+    }
+  ]
+}

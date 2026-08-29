@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8da28ce7-3d1f-4691-9657-3370559a09af",
+        "inat_id": 176680563,
+        "timestamp": "2023-08-04T16:47:10-06:00",
+        "date": "2023-08-04",
+        "olc": "85PR962J+",
+        "elevation": 1601.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 21.0,
+        "precipitation": 25.0,
+        "windspeed": 5.4,
+        "winddirection": null,
+        "presure": 1017.0,
+        "species": "Hypomyces lactifluorum",
+        "location": "McQuillan St, Lead, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.7687833333,
+          44.3500883333
+        ]
+      }
+    }
+  ]
+}

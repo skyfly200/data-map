@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "671733ee-b8d0-4078-b2c9-866928a4d318",
+        "inat_id": 178123100,
+        "timestamp": "2023-08-12T12:46:53-06:00",
+        "date": "2023-08-12",
+        "olc": "85GP2FJ6+",
+        "elevation": 2945.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 28.0,
+        "precipitation": 0.0,
+        "windspeed": 8.5,
+        "winddirection": null,
+        "presure": 1019.7,
+        "species": "Trichaptum biforme",
+        "location": "County Road 116, Ward, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5384666667,
+          40.0313111667
+        ]
+      }
+    }
+  ]
+}

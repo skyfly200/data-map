@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1e68053c-0a5d-4176-983e-7f606c7f1c7a",
+        "inat_id": 218263974,
+        "timestamp": "2022-07-26T15:23:00-06:00",
+        "date": "2022-07-26",
+        "olc": "85CPVW6M+",
+        "elevation": 3979.0,
+        "tavg": null,
+        "tmin": 14.3,
+        "tmax": 29.2,
+        "precipitation": 1.1,
+        "windspeed": 6.2,
+        "winddirection": null,
+        "presure": 1013.3,
+        "species": "Cantharellus roseocanus",
+        "location": "Devils Playground, Colorado 80809, USA",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0663694,
+          38.8624891
+        ]
+      }
+    }
+  ]
+}

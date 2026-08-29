@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "03cc63b5-aec3-472a-a793-d2fdfa7342e4",
+        "inat_id": 290406951,
+        "timestamp": "2025-06-08T11:42:19-06:00",
+        "date": "2025-06-08",
+        "olc": "85CMRJ45+",
+        "elevation": 3393.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 22.0,
+        "precipitation": 2.0,
+        "windspeed": 4.5,
+        "winddirection": null,
+        "presure": 1016.5,
+        "species": "Hygrophorus marzuolus",
+        "location": "Pike and San Isabel National Forests, Nathrop, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3922349362,
+          38.8069234959
+        ]
+      }
+    }
+  ]
+}

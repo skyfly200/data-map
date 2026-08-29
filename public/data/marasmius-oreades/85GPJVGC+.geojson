@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c60f903b-2139-4c3b-85f7-c87bfc1e5078",
+        "inat_id": 291235476,
+        "timestamp": "2025-06-06T18:31:31-06:00",
+        "date": "2025-06-06",
+        "olc": "85GPJVGC+",
+        "elevation": 1542.0,
+        "tavg": null,
+        "tmin": 10.6,
+        "tmax": 16.7,
+        "precipitation": 6.8,
+        "windspeed": 9.9,
+        "winddirection": null,
+        "presure": 1015.7,
+        "species": "Marasmius oreades",
+        "location": "CR-54G, Fort Collins, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1286018422,
+          40.6263291018
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "aa477786-f12c-4f10-a9f0-19fb786c09ce",
+        "inat_id": 243245951,
+        "timestamp": "2024-09-21T11:15:48-06:00",
+        "date": "2024-09-21",
+        "olc": "85FMMV3W+",
+        "elevation": 2830.0,
+        "tavg": null,
+        "tmin": 2.0,
+        "tmax": 15.0,
+        "precipitation": 3.9,
+        "windspeed": 21.9,
+        "winddirection": null,
+        "presure": 1029.8,
+        "species": "Armillaria solidipes",
+        "location": "White River National Forest, Silverthorne, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.1040721667,
+          39.6537366667
+        ]
+      }
+    }
+  ]
+}

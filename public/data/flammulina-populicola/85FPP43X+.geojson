@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9a7a3355-b35b-4107-b714-45b7418f62f7",
+        "inat_id": 14397299,
+        "timestamp": "2015-07-21T11:24:00-06:00",
+        "date": "2015-07-21",
+        "olc": "85FPP43X+",
+        "elevation": 3161.0,
+        "tavg": null,
+        "tmin": 7.0,
+        "tmax": 12.0,
+        "precipitation": null,
+        "windspeed": 22.5,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "Clear Creek County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8517913266,
+          39.7032727743
+        ]
+      }
+    }
+  ]
+}

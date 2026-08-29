@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a60c5a35-126e-44b1-9349-b09a0497a576",
+        "inat_id": 87632051,
+        "timestamp": "2021-07-18T14:18:45-06:00",
+        "date": "2021-07-18",
+        "olc": "857PR52C+",
+        "elevation": 2808.0,
+        "tavg": null,
+        "tmin": 17.8,
+        "tmax": 28.9,
+        "precipitation": null,
+        "windspeed": 14.4,
+        "winddirection": null,
+        "presure": 1017.2,
+        "species": "Turbinellus floccosus",
+        "location": "Santa Fe National Forest, Santa Fe, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.827948251,
+          35.8006713052
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5e0380db-8a37-43f3-879c-3ce4c6549c12",
+        "inat_id": 239057836,
+        "timestamp": "2024-08-29T12:54:00-06:00",
+        "date": "2024-08-29",
+        "olc": "857PR623+",
+        "elevation": 3319.0,
+        "tavg": null,
+        "tmin": 15.6,
+        "tmax": 28.9,
+        "precipitation": 0.0,
+        "windspeed": 12.1,
+        "winddirection": null,
+        "presure": 1014.3,
+        "species": "Albatrellopsis confluens",
+        "location": "Santa Fe County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7972416667,
+          35.8017833333
+        ]
+      }
+    }
+  ]
+}

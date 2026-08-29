@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "dc69a6d5-afda-4412-8fd5-2e0489c9d245",
+        "inat_id": 305020784,
+        "timestamp": "2025-08-09T10:03:04-06:00",
+        "date": "2025-08-09",
+        "olc": "85FMG87X+",
+        "elevation": 3055.0,
+        "tavg": null,
+        "tmin": 12.2,
+        "tmax": 29.4,
+        "precipitation": 0.0,
+        "windspeed": 11.1,
+        "winddirection": null,
+        "presure": 1013.3,
+        "species": "Fomitopsis schrenkii",
+        "location": "Nolan Lake Trail, Eagle, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.6516116667,
+          39.5129883333
+        ]
+      }
+    }
+  ]
+}

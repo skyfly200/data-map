@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "46b2b726-727e-474a-b644-dc75d47d6c07",
+        "inat_id": 323994950,
+        "timestamp": "2025-10-29T14:30:35-06:00",
+        "date": "2025-10-29",
+        "olc": "85FP7V9W+",
+        "elevation": 2752.0,
+        "tavg": null,
+        "tmin": -5.0,
+        "tmax": 17.0,
+        "precipitation": 0.0,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1026.9,
+        "species": "Fomitopsis schrenkii",
+        "location": "Pike and San Isabel National Forests, Sedalia, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1047138333,
+          39.2681716667
+        ]
+      }
+    }
+  ]
+}

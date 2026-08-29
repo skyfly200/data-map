@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "38a15485-6513-4061-9750-6c8cc870ed5e",
+        "inat_id": 175658526,
+        "timestamp": "2023-07-29T11:19:49-06:00",
+        "date": "2023-07-29",
+        "olc": "85MRVF33+",
+        "elevation": 2005.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 24.4,
+        "precipitation": 10.4,
+        "windspeed": 10.1,
+        "winddirection": null,
+        "presure": 1021.1,
+        "species": "Fomitopsis schrenkii",
+        "location": "Custer State Park, Custer, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.545805,
+          43.85267
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2cafa42d-271d-47de-bf5d-bd8e20dc9cce",
+        "inat_id": 80065027,
+        "timestamp": "2021-05-21T11:58:09-05:00",
+        "date": "2021-05-21",
+        "olc": "85MRVF33+",
+        "elevation": 1996.0,
+        "tavg": null,
+        "tmin": 7.8,
+        "tmax": 10.6,
+        "precipitation": null,
+        "windspeed": 12.7,
+        "winddirection": null,
+        "presure": 1011.4,
+        "species": "Fomitopsis schrenkii",
+        "location": "Custer State Park, Custer, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.54605,
+          43.8526716667
+        ]
+      }
+    }
+  ]
+}

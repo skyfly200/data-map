@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "843fdf9a-7ff7-4df3-8552-21f616deb0c4",
+        "inat_id": 221706697,
+        "timestamp": "2024-06-09T11:34:16-06:00",
+        "date": "2024-06-09",
+        "olc": "85FPV8WV+",
+        "elevation": 2915.0,
+        "tavg": null,
+        "tmin": -2.3,
+        "tmax": 10.2,
+        "precipitation": 2.3,
+        "windspeed": 8.8,
+        "winddirection": null,
+        "presure": 1017.9,
+        "species": "Hygrophorus marzuolus",
+        "location": "South Boulder Creek Trail, Black Hawk, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6571883333,
+          39.8966216667
+        ]
+      }
+    }
+  ]
+}

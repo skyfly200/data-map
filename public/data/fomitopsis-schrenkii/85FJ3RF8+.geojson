@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ad715f71-e4ab-49ff-b15f-4c811d0b74da",
+        "inat_id": 372492375,
+        "timestamp": "2026-06-16T11:43:06-06:00",
+        "date": "2026-06-16",
+        "olc": "85FJ3RF8+",
+        "elevation": 2432.0,
+        "tavg": null,
+        "tmin": 5.6,
+        "tmax": 26.1,
+        "precipitation": 0.0,
+        "windspeed": 6.6,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Marble, CO 81623, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1845507249,
+          39.0728652041
+        ]
+      }
+    }
+  ]
+}

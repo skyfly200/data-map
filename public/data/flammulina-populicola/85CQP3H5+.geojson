@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "579a0b45-daec-4ff5-a8b8-a05934efa3cf",
+        "inat_id": 309829214,
+        "timestamp": "2025-08-28T14:01:38-06:00",
+        "date": "2025-08-28",
+        "olc": "85CQP3H5+",
+        "elevation": 2981.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 23.0,
+        "precipitation": 5.1,
+        "windspeed": 9.0,
+        "winddirection": null,
+        "presure": 1026.2,
+        "species": "Flammulina populicola",
+        "location": "Victor, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.942445,
+          38.7294666667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c2359f86-1392-4cb8-a47d-3d67ab649240",
+        "inat_id": 309828636,
+        "timestamp": "2025-08-28T13:58:16-06:00",
+        "date": "2025-08-28",
+        "olc": "85CQP3H5+",
+        "elevation": 2981.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 23.0,
+        "precipitation": 5.1,
+        "windspeed": 9.0,
+        "winddirection": null,
+        "presure": 1026.2,
+        "species": "Flammulina populicola",
+        "location": "Victor, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9421166667,
+          38.72948
+        ]
+      }
+    }
+  ]
+}

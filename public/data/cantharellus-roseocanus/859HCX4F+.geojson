@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e574e635-c421-4536-a811-1c24cf3077d1",
+        "inat_id": 238843612,
+        "timestamp": "2024-08-11T11:34:21-06:00",
+        "date": "2024-08-11",
+        "olc": "859HCX4F+",
+        "elevation": 3400.0,
+        "tavg": null,
+        "tmin": 13.9,
+        "tmax": 25.0,
+        "precipitation": null,
+        "windspeed": 7.1,
+        "winddirection": null,
+        "presure": 1019.4,
+        "species": "Cantharellus roseocanus",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.0260765653,
+          37.4054082903
+        ]
+      }
+    }
+  ]
+}

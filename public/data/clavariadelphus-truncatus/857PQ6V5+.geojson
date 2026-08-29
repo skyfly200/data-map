@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ba2ec1ed-11c0-4c94-86c0-10f7b6392c27",
+        "inat_id": 310911446,
+        "timestamp": "2025-09-01T16:08:12-06:00",
+        "date": "2025-09-01",
+        "olc": "857PQ6V5+",
+        "elevation": 3365.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 27.0,
+        "precipitation": 0.0,
+        "windspeed": 12.5,
+        "winddirection": null,
+        "presure": 1029.0,
+        "species": "Clavariadelphus truncatus",
+        "location": "Tererro, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7922512666,
+          35.7944965922
+        ]
+      }
+    }
+  ]
+}

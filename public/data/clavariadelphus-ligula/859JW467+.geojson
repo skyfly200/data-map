@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2f7dae83-9216-4f3f-a793-21191933ef4e",
+        "inat_id": 236389860,
+        "timestamp": "2024-08-17T13:54:23-06:00",
+        "date": "2024-08-17",
+        "olc": "859JW467+",
+        "elevation": 2871.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 23.0,
+        "precipitation": 4.9,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1034.5,
+        "species": "Clavariadelphus ligula",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8862533333,
+          37.9111216667
+        ]
+      }
+    }
+  ]
+}

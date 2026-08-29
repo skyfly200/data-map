@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "291f2fac-539d-48e0-af0b-f30bd6e62c22",
+        "inat_id": 232767983,
+        "timestamp": "2024-07-29T12:33:45-06:00",
+        "date": "2024-07-29",
+        "olc": "859M66VJ+",
+        "elevation": 2524.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 16.0,
+        "precipitation": 0.3,
+        "windspeed": 17.4,
+        "winddirection": null,
+        "presure": 1039.8,
+        "species": "Hypomyces lactifluorum",
+        "location": "San Juan National Forest - Headquarters, Pagosa Springs, CO, US",
+        "num_identification_agreements": 4
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.7694424,
+          37.2435471
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9017a102-fbca-4df6-b970-c277d6734859",
+        "inat_id": 93936625,
+        "timestamp": "2021-09-04T11:44:00-06:00",
+        "date": "2021-09-04",
+        "olc": "85FM5WX7+",
+        "elevation": 3238.0,
+        "tavg": null,
+        "tmin": 1.7,
+        "tmax": 18.9,
+        "precipitation": 0.0,
+        "windspeed": 8.7,
+        "winddirection": null,
+        "presure": 1017.5,
+        "species": "Albatrellus ovinus",
+        "location": "Park, Colorado, United States",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.0855555556,
+          39.1990972222
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b2ffcf67-c407-41ca-a271-49e3405ae825",
+        "inat_id": 183709924,
+        "timestamp": "2023-09-17T11:33:32-06:00",
+        "date": "2023-09-17",
+        "olc": "85FP3X9M+",
+        "elevation": 2820.0,
+        "tavg": null,
+        "tmin": 4.5,
+        "tmax": 24.6,
+        "precipitation": 0.0,
+        "windspeed": 13.6,
+        "winddirection": null,
+        "presure": 1018.7,
+        "species": "Clavariadelphus ligula",
+        "location": "Colorado Springs, CO 80921, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0164447352,
+          39.0680986137
+        ]
+      }
+    }
+  ]
+}

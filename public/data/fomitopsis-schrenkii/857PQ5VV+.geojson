@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7dcb4d5d-38bb-47b4-80e5-7285beee15e2",
+        "inat_id": 224231864,
+        "timestamp": "2024-06-20T19:13:18-06:00",
+        "date": "2024-06-20",
+        "olc": "857PQ5VV+",
+        "elevation": 3124.0,
+        "tavg": null,
+        "tmin": 18.3,
+        "tmax": 28.3,
+        "precipitation": null,
+        "windspeed": 33.8,
+        "winddirection": null,
+        "presure": 1015.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "San Ildefonso Pueblo, NM 87506, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8058416667,
+          35.7942888889
+        ]
+      }
+    }
+  ]
+}

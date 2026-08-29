@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a1ff360d-b1e5-452b-9a40-b9b4b99d6e68",
+        "inat_id": 134095712,
+        "timestamp": "2022-08-28",
+        "date": "2022-08-28",
+        "olc": "85FM7HMF+",
+        "elevation": 3184.0,
+        "tavg": null,
+        "tmin": 2.8,
+        "tmax": 17.8,
+        "precipitation": null,
+        "windspeed": 10.1,
+        "winddirection": null,
+        "presure": 1012.7,
+        "species": "Hygrophorus chrysodon",
+        "location": "Colorado. Lake Co., San Isabel National Forest, CR 9, Turquoise Lake Rd, near Bear Creek.",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.4268,
+          39.2848
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7d21b4de-7e5c-4b61-b67d-ec85a4b02e6d",
+        "inat_id": 235032886,
+        "timestamp": "2024-08-10T12:47:00-06:00",
+        "date": "2024-08-10",
+        "olc": "85FMG8PC+",
+        "elevation": 3298.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 27.8,
+        "precipitation": 2.7,
+        "windspeed": 12.1,
+        "winddirection": null,
+        "presure": 1017.0,
+        "species": "Clavariadelphus ligula",
+        "location": "Porphyry Mountain, Colorado 81632, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.6786461,
+          39.5358185
+        ]
+      }
+    }
+  ]
+}

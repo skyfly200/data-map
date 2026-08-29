@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b9252c4f-716a-42fe-b39e-a66ce2d22ff8",
+        "inat_id": 235776242,
+        "timestamp": "2024-08-14T10:45:00-06:00",
+        "date": "2024-08-14",
+        "olc": "859JW4C2+",
+        "elevation": 2536.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 20.0,
+        "precipitation": 0.1,
+        "windspeed": 7.9,
+        "winddirection": null,
+        "presure": 1032.4,
+        "species": "Flammulina populicola",
+        "location": "San Miguel River South Fork Preserve, 37 921612 #107.899833, Mountain Village, CO 81435, USA",
+        "num_identification_agreements": 5
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8998781,
+          37.9216631
+        ]
+      }
+    }
+  ]
+}

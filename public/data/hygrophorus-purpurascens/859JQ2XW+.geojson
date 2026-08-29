@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "804b74ea-6939-427f-88e6-1272aaa955a9",
+        "inat_id": 131917607,
+        "timestamp": "2022-08-19T13:54:48-06:00",
+        "date": "2022-08-19",
+        "olc": "859JQ2XW+",
+        "elevation": 3256.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 17.0,
+        "precipitation": 7.5,
+        "windspeed": 3.4,
+        "winddirection": null,
+        "presure": 1030.0,
+        "species": "Hygrophorus purpurascens",
+        "location": "Dolores, CO 81323, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9525972222,
+          37.7977333333
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "21174c47-3359-432b-bfc0-3d73ac8f3443",
+        "inat_id": 131977553,
+        "timestamp": "2022-08-22T17:10:34-06:00",
+        "date": "2022-08-22",
+        "olc": "858P4HJH+",
+        "elevation": 2987.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 18.2,
+        "precipitation": 16.0,
+        "windspeed": 3.4,
+        "winddirection": null,
+        "presure": 1030.8,
+        "species": "Floccularia albolanaripes",
+        "location": "Vadito, NM 87579, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4211202997,
+          36.1312151997
+        ]
+      }
+    }
+  ]
+}

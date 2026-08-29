@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a920c592-87e4-48bf-bf55-378161708f98",
+        "inat_id": 392088592,
+        "timestamp": "2026-08-15T11:28:37-06:00",
+        "date": "2026-08-15",
+        "olc": "859JW5PQ+",
+        "elevation": 2692.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 20.0,
+        "precipitation": 1.4,
+        "windspeed": 3.7,
+        "winddirection": null,
+        "presure": null,
+        "species": "Tremella mesenterica",
+        "location": "Courthouse, Telluride, CO 81435, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8122851998,
+          37.9374922219
+        ]
+      }
+    }
+  ]
+}

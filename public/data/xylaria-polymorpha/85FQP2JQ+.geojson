@@ -1,0 +1,285 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6138d4b0-9e46-4ea6-9407-a2156c6160c5",
+        "inat_id": 188563097,
+        "timestamp": "2023-09-21T11:32:30-06:00",
+        "date": "2023-09-21",
+        "olc": "85FQP2JQ+",
+        "elevation": 1646.0,
+        "tavg": null,
+        "tmin": 12.8,
+        "tmax": 24.9,
+        "precipitation": 0.0,
+        "windspeed": 9.9,
+        "winddirection": null,
+        "presure": 1009.5,
+        "species": "Xylaria polymorpha",
+        "location": "Denver Botanic Gardens, Denver, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.962295,
+          39.7319916667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4911ba72-e767-4185-b3e2-7f71811b2c6a",
+        "inat_id": 184046377,
+        "timestamp": "2023-09-16T14:22:37-06:00",
+        "date": "2023-09-16",
+        "olc": "85FQP2JQ+",
+        "elevation": 1646.0,
+        "tavg": null,
+        "tmin": 9.2,
+        "tmax": 22.8,
+        "precipitation": 0.0,
+        "windspeed": 7.1,
+        "winddirection": null,
+        "presure": 1021.0,
+        "species": "Xylaria polymorpha",
+        "location": "Denver Botanic Gardens, Denver, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9622416667,
+          39.731955
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4778cb53-e1ff-402a-ad76-f024f869aead",
+        "inat_id": 180295730,
+        "timestamp": "2023-08-26T10:52:11-06:00",
+        "date": "2023-08-26",
+        "olc": "85FQP2JQ+",
+        "elevation": 1646.0,
+        "tavg": null,
+        "tmin": 13.7,
+        "tmax": 25.4,
+        "precipitation": 0.0,
+        "windspeed": 11.2,
+        "winddirection": null,
+        "presure": 1020.6,
+        "species": "Xylaria polymorpha",
+        "location": "Denver Botanic Gardens, Denver, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.962272464,
+          39.7319826216
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ec591eb0-009f-459a-99b6-564ba4da70c8",
+        "inat_id": 167480273,
+        "timestamp": "2023-06-14T10:38:39-06:00",
+        "date": "2023-06-14",
+        "olc": "85FQP2JQ+",
+        "elevation": 1649.0,
+        "tavg": null,
+        "tmin": 9.8,
+        "tmax": 24.5,
+        "precipitation": 0.3,
+        "windspeed": 10.5,
+        "winddirection": null,
+        "presure": 1008.7,
+        "species": "Xylaria polymorpha",
+        "location": "Cheesman Park, Denver, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9615423997,
+          39.7311741997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "12dcca9b-c441-46d8-959f-d2dded0bff9d",
+        "inat_id": 146243888,
+        "timestamp": "2022-08-14T12:10:33-06:00",
+        "date": "2022-08-14",
+        "olc": "85FQP2JQ+",
+        "elevation": 1646.0,
+        "tavg": null,
+        "tmin": 18.7,
+        "tmax": 31.8,
+        "precipitation": 0.0,
+        "windspeed": 12.0,
+        "winddirection": null,
+        "presure": 1013.2,
+        "species": "Xylaria polymorpha",
+        "location": "Denver Botanic Gardens, Denver, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9623466667,
+          39.7321083333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "aeead172-a5d4-48ab-b525-ab87bb5f7264",
+        "inat_id": 131047522,
+        "timestamp": "2022-08-15T13:53:37-06:00",
+        "date": "2022-08-15",
+        "olc": "85FQP2JQ+",
+        "elevation": 1646.0,
+        "tavg": null,
+        "tmin": 18.1,
+        "tmax": 28.6,
+        "precipitation": 3.3,
+        "windspeed": 14.7,
+        "winddirection": null,
+        "presure": 1013.8,
+        "species": "Xylaria polymorpha",
+        "location": "Denver Botanic Gardens, Denver, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9623174221,
+          39.7319389042
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "313f0e88-402f-4b12-8ca8-5200bd006591",
+        "inat_id": 101737794,
+        "timestamp": "2021-11-09T10:20:39-05:00",
+        "date": "2021-11-09",
+        "olc": "85FQP2JQ+",
+        "elevation": 1646.0,
+        "tavg": null,
+        "tmin": -0.1,
+        "tmax": 14.4,
+        "precipitation": null,
+        "windspeed": 10.3,
+        "winddirection": null,
+        "presure": 1018.1,
+        "species": "Xylaria polymorpha",
+        "location": "Denver Botanic Gardens, Denver, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9623033333,
+          39.7319633333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "22d1f457-b584-4d7f-bedd-e561759a9fde",
+        "inat_id": 95072609,
+        "timestamp": "2021-09-16T12:48:19-06:00",
+        "date": "2021-09-16",
+        "olc": "85FQP2JQ+",
+        "elevation": 1646.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 31.4,
+        "precipitation": null,
+        "windspeed": 12.0,
+        "winddirection": null,
+        "presure": 1006.2,
+        "species": "Xylaria polymorpha",
+        "location": "Denver Botanic Gardens, Denver, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9621264122,
+          39.732022561
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8db9cc86-ba0b-459f-bae6-6460ea9155db",
+        "inat_id": 58451110,
+        "timestamp": "2020-09-03T14:42:29-06:00",
+        "date": "2020-09-03",
+        "olc": "85FQP2JQ+",
+        "elevation": 1646.0,
+        "tavg": null,
+        "tmin": 17.6,
+        "tmax": 29.5,
+        "precipitation": null,
+        "windspeed": 12.0,
+        "winddirection": null,
+        "presure": 1015.0,
+        "species": "Xylaria polymorpha",
+        "location": "Cheesman Park, Denver, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.96226073,
+          39.73193611
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "de40f6d7-23a9-47f8-a577-f8210a967394",
+        "inat_id": 13177982,
+        "timestamp": "2018-05-17T11:57:55-06:00",
+        "date": "2018-05-17",
+        "olc": "85FQP2JQ+",
+        "elevation": 1649.0,
+        "tavg": null,
+        "tmin": 12.6,
+        "tmax": 29.5,
+        "precipitation": null,
+        "windspeed": 15.1,
+        "winddirection": null,
+        "presure": 1004.3,
+        "species": "Xylaria polymorpha",
+        "location": "999 N Gaylord St, Denver, CO 80206, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9615936279,
+          39.7311477661
+        ]
+      }
+    }
+  ]
+}

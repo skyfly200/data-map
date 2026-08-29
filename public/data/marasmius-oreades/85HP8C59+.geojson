@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8c338726-ac39-405a-be50-9a7b5394a5f9",
+        "inat_id": 83806896,
+        "timestamp": "2021-06-18T20:17:58-06:00",
+        "date": "2021-06-18",
+        "olc": "85HP8C59+",
+        "elevation": 2194.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Marasmius oreades",
+        "location": "E Custer St, Laramie, WY, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5806110137,
+          41.3083474346
+        ]
+      }
+    }
+  ]
+}

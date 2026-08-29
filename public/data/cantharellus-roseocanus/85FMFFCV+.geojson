@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "da7832cc-1386-43e4-aa71-c81da99df4b0",
+        "inat_id": 246144844,
+        "timestamp": "2024-09-28T11:59:13-06:00",
+        "date": "2024-09-28",
+        "olc": "85FMFFCV+",
+        "elevation": 3121.0,
+        "tavg": null,
+        "tmin": 1.1,
+        "tmax": 21.1,
+        "precipitation": 0.0,
+        "windspeed": 6.0,
+        "winddirection": null,
+        "presure": 1021.4,
+        "species": "Cantharellus roseocanus",
+        "location": "Gilman, CO 81645, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.506890282,
+          39.4721648408
+        ]
+      }
+    }
+  ]
+}

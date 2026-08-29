@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "b54eb8e2-b66d-4112-bc2b-10fe04448d1c",
+        "inat_id": 16213939,
+        "timestamp": "2018-08-25T16:50:41-06:00",
+        "date": "2018-08-25",
+        "olc": "859PX8QR+",
+        "elevation": 2754.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 25.0,
+        "precipitation": null,
+        "windspeed": 16.8,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Unnamed Road, Westcliffe, CO 81252, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6583932415,
+          37.9886947906
+        ]
+      }
+    }
+  ]
+}

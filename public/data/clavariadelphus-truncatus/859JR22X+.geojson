@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8a1e4471-8c3a-4ec7-999a-07b8ba4b45db",
+        "inat_id": 132483625,
+        "timestamp": "2022-08-21T16:51:45-06:00",
+        "date": "2022-08-21",
+        "olc": "859JR22X+",
+        "elevation": 3283.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 17.0,
+        "precipitation": 1.7,
+        "windspeed": 4.5,
+        "winddirection": null,
+        "presure": 1031.4,
+        "species": "Clavariadelphus truncatus",
+        "location": "Dolores, CO 81323, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.952262,
+          37.8011639722
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2f76cebd-3ba3-4f55-a122-f7a95f962600",
+        "inat_id": 133299528,
+        "timestamp": "2022-08-18T11:15:20-06:00",
+        "date": "2022-08-18",
+        "olc": "859JV3WV+",
+        "elevation": 2572.0,
+        "tavg": null,
+        "tmin": 9.0,
+        "tmax": 23.0,
+        "precipitation": 0.6,
+        "windspeed": 6.6,
+        "winddirection": null,
+        "presure": 1032.2,
+        "species": "Auriscalpium vulgare",
+        "location": "Mountain Village, CO 81435, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.905175,
+          37.8956944444
+        ]
+      }
+    }
+  ]
+}

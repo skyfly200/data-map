@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "a1566b6c-9dcd-40e4-84b5-a51c0f633a57",
+        "inat_id": 292504985,
+        "timestamp": "2025-06-24T17:17:53-06:00",
+        "date": "2025-06-24",
+        "olc": "85FJ22M9+",
+        "elevation": 3102.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 35.1,
+        "precipitation": 0.0,
+        "windspeed": 14.5,
+        "winddirection": null,
+        "presure": 1018.2,
+        "species": "Fomitopsis schrenkii",
+        "location": "Cedaredge, CO 81413, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9816027778,
+          39.032825
+        ]
+      }
+    }
+  ]
+}

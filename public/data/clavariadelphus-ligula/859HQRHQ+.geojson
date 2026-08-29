@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0143f2e1-efc6-4be9-a515-59ab00c30a55",
+        "inat_id": 129240431,
+        "timestamp": "2022-08-02T19:33:17-06:00",
+        "date": "2022-08-02",
+        "olc": "859HQRHQ+",
+        "elevation": 2734.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 22.0,
+        "precipitation": 1.1,
+        "windspeed": 7.4,
+        "winddirection": null,
+        "presure": 1032.4,
+        "species": "Clavariadelphus ligula",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.1610957999,
+          37.7786412632
+        ]
+      }
+    }
+  ]
+}

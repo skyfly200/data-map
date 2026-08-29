@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5003f1d8-f4ef-4bc5-a6e7-74774e80273c",
+        "inat_id": 247250228,
+        "timestamp": "2024-10-11T10:20:00-06:00",
+        "date": "2024-10-11",
+        "olc": "858PFGV3+",
+        "elevation": 3626.0,
+        "tavg": null,
+        "tmin": 1.7,
+        "tmax": 25.0,
+        "precipitation": 0.0,
+        "windspeed": 9.8,
+        "winddirection": null,
+        "presure": 1026.1,
+        "species": "Trichaptum abietinum",
+        "location": "New Mexico, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4954118534,
+          36.4947389934
+        ]
+      }
+    }
+  ]
+}

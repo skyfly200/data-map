@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "abae1ce8-84e9-4661-be04-a3fc80342860",
+        "inat_id": 228910154,
+        "timestamp": "2024-07-03T20:39:59-06:00",
+        "date": "2024-07-03",
+        "olc": "85CJF457+",
+        "elevation": 1802.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 31.7,
+        "precipitation": 0.0,
+        "windspeed": 11.3,
+        "winddirection": null,
+        "presure": 1012.7,
+        "species": "Marasmius oreades",
+        "location": "Chipeta Rd, Montrose, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.885095,
+          38.4592783333
+        ]
+      }
+    }
+  ]
+}

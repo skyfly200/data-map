@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "004fe039-a37c-45e0-ba9d-9d8205f333b4",
+        "inat_id": 350971432,
+        "timestamp": "2025-06-04T07:58:34-06:00",
+        "date": "2025-06-04",
+        "olc": "85GPHV34+",
+        "elevation": 1593.0,
+        "tavg": null,
+        "tmin": 10.6,
+        "tmax": 22.8,
+        "precipitation": 1.5,
+        "windspeed": 10.5,
+        "winddirection": null,
+        "presure": 1013.7,
+        "species": "Marasmius oreades",
+        "location": "Foothills Trail, Fort Collins, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1438305,
+          40.5536083333
+        ]
+      }
+    }
+  ]
+}

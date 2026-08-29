@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ea410a96-ca91-4526-b458-4fb0e2f34f0c",
+        "inat_id": 309339886,
+        "timestamp": "2025-08-26T07:48:37-06:00",
+        "date": "2025-08-26",
+        "olc": "85FQP2HV+",
+        "elevation": 1639.0,
+        "tavg": null,
+        "tmin": 13.8,
+        "tmax": 22.9,
+        "precipitation": 3.5,
+        "windspeed": 11.0,
+        "winddirection": null,
+        "presure": 1019.9,
+        "species": "Xylaria polymorpha",
+        "location": "E Seventh Avenue Pkwy, Denver, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9566333333,
+          39.7276533333
+        ]
+      }
+    }
+  ]
+}

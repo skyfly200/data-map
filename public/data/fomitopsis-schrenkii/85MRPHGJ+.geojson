@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "407e2a80-f99a-46f4-80f0-0a83703b5038",
+        "inat_id": 307380445,
+        "timestamp": "2025-08-18T10:47:04-06:00",
+        "date": "2025-08-18",
+        "olc": "85MRPHGJ+",
+        "elevation": 1359.0,
+        "tavg": null,
+        "tmin": 12.8,
+        "tmax": 29.4,
+        "precipitation": 0.0,
+        "windspeed": 9.8,
+        "winddirection": null,
+        "presure": 1016.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Custer County, US-SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.41877048,
+          43.72647316
+        ]
+      }
+    }
+  ]
+}

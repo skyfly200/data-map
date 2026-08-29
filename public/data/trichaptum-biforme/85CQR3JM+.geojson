@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "48d4cc36-7501-45ff-bbde-00a1affa1598",
+        "inat_id": 75501541,
+        "timestamp": "2021-04-27T18:48:00-06:00",
+        "date": "2021-04-27",
+        "olc": "85CQR3JM+",
+        "elevation": 2215.0,
+        "tavg": null,
+        "tmin": 5.0,
+        "tmax": 16.7,
+        "precipitation": 0.0,
+        "windspeed": 24.8,
+        "winddirection": null,
+        "presure": 1003.0,
+        "species": "Trichaptum biforme",
+        "location": "El Paso County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9151611111,
+          38.8304861111
+        ]
+      }
+    }
+  ]
+}

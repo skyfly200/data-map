@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8ddd8e0e-cd3c-4e3a-a7d1-4200e967936c",
+        "inat_id": 316772176,
+        "timestamp": "2025-09-20T10:42:54-06:00",
+        "date": "2025-09-20",
+        "olc": "85MRVC4F+",
+        "elevation": 1725.0,
+        "tavg": null,
+        "tmin": 5.0,
+        "tmax": 22.0,
+        "precipitation": 0.0,
+        "windspeed": 6.7,
+        "winddirection": null,
+        "presure": 1019.8,
+        "species": "Fomitopsis schrenkii",
+        "location": "Black Hills, Custer, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.5765533333,
+          43.855675
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7e3904d4-0ef4-4424-9c55-10833b35095c",
+        "inat_id": 316771922,
+        "timestamp": "2025-09-20T10:38:16-06:00",
+        "date": "2025-09-20",
+        "olc": "85MRVC4F+",
+        "elevation": 1725.0,
+        "tavg": null,
+        "tmin": 5.0,
+        "tmax": 22.0,
+        "precipitation": 0.0,
+        "windspeed": 6.7,
+        "winddirection": null,
+        "presure": 1019.8,
+        "species": "Fomitopsis schrenkii",
+        "location": "Black Hills, Custer, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.5753633333,
+          43.8552866667
+        ]
+      }
+    }
+  ]
+}

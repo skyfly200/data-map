@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c3cd37e7-7004-4e2b-8763-a81b1302953e",
+        "inat_id": 273505566,
+        "timestamp": "2025-04-25T13:09:27-06:00",
+        "date": "2025-04-25",
+        "olc": "857MRFW9+",
+        "elevation": 2714.0,
+        "tavg": null,
+        "tmin": 7.7,
+        "tmax": 21.7,
+        "precipitation": 0.0,
+        "windspeed": 13.7,
+        "winddirection": null,
+        "presure": 1019.5,
+        "species": "Fomitopsis schrenkii",
+        "location": "Jemez Springs, NM 87025, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.5318395997,
+          35.8473500997
+        ]
+      }
+    }
+  ]
+}

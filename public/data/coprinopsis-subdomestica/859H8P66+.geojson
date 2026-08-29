@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "eef3336a-bcce-47fc-abf4-a8c286823e39",
+        "inat_id": 225746195,
+        "timestamp": "2023-08-15T08:09:00-06:00",
+        "date": "2023-08-15",
+        "olc": "859H8P66+",
+        "elevation": 2171.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 29.0,
+        "precipitation": 2.6,
+        "windspeed": 10.0,
+        "winddirection": null,
+        "presure": 1028.8,
+        "species": "Coprinopsis subdomestica",
+        "location": "Montezuma County, CO, USA",
+        "num_identification_agreements": 4
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.2887124745,
+          37.3109611159
+        ]
+      }
+    }
+  ]
+}

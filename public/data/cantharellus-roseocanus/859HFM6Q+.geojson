@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e1d3dce4-41ab-4500-867b-feb2d0715a55",
+        "inat_id": 307395455,
+        "timestamp": "2024-08-24T17:51:41-06:00",
+        "date": "2024-08-24",
+        "olc": "859HFM6Q+",
+        "elevation": 2352.0,
+        "tavg": null,
+        "tmin": 16.0,
+        "tmax": 25.0,
+        "precipitation": 25.0,
+        "windspeed": 15.0,
+        "winddirection": null,
+        "presure": 1024.9,
+        "species": "Cantharellus roseocanus",
+        "location": "Mancos, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.3122707686,
+          37.4604249932
+        ]
+      }
+    }
+  ]
+}

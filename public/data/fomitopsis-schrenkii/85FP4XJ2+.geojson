@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "91ea1c1a-f73a-4f47-a029-75924e3e1359",
+        "inat_id": 173780420,
+        "timestamp": "2023-07-14",
+        "date": "2023-07-14",
+        "olc": "85FP4XJ2+",
+        "elevation": 2546.0,
+        "tavg": null,
+        "tmin": 13.7,
+        "tmax": 26.8,
+        "precipitation": 1.5,
+        "windspeed": 17.5,
+        "winddirection": null,
+        "presure": 1012.4,
+        "species": "Fomitopsis schrenkii",
+        "location": "Colorado Springs",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0486627594,
+          39.1305325438
+        ]
+      }
+    }
+  ]
+}

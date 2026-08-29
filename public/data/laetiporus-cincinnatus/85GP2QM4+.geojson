@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "261e1261-07d9-42b1-a6b9-4eb11b3f7a85",
+        "inat_id": 57962685,
+        "timestamp": "2020-08-29T14:11:37-06:00",
+        "date": "2020-08-29",
+        "olc": "85GP2QM4+",
+        "elevation": 1620.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 26.0,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Laetiporus cincinnatus",
+        "location": "Noble Park, Boulder, CO 80301, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2429777778,
+          40.0333583333
+        ]
+      }
+    }
+  ]
+}

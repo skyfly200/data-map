@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "abc134a6-9852-4526-b299-2eda2d80bd7a",
+        "inat_id": 130067093,
+        "timestamp": "2022-08-07T20:39:59-06:00",
+        "date": "2022-08-07",
+        "olc": "85FMF7H9+",
+        "elevation": 2600.0,
+        "tavg": null,
+        "tmin": 12.8,
+        "tmax": 31.7,
+        "precipitation": 0.0,
+        "windspeed": 12.1,
+        "winddirection": null,
+        "presure": 1015.2,
+        "species": "Cantharellus roseocanus",
+        "location": "Gypsum, CO 81637, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.731842123,
+          39.4783819767
+        ]
+      }
+    }
+  ]
+}

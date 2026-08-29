@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "be0c0a14-d7e8-447d-b974-18bbff5b2304",
+        "inat_id": 130868036,
+        "timestamp": "2022-07-21",
+        "date": "2022-07-21",
+        "olc": "85FPM59Q+",
+        "elevation": 3250.0,
+        "tavg": null,
+        "tmin": 4.6,
+        "tmax": 16.2,
+        "precipitation": 3.6,
+        "windspeed": 7.5,
+        "winddirection": null,
+        "presure": 1021.2,
+        "species": "Floccularia fusca",
+        "location": "Colorado. Clear Creek Co., Arapahoe-Roosevelt National Forest, along Grizzly Gulch Rd., ca 1 mile from jct. with Stevens Gulch Rd.",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8116,
+          39.6688
+        ]
+      }
+    }
+  ]
+}

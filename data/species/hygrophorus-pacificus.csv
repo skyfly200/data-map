@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e9cdd83c-7703-476f-986a-15b313a11227,313706006,2025-09-13 12:42:00-06:00,2025-09-13,-105.79913333,35.79629444,857PQ6W2+,3238.0,,9.0,19.0,9.1,9.6,,1021.8,Hygrophorus pacificus,"Santa Fe, New Mexico, United States",2
+4f52aa77-28a6-4419-b04c-0c0824cc7bd7,236967295,2024-08-18 19:25:01-06:00,2024-08-18,-106.7962333333,37.484255,859MF6M3+,3328.0,,8.0,17.0,1.4,12.9,,1043.3,Hygrophorus pacificus,"Rio Grande National Forest, Creede, CO, US",5

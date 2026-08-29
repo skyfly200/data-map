@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c1961818-40c6-4d25-a9bb-1fff878828fb",
+        "inat_id": 301280784,
+        "timestamp": "2025-07-25T15:55:49-06:00",
+        "date": "2025-07-25",
+        "olc": "859MG5MW+",
+        "elevation": 2817.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 16.0,
+        "precipitation": 0.0,
+        "windspeed": 12.4,
+        "winddirection": null,
+        "presure": 1039.1,
+        "species": "Trichaptum abietinum",
+        "location": "Mineral County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.8026979707,
+          37.5338412906
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "915ca764-fdca-451d-a091-dfd7029625e4",
+        "inat_id": 91187713,
+        "timestamp": "2021-08-14T14:58:09-04:00",
+        "date": "2021-08-14",
+        "olc": "85FPW643+",
+        "elevation": 2766.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 28.3,
+        "precipitation": 0.0,
+        "windspeed": 7.2,
+        "winddirection": null,
+        "presure": 1033.2,
+        "species": "Hygrophorus pudorinus",
+        "location": "Grand County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.79521276,
+          39.90526538
+        ]
+      }
+    }
+  ]
+}

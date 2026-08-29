@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "398d30e1-66fe-4687-918c-50f52173f266",
+        "inat_id": 237737693,
+        "timestamp": "2024-08-17T09:49:00-06:00",
+        "date": "2024-08-17",
+        "olc": "859JV4PV+",
+        "elevation": 3349.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 23.0,
+        "precipitation": 4.9,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1034.5,
+        "species": "Hygrophorus agathosmoides",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8560043951,
+          37.8866767815
+        ]
+      }
+    }
+  ]
+}

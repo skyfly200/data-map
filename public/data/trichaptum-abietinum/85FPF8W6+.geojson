@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4147c85d-a4fa-4877-862a-d005d98ee201",
+        "inat_id": 308927605,
+        "timestamp": "2025-08-23T13:24:24-06:00",
+        "date": "2025-08-23",
+        "olc": "85FPF8W6+",
+        "elevation": 2899.0,
+        "tavg": null,
+        "tmin": 0.5,
+        "tmax": 14.1,
+        "precipitation": 3.4,
+        "windspeed": 10.2,
+        "winddirection": null,
+        "presure": 1024.6,
+        "species": "Trichaptum abietinum",
+        "location": "Park County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.6894462722,
+          39.4957740751
+        ]
+      }
+    }
+  ]
+}

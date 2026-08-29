@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "efa22465-6d0a-4ed1-a46a-9db8a1824f55",
+        "inat_id": 236642880,
+        "timestamp": "2024-08-18T18:02:00-06:00",
+        "date": "2024-08-18",
+        "olc": "85FJ53RX+",
+        "elevation": 2154.0,
+        "tavg": null,
+        "tmin": 13.9,
+        "tmax": 29.4,
+        "precipitation": null,
+        "windspeed": 11.4,
+        "winddirection": null,
+        "presure": 1019.0,
+        "species": "Hydnum repandum",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.901785827,
+          39.1915060036
+        ]
+      }
+    }
+  ]
+}

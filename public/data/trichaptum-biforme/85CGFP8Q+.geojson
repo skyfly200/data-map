@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f80cc59a-5b20-4a0d-8ccf-c795edac1902",
+        "inat_id": 132693611,
+        "timestamp": "2022-08-27T10:47:48-06:00",
+        "date": "2022-08-27",
+        "olc": "85CGFP8Q+",
+        "elevation": 3137.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Trichaptum biforme",
+        "location": "Moab, UT 84532, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -109.2601916667,
+          38.466025
+        ]
+      }
+    }
+  ]
+}

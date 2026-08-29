@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "27b07c64-c4e5-4734-b118-69101df6e373",
+        "inat_id": 235234277,
+        "timestamp": "2024-08-11T17:49:32-06:00",
+        "date": "2024-08-11",
+        "olc": "85FQM36C+",
+        "elevation": 1671.0,
+        "tavg": null,
+        "tmin": 14.4,
+        "tmax": 29.4,
+        "precipitation": 0.0,
+        "windspeed": 15.0,
+        "winddirection": null,
+        "presure": 1015.9,
+        "species": "Marasmius oreades",
+        "location": "Denver",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.928604126,
+          39.6622924805
+        ]
+      }
+    }
+  ]
+}

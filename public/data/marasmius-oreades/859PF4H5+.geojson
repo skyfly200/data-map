@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7a2710e2-464a-41a3-8f95-468f1963fce0",
+        "inat_id": 16212709,
+        "timestamp": "2018-08-24T17:22:50-06:00",
+        "date": "2018-08-24",
+        "olc": "859PF4H5+",
+        "elevation": 2304.0,
+        "tavg": null,
+        "tmin": 2.8,
+        "tmax": 27.2,
+        "precipitation": 0.0,
+        "windspeed": 5.8,
+        "winddirection": null,
+        "presure": 1015.9,
+        "species": "Marasmius oreades",
+        "location": "201 Calle Buena, Alamosa, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.89073,
+          37.4784283333
+        ]
+      }
+    }
+  ]
+}

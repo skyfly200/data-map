@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "7ce2a5fc-8771-4639-a86a-c781185d7723",
+        "inat_id": 175882289,
+        "timestamp": "2023-06-26T14:42:47-06:00",
+        "date": "2023-06-26",
+        "olc": "85JP7G56+",
+        "elevation": 2297.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hygrophorus chrysodon",
+        "location": "Medicine Bow National Forest, Albany County, WY, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4877383333,
+          42.2583383333
+        ]
+      }
+    }
+  ]
+}

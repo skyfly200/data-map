@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f29bb145-28fd-48c5-9b3b-d650ea837cb1",
+        "inat_id": 227316340,
+        "timestamp": "2024-07-04T16:33:53-06:00",
+        "date": "2024-07-04",
+        "olc": "85FJ6WJ3+",
+        "elevation": 2997.0,
+        "tavg": null,
+        "tmin": 4.4,
+        "tmax": 23.3,
+        "precipitation": 0.0,
+        "windspeed": 10.2,
+        "winddirection": null,
+        "presure": 1017.0,
+        "species": "Hygrophorus subalpinus",
+        "location": "Snowmass, CO 81654, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.0955,
+          39.2311388889
+        ]
+      }
+    }
+  ]
+}

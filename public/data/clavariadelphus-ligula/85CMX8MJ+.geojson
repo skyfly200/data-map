@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "da79aaca-b7ab-4350-8729-b3a7c3c98ce0",
+        "inat_id": 319029647,
+        "timestamp": "2025-10-05T15:27:13-06:00",
+        "date": "2025-10-05",
+        "olc": "85CMX8MJ+",
+        "elevation": 3362.0,
+        "tavg": null,
+        "tmin": -2.0,
+        "tmax": 17.0,
+        "precipitation": 1.6,
+        "windspeed": 9.7,
+        "winddirection": null,
+        "presure": 1017.4,
+        "species": "Clavariadelphus ligula",
+        "location": "Gunnison County, US-CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.6697587413,
+          38.9832146005
+        ]
+      }
+    }
+  ]
+}

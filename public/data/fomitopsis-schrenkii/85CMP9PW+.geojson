@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "1d58c11c-6f45-45e4-87a0-84d3a2a9b106",
+        "inat_id": 300812957,
+        "timestamp": "2025-07-24T13:23:35-06:00",
+        "date": "2025-07-24",
+        "olc": "85CMP9PW+",
+        "elevation": 3070.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 19.0,
+        "precipitation": 12.7,
+        "windspeed": 2.8,
+        "winddirection": null,
+        "presure": 1022.1,
+        "species": "Fomitopsis schrenkii",
+        "location": "Iron Placer, Almont, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.60322,
+          38.7360633333
+        ]
+      }
+    }
+  ]
+}

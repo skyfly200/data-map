@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "43c61307-25b8-46dc-a875-15623045e413",
+        "inat_id": 182598423,
+        "timestamp": "2023-09-09T17:16:17-06:00",
+        "date": "2023-09-09",
+        "olc": "85GP2C6H+",
+        "elevation": 3061.0,
+        "tavg": null,
+        "tmin": 2.2,
+        "tmax": 13.4,
+        "precipitation": 1.3,
+        "windspeed": 10.2,
+        "winddirection": null,
+        "presure": 1025.0,
+        "species": "Gomphus clavatus",
+        "location": "Nederland, CO 80466, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5705138889,
+          40.0105666667
+        ]
+      }
+    }
+  ]
+}

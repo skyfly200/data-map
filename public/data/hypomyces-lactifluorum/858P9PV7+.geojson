@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "dc141f7d-b92e-4dfb-a5be-eeaebf74025a",
+        "inat_id": 88468492,
+        "timestamp": "2021-07-24T13:09:37-06:00",
+        "date": "2021-07-24",
+        "olc": "858P9PV7+",
+        "elevation": 2566.0,
+        "tavg": null,
+        "tmin": 9.3,
+        "tmax": 21.1,
+        "precipitation": 6.0,
+        "windspeed": 8.6,
+        "winddirection": null,
+        "presure": 1030.1,
+        "species": "Hypomyces lactifluorum",
+        "location": "Angel Fire",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.2850092947,
+          36.3932629004
+        ]
+      }
+    }
+  ]
+}

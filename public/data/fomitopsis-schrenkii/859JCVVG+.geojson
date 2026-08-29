@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "aa6a3e8b-9d08-4350-8897-015821556f58",
+        "inat_id": 376255210,
+        "timestamp": "2026-06-27T13:53:31-06:00",
+        "date": "2026-06-27",
+        "olc": "859JCVVG+",
+        "elevation": 2653.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 27.0,
+        "precipitation": 1.1,
+        "windspeed": 8.9,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "County Road 634, Creede, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.1228638333,
+          37.4431216667
+        ]
+      }
+    }
+  ]
+}

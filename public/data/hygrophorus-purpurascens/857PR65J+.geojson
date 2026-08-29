@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "22f95401-245c-4a26-8a32-492c815f7c4e",
+        "inat_id": 6998576,
+        "timestamp": "2008-09-03",
+        "date": "2008-09-03",
+        "olc": "857PR65J+",
+        "elevation": 3422.0,
+        "tavg": null,
+        "tmin": 10.6,
+        "tmax": 21.7,
+        "precipitation": null,
+        "windspeed": 10.7,
+        "winddirection": null,
+        "presure": 1015.9,
+        "species": "Hygrophorus purpurascens",
+        "location": "Santa Fe Ski Basin, Santa Fe National Forest, Santa Fe Co., New Mexico, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.769,
+          35.80925
+        ]
+      }
+    }
+  ]
+}

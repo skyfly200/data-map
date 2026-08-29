@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "43ac71a3-1c9d-4a60-9259-00570d1b913a",
+        "inat_id": 233367819,
+        "timestamp": "2024-08-02T15:56:50-06:00",
+        "date": "2024-08-02",
+        "olc": "857MV7M9+",
+        "elevation": 2339.0,
+        "tavg": null,
+        "tmin": 17.6,
+        "tmax": 29.0,
+        "precipitation": 0.9,
+        "windspeed": 8.3,
+        "winddirection": null,
+        "presure": 1033.0,
+        "species": "Flammulina populicola",
+        "location": "Santa Fe National Forest, Jemez Springs, NM, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.73053,
+          35.883055
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4fb17fbd-c905-4e7e-aebf-b05a595a40a0",
+        "inat_id": 227374432,
+        "timestamp": "2024-07-05T14:23:59-06:00",
+        "date": "2024-07-05",
+        "olc": "85CJF4JJ+",
+        "elevation": 1778.0,
+        "tavg": null,
+        "tmin": 10.6,
+        "tmax": 29.4,
+        "precipitation": 0.0,
+        "windspeed": 10.2,
+        "winddirection": null,
+        "presure": 1017.4,
+        "species": "Marasmius oreades",
+        "location": "S Second St, Montrose, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.868121164,
+          38.4821129032
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "14bbe53d-13db-4c6c-9bb3-49f7225507d6",
+        "inat_id": 14528814,
+        "timestamp": "2018-07-19T09:20:10-06:00",
+        "date": "2018-07-19",
+        "olc": "85CJ28GM+",
+        "elevation": 2445.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 27.0,
+        "precipitation": null,
+        "windspeed": 5.4,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Perimeter Trail, Ouray, CO 81427, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.6667106524,
+          38.0265802
+        ]
+      }
+    }
+  ]
+}

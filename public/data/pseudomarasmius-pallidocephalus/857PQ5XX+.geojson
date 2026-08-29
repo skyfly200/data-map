@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f397138b-91f8-4135-ba91-2a84570cc26c",
+        "inat_id": 238857791,
+        "timestamp": "2024-08-29T10:38:00-06:00",
+        "date": "2024-08-29",
+        "olc": "857PQ5XX+",
+        "elevation": 3202.0,
+        "tavg": null,
+        "tmin": 15.6,
+        "tmax": 28.9,
+        "precipitation": 0.0,
+        "windspeed": 12.1,
+        "winddirection": null,
+        "presure": 1014.3,
+        "species": "Pseudomarasmius pallidocephalus",
+        "location": "Santa Fe County, NM, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8021083333,
+          35.7989916667
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "04b3788a-ca1e-4db9-8c65-21307b19c92a",
+        "inat_id": 132609793,
+        "timestamp": "2022-08-27T13:09:34-06:00",
+        "date": "2022-08-27",
+        "olc": "859JQ3Q6+",
+        "elevation": 3116.0,
+        "tavg": null,
+        "tmin": 7.0,
+        "tmax": 20.0,
+        "precipitation": 1.6,
+        "windspeed": 7.4,
+        "winddirection": null,
+        "presure": 1027.3,
+        "species": "Armillaria ostoyae",
+        "location": "Dolores County, US-CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9380995781,
+          37.7885913849
+        ]
+      }
+    }
+  ]
+}

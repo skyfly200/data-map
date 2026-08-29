@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f6fc8434-9261-476d-9b9f-535ba812f7a1",
+        "inat_id": 178907589,
+        "timestamp": "2023-08-17T12:28:39-06:00",
+        "date": "2023-08-17",
+        "olc": "859JW5QQ+",
+        "elevation": 2692.0,
+        "tavg": null,
+        "tmin": 11.0,
+        "tmax": 25.0,
+        "precipitation": 5.5,
+        "windspeed": 7.2,
+        "winddirection": null,
+        "presure": 1033.4,
+        "species": "Fomitopsis schrenkii",
+        "location": "Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.8123473206,
+          37.9377365051
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f2d4258a-491a-4a50-9a09-7518c5f58194",
+        "inat_id": 90353177,
+        "timestamp": "2021-08-05T13:37:03-06:00",
+        "date": "2021-08-05",
+        "olc": "859J8VPF+",
+        "elevation": 2399.0,
+        "tavg": null,
+        "tmin": 7.0,
+        "tmax": 16.0,
+        "precipitation": 5.0,
+        "windspeed": 10.7,
+        "winddirection": null,
+        "presure": 1042.4,
+        "species": "Hypomyces chrysospermus",
+        "location": "Archuleta County, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.12629551,
+          37.33536629
+        ]
+      }
+    }
+  ]
+}

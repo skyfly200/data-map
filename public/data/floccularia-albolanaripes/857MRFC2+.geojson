@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "acc9449d-833e-44d2-b424-6ab0251ab28d",
+        "inat_id": 237149543,
+        "timestamp": "2024-08-21T09:56:18-06:00",
+        "date": "2024-08-21",
+        "olc": "857MRFC2+",
+        "elevation": 2559.0,
+        "tavg": null,
+        "tmin": 18.4,
+        "tmax": 31.7,
+        "precipitation": null,
+        "windspeed": 11.7,
+        "winddirection": null,
+        "presure": 1028.5,
+        "species": "Floccularia albolanaripes",
+        "location": "Jemez Springs, NM 87025, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.5487861111,
+          35.8218527778
+        ]
+      }
+    }
+  ]
+}

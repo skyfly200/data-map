@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "06f0e8de-3e86-4fe2-9edb-3b5f37b9f30f",
+        "inat_id": 364865547,
+        "timestamp": "2026-05-24T15:42:49-06:00",
+        "date": "2026-05-24",
+        "olc": "85FPVHG6+",
+        "elevation": 2829.0,
+        "tavg": null,
+        "tmin": 13.0,
+        "tmax": 27.0,
+        "precipitation": 1.2,
+        "windspeed": 4.4,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Raccoon Trail, Black Hawk, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4392466667,
+          39.8756666667
+        ]
+      }
+    }
+  ]
+}

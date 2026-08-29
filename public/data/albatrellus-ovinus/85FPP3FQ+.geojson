@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0d868f72-b346-4997-97dd-a4e081def702",
+        "inat_id": 182833432,
+        "timestamp": "2023-09-09T14:39:58-06:00",
+        "date": "2023-09-09",
+        "olc": "85FPP3FQ+",
+        "elevation": 3879.0,
+        "tavg": null,
+        "tmin": 2.2,
+        "tmax": 13.4,
+        "precipitation": 1.3,
+        "windspeed": 10.2,
+        "winddirection": null,
+        "presure": 1025.0,
+        "species": "Albatrellus ovinus",
+        "location": "Colorado, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.9122236053,
+          39.7228000538
+        ]
+      }
+    }
+  ]
+}

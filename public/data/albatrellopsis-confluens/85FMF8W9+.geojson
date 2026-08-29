@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e1d1a89f-95fb-457f-a809-d36ca466c263",
+        "inat_id": 235203238,
+        "timestamp": "2024-08-10T12:36:13-06:00",
+        "date": "2024-08-10",
+        "olc": "85FMF8W9+",
+        "elevation": 2946.0,
+        "tavg": null,
+        "tmin": 11.7,
+        "tmax": 27.8,
+        "precipitation": 2.7,
+        "windspeed": 12.1,
+        "winddirection": null,
+        "presure": 1017.0,
+        "species": "Albatrellopsis confluens",
+        "location": "White River National Forest, Eagle, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.6812666667,
+          39.4950333333
+        ]
+      }
+    }
+  ]
+}

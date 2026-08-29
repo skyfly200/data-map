@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "194b4ca9-05d2-42b3-ad21-a54e02b0c1e3",
+        "inat_id": 385959750,
+        "timestamp": "2026-07-25T08:02:26-06:00",
+        "date": "2026-07-25",
+        "olc": "85CQV53G+",
+        "elevation": 1856.0,
+        "tavg": null,
+        "tmin": 19.4,
+        "tmax": 35.0,
+        "precipitation": null,
+        "windspeed": 8.0,
+        "winddirection": null,
+        "presure": 1012.9,
+        "species": "Marasmius oreades",
+        "location": "E Columbia St, Colorado Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8239133333,
+          38.8536383333
+        ]
+      }
+    }
+  ]
+}

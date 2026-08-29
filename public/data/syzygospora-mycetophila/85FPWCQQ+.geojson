@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c70268b2-f485-4654-b59b-6a1514dafa09",
+        "inat_id": 174425440,
+        "timestamp": "2023-07-22T14:15:48-06:00",
+        "date": "2023-07-22",
+        "olc": "85FPWCQQ+",
+        "elevation": 2849.0,
+        "tavg": null,
+        "tmin": 3.5,
+        "tmax": 14.6,
+        "precipitation": 1.7,
+        "windspeed": 9.9,
+        "winddirection": null,
+        "presure": 1023.9,
+        "species": "Syzygospora mycetophila",
+        "location": "Colorado, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5600215796,
+          39.9380715846
+        ]
+      }
+    }
+  ]
+}

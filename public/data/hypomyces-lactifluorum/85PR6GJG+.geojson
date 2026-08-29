@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "04f18853-87c8-4306-bfed-b8513f595c2f",
+        "inat_id": 327326064,
+        "timestamp": "2025-09-13T16:58:00-06:00",
+        "date": "2025-09-13",
+        "olc": "85PR6GJG+",
+        "elevation": 1350.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 29.0,
+        "precipitation": 3.0,
+        "windspeed": 17.4,
+        "winddirection": null,
+        "presure": 1011.8,
+        "species": "Hypomyces lactifluorum",
+        "location": "Lawrence County, SD, USA",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4743277778,
+          44.2301611111
+        ]
+      }
+    }
+  ]
+}

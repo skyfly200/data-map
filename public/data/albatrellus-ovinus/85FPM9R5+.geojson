@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "876cb00b-4b48-4bc3-835c-5a0e16de9ee6",
+        "inat_id": 91184199,
+        "timestamp": "2021-08-14T16:12:00-04:00",
+        "date": "2021-08-14",
+        "olc": "85FPM9R5+",
+        "elevation": 2865.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Albatrellus ovinus",
+        "location": "Clear Creek County, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.641253,
+          39.690446
+        ]
+      }
+    }
+  ]
+}

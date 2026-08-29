@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ac06fca3-cd72-4930-baf0-171e85220691",
+        "inat_id": 231892592,
+        "timestamp": "2024-07-26T08:57:34-06:00",
+        "date": "2024-07-26",
+        "olc": "859JGH8Q+",
+        "elevation": 2634.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 26.0,
+        "precipitation": 5.8,
+        "windspeed": 7.9,
+        "winddirection": null,
+        "presure": 1027.5,
+        "species": "Turbinellus floccosus",
+        "location": "San Juan National Forest - Headquarters, Pagosa Springs, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.4100033333,
+          37.51587
+        ]
+      }
+    }
+  ]
+}

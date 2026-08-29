@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f6006c2a-87ed-4c69-a69e-1e3196b044c4",
+        "inat_id": 314034482,
+        "timestamp": "2025-09-14T11:39:20-06:00",
+        "date": "2025-09-14",
+        "olc": "857PP5W8+",
+        "elevation": 2709.0,
+        "tavg": null,
+        "tmin": 7.0,
+        "tmax": 24.0,
+        "precipitation": 0.0,
+        "windspeed": 10.0,
+        "winddirection": null,
+        "presure": 1021.5,
+        "species": "Hygrophorus chrysodon",
+        "location": "Santa Fe, NM 87501, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8345777778,
+          35.7466944444
+        ]
+      }
+    }
+  ]
+}

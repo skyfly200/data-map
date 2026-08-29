@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "64f1a98b-2c80-4bc2-aa9a-247c132fc924",
+        "inat_id": 131908166,
+        "timestamp": "2022-08-20T10:17:11-06:00",
+        "date": "2022-08-20",
+        "olc": "859JR4M9+",
+        "elevation": 2982.0,
+        "tavg": null,
+        "tmin": 10.0,
+        "tmax": 17.0,
+        "precipitation": 13.8,
+        "windspeed": 5.1,
+        "winddirection": null,
+        "presure": 1029.5,
+        "species": "Hydnum melitosarx",
+        "location": "San Miguel County, US-CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.880985257,
+          37.8329757911
+        ]
+      }
+    }
+  ]
+}

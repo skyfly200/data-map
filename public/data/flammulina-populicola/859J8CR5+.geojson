@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "85d77ce7-202e-46ee-9bc1-7f5c4eb028a4",
+        "inat_id": 132215011,
+        "timestamp": "2022-08-24T18:41:30-06:00",
+        "date": "2022-08-24",
+        "olc": "859J8CR5+",
+        "elevation": 2576.0,
+        "tavg": null,
+        "tmin": 10.6,
+        "tmax": 28.3,
+        "precipitation": 0.0,
+        "windspeed": 8.5,
+        "winddirection": null,
+        "presure": 1017.0,
+        "species": "Flammulina populicola",
+        "location": "Bayfield, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.5906966667,
+          37.3415716667
+        ]
+      }
+    }
+  ]
+}

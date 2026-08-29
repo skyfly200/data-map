@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8a0d6d2f-9598-47ad-a28a-8b3ec34bce85",
+        "inat_id": 130160174,
+        "timestamp": "2022-08-06T14:05:00-06:00",
+        "date": "2022-08-06",
+        "olc": "85FH2XVR+",
+        "elevation": 3311.0,
+        "tavg": null,
+        "tmin": 18.4,
+        "tmax": 37.4,
+        "precipitation": 0.0,
+        "windspeed": 9.1,
+        "winddirection": null,
+        "presure": 1019.7,
+        "species": "Cantharellus roseocanus",
+        "location": "Mesa County, CO, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.0099627168,
+          39.0432779754
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "108d86b8-2711-4503-b6e7-eea7faef87bd",
+        "inat_id": 303554389,
+        "timestamp": "2025-08-03T07:11:37-06:00",
+        "date": "2025-08-03",
+        "olc": "85CQQ4P2+",
+        "elevation": 2239.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 28.0,
+        "precipitation": 0.0,
+        "windspeed": 6.8,
+        "winddirection": null,
+        "presure": 1024.9,
+        "species": "Hypomyces lactifluorum",
+        "location": "Colorado Springs, CO, US",
+        "num_identification_agreements": 3
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.8992714826,
+          38.7857319782
+        ]
+      }
+    }
+  ]
+}

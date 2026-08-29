@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "5794288d-25d2-41ee-b170-69298699d5b7",
+        "inat_id": 232183767,
+        "timestamp": "2024-07-27T11:50:08-06:00",
+        "date": "2024-07-27",
+        "olc": "857PR79W+",
+        "elevation": 2866.0,
+        "tavg": null,
+        "tmin": 13.9,
+        "tmax": 31.1,
+        "precipitation": null,
+        "windspeed": 13.5,
+        "winddirection": null,
+        "presure": 1009.5,
+        "species": "Hygrocybe conica",
+        "location": "Santa Fe National Forest, Tererro, NM, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7045133333,
+          35.8176716667
+        ]
+      }
+    }
+  ]
+}

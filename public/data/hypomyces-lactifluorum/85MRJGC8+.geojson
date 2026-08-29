@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "8796b941-63e7-4a1a-81fd-385773c1c659",
+        "inat_id": 174025586,
+        "timestamp": "2023-07-20T18:24:05-06:00",
+        "date": "2023-07-20",
+        "olc": "85MRJGC8+",
+        "elevation": 1469.0,
+        "tavg": null,
+        "tmin": 11.1,
+        "tmax": 18.9,
+        "precipitation": 0.0,
+        "windspeed": 6.1,
+        "winddirection": null,
+        "presure": 1022.7,
+        "species": "Hypomyces lactifluorum",
+        "location": "Wind Cave National Park, Custer County, US-SD, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4840011597,
+          43.622253418
+        ]
+      }
+    }
+  ]
+}

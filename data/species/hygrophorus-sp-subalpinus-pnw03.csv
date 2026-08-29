@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c8eb5764-104c-4810-8773-e80107e329b7,183806653,2023-09-17 14:09:02-06:00,2023-09-17,-105.0054865326,39.1180137482,85FP4X9V+,2821.0,,4.5,24.6,0.0,13.6,,1018.7,Hygrophorus sp. 'subalpinus-PNW03',"Colorado, US",2

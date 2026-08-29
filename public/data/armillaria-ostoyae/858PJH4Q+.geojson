@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e4c31b92-14e1-4180-92f1-0f4dce4c17c5",
+        "inat_id": 132281839,
+        "timestamp": "2022-08-24T12:36:53-06:00",
+        "date": "2022-08-24",
+        "olc": "858PJH4Q+",
+        "elevation": 3094.0,
+        "tavg": null,
+        "tmin": 6.3,
+        "tmax": 21.0,
+        "precipitation": 2.3,
+        "windspeed": 3.8,
+        "winddirection": null,
+        "presure": 1030.6,
+        "species": "Armillaria ostoyae",
+        "location": "Taos Ski Valley, NM 87525, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.4122170806,
+          36.605205713
+        ]
+      }
+    }
+  ]
+}

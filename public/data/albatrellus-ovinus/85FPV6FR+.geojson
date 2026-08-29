@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e63f9077-5157-4c8f-8e84-112863754496",
+        "inat_id": 91143805,
+        "timestamp": "2021-08-14T09:46:30-06:00",
+        "date": "2021-08-14",
+        "olc": "85FPV6FR+",
+        "elevation": 2891.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 28.3,
+        "precipitation": 0.0,
+        "windspeed": 7.2,
+        "winddirection": null,
+        "presure": 1033.2,
+        "species": "Albatrellus ovinus",
+        "location": "Mary Jane Base Complex, Winter Park, CO 80482, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.7595921,
+          39.8735539997
+        ]
+      }
+    }
+  ]
+}

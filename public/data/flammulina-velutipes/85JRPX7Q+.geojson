@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f09d8437-f360-488a-8a6d-b6596ca7e4b4",
+        "inat_id": 153688505,
+        "timestamp": "2022-05-06",
+        "date": "2022-05-06",
+        "olc": "85JRPX7Q+",
+        "elevation": 1159.0,
+        "tavg": null,
+        "tmin": 8.3,
+        "tmax": 26.7,
+        "precipitation": 0.0,
+        "windspeed": 22.1,
+        "winddirection": null,
+        "presure": 1005.5,
+        "species": "Flammulina velutipes",
+        "location": "Dawes County, NE, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.0109945994,
+          42.7138511848
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9bfa6d4f-002b-4278-863d-243607cfd6c3",
+        "inat_id": 153567066,
+        "timestamp": "2022-04-02",
+        "date": "2022-04-02",
+        "olc": "85JRPX7Q+",
+        "elevation": 1159.0,
+        "tavg": null,
+        "tmin": -4.4,
+        "tmax": 17.8,
+        "precipitation": 0.0,
+        "windspeed": 9.6,
+        "winddirection": null,
+        "presure": 1016.2,
+        "species": "Flammulina velutipes",
+        "location": "Dawes County, NE, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.0109889749,
+          42.7138485314
+        ]
+      }
+    }
+  ]
+}

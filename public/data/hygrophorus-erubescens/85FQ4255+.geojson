@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "c0ac9e40-4f87-4a34-b827-2d9adafb0b9d",
+        "inat_id": 304606477,
+        "timestamp": "2025-08-07T13:58:10-06:00",
+        "date": "2025-08-07",
+        "olc": "85FQ4255+",
+        "elevation": 2702.0,
+        "tavg": null,
+        "tmin": 14.5,
+        "tmax": 34.0,
+        "precipitation": 0.0,
+        "windspeed": 18.4,
+        "winddirection": null,
+        "presure": 1013.4,
+        "species": "Hygrophorus erubescens",
+        "location": "Pike and San Isabel National Forests, Woodland Park, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9917533333,
+          39.1081
+        ]
+      }
+    }
+  ]
+}

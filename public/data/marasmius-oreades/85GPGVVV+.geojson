@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ede97489-4926-4757-b764-ba259ff623a4",
+        "inat_id": 306549697,
+        "timestamp": "2025-08-15T12:33:01-06:00",
+        "date": "2025-08-15",
+        "olc": "85GPGVVV+",
+        "elevation": 1554.0,
+        "tavg": null,
+        "tmin": 16.7,
+        "tmax": 33.3,
+        "precipitation": 0.0,
+        "windspeed": 9.8,
+        "winddirection": null,
+        "presure": 1010.3,
+        "species": "Marasmius oreades",
+        "location": "Wagon Wheel, Fort Collins, CO 80526, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.10545212,
+          40.54493544
+        ]
+      }
+    }
+  ]
+}

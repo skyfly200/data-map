@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "6831b550-b91f-4308-b179-c9c807116600",
+        "inat_id": 226068559,
+        "timestamp": "2024-06-29T11:45:28-06:00",
+        "date": "2024-06-29",
+        "olc": "857PQ5VR+",
+        "elevation": 3055.0,
+        "tavg": null,
+        "tmin": 15.6,
+        "tmax": 32.2,
+        "precipitation": null,
+        "windspeed": 18.7,
+        "winddirection": null,
+        "presure": 1013.4,
+        "species": "Flammulina velutipes",
+        "location": "San Ildefonso Pueblo, NM 87506, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.808375,
+          35.7934833333
+        ]
+      }
+    }
+  ]
+}

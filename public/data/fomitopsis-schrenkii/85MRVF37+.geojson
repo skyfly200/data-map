@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3e757f81-287f-498c-be93-3ab73c3d4ec6",
+        "inat_id": 338825330,
+        "timestamp": "2026-02-15T15:55:59-07:00",
+        "date": "2026-02-15",
+        "olc": "85MRVF37+",
+        "elevation": 1968.0,
+        "tavg": null,
+        "tmin": -4.4,
+        "tmax": 11.0,
+        "precipitation": 0.0,
+        "windspeed": 10.0,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis schrenkii",
+        "location": "Harney 9 South Trail, Custer, SD, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.53685,
+          43.85477
+        ]
+      }
+    }
+  ]
+}

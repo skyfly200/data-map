@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "60ee3c20-a7e6-4a96-b314-d1729872d91f",
+        "inat_id": 132329095,
+        "timestamp": "2022-08-25",
+        "date": "2022-08-25",
+        "olc": "85GP5F2X+",
+        "elevation": 2781.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 28.0,
+        "precipitation": 0.8,
+        "windspeed": 9.7,
+        "winddirection": null,
+        "presure": 1023.0,
+        "species": "Cantharellus roseocanus",
+        "location": "Boulder County",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.5005482584,
+          40.1507347082
+        ]
+      }
+    }
+  ]
+}

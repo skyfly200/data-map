@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2d3f493e-509e-4ad4-9611-3e2add6b3415",
+        "inat_id": 280943192,
+        "timestamp": "2025-05-13T14:11:49-06:00",
+        "date": "2025-05-13",
+        "olc": "85FPGJ64+",
+        "elevation": 2631.0,
+        "tavg": null,
+        "tmin": -2.3,
+        "tmax": 8.0,
+        "precipitation": 0.0,
+        "windspeed": 14.6,
+        "winddirection": null,
+        "presure": 1005.1,
+        "species": "Fomitopsis schrenkii",
+        "location": "Scout Line Trail, Pine, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.39467,
+          39.5106866667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3a5f727c-04de-4447-a7c4-a6554cc75e71",
+        "inat_id": 244403161,
+        "timestamp": "2024-09-27T18:02:47-06:00",
+        "date": "2024-09-27",
+        "olc": "85FPGJ64+",
+        "elevation": 2631.0,
+        "tavg": null,
+        "tmin": 0.7,
+        "tmax": 11.9,
+        "precipitation": 0.3,
+        "windspeed": 8.9,
+        "winddirection": null,
+        "presure": 1022.7,
+        "species": "Fomitopsis schrenkii",
+        "location": "GJ64+5M, Pine Junction Area, CO 80470, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.39252354,
+          39.51150873
+        ]
+      }
+    }
+  ]
+}

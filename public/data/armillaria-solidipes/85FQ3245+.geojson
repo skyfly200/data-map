@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ee001d2c-177e-4463-9337-d1ce02b2fbac",
+        "inat_id": 181494255,
+        "timestamp": "2023-09-02T16:08:48-06:00",
+        "date": "2023-09-02",
+        "olc": "85FQ3245+",
+        "elevation": 2802.0,
+        "tavg": null,
+        "tmin": 14.9,
+        "tmax": 32.0,
+        "precipitation": 0.0,
+        "windspeed": 10.5,
+        "winddirection": null,
+        "presure": 1013.4,
+        "species": "Armillaria solidipes",
+        "location": "Colorado Springs, CO 80921, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.991934,
+          39.055075
+        ]
+      }
+    }
+  ]
+}

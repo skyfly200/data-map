@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "3d271c40-0eeb-4bc0-b681-2429e05d2c0a",
+        "inat_id": 131846830,
+        "timestamp": "2022-08-21T09:36:21-06:00",
+        "date": "2022-08-21",
+        "olc": "85FPHJ6C+",
+        "elevation": 2594.0,
+        "tavg": null,
+        "tmin": 0.5,
+        "tmax": 10.3,
+        "precipitation": 8.8,
+        "windspeed": 4.8,
+        "winddirection": null,
+        "presure": 1023.6,
+        "species": "Catathelasma ventricosum",
+        "location": "Shadow Mountain, CO, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.3779833333,
+          39.5618916667
+        ]
+      }
+    }
+  ]
+}

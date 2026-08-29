@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "581c1ef5-53b7-44d9-a8bd-e344ee284afa",
+        "inat_id": 343884652,
+        "timestamp": "2026-03-19T14:57:47-06:00",
+        "date": "2026-03-19",
+        "olc": "857PQ537+",
+        "elevation": 2657.0,
+        "tavg": null,
+        "tmin": 6.0,
+        "tmax": 28.0,
+        "precipitation": 0.0,
+        "windspeed": 18.5,
+        "winddirection": null,
+        "presure": 1027.4,
+        "species": "Fomitopsis schrenkii",
+        "location": "Santa Fe, NM 87501, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.8366111111,
+          35.7543166667
+        ]
+      }
+    }
+  ]
+}

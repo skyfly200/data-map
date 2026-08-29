@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "20c39e12-3d1e-4db9-a1a0-c21089d32e03",
+        "inat_id": 132709623,
+        "timestamp": "2022-08-27T15:02:10-06:00",
+        "date": "2022-08-27",
+        "olc": "85FP7J86+",
+        "elevation": 2864.0,
+        "tavg": null,
+        "tmin": 3.3,
+        "tmax": 15.7,
+        "precipitation": 0.1,
+        "windspeed": 7.5,
+        "winddirection": null,
+        "presure": 1013.4,
+        "species": "Hygrocybe conica",
+        "location": "Pike and San Isabel National Forests, Sedalia, CO, US",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.38962,
+          39.2652783333
+        ]
+      }
+    }
+  ]
+}

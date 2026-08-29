@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "ee9a3194-853f-4404-9e79-98cd0af855e5",
+        "inat_id": 388920847,
+        "timestamp": "2026-07-29T11:50:12-06:00",
+        "date": "2026-07-29",
+        "olc": "85CPVV7F+",
+        "elevation": 3134.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 29.0,
+        "precipitation": 1.5,
+        "windspeed": 5.1,
+        "winddirection": null,
+        "presure": null,
+        "species": "Flammulina populicola",
+        "location": "Divide, CO 80814, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.1254527778,
+          38.8634305556
+        ]
+      }
+    }
+  ]
+}

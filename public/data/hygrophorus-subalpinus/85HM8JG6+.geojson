@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f81ecb34-d143-46bd-bea6-aaec18e13be9",
+        "inat_id": 378555216,
+        "timestamp": "2026-07-05T14:36:15-06:00",
+        "date": "2026-07-05",
+        "olc": "85HM8JG6+",
+        "elevation": 3051.0,
+        "tavg": null,
+        "tmin": 8.0,
+        "tmax": 31.0,
+        "precipitation": 0.0,
+        "windspeed": 4.9,
+        "winddirection": null,
+        "presure": 1014.6,
+        "species": "Hygrophorus subalpinus",
+        "location": "Wyoming, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.3889333766,
+          41.3256559623
+        ]
+      }
+    }
+  ]
+}

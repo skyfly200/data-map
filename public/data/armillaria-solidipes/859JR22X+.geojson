@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "4b9f2e86-c096-4d55-9509-36f4e038614b",
+        "inat_id": 236727680,
+        "timestamp": "2024-08-17T09:50:22-06:00",
+        "date": "2024-08-17",
+        "olc": "859JR22X+",
+        "elevation": 3268.0,
+        "tavg": null,
+        "tmin": 12.0,
+        "tmax": 23.0,
+        "precipitation": 4.9,
+        "windspeed": 9.4,
+        "winddirection": null,
+        "presure": 1034.5,
+        "species": "Armillaria solidipes",
+        "location": "San Juan National Forest - Headquarters, Dolores, CO, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -107.9500535251,
+          37.8006801592
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+30cf1793-822e-46c0-a681-e2d0bed6ae47,257502115,2024-08-31 14:56:02-06:00,2024-08-31,-105.2274033333,36.8046833333,858PRQ3F+,3369.0,,2.6,23.2,,4.4,,,Cantharellus cibarius,"Taos County, US-NM, US",2
+a0e6a16a-3ee2-431b-973c-5c8aa150ee6b,252340195,2024-08-11,2024-08-11,-105.8298766142,35.7971620721,857PQ5WC+,2843.0,,18.9,31.1,,15.6,,1014.4,Cantharellus cibarius,"New Mexico, US",1
+27cb7167-8d03-4747-b022-cac06c405a53,244428384,2024-09-10 14:40:34-06:00,2024-09-10,-107.3848604474,40.0898046817,85GJ3JQ8+,2965.0,,6.1,26.1,0.0,9.1,,1015.6,Cantharellus cibarius,"Colorado, US",2
+8cc49439-7068-4de7-97f9-437858392850,241138795,2024-09-03 09:51:00-06:00,2024-09-03,-105.8016805556,35.7987777778,857PQ5XX+,3208.0,,9.4,29.4,0.0,12.3,,1017.3,Cantharellus cibarius,"Santa Fe County, NM, USA",1

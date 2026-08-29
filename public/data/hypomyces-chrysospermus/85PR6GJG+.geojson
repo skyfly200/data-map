@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "0df694de-91d1-4d95-9817-a49ee597efd9",
+        "inat_id": 327326071,
+        "timestamp": "2025-09-13T16:57:00-06:00",
+        "date": "2025-09-13",
+        "olc": "85PR6GJG+",
+        "elevation": 1350.0,
+        "tavg": null,
+        "tmin": 15.0,
+        "tmax": 29.0,
+        "precipitation": 3.0,
+        "windspeed": 17.4,
+        "winddirection": null,
+        "presure": 1011.8,
+        "species": "Hypomyces chrysospermus",
+        "location": "Lawrence County, SD, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.4743277778,
+          44.2301333333
+        ]
+      }
+    }
+  ]
+}
