@@ -570,7 +570,7 @@ def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60, max_workers=
             lats = [p[2] for p in pts]
             region = ee.Geometry.Rectangle([min(lons) - 0.05, min(lats) - 0.05,
                                             max(lons) + 0.05, max(lats) + 0.05])
-            ndvi = (ee.ImageCollection('COPERNICUS/S2_SR')
+            ndvi = (ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
                     .filterDate(start, end)
                     .filterBounds(region)
                     .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', cloud_pct))
