@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,genus,location,num_identification_agreements
+140da1b4-ea07-4cca-9267-2dac8058e6fb,395681904,2026-08-29 14:59:48-07:00,2026-08-29,-122.3331882298,44.3084732382,84PV8M00+,684.0,,,,,,,,Caloboletus conifericola,Caloboletus,"Linn County, US-OR, US",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,genus,location,num_identification_agreements
+e1cb96f3-766a-4d27-8737-c712857758bf,395666832,2026-08-29 14:37:16-07:00,2026-08-29,-121.6839216667,45.756425,84QWQ800+,582.0,,14.4,22.9,0.0,19.5,,1016.7,Hypomyces lactifluorum,Hypomyces,"Bingen, WA, US",1

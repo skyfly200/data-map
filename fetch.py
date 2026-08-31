@@ -15,6 +15,7 @@ import cdsapi
 import ee
 import pandas as pd
 import requests
+import xarray as xr
 
 import species_store as store
 
@@ -150,13 +151,13 @@ def download_srtm_dem(area=None, output_dir="dem/", dem_type="SRTMGL3", api_key=
             os.remove(out_path)
         return None
 
-# ─── Soil Moisture (ERA5-Land) Worker ─────────────────────────────────────────
+# ─── (ERA5-Land) Worker - Soil Moisture + More ─────────────────────────────────────────
 def download_era5_worker(date_str, output_dir="soil/"):
     """Thread worker for fetching ERA5-Land soil moisture via CDS API."""
+    
     os.makedirs(output_dir, exist_ok=True)
     year, month, day = date_str.split("-")
 
-    zip_path = os.path.join(output_dir, f"soil_{date_str}.zip")
     nc_path = os.path.join(output_dir, f"soil_{date_str}.nc")
 
     if os.path.exists(nc_path):
@@ -166,57 +167,121 @@ def download_era5_worker(date_str, output_dir="soil/"):
     c = cdsapi.Client(quiet=True)
 
     dataset = "reanalysis-era5-land"
-    request = {
-        "variable": [
-            "volumetric_soil_water_layer_1",  # Existing: Soil moisture (0-7cm)
-            "volumetric_soil_water_layer_2",  # Soil moisture (7-28cm)
-            "volumetric_soil_water_layer_3",  # Soil moisture (28-100cm)
-            "volumetric_soil_water_layer_4",  # Soil moisture (100-289cm)
-            "soil_temperature_level_1",       # see above
-            "soil_temperature_level_2",       # see above
-            "soil_temperature_level_3",       # see above
-            "soil_temperature_level_4",       # see above
-            "2m_temperature",                 # Air temperature at 2 meters
-            "surface_pressure",
-            "total_precipitation",            # Accumulated precipitation
-            "surface_solar_radiation_downwards", # Solar radiation
-            "thermal_radiation_downwards",
-            "evaporation",
-            "relative_humidity_2m",           # Relative humidity
-            "10m_u_component_of_wind",        # Wind U component
-            "10m_v_component_of_wind",        # Wind V component
-            "skin_temperature",               # Surface skin temperature
-            "snow_depth",                     # Snow depth
-            "snow_water_equivalent",
-            "forest_fraction",
-            "crop_fraction",
-            "grass_fraction",
-            "shrub_fraction",
-            "bare_ground_fraction",
-        ],
-        "year": year,
-        "month": month,
-        "day": [day],
-        "time": [f"{h:02d}:00" for h in range(24)],  # All 24 hours
-        "data_format": "netcdf",
-        "area": STUDY_AREA,
-    }
+    
+    # Split variables into two groups to avoid "Structural differences" warning
+    # Group 1: State variables (instantaneous values)
+    state_vars = [
+        "volumetric_soil_water_layer_1",
+        "volumetric_soil_water_layer_2",
+        "volumetric_soil_water_layer_3",
+        "volumetric_soil_water_layer_4",
+        "soil_temperature_level_1",
+        "soil_temperature_level_2",
+        "soil_temperature_level_3",
+        "soil_temperature_level_4",
+        "2m_temperature",
+        "relative_humidity_2m",
+        "surface_pressure",
+        "10m_u_component_of_wind",
+        "10m_v_component_of_wind",
+        "skin_temperature",
+        "snow_depth",
+        "snow_water_equivalent",
+        "forest_fraction",
+        "crop_fraction",
+        "grass_fraction",
+        "shrub_fraction",
+        "bare_ground_fraction",
+    ]
+    
+    # Group 2: Flux/Accumulated variables
+    flux_vars = [
+        "total_precipitation",
+        "surface_solar_radiation_downwards",
+        "thermal_radiation_downwards",
+        "evaporation",
+    ]
+
+    temp_files = []
     
     try:
-        c.retrieve(dataset, request, zip_path)
-
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        # Download Group 1
+        request_state = {
+            "variable": state_vars,
+            "year": year,
+            "month": month,
+            "day": [day],
+            "time": [f"{h:02d}:00" for h in range(24)],
+            "data_format": "netcdf",
+            "area": STUDY_AREA,
+        }
+        zip_path_1 = os.path.join(output_dir, f"temp_state_{date_str}.zip")
+        c.retrieve(dataset, request_state, zip_path_1)
+        
+        with zipfile.ZipFile(zip_path_1, 'r') as zip_ref:
             zip_ref.extractall(output_dir)
             extracted_files = zip_ref.namelist()
             extracted_nc = [f for f in extracted_files if f.endswith(".nc")]
             if extracted_nc:
-                os.rename(os.path.join(output_dir, extracted_nc[0]), nc_path)
-        os.remove(zip_path)
+                src = os.path.join(output_dir, extracted_nc[0])
+                dst = os.path.join(output_dir, f"temp_state_{date_str}.nc")
+                os.rename(src, dst)
+                temp_files.append(dst)
+        os.remove(zip_path_1)
+
+        # Download Group 2
+        request_flux = {
+            "variable": flux_vars,
+            "year": year,
+            "month": month,
+            "day": [day],
+            "time": [f"{h:02d}:00" for h in range(24)],
+            "data_format": "netcdf",
+            "area": STUDY_AREA,
+        }
+        zip_path_2 = os.path.join(output_dir, f"temp_flux_{date_str}.zip")
+        c.retrieve(dataset, request_flux, zip_path_2)
+        
+        with zipfile.ZipFile(zip_path_2, 'r') as zip_ref:
+            zip_ref.extractall(output_dir)
+            extracted_files = zip_ref.namelist()
+            extracted_nc = [f for f in extracted_files if f.endswith(".nc")]
+            if extracted_nc:
+                src = os.path.join(output_dir, extracted_nc[0])
+                dst = os.path.join(output_dir, f"temp_flux_{date_str}.nc")
+                os.rename(src, dst)
+                temp_files.append(dst)
+        os.remove(zip_path_2)
+
+        # Merge the two NetCDF files
+        if len(temp_files) == 2:
+            ds1 = xr.open_dataset(temp_files[0])
+            ds2 = xr.open_dataset(temp_files[1])
+            merged = xr.merge([ds1, ds2])
+            merged.to_netcdf(nc_path)
+            ds1.close()
+            ds2.close()
+            
+            # Cleanup temp files
+            for f in temp_files:
+                if os.path.exists(f):
+                    os.remove(f)
+        elif len(temp_files) == 1:
+            os.rename(temp_files[0], nc_path)
+        else:
+            raise Exception("No valid NetCDF files extracted")
 
         return "downloaded", date_str, nc_path
+        
     except Exception as e:
-        if os.path.exists(zip_path):
-            os.remove(zip_path)
+        # Cleanup on error
+        for f in temp_files:
+            if os.path.exists(f):
+                os.remove(f)
+        zip_path_1 = os.path.join(output_dir, f"temp_state_{date_str}.zip")
+        zip_path_2 = os.path.join(output_dir, f"temp_flux_{date_str}.zip")
+        if os.path.exists(zip_path_1): os.remove(zip_path_1)
+        if os.path.exists(zip_path_2): os.remove(zip_path_2)
         return "error", date_str, str(e)
 
 

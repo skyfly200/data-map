@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "2fef2cb8-937b-488e-ba97-04cb1c12fba2",
+        "inat_id": 394316896,
+        "timestamp": "2026-08-24T19:19:03-07:00",
+        "date": "2026-08-24",
+        "olc": "84QVRJ00+",
+        "elevation": 205.0,
+        "tavg": null,
+        "tmin": 13.3,
+        "tmax": 33.9,
+        "precipitation": 0.0,
+        "windspeed": 4.3,
+        "winddirection": null,
+        "presure": null,
+        "species": "Trametes versicolor",
+        "genus": "Trametes",
+        "location": "Clark County, US-WA, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3958511353,
+          45.833026886
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,genus,location,num_identification_agreements
+e86b9055-002f-49e2-a2ae-be7f874ffd45,195728476,2017-10-13 00:34:00-07:00,2017-10-13,-122.0724319056,45.4655807877,84QVFW00+,562.0,,5.0,14.4,4.9,6.7,,1023.4,Calonarius oliveopetasatus,Calonarius,"Camp Creek, Oregon, USA",2
+a8df0000-e2f4-493c-8ece-032ae400e327,195721341,2019-10-05 09:37:00-07:00,2019-10-05,-121.564615421,45.9493500359,84QWWC00+,974.0,,8.3,20.0,0.0,10.3,,1026.6,Calonarius oliveopetasatus,Calonarius,"Washington, US",2
