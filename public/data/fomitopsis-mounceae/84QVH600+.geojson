@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f48dcb1d-9ebf-4726-9361-e69a4401a845",
+        "inat_id": 394827815,
+        "timestamp": "2026-08-26T15:37:12-07:00",
+        "date": "2026-08-26",
+        "olc": "84QVH600+",
+        "elevation": 271.0,
+        "tavg": null,
+        "tmin": 13.9,
+        "tmax": 27.2,
+        "precipitation": 0.0,
+        "windspeed": 1.7,
+        "winddirection": null,
+        "presure": null,
+        "species": "Fomitopsis mounceae",
+        "genus": "Fomitopsis",
+        "location": "Linnton, Portland, OR, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.7734489,
+          45.563442
+        ]
+      }
+    }
+  ]
+}

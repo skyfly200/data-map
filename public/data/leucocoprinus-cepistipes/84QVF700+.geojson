@@ -1,0 +1,63 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "67d2c51f-43ba-4ce8-b02b-36d8ca56bb54",
+        "inat_id": 395252522,
+        "timestamp": "2026-08-28T09:57:24-07:00",
+        "date": "2026-08-28",
+        "olc": "84QVF700+",
+        "elevation": 164.0,
+        "tavg": null,
+        "tmin": 15.7,
+        "tmax": 24.1,
+        "precipitation": 0.0,
+        "windspeed": 8.1,
+        "winddirection": null,
+        "presure": 1018.2,
+        "species": "Leucocoprinus cepistipes",
+        "genus": "Leucocoprinus",
+        "location": "SW Vermont St, Portland, OR, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.7139374443,
+          45.4763467179
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "67d2c51f-43ba-4ce8-b02b-36d8ca56bb54",
+        "inat_id": 395252522,
+        "timestamp": "2026-08-28T09:57:24-07:00",
+        "date": "2026-08-28",
+        "olc": "84QVF700+",
+        "elevation": 164.0,
+        "tavg": null,
+        "tmin": 15.7,
+        "tmax": 24.1,
+        "precipitation": 0.0,
+        "windspeed": 8.1,
+        "winddirection": null,
+        "presure": 1018.2,
+        "species": "Leucocoprinus cepistipes",
+        "genus": "Leucocoprinus",
+        "location": "SW Vermont St, Portland, OR, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.7139374443,
+          45.4763467179
+        ]
+      }
+    }
+  ]
+}

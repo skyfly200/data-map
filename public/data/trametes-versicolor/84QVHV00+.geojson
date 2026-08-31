@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9f7f073f-f60b-4966-8627-3055d77c3510",
+        "inat_id": 394252110,
+        "timestamp": "2026-07-14T08:20:00-07:00",
+        "date": "2026-07-14",
+        "olc": "84QVHV00+",
+        "elevation": 225.0,
+        "tavg": null,
+        "tmin": 12.2,
+        "tmax": 31.7,
+        "precipitation": 0.0,
+        "windspeed": 2.7,
+        "winddirection": null,
+        "presure": null,
+        "species": "Trametes versicolor",
+        "genus": "Trametes",
+        "location": "Multnomah Falls, Oregon 97014, USA",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.1157756,
+          45.5761597
+        ]
+      }
+    }
+  ]
+}

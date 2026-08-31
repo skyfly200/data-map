@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e1cb96f3-766a-4d27-8737-c712857758bf",
+        "inat_id": 395666832,
+        "timestamp": "2026-08-29T14:37:16-07:00",
+        "date": "2026-08-29",
+        "olc": "84QWQ800+",
+        "elevation": 582.0,
+        "tavg": null,
+        "tmin": 14.4,
+        "tmax": 22.9,
+        "precipitation": 0.0,
+        "windspeed": 19.5,
+        "winddirection": null,
+        "presure": 1016.7,
+        "species": "Hypomyces lactifluorum",
+        "genus": "Hypomyces",
+        "location": "Bingen, WA, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.6839216667,
+          45.756425
+        ]
+      }
+    }
+  ]
+}

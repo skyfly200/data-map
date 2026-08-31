@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "e86b9055-002f-49e2-a2ae-be7f874ffd45",
+        "inat_id": 195728476,
+        "timestamp": "2017-10-13T00:34:00-07:00",
+        "date": "2017-10-13",
+        "olc": "84QVFW00+",
+        "elevation": 562.0,
+        "tavg": null,
+        "tmin": 5.0,
+        "tmax": 14.4,
+        "precipitation": 4.9,
+        "windspeed": 6.7,
+        "winddirection": null,
+        "presure": 1023.4,
+        "species": "Calonarius oliveopetasatus",
+        "genus": "Calonarius",
+        "location": "Camp Creek, Oregon, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.0724319056,
+          45.4655807877
+        ]
+      }
+    }
+  ]
+}

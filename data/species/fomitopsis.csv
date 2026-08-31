@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,genus,location,num_identification_agreements
+f48dcb1d-9ebf-4726-9361-e69a4401a845,394827815,2026-08-26 15:37:12-07:00,2026-08-26,-122.7734489,45.563442,84QVH600+,271.0,,13.9,27.2,0.0,1.7,,,Fomitopsis mounceae,Fomitopsis,"Linnton, Portland, OR, USA",1

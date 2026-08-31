@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,genus,location,num_identification_agreements
+67d2c51f-43ba-4ce8-b02b-36d8ca56bb54,395252522,2026-08-28 09:57:24-07:00,2026-08-28,-122.7139374443,45.4763467179,84QVF700+,164.0,,15.7,24.1,0.0,8.1,,1018.2,Leucocoprinus cepistipes,Leucocoprinus,"SW Vermont St, Portland, OR, US",1
+d2fe5ef3-cf5a-493d-9e64-1a83288d46ae,394794733,2026-07-23 15:00:14-07:00,2026-07-23,-122.558105,45.4524633333,84QVFC00+,233.0,,17.8,26.7,0.0,3.8,,1016.2,Leucocoprinus birnbaumii,Leucocoprinus,"SE Westview Ct, Happy Valley, OR, US",1

@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d9479bc7-c19a-484b-b1c5-9ded3e1acd96",
+        "inat_id": 395548336,
+        "timestamp": "2024-10-09T09:56:05-07:00",
+        "date": "2024-10-09",
+        "olc": "84PW9800+",
+        "elevation": 1046.0,
+        "tavg": null,
+        "tmin": 4.0,
+        "tmax": 21.0,
+        "precipitation": 0.0,
+        "windspeed": 10.8,
+        "winddirection": null,
+        "presure": 1018.5,
+        "species": "Coprinus comatus",
+        "genus": "Coprinus",
+        "location": "Red Clover, Sisters, OR, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.66658,
+          44.36633
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,genus,location,num_identification_agreements
+9ef71b8e-cdd5-436f-83b7-aa2ffdbbf91c,322712709,2025-10-23 23:32:00-07:00,2025-10-23,-122.4484676375,44.6086338751,84PVJH00+,1069.0,,,,,,,,Cortinarius idahoensis,Cortinarius,"Linn County, OR, USA",2
+f55d1e0a-76cf-4820-bb11-62a169d0367c,213914625,2024-05-04 18:39:48-07:00,2024-05-04,-121.63942,44.4859116667,84PWF900+,898.0,,5.0,11.0,14.3,10.1,,1000.7,Cortinarius pacificovernus,Cortinarius,"Deschutes National Forest, Camp Sherman, OR, US",1

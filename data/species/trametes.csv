@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,genus,location,num_identification_agreements
+35990078-120a-4b12-8f6f-83354d890157,395534918,2026-08-22 11:06:54-07:00,2026-08-22,-122.1804716667,45.5550216667,84QVHR00+,35.0,,15.6,24.4,0.0,5.2,,1015.4,Trametes versicolor,Trametes,"E Historic Columbia River Hwy, Corbett, OR, US",1
+2fef2cb8-937b-488e-ba97-04cb1c12fba2,394316896,2026-08-24 19:19:03-07:00,2026-08-24,-122.3958511353,45.833026886,84QVRJ00+,205.0,,13.3,33.9,0.0,4.3,,,Trametes versicolor,Trametes,"Clark County, US-WA, US",1
+9f7f073f-f60b-4966-8627-3055d77c3510,394252110,2026-07-14 08:20:00-07:00,2026-07-14,-122.1157756,45.5761597,84QVHV00+,225.0,,12.2,31.7,0.0,2.7,,,Trametes versicolor,Trametes,"Multnomah Falls, Oregon 97014, USA",1
