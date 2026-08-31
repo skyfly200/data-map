@@ -73,6 +73,17 @@ def _clean(value, as_int=False):
         value = value.item()
     return value
 
+def _clean_plus_code(code_str):
+    """Clean up malformed plus codes ending in trailing zeros and a dangling plus."""
+    if not code_str or not isinstance(code_str, str):
+        return code_str
+    # If it's a folder/filename or property containing a malformed plus code pattern like '00+'
+    cleaned = re.sub(r'0{2,}\+', '+', code_str)
+    # Remove trailing dangling plus if nothing follows it
+    if cleaned.endswith('+') and len(cleaned.split('+')[-1]) == 0:
+        # Optionally strip the plus entirely if it's incomplete
+        cleaned = cleaned.rstrip('+')
+    return cleaned
 
 def _day_of_year(date_str):
     """1–366 day-of-year, for sorting/comparing dates across years (phenology)."""
@@ -92,6 +103,9 @@ def to_geojson(df):
             continue  # can't place a point without coordinates
 
         props = {c: _clean(row.get(c), as_int=c in INT_COLUMNS) for c in present}
+        # Clean any accidental malformed plus codes in filenames or IDs
+        if "uuid" in props and props["uuid"]:
+            props["uuid"] = _clean_plus_code(props["uuid"])
         if "date" in df.columns:
             props["day_of_year"] = _day_of_year(row.get("date"))
         if "uuid" in df.columns:
