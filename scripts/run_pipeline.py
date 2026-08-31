@@ -1,12 +1,15 @@
 import os
 import subprocess
 import sys
-from pathlib import Path
 from dotenv import load_dotenv
 from pathlib import Path
 
 # Locate the root directory (one level up from scripts/) and load .env
 ROOT_DIR = Path(__file__).resolve().parent.parent
+os.chdir(ROOT_DIR)
+
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 load_dotenv(dotenv_path=ROOT_DIR / ".env")
 
 def stage_output_path(input_path, suffix, output_dir='.'):
