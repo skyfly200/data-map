@@ -24,6 +24,7 @@ handle reading the DEM and writing GeoTIFFs of each derived layer.
 import math
 import os
 import sys
+import re
 
 import numpy as np
 
@@ -320,6 +321,10 @@ def process_dem(dem_path, out_dir="dem/derived/", prevailing_wind_deg=270.0):
     os.makedirs(out_dir, exist_ok=True)
     print(f"🏔  Processing DEM {dem_path} ...")
 
+    # Extract bounding box from the input filename (e.g., N46.3_N37.0_W124.6_W102.0)
+    match = re.search(r'([NS]\d+\.\d+_[NS]\d+\.\d+_[EW]\d+\.\d+_[EW]\d+\.\d+)', os.path.basename(dem_path))
+    box_suffix = f"_{match.group(1)}" if match else ""
+
     with rasterio.open(dem_path) as src:
         dem = src.read(1).astype("float64")
         profile = src.profile
@@ -360,7 +365,7 @@ def process_dem(dem_path, out_dir="dem/derived/", prevailing_wind_deg=270.0):
 
     paths = {}
     for name, data in layers.items():
-        out_path = os.path.join(out_dir, f"{name}.tif")
+        out_path = os.path.join(out_dir, f"{name}{box_suffix}.tif")
         _write_raster(out_path, data, profile)
         paths[name] = out_path
         print(f"   ✓ wrote {out_path}")
