@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,genus,location,num_identification_agreements
+df035bce-78c4-4eed-8c81-000f9bcd5a91,191153302,2023-11-15 15:11:58-08:00,2023-11-15,-122.4849945912,45.0772367035,84QV3G00+,202.0,,6.1,11.7,,4.7,,1013.7,Lepiota sp. 'helveola-PNW16',Lepiota,"S Dickey Prairie Rd, Molalla, OR, US",2
