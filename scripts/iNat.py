@@ -11,6 +11,14 @@ from meteostat import Point, stations, daily
 from datetime import datetime
 import requests
 
+import sys
+from pathlib import Path
+
+# Add repository root (parent of scripts/) to sys.path
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 import species_store as store
 import utils.olc as olc_utils
 
