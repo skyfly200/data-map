@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d2aa7a2e-941b-40f7-b41b-532e13a92765",
+        "inat_id": 394152328,
+        "timestamp": "2026-08-23T10:04:05-07:00",
+        "date": "2026-08-23",
+        "olc": "84QW7700+",
+        "elevation": 1120.0,
+        "tavg": null,
+        "tmin": 17.0,
+        "tmax": 26.0,
+        "precipitation": 0.0,
+        "windspeed": 7.6,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hydnellum caeruleum",
+        "genus": "Hydnellum",
+        "location": "Trillium Lake Loop, Government Camp, OR, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.7408110741,
+          45.2714186886
+        ]
+      }
+    }
+  ]
+}
