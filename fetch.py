@@ -82,6 +82,7 @@ load_env_into_os()
 STUDY_AREA = [42, -106, 39, -102]  # around Colorado
 
 
+Python
 # ─── Topography (Digital Elevation Model) ─────────────────────────────────────
 def download_srtm_dem(area=None, output_dir="dem/", dem_type="SRTMGL3", api_key=None):
     """Download a DEM GeoTIFF for the study area from the OpenTopography API."""
@@ -89,8 +90,16 @@ def download_srtm_dem(area=None, output_dir="dem/", dem_type="SRTMGL3", api_key=
     north, west, south, east = area
     os.makedirs(output_dir, exist_ok=True)
     
-    out_path = os.path.join(output_dir, f"dem_{dem_type}.tif")
-    cog_path = os.path.join(output_dir, f"dem_{dem_type}.cog.tif")
+    # Encode the bounding box coordinates into the filename (rounded to 1 decimal place)
+    n_str = f"N{north:.1f}" if north >= 0 else f"S{abs(north):.1f}"
+    s_str = f"N{south:.1f}" if south >= 0 else f"S{abs(south):.1f}"
+    w_str = f"E{west:.1f}" if west >= 0 else f"W{abs(west):.1f}"
+    e_str = f"E{east:.1f}" if east >= 0 else f"W{abs(east):.1f}"
+    
+    box_suffix = f"{n_str}_{s_str}_{w_str}_{e_str}"
+    
+    out_path = os.path.join(output_dir, f"dem_{dem_type}_{box_suffix}.tif")
+    cog_path = os.path.join(output_dir, f"dem_{dem_type}_{box_suffix}.cog.tif")
 
     # Use a cached DEM if present. Prefer the compressed COG, but also accept a
     # raw .tif left behind when a previous compression failed — otherwise the DEM
@@ -274,6 +283,8 @@ def download_era5_worker(date_str, output_dir="soil/"):
         return "downloaded", date_str, nc_path
         
     except Exception as e:
+        if "not available yet" in str(e):
+            print(f"[!] Soil moisture data is not yet available for {date_str}. The script will skip this date.")
         # Cleanup on error
         for f in temp_files:
             if os.path.exists(f):
