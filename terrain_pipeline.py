@@ -319,11 +319,21 @@ def process_dem(dem_path, out_dir="dem/derived/", prevailing_wind_deg=270.0):
         raise RuntimeError("rasterio is required to process DEM files")
 
     os.makedirs(out_dir, exist_ok=True)
-    print(f"🏔  Processing DEM {dem_path} ...")
 
     # Extract bounding box from the input filename (e.g., N46.3_N37.0_W124.6_W102.0)
     match = re.search(r'([NS]\d+\.\d+_[NS]\d+\.\d+_[EW]\d+\.\d+_[EW]\d+\.\d+)', os.path.basename(dem_path))
     box_suffix = f"_{match.group(1)}" if match else ""
+
+    # Define expected outputs
+    expected_layers = ["slope", "aspect", "solar_exposure", "wind_exposure", "water_retention"]
+    paths = {name: os.path.join(out_dir, f"{name}{box_suffix}.tif") for name in expected_layers}
+    
+    # Cache check: skip math if all files are already on disk
+    if all(os.path.exists(p) for p in paths.values()):
+        print(f"🏔  Terrain layers already cached for {dem_path} — skipping processing.")
+        return paths
+
+    print(f"🏔  Processing DEM {dem_path} ...")
 
     with rasterio.open(dem_path) as src:
         dem = src.read(1).astype("float64")

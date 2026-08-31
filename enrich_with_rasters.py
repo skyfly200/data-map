@@ -11,6 +11,7 @@ import math
 import os
 import shutil
 import sys
+import glob
 
 import species_store as store
 
@@ -327,9 +328,13 @@ def enrich_with_terrain(df, terrain_dir="dem/derived/", checkpoint=None):
     for name in TERRAIN_LAYERS:
         if name not in df.columns:
             df[name] = None
-        path = resolve_raster_path(os.path.join(terrain_dir, f"{name}.tif"))
-        if path:
-            layer_paths[name] = path
+        # Search for the layer with or without the coordinate suffix
+        search_pattern = os.path.join(terrain_dir, f"{name}*.tif")
+        matches = glob.glob(search_pattern)
+        
+        if matches:
+            # resolve_raster_path ensures it finds the .cog.tif if compressed
+            layer_paths[name] = resolve_raster_path(matches[0])
         else:
             missing.append(name)
 
