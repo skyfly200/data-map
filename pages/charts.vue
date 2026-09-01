@@ -2,7 +2,7 @@
   <div class="charts-page">
     <nav class="tabs">
       <button :class="{ on: tab === 'gallery' }" @click="tab = 'gallery'">Charts</button>
-      <button :class="{ on: tab === 'build' }" @click="tab = 'build'">Explore</button>
+      <button :class="{ on: tab === 'build' }" @click="tab = 'build'">Build</button>
     </nav>
 
     <ChartBuilder v-if="tab === 'build'" class="build-pane" />
@@ -12,7 +12,28 @@
     <p v-else-if="pending && !rows.length" class="msg">Loading…</p>
 
     <template v-else>
-      <!-- Saved custom charts (from Explore), reorderable -->
+      <!-- Layout controls: reorder / hide the preset charts -->
+      <div class="layout-bar">
+        <button class="lb-btn" :class="{ on: layout.editing.value }" @click="layout.editing.value = !layout.editing.value">
+          {{ layout.editing.value ? '✓ Done arranging' : '⇅ Arrange charts' }}
+        </button>
+        <span v-if="layout.editing.value" class="lb-hint">Use ‹ › to reorder and ✕ to hide.</span>
+        <span class="lb-count">{{ layout.visibleCount.value }} shown</span>
+        <button v-if="layout.hiddenCharts.value.length" class="lb-btn ghost" @click="layout.showAll()">
+          Show all ({{ layout.hiddenCharts.value.length }} hidden)
+        </button>
+        <button v-if="layout.editing.value" class="lb-btn ghost" @click="layout.reset()">Reset layout</button>
+      </div>
+
+      <div v-if="layout.editing.value && layout.hiddenCharts.value.length" class="hidden-bar">
+        <span class="hb-label">Hidden:</span>
+        <button v-for="h in layout.hiddenCharts.value" :key="h.id" class="hb-chip" :title="`Show “${h.title}”`"
+                @click="layout.show(h.id)">
+          {{ h.title }} <span class="plus">+</span>
+        </button>
+      </div>
+
+      <!-- Saved custom charts (from the Build tab), reorderable -->
       <section v-if="saved.charts.value.length" class="saved">
         <h2 class="saved-title">My charts</h2>
         <div class="grid">
@@ -28,110 +49,110 @@
       </section>
 
     <div class="grid">
-      <ChartCard>
+      <GalleryChart id="clusters">
         <BarChart title="Observations per environmental cluster" :data="clusterData" :format="int" />
         <p class="note">Colours match the map. “Unclustered” = missing every clustering feature.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard>
+      <GalleryChart id="rain-leadup">
         <BarChart title="Avg. rain in the 7 days before an observation" :data="rainLeadUp" :format="mm" />
         <p class="note">Mean daily precipitation (mm) across all observations, by days before the find.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard>
+      <GalleryChart id="coverage">
         <BarChart title="Enrichment coverage (values present)" :data="coverageData" :format="cov" horizontal />
         <p class="note">How many of the {{ rows.length }} observations carry each attribute. Gaps fill in as the full pipeline runs.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard>
+      <GalleryChart id="by-month">
         <BarChart title="Observations by month" :data="monthData" :format="int" />
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard>
+      <GalleryChart id="by-week">
         <BarChart title="Observations by week of year" :data="weekData" :format="int" />
         <p class="note">Seasonal timing across all years (ISO week 1–53), ignoring which year.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard v-if="hasTempHistory">
+      <GalleryChart id="temp-leadup" v-if="hasTempHistory">
         <BarChart :title="`Avg. daily high in the 7 days before (°${tempUnit})`" :data="tempLeadUp" :format="deg" />
         <p class="note">Mean daily high temperature across observations, by days before the find.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard v-if="hasDayTemp">
+      <GalleryChart id="temp-dist" v-if="hasDayTemp">
         <BarChart :title="`Observation-day temperature (°${tempUnit})`" :data="tempHighLowDist" :format="int" />
         <p class="note">Count of observations per 2° band, split into low and high day temperatures.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard>
+      <GalleryChart id="elevation-dist">
         <BarChart title="Elevation distribution" :data="elevationData" :format="int" />
         <p class="note">Count of observations per elevation band ({{ unit }}).</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard>
+      <GalleryChart id="land-cover">
         <BarChart title="Land cover" :data="landCoverData" :format="int" horizontal />
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard>
+      <GalleryChart id="top-species">
         <BarChart title="Top species" :data="speciesData" :format="int" horizontal />
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard v-if="elevVsDoy.length">
+      <GalleryChart id="elev-vs-doy" v-if="elevVsDoy.length">
         <ScatterChart title="Elevation vs. day of year" :data="elevVsDoy" :legend="clusterLegend"
           xLabel="Day of year" :yLabel="`Elevation (${unit})`"
           :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v).toLocaleString()"
           @select="selected = $event" />
         <p class="note">Each point is one observation, coloured by cluster — seasonal timing across elevation.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard v-if="elevVsTemp.length">
+      <GalleryChart id="elev-vs-temp" v-if="elevVsTemp.length">
         <ScatterChart title="Elevation vs. observation-day high temp" :data="elevVsTemp" :legend="clusterLegend"
           :xLabel="`High temp (°${tempUnit})`" :yLabel="`Elevation (${unit})`"
           :xFormat="(v) => `${Math.round(v)}°`" :yFormat="(v) => Math.round(v).toLocaleString()"
           @select="selected = $event" />
         <p class="note">Higher sites tend to be cooler on the day of the find.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard v-if="rainVsDoy.length">
+      <GalleryChart id="rain-vs-doy" v-if="rainVsDoy.length">
         <ScatterChart title="7-day rain total vs. day of year" :data="rainVsDoy" :legend="clusterLegend"
           xLabel="Day of year" yLabel="Rain total (mm)"
           :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v)"
           @select="selected = $event" />
         <p class="note">Total precipitation in the 7 days before each find.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard v-if="phenologyBySpecies.length">
+      <GalleryChart id="phenology" v-if="phenologyBySpecies.length">
         <BoxPlot title="Fruiting season by species" :data="phenologyBySpecies" xLabel="Day of year"
           :format="(v) => Math.round(v)" />
         <p class="note">When each species (≥3 obs) is found through the year — the forager's calendar.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard v-if="elevationBySpecies.length">
+      <GalleryChart id="elevation-by-species" v-if="elevationBySpecies.length">
         <BoxPlot :title="`Elevation range by species (${unit})`" :data="elevationBySpecies" :xLabel="`Elevation (${unit})`"
           :format="(v) => Math.round(v).toLocaleString()" />
         <p class="note">Elevation band each species (≥3 obs) prefers.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard v-if="clusterProfile.rows.length">
+      <GalleryChart id="cluster-profile" v-if="clusterProfile.rows.length">
         <HeatmapChart title="Environmental cluster profiles" :rows="clusterProfile.rows"
           :cols="clusterProfile.cols" :matrix="clusterProfile.matrix" :format="(v) => v.toFixed(2)" />
         <p class="note">Mean of each feature per cluster, scaled 0–1 across clusters — what defines each group.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard v-if="speciesLandcover.rows.length">
+      <GalleryChart id="species-landcover" v-if="speciesLandcover.rows.length">
         <HeatmapChart title="Species × land cover" :rows="speciesLandcover.rows"
           :cols="speciesLandcover.cols" :matrix="speciesLandcover.matrix" :format="(v) => `${Math.round(v)}`" />
         <p class="note">How many observations of each species fall in each land-cover class.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard v-if="rainBeforeDist.length">
+      <GalleryChart id="antecedent-rain" v-if="rainBeforeDist.length">
         <BarChart title="Antecedent rainfall (7-day total before finds)" :data="rainBeforeDist" :format="int" />
         <p class="note">Distribution of total precipitation (mm) in the week before each observation.</p>
-      </ChartCard>
+      </GalleryChart>
 
-      <ChartCard>
+      <GalleryChart id="aspect">
         <WindRose title="Slope aspect of finds" :values="aspectValues" />
         <p class="note">Which compass direction the ground faces at each find (from the DEM).</p>
-      </ChartCard>
+      </GalleryChart>
     </div>
     </template>
 
@@ -145,7 +166,7 @@ import { PALETTE, UNCLUSTERED, colorFor, hasValue, useObservations } from '~/com
 import { useUnits } from '~/composables/useUnits'
 import { useSavedCharts } from '~/composables/useSavedCharts'
 
-// Two tabs on this page: the preset chart gallery and the Explore builder.
+// Two tabs on this page: the preset chart gallery and the chart builder.
 // Tab lives in the URL query so /charts?tab=build deep-links (and the old
 // /explore route redirects here).
 const route = useRoute()
@@ -156,9 +177,10 @@ const tab = computed({
 })
 
 const saved = useSavedCharts()
+const layout = useChartLayout()
 const { rows, error, pending, load } = useObservations()
 const { unit, elevValue, tempUnit, tempValue } = useUnits()
-onMounted(() => { load(); saved.loadFromStorage() })
+onMounted(() => { load(); saved.loadFromStorage(); layout.loadFromStorage() })
 
 const int = (v) => String(v)
 const cov = (v) => `${v}/${rows.value.length}`
@@ -422,6 +444,30 @@ const speciesData = computed(() => {
 .grid > * {
   min-width: 0;
 }
+.layout-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.lb-btn {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
+  border-radius: 6px; padding: 5px 12px; font-size: 0.82rem; font-weight: 600;
+}
+.lb-btn:hover { background: var(--surface-2); }
+.lb-btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.lb-btn.ghost { font-weight: 500; color: var(--muted); }
+.lb-btn.ghost:hover { color: var(--text); }
+.lb-hint, .lb-count { font-size: 0.8rem; color: var(--muted); }
+.lb-count { margin-left: auto; }
+
+.hidden-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: -4px 0 14px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px;
+}
+.hb-label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.hb-chip {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
+  border-radius: 999px; padding: 3px 10px; font-size: 0.78rem;
+}
+.hb-chip:hover { background: var(--surface-3); }
+.hb-chip .plus { color: var(--accent); font-weight: 700; }
+
 .note { margin: 8px 0 0; font-size: 0.78rem; color: var(--muted); }
 .msg { padding: 16px; color: #555; }
 .msg.error { color: #b00020; }

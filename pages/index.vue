@@ -45,7 +45,7 @@
       </div>
       <div class="feature">
         <h3>Charts you build</h3>
-        <p>Scatter, bar, box, histogram and heatmap. Compose your own on the Explore tab and save the ones you like.</p>
+        <p>Scatter, bar, box, histogram and heatmap. Compose your own on the Build tab and save the ones you like.</p>
       </div>
     </section>
   </div>
