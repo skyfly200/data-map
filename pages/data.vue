@@ -6,6 +6,13 @@
       <button :class="{ on: tab === 'fetch' }" @click="tab = 'fetch'">Fetch new</button>
     </nav>
 
+    <div class="dataset-bar">
+      <label for="dataset-select">Dataset</label>
+      <select id="dataset-select" :value="selectedDataset" @change="setDataset($event.target.value)">
+        <option v-for="d in availableDatasets" :key="d.id" :value="d.path">{{ d.label }}</option>
+      </select>
+    </div>
+
     <div class="layout">
       <aside class="side">
         <FilterPanel />
@@ -22,7 +29,7 @@
           <div class="head">
             <div>
               <h2>{{ levelLabel }}</h2>
-              <p class="sub">Choose which {{ levelLabel.toLowerCase() }} to show across the map, table, charts, and explorer.</p>
+              <p class="sub">Choose which {{ levelLabel.toLowerCase() }} to show across the map, table, and charts.</p>
             </div>
             <div class="actions">
               <label class="level">
@@ -80,7 +87,8 @@
 <script setup>
 import { useObservations } from '~/composables/useObservations'
 
-const { speciesOptions, speciesFilter, setSpeciesFilter, error, pending, load } = useObservations()
+const { speciesOptions, speciesFilter, setSpeciesFilter, error, pending, load,
+  selectedDataset, availableDatasets, setDataset } = useObservations()
 onMounted(load)
 
 // Tabs (in the URL so /data?tab=table deep-links, and old /table redirects here).
@@ -178,6 +186,13 @@ function barWidth(n) { return `${(n / maxCount.value) * 100}%` }
 }
 .tabs button:hover { color: var(--text); }
 .tabs button.on { color: var(--text); border-bottom-color: var(--accent); }
+
+.dataset-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 0.82rem; color: var(--muted); }
+.dataset-bar label { font-weight: 600; }
+.dataset-bar select {
+  flex: 0 1 320px; min-width: 0; border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 9px; font-size: 0.84rem; background: var(--input-bg); color: var(--text);
+}
 
 .layout { display: grid; grid-template-columns: minmax(300px, 360px) 1fr; gap: 22px; align-items: start; }
 .side { position: sticky; top: 16px; }
