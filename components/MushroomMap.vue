@@ -35,19 +35,49 @@
         Include excluded water / non-terrestrial rows
       </label>
 
-      <!-- Overlay controls -->
-      <div class="overlay-controls" style="margin-top:8px;">
-        <div v-for="(url, name) in overlayDefs" :key="name" class="overlay-item">
-          <label>
-            <input type="checkbox" v-model="activeOverlays[name]" @change="toggleOverlay(name)" />
-            {{ name }}
-          </label>
-        </div>
-        <div class="custom-overlay" style="margin-top:4px;">
-          <input v-model="customOverlayUrl" placeholder="Custom overlay GeoJSON URL" style="width:200px;" />
-          <button @click="addCustomOverlay(customOverlayUrl)" :disabled="!customOverlayUrl">Add</button>
-        </div>
+      <!-- Aggregate overlay: grid summaries drawn under the points -->
+      <div class="colorby">
+        <label for="overlay-sel">Overlay</label>
+        <select id="overlay-sel" v-model="overlayMode">
+          <option v-for="o in OVERLAY_MODES" :key="o.key" :value="o.key">{{ o.label }}</option>
+        </select>
       </div>
+      <div v-if="overlayMode" class="colorby">
+        <label for="overlay-cell">Cell</label>
+        <select id="overlay-cell" v-model.number="overlayCell">
+          <option v-for="c in CELL_SIZES" :key="c.value" :value="c.value">{{ c.label }}</option>
+        </select>
+      </div>
+      <div v-if="overlayMode === 'season' || overlayMode === 'fruiting'" class="season">
+        <label :for="'season-day'">Date <strong>{{ seasonLabel }}</strong> ±{{ seasonWindow }}d</label>
+        <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1" />
+        <input v-model.number="seasonWindow" type="range" min="3" max="60" step="1" aria-label="Window width in days" />
+      </div>
+    </div>
+
+    <!-- Overlay legend, with the caveat that belongs with each metric -->
+    <div v-if="loaded && overlayLegend" class="legend overlay-legend">
+      <div class="legend-title">{{ overlayMeta.label }}</div>
+      <template v-if="overlayLegend.type === 'sequential'">
+        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${overlayLegend.ramp[0]}, ${overlayLegend.ramp[1]})` }"></div>
+        <div class="gradient-scale"><span>{{ overlayLegend.min }}</span><span>{{ overlayLegend.max }}</span></div>
+        <div class="legend-note">{{ overlayLegend.cells.toLocaleString() }} cells · {{ overlayLegend.note }}</div>
+      </template>
+      <template v-else-if="overlayLegend.type === 'vector'">
+        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${overlayLegend.ramp[0]}, ${overlayLegend.ramp[1]})` }"></div>
+        <div class="gradient-scale"><span>{{ overlayLegend.min }}</span><span>{{ overlayLegend.max }}</span></div>
+        <div class="legend-note">
+          Source: <strong>{{ overlayLegend.source }}</strong> · colour = {{ overlayLegend.colorBy }}<br />
+          {{ overlayLegend.cells.toLocaleString() }} arrows · {{ overlayLegend.note }}
+        </div>
+      </template>
+      <template v-else>
+        <div v-for="item in overlayLegend.items" :key="item.label" class="legend-row">
+          <span class="swatch" :style="{ background: item.color }"></span>
+          <span><em>{{ item.label }}</em> <span class="legend-n">{{ item.n }}</span></span>
+        </div>
+        <div class="legend-note">{{ overlayLegend.total }} species dominate somewhere · {{ overlayMeta.note }}</div>
+      </template>
     </div>
 
     <!-- Legend (categorical swatches or a sequential gradient) -->
@@ -139,57 +169,94 @@ let map, geoLayer, L, userLayer, selectedMarker
 
 // Holds enriched observation info (photos, description, etc.) fetched from iNaturalist API
 
-// Overlay management definitions
-const overlayDefs = ref({
-  // Example static overlay: name -> URL of GeoJSON
-  // 'NDVI Layer': '/data/ndvi.geojson',
-});
-const activeOverlays = ref({});
-const overlayLayers = {};
+// ─── Aggregate overlays ───────────────────────────────────────────────────────
+// Grid summaries drawn under the points: density, species richness, seasonal
+// activity, a fruiting-likelihood score, and dominant species. See
+// composables/useMapOverlays.js for what each one means.
+const overlays = useMapOverlays()
+const {
+  mode: overlayMode, cellSize: overlayCell, seasonDay, seasonWindow,
+  activeMode: overlayMeta, OVERLAY_MODES, CELL_SIZES,
+} = overlays
+let overlayLayer = null
 
-function loadOverlay(name, url) {
-  fetch(url)
-    .then(r => r.json())
-    .then(geo => {
-      if (!map || !L) {
-        console.warn('Map not initialized; cannot load overlay', name);
-        return;
-      }
-      const layer = L.geoJSON(geo, {
-        style: { color: '#ff7800', weight: 2, opacity: 0.6 },
-        onEachFeature: (f, l) => {
-          if (f.properties && f.properties.name) {
-            l.bindPopup(f.properties.name);
-          }
-        }
-      }).addTo(map);
-      overlayLayers[name] = layer;
-    })
-    .catch(e => console.error('Failed to load overlay', name, e));
-}
+const overlayResult = computed(() =>
+  overlays.computeOverlay(filteredData.value?.features || [], overlayMode.value))
+const overlayLegend = computed(() => overlayResult.value.legend)
 
-function toggleOverlay(name) {
-  if (activeOverlays.value[name]) {
-    const url = overlayDefs.value[name];
-    if (url) loadOverlay(name, url);
-  } else {
-    const layer = overlayLayers[name];
-    if (layer && map) {
-      map.removeLayer(layer);
-      delete overlayLayers[name];
-    }
+/**
+ * One arrow for a vector cell: a shaft plus two barbs, as canvas polylines.
+ *
+ * Directions are in compass space (dx east, dy north), so the shaft is drawn in
+ * degrees with the longitude step divided by cos(lat) — otherwise every arrow
+ * would skew east as you move away from the equator.
+ */
+function arrowFor(c) {
+  const span = (c.lat1 - c.lat0) * 0.42          // keep arrows inside their cell
+  const len = span * (0.35 + 0.65 * (c.t ?? 0.5))
+  const kx = 1 / Math.max(0.2, Math.cos((c.lat * Math.PI) / 180))
+  const tipLat = c.lat + c.dy * len
+  const tipLon = c.lon + c.dx * len * kx
+  const tailLat = c.lat - c.dy * len
+  const tailLon = c.lon - c.dx * len * kx
+
+  // Barbs at ±150° from the shaft direction, a third of its length.
+  const barb = len * 0.38
+  const head = (deg) => {
+    const a = Math.atan2(c.dx, c.dy) + (deg * Math.PI) / 180
+    return [tipLat - Math.cos(a) * barb, tipLon - Math.sin(a) * barb * kx]
   }
+  const style = { color: c.color, weight: 1.6, opacity: 0.9, interactive: false }
+  return [
+    L.polyline([[tailLat, tailLon], [tipLat, tipLon]], style),
+    L.polyline([head(-28), [tipLat, tipLon], head(28)], style),
+  ]
 }
 
-function addCustomOverlay(url) {
-  const name = `Custom ${Object.keys(overlayDefs.value).length + 1}`;
-  overlayDefs.value[name] = url;
-  activeOverlays.value[name] = true;
-  loadOverlay(name, url);
+function renderOverlay() {
+  if (!map || !L) return
+  if (overlayLayer) { overlayLayer.remove(); overlayLayer = null }
+  const { cells } = overlayResult.value
+  if (!cells.length) return
+
+  const shapes = overlayResult.value.legend?.type === 'vector'
+    ? cells.flatMap((c) => arrowFor(c))
+    // Rectangles go through the map's canvas renderer, so a few thousand cells
+    // cost one canvas rather than a few thousand DOM nodes.
+    : cells.map((c) => L.rectangle(
+      [[c.lat0, c.lon0], [c.lat1, c.lon1]],
+      { stroke: false, fillColor: c.color, fillOpacity: 0.55, interactive: false },
+    ))
+
+  overlayLayer = L.layerGroup(shapes)
+  overlayLayer.addTo(map)
+  // Keep the observation points on top of the shading.
+  if (geoLayer) geoLayer.bringToFront()
 }
 
-// UI state for custom overlay URL input
-const customOverlayUrl = ref('');
+watch(overlayResult, () => renderOverlay())
+watch([overlayMode, overlayCell, seasonDay, seasonWindow], () => overlays.persist())
+
+const seasonLabel = computed(() => {
+  const d = new Date(Date.UTC(2001, 0, 1))
+  d.setUTCDate(seasonDay.value)
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
+})
+
+// ─── Reference tile overlays ──────────────────────────────────────────────────
+// Public XYZ services layered over the basemap, for context the observations
+// cannot supply themselves.
+const TILE_OVERLAYS = [
+  { name: 'USGS topo', url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'USGS The National Map', maxZoom: 16 },
+  { name: 'USGS imagery', url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'USGS The National Map', maxZoom: 16 },
+  { name: 'Hillshade', url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Esri', maxZoom: 16, opacity: 0.6 },
+  { name: 'OpenTopoMap relief', url: 'https://tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: 'OpenTopoMap (CC-BY-SA)', maxZoom: 17, opacity: 0.5 },
+]
+
 const observationInfo = ref(null)
 // Carousel state
 const currentImageIndex = ref(0)
@@ -454,14 +521,23 @@ onMounted(async () => {
       scrollWheelZoom: true, zoomControl: false, layers: [osm], preferCanvas: true,
     }).setView([39.5, -105.7], 7)
     L.control.zoom({ position: 'bottomleft' }).addTo(map)
+    // Reference tile services as toggleable overlays alongside the basemaps.
+    const tileOverlays = {}
+    for (const o of TILE_OVERLAYS) {
+      tileOverlays[o.name] = L.tileLayer(o.url, {
+        attribution: o.attribution, maxZoom: o.maxZoom, opacity: o.opacity ?? 1,
+      })
+    }
     L.control.layers(
       { 'Street (OSM)': osm, 'Terrain (OpenTopoMap)': topo, 'Satellite (Esri)': sat },
-      {}, { position: 'topright', collapsed: true },
+      tileOverlays, { position: 'topright', collapsed: true },
     ).addTo(map)
 
+    overlays.loadFromStorage()
     await load()
     if (!data.value) throw new Error('no data')
     renderPoints(filteredData.value)
+    renderOverlay()
     loaded.value = true
     // If arriving via "Open on map" from a chart, focus that observation now.
     if (focusObservation.value) applyFocus(focusObservation.value)
@@ -555,6 +631,19 @@ onBeforeUnmount(() => { if (map) map.remove() })
 }
 .legend-title { font-weight: 600; margin-bottom: 6px; position: sticky; top: 0; }
 .legend-row { display: flex; align-items: center; gap: 8px; }
+
+/* The overlay legend sits above the point legend, in the same column. */
+.overlay-legend { bottom: auto; top: 18px; right: 12px; max-width: 280px; }
+.legend-note {
+  margin-top: 6px; font-size: 11px; line-height: 1.35; color: #555;
+  border-top: 1px solid #e6e6e6; padding-top: 5px;
+}
+.legend-n { color: #777; font-size: 11px; }
+
+/* Day-of-year window controls for the seasonal overlays. */
+.season { display: flex; flex-direction: column; gap: 2px; font-size: 0.78rem; min-width: 190px; }
+.season label { color: var(--text); }
+.season input[type="range"] { width: 100%; margin: 0; }
 .legend-row span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #222; flex: 0 0 auto; }
 .gradient { height: 12px; border-radius: 3px; border: 1px solid #ccc; }
