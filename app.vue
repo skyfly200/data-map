@@ -1,7 +1,9 @@
 <template>
   <div class="app">
     <NuxtRouteAnnouncer />
-    <header class="app-header">
+    <!-- Embedded in someone else's page: drop the site chrome so the iframe
+         shows only the view that was shared. -->
+    <header v-if="!isEmbed" class="app-header">
       <NuxtLink to="/" class="brand">
         <h1>Nexstrata</h1>
       </NuxtLink>
@@ -48,6 +50,9 @@
 <script setup>
 import { useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
+import { useShareState } from '~/composables/useShareState'
+
+const { isEmbed } = useShareState()
 
 useHead({
   title: 'data-map · Mushroom Observations',

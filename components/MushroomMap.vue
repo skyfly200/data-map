@@ -32,6 +32,8 @@
       <LiveClusterControls />
       <AppearanceControls :field="colorBy" :field-label="coloring.title"
                           :values="legendValues" />
+      <ShareMenu :map-view="mapView" :color-by="colorBy" :size-by="sizeBy"
+                 :title="shareTitle" />
       <label class="toggle">
         <input type="checkbox" v-model="showFiltered" />
         Include excluded water / non-terrestrial rows
@@ -141,10 +143,11 @@ import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useAppearance } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
 
-const { data, filteredData, load, showFiltered, setShowFiltered, focusObservation, setFocusObservation } = useObservations()
+const { data, filteredData, load, showFiltered, setShowFiltered, speciesFilter, focusObservation, setFocusObservation } = useObservations()
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const live = useLiveClusters()
 const appearance = useAppearance()
+const share = useShareState()
 const { pointRadius, pointOpacity, activeColors, colorOverrides } = appearance
 
 const mapEl = ref(null)
@@ -449,6 +452,20 @@ watch([activeColors, colorOverrides, pointRadius, pointOpacity], () => {
 })
 
 // When focusing an observation, the next re-render must not refit/clear it.
+// Leaflet owns the centre and zoom, so they are mirrored into a ref for the
+// share link rather than read out of shared state.
+const mapView = ref(null)
+function syncMapView() {
+  if (!map) return
+  mapView.value = { center: map.getCenter(), zoom: map.getZoom() }
+}
+
+const shareTitle = computed(() => {
+  const n = filteredData.value?.features?.length || 0
+  const what = speciesFilter.value?.length === 1 ? speciesFilter.value[0] : 'mushroom observations'
+  return `${n.toLocaleString()} ${what} — data-map`
+})
+
 let suppressFit = false
 
 // Rebuild the point layer whenever the dataset changes (e.g. species switch).
@@ -567,11 +584,26 @@ onMounted(async () => {
       tileOverlays, { position: 'topright', collapsed: true },
     ).addTo(map)
 
+    map.on('moveend zoomend', syncMapView)
+    syncMapView()
+
     overlays.loadFromStorage()
     appearance.loadFromStorage()
+
+    // A shared link wins over stored preferences: the point of opening one is to
+    // see what the sender saw, not what you last had configured.
+    const shared = share.apply(useRoute().query)
+    if (shared.colorBy) colorBy.value = shared.colorBy
+    if (shared.sizeBy !== null) sizeBy.value = shared.sizeBy
+
     await load()
     if (!data.value) throw new Error('no data')
+    // A link carrying a view sets it explicitly; skip the fit-to-data that would
+    // otherwise throw that view away.
+    if (shared.view) suppressFit = true
     renderPoints(filteredData.value)
+    if (shared.view) map.setView(shared.view.center, shared.view.zoom, { animate: false })
+    syncMapView()
     renderOverlay()
     loaded.value = true
     // If arriving via "Open on map" from a chart, focus that observation now.
