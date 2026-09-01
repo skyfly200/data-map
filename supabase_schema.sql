@@ -1,5 +1,13 @@
 -- Canonical observation table for iNaturalist sync.
 -- Store a single row per iNaturalist record keyed by inat_id.
+--
+-- This file is idempotent: run it on a fresh database or an existing one.
+-- Triggers are dropped before being created because PostgreSQL has no
+-- `create trigger if not exists`, and without that the whole script aborts on
+-- the first trigger that already exists — taking every statement after it with
+-- it. To add ONLY the settings/charts tables to a database that already has the
+-- observation tables, run supabase_migrations/001_user_settings_and_charts.sql
+-- instead.
 
 create table if not exists public.observations (
   inat_id bigint primary key,
@@ -46,11 +54,13 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists observations_set_updated_at on public.observations;
 create trigger observations_set_updated_at
 before update on public.observations
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists observation_enrichments_set_updated_at on public.observation_enrichments;
 create trigger observation_enrichments_set_updated_at
 before update on public.observation_enrichments
 for each row
@@ -113,11 +123,13 @@ drop policy if exists "own charts" on public.saved_charts;
 create policy "own charts" on public.saved_charts
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop trigger if exists user_settings_set_updated_at on public.user_settings;
 create trigger user_settings_set_updated_at
 before update on public.user_settings
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists saved_charts_set_updated_at on public.saved_charts;
 create trigger saved_charts_set_updated_at
 before update on public.saved_charts
 for each row

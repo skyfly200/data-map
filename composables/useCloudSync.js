@@ -67,6 +67,38 @@ export function rowsToCharts(rows = []) {
  * rather than throwing when there is no context, which is the correct outcome:
  * no context means no session means nothing to sync.
  */
+/**
+ * A Supabase error turned into something a reader can act on.
+ *
+ * The common failure is not a bug in the app: the tables have not been created
+ * yet, and PostgREST answers that with a schema-cache message that means nothing
+ * unless you already know what it implies.
+ */
+export function explainSyncError(err) {
+  const raw = err?.message || String(err || 'Unknown error')
+  const code = err?.code || ''
+  const missingTable = code === 'PGRST205' || code === '42P01'
+    || /schema cache|does not exist|Could not find the table/i.test(raw)
+  if (missingTable) {
+    return {
+      message: 'Your account is not set up for sync yet — the settings tables are missing.',
+      hint: 'Run supabase_migrations/001_user_settings_and_charts.sql against your Supabase project.',
+      raw,
+    }
+  }
+  if (code === '42501' || /row-level security|permission denied/i.test(raw)) {
+    return {
+      message: 'Your account is not allowed to write its own settings.',
+      hint: 'The row-level security policies are missing — re-run the migration.',
+      raw,
+    }
+  }
+  if (/Failed to fetch|NetworkError|ERR_/i.test(raw)) {
+    return { message: 'Could not reach your account.', hint: 'Check your connection and retry.', raw }
+  }
+  return { message: 'Could not sync with your account.', hint: '', raw }
+}
+
 export function safeCloudSync() {
   try {
     return useCloudSync()
@@ -83,6 +115,8 @@ export function useCloudSync() {
   // that is a valid, complete state, not a degraded one.
   const status = useState('cloud-sync-status', () => 'off')
   const error = useState('cloud-sync-error', () => '')
+  const errorHint = useState('cloud-sync-hint', () => '')
+  const errorRaw = useState('cloud-sync-raw', () => '')
   const lastSynced = useState('cloud-sync-at', () => null)
 
   const enabled = computed(() => Boolean(configured && isAuthed.value && $supabase))
@@ -192,6 +226,8 @@ export function useCloudSync() {
     }
     status.value = 'syncing'
     error.value = ''
+    errorHint.value = ''
+    errorRaw.value = ''
     try {
       const firstTime = readLocal(LAST_PULL_KEY) !== user.value.id
       const [remoteSettings, remoteCharts] = await Promise.all([pullSettings(), pullCharts()])
@@ -218,8 +254,12 @@ export function useCloudSync() {
       return { settings, charts }
     } catch (e) {
       // A sync failure must never cost the viewer their local state.
+      const info = explainSyncError(e)
       status.value = 'error'
-      error.value = e?.message || 'Could not sync with your account.'
+      error.value = info.message
+      errorHint.value = info.hint
+      errorRaw.value = info.raw
+      console.warn('[cloud sync]', info.raw)
       return { settings: null, charts: null }
     }
   }
@@ -235,15 +275,19 @@ export function useCloudSync() {
         lastSynced.value = new Date().toISOString()
         status.value = 'synced'
       } catch (e) {
+        const info = explainSyncError(e)
         status.value = 'error'
-        error.value = e?.message || 'Could not save to your account.'
+        error.value = info.message
+        errorHint.value = info.hint
+        errorRaw.value = info.raw
+        console.warn('[cloud sync]', info.raw)
       }
     }, delay)
   }
 
   return {
     SETTINGS_KEYS, CHARTS_KEY,
-    enabled, status, error, lastSynced,
+    enabled, status, error, errorHint, errorRaw, lastSynced,
     snapshotSettings, applySettings,
     pullSettings, pushSettings, pullCharts, pushCharts,
     sync, schedulePush,
