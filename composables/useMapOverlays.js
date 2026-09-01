@@ -81,6 +81,7 @@ export function dayDistance(a, b) {
 }
 
 export function useMapOverlays() {
+  const cloud = safeCloudSync()
   const mode = useState('map-overlay-mode', () => '')
   const cellSize = useState('map-overlay-cell', () => 0.05)
   // Day-of-year the seasonal modes centre on, and how wide the window is.
@@ -99,6 +100,7 @@ export function useMapOverlays() {
         mode: mode.value, cellSize: cellSize.value,
         seasonDay: seasonDay.value, seasonWindow: seasonWindow.value,
       }))
+      cloud?.schedulePush()
     } catch { /* ignore */ }
   }
 
