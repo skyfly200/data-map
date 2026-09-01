@@ -178,8 +178,10 @@ function viewDomain(base, c) {
 const xDom = computed(() => viewDomain(baseXDom.value, center.value?.x))
 const yDom = computed(() => viewDomain(baseYDom.value, center.value?.y))
 
-const sx = (v) => padL + ((v - xDom.value[0]) / (xDom.value[1] - xDom.value[0])) * (W.value - padL - padR)
-const sy = (v) => (H.value - padB) - ((v - yDom.value[0]) / (yDom.value[1] - yDom.value[0])) * (H.value - padT - padB)
+// `|| 1` guards a zero-width domain: dividing by it yields NaN coordinates,
+// which the browser rejects attribute by attribute and the chart renders blank.
+const sx = (v) => padL + ((v - xDom.value[0]) / ((xDom.value[1] - xDom.value[0]) || 1)) * (W.value - padL - padR)
+const sy = (v) => (H.value - padB) - ((v - yDom.value[0]) / ((yDom.value[1] - yDom.value[0]) || 1)) * (H.value - padT - padB)
 // Pixel → data (for cursor-anchored zoom and drag-to-pan).
 const invX = (px) => xDom.value[0] + ((px - padL) / ((W.value - padL - padR) || 1)) * (xDom.value[1] - xDom.value[0])
 const invY = (py) => yDom.value[0] + (((H.value - padB) - py) / ((H.value - padT - padB) || 1)) * (yDom.value[1] - yDom.value[0])

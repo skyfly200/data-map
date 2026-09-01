@@ -59,6 +59,13 @@
         <label class="ctrl"><span>Measure</span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
       </template>
 
+      <label v-if="SORTABLE_TYPES.has(chartType)" class="ctrl">
+        <span>Sort</span>
+        <select v-model="sortBy">
+          <option v-for="m in SORT_MODES" :key="m.key" :value="m.key">{{ m.label }}</option>
+        </select>
+      </label>
+
       <LiveClusterControls class="lc-item" />
       <button class="save" :disabled="justSaved" @click="save">{{ justSaved ? '✓ Saved to Charts' : '+ Save to Charts' }}</button>
     </div>
@@ -75,7 +82,7 @@
 
 <script setup>
 import { hasValue, useObservations } from '~/composables/useObservations'
-import { ALL_NUMERIC, ALL_CATEGORY } from '~/composables/useChartFields'
+import { ALL_NUMERIC, ALL_CATEGORY, SORT_MODES } from '~/composables/useChartFields'
 import { useSavedCharts } from '~/composables/useSavedCharts'
 
 const { rows, error, pending, load } = useObservations()
@@ -113,6 +120,11 @@ const bins = ref(10)
 const granularity = ref(24)
 const horizontal = ref(false)
 const showToday = ref(false)
+const sortBy = ref('value-desc')
+
+// Only charts that lay categories out in a row have an order worth choosing.
+// A scatter or histogram has no category axis to sort.
+const SORTABLE_TYPES = new Set(['bar', 'box', 'radar'])
 
 const config = computed(() => ({
   type: chartType.value,
@@ -120,7 +132,7 @@ const config = computed(() => ({
   shapeField: shapeField.value, sizeField: sizeField.value, seriesField: seriesField.value,
   groupField: groupField.value, valueField: valueField.value, measure: measure.value,
   rowField: rowField.value, colField: colField.value, bins: bins.value, granularity: granularity.value,
-  horizontal: horizontal.value, showToday: showToday.value,
+  horizontal: horizontal.value, showToday: showToday.value, sortBy: sortBy.value,
 }))
 
 // Click a scatter point to open its observation (iNat link + open on map).
@@ -129,7 +141,7 @@ const selected = ref(null)
 // Remember the builder configuration per viewer, so returning to Explore keeps
 // the last chart you were designing.
 const EXPLORE_KEY = 'explore-config'
-const persisted = { type: chartType, xField, yField, colorField, shapeField, sizeField, seriesField, groupField, valueField, measure, rowField, colField, bins, granularity, horizontal, showToday }
+const persisted = { type: chartType, xField, yField, colorField, shapeField, sizeField, seriesField, groupField, valueField, measure, rowField, colField, bins, granularity, horizontal, showToday, sortBy }
 onMounted(() => {
   if (!import.meta.client) return
   try {

@@ -55,6 +55,28 @@ export const EMPTY_FILTERS = {
   center: null, radiusKm: null, // { lat, lng } + radius
   country: '', state: '', county: '',
   year: '', month: '', week: '', dateFrom: '', dateTo: '',
+  // Drop taxa with too few records to say anything about. Unlike every other
+  // filter this one is not a per-row test — it needs the counts across the
+  // whole set first — so it is applied separately, in useObservations.
+  minObs: 0, minObsField: 'species',
+}
+
+/**
+ * Taxa with at least `min` observations in `features`.
+ *
+ * Returns null when the filter is off, so callers can skip the pass entirely
+ * rather than building a set that matches everything.
+ */
+export function taxaAboveThreshold(features, field, min) {
+  if (!min || min < 2) return null
+  const counts = new Map()
+  for (const f of features) {
+    const v = f.properties?.[field]
+    if (v !== null && v !== undefined && v !== '') counts.set(v, (counts.get(v) || 0) + 1)
+  }
+  const keep = new Set()
+  for (const [value, n] of counts) if (n >= min) keep.add(value)
+  return keep
 }
 
 // Pure predicate: does one feature pass the active filters?
@@ -99,6 +121,7 @@ export function useFilters() {
     let n = 0
     if (f.center && f.radiusKm) n++
     for (const k of ['country', 'state', 'county', 'year', 'month', 'week', 'dateFrom', 'dateTo']) if (f[k]) n++
+    if (f.minObs > 1) n++
     return n
   })
 
