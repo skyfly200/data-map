@@ -21,8 +21,18 @@ from dotenv import load_dotenv
 # scripts/ holds the stage scripts; the repo root above it is the working
 # directory they all expect — the per-species store (data/) and the raster
 # caches (dem/, precip/, ndvi/, soil/, world_cover/) are relative to it.
+#
+# The chdir happens in run_all()'s `working_directory`, not at import: importing
+# a module should not move the caller, and the notebook imports this before it
+# is ready to run.
 SCRIPTS_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPTS_DIR.parent
+
+# Stage modules import each other by bare name (`import species_store`), so the
+# directory holding them has to be importable for anyone importing run_pipeline.
+for _path in (SCRIPTS_DIR, ROOT_DIR):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
 load_dotenv(dotenv_path=ROOT_DIR / ".env")
 
 def stage_output_path(input_path, suffix, output_dir='.'):
