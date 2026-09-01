@@ -8,7 +8,7 @@
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
     <p v-else-if="pending && !rows.length" class="msg">Loading…</p>
 
-    <div v-else class="table-wrap">
+    <div v-else ref="scroller" class="table-wrap" @scroll.passive="onScroll">
       <table>
         <thead>
           <tr>
@@ -20,7 +20,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(row, i) in filtered" :key="row.uuid || i">
+          <!-- Only the rows in view exist in the DOM; these spacers stand in for
+               the ones above and below so the scrollbar still spans the full set. -->
+          <tr v-if="padTop" class="spacer" :style="{ height: `${padTop}px` }"><td :colspan="columns.length + 1"></td></tr>
+          <tr v-for="(row, i) in visibleRows" :key="row.uuid || start + i" ref="rowEls">
             <td v-for="col in columns" :key="col.key" :class="col.numeric ? 'num' : ''">
               <template v-if="col.key === 'cluster'">
                 <span v-if="hasValue(row.cluster)" class="chip" :style="{ background: colorFor(row.cluster) }">{{ row.cluster }}</span>
@@ -41,6 +44,7 @@
               <span v-else class="muted">—</span>
             </td>
           </tr>
+          <tr v-if="padBottom" class="spacer" :style="{ height: `${padBottom}px` }"><td :colspan="columns.length + 1"></td></tr>
         </tbody>
       </table>
     </div>
@@ -105,6 +109,64 @@ const filtered = computed(() => {
     return String(av).localeCompare(String(bv)) * dir
   })
 })
+
+// ─── Windowed rendering ───────────────────────────────────────────────────────
+// The full set is ~48k rows. Putting all of them in the DOM took ~30s to become
+// interactive and made scrolling unusable, so only the rows on screen are
+// rendered and two spacer rows carry the rest of the scroll height.
+
+const ROW_HEIGHT = 29   // measured from a rendered row; a starting estimate
+const OVERSCAN = 8      // rows kept beyond each edge, so a fast scroll stays filled
+
+const scroller = ref(null)
+const rowEls = ref([])
+const scrollTop = ref(0)
+const viewportHeight = ref(600)
+const rowHeight = ref(ROW_HEIGHT)
+
+const total = computed(() => filtered.value.length)
+const start = computed(() =>
+  Math.max(0, Math.floor(scrollTop.value / rowHeight.value) - OVERSCAN))
+const count = computed(() =>
+  Math.ceil(viewportHeight.value / rowHeight.value) + OVERSCAN * 2)
+const end = computed(() => Math.min(total.value, start.value + count.value))
+
+const visibleRows = computed(() => filtered.value.slice(start.value, end.value))
+const padTop = computed(() => start.value * rowHeight.value)
+const padBottom = computed(() => Math.max(0, (total.value - end.value) * rowHeight.value))
+
+function onScroll(e) {
+  scrollTop.value = e.target.scrollTop
+}
+
+function measure() {
+  const el = scroller.value
+  if (el) viewportHeight.value = el.clientHeight || viewportHeight.value
+  // Trust a real rendered row over the estimate, so the spacers match the
+  // content exactly and scrolling does not drift.
+  const row = rowEls.value?.[0]
+  const h = row?.offsetHeight
+  if (h && Math.abs(h - rowHeight.value) > 0.5) rowHeight.value = h
+}
+
+// Filtering or re-sorting changes what row 0 is; jump back to the top so the
+// window and the scroll position agree.
+watch([query, sortKey, sortDir], () => {
+  scrollTop.value = 0
+  if (scroller.value) scroller.value.scrollTop = 0
+})
+
+watch(visibleRows, () => nextTick(measure))
+
+onMounted(() => {
+  nextTick(measure)
+  if (import.meta.client) {
+    window.addEventListener('resize', measure, { passive: true })
+  }
+})
+onUnmounted(() => {
+  if (import.meta.client) window.removeEventListener('resize', measure)
+})
 </script>
 
 <style scoped>
@@ -120,7 +182,16 @@ const filtered = computed(() => {
 .msg { color: var(--muted); }
 .msg.error { color: var(--danger); }
 
-.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+/* Bounded height so the windowed body has a viewport to scroll inside. */
+.table-wrap {
+  overflow: auto; border: 1px solid var(--border); border-radius: 8px;
+  max-height: calc(100vh - 240px); min-height: 320px;
+}
+/* Spacer rows stand in for the off-screen rows; they must not pick up row
+   borders or hover styling. */
+tbody tr.spacer { background: none; }
+tbody tr.spacer:hover { background: none; }
+tbody tr.spacer td { padding: 0; border: 0; }
 table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
 thead th {
   position: sticky; top: 0; background: var(--surface-2); text-align: left;

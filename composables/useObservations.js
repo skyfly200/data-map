@@ -1,6 +1,8 @@
 // Shared observation data + display helpers for every view (map, table, charts).
 // Data is fetched once on the client and cached in Nuxt state across pages.
 
+import { markRaw } from 'vue'
+
 // Fallback dataset list. The real list is loaded at runtime from the manifest
 // public/data/datasets.json (written by export_geojson.py), which lists the
 // combined dataset plus one enriched GeoJSON per species.
@@ -231,7 +233,14 @@ export function useObservations() {
     if (data.value || pending.value) return // already loaded (shared across views)
     pending.value = true
     try {
-      data.value = deriveFields(await fetchObservations(selectedDataset.value))
+      // markRaw: the dataset is ~48k features x ~43 properties, and assigning it
+      // straight into a ref made Vue deep-proxy roughly two million properties.
+      // Every read from every chart, filter and table cell then paid a Proxy
+      // trap — over half the Charts page's startup time was reactivity overhead
+      // alone. Nothing mutates a feature after deriveFields, and swapping the
+      // whole object still triggers the ref, so the deep tracking bought
+      // nothing.
+      data.value = markRaw(deriveFields(await fetchObservations(selectedDataset.value)))
       error.value = ''
     } catch (e) {
       error.value = e.message
@@ -256,7 +265,7 @@ export function useObservations() {
       availableDatasets.value = [...availableDatasets.value, entry]
     }
     speciesFilter.value = []
-    data.value = geojson
+    data.value = markRaw(geojson)   // same reasoning as load()
     selectedDataset.value = entry.path
     // Persist only real (servable) paths; in-memory ones can't survive reload.
     if (import.meta.client && !String(entry.path).startsWith('mem:')) {

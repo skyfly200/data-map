@@ -362,15 +362,21 @@ function renderPoints(geo) {
       radius: radiusFor(feature.properties), weight: 1, color: '#222',
       fillColor: coloring.value.colorFn(feature.properties), fillOpacity: 0.85,
     }),
-    onEachFeature: (feature, lyr) => {
-      lyr.bindTooltip(feature.properties.species || 'Observation', { direction: 'top' })
-      lyr.on('click', () => {
-        selected.value = feature.properties
-        const co = feature.geometry?.coordinates
-        selectedLatLng.value = co ? [co[1], co[0]] : null
-      })
-    },
   }).addTo(map)
+
+  // One tooltip and one click handler for the whole layer, resolved against
+  // whichever marker the event came from. Binding them per feature created a
+  // Tooltip object and a listener for every observation — ~48k of each — which
+  // cost more than drawing the markers did.
+  geoLayer.bindTooltip((lyr) => lyr.feature?.properties?.species || 'Observation',
+                       { direction: 'top', sticky: true })
+  geoLayer.on('click', (e) => {
+    const feature = e.layer?.feature
+    if (!feature) return
+    selected.value = feature.properties
+    const co = feature.geometry?.coordinates
+    selectedLatLng.value = co ? [co[1], co[0]] : null
+  })
 
   const bounds = geoLayer.getBounds()
   // Non-animated: an in-flight fit animation would block a subsequent zoom-in to
@@ -440,7 +446,13 @@ onMounted(async () => {
 
     // Zoom control on the bottom-left so it never overlaps the top-left
     // "Color by" control (previously it clipped the label).
-    map = L.map(mapEl.value, { scrollWheelZoom: true, zoomControl: false, layers: [osm] }).setView([39.5, -105.7], 7)
+    // preferCanvas draws the markers into a single <canvas> instead of giving
+    // each one its own SVG <path>. At ~48k observations the SVG renderer put
+    // 48k interactive nodes in the DOM, which is what made panning and zooming
+    // crawl; the canvas renderer keeps that flat as the dataset grows.
+    map = L.map(mapEl.value, {
+      scrollWheelZoom: true, zoomControl: false, layers: [osm], preferCanvas: true,
+    }).setView([39.5, -105.7], 7)
     L.control.zoom({ position: 'bottomleft' }).addTo(map)
     L.control.layers(
       { 'Street (OSM)': osm, 'Terrain (OpenTopoMap)': topo, 'Satellite (Esri)': sat },
