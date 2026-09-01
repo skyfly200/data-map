@@ -233,10 +233,41 @@ function onDotClick(pt) {
   if (!dragged.value && pt.obs) emit('select', pt.obs)
 }
 
-const scaled = computed(() => points.value.map((d) => {
-  const cx = sx(d.x), cy = sy(d.y), r = Number.isFinite(d.r) ? d.r : 4
-  return { ...d, cx, cy, color: d.color || SERIES_1, d: shapePath(d.shape || 'circle', cx, cy, r) }
-}))
+// Marks actually worth drawing, in pixel space.
+//
+// At ~48k observations the naive map() emitted an SVG <path> per point — and
+// with three scatter charts on the page that was ~138k nodes, which is what made
+// the Charts view take half a minute to appear. Two cheap passes fix it without
+// changing what the chart looks like:
+//
+//   1. Drop points outside the zoom domain. They are clipped away anyway, so
+//      zooming in now costs less rather than the same.
+//   2. Collapse marks that land on the same cell with the same appearance. A
+//      mark is 2r px wide, so two of them within r px of each other are all but
+//      indistinguishable — drawing both only pays for overdraw.
+//
+// Both are visual no-ops: what is dropped was already hidden underneath what is
+// kept. Clicking and hovering are unaffected for the same reason — a covered
+// mark could never have received the event.
+const scaled = computed(() => {
+  const [x0, x1] = xDom.value
+  const [y0, y1] = yDom.value
+  const seen = new Set()
+  const out = []
+  for (const d of points.value) {
+    if (d.x < x0 || d.x > x1 || d.y < y0 || d.y > y1) continue
+    const cx = sx(d.x), cy = sy(d.y)
+    const r = Number.isFinite(d.r) ? d.r : 4
+    const color = d.color || SERIES_1
+    const shape = d.shape || 'circle'
+    const cell = Math.max(2, r)
+    const key = `${Math.round(cx / cell)},${Math.round(cy / cell)},${color},${shape},${Math.round(r)}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push({ ...d, cx, cy, color, d: shapePath(shape, cx, cy, r) })
+  }
+  return out
+})
 
 function ticks(dom, fmt, toPix) {
   const [lo, hi] = dom
