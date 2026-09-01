@@ -12,41 +12,15 @@ export const OBSERVATION_DATASETS = [
   { id: 'all', label: 'All species', path: DEFAULT_DATASET },
 ]
 
-// Validated colour-blind-safe categorical palette (worst adjacent CVD ΔE 9.1),
-// indexed by cluster id. Identity is never colour-alone: the map has a legend,
-// popups name the cluster, charts direct-label, and a full table view exists.
-export const PALETTE = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100',
-                        '#e87ba4', '#008300', '#4a3aa7', '#e34948']
-export const UNCLUSTERED = '#9aa0a6'
-export const SERIES_1 = '#2a78d6'  // single-series charts
-
-export function colorFor(cluster) {
-  if (cluster === null || cluster === undefined || Number.isNaN(cluster)) return UNCLUSTERED
-  return PALETTE[cluster % PALETTE.length]
-}
-
-// Deterministic colour for a category value, so the same value (a species, a
-// year, a land-cover class) gets the SAME colour on the map and in every chart.
-// A stable string hash → palette index; identity is never colour-alone (legends
-// everywhere), so palette collisions across distant values are acceptable.
-export function stableColor(value) {
-  if (value === null || value === undefined || value === '') return UNCLUSTERED
-  const s = String(value)
-  let h = 0
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
-  return PALETTE[h % PALETTE.length]
-}
-
-// Colour for a (field, value) pair. Cluster keeps its index-based palette
-// (already consistent everywhere); every other category uses the stable hash.
-export function categoryColor(field, value) {
-  if (value === null || value === undefined || value === '') return UNCLUSTERED
-  if (field === 'cluster' || field === 'live_cluster') {
-    const n = Number(String(value).replace(/^[CK]/, ''))
-    return Number.isFinite(n) ? colorFor(n) : UNCLUSTERED
-  }
-  return stableColor(value)
-}
+// Mark colours live in useAppearance, which owns the active palette and the
+// per-value overrides. Re-exported here so every existing import site keeps
+// working, and so callers get the palette currently in effect rather than a
+// hard-coded one. Identity is never colour-alone: the map has a legend, popups
+// name the cluster, charts direct-label, and a full table view exists.
+export {
+  PALETTE, UNCLUSTERED, SERIES_1,
+  colorFor, stableColor, categoryColor, categoryShape,
+} from '~/composables/useAppearance'
 
 // Canonical iNaturalist URL. Prefers the numeric id; falls back to the UUID,
 // which the iNaturalist observations route also resolves.

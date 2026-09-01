@@ -28,6 +28,7 @@
           Show all ({{ layout.hiddenCharts.value.length }} hidden)
         </button>
         <button v-if="layout.editing.value" class="lb-btn ghost" @click="layout.reset()">Reset layout</button>
+        <AppearanceControls field="species" field-label="Species" :values="speciesValues" />
       </div>
 
       <div v-if="layout.editing.value && layout.hiddenCharts.value.length" class="hidden-bar">
@@ -170,7 +171,7 @@
 </template>
 
 <script setup>
-import { PALETTE, UNCLUSTERED, colorFor, hasValue, useObservations } from '~/composables/useObservations'
+import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 import { useSavedCharts } from '~/composables/useSavedCharts'
 
@@ -188,7 +189,17 @@ const saved = useSavedCharts()
 const layout = useChartLayout()
 const { rows, error, pending, load } = useObservations()
 const { unit, elevValue, tempUnit, tempValue } = useUnits()
-onMounted(() => { load(); saved.loadFromStorage(); layout.loadFromStorage() })
+const appearance = useAppearance()
+onMounted(() => {
+  load(); saved.loadFromStorage(); layout.loadFromStorage(); appearance.loadFromStorage()
+})
+
+// Species present, most common first — what the appearance panel offers for
+// per-value recolouring. Species is the dimension worth pinning: it carries the
+// same colour across the map and every chart.
+const speciesValues = computed(() =>
+  [...countBy(rows.value, (r) => r.species).entries()]
+    .sort((a, b) => b[1] - a[1]).map(([v]) => v))
 
 const int = (v) => String(v)
 const cov = (v) => `${v}/${rows.value.length}`
@@ -241,7 +252,10 @@ function speciesGroups(valueFn) {
   return [...groups.entries()]
     .filter(([, vals]) => vals.length >= MIN_PER_SPECIES)
     .sort((a, b) => b[1].length - a[1].length)
-    .map(([label, values], i) => ({ label, values, color: PALETTE[i % PALETTE.length] }))
+    // categoryColor, not a positional palette index: a species then keeps the
+    // same colour here, on the map, and in every other chart — and honours a
+    // per-value override from the appearance panel.
+    .map(([label, values]) => ({ label, values, color: categoryColor('species', label) }))
 }
 
 const phenologyBySpecies = computed(() =>
@@ -489,7 +503,7 @@ const landCoverData = computed(() => {
 const speciesData = computed(() => {
   const counts = countBy(rows.value, (r) => r.species)
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)
-    .map(([label, n]) => ({ label, short: label, value: n }))
+    .map(([label, n]) => ({ label, short: label, value: n, color: categoryColor('species', label) }))
 })
 </script>
 
