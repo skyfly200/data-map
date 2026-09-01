@@ -104,7 +104,7 @@
 <script setup>
 import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, inatUrl, fetchObservationDetails, useObservations } from '~/composables/useObservations'
+import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, inatUrl, inatPhotoUrl, fetchObservationDetails, useObservations } from '~/composables/useObservations'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useUnits } from '~/composables/useUnits'
 
@@ -203,7 +203,7 @@ watch(selected, async (s) => {
     const details = await fetchObservationDetails(id)
     observationInfo.value = details
     if (details?.photos) {
-      images.value = details.photos.map(p => p.url || p.original_url || p.square_url || p.large_url)
+      images.value = details.photos.map((p) => inatPhotoUrl(p, 'large')).filter(Boolean)
     }
   }
 })
@@ -591,16 +591,19 @@ onBeforeUnmount(() => { if (map) map.remove() })
   overflow: hidden;
   background: #000;
 }
+/* No fixed square: let the photo keep its own aspect ratio up to a height cap,
+   so landscape shots aren't letterboxed into a small square. */
 .carousel-viewport {
   width: 100%;
-  aspect-ratio: 1;
+  min-height: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .carousel-image {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: auto;
+  max-height: 320px;
   object-fit: contain;
   display: block;
 }
