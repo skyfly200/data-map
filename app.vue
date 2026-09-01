@@ -26,6 +26,7 @@
           <NuxtLink to="/" class="nav-link">Home</NuxtLink>
           <NuxtLink to="/map" class="nav-link">Map</NuxtLink>
           <NuxtLink to="/charts" class="nav-link">Charts</NuxtLink>
+          <NuxtLink to="/analysis" class="nav-link">Analysis</NuxtLink>
           <NuxtLink to="/data" class="nav-link">Data</NuxtLink>
           <NuxtLink to="/coverage" class="nav-link">Coverage</NuxtLink>
         </nav>
