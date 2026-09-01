@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d99b5c43-3d6e-4962-8690-5ff3bbfa5636,66282307,2020-12-05 09:15:47-08:00,2020-12-05,-122.7570166667,45.5633583333,84QVH67V+,173.0,,0.6,7.8,,11.8,,1021.1,Ampulloclitocybe avellaneialba,"Portland, OR 97210, USA",1

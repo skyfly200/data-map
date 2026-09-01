@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+6e63ab4d-6d38-4f17-9920-d251c5f95f79,250724557,2024-11-04 13:32:29-08:00,2024-11-04,-121.6169771353,45.6089502662,310.0,,7.5,10.8,2.9,15.8,,1020.9,Phlegmacium subfoetidum,"Washington, US",0,
+b63eb545-c5d4-4550-a95d-258091742386,9569966,1990-11-02,1990-11-02,-121.972,44.7827,690.0,,,,,,,,Phlegmacium subfoetidum,"Breitenbush, Marion Co., Oregon, USA",0,84PWQ2MH+
+51d7d5f1-9554-4fb4-ab81-0a42869c3265,323308427,2025-10-26 12:10:45-07:00,2025-10-26,-121.9696502686,45.8605499268,366.0,,4.0,8.0,2.2,0.9,,1013.8,Phlegmacium subfoetidum,"Skamania County, US-WA, US",1,84QWV26J+
+6acbf68f-04b4-43ae-b6ac-cc55365bba45,249438088,2024-10-27 18:40:48-07:00,2024-10-27,-122.7431688257,45.4308890798,92.0,,8.9,13.9,,12.3,,1012.5,Phlegmacium subfoetidum,"Oregon, US",0,84QVC7J4+
+3a130b71-0c52-42ea-9866-f21cacf48c9f,17458450,2018-10-12 11:29:56-07:00,2018-10-12,-121.979174473,44.4292845798,1096.0,,,,,,,,Phlegmacium subfoetidum,"Willamette National Forest, Idanha, OR, US",0,84PWC2HC+

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6e0ab63b-0106-4f98-bd78-d50991dee37d,156190262,2023-04-22 19:57:17-07:00,2023-04-22,-122.0737861111,45.6288666667,237.0,,9.4,20.6,,6.4,,1020.6,Deconica subviscida,"Stevenson, WA 98648, USA",1

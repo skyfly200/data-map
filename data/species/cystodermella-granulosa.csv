@@ -1,5 +1,9 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-d07e7b95-cb34-495f-975e-a88435b20f35,348903422,2025-09-01 16:19:23-06:00,2025-09-01,-105.0927817041,39.0311723352,2551.0,,7.0,24.1,0.0,11.4,,1022.1,Cystodermella granulosa,"Lucky Lady Dr, Woodland Park, CO, US",1
-3e308717-5730-4e30-ba5a-16c566939783,315871249,2025-09-22 10:45:12-06:00,2025-09-22,-106.5333331749,35.8999998917,2797.0,,12.0,19.0,0.5,5.6,,1021.4,Cystodermella granulosa,"Jemez Springs, NM 87025, USA",1
-138413eb-00c9-42e1-9ffa-541b2091efd5,312209087,2025-09-06 09:27:11-06:00,2025-09-06,-105.0495683,39.1895225,2745.0,,8.0,22.0,0.0,13.7,,1023.9,Cystodermella granulosa,"Sedalia, CO 80135, USA",1
-38746677-211a-4d3b-96e5-7563ca56d064,235451914,2024-08-12 16:37:22-06:00,2024-08-12,-106.6417472222,35.8306027778,2085.0,,15.2,27.0,,8.3,,1026.6,Cystodermella granulosa,"Jemez Springs, NM 87025, USA",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+d07e7b95-cb34-495f-975e-a88435b20f35,348903422,2025-09-01 16:19:23-06:00,2025-09-01,-105.0927817041,39.0311723352,2551.0,,7.0,24.1,0.0,11.4,,1022.1,Cystodermella granulosa,"Lucky Lady Dr, Woodland Park, CO, US",1,
+3e308717-5730-4e30-ba5a-16c566939783,315871249,2025-09-22 10:45:12-06:00,2025-09-22,-106.5333331749,35.8999998917,2797.0,,12.0,19.0,0.5,5.6,,1021.4,Cystodermella granulosa,"Jemez Springs, NM 87025, USA",1,
+138413eb-00c9-42e1-9ffa-541b2091efd5,312209087,2025-09-06 09:27:11-06:00,2025-09-06,-105.0495683,39.1895225,2745.0,,8.0,22.0,0.0,13.7,,1023.9,Cystodermella granulosa,"Sedalia, CO 80135, USA",1,
+38746677-211a-4d3b-96e5-7563ca56d064,235451914,2024-08-12 16:37:22-06:00,2024-08-12,-106.6417472222,35.8306027778,2085.0,,15.2,27.0,,8.3,,1026.6,Cystodermella granulosa,"Jemez Springs, NM 87025, USA",2,
+11bff699-c2ac-48da-8fec-67e82a4c674c,146846769,2023-01-16 12:15:00-08:00,2023-01-16,-121.3592777778,45.7097027778,63.0,,0.6,6.3,0.1,5.6,,1008.5,Cystodermella granulosa,"Klickitat County, WA, USA",2,
+d71c850b-525f-475a-b7c4-e3a6ff3e0810,63646877,2020-10-18 16:00:00-07:00,2020-10-18,-121.880412139,45.3801239058,599.0,,12.8,19.4,,8.3,,1020.0,Cystodermella granulosa,"Rhododendron, OR 97049, USA",2,
+65399dc6-a412-4b72-bd37-6fc791181d7d,34739789,2019-10-18 10:11:45-07:00,2019-10-18,-121.8822416667,44.8289666667,1112.0,,,,,,,,Cystodermella granulosa,"Marion County, US-OR, US",1,84PWR4H9+
+367c87c9-6424-4da9-9bfc-534ee9e69669,4450788,2016-10-25 12:07:19-07:00,2016-10-25,-122.1990973783,44.8361172807,767.0,,,,,,,,Cystodermella granulosa,"Marion County, US-OR, US",1,84PVRRP2+

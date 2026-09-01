@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4285a130-bb1d-4f98-9546-d801dcccf805,340273573,2026-02-02 22:54:00-08:00,2026-02-02,-122.6238614728,45.4628052696,84QVF97G+,44.0,,6.1,11.1,0.3,11.5,,1026.6,Mycena tenerrima,"Ardenwald, Milwaukie, OR, USA",1
+3a54f300-a924-40f3-b461-55eb42c5f2dc,256887064,2024-12-26 11:08:00-08:00,2024-12-26,-123.0190722222,45.0258555556,84QR2XGJ+,55.0,,8.3,12.8,33.3,23.0,,1004.0,Mycena tenerrima,"Keizer, OR, USA",1

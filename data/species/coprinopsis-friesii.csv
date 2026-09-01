@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+2441882e-2932-40b5-a398-618f68782bc1,80216077,2021-05-25 02:23:13-07:00,2021-05-25,-121.965788193,45.6365594019,10.0,,13.3,16.1,,2.8,,1019.9,Coprinopsis friesii,"North Bonneville, WA, USA",1,
+64bfb7f8-9ed7-416e-aefe-f945396d9367,13296567,2018-06-10 07:16:00-07:00,2018-06-10,-122.5712957897,45.6627545145,94.0,,10.0,13.9,,7.2,,1019.4,Coprinopsis friesii,"Five Corners, WA, USA",2,84QVMC7H+

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0d917ddf-5851-4ac4-8e4a-2693ee22bd45,320524622,2024-11-14 12:57:00-08:00,2024-11-14,-122.2250251615,45.3061390768,383.0,,8.3,13.9,,10.0,,1014.5,Mycena picta,"Clackamas County, OR, USA",1

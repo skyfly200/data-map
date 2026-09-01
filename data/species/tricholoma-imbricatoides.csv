@@ -1,0 +1,12 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+782bc544-d6cd-4f78-9d7b-3b67ffd5625b,312047232,2025-09-06 10:29:35-06:00,2025-09-06,-105.04682343,39.19057041,2723.0,,8.0,22.0,0.0,13.7,,1023.9,Tricholoma imbricatoides,"Douglas County, US-CO, US",1,
+b2a4bfa5-65e4-42e6-a42f-e9a829420c7e,237334926,2024-08-22 10:25:49-06:00,2024-08-22,-105.7480019648,39.4125264865,3064.0,,3.6,11.4,9.5,9.6,,1022.9,Tricholoma imbricatoides,"Park County, US-CO, US",3,
+7060f90e-50bc-4a88-a42b-e62025c24502,178118847,2023-08-12 14:17:00-06:00,2023-08-12,-105.5367397031,40.0318584498,2911.0,,17.0,28.0,0.0,8.5,,1019.7,Tricholoma imbricatoides,"County Road 116, Ward, CO, US",2,
+d1238ca4-bbf6-4fe0-bede-a6034bc36c4e,150081179,2023-03-02 14:06:59-07:00,2023-03-02,-105.546537,40.039224,3050.0,,-6.0,10.0,0.0,4.8,,1006.1,Tricholoma imbricatoides,"Nederland, CO",2,
+2e645dc3-0c7f-4631-b7ea-62e7173b5d06,135805496,2022-09-17 17:10:30-06:00,2022-09-17,-105.5614991114,40.0397575746,3207.0,,12.0,26.0,1.7,7.1,,1015.2,Tricholoma imbricatoides,"Nederland, CO 80466, USA",2,
+40766642-e81c-423e-b134-7b5c8fb03e5c,135434133,2022-09-17 10:14:52-06:00,2022-09-17,-105.53740475,40.03119222,2886.0,,12.0,26.0,1.7,7.1,,1015.2,Tricholoma imbricatoides,"Boulder County, US-CO, US",3,
+7f44849a-0633-40c8-b7a2-308426ae4511,91300539,2021-08-14 15:10:26-06:00,2021-08-14,-105.7951333333,39.9052166667,2766.0,,6.0,28.3,0.0,7.2,,1033.2,Tricholoma imbricatoides,"Arapaho & Roosevelt National Forests Pawnee National Grassland, Winter Park, CO, US",1,
+a5fb2a8e-bb92-4b82-b5d8-41c55d917327,91022950,2021-08-13 10:37:04-06:00,2021-08-13,-105.878875,39.909355,2753.0,,7.7,27.3,0.0,6.7,,1032.1,Tricholoma imbricatoides,"Arapaho & Roosevelt National Forests Pawnee National Grassland, Parshall, CO, US",1,
+f73f2d66-d13e-46ef-8f64-1c158f16a941,244628911,2024-09-28 14:15:28-07:00,2024-09-28,-121.524975,45.4185694444,1323.0,,11.8,26.0,0.3,11.0,,1011.9,Tricholoma imbricatoides,"MT HOOD PRKDL, OR 97041, USA",2,
+17953b05-34b6-47fc-be31-38eadcea3d18,65245675,2019-09-16,2019-09-16,-121.7319,45.2802,1115.0,,,,,,,,Tricholoma imbricatoides,"Zigzag Ranger District portion in Clackamas Co., Mount Hood National Forest, Clackamas Co., Oregon, USA",1,
+9fb5484c-3d3b-4790-985b-ff441fde7db4,65236022,2012-11-01,2012-11-01,-122.719,45.359,138.0,,11.1,14.4,,18.0,,1012.0,Tricholoma imbricatoides,"Stafford, Clackamas Co., Oregon, USA",1,84QV975J+

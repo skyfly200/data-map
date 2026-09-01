@@ -1,0 +1,10 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e8d5ad8d-4f17-49f9-a8e9-1a3f3b7edfda,220308414,2023-10-21 16:38:09-07:00,2023-10-21,-122.2723383333,45.304795,84QV8P3H+,221.0,,12.8,16.7,0.3,2.0,,1011.7,Armillaria nabsnona,"SE Camp Rd, Estacada, OR, US",1
+c3e37cd0-018f-4622-81bf-d1578fc26b7c,17021159,2018-09-27,2018-09-27,-121.9395,45.29935,84QW73X6+,484.0,,10.0,28.3,0.0,3.1,,1014.3,Armillaria nabsnona,"Salmon River Trail, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",2
+7627b81f-4d11-4804-9fe3-6e11a0fd0a17,250875271,2024-11-07 13:26:47-08:00,2024-11-07,-122.4218833333,45.8366866667,84QVRHPH+,187.0,,1.7,16.1,0.0,1.8,,1024.0,Armillaria nabsnona,"Yacolt, WA, US",1
+53183521-f387-47e4-a282-edf5511ad254,249834149,2024-10-29 13:41:39-07:00,2024-10-29,-122.6790083333,45.440455,84QVC8RC+,78.0,,7.8,14.4,0.0,5.8,,1019.6,Armillaria nabsnona,"Tryon Creek State Natural Area, Portland, OR, US",1
+eddeaee1-961e-4c10-a10f-fa9663f6fab0,187523119,2023-10-13,2023-10-13,-122.6471850404,45.4481477836,84QVC9X3+,44.0,,13.9,20.6,2.0,16.9,,1009.7,Armillaria nabsnona,"Oregon, US",1
+7e542375-f1a5-479f-ad89-d2694bf1f9ec,140164173,2022-10-26 14:25:12-07:00,2022-10-26,-122.6769926772,45.4358298545,84QVC8PF+,68.0,,8.3,13.9,9.9,6.1,,1020.5,Armillaria nabsnona,Tryon Creek State Natural Area,1
+e74aa4ac-ccfa-49f3-84de-6da26a714816,25988645,2017-11-18,2017-11-18,-122.655,45.5425,84QVG8VW+,54.0,,2.2,11.7,0.0,6.1,,1024.8,Armillaria nabsnona,"Portland, Multnomah Co., Oregon, USA",1
+37ee928b-055c-496c-803b-dfc3ea7d0be3,4575236,2016-11-14 13:04:31-08:00,2016-11-14,-122.8437716667,45.5019833333,84QVG524+,59.0,,11.7,13.9,,13.0,,1015.7,Armillaria nabsnona,"16130 SW Merlo Rd, Beaverton, OR, US",1
+82c137bd-6096-4d8e-8319-2ac90ecc02c6,4575193,2016-11-14 12:35:34-08:00,2016-11-14,-122.8407883333,45.4994383333,84QVF5X5+,70.0,,11.7,13.9,,13.0,,1015.7,Armillaria nabsnona,"Tualatin Hills Nature Reserve, Beaverton, OR, US",1

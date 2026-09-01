@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d648adb4-36dc-4be8-8aef-3ccf90f3a87a,190975812,2023-11-13 14:34:01-08:00,2023-11-13,-122.6623534721,44.8735993921,84PVV8FQ+,534.0,,6.1,12.8,0.8,8.6,,1016.1,Amanita sp. 'vaginata-OR01',"Silver Ridge Rd SE, Sublimity, OR, US",2
+78f411aa-213d-4bab-869c-4099a26758e1,190975615,2023-11-13 14:56:32-08:00,2023-11-13,-122.662042329,44.8720409588,84PVV8CQ+,510.0,,6.1,12.8,0.8,8.6,,1016.1,Amanita sp. 'vaginata-OR01',"Silver Ridge Rd SE, Sublimity, OR, US",1

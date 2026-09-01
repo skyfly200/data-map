@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,genus,location,num_identification_agreements
+95b789e4-6ea4-42c5-b647-b61512f8b395,396014511,2026-08-30 11:17:19-07:00,2026-08-30,-121.7222416928,45.2318872459,84QW6700+,1026.0,,,,,,,,Hydnellum aurantiacum,Hydnellum,"Oregon, US",1
+d2aa7a2e-941b-40f7-b41b-532e13a92765,394152328,2026-08-23 10:04:05-07:00,2026-08-23,-121.7408110741,45.2714186886,84QW7700+,1120.0,,17.0,26.0,0.0,7.6,,,Hydnellum caeruleum,Hydnellum,"Trillium Lake Loop, Government Camp, OR, US",1

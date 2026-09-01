@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+93b109a3-72bc-4c47-87f2-679187731f01,291011763,2025-06-19 12:16:09-07:00,2025-06-19,-122.506775,45.646855,84QVJFWV+,77.0,,11.1,22.8,0.0,13.7,,1016.0,Ganoderma australe,"NE 35th St, Vancouver, WA, US",1

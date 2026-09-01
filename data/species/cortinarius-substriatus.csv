@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+96152c10-ed72-4dcc-9748-4968cf2e5424,233525375,2023-10-19 12:09:00-07:00,2023-10-19,-122.1135027483,45.2401645527,1025.0,,8.3,22.2,0.0,1.5,,1017.8,Cortinarius substriatus,"Clackamas County, OR, USA",1,
+77a1dac2-0969-4b76-ac2a-71f45b17601c,17478055,2018-10-13 14:42:40-07:00,2018-10-13,-122.912501861,44.9002791496,148.0,,5.6,22.8,0.0,13.3,,1019.9,Cortinarius substriatus,"Shangri-la School, Salem, OR, US",2,84PVW32P+

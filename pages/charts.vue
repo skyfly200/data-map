@@ -441,6 +441,9 @@ const speciesData = computed(() => {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 16px;
 }
+.grid > * {
+  min-width: 0;
+}
 .layout-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
 .lb-btn {
   border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;

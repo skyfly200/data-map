@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+9d8c5a16-1194-4c4a-905d-f3b5a22956de,252529706,2024-10-11 11:49:00-07:00,2024-10-11,-122.2273416066,45.3070594808,413.0,,14.4,21.1,0.0,16.4,,1015.5,Clitocybe odora pacifica,"Clackamas County, US-OR, US",1,
+335cd859-8792-4d8e-aa8a-350ba140d28c,425996,2013-10-09 13:15:34-07:00,2013-10-09,-121.510202,45.899982,391.0,,4.4,16.1,0.0,2.8,,1017.2,Clitocybe odora pacifica,"SDS Timber Property, Trout Lake, WA",2,84QWVFXQ+

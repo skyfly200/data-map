@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+1392f96e-9574-4632-8992-a3145ef75634,231448959,2024-07-16 13:55:00-06:00,2024-07-16,-107.9676824769,38.0550647919,85CJ324J+,2830.0,,12.0,26.0,9.1,9.4,,1032.5,Rhizopogon sp. 'subbadius-CA01',"San Miguel County, CO, USA",1

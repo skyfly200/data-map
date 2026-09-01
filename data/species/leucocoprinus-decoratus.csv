@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+f79183d5-bb4e-4802-98d2-feea63cf10b5,67882478,2021-01-10 09:56:39-08:00,2021-01-10,-121.9417283333,45.294505,509.0,,5.6,7.8,,27.1,,1024.4,Leucocoprinus decoratus,"Mt. Hood National Forest, Welches, OR, US",1,
+917dda7f-a627-4ca4-8f44-912c99e6bdc2,332541163,2025-12-28 14:50:14-08:00,2025-12-28,-122.79262,45.5880133333,240.0,,1.0,7.0,0.0,3.6,,1036.1,Leucocoprinus decoratus,"Forest Park Conservancy, Portland, OR, US",0,84QVH6Q4+
+67d3e1dd-e2a5-4da0-99ed-8643b76c0422,331375545,2025-12-19 18:58:08-08:00,2025-12-19,-122.7711807936,45.5789255607,213.0,,2.0,9.0,1.0,5.4,,1011.5,Leucocoprinus decoratus,"Linnton, Portland, OR, USA",0,84QVH6HH+
+9dfbe65a-e7a2-4de9-81dc-e10cc05e9083,105573090,2021-10-17 16:10:07-07:00,2021-10-17,-122.671555,45.4555283333,146.0,,10.0,17.8,0.0,11.2,,1007.1,Leucocoprinus decoratus,"River View Natural Area, Portland, OR, US",1,84QVF84H+
+a36bac69-7ae9-46bd-8c56-01aeb0c93d61,38361724,2020-02-06 08:06:30+00:00,2020-02-06,-122.792622717,45.5879636366,240.0,,10.0,15.0,,9.6,,1021.1,Leucocoprinus decoratus,"Forest Park, Portland, OR, US",2,84QVH6Q4+
+1d383716-2945-4659-80cb-7be72c5caaa4,37731708,2020-01-18 17:33:44+00:00,2020-01-18,-122.6919761673,45.5741625267,52.0,,3.3,5.6,,15.6,,1023.0,Leucocoprinus decoratus,"Arbor Lodge, Portland, OR 97217, USA",0,84QVH8F5+

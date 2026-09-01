@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+41d9bcbc-bba3-4706-838f-61bf030b2fdb,250945197,2024-11-07 15:29:05-08:00,2024-11-07,-121.398209491,45.7109511376,326.0,,0.6,11.6,0.0,7.8,,1027.8,Hericium oregonense,"Oregon, US",1,
+fa1d25db-d490-4435-bd03-5f5fd03b1193,332458194,2025-12-28 09:00:10-08:00,2025-12-28,-121.2239860172,45.7657808742,528.0,,1.0,4.0,0.3,5.5,,1037.7,Hericium oregonense,"Oregon, US",1,84QWQQ8G+
+23a01ab5-44a3-4d24-8298-93bc40a1a26c,326984183,2025-11-17 08:54:59-08:00,2025-11-17,-122.5944666667,45.48183,74.0,,3.0,13.0,0.9,12.2,,1012.3,Hericium oregonense,"SE Reedway St, Portland, OR, US",1,84QVFCJ4+
+a1308a7b-9932-49b3-90d2-29fb945cd536,324753541,2025-11-03 11:47:17-08:00,2025-11-03,-122.6275194444,45.3815166667,63.0,,8.0,11.0,0.6,6.9,,1012.2,Hericium oregonense,"West Linn, OR, USA",2,84QV99JC+

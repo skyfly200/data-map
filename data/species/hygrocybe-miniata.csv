@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+846fa169-5710-4d50-a762-f76220ecbf36,189322398,2023-10-28 14:46:42-07:00,2023-10-28,-122.0912028333,45.2961716667,561.0,,3.9,12.2,0.0,19.5,,1031.7,Hygrocybe miniata,"Mt. Hood National Forest, Sandy, OR, US",1,
+402c334f-21f5-47d1-a923-bf59cfe1df1d,33973427,2019-10-06 13:44:19-07:00,2019-10-06,-121.7749461719,45.3049014509,1136.0,,,,,,,,Hygrocybe miniata,"Mt. Hood National Forest, Government Camp, OR, US",1,
+c36855cf-7e0b-43aa-852c-ecc517d7be7a,100029793,2021-11-01 17:57:16-07:00,2021-11-01,-121.7187652967,44.5382930014,1136.0,,3.0,4.0,4.4,4.1,,1018.5,Hygrocybe miniata,"Oregon, US",1,84PWG7QJ+
+9ceb5959-04c8-48b5-8377-da19c9c4c038,99753733,2021-10-29 15:51:11-07:00,2021-10-29,-121.647890502,44.4279291915,950.0,,7.0,16.0,2.5,13.3,,1016.4,Hygrocybe miniata,"Oregon, US",2,84PWC9H2+
+cc741f67-b72f-4cc2-ac27-6acfd244414d,63171585,2020-10-21 08:50:35-07:00,2020-10-21,-122.6263708136,45.483150836,34.0,,4.4,15.6,0.3,10.8,,1022.1,Hygrocybe miniata,"SE Harold Ct, Portland, OR, US",1,84QVF9MF+
+cc2de5bc-99f5-4288-bb7d-6fb3b933abf9,35076989,2019-10-25 16:08:00-07:00,2019-10-25,-121.9994444444,44.3441666667,870.0,,,,,,,,Hygrocybe miniata,"Koosah Falls area, Linn County, OR, USA",2,84PW82V2+

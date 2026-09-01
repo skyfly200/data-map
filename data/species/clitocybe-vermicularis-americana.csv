@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+de3a66ed-0eef-4f3c-8a63-1a55cf459bd7,122912634,2022-06-21 11:59:54-07:00,2022-06-21,-122.1514703087,44.2540926174,84PV7R3X+,1234.0,,,,,,,,Clitocybe vermicularis americana,"Willamette National Forest, Foster, OR, US",1

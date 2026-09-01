@@ -1,2 +1,17 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-e40139d6-aee7-46d7-bef0-d8bb1f23bffe,131413652,2022-08-17 12:42:26-06:00,2022-08-17,-109.090335935,42.7317322097,3222.0,,13.9,33.9,0.0,8.6,,1016.4,Boletus edulis grandedulis,"Fremont County, US-WY, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+e40139d6-aee7-46d7-bef0-d8bb1f23bffe,131413652,2022-08-17 12:42:26-06:00,2022-08-17,-109.090335935,42.7317322097,3222.0,,13.9,33.9,0.0,8.6,,1016.4,Boletus edulis grandedulis,"Fremont County, US-WY, US",1,
+58470c17-2b87-4bbb-bbeb-7fcc9f5ec2c0,244617237,2024-09-28 15:28:33-07:00,2024-09-28,-121.5268805556,45.4149916667,1308.0,,11.8,26.0,0.3,11.0,,1011.9,Boletus edulis grandedulis,"MT HOOD PRKDL, OR 97041, USA",1,
+018c27ea-6543-4b71-8a8e-a9955167015a,186606061,2023-10-06 15:56:22-07:00,2023-10-06,-121.7066277778,45.3247111111,1683.0,,10.5,23.6,0.0,10.5,,1023.1,Boletus edulis grandedulis,"MT HOOD PRKDL, OR 97041, USA",1,
+95699f6a-343c-4fae-8da8-98054be5d193,138034711,2022-10-08 11:36:17-07:00,2022-10-08,-121.5747638889,45.3373027778,1116.0,,12.7,26.1,0.0,3.7,,1021.2,Boletus edulis grandedulis,"MT HOOD PRKDL, OR 97041, USA",1,
+c5fbfd84-c4e6-47e7-85a6-5269a0943b3e,137153484,2022-09-28 16:51:25-07:00,2022-09-28,-121.6223225719,45.3189821318,1324.0,,14.1,22.9,3.2,10.4,,1014.9,Boletus edulis grandedulis,"Hood River County, US-OR, US",1,
+c3fabf79-6756-444d-b089-23a40d9dc822,137152308,2022-09-28 15:22:17-07:00,2022-09-28,-121.621947231,45.3197674357,1324.0,,14.1,22.9,3.2,10.4,,1014.9,Boletus edulis grandedulis,"Hood River County, US-OR, US",1,
+d1221edf-6fa3-4f22-86bb-a90d77dd93d2,136662465,2022-09-26 17:51:21-07:00,2022-09-26,-121.6250954277,45.3194913618,1338.0,,12.9,30.0,0.0,4.7,,1015.7,Boletus edulis grandedulis,"Hood River County, US-OR, US",2,
+e05097df-5ebd-4123-be6b-6f9a039771e3,89405867,2021-07-31 11:52:55-07:00,2021-07-31,-121.758995,45.3661283333,1477.0,,,,,,,,Boletus edulis grandedulis,"Mt. Hood National Forest, Rhododendron, OR, US",1,
+5adf0dd2-f318-4137-b4fc-26b726d709fd,63852168,2020-10-30 16:43:03-07:00,2020-10-30,-121.80971333,45.31440833,942.0,,,,,,,,Boletus edulis grandedulis,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",2,
+a01a5707-9945-4124-ad75-fdd0a0df00f5,30272832,2019-08-05 14:23:19-07:00,2019-08-05,-121.7390966667,45.2671466667,1112.0,,,,,,,,Boletus edulis grandedulis,"Mt. Hood National Forest, Government Camp, OR, US",1,
+325be64b-b735-42da-8a3d-254c0fbba728,29761677,2019-07-28 11:42:01-07:00,2019-07-28,-121.7369166667,45.2684366667,1112.0,,,,,,,,Boletus edulis grandedulis,"Mt. Hood National Forest, Government Camp, OR, US",1,
+06e7bee1-a20f-4206-8d0f-090d9bc850a1,11190539,2007-08-09 15:26:00-04:00,2007-08-09,-121.6555399104,45.4017562262,1815.0,,13.9,24.4,0.0,27.4,,1013.7,Boletus edulis grandedulis,"Hood River County, OR, USA",1,
+390083af-b03d-4713-8667-5a3897dfe994,96325907,2021-09-26 14:39:33-07:00,2021-09-26,-121.6792055675,45.8660525251,636.0,,16.7,26.7,0.0,21.7,,1008.7,Boletus edulis grandedulis,"Washington, US",1,84QWV88C+
+b22361af-9235-483a-95b5-3d8c649f79cb,66033204,2020-12-02 16:10:09+00:00,2020-12-02,-122.6792720052,45.4454764622,81.0,,6.7,12.2,0.0,31.3,,1023.7,Boletus edulis grandedulis,"Tryon Creek State Natural Area, Portland, OR, US",1,84QVC8WC+
+b0b19bb9-a8e6-4c47-ad87-1eb74b7b2215,64623200,2020-11-10 11:48:47+00:00,2020-11-10,-122.659058,45.4693079722,33.0,,5.0,10.6,1.5,11.9,,1018.7,Boletus edulis grandedulis,"Sellwood - Moreland, Portland, OR, USA",1,84QVF89R+
+19b0dc80-7712-4cf2-aded-720105a7dd56,10033778,2016-10-01,2016-10-01,-122.1322048455,44.3429488685,1259.0,,,,,,,,Boletus edulis grandedulis,"Foster, OR 97345, USA",2,84PV8VV9+

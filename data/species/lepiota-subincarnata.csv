@@ -1,2 +1,5 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-900baa20-7e68-4702-8ad3-d27fa46914bb,240554705,2024-09-06 11:53:36-06:00,2024-09-06,-105.2246866667,36.5270716667,2600.0,,3.9,20.9,0.0,2.9,,1036.8,Lepiota subincarnata,"Cimarron Canyon State Park, Ute Park, NM, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+900baa20-7e68-4702-8ad3-d27fa46914bb,240554705,2024-09-06 11:53:36-06:00,2024-09-06,-105.2246866667,36.5270716667,2600.0,,3.9,20.9,0.0,2.9,,1036.8,Lepiota subincarnata,"Cimarron Canyon State Park, Ute Park, NM, US",1,
+28414337-97f5-46b3-9ac6-0ac7fd808d5f,34739852,2019-10-18 13:13:06-07:00,2019-10-18,-121.9750533333,44.7816883333,680.0,,,,,,,,Lepiota subincarnata,"Marion County, US-OR, US",1,84PWQ2JF+
+9b5cb2a0-46ac-421e-9773-53c70835eef2,251462348,2024-11-12 08:46:18-08:00,2024-11-12,-122.6801,45.581525,29.0,,9.4,13.3,,12.3,,1015.7,Lepiota subincarnata,"N Watts St, Portland, OR, US",1,84QVH8J9+
+7e7f30d1-d722-4911-b455-e72ce48adc73,248655232,2024-10-22 14:18:45-07:00,2024-10-22,-122.6102,45.528604,63.0,,5.6,16.7,0.0,6.8,,1025.3,Lepiota subincarnata,"Rose City Park, Portland, OR 97213, USA",1,84QVG9HQ+

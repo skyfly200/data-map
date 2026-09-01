@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+77182be9-5630-4eec-901f-bfbb15087c03,103218642,2021-12-16 09:52:14-08:00,2021-12-16,-122.6079411155,45.5084821198,84QVG95R+,68.0,,3.3,8.3,0.3,5.4,,1016.5,Tremella globispora,"Oregon, US",1

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0dfd33bc-1ddd-423e-bd6d-1739666f5fea,35019299,2019-10-02,2019-10-02,-121.81,45.31605,916.0,,,,,,,,Tricholoma subsejunctum,"SW Mount Hood, Clackamas Co., Oregon, USA",1
+d4670c97-3b25-43f6-ae06-fecc06ab7449,32279705,2019-08-31 13:29:00-07:00,2019-08-31,-121.7859416667,45.3844694444,985.0,,,,,,,,Tricholoma subsejunctum,"Clackamas County, OR, USA",1

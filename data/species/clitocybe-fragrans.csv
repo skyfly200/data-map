@@ -1,5 +1,25 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-ae6d096f-025d-452d-8a62-7690b345f0d0,315323481,2025-09-16 12:54:58-06:00,2025-09-16,-105.7046283333,35.7884,2609.0,,11.0,28.0,0.1,10.4,,1025.9,Clitocybe fragrans,"Holy Ghost Trail, Tererro, NM, US",1
-ac4da6cc-ca12-4043-95f9-4fbb3d0b2213,310329149,2025-08-30 10:56:35-06:00,2025-08-30,-104.9056792259,38.728135548,2711.0,,11.3,19.3,2.1,11.1,,1019.1,Clitocybe fragrans,"Rock Creek, Colorado Springs, CO, USA",1
-ebbb1124-794a-44e9-91ff-8ee2123a97c7,240471950,2024-09-07 10:52:39-06:00,2024-09-07,-105.1764317028,39.2727727565,2360.0,,1.8,16.3,1.4,8.9,,1022.6,Clitocybe fragrans,"Colorado, US",1
-dbf621bf-de66-4f83-bf79-6c555b4c5834,236400497,2024-08-17 12:50:54-06:00,2024-08-17,-107.8548583333,37.8838833333,3338.0,,12.0,23.0,4.9,9.4,,1034.5,Clitocybe fragrans,"Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+ae6d096f-025d-452d-8a62-7690b345f0d0,315323481,2025-09-16 12:54:58-06:00,2025-09-16,-105.7046283333,35.7884,2609.0,,11.0,28.0,0.1,10.4,,1025.9,Clitocybe fragrans,"Holy Ghost Trail, Tererro, NM, US",1,
+ac4da6cc-ca12-4043-95f9-4fbb3d0b2213,310329149,2025-08-30 10:56:35-06:00,2025-08-30,-104.9056792259,38.728135548,2711.0,,11.3,19.3,2.1,11.1,,1019.1,Clitocybe fragrans,"Rock Creek, Colorado Springs, CO, USA",1,
+ebbb1124-794a-44e9-91ff-8ee2123a97c7,240471950,2024-09-07 10:52:39-06:00,2024-09-07,-105.1764317028,39.2727727565,2360.0,,1.8,16.3,1.4,8.9,,1022.6,Clitocybe fragrans,"Colorado, US",1,
+dbf621bf-de66-4f83-bf79-6c555b4c5834,236400497,2024-08-17 12:50:54-06:00,2024-08-17,-107.8548583333,37.8838833333,3338.0,,12.0,23.0,4.9,9.4,,1034.5,Clitocybe fragrans,"Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",1,
+26bb0af1-2834-433a-9e09-d189a516b5a4,64790996,2020-10-23 14:13:09-07:00,2020-10-23,-121.8510225061,45.3789510078,751.0,,5.6,14.4,,11.4,,1018.6,Clitocybe fragrans,"Oregon, US",2,
+07b51e2a-e523-4537-91ce-31bb70be85b2,35221154,2019-11-02 12:49:23-07:00,2019-11-02,-122.2872978811,45.3265781754,228.0,,7.8,15.6,0.0,22.1,,1024.0,Clitocybe fragrans,"Eagle Fern Park, Eagle Creek, OR, US",1,
+5b302b3a-fb11-4c56-838f-95f4cc8005a1,17021149,2018-09-27,2018-09-27,-121.9395,45.29935,484.0,,10.0,28.3,0.0,3.1,,1014.3,Clitocybe fragrans,"Salmon River Trail, Zigzag Ranger District, Mount Hood National Forest, Clackamas Co., Oregon, USA",1,
+fea64eea-f642-48e1-a9c9-8fa2c8f9b1f7,335156090,2026-01-17 15:16:14-08:00,2026-01-17,-122.5617133333,45.7313383333,118.0,,-2.0,10.0,0.0,6.1,,1026.0,Clitocybe fragrans,"NE 149th St, Brush Prairie, WA, US",1,84QVPCJQ+
+6aa2ddc6-97fc-404f-aae5-3d4ccf6827bd,252659332,2024-11-22 15:58:32-08:00,2024-11-22,-122.3700916667,45.6204611111,55.0,,7.8,15.0,,20.3,,1004.3,Clitocybe fragrans,"Washougal, WA 98671, USA",1,84QVJJCH+
+6cdee63d-4d16-4ba7-895a-34620cfdff00,194748649,2023-12-23 15:07:04-08:00,2023-12-23,-122.6770449802,45.437722301,91.0,,0.0,5.0,0.0,6.1,,1025.8,Clitocybe fragrans,"Forest Highlands, Portland, OR, USA",1,84QVC8QF+
+b4102a77-e2e4-4637-a603-f458aeccf378,147083650,2023-01-20 13:42:44-08:00,2023-01-20,-122.7046925202,45.5217450715,119.0,,1.1,5.0,0.0,4.3,,1032.6,Clitocybe fragrans,"Oregon Holocaust Memorial, Portland, OR 97205, USA",1,84QVG7CW+
+f48e67e3-3013-4ffe-a90b-45d040869825,145719411,2023-01-02 16:09:42-08:00,2023-01-02,-122.42183,45.59568,189.0,,2.2,5.6,,37.6,,1008.9,Clitocybe fragrans,"NW 22nd Ave, Camas, WA, US",1,84QVHHWH+
+c179cc74-c648-4607-92c0-970833f3d381,144133156,2022-12-09 19:29:28-08:00,2022-12-09,-122.578532137,45.490470683,74.0,,4.4,6.7,19.3,19.8,,1009.1,Clitocybe fragrans,4400 Southeast 82nd Avenue,1,84QVFCRC+
+c75d234d-d80f-4ad2-8b38-7b47ca9fe91e,101345108,2021-11-17 10:34:47+00:00,2021-11-17,-122.6757601244,45.4374103245,68.0,,1.7,11.7,0.0,17.3,,1023.2,Clitocybe fragrans,"Tryon Creek State Natural Area, Portland, OR, US",1,84QVC8PF+
+b8bf698e-df01-4210-a5db-17c160cf437a,99427544,2021-10-25 12:54:00-07:00,2021-10-25,-122.7349166667,45.54105,275.0,,11.7,14.4,,15.3,,1000.0,Clitocybe fragrans,"Forest Park Conservancy, Portland, OR, US",1,84QVG7R8+
+87cc827b-e0f4-4fdd-b05e-bbb17b5b3571,99427330,2021-10-25 12:21:47-07:00,2021-10-25,-122.7357416667,45.54068,261.0,,11.7,14.4,,15.3,,1000.0,Clitocybe fragrans,"Forest Park Conservancy, Portland, OR, US",1,84QVG7R7+
+02a4bd2d-78cb-4e93-a5af-0d0b6bc81a17,65243118,2017-12-01,2017-12-01,-122.7204,45.3677,129.0,,7.2,10.0,,7.7,,1019.9,Clitocybe fragrans,"Stafford, Clackamas Co., Oregon, USA",1,84QV979H+
+ebb16cd8-23de-4bba-9c22-3468d53dba4a,41507175,2020-04-05 14:41:35-07:00,2020-04-05,-122.7649459722,45.642285,18.0,,4.4,17.8,,7.5,,1001.6,Clitocybe fragrans,"St. Johns, Portland, OR, USA",1,84QVJ6RP+
+a1de3ea0-22be-4407-85fe-ed38db60c8b7,37809917,2020-01-20 15:18:50+00:00,2020-01-20,-122.7497024536,45.5570602417,194.0,,5.0,8.3,0.0,11.3,,1013.0,Clitocybe fragrans,"Portland, OR 97210, USA",2,84QVH742+
+1f246e78-32c3-4608-861e-d37b8af811bb,36960546,2019-12-25 16:17:14-10:00,2019-12-25,-122.75884167,45.60449667,25.0,,0.0,6.1,,6.8,,1014.5,Clitocybe fragrans,"Pier Park, Portland, OR, US",1,84QVJ63R+
+f9389565-897c-4023-bff0-76711d78b80e,20548209,2019-02-21 11:43:01-08:00,2019-02-21,-122.5709609985,45.6645927429,79.0,,-1.7,8.3,0.0,5.1,,1019.4,Clitocybe fragrans,"9903 NE 59th St, Vancouver, WA 98662, USA",1,84QVMC7H+
+90012a67-6804-4f86-bcb9-a31dee98c49c,19414455,2019-01-03,2019-01-03,-122.596,45.5119,129.0,,6.1,12.8,1.5,19.4,,1015.2,Clitocybe fragrans,"Mount Tabor Park, Portland, Multnomah Co., Oregon, USA",1,84QVGC63+
+797e2013-624a-4d7b-898b-1fd847bf0ca3,19167715,2018-12-21 13:38:51-08:00,2018-12-21,-122.7954752817,45.59193445,218.0,,-0.6,8.3,0.0,2.2,,1023.3,Clitocybe fragrans,"Linnton Park, Portland, OR, US",2,84QVH6R3+
+0623bfc7-3645-459a-84f5-6bea3443317a,8560413,2017-10-26 12:20:38-07:00,2017-10-26,-122.5986171049,45.5113432836,103.0,,10.6,21.7,0.3,14.8,,1020.7,Clitocybe fragrans,"Mt Tabor Park, Portland, OR, US",1,84QVGC62+

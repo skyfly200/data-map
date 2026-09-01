@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0db149e8-f07e-4993-8fe9-8cecdb548787,237226972,2024-08-19 15:24:46-07:00,2024-08-19,-121.6574833024,44.7141268498,84PWP87V+,1093.0,,7.0,26.0,0.0,11.1,,1018.6,Russula monticola,"Oregon, US",1

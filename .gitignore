@@ -47,3 +47,4 @@ __pycache__/
 # Enrichment checkpoint markers (resumable pipeline)
 *.csv.done
 *.csv.tmp
+precip.zip

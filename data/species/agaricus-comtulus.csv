@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e3938a2b-a401-47cd-8f04-bb4f104b553a,189059448,2023-10-18 16:38:16-07:00,2023-10-18,-122.7801694444,45.5814972222,84QVH6J9+,222.0,,6.7,22.2,0.0,1.6,,1019.0,Agaricus comtulus,"Linnton, Portland, OR, USA",3

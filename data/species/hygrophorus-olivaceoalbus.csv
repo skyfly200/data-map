@@ -1,0 +1,10 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f17664aa-c446-42a5-a8a3-e304a04f802f,387377890,2026-08-01 14:21:25-06:00,2026-08-01,-110.8129983269,40.5939973283,85GFH5VP+,3225.0,,,,,,,,Hygrophorus olivaceoalbus,"Duchesne County, US-UT, US",2
+bf6c6128-5c9d-45ea-9731-136e9d23da69,310295802,2025-08-30 10:30:42-06:00,2025-08-30,-105.4995081997,39.6910303,85FPMGR2+,3162.0,,-1.4,7.2,1.5,11.0,,1025.0,Hygrophorus olivaceoalbus,"Idaho Springs, CO 80452, USA",1
+37a5cf07-2664-4f5c-a011-1a015b3415d1,239201911,2024-08-29 11:36:00-06:00,2024-08-29,-105.8004611111,35.800225,857PR52X+,3266.0,,15.6,28.9,0.0,12.1,,1014.3,Hygrophorus olivaceoalbus,"Santa Fe County, NM, USA",1
+1ad944e3-db7c-4096-9fed-0479e84ee9fb,238663343,2024-08-27 13:32:00-06:00,2024-08-27,-105.583525,39.9856111111,85FPXCP8+,3033.0,,,,,7.7,,,Hygrophorus olivaceoalbus,"Boulder County, CO, USA",1
+a4b04722-0cc5-4606-8788-df9aa173c477,238098567,2024-08-24 12:26:34-06:00,2024-08-24,-105.8004386723,35.7989527017,857PQ5XX+,3208.0,,16.7,30.0,,13.6,,1016.5,Hygrophorus olivaceoalbus,"San Ildefonso Pueblo, NM 87506, USA",1
+da5c177e-2756-4800-baaa-c20ef26a5737,181466503,2023-09-02 12:40:31-06:00,2023-09-02,-105.5534176156,40.0727800324,85GP3CFW+,3227.0,,20.0,33.0,0.0,7.7,,1021.0,Hygrophorus olivaceoalbus,"Nederland, CO 80466, USA",1
+3b045530-8d24-4d2e-884e-0d4378b5c57c,134085934,2022-08-27,2022-08-27,-106.4692,39.2472,85FM6GWJ+,3306.0,,2.8,18.3,0.0,11.0,,1013.4,Hygrophorus olivaceoalbus,"Colorado. Lake Co., San Isabel National Forest, Native Lake trailhead, SW of Turquoise Lake.",1
+28367552-b495-4345-8165-3ddb187b96ea,4042285,2016-09-05 14:26:51-06:00,2016-09-05,-106.0650724546,39.4822461158,85FMFWJM+,3020.0,,0.6,19.4,0.0,11.3,,1007.8,Hygrophorus olivaceoalbus,"Breckenridge Ski Area, Breckenridge, CO, US",2
+dab3724b-a6f4-40b3-9834-289d0dec8392,102208231,2021-11-29 16:35:51+00:00,2021-11-29,-122.8702662761,45.4521158055,84QVF42H+,232.0,,9.4,13.3,,2.9,,1024.4,Hygrophorus olivaceoalbus,"Cooper Mountain Nature Park, Beaverton, OR, US",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+65138f68-deb6-4143-a66b-759264658360,235267983,2024-08-11 19:39:23-06:00,2024-08-11,-108.0931867339,39.0149393058,85FH2W74+,3181.0,,16.6,30.7,1.2,10.6,,1016.3,Hygrophorus aurorae,"Delta County, US-CO, US",1

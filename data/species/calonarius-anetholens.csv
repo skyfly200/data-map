@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+ae36587b-1f18-485e-8571-2635413582c9,253967609,2024-10-25 11:42:00-07:00,2024-10-25,-121.7803320449,45.6989771149,19.0,,3.5,13.0,0.0,10.0,,1018.6,Calonarius anetholens,United States,1,
+24ccdd68-fe49-4e71-b66e-2ec9e5158257,192017178,2013-11-18 12:28:00-08:00,2013-11-18,-121.31667,45.71532,178.0,,3.9,9.4,0.6,2.6,,1011.5,Calonarius anetholens,"Klickitat County, WA, USA",2,
+f15b39e9-e39a-4353-842e-75487526487f,191417039,2023-11-18 14:31:48-08:00,2023-11-18,-121.429678448,45.9098744066,811.0,,3.4,6.5,7.6,8.3,,1013.0,Calonarius anetholens,"Washington, US",2,84QWWH5C+

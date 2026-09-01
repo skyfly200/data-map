@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+535ec815-c7fa-405d-96c5-99a2933c5e6b,390989992,2026-08-13 12:20:15-06:00,2026-08-13,-107.8800578997,37.8323419997,859JR4J9+,2982.0,,10.0,17.0,1.8,2.9,,,Fomitopsis rosea,"Ophir, CO 81426, USA",1
+1f113c52-3aef-4d29-999d-a5f51569f4da,282174672,2025-05-17 11:47:49-06:00,2025-05-17,-106.853026902,36.0381542755,858M24QW+,2892.0,,,,,,,,Fomitopsis rosea,"Rio Arriba County, US-NM, US",1
+7a3d08d4-72ce-429b-bf1d-6776ea6d7af9,246097107,2024-10-06 16:52:30-06:00,2024-10-06,-104.8065234767,38.7832525211,85CQQ5MV+,1836.0,,9.5,20.1,0.0,13.8,,1023.2,Fomitopsis rosea,"Colorado, US",1
+93c79b1f-e4e1-41df-ae7a-94caa6e36a8c,122388026,2022-06-18 14:14:41-07:00,2022-06-18,-122.790275,45.5831,84QVH6M5+,283.0,,9.4,17.8,,4.5,,1016.9,Fomitopsis rosea,"Linnton, Portland, OR, USA",1

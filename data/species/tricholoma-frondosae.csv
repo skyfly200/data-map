@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c55bee30-e9dd-4a35-b0d2-2786130ac12e,308561244,2025-08-22 11:36:00-06:00,2025-08-22,-105.79672222,35.80191667,3319.0,,15.0,31.7,0.0,11.2,,1014.3,Tricholoma frondosae,"Santa Fe, New Mexico, United States",1
+03a9de8c-5e94-4d31-a93d-1d33f16c591c,304273536,2025-08-05 12:03:00-06:00,2025-08-05,-105.79746944,35.80139167,3319.0,,12.8,35.0,0.0,12.5,,1014.1,Tricholoma frondosae,"Santa Fe, New Mexico, United States",1

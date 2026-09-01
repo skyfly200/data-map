@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+39469f53-e2d7-49e1-8163-0d356c4e54ca,33968646,2019-10-05 15:26:00-07:00,2019-10-05,-122.7845388889,45.5809194444,84QVH6J8+,283.0,,7.2,18.3,0.0,2.6,,1027.9,Coprinopsis acuminata,"Northwest Portland, Portland, OR, USA",1

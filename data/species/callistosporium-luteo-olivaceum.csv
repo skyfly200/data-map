@@ -1,3 +1,9 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-89952b57-9a8b-4da3-b8df-a544813f3958,235708266,2024-08-12 12:08:29-06:00,2024-08-12,-105.3915033333,36.2202216667,3323.0,,6.6,25.5,2.7,7.2,,1030.6,Callistosporium luteo-olivaceum,"Carson National Forest, Chacon, NM, US",1
-f2a129f9-6580-470f-8ae9-635d8a500b7d,178767846,2023-08-12 10:55:21-06:00,2023-08-12,-104.7748371733,38.8853982639,1991.0,,15.0,26.7,3.3,9.0,,1015.1,Callistosporium luteo-olivaceum,"Colorado Springs, CO 80907, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+89952b57-9a8b-4da3-b8df-a544813f3958,235708266,2024-08-12 12:08:29-06:00,2024-08-12,-105.3915033333,36.2202216667,3323.0,,6.6,25.5,2.7,7.2,,1030.6,Callistosporium luteo-olivaceum,"Carson National Forest, Chacon, NM, US",1,
+f2a129f9-6580-470f-8ae9-635d8a500b7d,178767846,2023-08-12 10:55:21-06:00,2023-08-12,-104.7748371733,38.8853982639,1991.0,,15.0,26.7,3.3,9.0,,1015.1,Callistosporium luteo-olivaceum,"Colorado Springs, CO 80907, USA",1,
+a695bf61-740e-4f83-bb93-38636f623e01,250754306,2024-11-06 19:47:59-08:00,2024-11-06,-122.2968968786,45.4901440477,41.0,,3.9,14.4,0.0,11.0,,1027.4,Callistosporium luteo-olivaceum,"Oxbow Regional Park, Gresham, OR, US",1,
+f7240fa3-8e6f-4316-bbcb-cd3baa247d3c,190551111,2023-10-27 15:20:59-07:00,2023-10-27,-122.7300458013,45.5254523873,164.0,,3.9,13.3,0.0,9.0,,1027.0,Callistosporium luteo-olivaceum,"Portland, OR 97210, USA",1,84QVG7G9+
+c972c475-0159-4563-a8f8-45dbea6a24dd,188688592,2023-10-23 11:13:12-07:00,2023-10-23,-122.7179785073,45.5175244762,219.0,,11.1,16.7,0.0,9.0,,1017.8,Callistosporium luteo-olivaceum,"Arlington Heights, Portland, OR, USA",1,84QVG79J+
+c1a36835-f2da-4476-8840-3d9e8aea08f5,101417143,2021-11-18 11:02:45-08:00,2021-11-18,-122.5967601764,45.4374775198,49.0,,6.7,10.0,7.6,18.7,,1012.5,Callistosporium luteo-olivaceum,United States,1,84QVCCP3+
+a7b1b521-e7b0-488e-b3ca-c5a29d7f1b94,37809965,2020-01-20 15:30:22+00:00,2020-01-20,-122.7489700317,45.5560798645,240.0,,5.0,8.3,0.0,11.3,,1013.0,Callistosporium luteo-olivaceum,"Portland, OR 97210, USA",2,84QVH742+
+5afcb887-568a-410f-ab9b-a7b862909f75,28541654,2019-07-09 12:16:00-07:00,2019-07-09,-122.2729891377,45.7173285335,792.0,,14.4,23.3,,5.8,,1015.3,Callistosporium luteo-olivaceum,"Clark County, WA, USA",2,84QVPP8G+

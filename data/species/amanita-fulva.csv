@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+7c29ab46-1d74-43a3-a871-b09ba99052ca,34441245,2019-10-15 16:52:27-07:00,2019-10-15,-122.653615866,44.8787020154,84PVV8HW+,455.0,,2.2,17.2,0.0,5.4,,1015.9,Amanita fulva,"Silver Falls State Park, Silverton, OR, US",1

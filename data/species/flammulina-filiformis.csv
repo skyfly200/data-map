@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ddc578eb-50fa-4dc3-9320-83779043aa57,341431160,2023-12-02 12:13:00-08:00,2023-12-02,-122.2235086634,45.3037073268,84QV8Q3G+,361.0,,7.2,12.2,,11.1,,1010.4,Flammulina filiformis,"Clackamas County, OR, USA",1

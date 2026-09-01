@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a2d61cb1-e262-461d-b49b-7298869d9d0c,132047122,2022-08-22 11:19:09-06:00,2022-08-22,-105.5831666667,40.0520945,85GP3C28+,3475.0,,8.5,22.6,2.8,3.5,,1030.2,Boletopsis sp. 'SRM-01',"Arapaho & Roosevelt National Forests Pawnee National Grassland, Ward, CO, US",5

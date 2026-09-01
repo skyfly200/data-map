@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+5590bd79-fc3b-4913-87b9-974efe4e8cdd,136500688,2022-09-24 12:26:00-07:00,2022-09-24,-122.2647440264,44.3566229779,84PV9P4P+,1218.0,,,,,,,,Cortinarius sp. 'PNW23',"Linn County, OR, USA",2

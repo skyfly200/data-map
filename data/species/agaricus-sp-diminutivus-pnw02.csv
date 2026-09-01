@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+839516f2-3cb2-4e0b-ada4-bac5d26b9d10,190976217,2023-11-13 13:53:30-08:00,2023-11-13,-122.66200419,44.8733520717,84PVV8FQ+,534.0,,6.1,12.8,0.8,8.6,,1016.1,Agaricus sp. 'diminutivus-PNW02',"Silver Ridge Rd SE, Sublimity, OR, US",1

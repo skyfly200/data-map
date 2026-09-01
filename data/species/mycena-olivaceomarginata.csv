@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+689f47c2-26d9-4a44-bf40-01f906ece8f3,248804491,2024-10-18 15:05:21-07:00,2024-10-18,-122.639824,45.469698,84QVF996+,17.0,,7.8,13.9,0.3,10.1,,1025.4,Mycena olivaceomarginata,"Sellwood - Moreland, Portland, OR, USA",1

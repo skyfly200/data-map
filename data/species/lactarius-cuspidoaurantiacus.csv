@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+38722edf-f034-4769-9e81-eeb7ebb21452,244390331,2024-09-26 15:43:00-07:00,2024-09-26,-121.7364883333,45.27705,1112.0,,10.1,21.1,0.0,7.2,,1016.4,Lactarius cuspidoaurantiacus,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1,
+97a8cdbd-07b5-4c9d-bab6-9cfe7224c3ef,141739920,2015-11-10 05:38:00-08:00,2015-11-10,-122.0731511519,44.6951241213,609.0,,,,,,,,Lactarius cuspidoaurantiacus,"Idanha, OR 97350, USA",1,84PVMWWG+
+610767fc-3c1e-49fd-9930-ac74d9d59428,141098529,2017-10-08 00:41:00-07:00,2017-10-08,-121.9068225121,44.6057734307,1324.0,,,,,,,,Lactarius cuspidoaurantiacus,"Linn County, OR, USA",2,84PWJ34V+
+b549e309-2dcc-4ae2-ba7c-e6d515f433b0,186935507,2023-10-08 16:31:00-07:00,2023-10-08,-122.0181217283,44.3685004208,1037.0,,,,,,,,Lactarius cuspidoaurantiacus,"Linn County, OR, USA",1,84PV9X9J+

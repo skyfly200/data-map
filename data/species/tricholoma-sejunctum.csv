@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+b559b91d-dbb8-4888-a86f-a2e11b2ac9d1,179037289,2023-08-16 18:03:17-06:00,2023-08-16,-105.8309910669,39.5617980076,3937.0,,6.0,15.4,3.5,11.9,,1023.3,Tricholoma sejunctum,"Colorado, US",1,
+4398f3f4-e51f-4284-811d-3c7c94266b26,64710228,2020-11-11 10:05:59-08:00,2020-11-11,-122.64379167,44.86399167,435.0,,1.7,12.2,0.0,5.4,,1021.1,Tricholoma sejunctum,"Silver Falls State Park, Silverton, OR, US",1,84PVV974+

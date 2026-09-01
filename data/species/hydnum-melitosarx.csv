@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0323e844-517b-4bb9-a60c-ec78b72b7449,309419742,2025-08-26 14:30:11-06:00,2025-08-26,-104.94581379,38.73693956,85CQP3P3+,3031.0,,13.0,15.0,3.2,9.6,,1027.7,Hydnum melitosarx,"Teller County, US-CO, US",1
+22af370f-d3b0-409e-8be8-598d38551b40,308359809,2025-08-22 14:50:15-06:00,2025-08-22,-104.9396616859,38.739561719,85CQP3Q6+,3031.0,,16.0,28.0,1.1,18.0,,1027.6,Hydnum melitosarx,"Colorado, US",2
+37e414b3-354a-4c3c-9d4f-7f5b038e0702,233346666,2024-07-31 10:12:00-06:00,2024-07-31,-105.8285471046,35.6557948894,857PM54C+,2557.0,,15.0,36.7,0.0,11.1,,1009.7,Hydnum melitosarx,"New Mexico, US",3
+64f1a98b-2c80-4bc2-aa9a-247c132fc924,131908166,2022-08-20 10:17:11-06:00,2022-08-20,-107.880985257,37.8329757911,859JR4M9+,2982.0,,10.0,17.0,13.8,5.1,,1029.5,Hydnum melitosarx,"San Miguel County, US-CO, US",1

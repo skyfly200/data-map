@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+c436108a-304a-4784-8bbb-14e1e2865e10,34854735,2019-10-20 14:40:03-07:00,2019-10-20,-121.9346393645,45.2681703606,646.0,,6.1,14.4,,5.1,,1018.9,Leucocoprinus flammeotinctus,"Welches, OR 97067, USA",1,
+b4c8cf7d-fe0d-4575-b5a7-5cc81ad6dd71,35035111,2019-10-19 12:32:00-07:00,2019-10-19,-121.9758287,44.7814124,680.0,,,,,,,,Leucocoprinus flammeotinctus,"53000 Breitenbush Rd SE, Detroit, OR 97342, USA",1,84PWQ2JF+
+b698a1d9-d976-4053-b0e7-9dc598ac2616,65541884,2020-11-20 12:59:00-08:00,2020-11-20,-122.6659694444,44.8837916667,495.0,,-1.0,5.0,0.0,2.5,,1032.0,Leucocoprinus flammeotinctus,"Marion County, OR, USA",1,84PVV8MM+
+1bec92e0-4ea3-42fe-95a7-158575764dc2,64119215,2020-11-02 15:21:39-10:00,2020-11-02,-122.7992886677,45.6051056441,123.0,,1.7,19.4,0.0,3.9,,1019.5,Leucocoprinus flammeotinctus,"Northwest Portland, Portland, OR, USA",1,84QVJ642+

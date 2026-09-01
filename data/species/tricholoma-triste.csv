@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+ce8b2b27-9bab-4629-9e10-77ce477500c6,317433628,2025-09-28 11:40:00-06:00,2025-09-28,-107.0468586641,38.6010381029,2964.0,,8.0,18.0,0.9,11.7,,1026.2,Tricholoma triste,"Gunnison County, US-CO, US",0
+4c6f6d33-716e-4519-ae57-9664dd633f61,311714658,2025-08-30 11:37:00-06:00,2025-08-30,-107.9716927306,39.0368532984,3113.0,,13.0,31.0,0.0,8.5,,1024.1,Tricholoma triste,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",0

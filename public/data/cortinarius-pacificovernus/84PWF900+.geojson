@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "f55d1e0a-76cf-4820-bb11-62a169d0367c",
+        "inat_id": 213914625,
+        "timestamp": "2024-05-04T18:39:48-07:00",
+        "date": "2024-05-04",
+        "olc": "84PWF900+",
+        "elevation": 898.0,
+        "tavg": null,
+        "tmin": 5.0,
+        "tmax": 11.0,
+        "precipitation": 14.3,
+        "windspeed": 10.1,
+        "winddirection": null,
+        "presure": 1000.7,
+        "species": "Cortinarius pacificovernus",
+        "genus": "Cortinarius",
+        "location": "Deschutes National Forest, Camp Sherman, OR, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.63942,
+          44.4859116667
+        ]
+      }
+    }
+  ]
+}

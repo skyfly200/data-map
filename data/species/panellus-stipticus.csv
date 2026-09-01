@@ -1,2 +1,9 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-1e4fa9a4-07bf-44db-8e90-e3cbaac5ad09,176480318,2023-08-03 09:22:34-05:00,2023-08-03,-102.0079258,37.07399935,1058.0,,20.0,33.0,0.0,12.6,,1018.1,Panellus stipticus,"Morton County, US-KS, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+1e4fa9a4-07bf-44db-8e90-e3cbaac5ad09,176480318,2023-08-03 09:22:34-05:00,2023-08-03,-102.0079258,37.07399935,1058.0,,20.0,33.0,0.0,12.6,,1018.1,Panellus stipticus,"Morton County, US-KS, US",1,
+b5f14a8a-892d-4089-825a-e720f2de4409,338386501,2026-02-12 17:16:08-08:00,2026-02-12,-121.5985716667,45.6950633333,334.0,,,,,2.5,,,Panellus stipticus,"Hood River, OR, US",1,
+7737d354-924f-4322-93e1-14de76fa03b3,333402318,2026-01-03 12:30:14-08:00,2026-01-03,-122.1126611111,45.6147472222,232.0,,5.0,7.0,1.4,30.6,,999.4,Panellus stipticus,"Stevenson, WA 98648, USA",1,
+e311d895-29ed-4285-b430-86e7eeff97ca,191250385,2023-11-16 23:24:00-08:00,2023-11-16,-122.0588314245,45.0325555973,463.0,,,,,,,,Panellus stipticus,"Clackamas County, OR, USA",1,
+35fcf021-ad2b-48b9-a57e-380b6cc23a6e,46568172,2020-05-19 15:57:00-07:00,2020-05-19,-122.2592771621,44.8044334757,1211.0,,,,,,,,Panellus stipticus,"Marion County, OR, USA",2,84PVRP3R+
+23088df8-6d21-4e3a-b838-37198dca0a4c,151349257,2023-03-16 16:34:21-07:00,2023-03-16,-122.5555895269,45.4738096724,64.0,,-1.0,16.1,0.0,15.5,,1021.5,Panellus stipticus,"Multnomah County, US-OR, US",1,84QVFCFV+
+29cde2b8-131e-4081-9a6e-a1d8895ea822,146445829,2023-01-12 14:42:18-08:00,2023-01-12,-122.4435579722,45.532246,60.0,,7.2,11.1,,38.9,,1011.2,Panellus stipticus,"Fairview, OR 97024, USA",1,84QVGHJ4+
+d3af348e-4d90-4f01-adc8-fd382782e58f,101240891,2021-11-13 08:21:55-08:00,2021-11-13,-122.6495583333,44.84608,465.0,,8.3,17.2,0.0,9.7,,1024.1,Panellus stipticus,"Silver Falls State Park, Stayton, OR, US",1,84PVR9W2+

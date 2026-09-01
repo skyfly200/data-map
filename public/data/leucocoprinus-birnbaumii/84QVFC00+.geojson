@@ -1,0 +1,63 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d2fe5ef3-cf5a-493d-9e64-1a83288d46ae",
+        "inat_id": 394794733,
+        "timestamp": "2026-07-23T15:00:14-07:00",
+        "date": "2026-07-23",
+        "olc": "84QVFC00+",
+        "elevation": 233.0,
+        "tavg": null,
+        "tmin": 17.8,
+        "tmax": 26.7,
+        "precipitation": 0.0,
+        "windspeed": 3.8,
+        "winddirection": null,
+        "presure": 1016.2,
+        "species": "Leucocoprinus birnbaumii",
+        "genus": "Leucocoprinus",
+        "location": "SE Westview Ct, Happy Valley, OR, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.558105,
+          45.4524633333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "d2fe5ef3-cf5a-493d-9e64-1a83288d46ae",
+        "inat_id": 394794733,
+        "timestamp": "2026-07-23T15:00:14-07:00",
+        "date": "2026-07-23",
+        "olc": "84QVFC00+",
+        "elevation": 233.0,
+        "tavg": null,
+        "tmin": 17.8,
+        "tmax": 26.7,
+        "precipitation": 0.0,
+        "windspeed": 3.8,
+        "winddirection": null,
+        "presure": 1016.2,
+        "species": "Leucocoprinus birnbaumii",
+        "genus": "Leucocoprinus",
+        "location": "SE Westview Ct, Happy Valley, OR, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.558105,
+          45.4524633333
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+7de71a30-41b9-4666-b96b-4994f47c87c1,392680067,2026-08-19 09:02:31-06:00,2026-08-19,-106.373895,42.808455,1607.0,,,,,,,,Hohenbuehelia petaloides,"Fox, Casper, WY, US",1,
+00f9f851-eff6-4b46-bf36-18110f0fdf2e,375660894,2026-06-26 15:53:58-06:00,2026-06-26,-105.2564166667,40.0009611117,1632.0,,13.0,31.0,1.5,3.1,,,Hohenbuehelia petaloides,"29th St, Boulder, CO, US",1,
+ca0f6088-3159-481b-bb2f-18208ff48d4b,295175410,2025-07-04 12:19:24-06:00,2025-07-04,-105.7530364722,36.4953536944,2131.0,,13.1,29.0,0.0,12.8,,1014.3,Hohenbuehelia petaloides,"US-64 & Lava Lane, New Mexico 87529, USA",1,
+3cfd6fa4-956a-44e6-b25b-549e8098eac9,225995867,2024-06-29 12:31:48-06:00,2024-06-29,-109.5615616667,40.4777416667,1671.0,,13.3,33.3,0.0,10.2,,1012.2,Hohenbuehelia petaloides,"W 1500 N St, Vernal, UT, US",1,
+7bfb8a80-ea91-42bd-a89c-7d6b433c8790,177113300,2023-08-06 08:21:16-06:00,2023-08-06,-104.907325,38.784795,2386.0,,14.0,18.0,1.4,11.9,,1028.1,Hohenbuehelia petaloides,"Pike and San Isabel National Forests, Manitou Springs, CO, US",1,
+49c172c4-9ea5-4b8a-8287-b5fe9ab265d5,77827392,2021-05-07 16:14:00-06:00,2021-05-07,-105.1148826205,39.993303234,1629.0,,4.3,28.1,0.0,5.8,,1014.4,Hohenbuehelia petaloides,"Lafayette, CO, USA",1,
+8c8b2c0b-add3-4535-a90b-e9679340a638,18867471,2018-10-08 17:23:43-06:00,2018-10-08,-104.9593583333,39.72417,1629.0,,0.8,5.2,,14.1,,1013.1,Hohenbuehelia petaloides,"2301–2399 E 5th Ave, Denver, CO, US",1,
+f565483b-ab3d-4992-bfdd-8b094fad5d2a,307429651,2025-08-18 12:08:02-07:00,2025-08-18,-122.3692,45.2960216667,129.0,,16.7,26.1,0.0,6.1,,1016.3,Hohenbuehelia petaloides,"Milo McIver State Park, Estacada, OR, US",1,84QV7JWJ+
+31434166-5594-4f5a-99fa-e2e283a2a017,307131097,2025-08-17 14:47:53-07:00,2025-08-17,-122.5379333333,45.4706783333,123.0,,17.8,26.1,0.0,8.3,,1015.7,Hohenbuehelia petaloides,"SE Knapp Ln, Portland, OR, US",1,84QVFFC6+
+ad9596ee-4005-4a91-b0fe-56f3f2d313d4,114814116,2022-05-01 18:03:00-07:00,2022-05-01,-122.0541990349,44.2564524855,650.0,,,,,,,,Hohenbuehelia petaloides,"Linn County, OR, USA",1,84PV7W4W+
+fcaf3de1-97f8-4cca-a0a4-744a95b836b4,61418179,2020-10-01 12:30:51-07:00,2020-10-01,-122.6351974066,45.4835758824,37.0,,13.3,25.0,0.0,4.7,,1020.6,Hohenbuehelia petaloides,"Sitka, Portland, OR 97202, USA",1,84QVF9M7+
+fd59f6e8-5c86-4853-bfd1-14565ff2ce74,17391689,2018-10-10 15:20:00-07:00,2018-10-10,-122.6760258246,45.6246281415,10.0,,7.2,19.4,0.0,2.6,,1015.9,Hohenbuehelia petaloides,"Esther Short, Vancouver, WA, USA",1,84QVJ8FF+
+30556d7b-1124-4d19-b6d7-62320ad0c5dc,7174062,2017-07-23 10:20:18-07:00,2017-07-23,-122.7966533333,45.48282,56.0,,16.1,29.4,0.0,17.0,,1015.6,Hohenbuehelia petaloides,"11685 SW 5th St, Beaverton, OR, US",1,84QVF6M3+
+2cf39ea5-ae63-4e55-9a01-b6b3021fee4b,7100071,2017-07-17 16:54:30-07:00,2017-07-17,-122.7966660947,45.4827756837,56.0,,8.9,27.2,0.0,9.2,,1017.2,Hohenbuehelia petaloides,"11685 SW 5th St, Beaverton, OR, US",1,84QVF6M3+

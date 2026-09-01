@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d8568b91-6223-41f1-9f12-b6e14d88a94d,236345076,2024-08-17 09:01:53-06:00,2024-08-17,-108.0617838633,37.6332582487,859HJWMQ+,2622.0,,12.0,23.0,4.9,9.4,,1034.5,Clavariadelphus sp. 'truncatus-PNW02',"Montezuma County, US-CO, US",2

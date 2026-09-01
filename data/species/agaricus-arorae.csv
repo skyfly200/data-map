@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+82e8872e-ec59-40af-9072-ff1a5bc6b1aa,251273560,2024-10-24 12:11:24-07:00,2024-10-24,-122.7851305556,45.5803888889,84QVH6J7+,283.0,,3.3,14.4,0.0,3.7,,1025.2,Agaricus arorae,"Linnton, Portland, OR, USA",2

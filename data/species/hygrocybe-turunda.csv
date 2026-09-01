@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8c4612df-fa06-4639-ad73-ba5b9d85845a,309114871,2025-08-17 15:36:49-07:00,2025-08-17,-121.6178133333,45.3452416667,84QW89WJ+,1553.0,,12.0,26.0,0.0,4.8,,1015.1,Hygrocybe turunda,"Mt. Hood Park Division Recreation Area, Mount Hood Parkdale, OR, US",1
+da740328-de4d-4364-b717-c956587872b3,148312172,2022-10-02 13:15:00-07:00,2022-10-02,-122.0773443242,44.5321657222,84PVGWJF+,1025.0,,,,,,,,Hygrocybe turunda,"Linn County, OR, USA",1
+dfa96a5a-7bef-4699-b345-a94ed7b82387,54862355,2020-07-29 16:12:20-07:00,2020-07-29,-122.0343419095,44.5242261852,84PVGXF8+,1126.0,,,,,,,,Hygrocybe turunda,"Willamette National Forest, Idanha, OR, US",2

@@ -70,12 +70,42 @@ function labelOf(key) {
   return f.label
 }
 function catLabel(key) { return (ALL_CATEGORY.find((f) => f.key === key) || { label: key }).label }
+function formatAspect(v) {
+  if (v === null || v === undefined || !Number.isFinite(Number(v))) return ''
+  const deg = Math.round(((Number(v) % 360) + 360) % 360)
+  const DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+  const dir = DIRS[Math.round(deg / 45) % 8]
+  return `${deg}° (${dir})`
+}
+
 function fmtOf(key) {
   const f = numFieldOf(key)
-  if (['ndvi', 'soil_moisture', 'water_retention'].includes(f.key) || String(f.key).includes('exposure')) {
-    return (v) => Number(v).toFixed(2)
+  if (f.key === 'aspect') {
+    return (v) => formatAspect(v)
   }
-  return (v) => Math.round(v).toLocaleString()
+  if (['ndvi', 'ndmi', 'soil_moisture'].includes(f.key) || String(f.key).includes('exposure')) {
+    return (v) => (Number.isFinite(Number(v)) ? Number(v).toFixed(2) : '')
+  }
+  if (['water_retention', 'rain7', 'slope'].includes(f.key)) {
+    return (v) => {
+      if (!Number.isFinite(Number(v))) return ''
+      const num = Number(v)
+      return Number.isInteger(num) ? String(num) : num.toFixed(1)
+    }
+  }
+  if (f.unit === 'temp') {
+    return (v) => {
+      if (!Number.isFinite(Number(v))) return ''
+      const num = Number(v)
+      return Number.isInteger(num) ? `${Math.round(num)}°` : `${num.toFixed(1)}°`
+    }
+  }
+  return (v) => {
+    if (!Number.isFinite(Number(v))) return ''
+    const num = Number(v)
+    if (Number.isInteger(num)) return Math.round(num).toLocaleString()
+    return Math.abs(num) < 10 ? num.toFixed(2) : num.toFixed(1)
+  }
 }
 
 // Colour a category value the same way the map does, so keys stay consistent.

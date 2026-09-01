@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+888ade66-1eba-48ee-b01f-e99c6bf45969,392429534,2026-08-16 10:46:16-07:00,2026-08-16,-122.0417944444,45.2938361111,1347.0,,16.7,27.2,0.0,3.4,,,Porphyrellus porphyrosporus,"Sandy, OR 97055, USA",1,
+68b844f5-4055-4654-a0a7-710af47ca0b1,248180395,2024-10-19 14:23:53-07:00,2024-10-19,-121.9406583333,45.303105,472.0,,12.2,22.8,,5.8,,1023.4,Porphyrellus porphyrosporus,"Zigzag Ranger Station, Welches, OR, US",1,
+ca55278f-77a9-4bf5-9851-d6a50063ff5c,96509900,2021-09-23 16:22:49-07:00,2021-09-23,-121.8085443601,45.3640875184,926.0,,,,,,,,Porphyrellus porphyrosporus,"Zigzag, OR 97049, USA",1,
+994024b0-5e85-44e3-99b9-38146b055d71,188214150,2023-10-19 14:33:40-07:00,2023-10-19,-122.37468,45.2460466667,292.0,,8.3,21.7,0.0,0.8,,1018.0,Porphyrellus porphyrosporus,"Beavercreek, OR, US",1,84QV6JWG+
+5b6df1ba-bc4d-4f5d-a5aa-cb1b2517babf,105744136,2019-07-07 16:39:26-07:00,2019-07-07,-122.81965,45.604745,178.0,,9.4,22.8,0.0,4.0,,1017.4,Porphyrellus porphyrosporus,"Forest Park, Portland, OR, US",3,84QVJ53J+
+d41b9d02-c1bf-4f90-b5e9-2e0bbddfc62e,105521775,2019-07-07 16:39:26-07:00,2019-07-07,-122.8196487427,45.6047439575,178.0,,9.4,22.8,0.0,4.0,,1017.4,Porphyrellus porphyrosporus,Portland,1,84QVJ53J+

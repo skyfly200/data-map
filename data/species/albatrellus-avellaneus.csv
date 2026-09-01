@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6c9ea853-0581-4eb6-aeb3-102390043943,248654744,2024-10-22 14:09:21-07:00,2024-10-22,-122.8149583333,45.5981666667,84QVH5XP+,324.0,,2.2,15.6,0.0,4.8,,1025.3,Albatrellus avellaneus,"Forest Park, Multnomah County, US-OR, US",1
+e02d4ba5-a162-4347-bc10-466e8bb65d99,140454568,2022-10-29 11:01:20-07:00,2022-10-29,-121.9828054203,44.5043968944,84PWG238+,1121.0,,,,,,,,Albatrellus avellaneus,"Linn County, US-OR, US",1
+306a1781-f804-41fc-a0c0-90a3e93e371d,59193724,2019-08-16 18:24:00-10:00,2019-08-16,-121.7594527778,45.9537861111,84QWX63R+,1143.0,,,,,,,,Albatrellus avellaneus,"Skamania County, WA, USA",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+09f8ece1-a3bf-4681-bfa2-38ae99219062,297629942,2025-07-12 15:22:39-06:00,2025-07-12,-105.8031783333,35.7994883333,3202.0,,19.4,28.3,1.5,21.8,,1011.6,Ganoderma lobatum,"Santa Fe National Forest, Tererro, NM, US",1

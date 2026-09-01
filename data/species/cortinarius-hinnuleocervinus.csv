@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+85c333da-f003-4a4c-a749-fdc1eb396bd3,191537832,2023-11-19 16:25:08-08:00,2023-11-19,-121.4364256,45.8286378,84QWRHH7+,242.0,,3.4,8.2,3.8,15.9,,1025.6,Cortinarius hinnuleocervinus,"White Salmon, WA 98672, USA",2

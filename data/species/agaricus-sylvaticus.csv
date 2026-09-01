@@ -1,3 +1,4 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-a69fbff1-5274-49db-a660-e2266d46f7a1,195046405,2014-07-31 22:22:00-06:00,2014-07-31,-104.8219687489,38.8372428113,1839.0,,13.3,19.4,2.8,6.1,,1022.3,Agaricus sylvaticus,"Downtown, Colorado Springs, CO, USA",1
-c6b70807-c44a-4124-a49b-6a9dd0eefd8d,178540506,2023-08-11 15:11:17-06:00,2023-08-11,-106.46377,39.84233,2841.0,,8.0,16.0,2.8,11.6,,1037.4,Agaricus sylvaticus,"White River National Forest, Bond, CO, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+a69fbff1-5274-49db-a660-e2266d46f7a1,195046405,2014-07-31 22:22:00-06:00,2014-07-31,-104.8219687489,38.8372428113,1839.0,,13.3,19.4,2.8,6.1,,1022.3,Agaricus sylvaticus,"Downtown, Colorado Springs, CO, USA",1,
+c6b70807-c44a-4124-a49b-6a9dd0eefd8d,178540506,2023-08-11 15:11:17-06:00,2023-08-11,-106.46377,39.84233,2841.0,,8.0,16.0,2.8,11.6,,1037.4,Agaricus sylvaticus,"White River National Forest, Bond, CO, US",2,
+2135de51-7ff4-4e11-9eac-82b790108dc8,61435690,2020-10-01 14:11:09-07:00,2020-10-01,-122.7558028085,45.4906265455,103.0,,13.3,25.0,0.0,4.7,,1020.6,Agaricus sylvaticus,"Oregon, US",3,84QVF6RV+

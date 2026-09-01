@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+e1edb414-9dc1-4faf-8e51-115c28f8b0e8,140189302,2022-10-27 12:06:29-07:00,2022-10-27,-122.5063293737,45.2082024405,84QV6F5V+,240.0,,4.4,16.1,0.0,3.3,,1020.5,Lactarius turpis,"S Windy City Rd, Mulino, OR, US",1
+f45cef60-80df-40d2-9585-d68c8957b5f2,94648790,2021-09-12 16:13:34-07:00,2021-09-12,-122.3855210537,45.4145806947,84QVCJ77+,186.0,,13.9,23.3,0.0,4.8,,1019.5,Lactarius turpis,"Oregon, US",1
+e29dc3af-8d92-44be-9ada-98f5f835bb22,190728692,2023-11-11 14:31:46-08:00,2023-11-11,-122.6948383333,45.46067,84QVF864+,155.0,,10.0,13.3,4.8,18.4,,1018.3,Lactarius turpis,"Marigold HydroPark, Portland, OR, US",1
+af5c4b0b-a110-4b37-ace1-0288957c6739,190232140,2023-11-06 10:55:24-08:00,2023-11-06,-122.6461333333,45.5185466667,84QVG993+,39.0,,11.7,14.4,18.5,19.8,,1004.1,Lactarius turpis,"SE Washington St, Portland, OR, US",1
+92ee0f54-bf27-4d34-b8dc-40de9fefe644,142969289,2022-11-26 14:45:12-08:00,2022-11-26,-122.7918466667,45.5244466667,84QVG6F5+,100.0,,1.7,7.2,0.0,2.1,,1030.3,Lactarius turpis,"NW 112th Ave, Portland, OR, US",1
+753132db-42f4-493a-9a80-aadc86b996f9,65366987,2020-11-08 11:25:25+00:00,2020-11-08,-122.5816853468,45.3606204307,84QV9C69+,21.0,,0.0,8.3,0.0,4.0,,1016.0,Lactarius turpis,"OR-213 N, Oregon City, OR, US",1
+96bffd37-f8e5-47af-846b-ec9c17093a18,3548941,2013-10-23,2013-10-23,-122.6625,45.5024,84QVG82Q+,3.0,,6.1,21.1,0.0,6.8,,1015.4,Lactarius turpis,"Portland, Oregon, USA",4

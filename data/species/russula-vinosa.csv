@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+3a72481e-ed0b-470e-b826-bc9016fcd4aa,137151852,2022-09-28 12:50:14-07:00,2022-09-28,-121.6232005107,45.3198253611,1337.0,,14.1,22.9,3.2,10.4,,1014.9,Russula vinosa,"Hood River County, US-OR, US",2,
+7e34dbe9-a878-46b5-8e15-3ce86d4800e2,17471897,2018-10-13 11:33:38-07:00,2018-10-13,-122.9133636878,44.9005342182,148.0,,5.6,22.8,0.0,13.3,,1019.9,Russula vinosa,"2887 74th Ave SE, Salem, OR, US",1,84PVW32P+
+895481b8-1f5b-46a4-9844-6482c83ce589,17471703,2018-10-13 11:15:09-07:00,2018-10-13,-122.9125525131,44.9002975849,148.0,,5.6,22.8,0.0,13.3,,1019.9,Russula vinosa,"Shangri-la School, Salem, OR, US",1,84PVW32P+

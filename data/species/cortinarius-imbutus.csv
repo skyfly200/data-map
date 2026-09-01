@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+78b222a2-847c-4aba-b2c5-75300b795dd0,315671756,2025-09-21 12:34:29-06:00,2025-09-21,-107.1420229451,38.8327652134,3125.0,,7.0,22.0,0.0,6.3,,1024.2,Cortinarius imbutus,"Gunnison County, US-CO, US",1

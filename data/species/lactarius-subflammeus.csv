@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0de92dbd-cabf-45a8-8937-1d0d7fdf4b7f,33409339,2019-09-25 14:38:01-07:00,2019-09-25,-122.1412666667,44.275055,84PV7VG5+,1388.0,,,,,,,,Lactarius subflammeus,"Willamette National Forest, Foster, OR, US",1

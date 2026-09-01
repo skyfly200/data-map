@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+4b6d5257-f2ba-479a-b892-b9852fc3ff58,258326840,2025-01-09 14:17:00-08:00,2025-01-09,-122.7661777778,45.6469833333,84QVJ6WM+,17.0,,0.0,9.4,0.0,6.4,,1030.6,Mycena sp. 'IN22',"St. Johns, Portland, OR, USA",1

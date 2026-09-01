@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+b6d7dd67-c072-43ef-9cb5-bdec185f2a7c,318803182,2025-10-04 13:06:14-07:00,2025-10-04,-121.8404805556,45.1449861111,1246.0,,,,,,,,Collybia cirrhata,"Clackamas County, US-OR, US",1,
+4a5a43af-9abb-4bc7-8311-2af76096ec14,35111560,2019-09-14 10:21:13-07:00,2019-09-14,-121.8087119982,45.2671311665,901.0,,,,,,,,Collybia cirrhata,"Zigzag, OR 97049, USA",2,
+ad16f560-8a19-432d-8325-b7fd061dff5d,34795128,2019-09-14 10:16:27-07:00,2019-09-14,-121.8383116667,45.2716833333,814.0,,,,,,,,Collybia cirrhata,"Mt. Hood National Forest, Rhododendron, OR, US",1,
+d5306728-6392-4065-b23f-1246cdc4e455,34223883,2019-10-05 11:56:00-07:00,2019-10-05,-121.8048524438,45.3210985635,1158.0,,,,,,,,Collybia cirrhata,"Clackamas County, OR, USA",2,
+b6daa9b9-1e2a-439f-9ab1-1650c3c6a162,18157100,2018-11-03 10:10:00-07:00,2018-11-03,-122.1460675902,45.1922627286,787.0,,10.6,15.6,,2.1,,1025.7,Collybia cirrhata,"Clackamas County, OR, USA",1,
+4f712a60-abcd-419d-a4fc-97b4453f65d2,34739884,2019-10-19 09:18:35-07:00,2019-10-19,-121.9734416667,44.780125,710.0,,,,,,,,Collybia cirrhata,"Marion County, US-OR, US",1,84PWQ2JG+
+57e1203e-b1a4-4bf7-922f-96632fe2d805,3555784,2015-10-15,2015-10-15,-121.993,44.775,762.0,,,,,,,,Collybia cirrhata,"Breitenbush Hot Springs, Breitenbush, Oregon, USA",1,84PWQ2G4+

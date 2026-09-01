@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+89b96caf-27fb-4ac4-80ce-47f0c261c410,65241974,2016-09-25,2016-09-25,-121.6781,45.1717,1097.0,,,,,,,,Suillus grevillei,"Mount Hood National Forest, Clackamas Co., Oregon, USA",1,
+69819bd8-452e-47f1-a63a-b8ac4dbb17c9,65237515,2013-10-04,2013-10-04,-121.7,45.3515,2309.0,,,,,,,,Suillus grevillei,"Mount Hood, Mount Hood National Forest, Oregon, USA",1,
+41167631-3763-4fb2-901f-94b5b6876639,65237508,2013-10-04,2013-10-04,-121.7,45.3515,2309.0,,,,,,,,Suillus grevillei,"Mount Hood, Mount Hood National Forest, Oregon, USA",1,
+b3748a89-2d40-436a-b47d-1fcc3b3f9c65,34739807,2019-10-18 11:45:56-07:00,2019-10-18,-121.8826616667,44.8322533333,1093.0,,,,,,,,Suillus grevillei,"Marion County, US-OR, US",1,84PWR4J8+
+d0f09db9-2802-417b-bbc7-f71e56643769,99554733,2019-09-22 12:19:00-07:00,2019-09-22,-122.7186721909,45.5162274041,250.0,,13.9,18.9,2.3,10.1,,1013.6,Suillus grevillei,"Southwest Portland, Portland, OR, USA",1,84QVG78J+
+fc0bd5cb-76d1-4b9b-81c0-e671bbeff6c5,34676955,2019-10-04 09:39:54-07:00,2019-10-04,-121.6478843988,45.9666552209,919.0,,,,,,,,Suillus grevillei,"Skamania County, US-WA, US",2,84QWX982+
+a2d44425-c736-41b3-b301-b6d4d74f3cb2,34078939,2019-10-04 10:45:06-07:00,2019-10-04,-121.64795,45.96679667,919.0,,,,,,,,Suillus grevillei,"Gifford Pinchot National Forest, Bingen, WA, US",1,84QWX982+

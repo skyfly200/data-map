@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+94086cdd-6a0e-4445-9ae4-a6989700e0e7,256465019,2024-09-29 17:52:37-06:00,2024-09-29,-105.670775,35.7617916667,857PQ86H+,2400.0,,12.8,29.4,,8.2,,1015.9,Steccherinum ochraceum,"Santa Fe National Forest, Tererro, NM, US",1
+51c19586-0229-4ec4-a2c9-bcbb96d6b471,148856113,2023-02-15 12:38:00-08:00,2023-02-15,-122.8043593863,45.5413562966,84QVG5RW+,132.0,,-3.9,7.2,0.0,2.0,,1028.4,Steccherinum ochraceum,"Bonny Slope, Portland, OR 97229, USA",1

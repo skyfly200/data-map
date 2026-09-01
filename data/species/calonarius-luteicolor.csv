@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fe787d72-ce1d-4eef-a550-35cf591cdd9c,34225965,2019-10-06 12:40:00-07:00,2019-10-06,-121.9674388889,45.8922166667,84QWV2RM+,390.0,,,,,,,,Calonarius luteicolor,"Skamania County, WA, USA",5

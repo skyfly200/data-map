@@ -1,2 +1,5 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-48a7d174-2946-4fb5-a311-3be019de387a,378967639,2026-07-05 20:01:35-06:00,2026-07-05,-105.404145,39.563395,2776.0,,6.0,15.0,0.0,8.2,,1021.4,Agaricus inapertus,"Pine Grove, Pine, CO, US",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+48a7d174-2946-4fb5-a311-3be019de387a,378967639,2026-07-05 20:01:35-06:00,2026-07-05,-105.404145,39.563395,2776.0,,6.0,15.0,0.0,8.2,,1021.4,Agaricus inapertus,"Pine Grove, Pine, CO, US",1,
+39582831-04ca-4293-ab72-1e5478f40aea,325840452,2025-06-28 12:50:00-07:00,2025-06-28,-121.5126898997,45.1972610997,1053.0,,,,,,,,Agaricus inapertus,"Wasco County, OR, USA",1,
+7dc38bb5-5603-41d6-96ff-9bf930208ccd,310943583,2025-06-28 15:52:00-07:00,2025-06-28,-121.5163322373,45.1986195242,1059.0,,,,,,,,Agaricus inapertus,"Wasco County, OR, USA",1,
+8aa0d3c0-f404-406d-a6bd-7d1e506f6c7f,298840874,2025-07-14 06:47:06-07:00,2025-07-14,-121.7904530801,44.5884534154,1787.0,,,,,,,,Agaricus inapertus,"Oregon, US",1,84PWH6Q5+

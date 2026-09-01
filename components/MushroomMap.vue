@@ -34,6 +34,20 @@
         <input type="checkbox" v-model="showFiltered" />
         Include excluded water / non-terrestrial rows
       </label>
+
+      <!-- Overlay controls -->
+      <div class="overlay-controls" style="margin-top:8px;">
+        <div v-for="(url, name) in overlayDefs" :key="name" class="overlay-item">
+          <label>
+            <input type="checkbox" v-model="activeOverlays[name]" @change="toggleOverlay(name)" />
+            {{ name }}
+          </label>
+        </div>
+        <div class="custom-overlay" style="margin-top:4px;">
+          <input v-model="customOverlayUrl" placeholder="Custom overlay GeoJSON URL" style="width:200px;" />
+          <button @click="addCustomOverlay(customOverlayUrl)" :disabled="!customOverlayUrl">Add</button>
+        </div>
+      </div>
     </div>
 
     <!-- Legend (categorical swatches or a sequential gradient) -->
@@ -56,6 +70,20 @@
       <aside v-if="selected" class="drawer">
         <button class="close" aria-label="Close" @click="selected = null">×</button>
         <h3><em>{{ selected.species || 'Observation' }}</em></h3>
+
+        <!-- Image Carousel -->
+        <div v-if="images.length > 0" class="carousel">
+          <div class="carousel-viewport">
+            <img :src="images[currentImageIndex]" :alt="`Observation image ${currentImageIndex + 1}`" class="carousel-image" />
+          </div>
+          <button v-if="images.length > 1" class="carousel-nav prev" aria-label="Previous image" @click="prevImage">‹</button>
+          <button v-if="images.length > 1" class="carousel-nav next" aria-label="Next image" @click="nextImage">›</button>
+          <div v-if="images.length > 1" class="carousel-indicators">
+            <span v-for="(img, idx) in images" :key="idx" class="indicator" :class="{ active: idx === currentImageIndex }" @click="currentImageIndex = idx"></span>
+          </div>
+          <div class="image-counter">{{ currentImageIndex + 1 }} / {{ images.length }}</div>
+        </div>
+
         <dl class="meta">
           <div v-if="selected.date"><dt>Observed</dt><dd>{{ selected.date }}</dd></div>
           <div v-if="selected.location"><dt>Location</dt><dd>{{ selected.location }}</dd></div>
@@ -63,6 +91,9 @@
           <div v-if="hasValue(selected.land_cover_label)"><dt>Land cover</dt><dd>{{ selected.land_cover_label }}</dd></div>
           <div v-if="hasValue(selected.cluster)"><dt>Cluster</dt><dd><span class="chip" :style="{ background: colorFor(selected.cluster) }">{{ selected.cluster }}</span></dd></div>
         </dl>
+        <div v-if="observationInfo && observationInfo.description" class="description">
+          {{ observationInfo.description }}
+        </div>
         <LeadUpCharts :p="selected" />
         <a v-if="inatUrl(selected)" :href="inatUrl(selected)" target="_blank" rel="noopener" class="inat">View on iNaturalist ↗</a>
       </aside>
@@ -73,7 +104,7 @@
 <script setup>
 import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, inatUrl, fetchObservationDetails, useObservations } from '~/composables/useObservations'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useUnits } from '~/composables/useUnits'
 
@@ -105,6 +136,77 @@ const selectedLatLng = ref(null)
 const locating = ref(false)
 const locateError = ref('')
 let map, geoLayer, L, userLayer, selectedMarker
+
+// Holds enriched observation info (photos, description, etc.) fetched from iNaturalist API
+
+// Overlay management definitions
+const overlayDefs = ref({
+  // Example static overlay: name -> URL of GeoJSON
+  // 'NDVI Layer': '/data/ndvi.geojson',
+});
+const activeOverlays = ref({});
+const overlayLayers = {};
+
+function loadOverlay(name, url) {
+  fetch(url)
+    .then(r => r.json())
+    .then(geo => {
+      if (!map || !L) {
+        console.warn('Map not initialized; cannot load overlay', name);
+        return;
+      }
+      const layer = L.geoJSON(geo, {
+        style: { color: '#ff7800', weight: 2, opacity: 0.6 },
+        onEachFeature: (f, l) => {
+          if (f.properties && f.properties.name) {
+            l.bindPopup(f.properties.name);
+          }
+        }
+      }).addTo(map);
+      overlayLayers[name] = layer;
+    })
+    .catch(e => console.error('Failed to load overlay', name, e));
+}
+
+function toggleOverlay(name) {
+  if (activeOverlays.value[name]) {
+    const url = overlayDefs.value[name];
+    if (url) loadOverlay(name, url);
+  } else {
+    const layer = overlayLayers[name];
+    if (layer && map) {
+      map.removeLayer(layer);
+      delete overlayLayers[name];
+    }
+  }
+}
+
+function addCustomOverlay(url) {
+  const name = `Custom ${Object.keys(overlayDefs.value).length + 1}`;
+  overlayDefs.value[name] = url;
+  activeOverlays.value[name] = true;
+  loadOverlay(name, url);
+}
+
+// UI state for custom overlay URL input
+const customOverlayUrl = ref('');
+const observationInfo = ref(null)
+// Carousel state
+const currentImageIndex = ref(0)
+const images = ref([])
+watch(selected, async (s) => {
+  currentImageIndex.value = 0
+  images.value = []
+  observationInfo.value = null
+  if (s) {
+    const id = s.inat_id ?? s.uuid
+    const details = await fetchObservationDetails(id)
+    observationInfo.value = details
+    if (details?.photos) {
+      images.value = details.photos.map(p => p.url || p.original_url || p.square_url || p.large_url)
+    }
+  }
+})
 
 const RAMP = ['#e8f1fb', '#0b3d91'] // sequential light → dark blue
 
@@ -228,6 +330,14 @@ function radiusFor(props) {
   const v = props[sizeBy.value]
   if (!hasValue(v)) return 3
   return 4 + 9 * ((Number(v) - s.lo) / ((s.hi - s.lo) || 1)) // 4 … 13
+}
+
+function prevImage() {
+  currentImageIndex.value = (currentImageIndex.value - 1 + images.value.length) % images.value.length
+}
+
+function nextImage() {
+  currentImageIndex.value = (currentImageIndex.value + 1) % images.value.length
 }
 
 // Re-style markers when the colouring or sizing changes.
@@ -466,7 +576,92 @@ onBeforeUnmount(() => { if (map) map.remove() })
 .chip { display: inline-block; min-width: 20px; padding: 0 7px; border-radius: 10px; color: #fff; font-weight: 600; text-align: center; }
 .inat { display: inline-block; margin-top: 14px; color: #2b7a3d; font-weight: 600; text-decoration: none; }
 .inat:hover { text-decoration: underline; }
+.photos { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.obs-photo { max-width: 100%; height: auto; border-radius: 4px; }
+.description { margin-top: 8px; white-space: pre-wrap; }
 
 .slide-enter-active, .slide-leave-active { transition: transform 0.2s ease; }
 .slide-enter-from, .slide-leave-to { transform: translateX(100%); }
+
+/* Carousel styles */
+.carousel {
+  position: relative;
+  margin: 0 0 14px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+}
+.carousel-viewport {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carousel-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 1.5rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.carousel-nav:hover {
+  background: rgba(0, 0, 0, 0.75);
+}
+.carousel-nav.prev {
+  left: 8px;
+}
+.carousel-nav.next {
+  right: 8px;
+}
+.carousel-indicators {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+}
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.indicator:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+.indicator.active {
+  background: #fff;
+  transform: scale(1.2);
+}
+.image-counter {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
 </style>

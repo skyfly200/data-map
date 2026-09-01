@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cd5c6cb5-88bb-400a-90f8-a936c918a031,139084886,2022-10-16 16:53:00-07:00,2022-10-16,-121.7302166667,45.2790444444,84QW77H9+,1110.0,,9.3,23.9,0.0,5.9,,1017.1,Hygrophorus agathosmoides,"Clackamas County, OR, USA",1
+928e825e-08f9-4b45-a938-e6f9b8727691,319031753,2025-10-05 15:51:17-06:00,2025-10-05,-106.6571935931,38.8477304107,85CMR8XV+,3340.0,,3.0,15.0,1.8,8.2,,1011.7,Hygrophorus agathosmoides,"Gunnison County, US-CO, US",1
+2bb78d04-3d60-4460-983b-1fd22f3fefb8,312301224,2025-09-07 11:33:36-06:00,2025-09-07,-105.5015949997,39.4061316,85FPCF4X+,2440.0,,1.8,15.6,0.8,11.2,,1020.5,Hygrophorus agathosmoides,"Bailey, CO 80421, USA",1
+bb1ff478-62c8-4ec2-a4a5-c0dc867ac609,312081619,2025-09-06 14:39:22-06:00,2025-09-06,-107.1666182964,38.7477825687,85CJPRXM+,3268.0,,3.0,23.0,0.4,9.4,,1028.3,Hygrophorus agathosmoides,"Gunnison County, US-CO, US",1
+398d30e1-66fe-4687-918c-50f52173f266,237737693,2024-08-17 09:49:00-06:00,2024-08-17,-107.8560043951,37.8866767815,859JV4PV+,3349.0,,12.0,23.0,4.9,9.4,,1034.5,Hygrophorus agathosmoides,"Grand Mesa Uncompahgre and Gunnison National Forests, Telluride, CO, US",1
+2b515308-0fbc-4a43-9639-21e5207ee275,232991741,2024-07-31 14:21:07-06:00,2024-07-31,-107.3833305,38.1503642,85CJ5J28+,3149.0,,,,,,,,Hygrophorus agathosmoides,"Grand Mesa Uncompahgre and Gunnison National Forests, Cimarron, CO, US",2
+4262067d-8ddf-400c-84e8-15d794622814,4125686,2016-08-26 11:30:00-07:00,2016-08-26,-105.4332592397,36.567529076,858PHH98+,3281.0,,,,,8.1,,,Hygrophorus agathosmoides,"Taos County, NM, USA",3

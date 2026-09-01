@@ -1,2 +1,24 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-ec1361c0-d2c5-49d8-a073-8c304aaa3476,191396725,2023-11-18 11:55:02-07:00,2023-11-18,-108.3472497761,41.9241034048,2008.0,,,,,,,,Psilocybe pelliculosa,United States,3
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+ec1361c0-d2c5-49d8-a073-8c304aaa3476,191396725,2023-11-18 11:55:02-07:00,2023-11-18,-108.3472497761,41.9241034048,2008.0,,,,,,,,Psilocybe pelliculosa,United States,3,
+b645671b-0dfa-46f2-b79a-13abc58676b9,329033876,2025-11-30 10:31:00-08:00,2025-11-30,-121.8842395982,45.3911401354,961.0,,-1.0,7.0,0.0,1.0,,1027.3,Psilocybe pelliculosa,"Oregon, US",2,
+5284a0c3-e8d5-4b1f-907a-fc64fb567d37,254606516,2024-12-08 12:48:00-08:00,2024-12-08,-121.9396563464,45.3325042133,916.0,,7.2,10.0,,9.1,,1026.7,Psilocybe pelliculosa,"Clackamas County, OR, USA",4,
+55dbcb91-6615-484f-bb0c-41183f1b4b8c,251078924,2024-11-09 10:45:48-08:00,2024-11-09,-121.9437,45.3084,513.0,,8.3,13.3,0.0,7.7,,1015.8,Psilocybe pelliculosa,"Clackamas County, US-OR, US",4,
+40e9ea26-bb59-43af-afdf-08f8e0ebbff5,249971614,2024-10-31 15:32:41-07:00,2024-10-31,-121.9711433842,45.3284507163,566.0,,6.7,10.6,,6.8,,1012.6,Psilocybe pelliculosa,"Oregon, US",1,
+8736997e-8ffa-417e-b91d-822b587cfa5c,230645691,2024-07-20,2024-07-20,-121.4518,45.4039,1207.0,,14.9,38.4,0.0,7.1,,1016.5,Psilocybe pelliculosa,"NF Road 44 -- aka Dufur Valley Rd., Barlow Ranger District and Hood River Ranger District, Mount Hood National Forest, Hood River Co., Oregon, USA",4,
+53cc7d5d-d335-41a0-8dd6-d405911589bc,191250387,2023-11-09 23:24:00-08:00,2023-11-09,-122.0591823997,45.0324546188,463.0,,,,,,,,Psilocybe pelliculosa,"Clackamas County, OR, USA",2,
+cb147484-d1da-40f7-bbe4-c97b1068a51b,191250383,2023-11-16 23:24:00-08:00,2023-11-16,-122.0698119676,45.0229129274,475.0,,,,,,,,Psilocybe pelliculosa,"Clackamas County, OR, USA",4,
+4c79812b-6830-4bee-95c5-8a9f3601f865,191250379,2023-11-16 23:24:00-08:00,2023-11-16,-122.0470672631,45.0145837975,672.0,,,,,,,,Psilocybe pelliculosa,"Clackamas County, OR, USA",5,
+efd846dc-caa5-45dd-b17e-0640ccfe1b00,190661899,2023-11-10 01:48:00-08:00,2023-11-10,-121.9528567127,45.2352958771,866.0,,9.4,13.3,,5.1,,1021.4,Psilocybe pelliculosa,"Oregon, US",6,
+5637e527-7ee7-4670-8aba-bd2d27a4482b,97266884,2020-01-03,2020-01-03,-121.9576567411,45.6463208166,24.0,,6.1,12.8,,10.0,,1015.4,Psilocybe pelliculosa,"North Bonneville, WA, USA",1,
+9ea39d2d-fbf8-4558-8ce5-8cd0fc7da63a,331259935,2025-11-25 17:55:00-08:00,2025-11-25,-122.0721513513,44.9913565153,581.0,,,,,,,,Psilocybe pelliculosa,"Clackamas County, OR, USA",2,84PVXWRH+
+73f2a85a-f9a3-4689-97d5-f2d25dc8e82c,331259934,2025-11-25 17:55:00-08:00,2025-11-25,-122.0721513513,44.9913565153,581.0,,,,,,,,Psilocybe pelliculosa,"Clackamas County, OR, USA",3,84PVXWRH+
+80accc24-2452-4ffd-a75f-3fc5299ab979,328293149,2025-11-25 13:51:21-08:00,2025-11-25,-122.0249778333,44.5808916667,1166.0,,,,,,,,Psilocybe pelliculosa,"Trail 60-Straight Creek Loop, Idanha, OR, US",1,84PVHXJG+
+c0e38915-3290-4767-8c45-a48b399aa7d5,326924294,2025-11-16 13:15:09-08:00,2025-11-16,-122.1938074753,44.6950089064,532.0,,,,,,,,Psilocybe pelliculosa,"Detroit, OR 97342, USA",2,84PVMRW4+
+d0ec1f4c-5849-46d8-bdb7-2601c5f149fc,329690149,2025-12-06 03:06:06-08:00,2025-12-06,-121.464675,45.8279916667,244.0,,7.0,11.0,6.2,3.0,,1018.3,Psilocybe pelliculosa,"Kirbish Rd, White Salmon, WA, US",2,84QWRGHP+
+1db5f200-bd74-4663-81eb-be7f20331a07,329180490,2025-10-29 01:01:00-07:00,2025-10-29,-121.858814271,45.8945748189,741.0,,3.0,15.0,0.0,2.0,,1028.5,Psilocybe pelliculosa,"Skamania County, WA, USA",1,84QWV4VR+
+8600bdcd-42df-4f66-9da4-8e398a658ca2,325248491,2025-11-06 08:43:40-08:00,2025-11-06,-121.9770792405,45.9032527356,726.0,,8.0,11.0,3.5,1.1,,1014.6,Psilocybe pelliculosa,"Carson, WA, US",4,84QWW23F+
+23a74ab6-8d2e-461d-83a7-aef0bddbe545,323943869,2025-10-29 14:59:52-07:00,2025-10-29,-122.5169675574,44.6397985881,958.0,,5.6,15.6,2.0,9.6,,1028.5,Psilocybe pelliculosa,"Oregon, US",2,84PVJFQM+
+864e79ae-2a35-4a0c-8d99-0672b04df23b,252088816,2024-11-17 10:30:38-08:00,2024-11-17,-121.9766481221,45.8700707825,353.0,,3.0,9.3,22.5,16.1,,1006.4,Psilocybe pelliculosa,"Carson, WA 98610, USA",2,84QWV2CF+
+64ab6c69-8f13-44c2-8319-14a234682604,251816198,2024-11-15 12:30:03-08:00,2024-11-15,-121.976111345,45.8688920876,353.0,,2.8,8.3,0.0,12.6,,1017.7,Psilocybe pelliculosa,Carson National Fish Hatchery Visitor Center,2,84QWV29F+
+dbe77137-8a4c-46a8-a92e-4b4e55a73d2c,250857726,2024-11-07 15:22:00-08:00,2024-11-07,-121.9754206762,45.8710048029,363.0,,0.6,11.6,0.0,7.8,,1027.8,Psilocybe pelliculosa,"Carson, WA 98610, USA",1,84QWV2CF+
+935023c2-3a7c-4e39-b794-d45b49b60ab4,101480526,2021-10-29 13:59:11-10:00,2021-10-29,-121.982595,45.879449,359.0,,5.6,19.4,,5.5,,1018.2,Psilocybe pelliculosa,"Carson, WA 98610, USA",5,84QWV2H8+

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a627f3c1-bb0a-4b39-a5ad-d6a356551373,190976549,2023-11-13 13:10:28-08:00,2023-11-13,-122.6565295849,44.8629040193,84PVV87V+,486.0,,6.1,12.8,0.8,8.6,,1016.1,Lepiota helveola,"Silver Falls State Park, Sublimity, OR, US",1

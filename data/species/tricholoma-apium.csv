@@ -1,0 +1,7 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+f63b0a2d-3d3e-4a0c-8e03-93bb594ecdc8,247498574,2024-10-14 10:03:00-07:00,2024-10-14,-121.9608962489,45.2627873167,1127.0,,10.6,23.9,0.0,4.4,,1019.2,Tricholoma apium,"Oregon, US",3,
+bf7b49e2-0c08-46cf-adb1-22c1deef83a9,238277309,2024-08-27 10:14:00-07:00,2024-08-27,-122.1160578772,45.2412403645,1033.0,,16.1,23.9,2.1,7.6,,1022.6,Tricholoma apium,"Clackamas County, US-OR, US",1,
+f0acb55f-e49c-4670-84d7-2c931aa1b170,189606136,2023-10-29 17:41:00-07:00,2023-10-29,-121.601194,45.4146,1157.0,,0.0,7.5,0.0,10.0,,1035.5,Tricholoma apium,Mt Hood,1,
+d48713bc-2ca9-41f9-bb40-a91748feed66,31763115,2019-08-14 16:51:00-07:00,2019-08-14,-121.8116388889,45.3174972222,1010.0,,,,,,,,Tricholoma apium,"Clackamas County, OR, USA",2,
+8eb75f21-b26f-4b6e-9e22-41a03aec27e1,34225949,2019-10-06 10:52:00-07:00,2019-10-06,-121.9617527778,45.8953638889,396.0,,,,,,,,Tricholoma apium,"Skamania County, WA, USA",5,84QWV2WQ+
+7eb96040-c477-43c1-abd9-9b2caa92d662,34225941,2019-10-06 11:12:00-07:00,2019-10-06,-121.9617611111,45.8952416667,396.0,,,,,,,,Tricholoma apium,"Skamania, Washington, United States",2,84QWV2WQ+

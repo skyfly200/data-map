@@ -3,7 +3,7 @@
     <NuxtRouteAnnouncer />
     <header class="app-header">
       <NuxtLink to="/" class="brand">
-        <h1>Mushroom Observations</h1>
+        <h1>Nexstrata</h1>
       </NuxtLink>
       <div class="app-controls">
         <NuxtLink v-if="filterCount" to="/data" class="filter-flag" title="Active filters — manage on the Data tab">

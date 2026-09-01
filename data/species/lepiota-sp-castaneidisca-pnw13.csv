@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b0d5732b-083a-466b-9e8c-c92f8ca2d964,251212490,2024-10-16 15:59:17-07:00,2024-10-16,-122.7838694444,45.5783111111,84QVH6H8+,287.0,,11.7,17.8,,5.5,,1016.8,Lepiota sp. 'castaneidisca-PNW13',"Linnton, Portland, OR, USA",2

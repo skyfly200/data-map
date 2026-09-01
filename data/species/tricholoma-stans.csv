@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+37498ace-1f20-4779-b133-fb0c225181ee,97689475,2021-09-04 13:15:38-06:00,2021-09-04,-106.3330794498,39.3475229474,3094.0,,1.7,18.9,0.0,8.7,,1017.5,Tricholoma stans,"Leadville, CO 80461, USA",5

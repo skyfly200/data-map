@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+06e19d9b-4e93-45f0-bd34-caa5e7ef5d98,253567263,2024-11-29 15:51:17-08:00,2024-11-29,-122.5643009,45.5751018997,84QVHCGP+,8.0,,4.4,6.1,0.0,5.4,,1025.9,Amanita muscaria alba,"Portland, OR 97220, USA",1

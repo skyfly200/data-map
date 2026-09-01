@@ -4,16 +4,16 @@
     <div class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
       <div class="chart-viewport" :style="viewportStyle">
         <svg :viewBox="`0 0 ${W} ${H}`" role="img" :aria-label="title">
-          <text v-for="(c, j) in cols" :key="`c${j}`" :x="cx(j) + cw / 2" :y="padT - 4" class="lbl lbl-col" :style="{ fontSize: `${labelFontSize}px` }">{{ compactLabel(c, Math.max(6, 12 - Math.max(0, props.cols.length - 8))) }}</text>
-          <text v-for="(r, i) in rows" :key="`r${i}`" :x="padL.value - 6" :y="cy(i) + ch / 2 + 3" class="lbl lbl-row" :style="{ fontSize: `${labelFontSize}px` }">{{ compactLabel(r, Math.max(8, 16 - Math.max(0, props.rows.length - 6))) }}</text>
+          <text v-for="(c, j) in sortedCols" :key="`c${j}`" :x="cx(j) + cw / 2" :y="padT - 4" class="lbl lbl-col" :style="{ fontSize: `${labelFontSize}px` }">{{ compactLabel(c, Math.max(6, 12 - Math.max(0, sortedCols.length - 8))) }}</text>
+          <text v-for="(r, i) in rows" :key="`r${i}`" :x="padL - 6" :y="cy(i) + ch / 2 + 3" class="lbl lbl-row" :style="{ fontSize: `${labelFontSize}px` }">{{ compactLabel(r, Math.max(8, 16 - Math.max(0, props.rows.length - 6))) }}</text>
 
           <template v-for="(r, i) in rows">
-            <g v-for="(c, j) in cols" :key="`${i}-${j}`">
+            <g v-for="(c, j) in sortedCols" :key="`${i}-${j}`">
               <rect :x="cx(j)" :y="cy(i)" :width="cw - 2" :height="ch - 2" rx="2"
-                    :fill="cellColor(matrix[i][j])" class="cell"
-                    @mouseenter="active = { r, c, v: matrix[i][j] }" />
+                    :fill="cellColor(sortedMatrix[i][j])" class="cell"
+                    @mouseenter="active = { r, c, v: sortedMatrix[i][j] }" />
               <text v-if="showValues" :x="cx(j) + cw / 2" :y="cy(i) + ch / 2 + 3"
-                    class="cell-val" :fill="textColor(matrix[i][j])">{{ cellText(matrix[i][j]) }}</text>
+                    class="cell-val" :fill="textColor(sortedMatrix[i][j])">{{ cellText(sortedMatrix[i][j]) }}</text>
             </g>
           </template>
         </svg>
@@ -37,6 +37,38 @@ const props = defineProps({
   showValues: { type: Boolean, default: true },
 })
 
+// Compute sorted column order (chronological months) and reorder matrix accordingly.
+const sortedIndices = computed(() => {
+  // Determine ordering based on month names or numeric values.
+  const cols = props.cols || []
+  if (cols.length === 0) return []
+  const first = cols[0]
+  // If strings, try month name order.
+  if (typeof first === 'string') {
+    const monthOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    return cols.map((c, idx) => ({ c, idx })).sort((a, b) => {
+      const ia = monthOrder.indexOf(a.c)
+      const ib = monthOrder.indexOf(b.c)
+      if (ia === -1 && ib === -1) return 0
+      if (ia === -1) return 1
+      if (ib === -1) return -1
+      return ia - ib
+    }).map(item => item.idx)
+  }
+  // Assume numeric month values.
+  return cols.map((c, idx) => ({ c, idx })).sort((a, b) => a.c - b.c).map(item => item.idx)
+})
+
+const sortedCols = computed(() => {
+  const idx = sortedIndices.value
+  return idx.map(i => props.cols[i])
+})
+
+const sortedMatrix = computed(() => {
+  const idx = sortedIndices.value
+  return props.matrix.map(row => idx.map(i => row[i]))
+})
+
 function compactLabel(label, maxLen = 16) {
   const value = String(label ?? '')
   if (value.length <= maxLen) return value
@@ -44,7 +76,7 @@ function compactLabel(label, maxLen = 16) {
 }
 
 const labelFontSize = computed(() => {
-  const n = Math.max(props.rows.length || 1, props.cols.length || 1)
+  const n = Math.max(props.rows.length || 1, sortedCols.value.length || 1)
   return Math.max(8, 10 - Math.max(0, n - 8) * 0.35)
 })
 const W = computed(() => Math.max(640, (props.cols.length || 1) * 90 + 180))
@@ -55,7 +87,7 @@ const padB = 8
 const ch = 30
 
 const H = computed(() => padT + padB + props.rows.length * ch)
-const cw = computed(() => (W.value - padL.value - padR) / Math.max(1, props.cols.length))
+const cw = computed(() => (W.value - padL.value - padR) / Math.max(1, sortedCols.value.length))
 const zoom = ref(1)
 const pan = ref({ x: 0, y: 0 })
 const dragStart = ref(null)

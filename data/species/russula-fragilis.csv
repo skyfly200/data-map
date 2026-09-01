@@ -1,3 +1,6 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-762b38c5-af5b-4d1f-be95-513073733d17,382123112,2026-07-15 11:30:00-06:00,2026-07-15,-105.9311216448,35.6279054702,2168.0,,17.2,29.4,0.9,9.7,,,Russula fragilis,"New Mexico, US",2
-fc1cd285-fbb7-46ab-accc-e9fe92a53c3b,382091283,2026-07-14 14:50:00-06:00,2026-07-14,-105.8131273305,35.7153339592,2866.0,,18.3,29.4,3.8,8.7,,,Russula fragilis,"New Mexico, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+762b38c5-af5b-4d1f-be95-513073733d17,382123112,2026-07-15 11:30:00-06:00,2026-07-15,-105.9311216448,35.6279054702,2168.0,,17.2,29.4,0.9,9.7,,,Russula fragilis,"New Mexico, US",2,
+fc1cd285-fbb7-46ab-accc-e9fe92a53c3b,382091283,2026-07-14 14:50:00-06:00,2026-07-14,-105.8131273305,35.7153339592,2866.0,,18.3,29.4,3.8,8.7,,,Russula fragilis,"New Mexico, US",2,
+eb964bf4-b896-4458-92ce-cbd8c615efb7,186863631,2023-10-08 11:09:17-07:00,2023-10-08,-122.0494787578,45.3429347205,962.0,,12.8,27.8,0.0,3.2,,1009.6,Russula fragilis,"Oregon, US",1,
+c7b945e2-8728-445e-8d69-36565d0930f9,190007366,2023-11-04 14:34:22-07:00,2023-11-04,-122.305249,45.211061,405.0,,11.1,17.2,,11.5,,1011.0,Russula fragilis,"Estacada, OR 97023, USA",1,84QV6M6V+
+fcbea4d4-101d-4171-9580-c87a9f412563,66275838,2020-11-02 12:59:00-07:00,2020-11-02,-122.369263,44.399212,527.0,,,,,,,,Russula fragilis,"Linn County, OR, USA",1,84PV9JXJ+

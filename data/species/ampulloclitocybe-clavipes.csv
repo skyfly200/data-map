@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+190978b3-29f5-4f9f-aee8-ca052d4ba863,324882860,2025-11-03 12:07:06-08:00,2025-11-03,-121.9394126765,45.2861336889,554.0,,8.0,12.0,0.7,23.4,,1012.2,Ampulloclitocybe clavipes,"Zigzag Ranger Station, Welches, OR, US",1,
+3d1492cb-df8a-46ce-84d3-20636a7148fd,254369987,2024-12-06 20:12:00-08:00,2024-12-06,-122.2284621149,45.3072870558,413.0,,3.9,6.7,0.0,34.3,,1026.4,Ampulloclitocybe clavipes,"Clackamas County, US-OR, US",1,
+ed7d3619-f8cf-4be2-80d7-4f6c698c85f5,189820311,2023-10-31 14:44:48-07:00,2023-10-31,-122.3706512153,44.3697013891,802.0,,,,,,,,Ampulloclitocybe clavipes,"Cascadia, OR 97329, USA",1,84PV9J9H+
+5e4166d4-fb3f-4af6-abe0-20138111af63,64486234,2020-11-08 11:01:39-08:00,2020-11-08,-122.64148,44.86686333,459.0,,-2.1,8.9,0.0,5.8,,1015.6,Ampulloclitocybe clavipes,"Silver Falls State Park, Silverton, OR, US",1,84PVV985+
+0628a336-3ae7-4618-b84b-79effe83d521,34898656,2019-10-25 15:12:50-07:00,2019-10-25,-122.0321814158,44.2890281976,693.0,,,,,,,,Ampulloclitocybe clavipes,"Linn County, US-OR, US",1,84PV7XQ9+

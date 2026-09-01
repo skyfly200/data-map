@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8d33f563-b193-4248-8cf7-39bf8cccee63,72461851,2021-03-30 10:00:34-07:00,2021-03-30,-122.5979083333,45.5107716667,84QVGC62+,129.0,,0.6,12.8,0.0,6.8,,1030.9,Pleurotus,"Mt. Tabor Park, Portland, OR, US",1

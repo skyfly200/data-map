@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+2fb35db6-8c8a-4077-987f-cad7042a3895,249703669,2024-10-29 11:21:04-07:00,2024-10-29,-121.8686506526,45.3793993034,627.0,,3.1,11.8,0.1,10.0,,1018.8,Cantharellula umbonata,"Clackamas County, US-OR, US",1

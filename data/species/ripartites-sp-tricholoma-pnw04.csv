@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d822b223-8f46-4baa-a8e0-fbbdcd37a612,191152665,2023-11-15 14:27:12-08:00,2023-11-15,-122.4854784757,45.0767854318,84QV3GG7+,198.0,,6.1,11.7,,4.7,,1013.7,Ripartites sp. 'tricholoma-PNW04',"Molalla River, Molalla, OR, US",2

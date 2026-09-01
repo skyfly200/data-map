@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+73f5b7b8-baef-4252-bf44-6ebdbbb2dbc1,7352580,2017-08-01 14:40:38-06:00,2017-08-01,-105.54348,40.03603,85GP2FP4+,3023.0,,16.0,31.0,,3.8,,,Rhizopogon ochraceorubens,CU Boulder Mountain Research Station,1
+46de7a76-ed00-4e30-9b09-b561d527b02c,184897022,2023-09-24 12:43:06-07:00,2023-09-24,-121.9693564688,44.2804795088,84PW72JJ+,1312.0,,,,,,,,Rhizopogon ochraceorubens,"Oregon, US",2

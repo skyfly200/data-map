@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+8fd29dc0-929d-4837-93b1-8a5d14e56121,187572542,2023-10-14 14:37:39-07:00,2023-10-14,-122.8767783333,45.53865,84QVG4QF+,64.0,,10.0,16.1,,1.4,,1016.4,Amanita umbrinidisca,"Kaiser Permanente Westside Medical Center, Hillsboro, OR, US",1

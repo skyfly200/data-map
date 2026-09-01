@@ -1,0 +1,6 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+027eb22e-0bc2-480c-b5d0-02d865bc35e2,245027851,2024-09-30 18:40:07-07:00,2024-09-30,-122.0477007699,45.3011343111,1250.0,,6.1,22.8,0.0,15.6,,1026.3,Lactarius kauffmanii,"Clackamas County, US-OR, US",1,
+3f73ccdd-a8dc-48a6-80c7-1ee29c03700d,138916376,2022-10-15 16:21:30-07:00,2022-10-15,-121.7247279665,45.2964202811,1287.0,,10.2,24.3,0.0,5.6,,1016.2,Lactarius kauffmanii,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1,
+1a0ec382-dbbd-4513-b094-d8270d41efb9,96225936,2021-09-06 11:20:16-07:00,2021-09-06,-121.6114591494,45.2886889724,1381.0,,,,,,,,Lactarius kauffmanii,"Oregon, US",1,
+fdf11f3c-d28d-45c3-9a0d-007d317b0651,31626751,2019-08-25,2019-08-25,-121.81,45.31605,916.0,,,,,,,,Lactarius kauffmanii,"SW Mount Hood, Clackamas Co., Oregon, USA",1,
+97282f09-c94f-4726-976a-bb48b283ff1c,137299330,2022-09-28 12:25:29-07:00,2022-09-28,-122.1933456343,44.4986267352,793.0,,,,,,,,Lactarius kauffmanii,"Linn County, US-OR, US",1,84PVFRX4+

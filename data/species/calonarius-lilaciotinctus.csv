@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+b04d25a9-379b-4d19-990b-8e3becb2e310,190520976,2023-11-08 10:30:00-08:00,2023-11-08,-121.5190916667,45.8070055556,84QWRF4J+,296.0,,3.3,12.3,0.0,7.6,,1029.3,Calonarius lilaciotinctus,"Klickitat County, WA, USA",2

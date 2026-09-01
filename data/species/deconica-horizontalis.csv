@@ -1,0 +1,13 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a60fc74c-e546-4546-891d-c059b3455fa2,140476465,2022-10-29 17:08:10-07:00,2022-10-29,-122.3736318833,45.2417551582,84QV6JRG+,344.0,,11.1,14.4,,3.7,,1025.5,Deconica horizontalis,"S Shady Forest Ln, Beavercreek, OR, US",1
+7e9c4f54-d111-4bd6-bd5b-c88c6571a230,64908792,2020-11-12 14:18:46+00:00,2020-11-12,-122.518355,45.250705,84QV7F2J+,156.0,,0.6,10.0,,7.9,,1016.8,Deconica horizontalis,"S Brockway Rd, Oregon City, OR, US",1
+130d8da2-bdef-43b3-98c8-37b7a069da96,63116262,2020-10-15 02:16:32-07:00,2020-10-15,-122.3748512768,45.2431604696,84QV6JVG+,344.0,,6.1,17.8,0.0,6.7,,1033.8,Deconica horizontalis,"S Shady Forest Ln, Beavercreek, OR, US",1
+b544c38f-1756-41d2-814f-ca7cb9bcfa0f,18287064,2018-10-13,2018-10-13,-122.565898,45.237627,84QV6CQM+,182.0,,7.2,21.7,0.0,14.4,,1020.8,Deconica horizontalis,"14761 S Buckner Creek Rd, Mulino, OR 97042, USA",2
+cecfab40-8f11-414c-b78c-4f750cb67c48,328424381,2025-10-20 17:16:00-07:00,2025-10-20,-122.625136748,45.4629982201,84QVF97F+,36.0,,10.0,17.0,0.0,4.9,,1027.3,Deconica horizontalis,"Ardenwald, Milwaukie, OR, USA",1
+d47bacfe-8351-4838-9cd7-26c0c9c14286,311856674,2025-04-12 11:36:44-07:00,2025-04-12,-122.4447679342,45.5218436547,84QVGHC4+,78.0,,5.6,13.3,0.4,7.5,,1027.3,Deconica horizontalis,"Oregon, US",1
+d7275b66-090f-4aa3-baf5-6a1a1a929f2e,251960291,2024-11-15 14:45:11-08:00,2024-11-15,-122.7721361111,45.5790305556,84QVH6HH+,213.0,,2.2,10.0,0.0,1.8,,1020.1,Deconica horizontalis,"Linnton, Portland, OR, USA",1
+11be7510-c47e-4b9e-b649-884416699471,251130394,2024-10-26 16:39:33-07:00,2024-10-26,-122.3961333333,45.5159866667,84QVGJ83+,101.0,,11.1,16.1,,21.2,,1014.6,Deconica horizontalis,"SE Stark St, Gresham, OR, US",1
+067c10df-f6e6-4f2f-9aab-1820f90e358d,187873449,2023-10-14 13:48:25-07:00,2023-10-14,-122.720869258,45.38771326,84QV97QH+,40.0,,11.7,16.7,,1.1,,1016.8,Deconica horizontalis,"Bryant, Lake Oswego, OR 97035, USA",1
+1c7a19a7-823b-4dbd-bb11-f3971144afa0,66901517,2020-12-21 14:50:29-10:00,2020-12-21,-122.725492,45.6188029722,84QVJ79F+,12.0,,6.7,16.1,,14.5,,1011.3,Deconica horizontalis,"5300 Block N Marine, Portland, OR 97203, USA",1
+5cd15149-632b-4fe4-a847-3536dbb5d005,39392128,2018-10-12 16:12:32-07:00,2018-10-12,-122.637,44.86765,84PVV997+,456.0,,3.9,22.8,0.0,5.8,,1018.2,Deconica horizontalis,"Silver Falls State Park, Marion Co., Oregon, USA",1
+da603f71-36ad-482b-af8f-9fa0ae16caf0,17446963,2018-10-12 10:32:41-07:00,2018-10-12,-122.6494883333,44.8681366667,84PVV992+,430.0,,3.9,22.8,0.0,5.8,,1018.2,Deconica horizontalis,"Silver Falls State Park, Silverton, OR, US",2

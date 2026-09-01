@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+c6776d6f-fbb3-4da9-9337-91f77a8e696d,187753646,2023-10-15 13:24:18-07:00,2023-10-15,-121.9040916667,44.8185883333,84PWR39W+,1299.0,,,,,,,,Mycena quiniaultensis,"Mt. Hood National Forest, Lyons, OR, US",1
+c985ee6b-0646-4c35-88a3-9a5277acfd0b,335295605,2025-10-17 11:14:31-07:00,2025-10-17,-121.93634592,45.9493507638,84QWW3X7+,484.0,,7.0,16.0,0.0,4.4,,1019.4,Mycena quiniaultensis,"Skamania County, WA, USA",1
+beaf975a-e265-4114-9753-3b1d88e5b253,251362229,2024-10-24 15:07:00-07:00,2024-10-24,-122.7922444444,45.5812277778,84QVH6J5+,318.0,,3.3,14.4,0.0,3.7,,1025.2,Mycena quiniaultensis,"Linnton, Portland, OR, USA",1

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+104335c3-c030-46bd-b09f-7f99a6d0065d,334681122,2020-07-03 12:17:00-07:00,2020-07-03,-122.1276388889,45.39605,84QV9VWC+,262.0,,11.1,23.3,,4.0,,1018.2,Hygrocybe cantharellus,"Clackamas County, OR, USA",1
+73c3b379-6027-47ff-bedb-4515886454a9,53214041,2020-07-15 15:37:18-07:00,2020-07-15,-121.86644667,45.301005,84QW842M+,713.0,,,,,,,,Hygrocybe cantharellus,"Mt. Hood Park Division Recreation Area, Rhododendron, OR, US",1

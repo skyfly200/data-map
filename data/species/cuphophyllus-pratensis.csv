@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+9021f7ab-247d-438c-89ed-6eaa0b44db27,69236616,2021-02-06 12:45:18+00:00,2021-02-06,-122.2891299846,45.4920193284,84QVFPR6+,128.0,,5.0,9.4,,15.0,,1023.2,Cuphophyllus pratensis,"Oxbow Regional Park, Gresham, OR, US",1
+5400d6ef-713d-42a7-ac7a-24f4b5cccdf0,257649298,2025-01-05 13:53:02-08:00,2025-01-05,-122.7611466667,45.5597833333,84QVH65Q+,206.0,,8.9,11.7,,4.2,,1023.8,Cuphophyllus pratensis,"Forest Park Conservancy, Portland, OR, US",1
+65241c1a-8253-4adb-abdf-f87b5f29c6f9,67551450,2020-12-25 14:19:34-08:00,2020-12-25,-122.621055,45.5419916667,84QVG9RH+,56.0,,2.8,5.0,13.7,19.1,,1009.5,Cuphophyllus pratensis,"NE Knott St, Portland, OR, US",2
+dc0e292d-2065-40c3-98c8-1202ad4e71fb,36960551,2019-12-25 16:22:39-10:00,2019-12-25,-122.75838333,45.605045,84QVJ64R+,25.0,,0.0,6.1,,6.8,,1014.5,Cuphophyllus pratensis,"Pier Park, Portland, OR, US",1

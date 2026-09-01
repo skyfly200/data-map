@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+48c06be6-179c-4b92-a5b5-ed63523e1336,60323039,2011-11-28 12:32:00-08:00,2011-11-28,-122.1044795965,44.7964129972,84PVQVWW+,1258.0,,,,,,,,Cortinarius cacaocolor,"Marion County, OR, USA",1
+93428ef3-acd1-431e-9c5c-1a7e11f95940,60322684,2011-11-22 16:01:00-08:00,2011-11-22,-122.0907466863,44.7939766765,84PVQWV5+,727.0,,,,,,,,Cortinarius cacaocolor,"Marion County, OR, USA",1
+47415af0-ac26-423f-a0a7-7c5e068bc45c,3593084,2013-10-20,2013-10-20,-121.993,44.775,84PWQ2G4+,762.0,,,,,,,,Cortinarius cacaocolor,"Breitenbush Hot Springs, Breitenbush, Oregon, USA",2
+b0a83973-339e-4ff0-ae51-46a5bb593830,35036425,2019-10-28 20:59:18-07:00,2019-10-28,-122.1852365131,44.262461176,84PV7R67+,979.0,,,,,,,,Cortinarius cacaocolor,"Willamette National Forest, Foster, OR, US",1

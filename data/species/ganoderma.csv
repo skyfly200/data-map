@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,genus
+2c085a50-8dc8-40f0-b4f2-8d61809b79f6,304328967,2025-08-06 14:20:14-07:00,2025-08-06,-122.7217783333,45.52975,84QVG7HH+,123.0,,16.7,22.2,10.9,10.1,,1019.9,Ganoderma,"Macleay Park, Portland, OR, US",2,
+df61d82f-ee22-4a91-9016-a24104548129,394763671,2026-08-24 12:00:00-07:00,2026-08-24,-121.8162442244,45.4935466149,84QWF500+,1009.0,,13.8,31.8,0.0,8.2,,1014.9,Ganoderma oregonense,"Rhododendron Trail, Mount Hood Parkdale, OR, US",2,Ganoderma

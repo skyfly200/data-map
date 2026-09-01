@@ -1,2 +1,11 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-8be35644-76ba-48a7-a38b-6b0cae8de38d,131164264,2022-08-16 12:58:50-06:00,2022-08-16,-108.0259555,37.7924416667,3093.0,,11.0,17.0,16.4,3.4,,1030.8,Clitopilus prunulus,"San Juan National Forest headquarters, Dolores, CO, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+8be35644-76ba-48a7-a38b-6b0cae8de38d,131164264,2022-08-16 12:58:50-06:00,2022-08-16,-108.0259555,37.7924416667,3093.0,,11.0,17.0,16.4,3.4,,1030.8,Clitopilus prunulus,"San Juan National Forest headquarters, Dolores, CO, US",2,
+a7ed9bed-b1bb-4a03-bc31-26a7f7b397b0,316860531,2025-09-26 16:02:00-07:00,2025-09-26,-122.2271558394,45.3072550092,413.0,,9.0,23.0,0.0,3.9,,1020.8,Clitopilus prunulus,"Clackamas County, OR, USA",1,
+b846743d-5be4-4841-9cb0-d42cb75971e5,185436518,2023-09-28,2023-09-28,-121.6440095901,45.3724844061,1910.0,,10.9,15.8,0.2,10.9,,1018.3,Clitopilus prunulus,"Oregon, US",1,
+478fb59a-afdb-407c-81ce-9a30e7d65a20,139080823,2022-10-14 15:43:00-07:00,2022-10-14,-121.6223972222,45.3191388889,1324.0,,11.4,23.8,0.0,2.4,,1016.1,Clitopilus prunulus,"Hood River, Oregon, United States",1,
+bb6eaee7-ad36-4bbb-bef7-c7e13b2f6c52,137373593,2022-10-02 13:59:00-07:00,2022-10-02,-121.7382732451,45.2754122448,1134.0,,12.6,25.8,0.0,3.9,,1015.4,Clitopilus prunulus,"Clackamas County, OR, USA",1,
+8091192b-f900-4115-87a9-04a5a040cc70,102034196,2021-11-27 10:57:35-08:00,2021-11-27,-122.1952545549,45.2660041619,554.0,,11.1,17.8,,11.4,,1020.1,Clitopilus prunulus,"Oregon, US",1,
+1dba3137-b6a3-4a27-994d-3806ffd159a8,97831338,2021-10-09 11:08:10-07:00,2021-10-09,-121.7259547338,45.2702898764,1228.0,,,,,,,,Clitopilus prunulus,"Mt. Hood Park Division Recreation Area, Government Camp, OR, US",1,
+4a184d9d-eca2-4fe5-9f8e-b2136d9a7252,34739525,2019-10-17 15:13:40-07:00,2019-10-17,-121.9668283333,44.7709716667,771.0,,,,,,,,Clitopilus prunulus,"Marion County, US-OR, US",1,84PWQ2CM+
+bf00466d-d348-4258-88fa-ba30f9aae59a,18137472,2018-11-03 13:56:15-07:00,2018-11-03,-122.1675186157,44.3014411926,861.0,,,,,,,,Clitopilus prunulus,"NF-15, Blue River, OR 97413, USA",2,84PV8R2J+
+6dd4d1ad-7c86-4694-93d6-36f965dff6c7,17483803,2018-10-13 10:44:02-07:00,2018-10-13,-121.9835283333,44.4990216667,1114.0,,,,,,,,Clitopilus prunulus,"Willamette National Forest, Idanha, OR, US",3,84PWF2X8+

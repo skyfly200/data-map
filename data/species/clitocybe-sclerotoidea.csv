@@ -1,0 +1,16 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+001c8616-bdff-40bf-894f-40fa2ba99de4,253970427,2024-12-02 14:04:00-08:00,2024-12-02,-122.2266383863,45.307123764,370.0,,4.4,7.8,0.0,24.7,,1026.4,Clitocybe sclerotoidea,"Clackamas County, OR, USA",2,
+f48431ab-c119-403e-adcc-1a67078ab59b,252563318,2024-11-21 14:20:00-08:00,2024-11-21,-122.1168054133,45.3003855583,549.0,,7.8,10.6,,24.6,,1011.6,Clitocybe sclerotoidea,"Salmon-Huckleberry Wilderness, OR, USA",1,
+2cde0b34-51fd-442d-b325-2ccc288fdc5a,227166673,2024-01-28 16:00:00-08:00,2024-01-28,-122.2259892672,45.3075077912,370.0,,6.7,11.7,,29.5,,1020.2,Clitocybe sclerotoidea,"Clackamas County, OR, USA",2,
+96d7574b-f1d4-4de6-97b8-14d60fb2d181,10267269,2018-03-16 12:19:00-07:00,2018-03-16,-122.1614456177,45.2340416279,723.0,,5.0,11.7,,3.4,,1009.9,Clitocybe sclerotoidea,"Clackamas County, OR, USA",1,
+3525b330-1ff9-45b3-8279-9c5af4bbadea,10267267,2018-03-16 12:19:00-07:00,2018-03-16,-122.1212768555,45.2429864944,967.0,,5.0,11.7,,3.4,,1009.9,Clitocybe sclerotoidea,"Clackamas County, OR, USA",1,
+454f46ee-071d-4006-9a71-2008e8c72a3e,108072531,2022-03-06 08:51:35-08:00,2022-03-06,-122.56098,44.92803,533.0,,0.0,11.7,0.0,3.6,,1030.8,Clitocybe sclerotoidea,"Silverton, OR, US",1,84PVWCHQ+
+95797516-4204-46bb-85c4-b101464c19bc,68306679,2021-01-18 16:00:00+00:00,2021-01-18,-122.4068436027,45.2873913125,209.0,,4.4,11.1,0.0,9.4,,1032.7,Clitocybe sclerotoidea,"Estacada, OR 97023, USA",2,84QV7HPV+
+2d11c488-7909-4c7e-b39b-824a8c596455,331975973,2025-12-24 14:11:34-08:00,2025-12-24,-122.9997173218,45.2714830153,53.0,,4.0,9.0,1.3,11.5,,998.5,Clitocybe sclerotoidea,"Oregon, US",1,84QV72C2+
+1bb6e6b3-1c38-47fa-a38f-6384331b077e,254749453,2024-12-10 12:59:50-08:00,2024-12-10,-122.7588116667,45.5848666667,5.0,,1.7,5.0,,4.9,,1028.9,Clitocybe sclerotoidea,"N Burlington Ave, Portland, OR, US",1,84QVH6MR+
+81f82115-ebd0-48f0-85ae-26581ed85fca,199946796,2019-11-20 06:06:00-08:00,2019-11-20,-122.7913888889,45.0080833333,71.0,,1.1,13.3,0.0,14.0,,1016.5,Clitocybe sclerotoidea,"Silverton, OR 97381, USA",1,84QV2655+
+d9b9ff25-65ac-4e61-9a2a-2d846decbdb3,122912566,2022-06-19 22:30:59-07:00,2022-06-19,-122.1500252056,44.2561589494,1191.0,,,,,,,,Clitocybe sclerotoidea,"Willamette National Forest, Foster, OR, US",3,84PV7R4X+
+8b528cf5-4279-483e-8d7e-a3de3fbf0861,67474242,2020-12-19 14:45:48-08:00,2020-12-19,-122.5042033333,45.487495,174.0,,10.0,13.3,,11.3,,1022.6,Clitocybe sclerotoidea,"Powell Butte Nature Park, Portland, OR, US",1,84QVFFPW+
+921252bf-b3ae-46d8-8a39-fad0254dd262,67268562,2020-12-29 09:25:29+00:00,2020-12-29,-122.800402,45.298926,57.0,,-3.3,2.8,0.6,2.7,,1026.2,Clitocybe sclerotoidea,"Wilsonville Rd at Graham Oaks Nature Park, Ladd Hill, OR 97070, USA",1,84QV75XX+
+bc30b337-26de-420d-ab58-a720b152b78f,9539332,2018-01-20 09:41:00-08:00,2018-01-20,-122.6022245083,45.6339640729,52.0,,6.1,9.4,,11.1,,1019.3,Clitocybe sclerotoidea,"Clark, Washington, United States",1,84QVJ9MX+
+c959221f-63c6-4bc8-a7d7-79f2d7d96fbd,8958240,2017-11-27 12:31:00-08:00,2017-11-27,-122.6026037894,45.6336646713,52.0,,5.0,10.0,0.0,5.2,,1019.5,Clitocybe sclerotoidea,"Northcrest, Vancouver, WA 98661, USA",2,84QVJ9MW+

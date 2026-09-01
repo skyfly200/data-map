@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+d4004bc7-57ce-4b87-8160-604126b75177,327222704,2025-11-07 13:14:35-08:00,2025-11-07,-122.496914,45.480106,84QVFGJ3+,107.0,,6.9,14.0,1.8,5.2,,1022.6,Leucocoprinus fuliginescens,"Pleasant Valley, Portland, OR, USA",0
+a888bd91-c808-4ce3-b8bc-dd84cfef3511,320472245,2025-10-12 09:26:54-07:00,2025-10-12,-122.8421493997,45.4957721,84QVF5W5+,52.0,,8.0,13.0,2.9,4.8,,1011.8,Leucocoprinus fuliginescens,"Cooper Mountain - Aloha North, Beaverton, OR, USA",1
+873f03f9-9402-46cd-93a9-7cf139a2ea9b,251232506,2024-10-23 16:37:30-07:00,2024-10-23,-122.7564075217,45.6049883644,84QVJ63V+,35.0,,5.0,13.3,0.0,2.6,,1027.0,Leucocoprinus fuliginescens,"St. Johns, Portland, OR, USA",0

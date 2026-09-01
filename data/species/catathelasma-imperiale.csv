@@ -1,0 +1,4 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+57015eb5-87e3-43d5-aac4-faa5bf953c88,138206289,2022-10-09 15:33:00-07:00,2022-10-09,-121.73005,45.2789777778,84QW77H9+,1110.0,,12.2,26.5,0.0,3.3,,1019.9,Catathelasma imperiale,"Clackamas, Oregon, United States",1
+89179f0a-8f67-439e-8e21-3c8639840ec7,65239176,2014-10-03,2014-10-03,-121.7,45.3515,84QW9822+,2309.0,,,,,,,,Catathelasma imperiale,"Mount Hood, Mount Hood National Forest, Oregon, USA",2
+4ca2e703-6e37-4a28-a270-e0affee7b05f,40349207,2018-08-16,2018-08-16,-107.836,37.9421,859JW5R7+,2652.0,,11.0,23.0,,6.2,,,Catathelasma imperiale,"Telluride, Colorado, USA",2

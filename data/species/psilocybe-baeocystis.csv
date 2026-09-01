@@ -1,0 +1,5 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+bebdceab-22eb-4dd4-a03f-1736356f5a73,329794084,2025-11-08 21:08:00-08:00,2025-11-08,-121.8676227964,45.720435821,287.0,,2.0,11.0,0.0,1.0,,1025.4,Psilocybe baeocystis,"Oregon, US",4,
+e079e414-47dd-449c-b67c-ed74688a2256,325088340,2025-11-02 12:24:02-08:00,2025-11-02,-121.9580161472,45.6336540569,13.0,,5.0,14.0,0.2,1.8,,1026.6,Psilocybe baeocystis,"NE Chinook Ct, Cascade Locks, OR, US",6,
+49245530-33b4-475a-bbb3-00c8814f94ce,188352829,2023-10-20 14:53:17-07:00,2023-10-20,-122.7958447751,45.3812557615,41.0,,11.1,19.4,0.0,3.7,,1015.1,Psilocybe baeocystis,"SW Herman Rd, Tualatin, OR, US",3,84QV96J3+
+ca80e308-b6a6-4356-afbe-883265616222,188325819,2023-10-20 14:52:37-07:00,2023-10-20,-122.9408606831,45.0228397314,44.0,,9.4,18.3,0.0,5.0,,1014.6,Psilocybe baeocystis,"Salem, OR, US",5,84QV23F5+

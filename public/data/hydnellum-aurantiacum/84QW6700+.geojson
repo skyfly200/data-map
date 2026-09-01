@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "95b789e4-6ea4-42c5-b647-b61512f8b395",
+        "inat_id": 396014511,
+        "timestamp": "2026-08-30T11:17:19-07:00",
+        "date": "2026-08-30",
+        "olc": "84QW6700+",
+        "elevation": 1026.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Hydnellum aurantiacum",
+        "genus": "Hydnellum",
+        "location": "Oregon, US",
+        "num_identification_agreements": 1
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.7222416928,
+          45.2318872459
+        ]
+      }
+    }
+  ]
+}

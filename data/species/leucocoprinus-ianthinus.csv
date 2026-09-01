@@ -1,4 +1,11 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-2e52b6e8-9d0a-492d-8d90-d10a59dc63c3,244387373,2021-08-28 16:22:39-06:00,2021-08-28,-105.0506583333,39.7418633333,1633.0,,18.1,31.6,,14.8,,1009.2,Leucocoprinus ianthinus,"Yates St, Denver, CO, US",1
-6485daa2-8e38-4bdf-b544-a281bfe39342,231740948,2024-07-25 18:52:06-06:00,2024-07-25,-105.0898376852,39.7195522151,1679.0,,20.0,34.4,0.0,16.9,,1017.1,Leucocoprinus ianthinus,"Creighton, Lakewood, CO 80226, USA",2
-4e113878-1105-4938-a95d-28dcf43d4474,221468263,2024-06-08 20:10:25-06:00,2024-06-08,-105.0887577608,39.7204230981,1674.0,,18.0,27.5,0.2,13.7,,1009.2,Leucocoprinus ianthinus,"Creighton, Lakewood, CO 80226, USA",1
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+2e52b6e8-9d0a-492d-8d90-d10a59dc63c3,244387373,2021-08-28 16:22:39-06:00,2021-08-28,-105.0506583333,39.7418633333,1633.0,,18.1,31.6,,14.8,,1009.2,Leucocoprinus ianthinus,"Yates St, Denver, CO, US",1,
+6485daa2-8e38-4bdf-b544-a281bfe39342,231740948,2024-07-25 18:52:06-06:00,2024-07-25,-105.0898376852,39.7195522151,1679.0,,20.0,34.4,0.0,16.9,,1017.1,Leucocoprinus ianthinus,"Creighton, Lakewood, CO 80226, USA",2,
+4e113878-1105-4938-a95d-28dcf43d4474,221468263,2024-06-08 20:10:25-06:00,2024-06-08,-105.0887577608,39.7204230981,1674.0,,18.0,27.5,0.2,13.7,,1009.2,Leucocoprinus ianthinus,"Creighton, Lakewood, CO 80226, USA",1,
+e198b283-9b47-4d6e-8893-9fd328083066,311560864,2025-09-04 14:08:52-07:00,2025-09-04,-122.6443153247,45.5209473204,44.0,,18.0,31.0,0.1,10.1,,1011.7,Leucocoprinus ianthinus,"Buckman, Portland, OR, USA",1,84QVG9C4+
+3f7ea358-7c17-45b9-bc2c-c16c11d82726,241714134,2024-09-14 12:45:38-07:00,2024-09-14,-122.6721333333,45.4489366667,145.0,,15.0,23.3,1.5,7.2,,1013.4,Leucocoprinus ianthinus,"Lewis & Clark College, Portland, OR, US",1,84QVC8XH+
+6e9c6524-cf61-4572-9938-f69f01e79d8f,185427096,2023-09-29 07:40:31-07:00,2023-09-29,-122.6773856799,45.4300587367,84.0,,12.8,17.2,0.3,7.9,,1011.7,Leucocoprinus ianthinus,"Oregon, US",1,84QVC8JF+
+085f8e61-1145-4af2-8191-ac7fde0ad0c6,171845766,2023-07-08 15:52:36-07:00,2023-07-08,-122.6583984309,45.6861567591,73.0,,13.3,23.9,0.0,6.0,,1014.6,Leucocoprinus ianthinus,"NE 88th St, Vancouver, WA, US",1,84QVM8PR+
+f853d627-8635-4fb6-89f4-a2ea2522a1c5,166477324,2023-05-16 16:31:56-07:00,2023-05-16,-122.6566466667,45.5267333333,35.0,,15.0,29.4,0.0,7.9,,1018.3,Leucocoprinus ianthinus,"NE Glisan St, Portland, OR, US",1,84QVG8GV+
+2f13a6bc-e828-4679-a282-46f6f900ace2,128159677,2022-07-27 09:06:14-07:00,2022-07-27,-122.6402366667,45.52245,43.0,,19.4,35.6,0.0,8.3,,1014.0,Leucocoprinus ianthinus,"SE Ankeny St, Portland, OR, US",1,84QVG9C5+
+f9bea82f-25b0-4370-ba37-86e156889954,95566675,2021-09-13 07:24:50-07:00,2021-09-13,-122.80165,45.48473,60.0,,6.7,23.9,0.0,7.6,,1021.5,Leucocoprinus ianthinus,"SW Franklin Ave, Beaverton, OR, US",1,84QVF5MX+

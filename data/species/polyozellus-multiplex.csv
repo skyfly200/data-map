@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+0027289b-9976-447b-ab0d-e1c098e50f4e,137815774,2022-10-06 11:37:35-07:00,2022-10-06,-121.5837055556,45.3411333333,84QW8CR8+,1127.0,,13.7,27.0,0.0,4.0,,1020.5,Polyozellus multiplex,"MT HOOD PRKDL, OR 97041, USA",1
+0ffbc9a6-7471-43ba-b64c-a57bc1f5a527,243503981,2024-08-04 16:28:22-06:00,2024-08-04,-106.3797925136,35.9072247288,857MWJ4C+,2881.0,,18.0,31.7,0.0,6.8,,1025.8,Polyozellus multiplex,"New Mexico, US",2
+ae95d02d-5f7d-4db7-957a-c509cc38f804,235459919,2024-08-12 20:18:09-06:00,2024-08-12,-105.800550701,35.7986694548,857PQ5XX+,3208.0,,18.9,32.8,0.0,15.6,,1012.6,Polyozellus multiplex,"Santa Fe National Forest, Tererro, NM, US",2
+38876156-659d-4fc9-b203-888b3fceeff7,132155933,2022-08-22 17:05:19-06:00,2022-08-22,-107.8857416667,37.8143916667,859JR477+,3139.0,,8.0,20.0,6.7,7.4,,1031.2,Polyozellus multiplex,"Grand Mesa Uncompahgre and Gunnison National Forests, Ophir, CO, US",2
+0be72260-0d27-4749-9614-1ac0100817b3,131938244,2022-08-20 14:03:19-06:00,2022-08-20,-107.8553859302,37.9953606964,859JX4WV+,3753.0,,10.0,17.0,13.8,5.1,,1029.5,Polyozellus multiplex,"Colorado, US",1
+0b6c65f2-0476-4d86-a15b-47cf52353aaf,131499962,2022-08-18 10:57:02-06:00,2022-08-18,-107.8122851998,37.9374924863,859JW5PQ+,2692.0,,9.0,23.0,0.6,6.6,,1032.2,Polyozellus multiplex,Telluride,2
+1afa2f68-7681-4630-b540-15dea775997b,92954864,2021-08-27 10:13:50-06:00,2021-08-27,-107.9037820979,37.8048099857,859JR33W+,3171.0,,13.0,23.0,0.0,9.1,,1029.0,Polyozellus multiplex,"San Juan National Forest, Dolores, CO, US",1

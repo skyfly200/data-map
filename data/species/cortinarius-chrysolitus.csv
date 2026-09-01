@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f3239ad0-717f-44f3-aa4c-a09d4006feb0,131916913,2022-08-21 17:07:00-07:00,2022-08-21,-121.7432856315,45.0967933617,1017.0,,,,,,,,Cortinarius chrysolitus,"Clackamas County, OR, USA",2

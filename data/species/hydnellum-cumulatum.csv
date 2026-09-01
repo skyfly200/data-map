@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+7252e842-5c1b-4045-8f2e-eefc47b62aa1,240255438,2024-09-06 15:18:27-06:00,2024-09-06,-105.7623903538,35.8573397685,3250.0,,10.0,26.1,0.0,11.8,,1023.7,Hydnellum cumulatum,"Santa Fe National Forest, Tererro, NM, US",1

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+43ee52ae-8574-4825-aff0-5da6480522d4,236849900,2024-08-19 19:54:48-06:00,2024-08-19,-104.89333699,38.78954806,85CQQ4Q4+,2228.0,,18.0,28.0,0.9,9.3,,1024.8,Mycetinis scorodonius,"El Paso County, US-CO, US",5

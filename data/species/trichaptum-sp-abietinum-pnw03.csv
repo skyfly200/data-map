@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f2a1218e-e97f-4c24-b068-22317cb75170,146971223,2023-01-20 10:22:08-08:00,2023-01-20,-122.3180606232,45.3301769005,84QV8MJJ+,134.0,,1.1,5.0,0.0,2.8,,1032.4,Trichaptum sp. 'abietinum-PNW03',"SE Currin Rd, Estacada, OR, US",2

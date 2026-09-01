@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f07dbc93-547c-42ef-925d-e88dfa3d8ec1,137672371,2022-10-05 13:01:19-07:00,2022-10-05,-121.9305101037,45.6503865748,84QWM329+,78.0,,12.3,26.6,0.0,3.3,,1019.0,Coprinopsis spilospora,"North Bonneville, WA, USA",2

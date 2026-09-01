@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+849b3517-a04b-4fbe-b22c-1c5ef632d130,258361324,2025-01-10 15:46:21-08:00,2025-01-10,-122.4969916418,45.4906960839,84QVFGR3+,138.0,,4.4,9.4,8.4,11.8,,1027.7,Panaeolus acuminatus,"Pleasant Valley, Portland, OR, USA",2
+90763bd6-bafa-4adb-b377-43ebcca9f3dc,116263168,2022-04-05 12:43:04-07:00,2022-04-05,-122.6358633333,45.3126116667,84QV8977+,106.0,,2.8,11.7,,10.1,,1028.1,Panaeolus acuminatus,"Oregon City, OR, US",1

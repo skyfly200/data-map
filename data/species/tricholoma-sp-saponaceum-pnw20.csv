@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+eee4747e-91ea-4756-aff7-70e5776bc225,229139930,2024-07-03 11:50:00-06:00,2024-07-03,-105.8028557847,35.797172236,3149.0,,14.4,29.4,0.0,10.6,,1011.9,Tricholoma sp. 'saponaceum-PNW20',"Santa Fe County, ski area, NM, USA",3

@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+3f15b58a-7ab3-4578-b842-518bd40ca233,189826530,2023-11-02 15:40:58-07:00,2023-11-02,-122.7152124792,45.5162613616,84QVG78M+,251.0,,10.0,20.0,1.5,17.6,,1015.2,Xylaria filiformis,"4000 Block SW Fairview (Arboretum), Portland, OR 97205, USA",1

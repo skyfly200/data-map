@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "uuid": "9ef71b8e-cdd5-436f-83b7-aa2ffdbbf91c",
+        "inat_id": 322712709,
+        "timestamp": "2025-10-23T23:32:00-07:00",
+        "date": "2025-10-23",
+        "olc": "84PVJH00+",
+        "elevation": 1069.0,
+        "tavg": null,
+        "tmin": null,
+        "tmax": null,
+        "precipitation": null,
+        "windspeed": null,
+        "winddirection": null,
+        "presure": null,
+        "species": "Cortinarius idahoensis",
+        "genus": "Cortinarius",
+        "location": "Linn County, OR, USA",
+        "num_identification_agreements": 2
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4484676375,
+          44.6086338751
+        ]
+      }
+    }
+  ]
+}

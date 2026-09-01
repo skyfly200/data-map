@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+69e6c4e6-f604-4025-ba5f-532ccb662625,235771173,2024-08-14 09:48:36-06:00,2024-08-14,-107.8620673009,37.8328350492,3459.0,,9.0,20.0,0.1,7.9,,1032.4,Tricholoma sp. 'CO01',"Colorado, US",2

@@ -1,2 +1,3 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-2e51c149-129c-4fd5-871e-ca39099acac3,286894368,2025-06-04 15:09:04-06:00,2025-06-04,-104.92872,39.6954883333,1650.0,,9.6,18.3,1.5,12.4,,1013.7,Parasola lactea,"E Kansas Dr, Denver, CO, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+2e51c149-129c-4fd5-871e-ca39099acac3,286894368,2025-06-04 15:09:04-06:00,2025-06-04,-104.92872,39.6954883333,1650.0,,9.6,18.3,1.5,12.4,,1013.7,Parasola lactea,"E Kansas Dr, Denver, CO, US",2,
+76fc82a3-548d-4788-abba-faaf7dad4b85,49537765,2020-06-13 12:54:00-07:00,2020-06-13,-122.776073,45.585753,120.0,,11.7,15.6,,3.8,,1015.5,Parasola lactea,"Linnton, Portland, OR, USA",1,84QVH6PF+

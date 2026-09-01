@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+a25faaf6-6261-46fb-9b43-4d0486c0de3f,142035709,2022-11-13 14:27:00-08:00,2022-11-13,-121.4730583333,45.8643861111,84QWVG7G+,459.0,,-0.8,5.7,0.0,3.5,,1029.3,Tremella mesenterella,"Klickitat County, WA, USA",2

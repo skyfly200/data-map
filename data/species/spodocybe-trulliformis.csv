@@ -1,2 +1,5 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-9f160edb-fcd4-4769-910b-b848b70e7ace,131286362,2022-08-17 15:47:27-06:00,2022-08-17,-105.1602505009,38.0167891345,3275.0,,16.2,24.1,3.3,4.8,,1020.1,Spodocybe trulliformis,"Rye, CO 81069, USA",3
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+9f160edb-fcd4-4769-910b-b848b70e7ace,131286362,2022-08-17 15:47:27-06:00,2022-08-17,-105.1602505009,38.0167891345,3275.0,,16.2,24.1,3.3,4.8,,1020.1,Spodocybe trulliformis,"Rye, CO 81069, USA",3,
+ba275dda-25f1-45e6-8363-9bea68224615,249564884,2024-10-25 15:58:15-07:00,2024-10-25,-122.294245,45.49337,50.0,,10.6,16.7,,33.9,,1013.2,Spodocybe trulliformis,"Gresham, OR 97080, USA",1,
+bab8b068-d5cc-4089-a781-570c058ae84b,247981394,2024-10-18 12:45:33-07:00,2024-10-18,-122.2949216667,45.4927666667,50.0,,7.2,14.4,,4.7,,1025.4,Spodocybe trulliformis,"Oxbow Regional Park, Gresham, OR, US",1,
+f581dcf8-e1a5-41e3-bfc0-669e691cb27d,34718220,2019-10-17 12:23:17-07:00,2019-10-17,-121.9747783333,44.4493666667,1137.0,,,,,,,,Spodocybe trulliformis,"Linn County, US-OR, US",3,84PWC2XG+

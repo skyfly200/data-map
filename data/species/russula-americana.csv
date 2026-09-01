@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+cf49e8d9-6add-41cf-b20f-eb7ed75047a5,188736502,2023-10-22 16:53:35-07:00,2023-10-22,-122.3145072162,44.3647474477,84PV9M7P+,1322.0,,,,,,,,Russula americana,"Foster, OR 97345, USA",1

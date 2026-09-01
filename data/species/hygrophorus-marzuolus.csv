@@ -1,0 +1,12 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+6d48a44b-fecb-4bed-81eb-c0e20e4cad85,371887076,2026-06-13 15:02:26-06:00,2026-06-13,-106.6084436,39.4609355997,85FMF96R+,3431.0,,7.2,30.6,0.0,6.8,,1011.6,Hygrophorus marzuolus,"Eagle, CO 81631, USA",1
+9c26d4fc-18cd-4b71-a9f5-bfad509c4ff8,367227239,2026-05-31 12:20:09-06:00,2026-05-31,-107.1255281906,38.9352404137,85CJWVPF+,3386.0,,1.7,20.6,2.3,5.2,,,Hygrophorus marzuolus,"Gunnison County, US-CO, US",1
+03cc63b5-aec3-472a-a793-d2fdfa7342e4,290406951,2025-06-08 11:42:19-06:00,2025-06-08,-106.3922349362,38.8069234959,85CMRJ45+,3393.0,,8.0,22.0,2.0,4.5,,1016.5,Hygrophorus marzuolus,"Pike and San Isabel National Forests, Nathrop, CO, US",1
+9ba293b4-9bb2-4519-a1d4-72c58f7e795a,288267664,2025-06-08 12:50:21-06:00,2025-06-08,-106.3755321019,38.8032257225,85CMRJ3F+,3271.0,,8.0,22.0,2.0,4.5,,1016.5,Hygrophorus marzuolus,"Chaffee County, US-CO, US",3
+ba6f88e9-d30f-45e7-b9f2-03ef3fb3d3e8,287244151,2025-06-05 15:58:42-06:00,2025-06-05,-105.748691919,39.8687505264,85FPV792+,2861.0,,-4.6,5.6,0.1,12.3,,1017.1,Hygrophorus marzuolus,"Colorado, US",1
+e05ce5fd-74e3-47b8-97e1-bfdedd8f1c91,225381474,2024-06-25 12:43:59-06:00,2024-06-25,-107.1345939615,38.8720844898,85CJVVC8+,3116.0,,8.3,28.9,0.0,5.8,,1017.8,Hygrophorus marzuolus,"Gunnison County, US-CO, US",1
+13b48999-7538-4ad4-ac49-0d25ff73cfe0,221756835,2024-06-09 17:51:27-06:00,2024-06-09,-105.6377283073,39.8500176129,85FPV926+,3381.0,,-2.3,10.2,2.3,8.8,,1017.9,Hygrophorus marzuolus,"Colorado, US",1
+e21f2ae9-1d06-469b-8e4a-5e88a2adba5e,221756331,2024-06-09 17:11:12-06:00,2024-06-09,-105.766011908,39.8801658354,85FPV6JM+,2978.0,,-2.3,10.2,2.3,8.8,,1017.9,Hygrophorus marzuolus,"Colorado, US",1
+843fdf9a-7ff7-4df3-8552-21f616deb0c4,221706697,2024-06-09 11:34:16-06:00,2024-06-09,-105.6571883333,39.8966216667,85FPV8WV+,2915.0,,-2.3,10.2,2.3,8.8,,1017.9,Hygrophorus marzuolus,"South Boulder Creek Trail, Black Hawk, CO, US",1
+7d8c3b1f-cfee-468f-8cfd-45da454e5ebc,122689916,2022-06-17 13:11:00-06:00,2022-06-17,-107.9792616667,39.0552733333,85FJ324C+,3306.0,,18.5,37.5,0.8,16.9,,1016.2,Hygrophorus marzuolus,"Delta, Colorado, United States",2
+bc22aa14-4852-4bd8-9d57-8c56fdc1297c,24967370,2019-05-11 16:55:11-07:00,2019-05-11,-121.694714,44.317819,84PW8894+,1182.0,,2.2,30.6,0.0,9.7,,,Hygrophorus marzuolus,"NF-1028, 1 mile west of OR 242, Sisters Ranger District, Deschutes National Forest, Deschutes County, Oregon, USA",3

@@ -1,0 +1,3 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+f6579d09-14be-42d3-b029-00062367ff6f,233815051,2024-07-31 11:51:00-06:00,2024-07-31,-105.9394356756,35.6689129601,2160.0,,15.0,36.7,0.0,11.1,,1009.7,Tricholoma caligatum,"New Mexico, US",1
+6878979c-406e-4c57-a171-85b21cdb676e,91602494,2021-08-16 10:25:38-10:00,2021-08-16,-105.6057656184,39.6495537262,3445.0,,,,,,,,Tricholoma caligatum,"Evergreen, CO 80439, USA",2

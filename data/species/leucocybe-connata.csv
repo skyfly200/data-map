@@ -1,0 +1,8 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+a0944150-fbdc-49a7-92bd-af5654c9c56b,260729990,2024-11-04 10:50:00-08:00,2024-11-04,-121.9609135,45.3281745,407.0,,7.8,12.8,,8.3,,1022.5,Leucocybe connata,"E Elk Park Rd, Welches, OR, US",1,
+ce9ec5ae-5137-4921-986e-dc64d6afd36e,247381174,2024-10-12 13:51:48-07:00,2024-10-12,-121.88813,44.9867583333,693.0,,,,,,,,Leucocybe connata,"Mt. Hood National Forest, Estacada, OR, US",1,
+b55a4a51-3467-4c5e-8169-f53e42db80bf,63866197,2020-10-17 14:52:00-10:00,2020-10-17,-121.9396027778,45.2696583333,537.0,,12.8,17.8,0.8,3.4,,1022.1,Leucocybe connata,"Clackamas, Oregon, United States",1,
+ed52f5cb-f805-46da-8fc5-fdd413d992ad,34739589,2019-10-17 15:21:11-07:00,2019-10-17,-121.968795,44.770795,753.0,,,,,,,,Leucocybe connata,"Marion County, US-OR, US",2,84PWQ2CJ+
+5eb0d97a-f05d-45ea-a568-6be5769d0521,339095696,2026-02-17 15:22:46-08:00,2026-02-17,-122.7332897803,45.524750028,243.0,,2.0,6.0,0.4,7.9,,998.8,Leucocybe connata,"NW Cornell Rd, Portland, OR, US",1,84QVG7F8+
+3933506b-4bce-488d-84b9-513792886d93,248180077,2024-10-19 13:17:22-07:00,2024-10-19,-122.0342555,45.7681883333,527.0,,12.2,22.8,,5.8,,1023.4,Leucocybe connata,"Carson, WA, US",1,84QVQX98+
+19b6050a-3c47-4a65-a842-b377770a17b0,63144822,2020-10-20 13:13:32-07:00,2020-10-20,-122.35395833,44.386345,897.0,,,,,,,,Leucocybe connata,"Willamette National Forest, Cascadia, OR, US",1,84PV9JPW+

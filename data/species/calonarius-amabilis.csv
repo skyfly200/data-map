@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,olc,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+195bf846-b733-4d57-bac4-62eb6c1a1bdd,191426920,2023-11-18 15:54:03-08:00,2023-11-18,-121.4193428755,45.8054465844,84QWRH4J+,651.0,,3.4,6.5,7.6,8.3,,1013.0,Calonarius amabilis,"Washington, US",2

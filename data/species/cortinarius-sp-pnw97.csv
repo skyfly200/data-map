@@ -1,0 +1,2 @@
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
+fd167bcf-7102-4ff9-a562-b2fd3b929cf6,231213513,2024-05-08 11:49:00-07:00,2024-05-08,-122.1161685328,45.2416712795,984.0,,4.4,21.7,0.0,6.6,,1028.0,Cortinarius sp. 'PNW97',"Clackamas County, OR, USA",2

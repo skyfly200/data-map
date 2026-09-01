@@ -1,4 +1,7 @@
-uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements
-2e152e65-0e1c-407b-9bee-95ef1709a165,284409436,2025-05-23 12:29:00-06:00,2025-05-23,-105.79941667,35.79989722,3249.0,,9.4,30.0,0.0,16.3,,1008.8,Mycena nivicola,"Santa Fe, New Mexico, United States",1
-b49b9ac3-e95e-4855-8b3b-68903fce61a1,281816995,2025-05-17 09:44:25-06:00,2025-05-17,-107.9947283333,39.0054166667,2951.0,,8.8,27.0,0.0,12.4,,1011.1,Mycena nivicola,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",1
-c591e394-687a-41cf-8770-658ce9540c4f,221412378,2024-06-08 11:25:39-06:00,2024-06-08,-105.399575,36.2178466667,3292.0,,4.1,27.5,0.1,11.0,,1024.6,Mycena nivicola,"Carson National Forest, Vadito, NM, US",2
+uuid,inat_id,timestamp,date,lon,lat,elevation,tavg,tmin,tmax,precipitation,windspeed,winddirection,presure,species,location,num_identification_agreements,olc
+2e152e65-0e1c-407b-9bee-95ef1709a165,284409436,2025-05-23 12:29:00-06:00,2025-05-23,-105.79941667,35.79989722,3249.0,,9.4,30.0,0.0,16.3,,1008.8,Mycena nivicola,"Santa Fe, New Mexico, United States",1,
+b49b9ac3-e95e-4855-8b3b-68903fce61a1,281816995,2025-05-17 09:44:25-06:00,2025-05-17,-107.9947283333,39.0054166667,2951.0,,8.8,27.0,0.0,12.4,,1011.1,Mycena nivicola,"Grand Mesa Uncompahgre and Gunnison National Forests, Cedaredge, CO, US",1,
+c591e394-687a-41cf-8770-658ce9540c4f,221412378,2024-06-08 11:25:39-06:00,2024-06-08,-105.399575,36.2178466667,3292.0,,4.1,27.5,0.1,11.0,,1024.6,Mycena nivicola,"Carson National Forest, Vadito, NM, US",2,
+973c2dc5-e086-4473-9fe6-ac68dcdf7509,213867337,2024-05-05 14:18:25-07:00,2024-05-05,-121.7001724625,44.440318581,967.0,,1.0,11.0,2.2,29.5,,1007.8,Mycena nivicola,"Deschutes National Forest, Camp Sherman, OR, US",2,84PWC7RX+
+3ffc368e-57bc-438e-bb56-63e60f38b2f3,166949760,2023-06-11 17:13:58-07:00,2023-06-11,-122.0969083333,44.3955033333,1073.0,,,,,,,,Mycena nivicola,"Willamette National Forest, Idanha, OR, US",1,84PV9WW3+
+4aef7f30-b763-4e49-b09e-09cd3c9a2953,80070607,2021-05-22 12:04:44-07:00,2021-05-22,-122.0817798029,44.4132774625,1336.0,,,,,,,,Mycena nivicola,"Willamette National Forest, Idanha, OR, US",1,84PVCW79+
