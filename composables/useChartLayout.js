@@ -35,6 +35,7 @@ const DEFAULT_ORDER = GALLERY_CHARTS.map((c) => c.id)
 const titleOf = (id) => GALLERY_CHARTS.find((c) => c.id === id)?.title || id
 
 export function useChartLayout() {
+  const cloud = safeCloudSync()
   const order = useState('chart-layout-order', () => [...DEFAULT_ORDER])
   const hidden = useState('chart-layout-hidden', () => [])
   const editing = useState('chart-layout-editing', () => false)
@@ -61,7 +62,10 @@ export function useChartLayout() {
 
   function persist() {
     if (!import.meta.client) return
-    try { localStorage.setItem(KEY, JSON.stringify({ order: order.value, hidden: hidden.value })) } catch { /* ignore */ }
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ order: order.value, hidden: hidden.value }))
+      cloud?.schedulePush()
+    } catch { /* ignore */ }
   }
 
   const isVisible = (id) => !hidden.value.includes(id)

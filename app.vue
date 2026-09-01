@@ -32,6 +32,7 @@
         <ClientOnly>
           <div class="auth-box" v-if="configured">
             <template v-if="isAuthed">
+              <SyncStatus />
               <span class="avatar" :title="user?.email || ''">{{ initial }}</span>
               <span class="who" :title="user?.email || ''">{{ shortEmail }}</span>
               <button class="auth-btn" @click="signOut">Sign out</button>
