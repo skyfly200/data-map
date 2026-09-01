@@ -2,9 +2,10 @@
   <ScatterChart v-if="config.type === 'scatter'" :title="title" :data="scatterData" :legend="coloring.legend"
     :shapeLegend="shaping ? shaping.legend : []" :sizeLegend="config.sizeField ? `${labelOf(config.sizeField)} (small→large)` : ''"
     :xLabel="labelOf(config.xField)" :yLabel="labelOf(config.yField)" :xFormat="fmtOf(config.xField)" :yFormat="fmtOf(config.yField)"
+    :xKey="config.xField" :yKey="config.yField"
     :todayX="todayX" :todayLabel="todayLabel" @select="$emit('select', $event)" />
   <BarChart v-else-if="config.type === 'bar'" :title="title" :data="barData" :horizontal="!!config.horizontal" :format="barFmt" />
-  <BoxPlot v-else-if="config.type === 'box'" :title="title" :data="boxData" :xLabel="labelOf(config.valueField)" :format="fmtOf(config.valueField)" />
+  <BoxPlot v-else-if="config.type === 'box'" :title="title" :data="boxData" :xLabel="labelOf(config.valueField)" :valueKey="config.valueField" :format="fmtOf(config.valueField)" />
   <BarChart v-else-if="config.type === 'histogram'" :title="title" :data="histogramData" :format="(v) => String(v)" />
   <HeatmapChart v-else-if="config.type === 'heatmap'" :title="title" :rows="heatmap.rows" :cols="heatmap.cols"
     :matrix="heatmap.matrix" :format="heatFmt" />
