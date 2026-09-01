@@ -30,6 +30,8 @@
         <span class="dot-icon"></span>{{ locating ? 'Locating…' : 'My location' }}
       </button>
       <LiveClusterControls />
+      <AppearanceControls :field="colorBy" :field-label="coloring.title"
+                          :values="legendValues" />
       <label class="toggle">
         <input type="checkbox" v-model="showFiltered" />
         Include excluded water / non-terrestrial rows
@@ -48,7 +50,7 @@
           <option v-for="c in CELL_SIZES" :key="c.value" :value="c.value">{{ c.label }}</option>
         </select>
       </div>
-      <div v-if="overlayMode === 'season' || overlayMode === 'fruiting'" class="season">
+      <div v-if="overlayMode === 'season' || overlayMode === 'hotspots'" class="season">
         <label :for="'season-day'">Date <strong>{{ seasonLabel }}</strong> ±{{ seasonWindow }}d</label>
         <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1" />
         <input v-model.number="seasonWindow" type="range" min="3" max="60" step="1" aria-label="Window width in days" />
@@ -136,11 +138,14 @@ import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, inatUrl, inatPhotoUrl, fetchObservationDetails, useObservations } from '~/composables/useObservations'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
+import { useAppearance } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
 
 const { data, filteredData, load, showFiltered, setShowFiltered, focusObservation, setFocusObservation } = useObservations()
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const live = useLiveClusters()
+const appearance = useAppearance()
+const { pointRadius, pointOpacity, activeColors, colorOverrides } = appearance
 
 const mapEl = ref(null)
 const loaded = ref(false)
@@ -171,7 +176,7 @@ let map, geoLayer, L, userLayer, selectedMarker
 
 // ─── Aggregate overlays ───────────────────────────────────────────────────────
 // Grid summaries drawn under the points: density, species richness, seasonal
-// activity, a fruiting-likelihood score, and dominant species. See
+// activity, an in-season hotspot score, and dominant species. See
 // composables/useMapOverlays.js for what each one means.
 const overlays = useMapOverlays()
 const {
@@ -383,6 +388,20 @@ const coloring = computed(() => {
   }
 })
 
+// The RAW category values on screen, most common first — what the appearance
+// panel keys its per-value overrides on. Deliberately not taken from the legend,
+// whose labels are display text ("Cluster 3") rather than the value itself.
+const legendValues = computed(() => {
+  if (coloring.value?.type !== 'categorical') return []
+  const key = colorBy.value
+  const counts = new Map()
+  for (const f of filteredData.value?.features || []) {
+    const v = key === 'live_cluster' ? live.labelFor(f.properties) : f.properties[key]
+    if (hasValue(v)) counts.set(v, (counts.get(v) || 0) + 1)
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
+})
+
 // Size points by a numeric field (radius), or a uniform size when "none".
 const sizeScale = computed(() => {
   if (!sizeBy.value) return null
@@ -392,11 +411,14 @@ const sizeScale = computed(() => {
   return { lo: Math.min(...vals), hi: Math.max(...vals) }
 })
 function radiusFor(props) {
+  // The configured point size sets the baseline; a "Size by" field then scales
+  // marks around it, so both controls compose instead of fighting.
+  const base = pointRadius.value
   const s = sizeScale.value
-  if (!s) return 6
+  if (!s) return base * 1.5
   const v = props[sizeBy.value]
-  if (!hasValue(v)) return 3
-  return 4 + 9 * ((Number(v) - s.lo) / ((s.hi - s.lo) || 1)) // 4 … 13
+  if (!hasValue(v)) return base * 0.75
+  return base + base * 2.25 * ((Number(v) - s.lo) / ((s.hi - s.lo) || 1))
 }
 
 function prevImage() {
@@ -410,7 +432,18 @@ function nextImage() {
 // Re-style markers when the colouring or sizing changes.
 watch([coloring, sizeScale], ([c]) => {
   if (geoLayer) geoLayer.eachLayer((l) => {
-    l.setStyle({ fillColor: c.colorFn(l.feature.properties) })
+    l.setStyle({ fillColor: c.colorFn(l.feature.properties), fillOpacity: pointOpacity.value })
+    l.setRadius(radiusFor(l.feature.properties))
+  })
+})
+
+// Palette, per-value overrides and point styling all restyle the existing
+// layer in place — no need to rebuild it, which would refit the view.
+watch([activeColors, colorOverrides, pointRadius, pointOpacity], () => {
+  const c = coloring.value
+  if (!geoLayer) return
+  geoLayer.eachLayer((l) => {
+    l.setStyle({ fillColor: c.colorFn(l.feature.properties), fillOpacity: pointOpacity.value })
     l.setRadius(radiusFor(l.feature.properties))
   })
 })
@@ -427,7 +460,8 @@ function renderPoints(geo) {
   geoLayer = L.geoJSON(geo, {
     pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
       radius: radiusFor(feature.properties), weight: 1, color: '#222',
-      fillColor: coloring.value.colorFn(feature.properties), fillOpacity: 0.85,
+      fillColor: coloring.value.colorFn(feature.properties),
+      fillOpacity: pointOpacity.value,
     }),
   }).addTo(map)
 
@@ -534,6 +568,7 @@ onMounted(async () => {
     ).addTo(map)
 
     overlays.loadFromStorage()
+    appearance.loadFromStorage()
     await load()
     if (!data.value) throw new Error('no data')
     renderPoints(filteredData.value)
