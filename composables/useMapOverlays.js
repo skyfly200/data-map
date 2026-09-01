@@ -7,7 +7,7 @@
 //
 // A caveat runs through all of this and is surfaced in the UI: iNaturalist
 // records are *observations*, not surveys. Dense cells are partly dense because
-// people walk there. The `season` and `fruiting` modes normalise by each cell's
+// people walk there. The `season` and `hotspots` modes normalise by each cell's
 // own total, which cancels most of that bias — a cell's seasonal shape does not
 // depend on how many people visited it, only on when they found things.
 
@@ -37,8 +37,8 @@ export const OVERLAY_MODES = [
     note: "Share of the cell's own finds that fall in the selected window — effort-neutral, so it shows when an area fruits.",
   },
   {
-    key: 'fruiting', label: 'Fruiting likelihood', kind: 'sequential',
-    note: 'Seasonal activity weighted by how well-sampled the cell is. Best guess at where to be on this date.',
+    key: 'hotspots', label: 'In-season hotspots', kind: 'sequential',
+    note: 'Where finds have actually concentrated in this window, weighted by how well-sampled the cell is. A record of past finds, not a forecast.',
   },
   {
     key: 'dominant', label: 'Dominant species', kind: 'categorical',
@@ -61,7 +61,7 @@ const RAMPS = {
   density: ['#e8f1fb', '#0b3d91'],
   richness: ['#eef7ec', '#1b5e20'],
   season: ['#fff3e0', '#bf360c'],
-  fruiting: ['#f3e9fb', '#4a148c'],
+  hotspots: ['#f3e9fb', '#4a148c'],
   wind: ['#9ecae1', '#08306b'],
 }
 
@@ -107,7 +107,10 @@ export function useMapOverlays() {
     try {
       const saved = JSON.parse(localStorage.getItem('map-overlay') || 'null')
       if (!saved) return
-      if (OVERLAY_MODES.some((m) => m.key === saved.mode)) mode.value = saved.mode
+      // 'fruiting' was the old name for 'hotspots'; carry the saved choice over
+      // rather than silently dropping the viewer back to no overlay.
+      const savedMode = saved.mode === 'fruiting' ? 'hotspots' : saved.mode
+      if (OVERLAY_MODES.some((m) => m.key === savedMode)) mode.value = savedMode
       if (CELL_SIZES.some((c) => c.value === saved.cellSize)) cellSize.value = saved.cellSize
       if (Number.isFinite(saved.seasonDay)) seasonDay.value = saved.seasonDay
       if (Number.isFinite(saved.seasonWindow)) seasonWindow.value = saved.seasonWindow
@@ -266,7 +269,7 @@ export function useMapOverlays() {
       if (m === 'density') c.raw = Math.log1p(c.n)
       else if (m === 'richness') c.raw = c.species.size
       else if (m === 'season') c.raw = c.n >= MIN_SAMPLE ? c.inWindow / c.n : null
-      else if (m === 'fruiting') {
+      else if (m === 'hotspots') {
         // Seasonal share carries the "when"; log density carries confidence that
         // the cell is worth trusting at all. Cells nobody has sampled stay dark
         // rather than scoring high off one lucky find.
@@ -290,7 +293,7 @@ export function useMapOverlays() {
     }
 
     // Legend endpoints read in the metric's own units, not the scaled 0–1.
-    const fmt = m === 'season' || m === 'fruiting'
+    const fmt = m === 'season' || m === 'hotspots'
       ? (c) => `${Math.round((c.n ? c.inWindow / c.n : 0) * 100)}%`
       : (c) => String(c.value)
     const loCell = shown.reduce((a, b) => (a.raw <= b.raw ? a : b))

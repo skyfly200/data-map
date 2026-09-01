@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { SERIES_1, UNCLUSTERED, categoryColor, hasValue, useObservations } from '~/composables/useObservations'
+import { SERIES_1, UNCLUSTERED, categoryColor, categoryShape, hasValue, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 import { ALL_NUMERIC, ALL_CATEGORY } from '~/composables/useChartFields'
 
@@ -119,12 +119,13 @@ function categoryColoring(field) {
 }
 const coloring = computed(() => categoryColoring(c.value.colorField))
 
-// Encode a category by SHAPE (six distinguishable marks) for scatter points.
-const SHAPES = ['circle', 'square', 'triangle', 'diamond', 'cross', 'wye']
+// Encode a category by SHAPE for scatter points. Which marks are in rotation
+// comes from the viewer's appearance settings, and a per-value override wins
+// over the rotation — so a species can be pinned to one shape everywhere.
 function shapeMapping(field) {
   if (!field) return null
   const uniq = [...new Set(rows.value.map((r) => catVal(r, field)).filter((v) => v !== null))]
-  const m = new Map(uniq.map((v, i) => [v, SHAPES[i % SHAPES.length]]))
+  const m = new Map(uniq.map((v, i) => [v, categoryShape(field, v, i)]))
   return { shapeOf: (v) => m.get(v) || 'circle', legend: uniq.slice(0, 6).map((v) => ({ label: v, shape: m.get(v) })) }
 }
 const shaping = computed(() => shapeMapping(c.value.shapeField))
