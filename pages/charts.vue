@@ -29,6 +29,7 @@
         </button>
         <button v-if="layout.editing.value" class="lb-btn ghost" @click="layout.reset()">Reset layout</button>
         <AppearanceControls field="species" field-label="Species" :values="speciesValues" />
+        <ShareMenu :title="shareTitle" />
       </div>
 
       <div v-if="layout.editing.value && layout.hiddenCharts.value.length" class="hidden-bar">
@@ -190,6 +191,11 @@ const layout = useChartLayout()
 const { rows, error, pending, load } = useObservations()
 const { unit, elevValue, tempUnit, tempValue } = useUnits()
 const appearance = useAppearance()
+const share = useShareState()
+const shareTitle = computed(() =>
+  `${rows.value.length.toLocaleString()} mushroom observations — charts`)
+// Restore filters/palette from a shared link before the charts compute.
+onMounted(() => share.apply(useRoute().query))
 onMounted(() => {
   load(); saved.loadFromStorage(); layout.loadFromStorage(); appearance.loadFromStorage()
 })
