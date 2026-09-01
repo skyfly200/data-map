@@ -1,12 +1,28 @@
+"""The one pipeline entry point, shared by the CLI and the Kaggle notebook.
+
+    python run_pipeline.py          # command line
+    run_pipeline.run_all()          # notebook / Colab / any Python session
+
+``run_all`` is the whole sequence — pre-flight, iNaturalist fetch, enrichment,
+clustering, GeoJSON export, coverage summary — with the skip rules that decide
+what actually needs doing. Callers get identical behaviour, so the notebook
+never has to restate the stage order or duplicate a skip rule.
+"""
+
+import contextlib
+import json
 import os
 import subprocess
 import sys
 from pathlib import Path
-from dotenv import load_dotenv
-from pathlib import Path
 
-# Locate the root directory (one level up from scripts/) and load .env
-ROOT_DIR = Path(__file__).resolve().parent.parent
+from dotenv import load_dotenv
+
+# scripts/ holds the stage scripts; the repo root above it is the working
+# directory they all expect — the per-species store (data/) and the raster
+# caches (dem/, precip/, ndvi/, soil/, world_cover/) are relative to it.
+SCRIPTS_DIR = Path(__file__).resolve().parent
+ROOT_DIR = SCRIPTS_DIR.parent
 load_dotenv(dotenv_path=ROOT_DIR / ".env")
 
 def stage_output_path(input_path, suffix, output_dir='.'):
@@ -99,17 +115,37 @@ def _resolve_python():
 
 
 def run_step(label, python_executable, script_name, *args):
+    """Run one stage script by absolute path, so the caller's cwd stays the repo root."""
     print(f"\n=== {label} ===")
-    cmd = [python_executable, script_name, *args]
+    cmd = [python_executable, str(SCRIPTS_DIR / script_name), *args]
     result = subprocess.run(cmd, check=False)
     if result.returncode != 0:
         raise SystemExit(f"{label} failed with exit code {result.returncode}")
 
 
-def main():
-    root = Path(__file__).resolve().parent
-    os.chdir(root)
+@contextlib.contextmanager
+def working_directory(path):
+    """Run inside ``path``, restoring the previous cwd afterwards.
 
+    The stages address their inputs and outputs relative to the repo root, so
+    the pipeline has to run from there. Restoring matters when run_all() is
+    called from a notebook that then keeps working in its own directory.
+    """
+    previous = os.getcwd()
+    os.chdir(path)
+    try:
+        yield Path(path)
+    finally:
+        os.chdir(previous)
+
+
+def run_all(python_executable=None, root=None):
+    """Run the full pipeline. Shared by ``main()`` and the notebook."""
+    with working_directory(root or ROOT_DIR):
+        _run_stages(python_executable)
+
+
+def _run_stages(python_executable=None):
     env_file = Path(os.getenv('ENV_FILE', '.env'))
     if env_file.exists():
         print(f"Loading env file: {env_file}")
@@ -125,11 +161,14 @@ def main():
 
     refresh_all = os.getenv('REFRESH_ALL', '').strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
 
-    python_executable = _resolve_python()
+    python_executable = python_executable or _resolve_python()
     print(f"Using Python interpreter: {python_executable}")
+    print(f"Working directory: {os.getcwd()}")
 
     # The whole pipeline reads and writes the per-species store under data/;
     # each script defaults to it, so stages need no CSV paths passed between them.
+    if str(SCRIPTS_DIR) not in sys.path:
+        sys.path.insert(0, str(SCRIPTS_DIR))
     import species_store as store
 
     # 1. Observations — run incremental fetch by default so new taxa or fresh sightings are captured.
@@ -187,6 +226,10 @@ def main():
         print(f"[!] Raster coverage summary skipped: {exc}")
 
     print("\n✅ Full data pipeline completed successfully.")
+
+
+def main():
+    run_all()
 
 
 if __name__ == "__main__":
