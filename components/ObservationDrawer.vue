@@ -35,7 +35,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { colorFor, hasValue, inatUrl, useObservations, fetchObservationDetails } from '~/composables/useObservations'
+import { colorFor, hasValue, inatUrl, inatPhotoUrl, useObservations, fetchObservationDetails } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 
 const props = defineProps({
@@ -49,6 +49,31 @@ const emit = defineEmits(['close'])
 
 const { elevLabel } = useUnits()
 const { setFocusObservation } = useObservations()
+
+// Photo carousel: fetch the observation's photos from iNaturalist when a point
+// is selected, at a large size (the API's bare `url` is a 75px square thumb).
+const images = ref([])
+const currentImageIndex = ref(0)
+
+watch(() => props.selected, async (s) => {
+  currentImageIndex.value = 0
+  images.value = []
+  if (!s) return
+  const id = s.inat_id ?? s.uuid
+  const details = await fetchObservationDetails(id)
+  // Guard against a stale response landing after the user picked another point.
+  if (props.selected !== s) return
+  images.value = (details?.photos || []).map((p) => inatPhotoUrl(p, 'large')).filter(Boolean)
+}, { immediate: true })
+
+function prevImage() {
+  if (!images.value.length) return
+  currentImageIndex.value = (currentImageIndex.value - 1 + images.value.length) % images.value.length
+}
+function nextImage() {
+  if (!images.value.length) return
+  currentImageIndex.value = (currentImageIndex.value + 1) % images.value.length
+}
 
 function openOnMap() {
   const s = props.selected
@@ -71,6 +96,33 @@ function openOnMap() {
   padding: 16px 18px; overflow-y: auto; font: 14px/1.45 system-ui, sans-serif; color: var(--text);
 }
 .drawer h3 { margin: 0 26px 10px 0; font-size: 1.05rem; }
+
+/* Photo carousel. The viewport has no fixed aspect ratio so a photo keeps its
+   own shape up to a height cap, instead of being boxed into a small square. */
+.carousel { position: relative; margin: 0 0 14px; border-radius: 8px; overflow: hidden; background: #000; }
+.carousel-viewport { width: 100%; min-height: 150px; display: flex; align-items: center; justify-content: center; }
+.carousel-image { width: 100%; height: auto; max-height: 320px; object-fit: contain; display: block; }
+.carousel-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); border: 0;
+  background: rgba(0, 0, 0, 0.5); color: #fff; cursor: pointer;
+  width: 28px; height: 44px; font-size: 1.4rem; line-height: 1; padding: 0;
+}
+.carousel-nav:hover { background: rgba(0, 0, 0, 0.72); }
+.carousel-nav.prev { left: 0; border-radius: 0 6px 6px 0; }
+.carousel-nav.next { right: 0; border-radius: 6px 0 0 6px; }
+.carousel-indicators {
+  position: absolute; bottom: 8px; left: 0; right: 0; display: flex;
+  justify-content: center; gap: 6px;
+}
+.carousel-indicators .indicator {
+  width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, 0.45);
+  cursor: pointer; transition: background 0.15s;
+}
+.carousel-indicators .indicator.active { background: #fff; }
+.image-counter {
+  position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.55);
+  color: #fff; font-size: 0.72rem; padding: 2px 7px; border-radius: 10px;
+}
 .close {
   position: absolute; top: 8px; right: 10px; border: 0; background: transparent;
   font-size: 1.5rem; line-height: 1; color: var(--muted); cursor: pointer;

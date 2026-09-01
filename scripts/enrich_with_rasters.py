@@ -14,6 +14,7 @@ import sys
 import glob
 
 import species_store as store
+import ee_enrich
 
 if sys.platform == 'win32' and hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -168,7 +169,11 @@ def enrich_with_precip(df, precip_dir="precip/", checkpoint=None):
     done_rows = 0
     for i, date in enumerate(pending, 1):
         dstr = date.strftime('%Y-%m-%d')
-        day_rows = df[df['date'] == dstr]          # compute the date group once
+        # Only the rows still missing rainfall: this stage runs after the Earth
+        # Engine sampler, so filled rows must not be rewritten from local tiles.
+        day_rows = df[(df['date'] == dstr) & df['prcp_d0'].isna()]
+        if day_rows.empty:
+            continue
         idxs = list(day_rows.index)
         coords = list(zip(day_rows['lon'], day_rows['lat']))
         for d in range(7):
@@ -323,15 +328,28 @@ def enrich_with_terrain(df, terrain_dir="dem/derived/", checkpoint=None):
     Adds columns: slope, aspect, solar_exposure, wind_exposure, water_retention.
     Run ``fetch.py`` (or ``terrain_pipeline.py``) first to generate the layers.
     """
-    layer_paths = {}
-    missing = []
     for name in TERRAIN_LAYERS:
         if name not in df.columns:
             df[name] = None
+
+    # Resume first: when Earth Engine (or an earlier run) already filled these
+    # columns there is nothing to do, and no reason to warn about rasters that
+    # were deliberately never downloaded.
+    gate = TERRAIN_LAYERS[0]
+    pending = [(idx, row) for idx, row in df.iterrows()
+               if not (pd.isna(row.get("lat")) or pd.isna(row.get("lon"))) and pd.isna(row.get(gate))]
+    total = len(pending)
+    if not total:
+        print("Terrain exposure already complete — skipping.")
+        return df
+
+    layer_paths = {}
+    missing = []
+    for name in TERRAIN_LAYERS:
         # Search for the layer with or without the coordinate suffix
         search_pattern = os.path.join(terrain_dir, f"{name}*.tif")
         matches = glob.glob(search_pattern)
-        
+
         if matches:
             # resolve_raster_path ensures it finds the .cog.tif if compressed
             layer_paths[name] = resolve_raster_path(matches[0])
@@ -345,15 +363,6 @@ def enrich_with_terrain(df, terrain_dir="dem/derived/", checkpoint=None):
         return df
     if missing:
         print(f"[!] Terrain layers missing: {', '.join(missing)} (re-run terrain_pipeline.py).")
-
-    first = next(iter(layer_paths))
-    # Resume: only rows without a terrain value yet.
-    pending = [(idx, row) for idx, row in df.iterrows()
-               if not (pd.isna(row.get("lat")) or pd.isna(row.get("lon"))) and pd.isna(row.get(first))]
-    total = len(pending)
-    if not total:
-        print("Terrain exposure already complete — skipping.")
-        return df
     print(f"Adding terrain exposure ({len(layer_paths)} layers × {total} observations)...")
     start = time.monotonic()
     idxs = [idx for idx, _ in pending]
@@ -513,107 +522,10 @@ def fill_missing_ndvi(df, max_days_gap=7):
     print(f"✅ Filled {filled} NDVI values using same-location fallback.")
     return df
 
-# ─── NDVI via direct Earth Engine point sampling ──────────────────────────────
-# The old approach exported a Sentinel-2 NDVI GeoTIFF per observation to Google
-# Drive (fetch.py:fetch_sentinel2_ndvi) — asynchronous, and nothing downloaded
-# the tiles back, so the `ndvi` column stayed empty. This samples the NDVI value
-# directly at each point with reduceRegion().getInfo(): no Drive round-trip, and
-# it populates the column in a single (Earth-Engine-authenticated) run.
-
-def enrich_with_ndvi_ee(df, buffer_days=15, scale=10, cloud_pct=60, max_workers=8, checkpoint=None):
-    if os.environ.get('SKIP_EARTH_ENGINE') == '1':
-        print('Skipping Earth Engine NDVI sampling (SKIP_EARTH_ENGINE=1).')
-        return df
-
-    try:
-        import ee
-        try:
-            ee.Initialize(project=os.environ.get('EARTHENGINE_PROJECT'))
-        except Exception:
-            ee.Authenticate(quiet=True)
-            ee.Initialize(project=os.environ.get('EARTHENGINE_PROJECT'))
-    except Exception as e:
-        print(f'[!] Earth Engine unavailable — NDVI sampling skipped: {e}')
-        return df
-
-    if 'ndvi' not in df.columns:
-        df['ndvi'] = None
-
-    # Resume: only rows still missing an NDVI value.
-    tasks = [
-        (idx, float(row['lon']), float(row['lat']), pd.to_datetime(row['date']))
-        for idx, row in df.iterrows()
-        if not (pd.isna(row.get('lat')) or pd.isna(row.get('lon')) or pd.isna(row.get('date')))
-        and pd.isna(row.get('ndvi'))
-    ]
-    total = len(tasks)
-    if not total:
-        print("NDVI already complete — skipping.")
-        return df
-    print(f'Sampling Sentinel-2 NDVI per point (±{buffer_days}d, {scale} m) via Earth Engine '
-          f'— {total} points, {max_workers} parallel...')
-
-    # Batch by observation date: points that share a date share the ±buffer
-    # window, so ONE median composite + ONE reduceRegions over a FeatureCollection
-    # samples them all in a single getInfo instead of one call per point. Dates
-    # run concurrently, and each date's points are chunked to bound the payload.
-    by_date = {}
-    for idx, lon, lat, date in tasks:
-        by_date.setdefault(pd.Timestamp(date).normalize(), []).append((idx, lon, lat))
-    total_dates = len(by_date)
-    chunk_size = 500
-
-    print(f'  batched into {total_dates} date group(s), {max_workers} parallel.')
-
-    def worker(item):
-        date, pts = item
-        start = (date - timedelta(days=buffer_days)).strftime('%Y-%m-%d')
-        end = (date + timedelta(days=buffer_days)).strftime('%Y-%m-%d')
-        results = {}
-        try:
-            lons = [p[1] for p in pts]
-            lats = [p[2] for p in pts]
-            region = ee.Geometry.Rectangle([min(lons) - 0.05, min(lats) - 0.05,
-                                            max(lons) + 0.05, max(lats) + 0.05])
-            ndvi = (ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
-                    .filterDate(start, end)
-                    .filterBounds(region)
-                    .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', cloud_pct))
-                    .map(lambda img: img.normalizedDifference(['B8', 'B4']).rename('NDVI'))
-                    .median())
-            for c in range(0, len(pts), chunk_size):
-                fc = ee.FeatureCollection([
-                    ee.Feature(ee.Geometry.Point([lon, lat]), {'ridx': int(idx)})
-                    for idx, lon, lat in pts[c:c + chunk_size]
-                ])
-                reduced = ndvi.reduceRegions(collection=fc, reducer=ee.Reducer.mean(), scale=scale).getInfo()
-                for feat in reduced.get('features', []):
-                    props = feat.get('properties', {})
-                    results[props.get('ridx')] = props.get('NDVI')
-            return date, results, None
-        except Exception as e:
-            return date, results, str(e)
-
-    sampled = fail_batches = 0
-    t0 = time.monotonic()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as ex:
-        futures = [ex.submit(worker, item) for item in by_date.items()]
-        for i, fut in enumerate(concurrent.futures.as_completed(futures), 1):
-            _date, results, err = fut.result()
-            if err:
-                fail_batches += 1
-            for ridx, val in results.items():
-                if ridx is not None and val is not None:
-                    df.at[ridx, 'ndvi'] = val
-                    sampled += 1
-            _progress(f"NDVI ({sampled} sampled)", i, total_dates, t0)
-            if checkpoint:
-                checkpoint()
-
-    if fail_batches:
-        print(f"[!] {fail_batches}/{total_dates} NDVI date-batch(es) failed.")
-    print(f'✅ NDVI sampled for {sampled}/{total} points across {total_dates} date-batches.')
-    return df
+# ─── NDVI via Earth Engine ────────────────────────────────────────────────────
+# NDVI is sampled directly at each point by ee_enrich.enrich_ndvi_ee, alongside
+# every other Earth-Engine-backed column. `fill_missing_ndvi` below still carries
+# a value across a short gap for points EE could not resolve (persistent cloud).
 
 # ─── Main Enrichment Script ───────────────────────────────────────────────────
 
@@ -623,8 +535,17 @@ def enrich_df_with_rasters(df, ndvi_dir='ndvi/', soil_dir='soil/'):
         if col not in df.columns:
             df[col] = None
 
-    unique_dates = sorted(set(df['date'].dropna()))
+    # Resume: only dates that still have a gap. This stage runs after the Earth
+    # Engine samplers, so without the guard a stale cached raster would overwrite
+    # a value EE just supplied.
+    unique_dates = [
+        d for d in sorted(set(df['date'].dropna()))
+        if df.loc[df['date'] == d, ['ndvi', 'soil_moisture']].isna().any().any()
+    ]
     total = len(unique_dates)
+    if not total:
+        print("NDVI + soil moisture already complete — skipping.")
+        return df
     print(f"Adding NDVI + soil moisture — {total} unique dates...")
 
     start = time.monotonic()
@@ -648,9 +569,10 @@ def enrich_df_with_rasters(df, ndvi_dir='ndvi/', soil_dir='soil/'):
         soil_ds = load_soil_moisture_dataset(soil_path) if has_soil else None
 
         for idx, row in date_df.iterrows():
-            if has_ndvi:
+            # Fill gaps only — never replace a value another stage already found.
+            if has_ndvi and pd.isna(df.at[idx, 'ndvi']):
                 df.at[idx, 'ndvi'] = get_ndvi_from_raster(ndvi_path, row.lon, row.lat)
-            if has_soil:
+            if has_soil and pd.isna(df.at[idx, 'soil_moisture']):
                 df.at[idx, 'soil_moisture'] = extract_soil_moisture(soil_ds, row.lat, row.lon, row.date)
 
     print(f"✅ NDVI/soil pass done — {n_ndvi} date(s) with NDVI, {n_soil} with soil, "
@@ -782,16 +704,28 @@ if __name__ == "__main__":
         def save():
             _checkpoint(df, output_file)
 
-    print("Total dates needed (for precip):", len(get_needed_raster_dates(df)))
-
     checkpoint_path = checkpoint_file if store_mode else output_file
+
+    # ─── Earth Engine first ───────────────────────────────────────────────────
+    # Every environmental column is available from Earth Engine as a point
+    # sample, which is far cheaper than downloading the source rasters. These
+    # stages fill what they can; the raster stages below then run as a fallback,
+    # and since each of those only touches rows still missing its column, they
+    # cost nothing when EE has already supplied the data.
+    if ee_enrich.earth_engine_enabled():
+        for label, fn in ee_enrich.EE_STAGES:
+            df = run_stage(label, lambda d, _fn=fn: _fn(d, checkpoint=save), df, checkpoint_path)
+    else:
+        print("\nEarth Engine sampling disabled — using cached rasters only.")
+
+    # ─── Cached-raster fallback ───────────────────────────────────────────────
+    print("Total dates needed (for precip):", len(get_needed_raster_dates(df)))
     df = run_stage("NDVI + soil (cached rasters)", lambda d: enrich_df_with_rasters(d, ndvi_dir="ndvi/", soil_dir="soil/"), df, checkpoint_path)
     df = run_stage("Precipitation history", lambda d: enrich_with_precip(d, precip_dir="precip/", checkpoint=save), df, checkpoint_path)
     df = run_stage("Land cover", lambda d: enrich_with_worldcover(d, checkpoint=save), df, checkpoint_path)
     df = run_stage("Land-cover labels / filter", _postprocess_landcover, df, checkpoint_path)
     df = run_stage("Terrain exposure", lambda d: enrich_with_terrain(d, checkpoint=save), df, checkpoint_path)
     df = run_stage("Temperature history", lambda d: enrich_with_temperature_history(d, checkpoint=save), df, checkpoint_path)
-    df = run_stage("NDVI (Earth Engine)", lambda d: enrich_with_ndvi_ee(d, checkpoint=save), df, checkpoint_path)
     df = run_stage("Fill missing NDVI", lambda d: fill_missing_ndvi(d, max_days_gap=7), df, checkpoint_path)
 
     if store_mode:
