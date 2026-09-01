@@ -69,6 +69,7 @@
 </template>
 
 <script setup>
+import { useId } from 'vue'
 import { SERIES_1 } from '~/composables/useObservations'
 
 const props = defineProps({
@@ -123,7 +124,9 @@ const padL = 52
 const padR = 16
 const padT = 12
 const padB = 34
-const clipId = `plot-clip-${Math.random().toString(36).slice(2, 9)}`
+// useId (not Math.random) so the server and client agree on the clip-path id —
+// a random one differs between the two renders and trips hydration.
+const clipId = `plot-clip-${useId()}`
 
 function clamp(v, min, max) { return Math.min(max, Math.max(min, v)) }
 function domain(vals) {
@@ -264,8 +267,8 @@ svg { width: 100%; height: 100%; display: block; }
 .dot { stroke: var(--surface); stroke-width: 1; opacity: 0.9; filter: var(--chart-glow); }
 .dot:hover { stroke: var(--text); stroke-width: 1.5; }
 .dot.selectable { cursor: pointer; }
-.today-line { stroke: #b00020; stroke-width: 1.5; stroke-dasharray: 4 4; }
-.today-label { fill: #b00020; font-size: 10px; font-weight: 600; }
+.today-line { stroke: var(--danger); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.today-label { fill: var(--danger); font-size: 10px; font-weight: 600; }
 
 .legend {
   position: absolute; top: 4px; right: 8px; display: flex; flex-wrap: wrap; gap: 4px 10px;

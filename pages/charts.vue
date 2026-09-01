@@ -18,7 +18,12 @@
           {{ layout.editing.value ? '✓ Done arranging' : '⇅ Arrange charts' }}
         </button>
         <span v-if="layout.editing.value" class="lb-hint">Use ‹ › to reorder and ✕ to hide.</span>
-        <span class="lb-count">{{ layout.visibleCount.value }} shown</span>
+        <!-- Cards register themselves as they render, which happens after this
+             bar is serialised on the server. Render the tally on the client
+             only, so SSR's "0 shown" never mismatches the real count. -->
+        <ClientOnly>
+          <span class="lb-count">{{ layout.visibleCount.value }} shown</span>
+        </ClientOnly>
         <button v-if="layout.hiddenCharts.value.length" class="lb-btn ghost" @click="layout.showAll()">
           Show all ({{ layout.hiddenCharts.value.length }} hidden)
         </button>
@@ -469,8 +474,8 @@ const speciesData = computed(() => {
 .hb-chip .plus { color: var(--accent); font-weight: 700; }
 
 .note { margin: 8px 0 0; font-size: 0.78rem; color: var(--muted); }
-.msg { padding: 16px; color: #555; }
-.msg.error { color: #b00020; }
+.msg { padding: 16px; color: var(--muted); }
+.msg.error { color: var(--danger); }
 
 .saved { margin-bottom: 22px; }
 .saved-title { margin: 0 0 10px; font-size: 1rem; color: var(--text); }

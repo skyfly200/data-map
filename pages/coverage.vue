@@ -84,6 +84,10 @@ function handlePlusCodes(codes) {
   plusCodes.value = codes
 }
 
+// The coverage summary written by raster_coverage.py. Everything below reads
+// through `cov`, so it has to exist before the fetch assigns into it — without
+// the ref the assignment threw and the catch silently showed "not found".
+const cov = ref(null)
 const error = ref(false)
 
 onMounted(async () => {
