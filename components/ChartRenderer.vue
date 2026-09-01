@@ -19,7 +19,7 @@
 <script setup>
 import { SERIES_1, UNCLUSTERED, categoryColor, categoryShape, hasValue, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
-import { ALL_NUMERIC, ALL_CATEGORY } from '~/composables/useChartFields'
+import { ALL_NUMERIC, ALL_CATEGORY, sortEntries } from '~/composables/useChartFields'
 
 const props = defineProps({ config: { type: Object, required: true } })
 defineEmits(['select'])
@@ -177,7 +177,10 @@ const barData = computed(() => {
     }
     out.push({ label, short: label, value, color: groupColor(label) })
   }
-  return out.sort((a, b) => b.value - a.value).slice(0, 25)
+  // Cap by SIZE first, then apply the reader's sort: an A–Z sort must not push
+  // the biggest categories off the end of the chart.
+  const top = out.sort((a, b) => b.value - a.value).slice(0, 25)
+  return sortEntries(top, c.value.sortBy)
 })
 const barFmt = computed(() => (c.value.measure === 'count' ? (v) => String(v) : (v) => Number(v).toFixed(1)))
 
@@ -249,7 +252,8 @@ const radarData = computed(() => {
     }
     out.push({ label, short: label, value, color: groupColor(label) })
   }
-  return out.sort((a, b) => b.value - a.value).slice(0, 12)
+  const top = out.sort((a, b) => b.value - a.value).slice(0, 12)
+  return sortEntries(top, c.value.sortBy)
 })
 
 const histogramData = computed(() => {
@@ -276,8 +280,10 @@ const boxData = computed(() => {
     }
   }
   // Cap to the most-sampled categories so a high-cardinality field (e.g. 200+
-  // species) stays readable instead of running off-screen.
-  return out.sort((a, b) => b.values.length - a.values.length).slice(0, 30)
+  // species) stays readable instead of running off-screen, then order them the
+  // way the reader asked.
+  const top = out.sort((a, b) => b.values.length - a.values.length).slice(0, 30)
+  return sortEntries(top, c.value.sortBy, (e) => e.values.length)
 })
 
 const heatmap = computed(() => {

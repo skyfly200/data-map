@@ -46,10 +46,19 @@ export function clampDomain([lo, hi], bounds, values) {
   if (min === undefined && Array.isArray(values) && values.length && values.every((v) => v >= 0)) {
     min = 0
   }
-  return [
-    min === null || min === undefined ? lo : Math.max(lo, min),
-    max === null || max === undefined ? hi : Math.min(hi, max),
-  ]
+  let outLo = min === null || min === undefined ? lo : Math.max(lo, min)
+  let outHi = max === null || max === undefined ? hi : Math.min(hi, max)
+
+  // Clamping can collapse the range to zero width — an empty chart falls back to
+  // [0, 1], and a field whose floor is 1 (day of year) pins both ends to 1. A
+  // zero-width domain divides by zero in every scale function and paints the SVG
+  // with NaN coordinates, so widen it back out, staying inside the bounds.
+  if (!(outHi > outLo)) {
+    const span = Math.max(1e-6, Math.abs(outLo) * 0.01 || 1)
+    if (max === null || max === undefined || outLo + span <= max) outHi = outLo + span
+    else outLo = outHi - span
+  }
+  return [outLo, outHi]
 }
 
 export const ALL_CATEGORY = [
@@ -62,3 +71,34 @@ export const ALL_CATEGORY = [
   { key: 'month_name', label: 'Month' },
   { key: 'enrichment_level', label: 'Enrichment level' },
 ]
+
+
+// ─── Category ordering ───────────────────────────────────────────────────────
+// How the categories of a grouped chart are laid out. Sorting by value answers
+// "which is biggest"; sorting by label answers "what is X" — different
+// questions, and only the reader knows which one they are asking.
+
+export const SORT_MODES = [
+  { key: 'value-desc', label: 'Largest first' },
+  { key: 'value-asc', label: 'Smallest first' },
+  { key: 'label-asc', label: 'Label A–Z' },
+  { key: 'label-desc', label: 'Label Z–A' },
+]
+
+/**
+ * Order grouped chart entries. Returns a new array; the input is left alone.
+ *
+ * `valueOf` reads the number a "by value" sort should use — the measure for a
+ * bar, the sample count for a box plot.
+ */
+export function sortEntries(entries, mode, valueOf = (e) => e.value) {
+  const list = [...(entries || [])]
+  // `numeric` so "Cluster 10" sorts after "Cluster 9" rather than before it.
+  const byLabel = (a, b) => String(a.label).localeCompare(String(b.label), undefined, { numeric: true })
+  switch (mode) {
+    case 'value-asc': return list.sort((a, b) => valueOf(a) - valueOf(b))
+    case 'label-asc': return list.sort(byLabel)
+    case 'label-desc': return list.sort((a, b) => byLabel(b, a))
+    default: return list.sort((a, b) => valueOf(b) - valueOf(a))
+  }
+}
