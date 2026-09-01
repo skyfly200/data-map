@@ -17,6 +17,26 @@ pip install -r requirements.txt
 Earth Engine supplies every environmental layer, so it is the only credential
 the pipeline needs. The rest are for the raster fallback described below.
 
+**Finding `EARTHENGINE_PROJECT`** — it is the *project ID* of a Google Cloud
+project registered for Earth Engine (e.g. `my-project-451208`), not the display
+name and not the project number:
+
+- [console.cloud.google.com](https://console.cloud.google.com/) — the project
+  picker lists every project with its ID column
+- [code.earthengine.google.com](https://code.earthengine.google.com/) — the Code
+  Editor shows the active project top-right and in the Assets tab
+- not registered yet? [code.earthengine.google.com/register](https://code.earthengine.google.com/register)
+  attaches a Cloud project to Earth Engine (free for noncommercial use)
+- already using gcloud? `gcloud config get-value project`
+
+`python scripts/preflight.py --ee-project` prints the one this checkout will use
+(reading `EARTHENGINE_PROJECT`, then the stored Earth Engine credential, then
+gcloud), or explains where to find one. Put it in `.env` at the repo root:
+
+```
+EARTHENGINE_PROJECT=your-project-id
+```
+
 | For | Set |
 | --- | --- |
 | **Everything environmental (Earth Engine)** | run `python gauth.py` once; set `EARTHENGINE_PROJECT` to your Google Cloud project id |
@@ -98,21 +118,32 @@ Engine is available.
 
 ### Running in a notebook / Colab
 
-Every module is import-safe — the run logic lives in functions behind an
-`if __name__ == "__main__"` guard — so you can drive stages cell by cell:
+The notebook and the command line run **the same code**. `run_pipeline.run_all()`
+is the entry point behind `python run_pipeline.py`, so a notebook never restates
+the stage order or repeats a skip rule:
 
 ```python
-import ee; ee.Initialize(project="your-gcp-project")   # or fetch.init_earth_engine()
-import fetch, enrich_with_rasters as enrich, terrain_pipeline as terrain
-
-fetch.download_worldcover_tiles(df)          # call individual steps...
-fetch.main()                                  # ...or run the whole download
-terrain.process_dem("dem/dem_SRTMGL3.tif")
+import run_pipeline
+run_pipeline.run_all()                 # identical to `python run_pipeline.py`
+run_pipeline.run_all(root="/kaggle/working")   # or point it at another checkout
 ```
 
-In Colab, `pip install rasterio netCDF4 earthengine-api cdsapi`, authenticate
-Earth Engine with `ee.Authenticate()`, and note that NDVI/satellite-moisture
-exports still land in Google Drive (download them before enriching).
+`run_all` runs the stages from the repo root — where the per-species store and
+raster caches live — and restores the caller's working directory afterwards.
+`notebooks/kaggle_pipeline.ipynb` is exactly this: configure credentials,
+authenticate Earth Engine, one `run_all()` call, then review the results.
+
+Every module is also import-safe — the run logic lives in functions behind an
+`if __name__ == "__main__"` guard — so you can still drive individual steps:
+
+```python
+import ee_enrich, species_store as store
+df = store.load_all(store.SPECIES_DIR)
+ee_enrich.enrich_precip_ee(df, max_workers=4)   # one stage, gentler on EE quota
+```
+
+In Colab, `pip install earthengine-api pyinaturalist python-dotenv scikit-learn`
+and authenticate Earth Engine with `ee.Authenticate()`.
 
 ### Topographic exposure layers
 

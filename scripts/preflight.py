@@ -8,7 +8,9 @@ or file to set for each — so a run's gaps are predictable before it starts.
 ``run_pipeline.py`` calls :func:`print_preflight` at the start of every run.
 """
 
+import json
 import os
+import subprocess
 from pathlib import Path
 
 
@@ -38,6 +40,78 @@ def _earth_engine_ready():
 def earth_engine_ready():
     """(ready, note) for Earth Engine — the credential the whole pipeline hangs on."""
     return _earth_engine_ready()
+
+
+# Where to look for a Google Cloud project id, in the order the pipeline trusts.
+EE_PROJECT_HELP = """\
+EARTHENGINE_PROJECT is the id of a Google Cloud project that is registered for
+Earth Engine. It is the project id (e.g. "my-project-451208"), not the display
+name and not the project number. To find yours:
+
+  1. https://console.cloud.google.com/ — the project picker lists every project
+     with its ID column. Create one if you have none.
+  2. https://code.earthengine.google.com/ — the Earth Engine Code Editor shows
+     the active project in the top-right; it also appears in the Assets tab.
+  3. Not registered yet? https://code.earthengine.google.com/register attaches a
+     Cloud project to Earth Engine (free for noncommercial use).
+  4. Already using gcloud? `gcloud config get-value project` prints the current one.
+
+Then either export it or put it in .env at the repo root:
+
+    EARTHENGINE_PROJECT=your-project-id
+"""
+
+
+def resolve_earthengine_project():
+    """(project_id, source) for the project Earth Engine will actually use.
+
+    Returns (None, None) when nothing is configured, in which case
+    ``EE_PROJECT_HELP`` explains where to find one.
+    """
+    _load_env()
+
+    value = os.environ.get("EARTHENGINE_PROJECT")
+    if value:
+        return value, "EARTHENGINE_PROJECT"
+
+    # The stored Earth Engine credential often carries the project it was
+    # authorised against, under one of a couple of key names across versions.
+    cred = Path.home() / ".config" / "earthengine" / "credentials"
+    if cred.exists():
+        try:
+            data = json.loads(cred.read_text(encoding="utf-8"))
+            for key in ("project", "project_id", "quota_project_id"):
+                if data.get(key):
+                    return data[key], f"{cred} ({key})"
+        except (ValueError, OSError):
+            pass
+
+    # Finally the active gcloud project, which is usually the same one.
+    try:
+        out = subprocess.run(
+            ["gcloud", "config", "get-value", "project"],
+            capture_output=True, text=True, timeout=15, check=False,
+        )
+        candidate = (out.stdout or "").strip()
+        if candidate and candidate != "(unset)":
+            return candidate, "gcloud config get-value project"
+    except (OSError, subprocess.SubprocessError):
+        pass
+
+    return None, None
+
+
+def print_earthengine_project():
+    """Report the resolved project id, or explain where to find one."""
+    project, source = resolve_earthengine_project()
+    if project:
+        print(f"Earth Engine project: {project}   (from {source})")
+        if source != "EARTHENGINE_PROJECT":
+            print("  Set EARTHENGINE_PROJECT to pin it explicitly.")
+    else:
+        print("Earth Engine project: not configured\n")
+        print(EE_PROJECT_HELP)
+    return project
 
 
 def _cds_ready():
@@ -98,6 +172,7 @@ def check_preflight():
 def print_preflight():
     checks = check_preflight()
     print("\n── Pipeline pre-flight ───────────────────────────────────────────────")
+    print_earthengine_project()
     ready = 0
     for name, enriches, ok, note in checks:
         mark = "✅" if ok else "⏭️ "
@@ -113,4 +188,9 @@ def print_preflight():
 
 
 if __name__ == "__main__":
+    import sys
+
+    # `python preflight.py --ee-project` answers just "which project id?"
+    if "--ee-project" in sys.argv:
+        sys.exit(0 if print_earthengine_project() else 1)
     print_preflight()
