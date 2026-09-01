@@ -71,3 +71,54 @@ execute function public.set_updated_at();
 --   quality_grade = excluded.quality_grade,
 --   raw_payload = excluded.raw_payload,
 --   updated_at = now();
+
+-- ─── Per-user settings and saved charts ──────────────────────────────────────
+-- Everything the app persists per viewer (appearance, chart layout, map overlay,
+-- units) lives in one JSON blob rather than a column per preference: these are
+-- display preferences that change shape as features are added, and a schema
+-- migration for every new toggle is not worth it. Saved charts DO get their own
+-- table — they are user-authored content, they are listed and reordered, and
+-- they deserve to be queryable.
+
+create table if not exists public.user_settings (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  settings jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.saved_charts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  -- The chart builder's config, stored whole so an older client cannot lose
+  -- fields it does not understand.
+  config jsonb not null,
+  title text,
+  position integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists saved_charts_user_idx on public.saved_charts (user_id, position);
+
+-- Row-level security: a signed-in user reaches only their own rows. Without
+-- this, the anon key would expose every user's settings to every other user.
+alter table public.user_settings enable row level security;
+alter table public.saved_charts enable row level security;
+
+drop policy if exists "own settings" on public.user_settings;
+create policy "own settings" on public.user_settings
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "own charts" on public.saved_charts;
+create policy "own charts" on public.saved_charts
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+create trigger user_settings_set_updated_at
+before update on public.user_settings
+for each row
+execute function public.set_updated_at();
+
+create trigger saved_charts_set_updated_at
+before update on public.saved_charts
+for each row
+execute function public.set_updated_at();

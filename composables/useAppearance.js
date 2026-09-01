@@ -136,6 +136,10 @@ export function categoryShape(field, value, index = 0) {
 }
 
 export function useAppearance() {
+  // Captured during setup: persist() runs from DOM event handlers, where
+  // useNuxtApp() (and therefore useCloudSync) is not reliably available.
+  const cloud = safeCloudSync()
+
   function persist() {
     if (!import.meta.client) return
     try {
@@ -147,6 +151,9 @@ export function useAppearance() {
         colorOverrides: colorOverrides.value,
         shapeOverrides: shapeOverrides.value,
       }))
+      // Mirror to the account when one is connected. Debounced there, so
+      // dragging a slider is one request, not one per pixel.
+      cloud?.schedulePush()
     } catch { /* ignore */ }
   }
 
