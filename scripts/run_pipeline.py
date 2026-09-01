@@ -161,9 +161,20 @@ def main():
     if not refresh_all and os.path.exists(store.ENRICHED_DONE):
         print(f"Skipping enrichment: {store.ENRICHED_DIR}/ already complete.")
     else:
-        run_step("Download environmental layers", python_executable, "fetch.py")
-        run_step("Process terrain DEM", python_executable, "terrain_pipeline.py")
-        run_step("Enrich observations with rasters", python_executable, "enrich_with_rasters.py")
+        # fetch.py and terrain_pipeline.py download and derive the bulk rasters.
+        # Earth Engine serves the same layers as point samples during enrichment,
+        # so both are skipped unless EE is off or FETCH_RASTERS=1 asks for the
+        # local rasters (still used by validate_wetness.py and the Coverage page).
+        from fetch import skip_raster_downloads
+        from preflight import earth_engine_ready
+        ee_ready, _note = earth_engine_ready()
+        if skip_raster_downloads(ee_available=ee_ready):
+            print("\nSkipping raster downloads and DEM processing — enrichment samples "
+                  "every layer from Earth Engine.\nSet FETCH_RASTERS=1 to download them anyway.")
+        else:
+            run_step("Download environmental layers", python_executable, "fetch.py")
+            run_step("Process terrain DEM", python_executable, "terrain_pipeline.py")
+        run_step("Enrich observations", python_executable, "enrich_with_rasters.py")
 
     # 3. Clustering — global KMeans, cluster labels written back into the store.
     run_step("Cluster observations", python_executable, "cluster.py")

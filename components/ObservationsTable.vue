@@ -117,8 +117,8 @@ const filtered = computed(() => {
 }
 .count { color: var(--muted); font-size: 0.85rem; }
 
-.msg { color: #555; }
-.msg.error { color: #b00020; }
+.msg { color: var(--muted); }
+.msg.error { color: var(--danger); }
 
 .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
 table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
@@ -127,7 +127,7 @@ thead th {
   padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text);
 }
 th.sortable { cursor: pointer; user-select: none; }
-th.sortable:hover { background: #e9ebee; }
+th.sortable:hover { background: var(--surface-3); }
 .arrow { font-size: 0.7rem; color: var(--muted); }
 tbody td { padding: 6px 10px; border-bottom: 1px solid var(--border-soft); white-space: nowrap; }
 tbody tr:hover { background: var(--surface-2); }
@@ -137,6 +137,6 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
   display: inline-block; min-width: 20px; padding: 1px 7px; border-radius: 10px;
   color: #fff; font-weight: 600; text-align: center; font-size: 0.78rem;
 }
-.muted { color: #b0b6be; }
-.ext { text-decoration: none; color: #2b7a3d; font-weight: 700; }
+.muted { color: var(--muted); }
+.ext { text-decoration: none; color: var(--accent); font-weight: 700; }
 </style>

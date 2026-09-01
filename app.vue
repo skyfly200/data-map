@@ -6,14 +6,6 @@
         <h1>Nexstrata</h1>
       </NuxtLink>
       <div class="app-controls">
-        <div class="dataset-picker">
-          <label for="dataset-select">Dataset</label>
-          <select id="dataset-select" :value="selectedDataset" @change="handleDatasetChange">
-            <option v-for="dataset in availableDatasets" :key="dataset.id" :value="dataset.path">
-              {{ dataset.label }}
-            </option>
-          </select>
-        </div>
         <NuxtLink v-if="filterCount" to="/data" class="filter-flag" title="Active filters — manage on the Data tab">
           Filters: {{ filterCount }}
         </NuxtLink>
@@ -62,7 +54,9 @@ useHead({
   meta: [{ name: 'description', content: 'Mushroom observations enriched with terrain and environmental exposure.' }],
 })
 
-const { selectedDataset, availableDatasets, setDataset, loadDatasets } = useObservations()
+// The dataset picker itself lives on the Data page; the app still loads the
+// manifest here so every view knows what's available from first paint.
+const { selectedDataset, setDataset, loadDatasets } = useObservations()
 onMounted(loadDatasets)
 
 const { activeCount: filterCount } = useFilters()
@@ -76,10 +70,6 @@ const initial = computed(() => {
   const e = user.value?.email
   return (e ? e[0] : '?').toUpperCase()
 })
-
-function handleDatasetChange(event) {
-  setDataset(event.target.value)
-}
 
 // Theme: default dark, remembered per viewer. `:root` CSS defaults to dark so
 // there's no light flash before hydration; we only stamp an attribute for light.
@@ -187,15 +177,6 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 
 .app-controls { display: flex; align-items: center; gap: 14px; }
 
-.dataset-picker {
-  display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #dfe4ea;
-}
-.dataset-picker label { font-weight: 600; }
-.dataset-picker select {
-  background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px;
-  padding: 4px 8px; font-size: 0.8rem;
-}
-
 .theme-btn {
   border: 1px solid #52606d; background: transparent; color: #cbd2d9; cursor: pointer;
   border-radius: 6px; width: 30px; height: 28px; font-size: 0.95rem; line-height: 1;
@@ -240,8 +221,6 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
   .app-header { flex-wrap: wrap; gap: 8px 10px; padding: 8px 12px; }
   .brand h1 { font-size: 1rem; }
   .app-controls { flex-wrap: wrap; gap: 8px 10px; width: 100%; }
-  .dataset-picker { flex: 1 1 160px; min-width: 0; }
-  .dataset-picker select { width: 100%; min-width: 0; }
   .app-nav {
     order: 5; width: 100%; flex-wrap: nowrap; overflow-x: auto;
     -webkit-overflow-scrolling: touch; gap: 4px; padding-bottom: 2px;

@@ -11,9 +11,10 @@ correlation rather than Pearson.
 
 Two modes:
 
-    points   Correlate the columns already in the enriched CSV at observation
-             points — a quick check against soil_moisture (ERA5-Land) and ndvi
+    points   Correlate the already-enriched columns at observation points — a
+             quick check against soil_moisture (ERA5-Land) and ndvi
              (Sentinel-2). ERA5 is ~9 km, so treat it as a coarse sanity check.
+             Reads the per-species enriched store unless --csv is given.
 
     raster   Correlate two rasters pixel-by-pixel over the whole DEM footprint:
              dem/derived/water_retention.tif against a satellite moisture raster
@@ -35,6 +36,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr, pearsonr
 
+import species_store as store
+
 
 TWI_COL = "water_retention"
 TWI_RASTER = "dem/derived/water_retention.tif"
@@ -47,13 +50,27 @@ _MASK_LANDCOVER = {50, 70, 80}
 # ─── Point mode ───────────────────────────────────────────────────────────────
 
 def compare_points(csv_path, refs, group_col="land_cover_label"):
-    """Correlate the TWI column against reference columns at observation points."""
-    df = pd.read_csv(csv_path)
+    """Correlate the TWI column against reference columns at observation points.
+
+    With no ``csv_path`` the per-species enriched store is read, which is where
+    enrichment writes since the data layout moved to one CSV per species.
+    """
+    if csv_path:
+        source = csv_path
+        df = pd.read_csv(csv_path)
+    else:
+        source = store.ENRICHED_DIR
+        df = store.load_all(store.ENRICHED_DIR)
+        if df.empty:
+            raise SystemExit(
+                f"No enriched observations found in {source}/. Run enrich_with_rasters.py "
+                "first, or pass --csv to point at a single file."
+            )
 
     if TWI_COL not in df.columns:
         raise SystemExit(
-            f"'{TWI_COL}' not found in {csv_path}. Re-run enrich_with_rasters.py "
-            "so the terrain layers are sampled into the enriched CSV first."
+            f"'{TWI_COL}' not found in {source}. Re-run enrich_with_rasters.py "
+            "so the terrain layers are sampled into the enriched data first."
         )
 
     print(f"\nTWI vs. observed moisture at {len(df)} observation points")
@@ -212,7 +229,8 @@ def main():
     sub = parser.add_subparsers(dest="mode", required=True)
 
     p_pts = sub.add_parser("points", help="Correlate enriched-CSV columns at observation points")
-    p_pts.add_argument("--csv", default="mushroom_observations_enriched.csv")
+    p_pts.add_argument("--csv", default=None,
+                       help="Single enriched CSV; defaults to the per-species enriched store")
     p_pts.add_argument("--refs", nargs="+", default=["soil_moisture", "ndvi"],
                        help="Reference moisture columns to compare against")
 

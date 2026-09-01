@@ -27,11 +27,17 @@ def _load_env(path=".env"):
 
 def _earth_engine_ready():
     if os.environ.get("SKIP_EARTH_ENGINE") == "1":
-        return False, "disabled by SKIP_EARTH_ENGINE=1 — unset it (or set 0) to enable NDVI"
+        return False, ("disabled by SKIP_EARTH_ENGINE=1 — unset it (or set 0) to sample every "
+                       "environmental layer from Earth Engine instead of downloading rasters")
     cred = Path.home() / ".config" / "earthengine" / "credentials"
     if os.environ.get("EARTHENGINE_PROJECT") or cred.exists():
         return True, ""
     return False, "run `earthengine authenticate` and set EARTHENGINE_PROJECT"
+
+
+def earth_engine_ready():
+    """(ready, note) for Earth Engine — the credential the whole pipeline hangs on."""
+    return _earth_engine_ready()
 
 
 def _cds_ready():
@@ -51,23 +57,41 @@ def _cds_ready():
 
 
 def check_preflight():
-    """Return [(source, enriches, ready, note)] for every pipeline data source."""
+    """Return [(source, enriches, ready, note)] for every pipeline data source.
+
+    Earth Engine now supplies every environmental column, so one credential
+    covers the whole enrichment. The raster downloads it replaced are listed
+    after it as the fallback path — they only matter when EE is unavailable, or
+    when FETCH_RASTERS=1 asks for the local rasters that
+    ``validate_wetness.py raster`` and the Coverage page read.
+    """
     _load_env()
 
     ee_ok, ee_note = _earth_engine_ready()
     cds_ok, cds_note = _cds_ready()
     otk = bool(os.environ.get("OPENTOPOGRAPHY_API_KEY"))
 
-    return [
+    checks = [
         ("iNaturalist observations", "the observations themselves", True, "public, no key"),
-        ("Precipitation (CHIRPS)", "rain7 / prcp_d0..6", True, "public, no key"),
-        ("Land cover (ESA WorldCover)", "land_cover / land_cover_label", True, "public, no key"),
-        ("Temperature (Open-Meteo)", "tmin / tmax / tavg", True, "public, no key"),
+        ("Earth Engine (all environmental layers)",
+         "ndvi, soil_moisture, prcp_d0..6, tmax/tmin_d0..6, land_cover, "
+         "elevation, slope, aspect, solar/wind exposure, water retention",
+         ee_ok, ee_note),
+    ]
+    if ee_ok:
+        return checks
+
+    # Fallback path — only reachable when Earth Engine is not available.
+    return checks + [
+        ("Precipitation (CHIRPS download)", "prcp_d0..6", True, "fallback — public, no key"),
+        ("Land cover (ESA WorldCover download)", "land_cover / land_cover_label", True,
+         "fallback — public, no key"),
+        ("Temperature (Open-Meteo)", "tmax/tmin_d0..6", True, "fallback — public, no key"),
         ("Elevation + terrain (OpenTopography DEM)",
          "elevation, slope, aspect, solar/wind exposure, water retention", otk,
-         "" if otk else "set OPENTOPOGRAPHY_API_KEY (free at portal.opentopography.org)"),
-        ("NDVI (Earth Engine)", "ndvi", ee_ok, ee_note),
-        ("Soil moisture (ERA5-Land / CDS)", "soil_moisture", cds_ok, cds_note),
+         "fallback" if otk else "fallback — set OPENTOPOGRAPHY_API_KEY (free at portal.opentopography.org)"),
+        ("Soil moisture (ERA5-Land / CDS)", "soil_moisture", cds_ok,
+         "fallback" if cds_ok else f"fallback — {cds_note}"),
     ]
 
 

@@ -11,11 +11,13 @@ import zipfile
 from datetime import timedelta
 from pathlib import Path
 
-import cdsapi
 import ee
 import pandas as pd
 import requests
-import xarray as xr
+
+# cdsapi and xarray are imported lazily inside the ERA5 worker: that download is
+# the fallback for when Earth Engine is unavailable, so the normal EE path should
+# not require either package to be installed.
 
 import species_store as store
 
@@ -82,7 +84,6 @@ load_env_into_os()
 STUDY_AREA = [42, -106, 39, -102]  # around Colorado
 
 
-Python
 # ─── Topography (Digital Elevation Model) ─────────────────────────────────────
 def download_srtm_dem(area=None, output_dir="dem/", dem_type="SRTMGL3", api_key=None):
     """Download a DEM GeoTIFF for the study area from the OpenTopography API."""
@@ -173,6 +174,8 @@ def download_era5_worker(date_str, output_dir="soil/"):
         return "cached", date_str, nc_path
 
     # Initialize a local client for the thread. quiet=True prevents intertwined console spam.
+    import cdsapi
+
     c = cdsapi.Client(quiet=True)
 
     dataset = "reanalysis-era5-land"
@@ -264,6 +267,8 @@ def download_era5_worker(date_str, output_dir="soil/"):
 
         # Merge the two NetCDF files
         if len(temp_files) == 2:
+            import xarray as xr
+
             ds1 = xr.open_dataset(temp_files[0])
             ds2 = xr.open_dataset(temp_files[1])
             merged = xr.merge([ds1, ds2])
@@ -315,36 +320,10 @@ def init_earth_engine():
             return False
 
 
-def fetch_sentinel2_ndvi(lat, lon, date_str, output_dir="ndvi/"):
-    date = pd.to_datetime(date_str)
-    range_val = 5
-    start_date = (date - timedelta(days=range_val)).strftime('%Y-%m-%d')
-    end_date = (date + timedelta(days=range_val)).strftime('%Y-%m-%d')
-
-    point = ee.Geometry.Point([lon, lat])
-    region = point.buffer(500).bounds()
-
-    collection = (ee.ImageCollection('COPERNICUS/S2_SR')
-                  .filterDate(start_date, end_date)
-                  .filterBounds(region)
-                  .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 50))
-                  .map(lambda img: img.normalizedDifference(['B8', 'B4']).rename('NDVI')))
-
-    ndvi_image = collection.median().clip(region)
-
-    task = ee.batch.Export.image.toDrive(
-        image=ndvi_image,
-        description=f"NDVI_{date_str}_{lat:.4f}_{lon:.4f}",
-        folder='EarthEngineNDVI',
-        fileNamePrefix=f"ndvi_{date_str}_{lat:.4f}_{lon:.4f}",
-        scale=10,
-        region=region.getInfo()['coordinates'],
-        crs="EPSG:4326",
-        maxPixels=1e9
-    )
-
-    task.start()
-    print(f"📦 Started NDVI export task for {date_str} at ({lat},{lon})")
+# Sentinel-2 NDVI is no longer exported per observation to Google Drive: those
+# tasks were asynchronous, nothing downloaded the tiles back, and the `ndvi`
+# column stayed empty as a result. ee_enrich.enrich_ndvi_ee samples NDVI at each
+# point directly instead.
 
 
 def _study_region(area=None):
@@ -650,6 +629,30 @@ def _stage_terrain(df, tag="Terrain"):
         _log(tag, f"[!] skipped: {e}")
 
 
+def skip_raster_downloads(ee_available=True, env=None):
+    """True when enrichment will sample these layers from Earth Engine instead.
+
+    ERA5-Land, CHIRPS, ESA WorldCover and SRTM are all hosted in Earth Engine,
+    and ``ee_enrich`` reads them at the observation points — so downloading the
+    source rasters is redundant work measured in gigabytes and CDS queue time.
+
+    Downloads still happen when Earth Engine is unavailable (the raster path is
+    the fallback), when it is switched off via ``SKIP_EARTH_ENGINE=1`` or
+    ``USE_EARTH_ENGINE=0``, or when ``FETCH_RASTERS=1`` asks for them explicitly
+    — the local rasters remain what ``validate_wetness.py raster`` and the
+    Coverage page read.
+    """
+    values = {**os.environ, **(env or {})}
+    truthy = {'1', 'true', 'yes', 'y', 'on'}
+    if str(values.get('FETCH_RASTERS', '')).strip().lower() in truthy:
+        return False
+    if not ee_available:
+        return False
+    if str(values.get('SKIP_EARTH_ENGINE', '')).strip() == '1':
+        return False
+    return str(values.get('USE_EARTH_ENGINE', '1')).strip().lower() not in {'0', 'false', 'no', 'off'}
+
+
 def main(csv_path=None):
     skip_ee = os.environ.get("SKIP_EARTH_ENGINE") == "1"
     if not skip_ee:
@@ -669,41 +672,40 @@ def main(csv_path=None):
             return
         print(f"Loaded {len(df)} observations from {store.SPECIES_DIR}/ for environmental downloads.")
 
-    # ─── NDVI (Sentinel-2) — Earth Engine, main thread ────────────────────────
-    # Queues async Drive export tasks; kept off the concurrent pool to avoid EE
-    # client thread-safety concerns (and it's fast — just task.start() calls).
-    if not skip_ee and os.environ.get("EXPORT_NDVI_TILES") == "1":
-        print("Exporting Sentinel-2 NDVI tiles to Drive...")
-        for idx, row in df.iterrows():
-            if pd.isna(row['lat']) or pd.isna(row['lon']) or pd.isna(row['date']):
-                continue
-            print(f"  → NDVI for {row['date']} at ({row['lat']}, {row['lon']})")
-            fetch_sentinel2_ndvi(row['lat'], row['lon'], row['date'])
-
-    # ─── Independent HTTP sources — run concurrently ──────────────────────────
-    # These hit different servers with no cross-dependency, so overlapping them
-    # collapses total wall time to the slowest single source (usually ERA5/CDS).
-    stages = [
-        ("ERA5", _stage_era5),
-        ("CHIRPS", _stage_chirps),
-        ("WorldCover", _stage_worldcover),
-        ("Terrain", _stage_terrain),
-    ]
-    if os.environ.get("SEQUENTIAL_FETCH") == "1":
-        print("Fetching data sources sequentially (SEQUENTIAL_FETCH=1)...")
-        for _name, fn in stages:
-            fn(df)
+    # ─── Bulk raster downloads ────────────────────────────────────────────────
+    # Every source below is also hosted in Earth Engine, and ee_enrich samples it
+    # at the observation points during enrichment — no gigabytes of tiles, no CDS
+    # queue. So when EE is available these downloads are skipped by default.
+    # Set FETCH_RASTERS=1 to pull them anyway: the local rasters are still what
+    # `validate_wetness.py raster` and the Coverage page read.
+    if skip_raster_downloads(ee_available=not skip_ee):
+        print("Earth Engine is available — skipping the ERA5, CHIRPS, WorldCover and DEM\n"
+              "downloads; enrichment samples those layers directly at each observation.\n"
+              "Set FETCH_RASTERS=1 to download the rasters anyway.")
     else:
-        print(f"Fetching {len(stages)} data sources concurrently: "
-              f"{', '.join(name for name, _ in stages)}...")
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(stages)) as executor:
-            futures = {executor.submit(fn, df): name for name, fn in stages}
-            for future in concurrent.futures.as_completed(futures):
-                name = futures[future]
-                try:
-                    future.result()
-                except Exception as e:
-                    _log(name, f"[!] failed: {e}")
+        # These hit different servers with no cross-dependency, so overlapping them
+        # collapses total wall time to the slowest single source (usually ERA5/CDS).
+        stages = [
+            ("ERA5", _stage_era5),
+            ("CHIRPS", _stage_chirps),
+            ("WorldCover", _stage_worldcover),
+            ("Terrain", _stage_terrain),
+        ]
+        if os.environ.get("SEQUENTIAL_FETCH") == "1":
+            print("Fetching data sources sequentially (SEQUENTIAL_FETCH=1)...")
+            for _name, fn in stages:
+                fn(df)
+        else:
+            print(f"Fetching {len(stages)} data sources concurrently: "
+                  f"{', '.join(name for name, _ in stages)}...")
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(stages)) as executor:
+                futures = {executor.submit(fn, df): name for name, fn in stages}
+                for future in concurrent.futures.as_completed(futures):
+                    name = futures[future]
+                    try:
+                        future.result()
+                    except Exception as e:
+                        _log(name, f"[!] failed: {e}")
 
     # ─── Independent Satellite Moisture — Earth Engine, main thread ────────────
     if os.environ.get("EXPORT_SATELLITE_MOISTURE") == "1" and not skip_ee:
