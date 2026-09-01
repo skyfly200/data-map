@@ -247,23 +247,53 @@ const phenologyBySpecies = computed(() =>
 const elevationBySpecies = computed(() =>
   speciesGroups((r) => (hasValue(r.elevation) ? elevValue(r.elevation) : null)))
 
-// Cluster centroids across the populated features, min-max scaled per feature.
-const clusterProfile = computed(() => {
-  const clusters = [...new Set(rows.value.map((r) => r.cluster).filter(hasValue))].sort((a, b) => a - b)
-  const feats = [
-    ['Elevation', (r) => r.elevation],
-    ['High temp', (r) => r.tmax],
-    ['7-day rain', (r) => [0, 1, 2, 3, 4, 5, 6].reduce((s, o) => s + (hasValue(r[`prcp_d${o}`]) ? Number(r[`prcp_d${o}`]) : 0), 0)],
-    ['Day of year', (r) => r.day_of_year],
-    ['Soil moist.', (r) => r.soil_moisture],
-    ['Water ret.', (r) => r.water_retention],
-  ].filter(([, fn]) => rows.value.some((r) => hasValue(fn(r))))
-  if (!clusters.length || !feats.length) return { rows: [], cols: [], matrix: [] }
+// Day offsets of the 7-day precipitation history columns (prcp_d0..d6).
+const PRCP_OFFSETS = [0, 1, 2, 3, 4, 5, 6]
+const rain7 = (r) => PRCP_OFFSETS.reduce(
+  (s, o) => s + (hasValue(r[`prcp_d${o}`]) ? Number(r[`prcp_d${o}`]) : 0), 0)
 
-  // mean per cluster per feature
-  const means = feats.map(([, fn]) => clusters.map((c) => {
-    const vals = rows.value.filter((r) => r.cluster === c).map(fn).filter((v) => Number.isFinite(Number(v))).map(Number)
-    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+// Cluster centroids across the populated features, min-max scaled per feature.
+//
+// Accumulated in ONE pass over the rows. The earlier shape — a filter of the
+// whole set per (feature, cluster) pair, plus one more per feature to test for
+// presence — meant dozens of full scans of ~48k rows.
+const CLUSTER_FEATURES = [
+  ['Elevation', (r) => r.elevation],
+  ['High temp', (r) => r.tmax],
+  ['7-day rain', rain7],
+  ['Day of year', (r) => r.day_of_year],
+  ['Soil moist.', (r) => r.soil_moisture],
+  ['Water ret.', (r) => r.water_retention],
+]
+
+const clusterProfile = computed(() => {
+  const present = CLUSTER_FEATURES.map(() => false)
+  // feature index → cluster → running { sum, n }
+  const acc = CLUSTER_FEATURES.map(() => new Map())
+  const clusterSet = new Set()
+
+  for (const r of rows.value) {
+    const clustered = hasValue(r.cluster)
+    if (clustered) clusterSet.add(r.cluster)
+    for (let i = 0; i < CLUSTER_FEATURES.length; i++) {
+      const raw = CLUSTER_FEATURES[i][1](r)
+      if (!hasValue(raw)) continue
+      present[i] = true
+      const v = Number(raw)
+      if (!clustered || !Number.isFinite(v)) continue
+      const byCluster = acc[i]
+      const cur = byCluster.get(r.cluster)
+      if (cur) { cur.sum += v; cur.n += 1 } else byCluster.set(r.cluster, { sum: v, n: 1 })
+    }
+  }
+
+  const clusters = [...clusterSet].sort((a, b) => a - b)
+  const keep = CLUSTER_FEATURES.map((f, i) => [f, i]).filter(([, i]) => present[i])
+  if (!clusters.length || !keep.length) return { rows: [], cols: [], matrix: [] }
+
+  const means = keep.map(([, i]) => clusters.map((c) => {
+    const cell = acc[i].get(c)
+    return cell && cell.n ? cell.sum / cell.n : null
   }))
   // scale each feature (row) 0–1 across clusters
   const matrix = means.map((row) => {
@@ -271,32 +301,61 @@ const clusterProfile = computed(() => {
     const lo = Math.min(...finite), hi = Math.max(...finite)
     return row.map((v) => (Number.isFinite(v) ? (hi === lo ? 0.5 : (v - lo) / (hi - lo)) : null))
   })
-  return { rows: feats.map(([l]) => l), cols: clusters.map((c) => `C${c}`), matrix }
+  return { rows: keep.map(([[l]]) => l), cols: clusters.map((c) => `C${c}`), matrix }
 })
 
 // Species (rows) × land cover (cols) observation counts.
+//
+// Also one pass. This was the single most expensive thing on the page: it
+// scanned all ~48k rows once per species to get the totals (~975 species), then
+// again per species × land-cover cell to fill the matrix — tens of millions of
+// row visits for a table of counts.
 const speciesLandcover = computed(() => {
-  const sp = [...new Set(rows.value.map((r) => r.species).filter(hasValue))]
-    .map((s) => [s, rows.value.filter((r) => r.species === s).length])
-    .filter(([, n]) => n >= MIN_PER_SPECIES).sort((a, b) => b[1] - a[1]).map(([s]) => s)
-  const lc = [...new Set(rows.value.map((r) => r.land_cover_label).filter(hasValue))]
+  const totals = new Map()            // species → observations
+  const cells = new Map()             // species → (land cover → count)
+  const covers = new Set()
+
+  for (const r of rows.value) {
+    if (hasValue(r.land_cover_label)) covers.add(r.land_cover_label)
+    if (!hasValue(r.species)) continue
+    totals.set(r.species, (totals.get(r.species) || 0) + 1)
+    if (!hasValue(r.land_cover_label)) continue
+    let byCover = cells.get(r.species)
+    if (!byCover) cells.set(r.species, byCover = new Map())
+    byCover.set(r.land_cover_label, (byCover.get(r.land_cover_label) || 0) + 1)
+  }
+
+  const sp = [...totals.entries()]
+    .filter(([, n]) => n >= MIN_PER_SPECIES)
+    .sort((a, b) => b[1] - a[1])
+    .map(([s]) => s)
+  const lc = [...covers]
   if (!sp.length || !lc.length) return { rows: [], cols: [], matrix: [] }
-  const matrix = sp.map((s) => lc.map((l) =>
-    rows.value.filter((r) => r.species === s && r.land_cover_label === l).length))
+
+  const matrix = sp.map((s) => {
+    const byCover = cells.get(s)
+    return lc.map((l) => byCover?.get(l) || 0)
+  })
   return { rows: sp, cols: lc, matrix }
 })
 
 const rainBeforeDist = computed(() => {
   const totals = rows.value
-    .filter((r) => [0, 1, 2, 3, 4, 5, 6].some((o) => hasValue(r[`prcp_d${o}`])))
-    .map((r) => [0, 1, 2, 3, 4, 5, 6].reduce((s, o) => s + (hasValue(r[`prcp_d${o}`]) ? Number(r[`prcp_d${o}`]) : 0), 0))
+    .filter((r) => PRCP_OFFSETS.some((o) => hasValue(r[`prcp_d${o}`])))
+    .map(rain7)
   if (!totals.length) return []
   const step = 10
   const max = Math.ceil(Math.max(...totals) / step) * step
-  const bins = []
-  for (let lo = 0; lo < Math.max(step, max); lo += step) {
-    bins.push({ label: `${lo}–${lo + step} mm`, short: `${lo}`, value: totals.filter((v) => v >= lo && v < lo + step).length })
+  const binCount = Math.max(1, Math.ceil(Math.max(step, max) / step))
+  // Bucket in one pass rather than re-filtering every total per bin.
+  const counts = new Array(binCount).fill(0)
+  for (const v of totals) {
+    const i = Math.floor(v / step)
+    if (i >= 0 && i < binCount) counts[i] += 1
   }
+  const bins = counts.map((value, i) => ({
+    label: `${i * step}–${(i + 1) * step} mm`, short: `${i * step}`, value,
+  }))
   return bins
 })
 

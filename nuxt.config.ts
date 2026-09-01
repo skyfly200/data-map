@@ -2,6 +2,12 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
+  nitro: {
+    // The observation GeoJSON is ~48 MB of highly repetitive JSON that gzips to
+    // under 7 MB. Without this it ships uncompressed: Nitro serves public/
+    // assets byte-for-byte, so every visitor downloaded the full 48 MB.
+    compressPublicAssets: { gzip: true, brotli: true },
+  },
   runtimeConfig: {
     public: {
       // Where the frontend loads the dataset manifest from. Defaults to the
