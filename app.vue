@@ -47,6 +47,7 @@
     <main class="app-main">
       <NuxtPage />
     </main>
+    <ClientOnly><ShortcutsHelp /></ClientOnly>
   </div>
 </template>
 
@@ -68,6 +69,8 @@ const { selectedDataset, setDataset, loadDatasets } = useObservations()
 onMounted(loadDatasets)
 
 const { activeCount: filterCount } = useFilters()
+
+
 
 const { user, isAuthed, configured, signOut } = useAuth()
 const shortEmail = computed(() => {
@@ -111,6 +114,30 @@ watch(unit, (v) => {
 watch(tempUnit, (v) => {
   if (import.meta.client) localStorage.setItem('temp-unit', v)
 })
+
+// ─── Keyboard shortcuts ─────────────────────────────────────────────────────
+// Registered here rather than per-page so they work everywhere, and so the help
+// overlay lists them even before a page adds its own.
+const shortcuts = useShortcuts()
+const router = useRouter()
+const go = (path) => () => router.push(path)
+
+shortcuts.register([
+  { scope: 'Navigate', keys: 'm', label: 'Map', run: go('/map') },
+  { scope: 'Navigate', keys: 'c', label: 'Charts', run: go('/charts') },
+  { scope: 'Navigate', keys: 'a', label: 'Analysis', run: go('/analysis') },
+  { scope: 'Navigate', keys: 'd', label: 'Data', run: go('/data') },
+  { scope: 'Navigate', keys: 'v', label: 'Coverage', run: go('/coverage') },
+  { scope: 'Navigate', keys: 'g', label: 'Guide', run: go('/guide') },
+  { scope: 'General', keys: '?', label: 'Show this help', run: () => { shortcuts.helpOpen.value = !shortcuts.helpOpen.value } },
+  { scope: 'General', keys: 'escape', label: 'Close dialogs and panels', run: () => { shortcuts.helpOpen.value = false } },
+  { scope: 'General', keys: 't', label: 'Light / dark theme', run: () => toggleTheme() },
+  { scope: 'General', keys: 'u', label: 'Metric / imperial units', run: () => { unit.value = unit.value === 'ft' ? 'm' : 'ft' } },
+])
+
+onMounted(() => window.addEventListener('keydown', shortcuts.handle))
+onBeforeUnmount(() => window.removeEventListener('keydown', shortcuts.handle))
+
 </script>
 
 <style>

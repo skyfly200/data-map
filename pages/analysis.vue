@@ -1,7 +1,8 @@
 <template>
   <div class="analysis">
     <nav class="tabs">
-      <button v-for="t in TABS" :key="t.key" :class="{ on: tab === t.key }" @click="tab = t.key">
+      <button v-for="(t, i) in TABS" :key="t.key" :class="{ on: tab === t.key }"
+              :title="tip(t.hint, String(i + 1))" @click="tab = t.key">
         {{ t.label }}
       </button>
       <ShareMenu class="tab-share" :title="shareTitle" />
@@ -162,10 +163,10 @@ import { computed, ref } from 'vue'
 import { useUnits } from '~/composables/useUnits'
 
 const TABS = [
-  { key: 'drivers', label: 'What relates to what' },
-  { key: 'species', label: 'Species' },
-  { key: 'seasons', label: 'Year over year' },
-  { key: 'quality', label: 'Data quality' },
+  { key: 'drivers', label: 'What relates to what', hint: 'Which environmental variables move together' },
+  { key: 'species', label: 'Species', hint: 'What each species prefers, and which are found together' },
+  { key: 'seasons', label: 'Year over year', hint: 'Season timing and elevation by year, against recording effort' },
+  { key: 'quality', label: 'Data quality', hint: 'How much of each field is actually filled in' },
 ]
 const MIN_SPECIES_OBS = 20
 
@@ -173,6 +174,12 @@ const { rows, error, pending, load } = useObservations()
 const { unit, elevValue } = useUnits()
 const analysis = useAnalysis()
 const tab = ref('drivers')
+
+const shortcuts = useShortcuts()
+const tip = (text, keys) => shortcuts.withKey(text, keys)
+shortcuts.register(TABS.map((t, i) => ({
+  scope: 'Analysis', keys: String(i + 1), label: t.label, run: () => { tab.value = t.key },
+})))
 
 onMounted(load)
 

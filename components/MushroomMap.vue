@@ -25,16 +25,27 @@
           <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
         </select>
       </div>
-      <button class="locate" :class="{ busy: locating }" :title="locateError || 'Show my location'"
+      <button class="locate" :class="{ busy: locating }"
+              :title="locateError || tip('Centre the map on where you are', 'l')"
               @click="locateMe">
         <span class="dot-icon"></span>{{ locating ? 'Locating…' : 'My location' }}
+      </button>
+      <!-- Hiding the points leaves the overlay readable on its own; at 48k marks
+           they cover the shading they are meant to sit on top of. -->
+      <button class="locate" :class="{ off: !showPoints }"
+              :title="tip(showPoints ? 'Hide the observation points and show the overlay alone'
+                                     : 'Show the observation points again', 'p')"
+              :aria-pressed="String(showPoints)"
+              @click="showPoints = !showPoints">
+        {{ showPoints ? '👁 Points' : '🚫 Points' }}
       </button>
       <LiveClusterControls />
       <AppearanceControls :field="colorBy" :field-label="coloring.title"
                           :values="legendValues" />
       <ShareMenu :map-view="mapView" :color-by="colorBy" :size-by="sizeBy"
                  :title="shareTitle" />
-      <button class="locate" :disabled="saving" :title="saveError || 'Save the map as a PNG'"
+      <button class="locate" :disabled="saving"
+              :title="saveError || tip('Save the map, basemap and all, as a PNG', 'e')"
               @click="saveMap">
         ⤓ {{ saving ? 'Saving…' : 'Save image' }}
       </button>
@@ -46,20 +57,33 @@
       <!-- Aggregate overlay: grid summaries drawn under the points -->
       <div class="colorby">
         <label for="overlay-sel">Overlay</label>
-        <select id="overlay-sel" v-model="overlayMode">
+        <select id="overlay-sel" v-model="overlayMode" :title="overlayTip">
           <option v-for="o in OVERLAY_MODES" :key="o.key" :value="o.key">{{ o.label }}</option>
         </select>
       </div>
       <div v-if="overlayMode" class="colorby">
-        <label for="overlay-cell">Cell</label>
-        <select id="overlay-cell" v-model.number="overlayCell">
+        <label for="overlay-cell">Cell size</label>
+        <select id="overlay-cell" v-model.number="overlayCell"
+                title="Ground size of each grid square. Smaller is more precise and noisier.">
           <option v-for="c in CELL_SIZES" :key="c.value" :value="c.value">{{ c.label }}</option>
         </select>
       </div>
       <div v-if="overlayMode === 'season' || overlayMode === 'hotspots'" class="season">
-        <label :for="'season-day'">Date <strong>{{ seasonLabel }}</strong> ±{{ seasonWindow }}d</label>
-        <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1" />
-        <input v-model.number="seasonWindow" type="range" min="3" max="60" step="1" aria-label="Window width in days" />
+        <div class="slider">
+          <label for="season-day">
+            Date <strong>{{ seasonLabel }}</strong>
+          </label>
+          <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1"
+                 :title="tip(`Centre of the date window — currently ${seasonLabel}`, '[')" />
+        </div>
+        <div class="slider">
+          <label for="season-window">
+            Window <strong>±{{ seasonWindow }} days</strong>
+          </label>
+          <input id="season-window" v-model.number="seasonWindow" type="range" min="3" max="60" step="1"
+                 title="How wide a window counts as 'in season'. Wider is smoother and less specific." />
+        </div>
+        <p class="slider-note">{{ windowSpan }}</p>
       </div>
     </div>
 
@@ -466,6 +490,44 @@ const exporter = useImageExport()
 const saving = ref(false)
 const saveError = ref('')
 
+// ─── Point visibility ───────────────────────────────────────────────────────
+// The overlay is drawn UNDER the points, and 48k marks cover most of the
+// shading they are meant to sit on. Hiding them is what makes an overlay
+// readable, so it is a first-class toggle rather than an appearance setting.
+const POINTS_KEY = 'map-show-points'
+const showPoints = ref(true)
+if (import.meta.client) {
+  showPoints.value = localStorage.getItem(POINTS_KEY) !== '0'
+}
+watch(showPoints, (v) => {
+  if (import.meta.client) localStorage.setItem(POINTS_KEY, v ? '1' : '0')
+  if (!map || !geoLayer) return
+  if (v) { geoLayer.addTo(map); geoLayer.bringToFront() } else geoLayer.remove()
+})
+
+// ─── Tooltips ───────────────────────────────────────────────────────────────
+const shortcuts = useShortcuts()
+// Every control's tooltip says what it does and, where one exists, the key that
+// does it — so shortcuts are discoverable without opening the help overlay.
+const tip = (text, keys) => shortcuts.withKey(text, keys)
+
+const overlayTip = computed(() => {
+  const note = overlayMeta.value?.note
+  return note
+    ? tip(`${overlayMeta.value.label}: ${note}`, 'o')
+    : tip('Draw a grid summary under the points', 'o')
+})
+
+// Spelling out the window's actual dates removes the arithmetic from reading it.
+const windowSpan = computed(() => {
+  const fmt = (day) => {
+    const d = new Date(Date.UTC(2001, 0, 1))
+    d.setUTCDate(((day - 1 + 365) % 365) + 1)
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
+  }
+  return `Counting finds from ${fmt(seasonDay.value - seasonWindow.value)} to ${fmt(seasonDay.value + seasonWindow.value)}`
+})
+
 async function saveMap() {
   if (!mapEl.value || saving.value) return
   saving.value = true
@@ -521,6 +583,8 @@ function renderPoints(geo) {
     const co = feature.geometry?.coordinates
     selectedLatLng.value = co ? [co[1], co[0]] : null
   })
+
+  if (!showPoints.value) geoLayer.remove()
 
   const bounds = geoLayer.getBounds()
   // Non-animated: an in-flight fit animation would block a subsequent zoom-in to
@@ -674,6 +738,28 @@ function locateMe() {
   )
 }
 
+// Only while the map is on screen: pressing "o" on the Charts page should do
+// nothing rather than reach for a control that is not there.
+const OVERLAY_KEYS = OVERLAY_MODES.map((m) => m.key)
+function cycleOverlay(step) {
+  const i = OVERLAY_KEYS.indexOf(overlayMode.value)
+  overlayMode.value = OVERLAY_KEYS[(i + step + OVERLAY_KEYS.length) % OVERLAY_KEYS.length]
+}
+function nudgeDay(days) {
+  seasonDay.value = ((seasonDay.value - 1 + days + 365) % 365) + 1
+}
+
+shortcuts.register([
+  { scope: 'Map', keys: 'p', label: 'Show / hide observation points', run: () => { showPoints.value = !showPoints.value } },
+  { scope: 'Map', keys: 'o', label: 'Next overlay', run: () => cycleOverlay(1) },
+  { scope: 'Map', keys: 'shift+O', label: 'Previous overlay', run: () => cycleOverlay(-1) },
+  { scope: 'Map', keys: 'l', label: 'My location', run: () => locateMe() },
+  { scope: 'Map', keys: 'e', label: 'Save the map as an image', run: () => saveMap() },
+  { scope: 'Map', keys: '[', label: 'Overlay date back a week', run: () => nudgeDay(-7) },
+  { scope: 'Map', keys: ']', label: 'Overlay date forward a week', run: () => nudgeDay(7) },
+  { scope: 'Map', keys: 'escape', label: 'Close the observation drawer', run: () => { selected.value = null } },
+])
+
 onBeforeUnmount(() => { if (map) map.remove() })
 </script>
 
@@ -737,9 +823,15 @@ onBeforeUnmount(() => { if (map) map.remove() })
 .legend-n { color: #777; font-size: 11px; }
 
 /* Day-of-year window controls for the seasonal overlays. */
-.season { display: flex; flex-direction: column; gap: 2px; font-size: 0.78rem; min-width: 190px; }
-.season label { color: var(--text); }
+.season { display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem; min-width: 200px; }
+.slider { display: flex; flex-direction: column; gap: 1px; }
+.slider label { color: var(--muted); }
+.slider label strong { color: var(--text); }
 .season input[type="range"] { width: 100%; margin: 0; }
+.slider-note { margin: 0; color: var(--muted); font-size: 0.72rem; line-height: 1.3; }
+
+/* A control that is currently off reads as off, not just unstyled. */
+.locate.off { opacity: 0.6; text-decoration: line-through; }
 .legend-row span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #222; flex: 0 0 auto; }
 .gradient { height: 12px; border-radius: 3px; border: 1px solid #ccc; }

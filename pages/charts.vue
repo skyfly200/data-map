@@ -1,8 +1,10 @@
 <template>
   <div class="charts-page">
     <nav class="tabs">
-      <button :class="{ on: tab === 'gallery' }" @click="tab = 'gallery'">Charts</button>
-      <button :class="{ on: tab === 'build' }" @click="tab = 'build'">Build</button>
+      <button :class="{ on: tab === 'gallery' }" :title="tip('The preset chart gallery', '1')"
+              @click="tab = 'gallery'">Charts</button>
+      <button :class="{ on: tab === 'build' }" :title="tip('Compose your own chart', '2')"
+              @click="tab = 'build'">Build</button>
     </nav>
 
     <ChartBuilder v-if="tab === 'build'" class="build-pane" />
@@ -14,7 +16,9 @@
     <template v-else>
       <!-- Layout controls: reorder / hide the preset charts -->
       <div class="layout-bar">
-        <button class="lb-btn" :class="{ on: layout.editing.value }" @click="layout.editing.value = !layout.editing.value">
+        <button class="lb-btn" :class="{ on: layout.editing.value }"
+                :title="tip('Reorder or hide the preset charts', 'r')"
+                @click="layout.editing.value = !layout.editing.value">
           {{ layout.editing.value ? '✓ Done arranging' : '⇅ Arrange charts' }}
         </button>
         <span v-if="layout.editing.value" class="lb-hint">Use ‹ › to reorder and ✕ to hide.</span>
@@ -24,10 +28,13 @@
         <ClientOnly>
           <span class="lb-count">{{ layout.visibleCount.value }} shown</span>
         </ClientOnly>
-        <button v-if="layout.hiddenCharts.value.length" class="lb-btn ghost" @click="layout.showAll()">
+        <button v-if="layout.hiddenCharts.value.length" class="lb-btn ghost"
+                title="Bring every hidden chart back" @click="layout.showAll()">
           Show all ({{ layout.hiddenCharts.value.length }} hidden)
         </button>
-        <button v-if="layout.editing.value" class="lb-btn ghost" @click="layout.reset()">Reset layout</button>
+        <button v-if="layout.editing.value" class="lb-btn ghost"
+                title="Restore the original order and unhide everything"
+                @click="layout.reset()">Reset layout</button>
         <AppearanceControls field="species" field-label="Species" :values="speciesValues" />
         <ShareMenu :title="shareTitle" />
       </div>
@@ -196,6 +203,15 @@ const { rows, error, pending, load } = useObservations()
 const { unit, elevValue, tempUnit, tempValue } = useUnits()
 const appearance = useAppearance()
 const share = useShareState()
+const shortcuts = useShortcuts()
+const tip = (text, keys) => shortcuts.withKey(text, keys)
+
+shortcuts.register([
+  { scope: 'Charts', keys: '1', label: 'Chart gallery', run: () => { tab.value = 'gallery' } },
+  { scope: 'Charts', keys: '2', label: 'Chart builder', run: () => { tab.value = 'build' } },
+  { scope: 'Charts', keys: 'r', label: 'Arrange charts', run: () => { layout.editing.value = !layout.editing.value } },
+  { scope: 'Charts', keys: 'escape', label: 'Close the observation drawer', run: () => { selected.value = null } },
+])
 const shareTitle = computed(() =>
   `${rows.value.length.toLocaleString()} mushroom observations — charts`)
 // Restore filters/palette from a shared link before the charts compute.
