@@ -118,7 +118,11 @@
           :xLabel="`High temp (°${tempUnit})`" :yLabel="`Elevation (${unit})`"
           :xFormat="(v) => `${Math.round(v)}°`" :yFormat="(v) => Math.round(v).toLocaleString()"
           @select="selected = $event" />
-        <p class="note">Higher sites tend to be cooler on the day of the find.</p>
+        <p class="note">
+          These rise together (ρ +0.43), which is not altitude warming anything: high
+          finds happen in summer and low ones in spring and autumn. Hold the season
+          still and the relationship flattens to about zero.
+        </p>
       </GalleryChart>
 
       <GalleryChart id="rain-vs-doy" v-if="rainVsDoy.length">
