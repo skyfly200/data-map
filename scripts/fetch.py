@@ -82,7 +82,6 @@ load_env_into_os()
 STUDY_AREA = [42, -106, 39, -102]  # around Colorado
 
 
-Python
 # ─── Topography (Digital Elevation Model) ─────────────────────────────────────
 def download_srtm_dem(area=None, output_dir="dem/", dem_type="SRTMGL3", api_key=None):
     """Download a DEM GeoTIFF for the study area from the OpenTopography API."""

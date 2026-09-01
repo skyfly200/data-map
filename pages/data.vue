@@ -217,8 +217,8 @@ thead th { background: var(--surface-2); text-align: left; padding: 8px 10px; bo
 tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border-soft); }
 tbody tr { cursor: pointer; }
 tbody tr:hover { background: var(--surface-2); }
-tbody tr.off { color: #b0b6be; }
-tbody tr.off .sp em { color: #b0b6be; }
+tbody tr.off { color: var(--muted); }
+tbody tr.off .sp em { color: var(--muted); }
 .c-check { width: 34px; text-align: center; }
 .c-num { text-align: right; width: 90px; font-variant-numeric: tabular-nums; }
 .c-bar { width: 140px; }

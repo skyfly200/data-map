@@ -137,9 +137,9 @@ async function fetchNew() {
 .fetch-new button { border: 1px solid #2b7a3d; background: #2b7a3d; color: #fff; border-radius: 6px; padding: 6px 14px; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
 .fetch-new button:disabled { opacity: 0.55; cursor: default; }
 .fmsg { font-size: 0.82rem; }
-.fmsg.ok { color: #2b7a3d; }
-.fmsg.err { color: #b00020; }
-.signin-link { font-size: 0.82rem; font-weight: 600; color: #2b7a3d; text-decoration: none; border: 1px solid #2b7a3d; border-radius: 6px; padding: 4px 10px; }
+.fmsg.ok { color: var(--accent); }
+.fmsg.err { color: var(--danger); }
+.signin-link { font-size: 0.82rem; font-weight: 600; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); border-radius: 6px; padding: 4px 10px; }
 
 .fetch-progress { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; }
 .pbar { position: relative; flex: 0 1 220px; height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; }

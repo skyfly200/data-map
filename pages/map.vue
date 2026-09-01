@@ -15,5 +15,5 @@
 
 <style scoped>
 .map-page { height: 100%; }
-.map-fallback { display: grid; place-items: center; height: 100%; color: #555; }
+.map-fallback { display: grid; place-items: center; height: 100%; color: var(--muted); }
 </style>
