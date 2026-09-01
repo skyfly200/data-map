@@ -14,11 +14,14 @@ pip install -r requirements.txt
 
 ### Credentials
 
+Earth Engine supplies every environmental layer, so it is the only credential
+the pipeline needs. The rest are for the raster fallback described below.
+
 | For | Set |
 | --- | --- |
-| NDVI / soil / satellite-moisture (Earth Engine) | run `python gauth.py` once; set `EARTHENGINE_PROJECT` to your Google Cloud project id |
-| DEM ([OpenTopography](https://portal.opentopography.org/login)) | `OPENTOPOGRAPHY_API_KEY` |
-| Soil moisture ([Copernicus CDS](https://cds.climate.copernicus.eu)) | copy `.cdsapirc.example` to `~/.cdsapirc` with your key (and accept the ERA5-Land license on the CDS site) |
+| **Everything environmental (Earth Engine)** | run `python gauth.py` once; set `EARTHENGINE_PROJECT` to your Google Cloud project id |
+| DEM ([OpenTopography](https://portal.opentopography.org/login)) — *fallback only* | `OPENTOPOGRAPHY_API_KEY` |
+| Soil moisture ([Copernicus CDS](https://cds.climate.copernicus.eu)) — *fallback only* | copy `.cdsapirc.example` to `~/.cdsapirc` with your key (and accept the ERA5-Land license on the CDS site) |
 
 ### Data layout (per-species CSV store)
 
@@ -48,24 +51,50 @@ Stages (run in order — or just `python run_pipeline.py`, which chains them):
 1. **`iNat.py`** — pull mushroom observations from iNaturalist (+ elevation and
    weather) → per-species CSVs in `data/species/` (incremental runs merge and
    de-dupe on uuid; `REFRESH_ALL=1` overwrites).
-2. **`fetch.py`** — download *all* the environmental data for those observations,
-   end to end: NDVI (Sentinel-2 via Earth Engine), soil moisture (ERA5-Land),
-   precipitation (CHIRPS, 7-day history), land cover (ESA WorldCover tiles,
-   auto-downloaded), and **topography (SRTM DEM)**. The independent HTTP sources
-   download concurrently (each keeps its own per-source thread pool;
-   `SEQUENTIAL_FETCH=1` disables). After the DEM downloads it runs
-   `terrain_pipeline.process_dem` to derive the terrain-exposure layers. NDVI is
-   exported asynchronously to Google Drive (folder `EarthEngineNDVI`) — download
-   those GeoTIFFs into `ndvi/` before enriching.
-3. **`terrain_pipeline.py`** — turn the raw DEM into terrain-exposure layers
-   (see below). Runs automatically from `fetch.py`, or standalone:
-   `python terrain_pipeline.py --dem dem/dem_SRTMGL3.tif`.
-4. **`enrich_with_rasters.py`** — sample every raster (including the terrain
-   layers) at each observation point → per-species files in `data/enriched/`
-   (resumable; a `.done` marker signals completion).
-5. **`cluster.py`** — KMeans-cluster observations by environmental similarity
+2. **`enrich_with_rasters.py`** — fill in every environmental column for those
+   observations → per-species files in `data/enriched/` (resumable; a `.done`
+   marker signals completion). `ee_enrich.py` samples each layer from Earth
+   Engine *at the observation points*, so nothing bulky is downloaded:
+
+   | Column | Earth Engine dataset |
+   | --- | --- |
+   | `ndvi` | `COPERNICUS/S2_SR_HARMONIZED` |
+   | `soil_moisture` | `ECMWF/ERA5_LAND/DAILY_AGGR` |
+   | `prcp_d0..d6` | `UCSB-CHG/CHIRPS/DAILY` |
+   | `tmax_d0..d6`, `tmin_d0..d6` | `ECMWF/ERA5_LAND/DAILY_AGGR` |
+   | `land_cover` | `ESA/WorldCover/v200` |
+   | `elevation`, `slope`, `aspect` | `USGS/SRTMGL1_003` |
+   | `solar_exposure`, `wind_exposure`, `water_retention` | derived from the sampled terrain + `MERIT/Hydro/v1_0_1` upstream drainage area |
+
+   Requests are batched by observation *date*: points sharing a date share one
+   composite and one `reduceRegions`, so a 7-day weather history costs one round
+   trip per date rather than one per observation (the old Open-Meteo stage made
+   an HTTP request per observation) or seven file downloads.
+
+3. **`cluster.py`** — KMeans-cluster observations by environmental similarity
    *globally* across all species, writing the `cluster` label back into each
    `data/enriched/` file. Tune the count with `CLUSTER_COUNT` or `--clusters`.
+
+#### Raster fallback
+
+The original path — download the source rasters, then sample them locally — is
+still there and runs automatically whenever Earth Engine is unavailable. Each
+raster stage only touches rows still missing its column, so after a successful
+Earth Engine pass they are no-ops.
+
+To use it deliberately (it is also what `validate_wetness.py raster` and the
+Coverage page read):
+
+```bash
+FETCH_RASTERS=1 python fetch.py            # ERA5 via CDS, CHIRPS, WorldCover, SRTM DEM
+python terrain_pipeline.py                 # derive the terrain-exposure layers
+python enrich_with_rasters.py
+```
+
+`USE_EARTH_ENGINE=0` (or `SKIP_EARTH_ENGINE=1`) turns the Earth Engine stages off
+entirely; `SEQUENTIAL_FETCH=1` stops the fallback downloads running concurrently.
+`fetch.py` and `terrain_pipeline.py` are skipped by `run_pipeline.py` while Earth
+Engine is available.
 
 ### Running in a notebook / Colab
 
