@@ -103,6 +103,7 @@
 
       <GalleryChart id="elev-vs-doy" v-if="elevVsDoy.length">
         <ScatterChart title="Elevation vs. day of year" :data="elevVsDoy" :legend="clusterLegend"
+          xKey="day_of_year" yKey="elevation"
           xLabel="Day of year" :yLabel="`Elevation (${unit})`"
           :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v).toLocaleString()"
           @select="selected = $event" />
@@ -111,6 +112,7 @@
 
       <GalleryChart id="elev-vs-temp" v-if="elevVsTemp.length">
         <ScatterChart title="Elevation vs. observation-day high temp" :data="elevVsTemp" :legend="clusterLegend"
+          xKey="tmax" yKey="elevation"
           :xLabel="`High temp (°${tempUnit})`" :yLabel="`Elevation (${unit})`"
           :xFormat="(v) => `${Math.round(v)}°`" :yFormat="(v) => Math.round(v).toLocaleString()"
           @select="selected = $event" />
@@ -119,6 +121,7 @@
 
       <GalleryChart id="rain-vs-doy" v-if="rainVsDoy.length">
         <ScatterChart title="7-day rain total vs. day of year" :data="rainVsDoy" :legend="clusterLegend"
+          xKey="day_of_year" yKey="rain7"
           xLabel="Day of year" yLabel="Rain total (mm)"
           :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v)"
           @select="selected = $event" />
@@ -126,13 +129,13 @@
       </GalleryChart>
 
       <GalleryChart id="phenology" v-if="phenologyBySpecies.length">
-        <BoxPlot title="Fruiting season by species" :data="phenologyBySpecies" xLabel="Day of year"
+        <BoxPlot title="Fruiting season by species" :data="phenologyBySpecies" xLabel="Day of year" valueKey="day_of_year"
           :format="(v) => Math.round(v)" />
         <p class="note">When each species (≥3 obs) is found through the year — the forager's calendar.</p>
       </GalleryChart>
 
       <GalleryChart id="elevation-by-species" v-if="elevationBySpecies.length">
-        <BoxPlot :title="`Elevation range by species (${unit})`" :data="elevationBySpecies" :xLabel="`Elevation (${unit})`"
+        <BoxPlot :title="`Elevation range by species (${unit})`" :data="elevationBySpecies" :xLabel="`Elevation (${unit})`" valueKey="elevation"
           :format="(v) => Math.round(v).toLocaleString()" />
         <p class="note">Elevation band each species (≥3 obs) prefers.</p>
       </GalleryChart>

@@ -43,6 +43,10 @@ PROPERTY_COLUMNS = [
     "water_retention",
     "slope",
     "aspect",
+    # ERA5 10 m wind as vector components, so the map can average directions
+    # over a grid cell without the wraparound that averaging bearings causes.
+    "wind_u",
+    "wind_v",
     "num_identification_agreements",
     "cluster",
     # Observation-day weather

@@ -419,6 +419,64 @@ def enrich_soil_moisture_ee(df, max_workers=8, checkpoint=None):
     return df
 
 
+# ─── Wind (per observation date) ──────────────────────────────────────────────
+
+def enrich_wind_ee(df, max_workers=8, checkpoint=None):
+    """ERA5-Land 10 m wind as its eastward/northward components.
+
+    Stored as vector components rather than a speed and a bearing on purpose:
+    directions are circular, so `wind_u`/`wind_v` can be averaged over a map
+    cell by summing, while averaging bearings would put the mean of 350° and 10°
+    at 180° — pointing exactly the wrong way. The map's wind overlay reads these
+    and falls back to terrain aspect where they are missing.
+    """
+    ee = init_ee()
+    if ee is None:
+        return df
+
+    for col in ('wind_u', 'wind_v'):
+        if col not in df.columns:
+            df[col] = None
+
+    by_date, total = _pending_dated_rows(df, 'wind_u')
+    if not total:
+        print("Wind already complete — skipping.")
+        return df
+    print(f"Sampling ERA5-Land 10 m wind from Earth Engine — {total} points "
+          f"across {len(by_date)} date(s), {max_workers} parallel...")
+
+    era5 = ee.ImageCollection(ERA5_DAILY)
+
+    def worker(item):
+        day, pts = item
+        try:
+            image = ee.Image.cat([
+                _daily_band(ee, era5, 'u_component_of_wind_10m', day, 'wind_u'),
+                _daily_band(ee, era5, 'v_component_of_wind_10m', day, 'wind_v'),
+            ])
+            points = [(pos, lon, lat) for pos, (_idx, lon, lat) in enumerate(pts)]
+            sampled = _sample_points(ee, image, points, SCALE_ERA5, reducer=ee.Reducer.mean())
+            out = []
+            for pos, (idx, _lon, _lat) in enumerate(pts):
+                props = sampled.get(pos, {})
+                for col in ('wind_u', 'wind_v'):
+                    val = props.get(col)
+                    if val is not None:
+                        out.append((idx, col, val))
+            return out, None
+        except Exception as exc:
+            return [], str(exc)
+
+    results, failed = _run_date_batches(by_date, worker, "wind", max_workers, checkpoint)
+    for idx, col, val in results:
+        df.at[idx, col] = val
+
+    if failed:
+        print(f"[!] {failed}/{len(by_date)} wind date batch(es) failed.")
+    print(f"✅ Wind sampled for {total} points ({len(results)} values).")
+    return df
+
+
 # ─── Precipitation history (per observation date) ─────────────────────────────
 
 def enrich_precip_ee(df, days=7, max_workers=8, checkpoint=None):
@@ -599,6 +657,7 @@ EE_STAGES = [
     ("Terrain (Earth Engine)", enrich_terrain_ee),
     ("Land cover (Earth Engine)", enrich_landcover_ee),
     ("Soil moisture (Earth Engine)", enrich_soil_moisture_ee),
+    ("Wind (Earth Engine)", enrich_wind_ee),
     ("Precipitation history (Earth Engine)", enrich_precip_ee),
     ("Temperature history (Earth Engine)", enrich_temperature_ee),
     ("NDVI (Earth Engine)", enrich_ndvi_ee),

@@ -43,12 +43,17 @@
 
 <script setup>
 import { SERIES_1 } from '~/composables/useObservations'
+import { boundsFor, clampDomain } from '~/composables/useChartFields'
 
 const props = defineProps({
   title: { type: String, default: '' },
   // [{ label, values: number[], color? }]
   data: { type: Array, required: true },
   xLabel: { type: String, default: '' },
+  // Field key (and optional explicit override) so the axis can be clamped to
+  // the range the quantity can actually take.
+  valueKey: { type: String, default: '' },
+  bounds: { type: Array, default: null },
   format: {
     type: Function,
     default: (v) => {
@@ -155,7 +160,9 @@ const domain = computed(() => {
   let lo = Math.min(...all), hi = Math.max(...all)
   if (lo === hi) { lo -= 1; hi += 1 }
   const pad = (hi - lo) * 0.04
-  return [lo - pad, hi + pad]
+  // Clamp the padding to what the quantity can be: a day-of-year axis must not
+  // run past 365, and an elevation axis must not go negative.
+  return clampDomain([lo - pad, hi + pad], props.bounds ?? boundsFor(props.valueKey), all)
 })
 const sx = (v) => padL.value + ((v - domain.value[0]) / (domain.value[1] - domain.value[0] || 1)) * (W - padL.value - padR)
 

@@ -71,6 +71,7 @@
 <script setup>
 import { useId } from 'vue'
 import { SERIES_1 } from '~/composables/useObservations'
+import { boundsFor, clampDomain } from '~/composables/useChartFields'
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -101,6 +102,12 @@ const props = defineProps({
   sizeLegend: { type: String, default: '' },       // e.g. "Slope (small→large)"
   todayX: { type: Number, default: null },
   todayLabel: { type: String, default: 'Today' },
+  // Field keys, so the axes can be clamped to what the quantity can take.
+  // `xBounds`/`yBounds` override the registry for a computed axis.
+  xKey: { type: String, default: '' },
+  yKey: { type: String, default: '' },
+  xBounds: { type: Array, default: null },
+  yBounds: { type: Array, default: null },
 })
 const emit = defineEmits(['select'])
 
@@ -138,8 +145,18 @@ function domain(vals) {
 }
 
 const points = computed(() => props.data.filter((d) => Number.isFinite(d.x) && Number.isFinite(d.y)))
-const baseXDom = computed(() => domain(points.value.map((d) => d.x)))
-const baseYDom = computed(() => domain(points.value.map((d) => d.y)))
+
+// Pad the axes, then clamp to what the quantity can actually be — otherwise the
+// padding invents readings the field cannot take (an aspect axis running to
+// 378°, a negative rainfall total).
+const baseXDom = computed(() => {
+  const vals = points.value.map((d) => d.x)
+  return clampDomain(domain(vals), props.xBounds ?? boundsFor(props.xKey), vals)
+})
+const baseYDom = computed(() => {
+  const vals = points.value.map((d) => d.y)
+  return clampDomain(domain(vals), props.yBounds ?? boundsFor(props.yKey), vals)
+})
 
 // Zoom is expressed on the DATA domain (not a CSS transform), so points always
 // render inside the axes and stay clickable. k = zoom factor, center = focal
