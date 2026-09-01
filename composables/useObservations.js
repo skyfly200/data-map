@@ -67,6 +67,23 @@ export function inatUrl(obs) {
   return id ? `https://www.inaturalist.org/observations/${id}` : null
 }
 
+// iNaturalist serves each photo at .../photos/<id>/<size>.<ext>, and the API's
+// bare `photo.url` is the 75px SQUARE thumbnail — using it directly gives a tiny,
+// upscaled image. Prefer an explicitly-sized field when the payload has one,
+// otherwise rewrite the size segment of whatever URL we were given.
+const INAT_PHOTO_SIZES = ['square', 'small', 'medium', 'large', 'original']
+
+export function inatPhotoUrl(photo, size = 'large') {
+  if (!photo) return null
+  const base = photo[`${size}_url`] || photo.large_url || photo.medium_url
+    || photo.original_url || photo.url
+  if (!base) return null
+  return String(base).replace(
+    new RegExp(`/(${INAT_PHOTO_SIZES.join('|')})(\\.[a-z0-9]+)(\\?|$)`, 'i'),
+    `/${size}$2$3`,
+  )
+}
+
 
 const num1 = (v) => Number(v).toFixed(1)
 const num2 = (v) => Number(v).toFixed(2)
