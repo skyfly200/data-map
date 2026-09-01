@@ -1,18 +1,25 @@
 # Python data pipeline dependencies
+
 # Observation ingest (iNat.py)
 pyinaturalist
 meteostat
-# Data download (fetch.py)
+
+# Environmental enrichment (ee_enrich.py) — Earth Engine supplies every
+# environmental layer as a point sample, so this is the whole download stack.
 earthengine-api
-cdsapi
 requests
-# Raster processing / enrichment (enrich_with_rasters.py, terrain_pipeline.py)
+
+# Enrichment / clustering maths
+numpy
+scipy
+pandas
+scikit-learn
+
+# Raster fallback: only needed when Earth Engine is unavailable, or when
+# FETCH_RASTERS=1 downloads the source rasters (also what validate_wetness.py
+# raster mode and the Coverage page read).
 rasterio
 rio-cogeo
 xarray
 netCDF4
-numpy
-scipy
-pandas
-# Clustering (cluster.py)
-scikit-learn
+cdsapi
