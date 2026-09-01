@@ -260,12 +260,19 @@ export function useObservations() {
     const set = sel.length ? new Set(sel) : null
     const f = filters.value
     const hideFiltered = !showFiltered.value
-    const out = feats.filter((feat) => {
+    let out = feats.filter((feat) => {
       // Non-productive land cover (water) is hidden unless the user opts in.
       if (hideFiltered && feat.properties?.water_mask) return false
       if (set && !set.has(feat.properties?.species)) return false
       return matchesFilters(feat, f)
     })
+
+    // Minimum observations per taxon: counted AFTER the other filters, so the
+    // threshold means "enough records in what you are actually looking at"
+    // rather than "enough somewhere in the dataset".
+    const keep = taxaAboveThreshold(out, f.minObsField || 'species', f.minObs)
+    if (keep) out = out.filter((feat) => keep.has(feat.properties?.[f.minObsField || 'species']))
+
     return { type: 'FeatureCollection', features: out }
   })
 

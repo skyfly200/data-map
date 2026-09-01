@@ -19,6 +19,8 @@ const SETTINGS_KEYS = [
   'map-color-by',
   'map-size-by',
   'observations-show-filtered',
+  'saved-filters',              // named filter subsets
+  'explore-config',             // the chart builder's last configuration
 ]
 
 const CHARTS_KEY = 'saved-charts'

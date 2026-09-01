@@ -85,6 +85,53 @@
           </label>
         </div>
       </fieldset>
+
+      <!-- Sample size: drop taxa with too few records to say anything about -->
+      <fieldset>
+        <legend>Sample size</legend>
+        <div class="time-row">
+          <label>At least
+            <input type="number" min="0" max="500" step="1" :value="filters.minObs || ''" placeholder="any"
+                   @input="setFilter('minObs', Number($event.target.value) || 0)" />
+          </label>
+          <label>records per
+            <select :value="filters.minObsField || 'species'"
+                    @change="setFilter('minObsField', $event.target.value)">
+              <option value="species">Species</option>
+              <option value="genus">Genus</option>
+            </select>
+          </label>
+        </div>
+        <p class="fp-hint">
+          Counted after the other filters, so it means “enough records in what you
+          are looking at”. A species seen twice cannot tell you where it fruits.
+        </p>
+      </fieldset>
+
+      <!-- Saved subsets -->
+      <fieldset>
+        <legend>Saved subsets</legend>
+        <div class="subset-save">
+          <input v-model="subsetName" type="text" placeholder="Name this filter set"
+                 @keyup.enter="saveSubset" />
+          <button :disabled="!subsetName.trim()" @click="saveSubset">Save</button>
+        </div>
+        <div v-if="savedFilters.subsets.value.length" class="subsets">
+          <div v-for="s in savedFilters.subsets.value" :key="s.id" class="subset"
+               :class="{ on: savedFilters.activeId.value === s.id }">
+            <button class="subset-apply" :title="describeFilters(s.snapshot)"
+                    @click="savedFilters.apply(s.id)">
+              <strong>{{ s.name }}</strong>
+              <span class="subset-desc">{{ describeFilters(s.snapshot) }}</span>
+            </button>
+            <button class="subset-rm" title="Delete this subset"
+                    @click="savedFilters.remove(s.id)">✕</button>
+          </div>
+        </div>
+        <p v-else class="fp-hint">
+          Save the filters you are using now and get back to them in one click.
+        </p>
+      </fieldset>
     </div>
   </div>
 </template>
@@ -94,6 +141,18 @@ const { filterOptions, filteredData, data } = useObservations()
 const { filters, setFilter, setCenter, reset, activeCount } = useFilters()
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+const savedFilters = useSavedFilters()
+const { describeFilters } = savedFilters
+const subsetName = ref('')
+
+function saveSubset() {
+  if (!subsetName.value.trim()) return
+  savedFilters.save(subsetName.value)
+  subsetName.value = ''
+}
+
+onMounted(() => savedFilters.loadFromStorage())
 
 const shownCount = computed(() => filteredData.value?.features?.length || 0)
 const totalCount = computed(() => data.value?.features?.length || 0)
@@ -114,6 +173,35 @@ function clearRadius() {
 </script>
 
 <style scoped>
+.fp-hint { color: var(--muted); font-size: 0.72rem; line-height: 1.4; margin: 5px 0 0; }
+
+.subset-save { display: flex; gap: 5px; }
+.subset-save input { flex: 1; min-width: 0; }
+.subset-save button {
+  border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
+  border-radius: 5px; padding: 4px 10px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+}
+.subset-save button:disabled { opacity: 0.45; cursor: default; }
+
+.subsets { display: grid; gap: 4px; margin-top: 7px; }
+.subset { display: flex; gap: 4px; align-items: stretch; }
+.subset-apply {
+  flex: 1; min-width: 0; text-align: left; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  border-radius: 5px; padding: 5px 8px; display: grid; gap: 1px;
+}
+.subset-apply:hover { background: var(--surface-3); }
+.subset.on .subset-apply { border-color: var(--accent); }
+.subset-desc {
+  color: var(--muted); font-size: 0.7rem; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.subset-rm {
+  border: 1px solid var(--border); background: transparent; color: var(--muted);
+  border-radius: 5px; padding: 0 7px; cursor: pointer;
+}
+.subset-rm:hover { color: var(--danger); border-color: var(--danger); }
+
 .filter-panel { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; background: var(--surface); }
 .fp-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
 .fp-head h3 { margin: 0; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }

@@ -41,3 +41,21 @@ test('an unregistered field falls back to the sign of its own data', () => {
 test('no values means no inference', () => {
   assert.deepEqual(clampDomain([-5, 5], null, []), [-5, 5])
 })
+
+test('clamping never collapses the domain to zero width', () => {
+  // An empty chart falls back to [0, 1]; clamping that to a field whose floor is
+  // 1 pinned both ends to 1, and every scale then divided by zero and painted
+  // the SVG with NaN coordinates.
+  const [lo, hi] = clampDomain([0, 1], boundsFor('day_of_year'), [])
+  assert.ok(hi > lo, `degenerate domain [${lo}, ${hi}]`)
+
+  // The same at the top end: a range pinned against a ceiling must widen
+  // downward rather than upward, staying inside the bound.
+  const [lo2, hi2] = clampDomain([360, 400], boundsFor('aspect'), [])
+  assert.ok(hi2 > lo2, `degenerate domain [${lo2}, ${hi2}]`)
+  assert.ok(hi2 <= 360, 'must not exceed the upper bound')
+})
+
+test('a normal domain is left exactly as it was', () => {
+  assert.deepEqual(clampDomain([10, 90], boundsFor('slope'), [20, 80]), [10, 90])
+})
