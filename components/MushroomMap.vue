@@ -34,6 +34,10 @@
                           :values="legendValues" />
       <ShareMenu :map-view="mapView" :color-by="colorBy" :size-by="sizeBy"
                  :title="shareTitle" />
+      <button class="locate" :disabled="saving" :title="saveError || 'Save the map as a PNG'"
+              @click="saveMap">
+        ⤓ {{ saving ? 'Saving…' : 'Save image' }}
+      </button>
       <label class="toggle">
         <input type="checkbox" v-model="showFiltered" />
         Include excluded water / non-terrestrial rows
@@ -455,6 +459,28 @@ watch([activeColors, colorOverrides, pointRadius, pointOpacity], () => {
 // Leaflet owns the centre and zoom, so they are mirrored into a ref for the
 // share link rather than read out of shared state.
 const mapView = ref(null)
+// Flatten the live map — tiles, the point canvas, any overlay canvas — into a
+// PNG. Everything is measured on screen rather than recomputed, so what is saved
+// is exactly what is displayed.
+const exporter = useImageExport()
+const saving = ref(false)
+const saveError = ref('')
+
+async function saveMap() {
+  if (!mapEl.value || saving.value) return
+  saving.value = true
+  saveError.value = ''
+  try {
+    const blob = await exporter.mapToPng(mapEl.value, { scale: 2 })
+    exporter.download(blob, `map-${exporter.slugify(colorBy.value, 'view')}-${exporter.stamp()}.png`)
+  } catch (err) {
+    saveError.value = err.message || 'Could not save the map.'
+    console.error('Map export failed:', err)
+  } finally {
+    saving.value = false
+  }
+}
+
 function syncMapView() {
   if (!map) return
   mapView.value = { center: map.getCenter(), zoom: map.getZoom() }
@@ -552,14 +578,16 @@ onMounted(async () => {
     if (!mapEl.value) throw new Error('map container not ready')
     L = (await import('leaflet')).default
 
+    // crossOrigin: the image export composites these tiles onto a canvas, and a
+    // tile fetched without it taints the canvas so toBlob() throws.
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors', maxZoom: 19,
+      attribution: '© OpenStreetMap contributors', maxZoom: 19, crossOrigin: 'anonymous',
     })
     const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17,
+      attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17, crossOrigin: 'anonymous',
     })
     const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Imagery © Esri', maxZoom: 19,
+      attribution: 'Imagery © Esri', maxZoom: 19, crossOrigin: 'anonymous',
     })
 
     // Zoom control on the bottom-left so it never overlaps the top-left
@@ -577,6 +605,7 @@ onMounted(async () => {
     for (const o of TILE_OVERLAYS) {
       tileOverlays[o.name] = L.tileLayer(o.url, {
         attribution: o.attribution, maxZoom: o.maxZoom, opacity: o.opacity ?? 1,
+        crossOrigin: 'anonymous',
       })
     }
     L.control.layers(

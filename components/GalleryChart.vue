@@ -27,7 +27,8 @@ const isLast = computed(() => visibleOrder.value[visibleOrder.value.length - 1] 
 
 <style scoped>
 /* The expand button sits top-right; these sit just left of it. */
-.layout-tools { position: absolute; top: 8px; right: 34px; display: flex; gap: 2px; z-index: 3; }
+/* Clears the card's own tools (save + full screen) sitting at the right edge. */
+.layout-tools { position: absolute; top: 8px; right: 62px; display: flex; gap: 2px; z-index: 3; }
 .layout-tools button {
   border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer;
   width: 22px; height: 22px; border-radius: 5px; font-size: 0.85rem; line-height: 1; padding: 0;
