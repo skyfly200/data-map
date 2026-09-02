@@ -5,6 +5,7 @@
          shows only the view that was shared. -->
     <header v-if="!isEmbed" class="app-header">
       <NuxtLink to="/" class="brand">
+        <AppLogo :size="30" />
         <h1>Nexstrata</h1>
       </NuxtLink>
       <div class="app-controls">
@@ -58,9 +59,24 @@ import { useShareState } from '~/composables/useShareState'
 
 const { isEmbed } = useShareState()
 
+const DESCRIPTION = 'Mushroom observations enriched with terrain and environmental exposure.'
 useHead({
-  title: 'data-map · Mushroom Observations',
-  meta: [{ name: 'description', content: 'Mushroom observations enriched with terrain and environmental exposure.' }],
+  title: 'Nexstrata · Mushroom Observations',
+  meta: [
+    { name: 'description', content: DESCRIPTION },
+    { name: 'theme-color', content: '#12181f' },
+    { property: 'og:title', content: 'Nexstrata' },
+    { property: 'og:description', content: DESCRIPTION },
+    { property: 'og:image', content: '/logo.svg' },
+    { name: 'twitter:card', content: 'summary' },
+  ],
+  link: [
+    // SVG first: browsers that understand it get the vector, and the .ico stays
+    // as the fallback rather than being replaced.
+    { rel: 'icon', type: 'image/svg+xml', href: '/icon.svg' },
+    { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+    { rel: 'apple-touch-icon', href: '/logo.svg' },
+  ],
 })
 
 // The dataset picker itself lives on the Data page; the app still loads the
@@ -216,9 +232,9 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
      the header's account menu opened underneath them. */
   position: relative; z-index: 2000;
 }
-.brand { text-decoration: none; color: inherit; }
+.brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; }
 .brand h1 { margin: 0; font-size: 1.15rem; }
-.brand:hover h1 { opacity: 0.85; }
+.brand:hover { opacity: 0.85; }
 
 .app-controls { display: flex; align-items: center; gap: 14px; }
 
@@ -264,7 +280,9 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
    nav its own horizontally-scrollable strip so nothing overflows off-screen. ── */
 @media (max-width: 860px) {
   .app-header { flex-wrap: wrap; gap: 6px 10px; padding: 6px 12px; }
+  .brand { gap: 7px; }
   .brand h1 { font-size: 1rem; }
+  .brand .logo { width: 24px; height: auto; }
   /* The nav lives inside .app-controls, which sits beside the brand — so the
      strip was penned into that column, starting a third of the way across and
      running out of room before the last two links. `display: contents` drops the
