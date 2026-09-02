@@ -7,7 +7,20 @@ from pathlib import Path
 
 from pyinaturalist import get_observations
 import pandas as pd
-from meteostat import Point, stations, daily
+try:
+    from meteostat import Point, stations, daily
+    _METEOSTAT_AVAILABLE = True
+except ImportError:
+    # Weather enrichment is best-effort. If meteostat isn't installed
+    # (e.g. a hosted notebook that doesn't install requirements.txt), the
+    # pipeline still runs and simply skips weather lookups.
+    Point = stations = daily = None
+    _METEOSTAT_AVAILABLE = False
+    print(
+        "Warning: 'meteostat' not installed; weather enrichment will be "
+        "skipped. Install it with `pip install meteostat` to enable.",
+        file=sys.stderr,
+    )
 from datetime import datetime
 import requests
 
@@ -74,7 +87,7 @@ def get_elevation(lat, lon):
     return None
 
 def get_weather(lat, lon, date_str):
-    if not date_str:
+    if not date_str or not _METEOSTAT_AVAILABLE:
         return {'station_id': None}
 
     key = (round(float(lat), 4), round(float(lon), 4), str(date_str))
