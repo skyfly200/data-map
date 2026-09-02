@@ -211,6 +211,10 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 10px 20px; background: var(--header-bg); color: #fff; flex: 0 0 auto;
   border-bottom: 1px solid var(--border);
+  /* Above anything a page draws. The map alone puts Leaflet's controls at 1000
+     and its observation drawer at 1100, and without a stacking order of its own
+     the header's account menu opened underneath them. */
+  position: relative; z-index: 2000;
 }
 .brand { text-decoration: none; color: inherit; }
 .brand h1 { margin: 0; font-size: 1.15rem; }

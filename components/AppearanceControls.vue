@@ -1,11 +1,15 @@
 <template>
   <div class="appearance">
-    <button class="ap-btn" :class="{ on: open }" :title="`Palette, shapes, point and overlay styling${overrideCount ? ` — ${overrideCount} override(s)` : ''}`"
-            @click="open = !open">
+    <button class="ap-btn" :class="{ on: open, 'icon-only': iconOnly }"
+            :title="`Palette, point and overlay styling${overrideCount ? ` — ${overrideCount} override(s)` : ''}`"
+            :aria-label="iconOnly ? 'Style' : null" @click="open = !open">
+      <!-- The swatches are the icon: they say what the palette currently is,
+           which a paint-pot glyph could not. -->
       <span class="swatches">
         <span v-for="c in activeColors.slice(0, 4)" :key="c" class="mini" :style="{ background: c }"></span>
       </span>
-      Style<span v-if="overrideCount" class="badge">{{ overrideCount }}</span>
+      <template v-if="!iconOnly">Style</template>
+      <span v-if="overrideCount" class="badge">{{ overrideCount }}</span>
     </button>
 
     <div v-if="open" class="ap-panel">
@@ -17,18 +21,6 @@
       </div>
       <div class="ap-preview">
         <span v-for="c in activeColors" :key="c" class="mini" :style="{ background: c }" :title="c"></span>
-      </div>
-
-      <div class="ap-row">
-        <label for="ap-shapes">Shapes</label>
-        <select id="ap-shapes" v-model="shapeSetKey" @change="persist">
-          <option v-for="s in SHAPE_SETS" :key="s.key" :value="s.key">{{ s.label }}</option>
-        </select>
-      </div>
-      <div class="ap-preview">
-        <svg v-for="s in activeShapes" :key="s" class="glyph" viewBox="-7 -7 14 14" :aria-label="s">
-          <path :d="shapePath(s, 0, 0, 5)" fill="currentColor" />
-        </svg>
       </div>
 
       <div class="ap-row">
@@ -82,12 +74,6 @@
             <input type="color" class="ap-color" :value="toHex(categoryColor(field, v))"
                    :aria-label="`Colour for ${v}`"
                    @input="setColor(field, v, $event.target.value)" />
-            <select class="ap-shape" :value="shapeOverrides[overrideKey(field, v)] || ''"
-                    :aria-label="`Shape for ${v}`"
-                    @change="$event.target.value ? setShape(field, v, $event.target.value) : clearShape(field, v)">
-              <option value="">auto</option>
-              <option v-for="s in ALL_SHAPES" :key="s" :value="s">{{ s }}</option>
-            </select>
             <span class="ap-label" :title="String(v)">{{ v }}</span>
             <button v-if="hasOverride(field, v)" class="ap-clear" title="Back to automatic"
                     @click="clearColor(field, v); clearShape(field, v)">↺</button>
@@ -119,6 +105,8 @@ const props = defineProps({
   field: { type: String, default: '' },
   fieldLabel: { type: String, default: '' },
   values: { type: Array, default: () => [] },
+  // Icon-only, for the map's control bar.
+  iconOnly: { type: Boolean, default: false },
 })
 
 // Long tails (hundreds of species) make the panel unusable; the host passes
@@ -148,11 +136,15 @@ function setRampEnd(i, hex) {
 }
 
 const open = ref(false)
+// Shapes are no longer offered here: colour already carries category identity
+// on this map, and a second encoding of the same thing added a control without
+// adding information. The shape encoding still exists for charts that ask for it
+// explicitly — it just runs on its defaults rather than being configured here.
 const {
-  PALETTES, SHAPE_SETS, ALL_SHAPES,
-  paletteKey, shapeSetKey, pointRadius, pointOpacity, pointOutline,
-  activeColors, activeShapes, shapeOverrides, overrideCount,
-  persist, reset, shuffleColors, setColor, clearColor, setShape, clearShape, hasOverride,
+  PALETTES,
+  paletteKey, pointRadius, pointOpacity, pointOutline,
+  activeColors, overrideCount,
+  persist, reset, shuffleColors, setColor, clearColor, clearShape, hasOverride,
 } = useAppearance()
 
 // <input type="color"> only accepts #rrggbb, so shorthand and named colours
@@ -165,18 +157,6 @@ function toHex(color) {
   return '#000000'
 }
 
-// Same generator the scatter charts use, so the preview glyphs match the marks.
-function shapePath(shape, cx, cy, r) {
-  const a = r * 0.6
-  switch (shape) {
-    case 'square': return `M${cx - r},${cy - r}h${2 * r}v${2 * r}h${-2 * r}z`
-    case 'triangle': return `M${cx},${cy - r}L${cx + r},${cy + r}L${cx - r},${cy + r}z`
-    case 'diamond': return `M${cx},${cy - r}L${cx + r},${cy}L${cx},${cy + r}L${cx - r},${cy}z`
-    case 'cross': return `M${cx - a},${cy - r}h${2 * a}v${r - a}h${r - a}v${2 * a}h${-(r - a)}v${r - a}h${-2 * a}v${-(r - a)}h${-(r - a)}v${-2 * a}h${r - a}z`
-    case 'wye': return `M${cx - a},${cy + r}l${a},${-r}l${-r},${-a}l${a * 0.6},${-a * 0.9}l${r - a * 0.6},${a}l${r - a * 0.6},${-a}l${a * 0.6},${a * 0.9}l${-r},${a}l${a},${r}z`
-    default: return `M${cx - r},${cy}a${r},${r} 0 1,0 ${2 * r},0a${r},${r} 0 1,0 ${-2 * r},0z`
-  }
-}
 </script>
 
 <style scoped>
@@ -188,6 +168,8 @@ function shapePath(shape, cx, cy, r) {
   border-radius: 6px; padding: 5px 10px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
 }
 .ap-btn:hover, .ap-btn.on { background: var(--surface-2); }
+.ap-btn.icon-only { width: 34px; height: 34px; padding: 0; justify-content: center; }
+.ap-btn.icon-only .swatches { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
 .swatches { display: inline-flex; gap: 2px; }
 .mini { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
 .badge {
@@ -212,7 +194,6 @@ function shapePath(shape, cx, cy, r) {
   border: 1px solid var(--border); border-radius: 5px; padding: 4px 6px;
 }
 .ap-preview { display: flex; flex-wrap: wrap; gap: 3px; margin: -4px 0 10px; color: var(--muted); }
-.glyph { width: 14px; height: 14px; }
 
 .ap-sub {
   display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
