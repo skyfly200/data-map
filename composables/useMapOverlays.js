@@ -11,16 +11,28 @@
 // own total, which cancels most of that bias — a cell's seasonal shape does not
 // depend on how many people visited it, only on when they found things.
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { categoryColor, hasValue } from '~/composables/useObservations'
 
 // Grid resolutions in degrees of latitude, with a rough ground distance.
 export const CELL_SIZES = [
+  // Below about a kilometre the grid stops summarising and starts drawing one
+  // cell per observation, which is the point layer with square markers — so
+  // these are offered, but the legend reports the cell count so you can see
+  // when that has happened.
+  { value: 0.005, label: '~500 m' },
+  { value: 0.01, label: '~1 km' },
   { value: 0.02, label: '~2 km' },
   { value: 0.05, label: '~5 km' },
   { value: 0.1, label: '~11 km' },
   { value: 0.25, label: '~28 km' },
 ]
+
+/** Today as a day of the year, which is where the seasonal overlays start. */
+export function todayOfYear(now = new Date()) {
+  const start = new Date(Date.UTC(now.getUTCFullYear(), 0, 0))
+  return Math.min(365, Math.max(1, Math.floor((now - start) / 86400000)))
+}
 
 export const OVERLAY_MODES = [
   { key: '', label: 'None', kind: 'none' },
@@ -57,13 +69,49 @@ const MIN_VECTOR_CELL = 0.1
 
 // Light → saturated ramps, one per sequential mode so overlays stay tellable
 // apart when a reader switches between them.
-const RAMPS = {
+export const DEFAULT_RAMPS = {
   density: ['#e8f1fb', '#0b3d91'],
   richness: ['#eef7ec', '#1b5e20'],
   season: ['#fff3e0', '#bf360c'],
   hotspots: ['#f3e9fb', '#4a148c'],
   wind: ['#9ecae1', '#08306b'],
 }
+
+// A named set to pick from, plus whatever the viewer sets by hand. Colour on a
+// map is not decoration — a ramp that a reader cannot separate at the light end
+// hides exactly the low values a density map is meant to show — so the presets
+// are all light-to-dark in luminance, and a custom pair is theirs to get wrong.
+export const RAMP_PRESETS = [
+  { key: 'default', label: 'Per overlay (default)', ramp: null },
+  { key: 'blue', label: 'Blue', ramp: ['#e8f1fb', '#0b3d91'] },
+  { key: 'green', label: 'Green', ramp: ['#eef7ec', '#1b5e20'] },
+  { key: 'warm', label: 'Warm', ramp: ['#fff3e0', '#bf360c'] },
+  { key: 'purple', label: 'Purple', ramp: ['#f3e9fb', '#4a148c'] },
+  { key: 'viridis', label: 'Viridis-ish', ramp: ['#fde725', '#440154'] },
+  { key: 'mono', label: 'Greyscale', ramp: ['#f2f2f2', '#1a1a1a'] },
+]
+
+// Overridden per viewer, from the appearance panel. Module-level so the colour
+// helpers below track it the same way the point palette does.
+export const overlayRampKey = ref('default')
+export const overlayRampCustom = ref(null)   // [from, to] hex, when set by hand
+
+/** The ramp actually used for a mode, after any override. */
+export function rampFor(mode) {
+  const custom = overlayRampCustom.value
+  if (overlayRampKey.value === 'custom' && Array.isArray(custom) && custom.length === 2) {
+    return custom
+  }
+  const preset = RAMP_PRESETS.find((p) => p.key === overlayRampKey.value)
+  if (preset?.ramp) return preset.ramp
+  return DEFAULT_RAMPS[mode] || DEFAULT_RAMPS.density
+}
+
+// Read through the override wherever the ramps were read directly before.
+const RAMPS = new Proxy({}, {
+  get: (_t, mode) => rampFor(String(mode)),
+  has: (_t, mode) => String(mode) in DEFAULT_RAMPS,
+})
 
 export function hexLerp(a, b, t) {
   const k = Math.max(0, Math.min(1, Number.isFinite(t) ? t : 0))
@@ -85,10 +133,7 @@ export function useMapOverlays() {
   const mode = useState('map-overlay-mode', () => '')
   const cellSize = useState('map-overlay-cell', () => 0.05)
   // Day-of-year the seasonal modes centre on, and how wide the window is.
-  const seasonDay = useState('map-overlay-day', () => {
-    const now = new Date()
-    return Math.floor((now - new Date(now.getUTCFullYear(), 0, 0)) / 86400000)
-  })
+  const seasonDay = useState('map-overlay-day', () => todayOfYear())
   const seasonWindow = useState('map-overlay-window', () => 14)
 
   const activeMode = computed(() => OVERLAY_MODES.find((m) => m.key === mode.value) || OVERLAY_MODES[0])
@@ -99,6 +144,7 @@ export function useMapOverlays() {
       localStorage.setItem('map-overlay', JSON.stringify({
         mode: mode.value, cellSize: cellSize.value,
         seasonDay: seasonDay.value, seasonWindow: seasonWindow.value,
+        rampKey: overlayRampKey.value, rampCustom: overlayRampCustom.value,
       }))
       cloud?.schedulePush()
     } catch { /* ignore */ }
@@ -116,6 +162,13 @@ export function useMapOverlays() {
       if (CELL_SIZES.some((c) => c.value === saved.cellSize)) cellSize.value = saved.cellSize
       if (Number.isFinite(saved.seasonDay)) seasonDay.value = saved.seasonDay
       if (Number.isFinite(saved.seasonWindow)) seasonWindow.value = saved.seasonWindow
+      if (saved.rampKey === 'custom' || RAMP_PRESETS.some((r) => r.key === saved.rampKey)) {
+        overlayRampKey.value = saved.rampKey
+      }
+      if (Array.isArray(saved.rampCustom) && saved.rampCustom.length === 2
+        && saved.rampCustom.every((c) => /^#[0-9a-f]{6}$/i.test(c))) {
+        overlayRampCustom.value = saved.rampCustom
+      }
     } catch { /* keep defaults */ }
   }
 
@@ -311,8 +364,9 @@ export function useMapOverlays() {
   }
 
   return {
-    mode, cellSize, seasonDay, seasonWindow, activeMode,
+    mode, cellSize, seasonDay, seasonWindow, activeMode, todayOfYear,
     OVERLAY_MODES, CELL_SIZES,
     computeOverlay, buildCells, persist, loadFromStorage,
+    RAMP_PRESETS, DEFAULT_RAMPS, overlayRampKey, overlayRampCustom, rampFor,
   }
 }

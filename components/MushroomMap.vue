@@ -52,22 +52,41 @@
           <option v-for="c in CELL_SIZES" :key="c.value" :value="c.value">{{ c.label }}</option>
         </select>
       </div>
-      <div v-if="overlayMode === 'season' || overlayMode === 'hotspots'" class="season">
-        <div class="slider">
-          <label for="season-day">
-            Date <strong>{{ seasonLabel }}</strong> <HelpLink option="map-season-day" keys="[" />
-          </label>
-          <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1"
-                 :title="tip(`Centre of the date window — currently ${seasonLabel}`, '[')" />
+      <!-- The date and window sliders were bare text and a bare track sitting
+           directly on the map tiles, which made both unreadable and cost a full
+           row of the bar. They now collapse to a summary of their own values,
+           and expand over a solid panel. -->
+      <div v-if="overlayMode === 'season' || overlayMode === 'hotspots'" ref="seasonEl" class="season">
+        <button class="season-toggle" :class="{ on: seasonOpen }" :aria-expanded="String(seasonOpen)"
+                :title="tip('Set the date and window the seasonal overlays use', 's')"
+                @click="seasonOpen = !seasonOpen">
+          <span class="s-label">Season</span>
+          <strong>{{ seasonLabel }} · ±{{ seasonWindow }}d</strong>
+          <span class="caret" aria-hidden="true">{{ seasonOpen ? '▴' : '▾' }}</span>
+        </button>
+
+        <div v-if="seasonOpen" class="season-panel">
+          <div class="slider">
+            <label for="season-day">
+              Date <strong>{{ seasonLabel }}</strong> <HelpLink option="map-season-day" keys="[" />
+              <!-- The slider opens on today, but the setting is remembered, so a
+                   return visit lands wherever it was left. This is the way back. -->
+              <button class="today-btn" :disabled="seasonDay === todayDay"
+                      title="Centre the window on today"
+                      @click="seasonDay = todayDay">Today</button>
+            </label>
+            <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1"
+                   :title="tip(`Centre of the date window — currently ${seasonLabel}`, '[')" />
+          </div>
+          <div class="slider">
+            <label for="season-window">
+              Window <strong>±{{ seasonWindow }} days</strong> <HelpLink option="map-season-window" />
+            </label>
+            <input id="season-window" v-model.number="seasonWindow" type="range" min="3" max="60" step="1"
+                   title="How wide a window counts as 'in season'. Wider is smoother and less specific." />
+          </div>
+          <p class="slider-note">{{ windowSpan }}</p>
         </div>
-        <div class="slider">
-          <label for="season-window">
-            Window <strong>±{{ seasonWindow }} days</strong> <HelpLink option="map-season-window" />
-          </label>
-          <input id="season-window" v-model.number="seasonWindow" type="range" min="3" max="60" step="1"
-                 title="How wide a window counts as 'in season'. Wider is smoother and less specific." />
-        </div>
-        <p class="slider-note">{{ windowSpan }}</p>
       </div>
     </div>
 
@@ -104,7 +123,9 @@
         </div>
       </template>
       <template v-else>
-        <div v-for="item in overlayLegend.items" :key="item.label" class="legend-row">
+        <div v-for="item in overlayLegend.items" :key="item.label" class="legend-row hoverable"
+             :class="{ dim: hoverValue && hoverValue !== item.label }"
+             @mouseenter="hoverValue = item.label" @mouseleave="hoverValue = null">
           <span class="swatch" :style="{ background: item.color }"></span>
           <span><em>{{ item.label }}</em> <span class="legend-n">{{ item.n }}</span></span>
         </div>
@@ -113,10 +134,14 @@
     </div>
 
     <!-- Legend (categorical swatches or a sequential gradient) -->
-    <div v-if="coloring" class="legend">
+    <div v-if="coloring" class="legend" @mouseleave="hoverValue = null">
       <div class="legend-title">{{ coloring.title }}</div>
       <template v-if="coloring.type === 'categorical'">
-        <div v-for="item in coloring.legend" :key="item.label" class="legend-row">
+        <!-- Hovering a row picks out the marks it stands for. A legend of twenty
+             species otherwise leaves you matching hues by eye. -->
+        <div v-for="item in coloring.legend" :key="item.label" class="legend-row hoverable"
+             :class="{ dim: hoverValue && hoverValue !== item.label }"
+             @mouseenter="hoverValue = item.label">
           <span class="swatch" :style="{ background: item.color }"></span>
           <span>{{ item.label }}</span>
         </div>
@@ -149,7 +174,7 @@ const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const live = useLiveClusters()
 const appearance = useAppearance()
 const share = useShareState()
-const { pointRadius, pointOpacity, pointOutline, activeColors, colorOverrides } = appearance
+const { pointRadius, pointOpacity, pointOutline, colorSeed, activeColors, colorOverrides } = appearance
 
 const mapEl = ref(null)
 
@@ -309,6 +334,15 @@ const TILE_OVERLAYS = [
 
 // Reference layers that could not be reached. Shown rather than swallowed:
 // an empty ownership layer reads as "no public land here".
+// The season sliders collapse by default: their summary says what they are set
+// to, so the bar stays one row until you actually want to move them.
+const seasonEl = ref(null)
+const seasonOpen = ref(false)
+const todayDay = overlays.todayOfYear()
+
+// The legend value under the cursor. Everything not matching it is faded on the
+// map, so a row in the key and the marks it stands for can be seen together.
+const hoverValue = ref(null)
 const tileErrors = ref([])
 // The caveat belonging to whichever reference layers are switched on.
 const activeTileNotes = ref([])
@@ -365,7 +399,12 @@ const coloring = computed(() => {
     }
     const legend = [...seen].sort().map((lab) => ({ label: lab, color: categoryColor('live_cluster', lab) }))
     if (hasNull) legend.push({ label: 'Unclustered', color: UNCLUSTERED })
-    return { type: 'categorical', title, colorFn: (p) => categoryColor('live_cluster', live.labelFor(p)), legend }
+    return {
+      type: 'categorical', title, legend,
+      colorFn: (p) => categoryColor('live_cluster', live.labelFor(p)),
+      // The legend label this mark would carry, for hover highlighting.
+      labelOf: (p) => (hasValue(live.labelFor(p)) ? live.labelFor(p) : 'Unclustered'),
+    }
   }
 
   // Cluster keeps its own stable palette + an explicit "Unclustered" bucket.
@@ -378,7 +417,11 @@ const coloring = computed(() => {
     }
     const legend = [...seen].sort((a, b) => a - b).map((c) => ({ label: `Cluster ${c}`, color: colorFor(c) }))
     if (hasNull) legend.push({ label: 'Unclustered', color: UNCLUSTERED })
-    return { type: 'categorical', title, colorFn: (p) => colorFor(p.cluster), legend }
+    return {
+      type: 'categorical', title, legend,
+      colorFn: (p) => colorFor(p.cluster),
+      labelOf: (p) => (hasValue(p.cluster) ? `Cluster ${p.cluster}` : 'Unclustered'),
+    }
   }
 
   // Any other categorical dimension (land cover, species, …): assign palette
@@ -397,9 +440,9 @@ const coloring = computed(() => {
     const legend = cats.slice(0, LEGEND_CAP).map((v) => ({ label: String(v), color: categoryColor(key, v) }))
     if (cats.length > LEGEND_CAP) legend.push({ label: `+${cats.length - LEGEND_CAP} more`, color: UNCLUSTERED })
     return {
-      type: 'categorical', title,
+      type: 'categorical', title, legend,
       colorFn: (p) => (hasValue(p[key]) ? categoryColor(key, p[key]) : UNCLUSTERED),
-      legend,
+      labelOf: (p) => (hasValue(p[key]) ? String(p[key]) : null),
     }
   }
 
@@ -463,21 +506,28 @@ function radiusFor(props) {
  * mesh — the opposite of what turning the dots down is for.
  */
 function markerStyle(props) {
+  // While a legend row is hovered, everything it does not stand for fades back
+  // rather than disappearing — the surrounding marks are the context that makes
+  // the highlighted ones mean something.
+  const c = coloring.value
+  const faded = hoverValue.value !== null && typeof c.labelOf === 'function'
+    && c.labelOf(props) !== hoverValue.value
+  const fill = faded ? pointOpacity.value * 0.12 : pointOpacity.value
   return {
     radius: radiusFor(props),
-    fillColor: coloring.value.colorFn(props),
-    fillOpacity: pointOpacity.value,
-    stroke: pointOutline.value,
-    weight: pointOutline.value ? 1 : 0,
+    fillColor: c.colorFn(props),
+    fillOpacity: fill,
+    stroke: pointOutline.value && !faded,
+    weight: pointOutline.value && !faded ? 1 : 0,
     color: '#222',
-    opacity: pointOutline.value ? pointOpacity.value : 0,
+    opacity: pointOutline.value && !faded ? fill : 0,
   }
 }
 
 // Colouring, sizing, palette, per-value overrides and point styling all restyle
 // the existing layer in place — no need to rebuild it, which would refit the
 // view.
-watch([coloring, sizeScale, activeColors, colorOverrides, pointRadius, pointOpacity, pointOutline], () => {
+watch([coloring, sizeScale, activeColors, colorOverrides, pointRadius, pointOpacity, pointOutline, colorSeed, hoverValue], () => {
   if (!geoLayer) return
   geoLayer.eachLayer((l) => {
     const style = markerStyle(l.feature.properties)
@@ -674,6 +724,23 @@ onMounted(async () => {
     const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17, crossOrigin: 'anonymous',
     })
+    // Muted basemaps, and the default. A street or topo map is drawn to be read
+    // on its own; the moment 48k coloured dots sit on top of it, its own colour
+    // is competing with the data for the same hues. A grey canvas gives the dots
+    // the only saturation on screen — which is why it is the conventional base
+    // for a point map, and why it is what this one opens with. Terrain is still
+    // one click away, and the hillshade overlay puts relief back without colour.
+    const grey = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap contributors © CARTO', maxZoom: 19,
+      subdomains: 'abcd', crossOrigin: 'anonymous',
+    })
+    const greyMin = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap contributors © CARTO', maxZoom: 19,
+      subdomains: 'abcd', crossOrigin: 'anonymous',
+    })
+    const greyEsri = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Esri', maxZoom: 16, crossOrigin: 'anonymous',
+    })
     const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Imagery © Esri', maxZoom: 19, crossOrigin: 'anonymous',
     })
@@ -685,7 +752,7 @@ onMounted(async () => {
     // 48k interactive nodes in the DOM, which is what made panning and zooming
     // crawl; the canvas renderer keeps that flat as the dataset grows.
     map = L.map(mapEl.value, {
-      scrollWheelZoom: true, zoomControl: false, layers: [osm], preferCanvas: true,
+      scrollWheelZoom: true, zoomControl: false, layers: [grey], preferCanvas: true,
     }).setView([39.5, -105.7], 7)
     L.control.zoom({ position: 'bottomleft' }).addTo(map)
     // Reference tile services as toggleable overlays alongside the basemaps.
@@ -730,7 +797,14 @@ onMounted(async () => {
       tileOverlays[o.name] = layer
     }
     L.control.layers(
-      { 'Street (OSM)': osm, 'Terrain (OpenTopoMap)': topo, 'Satellite (Esri)': sat },
+      {
+        'Light grey': grey,
+        'Light grey, no labels': greyMin,
+        'Grey canvas (Esri)': greyEsri,
+        'Street (OSM)': osm,
+        'Terrain (OpenTopoMap)': topo,
+        'Satellite (Esri)': sat,
+      },
       tileOverlays, { position: 'topright', collapsed: true },
     ).addTo(map)
 
@@ -814,13 +888,22 @@ shortcuts.register([
   { scope: 'Map', keys: 'e', label: 'Save the map as an image', run: () => saveMap() },
   { scope: 'Map', keys: '[', label: 'Overlay date back a week', run: () => nudgeDay(-7) },
   { scope: 'Map', keys: ']', label: 'Overlay date forward a week', run: () => nudgeDay(7) },
+  { scope: 'Map', keys: 's', label: 'Season date and window', run: () => { seasonOpen.value = !seasonOpen.value } },
   { scope: 'Map', keys: 'escape', label: 'Close the observation drawer', run: () => { selected.value = null } },
 ])
 
 // The bar renders behind v-if="loaded", so start measuring when it appears.
 watch(loaded, (ok) => { if (ok) nextTick(trackControlsHeight) }, { immediate: true })
 
+function onDocClick(e) {
+  if (seasonOpen.value && seasonEl.value && !seasonEl.value.contains(e.target)) {
+    seasonOpen.value = false
+  }
+}
+onMounted(() => document.addEventListener('click', onDocClick))
+
 onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocClick)
   controlsResize?.disconnect()
   if (map) map.remove()
 })
@@ -910,15 +993,48 @@ onBeforeUnmount(() => {
 .tile-warn .legend-title { color: #b00020; }
 
 /* Day-of-year window controls for the seasonal overlays. */
-.season { display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem; min-width: 200px; }
-.slider { display: flex; flex-direction: column; gap: 1px; }
-.slider label { color: var(--muted); }
+/* Collapsed, it is one chip the width of its own summary. Expanded, it floats
+   over a solid panel rather than pushing the bar taller — which also keeps the
+   bar's measured height, and so Leaflet's offset, stable. */
+.season { position: relative; }
+.season-toggle {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
+  padding: 7px 10px; font: 13px system-ui, sans-serif; color: #333; cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); white-space: nowrap;
+}
+.season-toggle:hover, .season-toggle.on { background: #fff; }
+.season-toggle .s-label { color: var(--muted); font-weight: 600; }
+.season-toggle .caret { color: var(--muted); font-size: 10px; }
+
+.season-panel {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 900; width: 260px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 4px 16px var(--shadow); padding: 12px;
+  display: flex; flex-direction: column; gap: 10px; font-size: 0.8rem; color: var(--text);
+}
+.slider { display: flex; flex-direction: column; gap: 3px; }
+.slider label { color: var(--muted); display: flex; align-items: center; gap: 6px; }
 .slider label strong { color: var(--text); }
-.season input[type="range"] { width: 100%; margin: 0; }
-.slider-note { margin: 0; color: var(--muted); font-size: 0.72rem; line-height: 1.3; }
+.season-panel input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); }
+.slider-note { margin: 0; color: var(--muted); font-size: 0.74rem; line-height: 1.35; }
+.today-btn {
+  margin-left: auto; border: 1px solid var(--border); background: var(--surface-2);
+  color: var(--text); border-radius: 5px; padding: 2px 8px; font-size: 0.72rem;
+  font-weight: 600; cursor: pointer;
+}
+.today-btn:hover:not(:disabled) { background: var(--surface-3); }
+.today-btn:disabled { opacity: 0.4; cursor: default; }
+
+@media (max-width: 640px) {
+  .season-panel { width: min(260px, calc(100vw - 40px)); }
+}
 
 /* A control that is currently off reads as off, not just unstyled. */
 .legend-row span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legend-row.hoverable { cursor: default; border-radius: 4px; padding: 1px 3px; margin: 0 -3px; }
+.legend-row.hoverable:hover { background: var(--surface-2, rgba(0, 0, 0, 0.06)); }
+.legend-row.dim { opacity: 0.35; }
 .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #222; flex: 0 0 auto; }
 .gradient { height: 12px; border-radius: 3px; border: 1px solid #ccc; }
 .gradient-scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 3px; }

@@ -60,7 +60,13 @@ const DEFAULTS = {
   shapeSet: 'all',
   pointRadius: 4,
   pointOpacity: 0.85,
-  pointOutline: true,
+  // Off by default: the ring helps a handful of sparse points and hurts
+  // everywhere else, and this dataset is dense far more often than it is sparse.
+  pointOutline: false,
+  // Reshuffles which palette colour each category lands on. Two species can
+  // hash to neighbouring colours and become hard to tell apart; there is no
+  // "right" assignment to fix that, only a different one.
+  colorSeed: 0,
   colorOverrides: {},   // "field:value" → hex
   shapeOverrides: {},   // "field:value" → shape name
 }
@@ -77,6 +83,7 @@ const pointOpacity = ref(DEFAULTS.pointOpacity)
 // dense cluster the rings merge into a grey mass and hide the colours they were
 // drawn to separate — so it can be turned off.
 const pointOutline = ref(DEFAULTS.pointOutline)
+const colorSeed = ref(DEFAULTS.colorSeed)
 const colorOverrides = ref({ ...DEFAULTS.colorOverrides })
 const shapeOverrides = ref({ ...DEFAULTS.shapeOverrides })
 
@@ -102,7 +109,10 @@ export const overrideKey = (field, value) => `${field}:${value}`
 export function colorFor(cluster) {
   if (cluster === null || cluster === undefined || Number.isNaN(cluster)) return UNCLUSTERED
   const colors = activeColors.value
-  return colors[cluster % colors.length]
+  // Shuffling has to reach clusters too. They are coloured by index rather than
+  // by hash, so without the seed here the button appeared to do nothing at all
+  // while the map was coloured by cluster — which is the default.
+  return colors[(cluster + colorSeed.value) % colors.length]
 }
 
 // Deterministic colour for a category value, so the same value (a species, a
@@ -113,7 +123,10 @@ export function stableColor(value) {
   let h = 0
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
   const colors = activeColors.value
-  return colors[h % colors.length]
+  // The seed shifts every assignment together. Still deterministic: the same
+  // seed gives the same colours on the map, in every chart and for anyone
+  // opening a shared link, so shuffling is a choice rather than a coin toss.
+  return colors[(h + colorSeed.value) % colors.length]
 }
 
 // Colour for a (field, value) pair. An explicit override wins; clusters keep
@@ -154,6 +167,7 @@ export function useAppearance() {
         pointRadius: pointRadius.value,
         pointOpacity: pointOpacity.value,
         pointOutline: pointOutline.value,
+        colorSeed: colorSeed.value,
         colorOverrides: colorOverrides.value,
         shapeOverrides: shapeOverrides.value,
       }))
@@ -173,6 +187,7 @@ export function useAppearance() {
       if (Number.isFinite(saved.pointRadius)) pointRadius.value = saved.pointRadius
       if (Number.isFinite(saved.pointOpacity)) pointOpacity.value = saved.pointOpacity
       if (typeof saved.pointOutline === 'boolean') pointOutline.value = saved.pointOutline
+      if (Number.isFinite(saved.colorSeed)) colorSeed.value = saved.colorSeed
       if (saved.colorOverrides && typeof saved.colorOverrides === 'object') {
         colorOverrides.value = { ...saved.colorOverrides }
       }
@@ -208,12 +223,28 @@ export function useAppearance() {
     return Boolean(colorOverrides.value[k] || shapeOverrides.value[k])
   }
 
+  /** A different assignment, not a better one — so it just advances the seed. */
+  function shuffleColors() {
+    const colors = activeColors.value.length || 1
+    // Land on a different offset than the current one, or the button appears
+    // broken when the random draw repeats itself.
+    let next = colorSeed.value
+    if (colors > 1) {
+      while (next % colors === colorSeed.value % colors) {
+        next = Math.floor(Math.random() * colors * 4)
+      }
+    }
+    colorSeed.value = next
+    persist()
+  }
+
   function reset() {
     paletteKey.value = DEFAULTS.palette
     shapeSetKey.value = DEFAULTS.shapeSet
     pointRadius.value = DEFAULTS.pointRadius
     pointOpacity.value = DEFAULTS.pointOpacity
     pointOutline.value = DEFAULTS.pointOutline
+    colorSeed.value = DEFAULTS.colorSeed
     colorOverrides.value = {}
     shapeOverrides.value = {}
     persist()
@@ -224,7 +255,7 @@ export function useAppearance() {
 
   return {
     PALETTES, SHAPE_SETS, ALL_SHAPES,
-    paletteKey, shapeSetKey, pointRadius, pointOpacity, pointOutline,
+    paletteKey, shapeSetKey, pointRadius, pointOpacity, pointOutline, colorSeed, shuffleColors,
     activeColors, activeShapes, colorOverrides, shapeOverrides, overrideCount,
     persist, loadFromStorage, reset,
     setColor, clearColor, setShape, clearShape, hasOverride,
