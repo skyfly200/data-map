@@ -253,19 +253,81 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 /* ── Mobile: the header is a single row on desktop; let it wrap and give the
    nav its own horizontally-scrollable strip so nothing overflows off-screen. ── */
 @media (max-width: 860px) {
-  .app-header { flex-wrap: wrap; gap: 8px 10px; padding: 8px 12px; }
+  .app-header { flex-wrap: wrap; gap: 6px 10px; padding: 6px 12px; }
   .brand h1 { font-size: 1rem; }
-  .app-controls { flex-wrap: wrap; gap: 8px 10px; width: 100%; }
+  /* Sits beside the brand rather than claiming a row of its own: at full width
+     the controls pushed the nav onto a third row, and three rows of chrome is a
+     lot of a phone screen to spend before any data.
+
+     `flex: 1 1 0`, not `1 1 auto` — with an auto basis this box is sized by its
+     content, and the nav strip inside it is `width: 100%`, so the two resolve
+     circularly to the nav's full unwrapped width (501px on a 390px screen) and
+     the whole page scrolls sideways. A zero basis breaks the cycle: the box
+     takes the room left over from the brand, and the nav scrolls inside it. */
+  .app-controls { flex: 1 1 0; min-width: 0; flex-wrap: wrap; gap: 6px 8px; justify-content: flex-end; }
   .app-nav {
-    order: 5; width: 100%; flex-wrap: nowrap; overflow-x: auto;
+    order: 5; width: 100%; min-width: 0; flex-wrap: nowrap; overflow-x: auto;
     -webkit-overflow-scrolling: touch; gap: 4px; padding-bottom: 2px;
   }
   .app-nav::-webkit-scrollbar { height: 0; }
   .nav-link { white-space: nowrap; padding: 6px 10px; }
-  .auth-box { margin-left: auto; }
 }
 @media (max-width: 480px) {
   .brand h1 { font-size: 0.95rem; }
-  .units button { padding: 4px 8px; }
+  /* The email is the first thing worth losing when space is short — the avatar
+     already says who is signed in. */
+  .auth-box .who { display: none; }
+}
+
+/* ── Touch: a finger is not a cursor ─────────────────────────────────────────
+   Keyed on the pointer, not the viewport, so a tablet gets the same treatment
+   as a phone and a small desktop window does not.
+
+   Two approaches. Controls with room to grow get a real minimum height. Icon
+   controls — the ? beside an option, a card's ⤓ and ⤢ — keep their drawn size
+   and grow an invisible hit area instead, because scaling them up would turn a
+   quiet affordance into a row of loud buttons. */
+@media (pointer: coarse) {
+  /* Every button and button-like link, unless it is one of the icon controls
+     handled by hit-area expansion below. */
+  button, [role="button"], .auth-btn, .nav-link, .filter-flag, .brand,
+  .ref-nav a, .opt-also a, .hb-chip {
+    min-height: 36px;
+  }
+  button, [role="button"], .auth-btn, .nav-link, .filter-flag, .brand, .ref-nav a {
+    display: inline-flex; align-items: center;
+  }
+  .app-header .units button { padding: 0 14px; justify-content: center; }
+  .app-header .theme-btn { width: 38px; justify-content: center; }
+
+  /* The icon controls opt back out: a 36px minimum would turn a card's quiet
+     ⤓ and ⤢ into a pair of chunky buttons. They get reach, not bulk. */
+  a.help, .card-tools .tool, .saved-tools button, .saved-tools .sh-btn,
+  .sc-close, .close, .set-close {
+    min-height: 0;
+  }
+
+  /* Checkboxes ship at 13px, which is under half a fingertip. */
+  input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; }
+
+  /* Form controls tall enough to hit, and 16px text so iOS does not zoom the
+     page when one takes focus. */
+  select, input[type="text"], input[type="number"], input[type="search"],
+  input[type="date"], input[type="email"], input[type="password"] {
+    min-height: 36px; font-size: 16px;
+  }
+
+  /* Invisible hit area, centred on the icon, without disturbing the layout. */
+  a.help, .card-tools .tool, .saved-tools button, .saved-tools .sh-btn {
+    position: relative;
+  }
+  a.help::after, .card-tools .tool::after,
+  .saved-tools button::after, .saved-tools .sh-btn::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: 40px; height: 40px; transform: translate(-50%, -50%);
+  }
+  /* The # beside a reference heading is a desktop affordance — it appears on
+     hover, which a touch screen has none of. */
+  .opt .anchor { display: none; }
 }
 </style>

@@ -838,7 +838,17 @@ onBeforeUnmount(() => { if (map) map.remove() })
 /* Mobile: tighten the on-map controls and legend so they don't swallow the map. */
 @media (max-width: 640px) {
   .controls { top: 8px; left: 8px; right: 8px; gap: 6px; }
-  .colorby { padding: 5px 8px; font-size: 12px; }
+  /* Two dropdowns to a row instead of one. Each pairing is natural — what the
+     dots mean beside how big they are, the overlay beside its cell size — and
+     it halves the number of rows the bar spends covering the map. */
+  .colorby {
+    padding: 5px 8px; font-size: 12px;
+    flex: 1 1 calc(50% - 3px); min-width: 0; box-sizing: border-box;
+  }
+  .colorby label { flex: 0 0 auto; }
+  .colorby select { flex: 1 1 auto; min-width: 0; }
+  /* The popover buttons share the remaining row rather than each taking one. */
+  .season { flex: 1 1 100%; }
   .legend {
     bottom: 8px; right: 8px; left: auto; max-width: 62vw; max-height: 34vh;
     padding: 8px 10px; font-size: 12px;
