@@ -280,6 +280,48 @@ def filter_new_observations(fresh_rows, existing_rows=None):
         new_rows.append(item)
     return new_rows
 
+# Above this, a coordinate is too vague to sample terrain at. A 0.2° obscuring
+# cell is ~22km across, so iNaturalist reports tens of kilometres of accuracy for
+# an obscured record; a GPS fix under a canopy is tens or hundreds of metres.
+# 1km sits well clear of honest GPS error and well below any obscured record.
+COARSE_ACCURACY_M = 1000
+
+def _coerce_accuracy(value):
+    """Accuracy in metres, or None. iNaturalist leaves it unset more often than not."""
+    if value is None:
+        return None
+    try:
+        metres = int(float(value))
+    except (TypeError, ValueError):
+        return None
+    return metres if metres >= 0 else None
+
+def classify_location_precision(obscured, geoprivacy, taxon_geoprivacy, public_accuracy):
+    """
+    One word for how much the coordinates can be trusted.
+
+    'obscured'  the point is randomised inside a ~20km cell — iNaturalist is
+                deliberately not telling us where this was, either because the
+                observer asked or because the taxon is threatened.
+    'coarse'    an honest but vague location: no obscuring, but an accuracy
+                radius too wide to sample terrain at.
+    'precise'   good enough to read the ground under it.
+    'unknown'   iNaturalist reported no accuracy at all, which is common. Not
+                the same as precise, and worth keeping separate so a filter can
+                decide what to do about it.
+
+    Obscuring wins over accuracy: a record can be obscured and still carry a
+    small accuracy number, and that number describes the observer's GPS, not the
+    published point.
+    """
+    if obscured or geoprivacy == 'obscured' or taxon_geoprivacy == 'obscured':
+        return 'obscured'
+    if geoprivacy == 'private' or taxon_geoprivacy == 'private':
+        return 'obscured'
+    if public_accuracy is None:
+        return 'unknown'
+    return 'coarse' if public_accuracy > COARSE_ACCURACY_M else 'precise'
+
 def get_species_observation_total(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0):
     try:
         response = get_observations(
@@ -387,9 +429,38 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
             if species_name_found:
                 genus_name_found = species_name_found.split()[0] if species_name_found else ''
 
+            # How much to trust the coordinates.
+            #
+            # iNaturalist obscures a location when the observer asks for it, or
+            # automatically for a threatened taxon. An obscured record is not
+            # merely vague: the published point is randomised inside a 0.2°
+            # cell, roughly 20km across, so it can sit on the wrong side of a
+            # ridge or in a different watershed entirely. Every terrain and
+            # weather value this pipeline samples is read AT the point, so for
+            # these records the enrichment describes a place the mushroom was
+            # probably not.
+            #
+            # All of this rides along on the response already being fetched —
+            # no extra request — but none of it was being read.
+            obscured = bool(obs.get('obscured'))
+            geoprivacy = obs.get('geoprivacy')
+            taxon_geoprivacy = obs.get('taxon_geoprivacy')
+            # public_positional_accuracy is what a stranger sees, and is what
+            # matters here: for an obscured record it reflects the whole cell,
+            # not the observer's GPS.
+            public_accuracy = _coerce_accuracy(obs.get('public_positional_accuracy'))
+            accuracy = _coerce_accuracy(obs.get('positional_accuracy'))
+
             observations.append({
                 'uuid': obs.get('uuid'),
                 'inat_id': obs.get('id'),
+                'obscured': obscured,
+                'geoprivacy': geoprivacy,
+                'taxon_geoprivacy': taxon_geoprivacy,
+                'positional_accuracy': accuracy,
+                'public_positional_accuracy': public_accuracy,
+                'location_precision': classify_location_precision(
+                    obscured, geoprivacy, taxon_geoprivacy, public_accuracy),
                 'timestamp': timestamp,
                 'date': date,
                 'lon': lon_val,

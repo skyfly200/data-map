@@ -77,7 +77,28 @@ export const FIELDS = [
   ['water_retention', 'Water retention', num2],
   ['slope', 'Slope', (v) => `${num1(v)}°`],
   ['aspect', 'Aspect', (v) => `${num1(v)}°`],
+  ['location_precision', 'Location', (v) => LOCATION_PRECISION_LABELS[v] || v],
 ]
+
+// How far the published coordinates can be trusted. iNaturalist obscures a
+// location on request, or automatically for a threatened taxon, by randomising
+// the point inside a ~0.2° cell — about 20km. Everything this app samples at a
+// point (elevation, slope, aspect, NDVI, soil moisture, the weather lead-up) is
+// therefore describing somewhere else entirely for an obscured record.
+export const LOCATION_PRECISION_LABELS = {
+  precise: 'Precise',
+  coarse: 'Coarse (>1km)',
+  obscured: 'Obscured (~20km)',
+  unknown: 'Not reported',
+}
+
+// The values whose terrain enrichment cannot be taken at face value.
+export const IMPRECISE_PRECISIONS = new Set(['obscured', 'coarse'])
+
+/** True when a record's coordinates are too vague to read the ground under. */
+export function isImprecise(props) {
+  return IMPRECISE_PRECISIONS.has(props?.location_precision)
+}
 
 export function hasValue(v) {
   return v !== null && v !== undefined && v !== ''

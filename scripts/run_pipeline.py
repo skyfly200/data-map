@@ -235,7 +235,45 @@ def _run_stages(python_executable=None):
     except Exception as exc:
         print(f"[!] Raster coverage summary skipped: {exc}")
 
+    # 6. Say how much of the terrain enrichment can actually be trusted. The
+    # pipeline samples every environmental value AT the observation's point, and
+    # iNaturalist randomises obscured points inside a ~20km cell — so for those
+    # rows the elevation, slope, NDVI and moisture describe somewhere else. That
+    # is worth stating at the end of a run rather than leaving to be discovered.
+    try:
+        _report_location_precision()
+    except Exception as exc:
+        print(f"[!] Location precision summary skipped: {exc}")
+
     print("\n✅ Full data pipeline completed successfully.")
+
+
+def _report_location_precision():
+    import species_store as store
+
+    # Read the enriched store, which is what the export and the app both see.
+    df = store.load_all(store.ENRICHED_DIR)
+    if df is None or 'location_precision' not in getattr(df, 'columns', []):
+        # Nothing to say until a fetch has run that records the field.
+        return
+    counts = df['location_precision'].value_counts(dropna=False).to_dict()
+    total = int(sum(counts.values()))
+    if not total:
+        return
+
+    print("\n=== Location precision ===")
+    for key in ('precise', 'coarse', 'obscured', 'unknown'):
+        n = int(counts.get(key, 0))
+        print(f"  {key:9s} {n:7,d}  {n / total * 100:5.1f}%")
+
+    untrustworthy = int(counts.get('obscured', 0)) + int(counts.get('coarse', 0))
+    if untrustworthy:
+        print(
+            f"  [!] {untrustworthy:,} of {total:,} rows ({untrustworthy / total * 100:.1f}%) "
+            "carry terrain sampled at a point iNaturalist deliberately moved or "
+            "could not pin down. Use the 'Precise coordinates only' filter before "
+            "reading terrain relationships."
+        )
 
 
 def main():

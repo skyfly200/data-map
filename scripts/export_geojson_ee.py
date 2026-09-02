@@ -12,12 +12,17 @@ PROPERTY_COLUMNS = [
     "species", "date", "location", "elevation", "land_cover_label",
     "water_mask", "exclude_reason", "ndvi", "soil_moisture",
     "solar_exposure", "wind_exposure", "water_retention", "slope", "aspect",
+    # Location trustworthiness. Obscured records are randomised inside a ~20km
+    # cell, so every terrain value sampled at the point describes somewhere else
+    # — the map and the analysis both need to be able to see that.
+    "location_precision",
+    "public_positional_accuracy",
     "num_identification_agreements", "cluster", "tavg", "tmin", "tmax",
     *(f"prcp_d{i}" for i in range(7)),
     *(f"tmax_d{i}" for i in range(7)),
     *(f"tmin_d{i}" for i in range(7)),
 ]
-INT_COLUMNS = {"cluster", "num_identification_agreements"}
+INT_COLUMNS = {"cluster", "num_identification_agreements", "public_positional_accuracy"}
 
 def _clean(value, as_int=False):
     if value is None or (isinstance(value, float) and math.isnan(value)) or pd.isna(value):
