@@ -311,6 +311,11 @@ const TILE_OVERLAYS = [
   { name: 'OpenTopoMap relief', url: 'https://tile.opentopomap.org/{z}/{x}/{y}.png',
     attribution: 'OpenTopoMap (CC-BY-SA)', maxZoom: 17, opacity: 0.5 },
 
+  // The grey basemaps carry no place names, which is what keeps them quiet.
+  // Labels are a separate layer so you can have them or not.
+  { name: 'Place labels', url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Esri', maxZoom: 16 },
+
   // Where you may legally walk, and where the paths are. Both matter for a
   // foraging map in a way the terrain layers do not: a productive slope on
   // private land is not somewhere you can go.
@@ -799,16 +804,17 @@ onMounted(async () => {
     // the only saturation on screen — which is why it is the conventional base
     // for a point map, and why it is what this one opens with. Terrain is still
     // one click away, and the hillshade overlay puts relief back without colour.
-    const grey = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap contributors © CARTO', maxZoom: 19,
-      subdomains: 'abcd', crossOrigin: 'anonymous',
+    // Esri's grey canvas rather than CARTO's, which now demands an API key and
+    // answers without one by serving a tile that says so — a 200 response, so
+    // nothing downstream can tell it apart from a map. These come from the same
+    // host as the satellite and hillshade layers the app already uses.
+    const grey = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Esri, HERE, Garmin, © OpenStreetMap contributors', maxZoom: 16,
+      crossOrigin: 'anonymous',
     })
-    const greyMin = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap contributors © CARTO', maxZoom: 19,
-      subdomains: 'abcd', crossOrigin: 'anonymous',
-    })
-    const greyEsri = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Esri', maxZoom: 16, crossOrigin: 'anonymous',
+    const greyDark = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Esri, HERE, Garmin, © OpenStreetMap contributors', maxZoom: 16,
+      crossOrigin: 'anonymous',
     })
     const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Imagery © Esri', maxZoom: 19, crossOrigin: 'anonymous',
@@ -868,8 +874,7 @@ onMounted(async () => {
     L.control.layers(
       {
         'Light grey': grey,
-        'Light grey, no labels': greyMin,
-        'Grey canvas (Esri)': greyEsri,
+        'Dark grey': greyDark,
         'Street (OSM)': osm,
         'Terrain (OpenTopoMap)': topo,
         'Satellite (Esri)': sat,
