@@ -115,46 +115,18 @@
     </div>
     </div>
 
-    <!-- Detail drawer with the weather lead-up -->
-    <transition name="slide">
-      <aside v-if="selected" class="drawer">
-        <button class="close" aria-label="Close" @click="selected = null">×</button>
-        <h3><em>{{ selected.species || 'Observation' }}</em></h3>
-
-        <!-- Image Carousel -->
-        <div v-if="images.length > 0" class="carousel">
-          <div class="carousel-viewport">
-            <img :src="images[currentImageIndex]" :alt="`Observation image ${currentImageIndex + 1}`" class="carousel-image" />
-          </div>
-          <button v-if="images.length > 1" class="carousel-nav prev" aria-label="Previous image" @click="prevImage">‹</button>
-          <button v-if="images.length > 1" class="carousel-nav next" aria-label="Next image" @click="nextImage">›</button>
-          <div v-if="images.length > 1" class="carousel-indicators">
-            <span v-for="(img, idx) in images" :key="idx" class="indicator" :class="{ active: idx === currentImageIndex }" @click="currentImageIndex = idx"></span>
-          </div>
-          <div class="image-counter">{{ currentImageIndex + 1 }} / {{ images.length }}</div>
-        </div>
-
-        <dl class="meta">
-          <div v-if="selected.date"><dt>Observed</dt><dd>{{ selected.date }}</dd></div>
-          <div v-if="selected.location"><dt>Location</dt><dd>{{ selected.location }}</dd></div>
-          <div v-if="hasValue(selected.elevation)"><dt>Elevation</dt><dd>{{ elevLabel(selected.elevation) }}</dd></div>
-          <div v-if="hasValue(selected.land_cover_label)"><dt>Land cover</dt><dd>{{ selected.land_cover_label }}</dd></div>
-          <div v-if="hasValue(selected.cluster)"><dt>Cluster</dt><dd><span class="chip" :style="{ background: colorFor(selected.cluster) }">{{ selected.cluster }}</span></dd></div>
-        </dl>
-        <div v-if="observationInfo && observationInfo.description" class="description">
-          {{ observationInfo.description }}
-        </div>
-        <LeadUpCharts :p="selected" />
-        <a v-if="inatUrl(selected)" :href="inatUrl(selected)" target="_blank" rel="noopener" class="inat">View on iNaturalist ↗</a>
-      </aside>
-    </transition>
+    <!-- The same drawer the charts and analysis pages use, so the two cannot
+         drift apart on what an observation is worth showing. `inline` keeps it
+         inside the map shell rather than pinned over the site header. -->
+    <ObservationDrawer inline :selected="selected" :show-map-link="false"
+                       @close="selected = null" />
   </div>
 </template>
 
 <script setup>
 import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, inatUrl, inatPhotoUrl, fetchObservationDetails, useObservations } from '~/composables/useObservations'
+import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservations } from '~/composables/useObservations'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useAppearance } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
@@ -302,24 +274,6 @@ const TILE_OVERLAYS = [
     attribution: 'OpenTopoMap (CC-BY-SA)', maxZoom: 17, opacity: 0.5 },
 ]
 
-const observationInfo = ref(null)
-// Carousel state
-const currentImageIndex = ref(0)
-const images = ref([])
-watch(selected, async (s) => {
-  currentImageIndex.value = 0
-  images.value = []
-  observationInfo.value = null
-  if (s) {
-    const id = s.inat_id ?? s.uuid
-    const details = await fetchObservationDetails(id)
-    observationInfo.value = details
-    if (details?.photos) {
-      images.value = details.photos.map((p) => inatPhotoUrl(p, 'large')).filter(Boolean)
-    }
-  }
-})
-
 const RAMP = ['#e8f1fb', '#0b3d91'] // sequential light → dark blue
 
 // Field labels + which keys are categorical, drawn from the shared chart
@@ -461,14 +415,6 @@ function radiusFor(props) {
   return base + base * 2.25 * ((Number(v) - s.lo) / ((s.hi - s.lo) || 1))
 }
 
-function prevImage() {
-  currentImageIndex.value = (currentImageIndex.value - 1 + images.value.length) % images.value.length
-}
-
-function nextImage() {
-  currentImageIndex.value = (currentImageIndex.value + 1) % images.value.length
-}
-
 /**
  * How one observation is drawn. Every place that styles a marker goes through
  * here, so creation and re-styling cannot disagree.
@@ -591,6 +537,14 @@ const shareTitle = computed(() => {
 
 let suppressFit = false
 
+// The drawer shows the coordinates, but a GeoJSON feature keeps them in its
+// geometry rather than its properties — so they are carried across here.
+function selectFeature(feature) {
+  if (!feature) return null
+  const co = feature.geometry?.coordinates
+  return co ? { ...feature.properties, lon: co[0], lat: co[1] } : feature.properties
+}
+
 // Rebuild the point layer whenever the dataset changes (e.g. species switch).
 function renderPoints(geo) {
   if (!map || !L || !geo) return
@@ -610,7 +564,7 @@ function renderPoints(geo) {
   geoLayer.on('click', (e) => {
     const feature = e.layer?.feature
     if (!feature) return
-    selected.value = feature.properties
+    selected.value = selectFeature(feature)
     const co = feature.geometry?.coordinates
     selectedLatLng.value = co ? [co[1], co[0]] : null
   })
@@ -636,7 +590,7 @@ function applyFocus(target) {
       const co = f.geometry?.coordinates
       return co && Math.abs(co[0] - lon) < 1e-6 && Math.abs(co[1] - lat) < 1e-6
     })
-  if (match) selected.value = match.properties
+  if (match) selected.value = selectFeature(match)
   if (Number.isFinite(lat) && Number.isFinite(lon)) {
     selectedLatLng.value = [lat, lon]
     // Zoom in on the observation (not just pan). Stop any in-flight fit-to-data
@@ -924,16 +878,6 @@ onBeforeUnmount(() => {
    control — a 48px square parked in the top-right corner — landed exactly on
    the drawer's close button and swallowed the click, so an observation could be
    opened and never dismissed. */
-.drawer {
-  position: absolute; top: 0; right: 0; z-index: 1100;
-  /* One number for how wide the drawer is, used both here and to move the
-     basemap picker out from under it. border-box so it means the whole width:
-     as content-box, 320px plus 18px of padding each side made a 356px panel
-     that reached past a 320px shift and swallowed the picker again. */
-  width: var(--drawer-w); max-width: 86%; box-sizing: border-box;
-  height: 100%; background: var(--surface); box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2);
-  padding: 16px 18px; overflow-y: auto; font: 14px/1.45 system-ui, sans-serif;
-}
 /* Raising the drawer settles the click, but it then covers the basemap picker
    it was fighting with. Where there is room, the picker steps aside instead of
    being buried, so basemaps can still be switched with an observation open. It
@@ -956,83 +900,13 @@ onBeforeUnmount(() => {
   }
 }
 
-.drawer h3 { margin: 0 26px 10px 0; font-size: 1.05rem; }
-.close {
-  position: absolute; top: 8px; right: 10px; border: 0; background: transparent;
-  font-size: 1.5rem; line-height: 1; color: var(--muted); cursor: pointer;
-}
-.meta { margin: 0 0 14px; display: grid; gap: 5px; }
-.meta div { display: grid; grid-template-columns: 84px 1fr; gap: 8px; }
-.meta dt { color: var(--muted); }
-.meta dd { margin: 0; }
-.chip { display: inline-block; min-width: 20px; padding: 0 7px; border-radius: 10px; color: #fff; font-weight: 600; text-align: center; }
-.inat { display: inline-block; margin-top: 14px; color: #2b7a3d; font-weight: 600; text-decoration: none; }
-.inat:hover { text-decoration: underline; }
 .photos { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
 .obs-photo { max-width: 100%; height: auto; border-radius: 4px; }
-.description { margin-top: 8px; white-space: pre-wrap; }
 
-.slide-enter-active, .slide-leave-active { transition: transform 0.2s ease; }
-.slide-enter-from, .slide-leave-to { transform: translateX(100%); }
 
 /* Carousel styles */
-.carousel {
-  position: relative;
-  margin: 0 0 14px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #000;
-}
 /* No fixed square: let the photo keep its own aspect ratio up to a height cap,
    so landscape shots aren't letterboxed into a small square. */
-.carousel-viewport {
-  width: 100%;
-  min-height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.carousel-image {
-  width: 100%;
-  height: auto;
-  max-height: 320px;
-  object-fit: contain;
-  display: block;
-}
-.carousel-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 0;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  font-size: 1.5rem;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-.carousel-nav:hover {
-  background: rgba(0, 0, 0, 0.75);
-}
-.carousel-nav.prev {
-  left: 8px;
-}
-.carousel-nav.next {
-  right: 8px;
-}
-.carousel-indicators {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 6px;
-}
 .indicator {
   width: 8px;
   height: 8px;
@@ -1047,16 +921,5 @@ onBeforeUnmount(() => {
 .indicator.active {
   background: #fff;
   transform: scale(1.2);
-}
-.image-counter {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
 }
 </style>
