@@ -1,7 +1,7 @@
 <template>
   <div class="appearance">
     <button class="ap-btn" :class="{ on: open, 'icon-only': iconOnly }"
-            :title="`Palette, point and overlay styling${overrideCount ? ` — ${overrideCount} override(s)` : ''}`"
+            :title="`Palette, point and heatmap styling${overrideCount ? ` — ${overrideCount} override(s)` : ''}`"
             :aria-label="iconOnly ? 'Style' : null" @click="open = !open">
       <!-- The swatches are the icon: they say what the palette currently is,
            which a paint-pot glyph could not. -->
@@ -40,27 +40,56 @@
         <HelpLink option="appearance-point-outline" />
       </div>
 
-      <!-- Overlay ramp: the grid overlays have their own colours, and the key
-           on the map reads from the same place. -->
+      <!-- Heatmap styling: the grid cells have their own colours and their own
+           opacity, and the key on the map reads from the same place. Kept apart
+           from the map's reference tile layers below, which are a different
+           stack at a different depth. -->
+      <div class="ap-sub"><span>Heatmap</span></div>
       <div class="ap-row">
-        <label for="ap-ramp">Overlay colours <HelpLink option="appearance-overlay-ramp" /></label>
-        <select id="ap-ramp" v-model="overlayRampKey" @change="onRampChange">
+        <label for="ap-ramp">Colours <HelpLink option="appearance-heatmap-ramp" /></label>
+        <select id="ap-ramp" v-model="heatmapRampKey" @change="onRampChange">
           <option v-for="r in RAMP_PRESETS" :key="r.key" :value="r.key">{{ r.label }}</option>
           <option value="custom">Custom…</option>
         </select>
       </div>
       <div class="ap-ramp-preview" :style="{ background: `linear-gradient(90deg, ${rampPreview[0]}, ${rampPreview[1]})` }"></div>
-      <div v-if="overlayRampKey === 'custom'" class="ap-ramp-pick">
+      <div v-if="heatmapRampKey === 'custom'" class="ap-ramp-pick">
         <label>
           Low
-          <input type="color" :value="rampPreview[0]" aria-label="Low end of the overlay ramp"
+          <input type="color" :value="rampPreview[0]" aria-label="Low end of the heatmap ramp"
                  @input="setRampEnd(0, $event.target.value)" />
         </label>
         <label>
           High
-          <input type="color" :value="rampPreview[1]" aria-label="High end of the overlay ramp"
+          <input type="color" :value="rampPreview[1]" aria-label="High end of the heatmap ramp"
                  @input="setRampEnd(1, $event.target.value)" />
         </label>
+      </div>
+      <div class="ap-row">
+        <label for="ap-hm-op">
+          Opacity <span class="val">{{ Math.round(heatmapOpacity * 100) }}%</span>
+          <HelpLink option="appearance-heatmap-opacity" />
+        </label>
+        <input id="ap-hm-op" v-model.number="heatmapOpacity" type="range" min="0.05" max="1" step="0.05"
+               title="How strongly the grid cells cover the basemap. Turn it down to read the ground through them."
+               @change="heatmaps.persist()" />
+      </div>
+      <div class="ap-row">
+        <label for="ap-cell-shape">Cell shape <HelpLink option="appearance-cell-shape" /></label>
+        <select id="ap-cell-shape" v-model="cellShape" @change="heatmaps.persist()">
+          <option v-for="s in CELL_SHAPES" :key="s.value" :value="s.value">{{ s.label }}</option>
+        </select>
+      </div>
+
+      <div class="ap-sub"><span>Map layers</span></div>
+      <div class="ap-row">
+        <label for="ap-tile-op">
+          Opacity <span class="val">{{ Math.round(tileOpacity * 100) }}%</span>
+          <HelpLink option="appearance-tile-opacity" />
+        </label>
+        <input id="ap-tile-op" v-model.number="tileOpacity" type="range" min="0.05" max="1" step="0.05"
+               title="Dims every reference layer switched on in the layers control — hillshade, rainfall, land cover — together."
+               @change="heatmaps.persist()" />
       </div>
 
       <!-- Per-value overrides for whatever categories are on screen -->
@@ -113,26 +142,29 @@ const props = defineProps({
 // values most-common-first, so the cap keeps the ones worth recolouring.
 const VALUE_CAP = 24
 
-// The grid overlays draw from their own ramp, chosen here and keyed on the map.
-const overlays = useMapOverlays()
-const { RAMP_PRESETS, overlayRampKey, overlayRampCustom, rampFor } = overlays
+// The grid heatmaps draw from their own ramp, chosen here and keyed on the map.
+const heatmaps = useMapHeatmaps()
+const {
+  RAMP_PRESETS, heatmapRampKey, heatmapRampCustom, rampFor,
+  heatmapOpacity, tileOpacity, cellShape, CELL_SHAPES,
+} = heatmaps
 // Previewed against the density ramp, which is the one a reader meets first.
 const rampPreview = computed(() => rampFor('density'))
 
 function onRampChange() {
   // Seed a custom pair from whatever was on screen, so the pickers do not open
   // on black and force the viewer to rebuild a ramp from nothing.
-  if (overlayRampKey.value === 'custom' && !overlayRampCustom.value) {
-    overlayRampCustom.value = [...rampPreview.value]
+  if (heatmapRampKey.value === 'custom' && !heatmapRampCustom.value) {
+    heatmapRampCustom.value = [...rampPreview.value]
   }
-  overlays.persist()
+  heatmaps.persist()
 }
 
 function setRampEnd(i, hex) {
-  const next = [...(overlayRampCustom.value || rampPreview.value)]
+  const next = [...(heatmapRampCustom.value || rampPreview.value)]
   next[i] = hex
-  overlayRampCustom.value = next
-  overlays.persist()
+  heatmapRampCustom.value = next
+  heatmaps.persist()
 }
 
 const open = ref(false)

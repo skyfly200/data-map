@@ -30,36 +30,63 @@ light-to-dark gradient.
 **Size by** scales each point by a numeric field, so two dimensions can be read
 at once.
 
-### Overlays
+### Heatmaps
 
-Grid summaries drawn under the points. 48,000 overlapping dots show where the
-data is dense; a grid can show what is actually in an area.
+Grid summaries computed from the observations and drawn under the points. 48,000
+overlapping dots show where the data is dense; a grid can show what is actually
+in an area.
 
-| Overlay | What each cell shows | Watch out for |
+These are distinct from the **layers** in the map's layers control. A layer is
+imagery from somebody else's server — hillshade, rainfall, land ownership. A
+heatmap is our own numbers, binned.
+
+| Heatmap | What each cell shows | Watch out for |
 | --- | --- | --- |
 | Observation density | How many records fall in the cell | Effort. Cities and trailheads glow. |
 | Species richness | How many distinct species | Also effort-sensitive — more visits find more species |
 | Seasonal activity | Share of *this cell's own* finds inside the date window | Effort-neutral; needs 3+ records in the cell |
 | In-season hotspots | That share, weighted by how well-sampled the cell is | A record of past finds, not a forecast |
 | Dominant species | The most-recorded species in the cell | Ties are broken arbitrarily |
+| Land cover | The most common land-cover class across the cell's finds | Only the winner shows; a 50/50 cell looks pure |
 | Wind / aspect vectors | Arrows for wind, or for the way slopes face | Says which source it used |
+| *Environmental fields* | The cell mean of one enriched value | Sampled at the finds, so a blank cell means nobody looked |
 
 **Seasonal activity** and **In-season hotspots** take a date and a window
 (±3 to ±60 days). They are the two worth trusting most, because dividing by each
 cell's own total cancels most of the effort bias: a cell's seasonal *shape* does
 not depend on how many people visited, only on when they found things.
 
+The **environmental field** heatmaps average one enriched value across each cell:
+7-day rainfall, temperature, soil moisture, wetness index (TWI), slope, aspect,
+sun and wind exposure, NDVI, NDMI, elevation. They are the honest version of an
+environmental raster — every observation already carries these values, and the
+grid turns them into a surface. What they are *not* is coverage: a cell has a
+value only where somebody recorded a find, so an empty cell means nobody went
+there, not that the ground is dry or flat. Aspect is circular and gets a compass
+key rather than a low-to-high bar, because 359° and 1° are neighbours.
+
 Cell size runs from ~500 m to ~28 km. Smaller cells are more precise and noisier —
 and below about a kilometre the grid stops summarising and starts drawing roughly
 one cell per observation.
 
+Cells are **hexagons** by default. Every neighbour of a hex is the same distance
+away and shares a full edge, where a square's diagonal neighbours are 1.41×
+further and meet at a point — so a hex grid reads as a surface rather than as a
+grid, and a cluster of finds is not split differently depending on how it lands
+against the axes. Squares are still available under Style, sized to the same area
+so switching does not change the resolution.
+
+**Heatmap opacity** and **Map layer opacity** are separate sliders under Style,
+because they are separate stacks: a faint hillshade under a solid heatmap is the
+normal case, not an odd one.
+
 ### Wind vectors
 
 The observations carry terrain **aspect** — the compass direction a slope faces —
-and a wind-exposure index, but no measured wind. So the overlay draws mean
+and a wind-exposure index, but no measured wind. So the heatmap draws mean
 terrain aspect, with arrow length showing how *consistently* a cell faces one way
 and colour showing wind exposure. A short arrow means mixed terrain, not calm
-air. Once the pipeline samples ERA5 wind into `wind_u` / `wind_v`, the overlay
+air. Once the pipeline samples ERA5 wind into `wind_u` / `wind_v`, the heatmap
 switches to real wind by itself and relabels the legend.
 
 ### Other map controls
@@ -96,8 +123,9 @@ choosing A–Z never pushes the biggest categories off the chart.
 
 ### Style
 
-Five palettes — including a colour-blind-safe one — three shape sets, point size,
-opacity and outline, the colour ramp the grid overlays use, and per-value
+Five palettes — including a colour-blind-safe one — point size,
+opacity and outline, the colour ramp and opacity the grid heatmaps use, the
+cell shape they bin into, the opacity of the reference layers, and per-value
 overrides. Pin a species to a colour and it holds across the map and every chart.
 
 **Shuffle colours** deals the same palette out differently, for when two species
@@ -198,7 +226,7 @@ click. The chip describes itself from whatever is actually set.
 ## Sharing and saving
 
 **Share** builds a link that reproduces the current view — map position, filters,
-colouring, overlay and date window all travel with it. From there: QR code
+colouring, heatmap and date window all travel with it. From there: QR code
 (generated locally, so the link never reaches a third party), X, Bluesky,
 Facebook, Reddit, email, SMS, and an iframe embed that drops the site header.
 
