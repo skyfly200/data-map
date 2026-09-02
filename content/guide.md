@@ -49,7 +49,9 @@ data is dense; a grid can show what is actually in an area.
 cell's own total cancels most of the effort bias: a cell's seasonal *shape* does
 not depend on how many people visited, only on when they found things.
 
-Cell size runs from ~2 km to ~28 km. Smaller cells are more precise and noisier.
+Cell size runs from ~500 m to ~28 km. Smaller cells are more precise and noisier —
+and below about a kilometre the grid stops summarising and starts drawing roughly
+one cell per observation.
 
 ### Wind vectors
 
@@ -63,8 +65,10 @@ switches to real wind by itself and relabels the legend.
 ### Other map controls
 
 - **My location** — puts a dot at your position with its accuracy circle
-- **Basemaps** — street, terrain, satellite; plus USGS topo, USGS imagery,
-  hillshade and relief as toggleable overlays
+- **Basemaps** — a light grey canvas by default, so the observations are the only
+  saturated thing on screen; street, terrain and satellite are one click away.
+  On top: USGS topo, USGS imagery, hillshade, relief, **hiking trails** and
+  **land ownership**. Grey base plus hillshade gives relief without colour.
 - **Live clustering** — k-means in the browser, by features or geography
 - **Save image** — flattens the whole map, tiles and all, into a PNG
 
@@ -90,11 +94,15 @@ to Charts** to keep it.
 is biggest"; A–Z answers "where is X". The size cap applies before the sort, so
 choosing A–Z never pushes the biggest categories off the chart.
 
-### Appearance
+### Style
 
-Five palettes — including a colour-blind-safe one — three shape sets, point size
-and opacity, and per-value overrides. Pin a species to a colour and it holds
-across the map and every chart. Settings persist per viewer.
+Five palettes — including a colour-blind-safe one — three shape sets, point size,
+opacity and outline, the colour ramp the grid overlays use, and per-value
+overrides. Pin a species to a colour and it holds across the map and every chart.
+
+**Shuffle colours** deals the same palette out differently, for when two species
+land on shades you cannot separate. It is deterministic, so a shuffled view still
+looks the same to whoever opens your shared link. Settings persist per viewer.
 
 ---
 

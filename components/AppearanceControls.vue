@@ -1,11 +1,11 @@
 <template>
   <div class="appearance">
-    <button class="ap-btn" :class="{ on: open }" :title="`Palette, shapes and point styling${overrideCount ? ` — ${overrideCount} override(s)` : ''}`"
+    <button class="ap-btn" :class="{ on: open }" :title="`Palette, shapes, point and overlay styling${overrideCount ? ` — ${overrideCount} override(s)` : ''}`"
             @click="open = !open">
       <span class="swatches">
         <span v-for="c in activeColors.slice(0, 4)" :key="c" class="mini" :style="{ background: c }"></span>
       </span>
-      Appearance<span v-if="overrideCount" class="badge">{{ overrideCount }}</span>
+      Style<span v-if="overrideCount" class="badge">{{ overrideCount }}</span>
     </button>
 
     <div v-if="open" class="ap-panel">
@@ -48,6 +48,29 @@
         <HelpLink option="appearance-point-outline" />
       </div>
 
+      <!-- Overlay ramp: the grid overlays have their own colours, and the key
+           on the map reads from the same place. -->
+      <div class="ap-row">
+        <label for="ap-ramp">Overlay colours <HelpLink option="appearance-overlay-ramp" /></label>
+        <select id="ap-ramp" v-model="overlayRampKey" @change="onRampChange">
+          <option v-for="r in RAMP_PRESETS" :key="r.key" :value="r.key">{{ r.label }}</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </div>
+      <div class="ap-ramp-preview" :style="{ background: `linear-gradient(90deg, ${rampPreview[0]}, ${rampPreview[1]})` }"></div>
+      <div v-if="overlayRampKey === 'custom'" class="ap-ramp-pick">
+        <label>
+          Low
+          <input type="color" :value="rampPreview[0]" aria-label="Low end of the overlay ramp"
+                 @input="setRampEnd(0, $event.target.value)" />
+        </label>
+        <label>
+          High
+          <input type="color" :value="rampPreview[1]" aria-label="High end of the overlay ramp"
+                 @input="setRampEnd(1, $event.target.value)" />
+        </label>
+      </div>
+
       <!-- Per-value overrides for whatever categories are on screen -->
       <template v-if="field && values.length">
         <div class="ap-sub">
@@ -75,13 +98,17 @@
         </p>
       </template>
 
-      <button class="ap-reset" @click="reset">Reset appearance</button>
+      <div class="ap-buttons">
+        <button class="ap-shuffle" title="Deal the palette out differently. Same colours, different assignment — for when two species land on shades you cannot tell apart."
+                @click="shuffleColors">🎨 Shuffle colours</button>
+        <button class="ap-reset" @click="reset">Reset</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { categoryColor } from '~/composables/useObservations'
 import { overrideKey, useAppearance } from '~/composables/useAppearance'
 
@@ -98,12 +125,34 @@ const props = defineProps({
 // values most-common-first, so the cap keeps the ones worth recolouring.
 const VALUE_CAP = 24
 
+// The grid overlays draw from their own ramp, chosen here and keyed on the map.
+const overlays = useMapOverlays()
+const { RAMP_PRESETS, overlayRampKey, overlayRampCustom, rampFor } = overlays
+// Previewed against the density ramp, which is the one a reader meets first.
+const rampPreview = computed(() => rampFor('density'))
+
+function onRampChange() {
+  // Seed a custom pair from whatever was on screen, so the pickers do not open
+  // on black and force the viewer to rebuild a ramp from nothing.
+  if (overlayRampKey.value === 'custom' && !overlayRampCustom.value) {
+    overlayRampCustom.value = [...rampPreview.value]
+  }
+  overlays.persist()
+}
+
+function setRampEnd(i, hex) {
+  const next = [...(overlayRampCustom.value || rampPreview.value)]
+  next[i] = hex
+  overlayRampCustom.value = next
+  overlays.persist()
+}
+
 const open = ref(false)
 const {
   PALETTES, SHAPE_SETS, ALL_SHAPES,
   paletteKey, shapeSetKey, pointRadius, pointOpacity, pointOutline,
   activeColors, activeShapes, shapeOverrides, overrideCount,
-  persist, reset, setColor, clearColor, setShape, clearShape, hasOverride,
+  persist, reset, shuffleColors, setColor, clearColor, setShape, clearShape, hasOverride,
 } = useAppearance()
 
 // <input type="color"> only accepts #rrggbb, so shorthand and named colours
@@ -187,9 +236,20 @@ function shapePath(shape, cx, cy, r) {
 }
 .ap-clear:hover { color: var(--text); }
 
+
+.ap-ramp-preview { height: 12px; border-radius: 3px; border: 1px solid var(--border); margin: -4px 0 8px; }
+.ap-ramp-pick { display: flex; gap: 12px; margin-bottom: 10px; }
+.ap-ramp-pick label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 600; }
+.ap-ramp-pick input { width: 34px; height: 24px; padding: 0; border: 1px solid var(--border); border-radius: 4px; background: none; }
+.ap-buttons { display: flex; gap: 8px; margin-top: 10px; }
+.ap-shuffle {
+  flex: 1 1 auto; border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  border-radius: 6px; padding: 7px 10px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+}
+.ap-shuffle:hover { background: var(--surface-3); }
 .ap-reset {
-  margin-top: 10px; width: 100%; border: 1px solid var(--border); background: var(--surface-2);
-  color: var(--text); border-radius: 6px; padding: 5px; font-size: 0.8rem; cursor: pointer;
+  flex: 0 0 auto; border: 1px solid var(--border); background: var(--surface-2);
+  color: var(--text); border-radius: 6px; padding: 7px 12px; font-size: 0.8rem; cursor: pointer;
 }
 .ap-reset:hover { background: var(--surface-3); }
 </style>

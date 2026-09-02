@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { isTyping, prettyKey } from '../composables/useShortcuts.js'
+import { eventKeys, isTyping, prettyKey } from '../composables/useShortcuts.js'
 
 /** A stand-in for a focused element, close enough for isTyping. */
 const el = (tagName, type) => ({
@@ -49,4 +49,30 @@ test('keys are shown the way a keyboard shows them', () => {
   assert.equal(prettyKey('escape'), 'Esc')
   assert.equal(prettyKey('arrowleft'), '←')
   assert.equal(prettyKey('ctrl+k'), 'ctrl + K')
+})
+
+test('a shifted letter is a distinct combination', () => {
+  // "shift+O" could never match before: the browser hands over e.key "O" for
+  // Shift+O, which was lowercased to "o" with the shift dropped — so the map's
+  // "previous overlay" shortcut was dead on arrival.
+  const ev = (key, shift = false) => ({ key, shiftKey: shift, ctrlKey: false, metaKey: false, altKey: false })
+  assert.equal(eventKeys(ev('O', true)), 'shift+o')
+  assert.equal(eventKeys(ev('o')), 'o')
+  assert.notEqual(eventKeys(ev('O', true)), eventKeys(ev('o')))
+})
+
+test('shift stays out of characters the browser already folded it into', () => {
+  const ev = (key, shift = false) => ({ key, shiftKey: shift, ctrlKey: false, metaKey: false, altKey: false })
+  // "?" IS shift+/, so demanding "shift+?" would never match anything.
+  assert.equal(eventKeys(ev('?', true)), '?')
+  assert.equal(eventKeys(ev('[')), '[')
+  // Named keys keep it, since Shift+Tab and Tab are genuinely different.
+  assert.equal(eventKeys(ev('Tab', true)), 'shift+tab')
+  assert.equal(eventKeys(ev('Escape')), 'escape')
+})
+
+test('modifiers combine in a stable order', () => {
+  const ev = (key, o = {}) => ({ key, shiftKey: false, ctrlKey: false, metaKey: false, altKey: false, ...o })
+  assert.equal(eventKeys(ev('k', { ctrlKey: true })), 'ctrl+k')
+  assert.equal(eventKeys(ev('k', { metaKey: true, altKey: true })), 'meta+alt+k')
 })
