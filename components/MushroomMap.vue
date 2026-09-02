@@ -74,6 +74,19 @@
     <!-- Both legends share one column, so they cannot overlap each other or the
          control bar, and neither needs to know how tall the other is. -->
     <div v-if="loaded" class="legends">
+    <!-- A reference layer that will not load looks the same as one reporting
+         empty ground, so it says so instead. -->
+    <div v-if="tileErrors.length" class="legend tile-warn">
+      <div class="legend-title">Layer unavailable</div>
+      <div class="legend-note">
+        {{ tileErrors.join(', ') }} could not be reached. Treat it as no data, not as
+        empty ground.
+      </div>
+    </div>
+    <div v-for="n in activeTileNotes" :key="n.name" class="legend tile-note">
+      <div class="legend-title">{{ n.name }}</div>
+      <div class="legend-note">{{ n.note }}</div>
+    </div>
     <!-- Overlay legend, with the caveat that belongs with each metric -->
     <div v-if="overlayLegend" class="legend overlay-legend">
       <div class="legend-title">{{ overlayMeta.label }}</div>
@@ -272,7 +285,33 @@ const TILE_OVERLAYS = [
     attribution: 'Esri', maxZoom: 16, opacity: 0.6 },
   { name: 'OpenTopoMap relief', url: 'https://tile.opentopomap.org/{z}/{x}/{y}.png',
     attribution: 'OpenTopoMap (CC-BY-SA)', maxZoom: 17, opacity: 0.5 },
+
+  // Where you may legally walk, and where the paths are. Both matter for a
+  // foraging map in a way the terrain layers do not: a productive slope on
+  // private land is not somewhere you can go.
+  //
+  // Waymarked Trails renders OSM's hiking route relations — named, waymarked
+  // routes rather than every footpath — as transparent tiles meant to sit on
+  // another basemap.
+  { name: 'Hiking trails', url: 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png',
+    attribution: 'waymarkedtrails.org · OpenStreetMap (CC-BY-SA)', maxZoom: 18,
+    note: 'Waymarked hiking routes from OpenStreetMap. Not a complete trail map — an unmapped path is missing, not absent.' },
+
+  // BLM's Surface Management Agency layer: which federal agency, state, or
+  // private party manages each parcel. The "without_PriUnk" build leaves private
+  // and unknown parcels unpainted, which is what makes it readable — the colour
+  // is public land, the gaps are everything else.
+  { name: 'Land ownership (US)',
+    url: 'https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_Cached_without_PriUnk/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'BLM Surface Management Agency', maxZoom: 16, opacity: 0.45,
+    note: 'US federal and state land, by managing agency. Unpainted means private or unrecorded, not necessarily open. Always confirm access before relying on it.' },
 ]
+
+// Reference layers that could not be reached. Shown rather than swallowed:
+// an empty ownership layer reads as "no public land here".
+const tileErrors = ref([])
+// The caveat belonging to whichever reference layers are switched on.
+const activeTileNotes = ref([])
 
 const RAMP = ['#e8f1fb', '#0b3d91'] // sequential light → dark blue
 
@@ -652,10 +691,43 @@ onMounted(async () => {
     // Reference tile services as toggleable overlays alongside the basemaps.
     const tileOverlays = {}
     for (const o of TILE_OVERLAYS) {
-      tileOverlays[o.name] = L.tileLayer(o.url, {
+      const layer = L.tileLayer(o.url, {
         attribution: o.attribution, maxZoom: o.maxZoom, opacity: o.opacity ?? 1,
         crossOrigin: 'anonymous',
       })
+      // A reference layer that fails to load looks exactly like one saying there
+      // is nothing there — no trails, no public land — which is the most
+      // misleading thing this map could do. Track whether a layer has ever
+      // succeeded, and say so when it has not.
+      let loaded = 0
+      let failed = 0
+      layer.on('tileload', () => {
+        loaded += 1
+        if (loaded === 1) tileErrors.value = tileErrors.value.filter((n) => n !== o.name)
+      })
+      layer.on('tileerror', () => {
+        failed += 1
+        // One failure is a hiccup; several with nothing loaded is the service.
+        if (loaded === 0 && failed >= 3 && !tileErrors.value.includes(o.name)) {
+          tileErrors.value = [...tileErrors.value, o.name]
+        }
+      })
+      // Its caveat travels with it: shown while it is on, gone when it is off.
+      if (o.note) {
+        layer.on('add', () => {
+          if (!activeTileNotes.value.some((n) => n.name === o.name)) {
+            activeTileNotes.value = [...activeTileNotes.value, { name: o.name, note: o.note }]
+          }
+        })
+      }
+      // Clear the warning when the layer is switched off, so it does not linger.
+      layer.on('remove', () => {
+        tileErrors.value = tileErrors.value.filter((n) => n !== o.name)
+        activeTileNotes.value = activeTileNotes.value.filter((n) => n.name !== o.name)
+        loaded = 0
+        failed = 0
+      })
+      tileOverlays[o.name] = layer
     }
     L.control.layers(
       { 'Street (OSM)': osm, 'Terrain (OpenTopoMap)': topo, 'Satellite (Esri)': sat },
@@ -833,6 +905,9 @@ onBeforeUnmount(() => {
   border-top: 1px solid #e6e6e6; padding-top: 5px;
 }
 .legend-n { color: #777; font-size: 11px; }
+.tile-note { max-width: 260px; }
+.tile-warn { max-width: 260px; border-color: #e0b4b4; background: rgba(255, 244, 244, 0.97); }
+.tile-warn .legend-title { color: #b00020; }
 
 /* Day-of-year window controls for the seasonal overlays. */
 .season { display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem; min-width: 200px; }

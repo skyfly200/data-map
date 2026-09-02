@@ -170,10 +170,35 @@ export const OPTION_DOCS = [
     id: 'map-basemaps',
     group: 'Map',
     title: 'Basemaps and layers',
-    summary: 'Street, terrain or satellite underneath, plus USGS topo, imagery, hillshade and relief on top.',
+    summary: 'Street, terrain or satellite underneath, plus USGS topo, imagery, hillshade, relief, trails and land ownership on top.',
     detail: [
       'One basemap at a time, any number of the overlay layers on top of it. Hillshade over street is a cheap way to read terrain without losing labels.',
+      'These are third-party tile services. If one cannot be reached the map says so rather than drawing nothing — an empty ownership layer would otherwise read as "no public land here".',
     ],
+    also: ['map-trails', 'map-land-ownership'],
+  },
+  {
+    id: 'map-trails',
+    group: 'Map',
+    title: 'Hiking trails layer',
+    summary: 'Waymarked hiking routes from OpenStreetMap, drawn over the basemap.',
+    detail: [
+      'Renders OpenStreetMap\'s hiking *route relations* — named, waymarked routes — rather than every footpath in the database. It answers "how would I get near this" for a cluster of finds that looks promising.',
+    ],
+    caveat: 'An unmapped path is missing from this layer, not absent from the ground, and a mapped one may be closed, overgrown or on land you cannot enter. It is a planning aid, not a permission.',
+    also: ['map-land-ownership', 'map-basemaps'],
+  },
+  {
+    id: 'map-land-ownership',
+    group: 'Map',
+    title: 'Land ownership layer',
+    summary: 'US federal and state land, coloured by the agency that manages it.',
+    detail: [
+      'The BLM\'s Surface Management Agency layer: which agency — Forest Service, BLM, Park Service, state — manages each parcel. This is the layer that turns a promising slope into somewhere you can actually go, or cannot.',
+      'The build used here leaves private and unrecorded parcels unpainted, which is what makes it readable: the colour is public land and the gaps are everything else.',
+    ],
+    caveat: 'Unpainted means private **or unrecorded** — not that the land is open. Public land is also not uniformly open to collecting: rules differ by agency, by unit, and by species, and a national park is not a national forest. Confirm access and collecting rules before relying on this.',
+    also: ['map-trails', 'map-basemaps'],
   },
   {
     id: 'map-locate',
