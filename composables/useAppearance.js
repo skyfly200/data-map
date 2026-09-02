@@ -60,6 +60,7 @@ const DEFAULTS = {
   shapeSet: 'all',
   pointRadius: 4,
   pointOpacity: 0.85,
+  pointOutline: true,
   colorOverrides: {},   // "field:value" → hex
   shapeOverrides: {},   // "field:value" → shape name
 }
@@ -72,6 +73,10 @@ const paletteKey = ref(DEFAULTS.palette)
 const shapeSetKey = ref(DEFAULTS.shapeSet)
 const pointRadius = ref(DEFAULTS.pointRadius)
 const pointOpacity = ref(DEFAULTS.pointOpacity)
+// The dark ring around each dot. It separates overlapping finds, but over a
+// dense cluster the rings merge into a grey mass and hide the colours they were
+// drawn to separate — so it can be turned off.
+const pointOutline = ref(DEFAULTS.pointOutline)
 const colorOverrides = ref({ ...DEFAULTS.colorOverrides })
 const shapeOverrides = ref({ ...DEFAULTS.shapeOverrides })
 
@@ -148,6 +153,7 @@ export function useAppearance() {
         shapeSet: shapeSetKey.value,
         pointRadius: pointRadius.value,
         pointOpacity: pointOpacity.value,
+        pointOutline: pointOutline.value,
         colorOverrides: colorOverrides.value,
         shapeOverrides: shapeOverrides.value,
       }))
@@ -166,6 +172,7 @@ export function useAppearance() {
       if (SHAPE_SETS.some((s) => s.key === saved.shapeSet)) shapeSetKey.value = saved.shapeSet
       if (Number.isFinite(saved.pointRadius)) pointRadius.value = saved.pointRadius
       if (Number.isFinite(saved.pointOpacity)) pointOpacity.value = saved.pointOpacity
+      if (typeof saved.pointOutline === 'boolean') pointOutline.value = saved.pointOutline
       if (saved.colorOverrides && typeof saved.colorOverrides === 'object') {
         colorOverrides.value = { ...saved.colorOverrides }
       }
@@ -206,6 +213,7 @@ export function useAppearance() {
     shapeSetKey.value = DEFAULTS.shapeSet
     pointRadius.value = DEFAULTS.pointRadius
     pointOpacity.value = DEFAULTS.pointOpacity
+    pointOutline.value = DEFAULTS.pointOutline
     colorOverrides.value = {}
     shapeOverrides.value = {}
     persist()
@@ -216,7 +224,7 @@ export function useAppearance() {
 
   return {
     PALETTES, SHAPE_SETS, ALL_SHAPES,
-    paletteKey, shapeSetKey, pointRadius, pointOpacity,
+    paletteKey, shapeSetKey, pointRadius, pointOpacity, pointOutline,
     activeColors, activeShapes, colorOverrides, shapeOverrides, overrideCount,
     persist, loadFromStorage, reset,
     setColor, clearColor, setShape, clearShape, hasOverride,

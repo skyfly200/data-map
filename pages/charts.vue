@@ -1,8 +1,10 @@
 <template>
   <div class="charts-page">
     <nav class="tabs">
-      <button :class="{ on: tab === 'gallery' }" @click="tab = 'gallery'">Charts</button>
-      <button :class="{ on: tab === 'build' }" @click="tab = 'build'">Build</button>
+      <button :class="{ on: tab === 'gallery' }" :title="tip('The preset chart gallery', '1')"
+              @click="tab = 'gallery'">Charts</button>
+      <button :class="{ on: tab === 'build' }" :title="tip('Compose your own chart', '2')"
+              @click="tab = 'build'">Build</button>
     </nav>
 
     <ChartBuilder v-if="tab === 'build'" class="build-pane" />
@@ -14,9 +16,12 @@
     <template v-else>
       <!-- Layout controls: reorder / hide the preset charts -->
       <div class="layout-bar">
-        <button class="lb-btn" :class="{ on: layout.editing.value }" @click="layout.editing.value = !layout.editing.value">
+        <button class="lb-btn" :class="{ on: layout.editing.value }"
+                :title="tip('Reorder or hide the preset charts', 'r')"
+                @click="layout.editing.value = !layout.editing.value">
           {{ layout.editing.value ? '✓ Done arranging' : '⇅ Arrange charts' }}
         </button>
+        <HelpLink option="chart-arrange" keys="r" />
         <span v-if="layout.editing.value" class="lb-hint">Use ‹ › to reorder and ✕ to hide.</span>
         <!-- Cards register themselves as they render, which happens after this
              bar is serialised on the server. Render the tally on the client
@@ -24,12 +29,17 @@
         <ClientOnly>
           <span class="lb-count">{{ layout.visibleCount.value }} shown</span>
         </ClientOnly>
-        <button v-if="layout.hiddenCharts.value.length" class="lb-btn ghost" @click="layout.showAll()">
+        <button v-if="layout.hiddenCharts.value.length" class="lb-btn ghost"
+                title="Bring every hidden chart back" @click="layout.showAll()">
           Show all ({{ layout.hiddenCharts.value.length }} hidden)
         </button>
-        <button v-if="layout.editing.value" class="lb-btn ghost" @click="layout.reset()">Reset layout</button>
+        <button v-if="layout.editing.value" class="lb-btn ghost"
+                title="Restore the original order and unhide everything"
+                @click="layout.reset()">Reset layout</button>
         <AppearanceControls field="species" field-label="Species" :values="speciesValues" />
+        <HelpLink option="appearance-palette" />
         <ShareMenu :title="shareTitle" />
+        <HelpLink option="share-link" />
       </div>
 
       <div v-if="layout.editing.value && layout.hiddenCharts.value.length" class="hidden-bar">
@@ -42,12 +52,17 @@
 
       <!-- Saved custom charts (from the Build tab), reorderable -->
       <section v-if="saved.charts.value.length" class="saved">
-        <h2 class="saved-title">My charts</h2>
+        <h2 class="saved-title">My charts <HelpLink option="chart-edit" /></h2>
         <div class="grid">
           <ChartCard v-for="(chart, i) in saved.charts.value" :key="chart.id">
             <div class="saved-tools">
               <button title="Move left" :disabled="i === 0" @click="saved.move(chart.id, -1)">‹</button>
               <button title="Move right" :disabled="i === saved.charts.value.length - 1" @click="saved.move(chart.id, 1)">›</button>
+              <button :title="`Open “${chartName(chart)}” in the chart builder`"
+                      :aria-label="`Edit ${chartName(chart)}`" @click="editChart(chart.id)">✎</button>
+              <ShareMenu compact :title="chartName(chart)" path="/charts"
+                         :extra="{ tab: 'build', cfg: encodeChartConfig(chart) }"
+                         note="This link opens this chart, over the same filtered data." />
               <button title="Remove" class="rm" @click="saved.remove(chart.id)">✕</button>
             </div>
             <ChartRenderer :config="chart" @select="selected = $event" />
@@ -179,6 +194,8 @@
 import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 import { useSavedCharts } from '~/composables/useSavedCharts'
+import { describeChart, encodeChartConfig } from '~/composables/chartConfig'
+import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 
 // Two tabs on this page: the preset chart gallery and the chart builder.
 // Tab lives in the URL query so /charts?tab=build deep-links (and the old
@@ -196,8 +213,29 @@ const { rows, error, pending, load } = useObservations()
 const { unit, elevValue, tempUnit, tempValue } = useUnits()
 const appearance = useAppearance()
 const share = useShareState()
+const shortcuts = useShortcuts()
+const tip = (text, keys) => shortcuts.withKey(text, keys)
+
+shortcuts.register([
+  { scope: 'Charts', keys: '1', label: 'Chart gallery', run: () => { tab.value = 'gallery' } },
+  { scope: 'Charts', keys: '2', label: 'Chart builder', run: () => { tab.value = 'build' } },
+  { scope: 'Charts', keys: 'r', label: 'Arrange charts', run: () => { layout.editing.value = !layout.editing.value } },
+  { scope: 'Charts', keys: 'escape', label: 'Close the observation drawer', run: () => { selected.value = null } },
+])
 const shareTitle = computed(() =>
   `${rows.value.length.toLocaleString()} mushroom observations — charts`)
+
+// A saved chart has no title of its own, so name it from what it plots — the
+// share text and the tooltips both need something better than "chart".
+const fieldLabel = (key) => (
+  [...ALL_NUMERIC, ...ALL_CATEGORY].find((f) => f.key === key)?.label || key
+)
+const chartName = (chart) => describeChart(chart, fieldLabel)
+
+/** Open a saved chart in the builder, editing that chart rather than a copy. */
+function editChart(id) {
+  router.push({ path: '/charts', query: { ...route.query, tab: 'build', edit: id, cfg: undefined } })
+}
 // Restore filters/palette from a shared link before the charts compute.
 onMounted(() => share.apply(useRoute().query))
 onMounted(() => {
@@ -565,7 +603,10 @@ const speciesData = computed(() => {
 
 .saved { margin-bottom: 22px; }
 .saved-title { margin: 0 0 10px; font-size: 1rem; color: var(--text); }
-.saved-tools { position: absolute; top: 8px; right: 34px; display: flex; gap: 2px; z-index: 3; }
+/* Above the neighbouring cards, not just above this one: the share panel drops
+   out of the card and would otherwise slide behind the card to its right. */
+.saved-tools { position: absolute; top: 8px; right: 34px; display: flex; gap: 2px; z-index: 400; }
+.saved-tools :deep(.share) { display: flex; }
 .saved-tools button {
   border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer;
   width: 22px; height: 22px; border-radius: 5px; font-size: 0.85rem; line-height: 1; padding: 0;

@@ -8,7 +8,7 @@
     <!-- Thematic layer selector -->
     <div v-if="loaded" class="controls">
       <div class="colorby">
-        <label for="colorby-sel">Color by</label>
+        <label for="colorby-sel">Color by <HelpLink option="map-color-by" /></label>
         <select id="colorby-sel" v-model="colorBy">
           <optgroup label="Category">
             <option v-for="o in colorOptions.category" :key="o.key" :value="o.key">{{ o.label }}</option>
@@ -19,47 +19,55 @@
         </select>
       </div>
       <div v-if="colorOptions.numeric.length" class="colorby">
-        <label for="sizeby-sel">Size by</label>
+        <label for="sizeby-sel">Size by <HelpLink option="map-size-by" /></label>
         <select id="sizeby-sel" v-model="sizeBy">
           <option value="">Uniform</option>
           <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
         </select>
       </div>
-      <button class="locate" :class="{ busy: locating }" :title="locateError || 'Show my location'"
-              @click="locateMe">
-        <span class="dot-icon"></span>{{ locating ? 'Locating…' : 'My location' }}
-      </button>
       <LiveClusterControls />
       <AppearanceControls :field="colorBy" :field-label="coloring.title"
                           :values="legendValues" />
       <ShareMenu :map-view="mapView" :color-by="colorBy" :size-by="sizeBy"
                  :title="shareTitle" />
-      <button class="locate" :disabled="saving" :title="saveError || 'Save the map as a PNG'"
-              @click="saveMap">
-        ⤓ {{ saving ? 'Saving…' : 'Save image' }}
-      </button>
-      <label class="toggle">
-        <input type="checkbox" v-model="showFiltered" />
-        Include excluded water / non-terrestrial rows
-      </label>
+      <!-- Everything you do not reach for every minute — the points toggle, the
+           excluded-rows option and the two actions — lives behind one button.
+           Spread across the bar they covered the map they were controlling. -->
+      <MapSettings v-model="showPoints"
+                   :locating="locating" :locate-error="locateError"
+                   :saving="saving" :save-error="saveError"
+                   @locate="locateMe" @save="saveMap" />
 
       <!-- Aggregate overlay: grid summaries drawn under the points -->
       <div class="colorby">
-        <label for="overlay-sel">Overlay</label>
-        <select id="overlay-sel" v-model="overlayMode">
+        <label for="overlay-sel">Overlay <HelpLink :option="overlayDocId" /></label>
+        <select id="overlay-sel" v-model="overlayMode" :title="overlayTip">
           <option v-for="o in OVERLAY_MODES" :key="o.key" :value="o.key">{{ o.label }}</option>
         </select>
       </div>
       <div v-if="overlayMode" class="colorby">
-        <label for="overlay-cell">Cell</label>
-        <select id="overlay-cell" v-model.number="overlayCell">
+        <label for="overlay-cell">Cell size <HelpLink option="map-cell-size" /></label>
+        <select id="overlay-cell" v-model.number="overlayCell"
+                title="Ground size of each grid square. Smaller is more precise and noisier.">
           <option v-for="c in CELL_SIZES" :key="c.value" :value="c.value">{{ c.label }}</option>
         </select>
       </div>
       <div v-if="overlayMode === 'season' || overlayMode === 'hotspots'" class="season">
-        <label :for="'season-day'">Date <strong>{{ seasonLabel }}</strong> ±{{ seasonWindow }}d</label>
-        <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1" />
-        <input v-model.number="seasonWindow" type="range" min="3" max="60" step="1" aria-label="Window width in days" />
+        <div class="slider">
+          <label for="season-day">
+            Date <strong>{{ seasonLabel }}</strong> <HelpLink option="map-season-day" keys="[" />
+          </label>
+          <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1"
+                 :title="tip(`Centre of the date window — currently ${seasonLabel}`, '[')" />
+        </div>
+        <div class="slider">
+          <label for="season-window">
+            Window <strong>±{{ seasonWindow }} days</strong> <HelpLink option="map-season-window" />
+          </label>
+          <input id="season-window" v-model.number="seasonWindow" type="range" min="3" max="60" step="1"
+                 title="How wide a window counts as 'in season'. Wider is smoother and less specific." />
+        </div>
+        <p class="slider-note">{{ windowSpan }}</p>
       </div>
     </div>
 
@@ -147,12 +155,12 @@ import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useAppearance } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
 
-const { data, filteredData, load, showFiltered, setShowFiltered, speciesFilter, focusObservation, setFocusObservation } = useObservations()
+const { data, filteredData, load, speciesFilter, focusObservation, setFocusObservation } = useObservations()
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const live = useLiveClusters()
 const appearance = useAppearance()
 const share = useShareState()
-const { pointRadius, pointOpacity, activeColors, colorOverrides } = appearance
+const { pointRadius, pointOpacity, pointOutline, activeColors, colorOverrides } = appearance
 
 const mapEl = ref(null)
 const loaded = ref(false)
@@ -436,22 +444,35 @@ function nextImage() {
   currentImageIndex.value = (currentImageIndex.value + 1) % images.value.length
 }
 
-// Re-style markers when the colouring or sizing changes.
-watch([coloring, sizeScale], ([c]) => {
-  if (geoLayer) geoLayer.eachLayer((l) => {
-    l.setStyle({ fillColor: c.colorFn(l.feature.properties), fillOpacity: pointOpacity.value })
-    l.setRadius(radiusFor(l.feature.properties))
-  })
-})
+/**
+ * How one observation is drawn. Every place that styles a marker goes through
+ * here, so creation and re-styling cannot disagree.
+ *
+ * The outline follows the opacity slider rather than staying at full strength:
+ * fading the dots while their rings stayed solid turned a dense area into a grey
+ * mesh — the opposite of what turning the dots down is for.
+ */
+function markerStyle(props) {
+  return {
+    radius: radiusFor(props),
+    fillColor: coloring.value.colorFn(props),
+    fillOpacity: pointOpacity.value,
+    stroke: pointOutline.value,
+    weight: pointOutline.value ? 1 : 0,
+    color: '#222',
+    opacity: pointOutline.value ? pointOpacity.value : 0,
+  }
+}
 
-// Palette, per-value overrides and point styling all restyle the existing
-// layer in place — no need to rebuild it, which would refit the view.
-watch([activeColors, colorOverrides, pointRadius, pointOpacity], () => {
-  const c = coloring.value
+// Colouring, sizing, palette, per-value overrides and point styling all restyle
+// the existing layer in place — no need to rebuild it, which would refit the
+// view.
+watch([coloring, sizeScale, activeColors, colorOverrides, pointRadius, pointOpacity, pointOutline], () => {
   if (!geoLayer) return
   geoLayer.eachLayer((l) => {
-    l.setStyle({ fillColor: c.colorFn(l.feature.properties), fillOpacity: pointOpacity.value })
-    l.setRadius(radiusFor(l.feature.properties))
+    const style = markerStyle(l.feature.properties)
+    l.setStyle(style)
+    l.setRadius(style.radius)
   })
 })
 
@@ -465,6 +486,57 @@ const mapView = ref(null)
 const exporter = useImageExport()
 const saving = ref(false)
 const saveError = ref('')
+
+// ─── Point visibility ───────────────────────────────────────────────────────
+// The overlay is drawn UNDER the points, and 48k marks cover most of the
+// shading they are meant to sit on. Hiding them is what makes an overlay
+// readable, so it is a first-class toggle rather than an appearance setting.
+const POINTS_KEY = 'map-show-points'
+const showPoints = ref(true)
+if (import.meta.client) {
+  showPoints.value = localStorage.getItem(POINTS_KEY) !== '0'
+}
+watch(showPoints, (v) => {
+  if (import.meta.client) localStorage.setItem(POINTS_KEY, v ? '1' : '0')
+  if (!map || !geoLayer) return
+  if (v) { geoLayer.addTo(map); geoLayer.bringToFront() } else geoLayer.remove()
+})
+
+// ─── Tooltips ───────────────────────────────────────────────────────────────
+const shortcuts = useShortcuts()
+// Every control's tooltip says what it does and, where one exists, the key that
+// does it — so shortcuts are discoverable without opening the help overlay.
+const tip = (text, keys) => shortcuts.withKey(text, keys)
+
+const overlayTip = computed(() => {
+  const note = overlayMeta.value?.note
+  return note
+    ? tip(`${overlayMeta.value.label}: ${note}`, 'o')
+    : tip('Draw a grid summary under the points', 'o')
+})
+
+// The ? beside the overlay picker documents the overlay you actually have
+// selected, not the concept in general — each mode is misleading in its own way,
+// and that caveat is the part worth one click.
+const OVERLAY_DOCS = {
+  density: 'map-overlay-density',
+  richness: 'map-overlay-richness',
+  season: 'map-overlay-season',
+  hotspots: 'map-overlay-hotspots',
+  dominant: 'map-overlay-dominant',
+  wind: 'map-overlay-wind',
+}
+const overlayDocId = computed(() => OVERLAY_DOCS[overlayMode.value] || 'map-overlay')
+
+// Spelling out the window's actual dates removes the arithmetic from reading it.
+const windowSpan = computed(() => {
+  const fmt = (day) => {
+    const d = new Date(Date.UTC(2001, 0, 1))
+    d.setUTCDate(((day - 1 + 365) % 365) + 1)
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
+  }
+  return `Counting finds from ${fmt(seasonDay.value - seasonWindow.value)} to ${fmt(seasonDay.value + seasonWindow.value)}`
+})
 
 async function saveMap() {
   if (!mapEl.value || saving.value) return
@@ -501,11 +573,7 @@ function renderPoints(geo) {
   if (!suppressFit) selected.value = null
 
   geoLayer = L.geoJSON(geo, {
-    pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
-      radius: radiusFor(feature.properties), weight: 1, color: '#222',
-      fillColor: coloring.value.colorFn(feature.properties),
-      fillOpacity: pointOpacity.value,
-    }),
+    pointToLayer: (feature, latlng) => L.circleMarker(latlng, markerStyle(feature.properties)),
   }).addTo(map)
 
   // One tooltip and one click handler for the whole layer, resolved against
@@ -521,6 +589,8 @@ function renderPoints(geo) {
     const co = feature.geometry?.coordinates
     selectedLatLng.value = co ? [co[1], co[0]] : null
   })
+
+  if (!showPoints.value) geoLayer.remove()
 
   const bounds = geoLayer.getBounds()
   // Non-animated: an in-flight fit animation would block a subsequent zoom-in to
@@ -674,6 +744,28 @@ function locateMe() {
   )
 }
 
+// Only while the map is on screen: pressing "o" on the Charts page should do
+// nothing rather than reach for a control that is not there.
+const OVERLAY_KEYS = OVERLAY_MODES.map((m) => m.key)
+function cycleOverlay(step) {
+  const i = OVERLAY_KEYS.indexOf(overlayMode.value)
+  overlayMode.value = OVERLAY_KEYS[(i + step + OVERLAY_KEYS.length) % OVERLAY_KEYS.length]
+}
+function nudgeDay(days) {
+  seasonDay.value = ((seasonDay.value - 1 + days + 365) % 365) + 1
+}
+
+shortcuts.register([
+  { scope: 'Map', keys: 'p', label: 'Show / hide observation points', run: () => { showPoints.value = !showPoints.value } },
+  { scope: 'Map', keys: 'o', label: 'Next overlay', run: () => cycleOverlay(1) },
+  { scope: 'Map', keys: 'shift+O', label: 'Previous overlay', run: () => cycleOverlay(-1) },
+  { scope: 'Map', keys: 'l', label: 'My location', run: () => locateMe() },
+  { scope: 'Map', keys: 'e', label: 'Save the map as an image', run: () => saveMap() },
+  { scope: 'Map', keys: '[', label: 'Overlay date back a week', run: () => nudgeDay(-7) },
+  { scope: 'Map', keys: ']', label: 'Overlay date forward a week', run: () => nudgeDay(7) },
+  { scope: 'Map', keys: 'escape', label: 'Close the observation drawer', run: () => { selected.value = null } },
+])
+
 onBeforeUnmount(() => { if (map) map.remove() })
 </script>
 
@@ -699,13 +791,6 @@ onBeforeUnmount(() => { if (map) map.remove() })
 }
 .colorby label { color: var(--muted); font-weight: 600; }
 .colorby select { border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; font-size: 13px; }
-.toggle {
-  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
-  padding: 7px 10px; font: 13px system-ui, sans-serif; display: inline-flex; gap: 8px; align-items: center;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-}
-.toggle input { accent-color: #2a78d6; }
-
 .locate {
   background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
   padding: 7px 10px; font: 600 13px system-ui, sans-serif; color: #333; cursor: pointer;
@@ -737,9 +822,14 @@ onBeforeUnmount(() => { if (map) map.remove() })
 .legend-n { color: #777; font-size: 11px; }
 
 /* Day-of-year window controls for the seasonal overlays. */
-.season { display: flex; flex-direction: column; gap: 2px; font-size: 0.78rem; min-width: 190px; }
-.season label { color: var(--text); }
+.season { display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem; min-width: 200px; }
+.slider { display: flex; flex-direction: column; gap: 1px; }
+.slider label { color: var(--muted); }
+.slider label strong { color: var(--text); }
 .season input[type="range"] { width: 100%; margin: 0; }
+.slider-note { margin: 0; color: var(--muted); font-size: 0.72rem; line-height: 1.3; }
+
+/* A control that is currently off reads as off, not just unstyled. */
 .legend-row span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #222; flex: 0 0 auto; }
 .gradient { height: 12px; border-radius: 3px; border: 1px solid #ccc; }
@@ -748,8 +838,17 @@ onBeforeUnmount(() => { if (map) map.remove() })
 /* Mobile: tighten the on-map controls and legend so they don't swallow the map. */
 @media (max-width: 640px) {
   .controls { top: 8px; left: 8px; right: 8px; gap: 6px; }
-  .colorby, .toggle { padding: 5px 8px; font-size: 12px; }
-  .toggle { flex: 1 1 100%; }
+  /* Two dropdowns to a row instead of one. Each pairing is natural — what the
+     dots mean beside how big they are, the overlay beside its cell size — and
+     it halves the number of rows the bar spends covering the map. */
+  .colorby {
+    padding: 5px 8px; font-size: 12px;
+    flex: 1 1 calc(50% - 3px); min-width: 0; box-sizing: border-box;
+  }
+  .colorby label { flex: 0 0 auto; }
+  .colorby select { flex: 1 1 auto; min-width: 0; }
+  /* The popover buttons share the remaining row rather than each taking one. */
+  .season { flex: 1 1 100%; }
   .legend {
     bottom: 8px; right: 8px; left: auto; max-width: 62vw; max-height: 34vh;
     padding: 8px 10px; font-size: 12px;

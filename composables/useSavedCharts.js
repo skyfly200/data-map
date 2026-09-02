@@ -51,6 +51,28 @@ export function useSavedCharts() {
     return entry.id
   }
 
+  /**
+   * Replace a saved chart's configuration in place, keeping its id and its
+   * position in the row — what "open in the editor, then save" should do, as
+   * opposed to leaving the original behind next to a near-identical copy.
+   * Returns false when the chart is gone (removed in another tab, say), so the
+   * caller can fall back to adding it.
+   */
+  function update(id, config) {
+    const i = charts.value.findIndex((c) => c.id === id)
+    if (i < 0) return false
+    const next = [...charts.value]
+    next[i] = { ...config, id }
+    charts.value = next
+    persist()
+    pushCloud()
+    return true
+  }
+
+  function byId(id) {
+    return charts.value.find((c) => c.id === id) || null
+  }
+
   function remove(id) {
     charts.value = charts.value.filter((c) => c.id !== id)
     persist()
@@ -68,5 +90,5 @@ export function useSavedCharts() {
     pushCloud()
   }
 
-  return { charts, loadFromStorage, persist, pushCloud, add, remove, move }
+  return { charts, loadFromStorage, persist, pushCloud, add, update, byId, remove, move }
 }
