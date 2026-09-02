@@ -2,7 +2,8 @@
 
 # Observation ingest (iNat.py)
 pyinaturalist
-meteostat
+# 2.x functional API (stations.nearby, daily(...)) — see scripts/iNat.py
+meteostat>=2.0
 
 # Environmental enrichment (ee_enrich.py) — Earth Engine supplies every
 # environmental layer as a point sample, so this is the whole download stack.
