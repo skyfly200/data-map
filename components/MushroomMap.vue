@@ -1,5 +1,5 @@
 <template>
-  <div class="map-shell">
+  <div class="map-shell" :class="{ 'drawer-open': selected }">
     <div ref="mapEl" class="map"></div>
 
     <div v-if="loadError" class="overlay error">{{ loadError }}</div>
@@ -770,6 +770,8 @@ onBeforeUnmount(() => { if (map) map.remove() })
 </script>
 
 <style scoped>
+.map-shell { --drawer-w: 320px; }
+
 .map-shell { position: relative; width: 100%; height: 100%; }
 .map { width: 100%; height: 100%; }
 
@@ -855,11 +857,33 @@ onBeforeUnmount(() => { if (map) map.remove() })
   }
 }
 
+/* Above Leaflet's own controls, which sit at z-index 1000. At 600 the layers
+   control — a 48px square parked in the top-right corner — landed exactly on
+   the drawer's close button and swallowed the click, so an observation could be
+   opened and never dismissed. */
 .drawer {
-  position: absolute; top: 0; right: 0; z-index: 600; width: 320px; max-width: 86%;
+  position: absolute; top: 0; right: 0; z-index: 1100;
+  /* One number for how wide the drawer is, used both here and to move the
+     basemap picker out from under it. border-box so it means the whole width:
+     as content-box, 320px plus 18px of padding each side made a 356px panel
+     that reached past a 320px shift and swallowed the picker again. */
+  width: var(--drawer-w); max-width: 86%; box-sizing: border-box;
   height: 100%; background: var(--surface); box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2);
   padding: 16px 18px; overflow-y: auto; font: 14px/1.45 system-ui, sans-serif;
 }
+/* Raising the drawer settles the click, but it then covers the basemap picker
+   it was fighting with. Where there is room, the picker steps aside instead of
+   being buried, so basemaps can still be switched with an observation open. It
+   moves in step with the drawer's own slide. On a narrow screen there is
+   nowhere to step to — the control bar already owns the left — so the drawer
+   simply covers it until it is closed. */
+@media (min-width: 861px) {
+  .map-shell :deep(.leaflet-top.leaflet-right) { transition: transform 0.18s ease; }
+  .map-shell.drawer-open :deep(.leaflet-top.leaflet-right) {
+    transform: translateX(calc(-1 * var(--drawer-w) - 8px));
+  }
+}
+
 .drawer h3 { margin: 0 26px 10px 0; font-size: 1.05rem; }
 .close {
   position: absolute; top: 8px; right: 10px; border: 0; background: transparent;
