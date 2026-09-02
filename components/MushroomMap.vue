@@ -71,8 +71,11 @@
       </div>
     </div>
 
+    <!-- Both legends share one column, so they cannot overlap each other or the
+         control bar, and neither needs to know how tall the other is. -->
+    <div v-if="loaded" class="legends">
     <!-- Overlay legend, with the caveat that belongs with each metric -->
-    <div v-if="loaded && overlayLegend" class="legend overlay-legend">
+    <div v-if="overlayLegend" class="legend overlay-legend">
       <div class="legend-title">{{ overlayMeta.label }}</div>
       <template v-if="overlayLegend.type === 'sequential'">
         <div class="gradient" :style="{ background: `linear-gradient(90deg, ${overlayLegend.ramp[0]}, ${overlayLegend.ramp[1]})` }"></div>
@@ -97,7 +100,7 @@
     </div>
 
     <!-- Legend (categorical swatches or a sequential gradient) -->
-    <div v-if="loaded && coloring" class="legend">
+    <div v-if="coloring" class="legend">
       <div class="legend-title">{{ coloring.title }}</div>
       <template v-if="coloring.type === 'categorical'">
         <div v-for="item in coloring.legend" :key="item.label" class="legend-row">
@@ -109,6 +112,7 @@
         <div class="gradient" :style="{ background: `linear-gradient(90deg, ${RAMP[0]}, ${RAMP[1]})` }"></div>
         <div class="gradient-scale"><span>{{ fmtNum(coloring.min) }}</span><span>{{ fmtNum(coloring.max) }}</span></div>
       </template>
+    </div>
     </div>
 
     <!-- Detail drawer with the weather lead-up -->
@@ -832,18 +836,44 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 0 1px #2a78d6; flex: 0 0 auto;
 }
 
-.legend {
+/* One column down the right-hand side holds both legends. They used to place
+   themselves independently — the overlay legend pinned to the top, the colouring
+   legend to the bottom — which works only while the control bar is a single row.
+   On a phone the bar is three rows tall and the overlay legend landed on top of
+   it; worse, the mobile rule added `bottom` without clearing the `top` it
+   inherited, so the box was stretched between the two and rendered as a mostly
+   empty panel half the height of the map.
+   Placement now belongs to the container, and the legends only stack inside it,
+   so neither has to know how tall the other is. */
+.legends {
   position: absolute; bottom: 18px; right: 12px; z-index: 500;
+  /* Below the control bar, whose height depends on how many rows it wraps into —
+     picking an overlay adds a "Cell size" dropdown and a second row, which is
+     exactly when the overlay legend appears to collide with it. */
+  top: calc(var(--controls-h, 0px) + 20px);
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  justify-content: flex-end;
+  /* The column spans the map so the two ends are reachable; only the panels
+     themselves should catch a click. */
+  pointer-events: none; max-width: 46vw;
+}
+.legends > * { pointer-events: auto; }
+
+.legend {
+  position: static; z-index: 500;
   background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
   padding: 10px 12px; font: 13px/1.4 system-ui, sans-serif; color: #222; min-width: 120px;
-  max-width: 46vw; max-height: 44vh; overflow-y: auto;
+  max-width: 100%; max-height: 44vh; overflow-y: auto; flex: 0 1 auto;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 .legend-title { font-weight: 600; margin-bottom: 6px; position: sticky; top: 0; }
 .legend-row { display: flex; align-items: center; gap: 8px; }
 
 /* The overlay legend sits above the point legend, in the same column. */
-.overlay-legend { bottom: auto; top: 18px; right: 12px; max-width: 280px; }
+/* Pushed to the top of the column, leaving the colouring legend at the bottom —
+   the arrangement this had before, now expressed as a relationship between the
+   two rather than as two absolute positions that can collide. */
+.overlay-legend { margin-bottom: auto; max-width: 280px; }
 .legend-note {
   margin-top: 6px; font-size: 11px; line-height: 1.35; color: #555;
   border-top: 1px solid #e6e6e6; padding-top: 5px;
@@ -878,9 +908,15 @@ onBeforeUnmount(() => {
   .colorby select { flex: 1 1 auto; min-width: 0; }
   /* The popover buttons share the remaining row rather than each taking one. */
   .season { flex: 1 1 100%; }
+  /* Both legends drop to the bottom, clear of the control bar, and share the
+     space rather than the overlay one claiming the top. */
+  .legends {
+    top: auto; bottom: 8px; right: 8px; max-width: 70vw;
+    gap: 6px; max-height: 46vh;
+  }
+  .overlay-legend { margin-bottom: 0; }
   .legend {
-    bottom: 8px; right: 8px; left: auto; max-width: 62vw; max-height: 34vh;
-    padding: 8px 10px; font-size: 12px;
+    max-height: 22vh; padding: 8px 10px; font-size: 12px;
   }
 }
 
