@@ -86,6 +86,29 @@
         </div>
       </fieldset>
 
+      <!-- Location precision: an obscured point was not measured where it sits -->
+      <fieldset v-if="precisionCounts.total">
+        <legend>Location precision <HelpLink option="filter-precise-only" /></legend>
+        <label class="fp-check">
+          <input type="checkbox" :checked="filters.preciseOnly"
+                 @change="setFilter('preciseOnly', $event.target.checked)" />
+          Precise coordinates only
+        </label>
+        <p class="fp-hint">
+          iNaturalist randomises obscured locations inside a ~20&nbsp;km cell, so the
+          elevation, slope and moisture on those records were read somewhere the
+          mushroom probably was not.
+        </p>
+        <ul class="fp-counts">
+          <li v-for="row in precisionRows" :key="row.key" :class="{ dim: !row.n }">
+            <span class="fp-dot" :class="row.key"></span>
+            {{ row.label }}
+            <strong>{{ row.n.toLocaleString() }}</strong>
+            <span class="fp-pct">{{ row.pct }}%</span>
+          </li>
+        </ul>
+      </fieldset>
+
       <!-- Sample size: drop taxa with too few records to say anything about -->
       <fieldset>
         <legend>Sample size <HelpLink option="filter-min-obs" /></legend>
@@ -137,6 +160,7 @@
 </template>
 
 <script setup>
+import { LOCATION_PRECISION_LABELS } from '~/composables/useObservations'
 const { filterOptions, filteredData, data } = useObservations()
 const { filters, setFilter, setCenter, reset, activeCount } = useFilters()
 
@@ -153,6 +177,31 @@ function saveSubset() {
 }
 
 onMounted(() => savedFilters.loadFromStorage())
+
+// How the loaded records break down by coordinate precision. Counted over the
+// whole dataset rather than the filtered view, so ticking the box does not
+// change the numbers that justify ticking it.
+const precisionCounts = computed(() => {
+  const counts = { precise: 0, coarse: 0, obscured: 0, unknown: 0, total: 0 }
+  for (const f of data.value?.features || []) {
+    const key = f.properties?.location_precision
+    if (!key) continue
+    if (counts[key] === undefined) continue
+    counts[key]++
+    counts.total++
+  }
+  return counts
+})
+
+const precisionRows = computed(() => {
+  const c = precisionCounts.value
+  return ['precise', 'coarse', 'obscured', 'unknown'].map((key) => ({
+    key,
+    label: LOCATION_PRECISION_LABELS[key],
+    n: c[key],
+    pct: c.total ? Math.round((c[key] / c.total) * 100) : 0,
+  }))
+})
 
 const shownCount = computed(() => filteredData.value?.features?.length || 0)
 const totalCount = computed(() => data.value?.features?.length || 0)
@@ -227,4 +276,20 @@ select, input { width: 100%; box-sizing: border-box; border: 1px solid var(--bor
 .mini.ghost { background: var(--surface); color: var(--text); border-color: var(--border); }
 .mini:disabled { opacity: 0.5; cursor: default; }
 .rnote { font-size: 0.76rem; color: #2b7a3d; font-variant-numeric: tabular-nums; }
+
+.fp-check { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: var(--text); }
+.fp-check input { accent-color: var(--accent); }
+.fp-counts { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 3px; }
+.fp-counts li {
+  display: flex; align-items: center; gap: 7px; font-size: 0.75rem; color: var(--muted);
+}
+.fp-counts li.dim { opacity: 0.45; }
+.fp-counts strong { margin-left: auto; color: var(--text); font-variant-numeric: tabular-nums; }
+.fp-pct { min-width: 2.6em; text-align: right; font-variant-numeric: tabular-nums; }
+.fp-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; background: var(--muted); }
+/* Same reading as everywhere else: green is trustworthy, red is not. */
+.fp-dot.precise { background: #2b7a3d; }
+.fp-dot.coarse { background: #d08a00; }
+.fp-dot.obscured { background: #b00020; }
+.fp-dot.unknown { background: #9aa0a6; }
 </style>

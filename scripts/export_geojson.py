@@ -47,6 +47,11 @@ PROPERTY_COLUMNS = [
     # over a grid cell without the wraparound that averaging bearings causes.
     "wind_u",
     "wind_v",
+    # Location trustworthiness. Obscured records are randomised inside a ~20km
+    # cell, so every terrain value sampled at the point describes somewhere else
+    # — the map and the analysis both need to be able to see that.
+    "location_precision",
+    "public_positional_accuracy",
     "num_identification_agreements",
     "cluster",
     # Observation-day weather
@@ -57,7 +62,7 @@ PROPERTY_COLUMNS = [
     *(f"tmin_d{i}" for i in range(7)),   # daily low (Open-Meteo)
 ]
 
-INT_COLUMNS = {"cluster", "num_identification_agreements"}
+INT_COLUMNS = {"cluster", "num_identification_agreements", "public_positional_accuracy"}
 
 
 def _clean(value, as_int=False):
