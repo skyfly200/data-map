@@ -6,6 +6,7 @@
         <select v-model="chartType">
           <option value="scatter">Scatter</option>
           <option value="bar">Bar (aggregate)</option>
+          <option value="stacked">Stacked bar</option>
           <option value="line">Line</option>
           <option value="area">Area</option>
           <option value="box">Box plot by category</option>
@@ -36,6 +37,15 @@
         <label class="ctrl"><span>Y (mean) <HelpLink option="chart-y" /></span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Series <HelpLink option="chart-series" /></span><select v-model="seriesField"><option value="">— one line —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Granularity <HelpLink option="chart-granularity" /></span><input type="range" min="4" max="60" v-model.number="granularity" /><span class="gval">{{ granularity }}</span></label>
+        <label v-if="xField === 'day_of_year'" class="ctrl chk"><input type="checkbox" v-model="showToday" /> Today line <HelpLink option="chart-today" /></label>
+      </template>
+
+      <template v-else-if="chartType === 'stacked'">
+        <label class="ctrl"><span>Group by <HelpLink option="chart-group-by" /></span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Split by <HelpLink option="chart-stack-field" /></span><select v-model="stackField"><option value="">— pick one —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Measure <HelpLink option="chart-measure" /></span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
+        <label class="ctrl chk"><input type="checkbox" v-model="horizontal" /> Horizontal <HelpLink option="chart-horizontal" /></label>
+        <label class="ctrl chk"><input type="checkbox" v-model="normalise" /> 100% <HelpLink option="chart-normalise" /></label>
       </template>
 
       <template v-else-if="chartType === 'box'">
@@ -151,11 +161,14 @@ const granularity = ref(D.granularity)
 const horizontal = ref(D.horizontal)
 const showToday = ref(D.showToday)
 const sortBy = ref(D.sortBy)
+const stackField = ref(D.stackField)
+const normalise = ref(D.normalise)
 
 // The ? beside the type picker documents the chart you actually have selected —
 // what it is good for and where it misleads — rather than the idea of charts.
 const TYPE_DOCS = {
-  scatter: 'chart-scatter', bar: 'chart-bar', line: 'chart-line', area: 'chart-line',
+  scatter: 'chart-scatter', bar: 'chart-bar', stacked: 'chart-stacked',
+  line: 'chart-line', area: 'chart-line',
   box: 'chart-box', histogram: 'chart-histogram', heatmap: 'chart-heatmap',
   radar: 'chart-radar', donut: 'chart-donut',
 }
@@ -163,7 +176,7 @@ const typeDocId = computed(() => TYPE_DOCS[chartType.value] || 'chart-type')
 
 // Only charts that lay categories out in a row have an order worth choosing.
 // A scatter or histogram has no category axis to sort.
-const SORTABLE_TYPES = new Set(['bar', 'box', 'radar'])
+const SORTABLE_TYPES = new Set(['bar', 'stacked', 'box', 'radar'])
 
 const config = computed(() => ({
   type: chartType.value,
@@ -172,6 +185,7 @@ const config = computed(() => ({
   groupField: groupField.value, valueField: valueField.value, measure: measure.value,
   rowField: rowField.value, colField: colField.value, bins: bins.value, granularity: granularity.value,
   horizontal: horizontal.value, showToday: showToday.value, sortBy: sortBy.value,
+  stackField: stackField.value, normalise: normalise.value,
 }))
 
 // Click a scatter point to open its observation (iNat link + open on map).
@@ -180,7 +194,7 @@ const selected = ref(null)
 // Remember the builder configuration per viewer, so returning to Explore keeps
 // the last chart you were designing.
 const EXPLORE_KEY = 'explore-config'
-const persisted = { type: chartType, xField, yField, colorField, shapeField, sizeField, seriesField, groupField, valueField, measure, rowField, colField, bins, granularity, horizontal, showToday, sortBy }
+const persisted = { type: chartType, xField, yField, colorField, shapeField, sizeField, seriesField, groupField, valueField, measure, rowField, colField, bins, granularity, horizontal, showToday, sortBy, stackField, normalise }
 
 function applyConfig(cfg) {
   for (const [k, r] of Object.entries(persisted)) if (cfg?.[k] !== undefined) r.value = cfg[k]
