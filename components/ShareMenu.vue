@@ -1,14 +1,16 @@
 <template>
   <div class="share">
-    <button class="sh-btn" :class="{ on: open }" title="Share this view" @click="toggle">
+    <button class="sh-btn" :class="{ on: open, compact }"
+            :title="compact ? `Share “${title}”` : 'Share this view'"
+            :aria-label="compact ? `Share “${title}”` : null" @click="toggle">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
         <path fill="currentColor" d="M18 16.1a3 3 0 0 0-2 .8l-7.1-4.2a3 3 0 0 0 0-1.4L16 7.1a3 3 0 1 0-1-2.1l-7.1 4.2a3 3 0 1 0 0 5.6L15 19a3 3 0 1 0 3-2.9z" />
       </svg>
-      Share
+      <template v-if="!compact">Share</template>
     </button>
 
-    <div v-if="open" class="sh-panel">
-      <p class="sh-note">This link reproduces what you are looking at — filters, colouring and overlay included.</p>
+    <div v-if="open" class="sh-panel" :class="{ right: compact }">
+      <p class="sh-note">{{ note }}</p>
 
       <div class="sh-url">
         <input ref="urlInput" :value="url" readonly aria-label="Shareable link" @focus="$event.target.select()" />
@@ -57,6 +59,14 @@ const props = defineProps({
   sizeBy: { type: String, default: '' },
   // What the link is of, used in the share text.
   title: { type: String, default: 'Mushroom observations' },
+  // Extra query params the host view owns — a built chart's configuration, so
+  // the link opens that chart rather than only the filters behind it.
+  extra: { type: Object, default: null },
+  // Where the link should land. Defaults to the current route.
+  path: { type: String, default: '' },
+  // Icon-only, for sitting in a chart card's toolbar rather than a control bar.
+  compact: { type: Boolean, default: false },
+  note: { type: String, default: 'This link reproduces what you are looking at — filters, colouring and overlay included.' },
 })
 
 const share = useShareState()
@@ -66,12 +76,13 @@ const copied = ref('')
 const qrError = ref('')
 
 const state = computed(() => ({
-  mapView: props.mapView, colorBy: props.colorBy, sizeBy: props.sizeBy,
+  mapView: props.mapView, colorBy: props.colorBy, sizeBy: props.sizeBy, extra: props.extra,
 }))
+const path = computed(() => props.path || null)
 
 // Recomputed while the panel is open so panning the map updates the link.
-const url = computed(() => (open.value ? share.buildUrl(state.value) : ''))
-const embedCode = computed(() => (open.value ? share.buildEmbedCode(state.value) : ''))
+const url = computed(() => (open.value ? share.buildUrl(state.value, path.value) : ''))
+const embedCode = computed(() => (open.value ? share.buildEmbedCode(state.value, path.value) : ''))
 
 const text = computed(() => props.title)
 const enc = encodeURIComponent
@@ -144,6 +155,12 @@ async function copy(value, what) {
   border-radius: 6px; padding: 5px 10px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
 }
 .sh-btn:hover, .sh-btn.on { background: var(--surface-2); }
+/* Sits in a chart card's toolbar, matching the buttons beside it. */
+.sh-btn.compact {
+  width: 22px; height: 22px; padding: 0; border-radius: 5px;
+  justify-content: center; color: var(--muted);
+}
+.sh-btn.compact:hover { color: var(--text); }
 
 .sh-panel {
   position: absolute; top: calc(100% + 6px); left: 0; z-index: 900; width: 300px;
@@ -151,6 +168,8 @@ async function copy(value, what) {
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
   box-shadow: 0 4px 16px var(--shadow); padding: 12px; font-size: 0.82rem;
 }
+/* A card's share button sits at its right edge, so the panel hangs inward. */
+.sh-panel.right { left: auto; right: 0; }
 .sh-note { margin: 0 0 8px; color: var(--muted); font-size: 0.76rem; line-height: 1.4; }
 
 .sh-url { display: flex; gap: 5px; }

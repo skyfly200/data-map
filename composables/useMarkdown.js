@@ -5,8 +5,34 @@
 // general-purpose or safe renderer for untrusted input. Source text is
 // HTML-escaped first, so our controlled Markdown renders literally.
 
+/**
+ * A heading's anchor id. Headings get one so the guide can be linked to a
+ * section rather than to the top of a long page — which is what the ? beside
+ * every control does.
+ */
+export function slugify(text) {
+  return String(text)
+    .toLowerCase()
+    // Drop the inline markup before slugging, so "**Bold** heading" and "Bold
+    // heading" reach the same anchor.
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\*+/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 function escapeHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+/**
+ * Inline markup only — bold, italic, code and links — with no block structure.
+ * The option reference renders its paragraphs through this, so the same escaping
+ * and the same small Markdown subset apply there as in the guide itself.
+ */
+export function renderInline(text) {
+  return inline(text)
 }
 
 function inline(text) {
@@ -67,7 +93,8 @@ export function renderMarkdown(md) {
     if ((m = /^(#{1,4})\s+(.*)$/.exec(line))) {
       flushPara(); flushList()
       const level = m[1].length
-      out.push(`<h${level}>${inline(m[2])}</h${level}>`)
+      const id = slugify(m[2])
+      out.push(`<h${level}${id ? ` id="${id}"` : ''}>${inline(m[2])}</h${level}>`)
     } else if (/^---+$/.test(line)) {
       flushPara(); flushList()
       out.push('<hr>')

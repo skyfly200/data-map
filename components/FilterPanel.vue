@@ -1,7 +1,7 @@
 <template>
   <div class="filter-panel">
     <div class="fp-head">
-      <h3>Filters <span v-if="activeCount" class="badge">{{ activeCount }}</span></h3>
+      <h3>Filters <HelpLink option="filter-panel" /> <span v-if="activeCount" class="badge">{{ activeCount }}</span></h3>
       <div class="fp-actions">
         <span class="showing">Showing {{ shownCount }} of {{ totalCount }}</span>
         <button class="reset" :disabled="!activeCount" @click="reset">Reset</button>
@@ -11,7 +11,7 @@
     <div class="groups">
       <!-- Location: admin -->
       <fieldset>
-        <legend>Location</legend>
+        <legend>Location <HelpLink option="filter-location" /></legend>
         <label>Country
           <select :value="filters.country" @change="setFilter('country', $event.target.value)">
             <option value="">Any</option>
@@ -57,7 +57,7 @@
 
       <!-- Time -->
       <fieldset>
-        <legend>Time</legend>
+        <legend>Time <HelpLink option="filter-time" /></legend>
         <div class="time-row">
           <label>Year
             <select :value="filters.year" @change="setFilter('year', $event.target.value)">
@@ -88,7 +88,7 @@
 
       <!-- Sample size: drop taxa with too few records to say anything about -->
       <fieldset>
-        <legend>Sample size</legend>
+        <legend>Sample size <HelpLink option="filter-min-obs" /></legend>
         <div class="time-row">
           <label>At least
             <input type="number" min="0" max="500" step="1" :value="filters.minObs || ''" placeholder="any"
@@ -110,7 +110,7 @@
 
       <!-- Saved subsets -->
       <fieldset>
-        <legend>Saved subsets</legend>
+        <legend>Saved subsets <HelpLink option="filter-saved" /></legend>
         <div class="subset-save">
           <input v-model="subsetName" type="text" placeholder="Name this filter set"
                  @keyup.enter="saveSubset" />

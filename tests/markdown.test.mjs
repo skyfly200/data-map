@@ -1,11 +1,11 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { renderMarkdown } from '../composables/useMarkdown.js'
+import { renderInline, renderMarkdown, slugify } from '../composables/useMarkdown.js'
 
 test('headings, paragraphs, lists and rules still render', () => {
   const html = renderMarkdown('# Title\n\nSome text.\n\n- one\n- two\n\n---')
-  assert.match(html, /<h1>Title<\/h1>/)
+  assert.match(html, /<h1 id="title">Title<\/h1>/)
   assert.match(html, /<p>Some text\.<\/p>/)
   assert.match(html, /<ul><li>one<\/li><li>two<\/li><\/ul>/)
   assert.match(html, /<hr>/)
@@ -68,4 +68,29 @@ test('empty and malformed input does not throw', () => {
   assert.equal(renderMarkdown(undefined), '')
   // A table header with no body rows is still a valid table.
   assert.match(renderMarkdown('| A |\n| --- |'), /<table>/)
+})
+
+test('headings carry an anchor id, so a tooltip can link to a section', () => {
+  const html = renderMarkdown('## Map\n\n### Colouring and sizing')
+  assert.match(html, /<h2 id="map">Map<\/h2>/)
+  assert.match(html, /<h3 id="colouring-and-sizing">/)
+})
+
+test('slugs ignore inline markup, so styled headings still anchor', () => {
+  assert.equal(slugify('**Bold** heading'), 'bold-heading')
+  assert.equal(slugify('`code` in a heading'), 'code-in-a-heading')
+  assert.equal(slugify('A [link](/x) here'), 'a-link-here')
+  // Punctuation and spacing collapse rather than leaking into the id.
+  assert.equal(slugify('Wind / aspect vectors'), 'wind-aspect-vectors')
+  assert.equal(slugify('  Trailing —  '), 'trailing')
+  assert.equal(slugify('!!!'), '')
+})
+
+test('a heading that slugs to nothing is still rendered, just unanchored', () => {
+  assert.equal(renderMarkdown('# !!!'), '<h1>!!!</h1>')
+})
+
+test('renderInline applies the same escaping as the block renderer', () => {
+  assert.equal(renderInline('<script>'), '&lt;script&gt;')
+  assert.equal(renderInline('**bold** and `code`'), '<strong>bold</strong> and <code>code</code>')
 })

@@ -26,7 +26,7 @@ export function useShareState() {
    * Current view as a flat param object. Only non-default values are included.
    * `mapView` is passed in by the map (Leaflet owns the centre and zoom).
    */
-  function collect({ mapView = null, colorBy = '', sizeBy = '' } = {}) {
+  function collect({ mapView = null, colorBy = '', sizeBy = '', extra = null } = {}) {
     const q = {}
     const f = filters.value
 
@@ -64,6 +64,15 @@ export function useShareState() {
     if (appearance.paletteKey.value !== 'default') q.pal = appearance.paletteKey.value
     if (selectedDataset.value && !selectedDataset.value.endsWith('observations.geojson')) {
       q.ds = selectedDataset.value
+    }
+
+    // Params the calling view owns — a built chart's configuration, say. They go
+    // in last but never overwrite the view state above, so a chart link still
+    // carries the filters that produced the data behind the chart.
+    for (const [key, value] of Object.entries(extra || {})) {
+      if (value !== null && value !== undefined && value !== '' && q[key] === undefined) {
+        q[key] = String(value)
+      }
     }
     return q
   }
