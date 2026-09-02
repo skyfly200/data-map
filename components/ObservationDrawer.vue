@@ -1,6 +1,6 @@
 <template>
   <transition name="slide">
-    <aside v-if="selected" class="drawer">
+    <aside v-if="selected" class="drawer" :class="{ inline }">
       <button class="close" aria-label="Close" @click="$emit('close')">×</button>
       <h3><em>{{ selected.species || 'Observation' }}</em></h3>
 
@@ -17,13 +17,40 @@
         <div class="image-counter">{{ currentImageIndex + 1 }} / {{ images.length }}</div>
       </div>
 
-      <dl class="meta">
-        <div v-if="selected.date"><dt>Observed</dt><dd>{{ selected.date }}</dd></div>
-        <div v-if="selected.location"><dt>Location</dt><dd>{{ selected.location }}</dd></div>
-        <div v-if="hasValue(selected.elevation)"><dt>Elevation</dt><dd>{{ elevLabel(selected.elevation) }}</dd></div>
-        <div v-if="hasValue(selected.land_cover_label)"><dt>Land cover</dt><dd>{{ selected.land_cover_label }}</dd></div>
-        <div v-if="hasValue(selected.cluster)"><dt>Cluster</dt><dd><span class="chip" :style="{ background: colorFor(selected.cluster) }">{{ selected.cluster }}</span></dd></div>
+      <section v-for="sec in sections" :key="sec.title" class="group">
+        <h4>{{ sec.title }}</h4>
+        <dl class="meta">
+          <div v-for="r in sec.rows" :key="r.label" :class="{ warn: r.warn }">
+            <dt>{{ r.label }}</dt>
+            <dd>
+              {{ r.value }}
+              <!-- A 0-1 index means little as a bare number; the bar puts it on
+                   its own scale at a glance. -->
+              <span v-if="r.bar !== undefined && r.bar !== null" class="bar" aria-hidden="true">
+                <span :style="{ width: `${Math.round(r.bar * 100)}%` }"></span>
+              </span>
+              <small v-if="r.hint" class="hint">{{ r.hint }}</small>
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <dl v-if="hasValue(selected.cluster) || genus" class="meta">
+        <div v-if="genus"><dt>Genus</dt><dd><em>{{ genus }}</em></dd></div>
+        <div v-if="hasValue(selected.cluster)">
+          <dt>Cluster</dt>
+          <dd><span class="chip" :style="{ background: colorFor(selected.cluster) }">{{ selected.cluster }}</span></dd>
+        </div>
       </dl>
+
+      <!-- Say what has not been sampled, rather than leaving a gap the reader
+           has to notice on their own. -->
+      <p v-if="missing.length" class="missing">
+        No {{ missing.join(', ') }} data on this record yet.
+      </p>
+
+      <div v-if="details && details.description" class="description">{{ details.description }}</div>
+
       <LeadUpCharts v-if="showCharts" :p="selected" />
       <div class="actions">
         <button v-if="showMapLink" class="act map" @click="openOnMap">Open on map ↗</button>
@@ -35,7 +62,11 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { colorFor, hasValue, inatUrl, inatPhotoUrl, useObservations, fetchObservationDetails } from '~/composables/useObservations'
+import {
+  LOCATION_PRECISION_LABELS, colorFor, hasValue, inatUrl, inatPhotoUrl,
+  useObservations, fetchObservationDetails,
+} from '~/composables/useObservations'
+import { detailSections, missingEnrichment } from '~/composables/observationDetail'
 import { useUnits } from '~/composables/useUnits'
 
 const props = defineProps({
@@ -44,26 +75,49 @@ const props = defineProps({
   showMapLink: { type: Boolean, default: true },
   // Show the weather lead-up mini-charts (needs the enriched history columns).
   showCharts: { type: Boolean, default: true },
+  // The map hosts this inside its own shell, below the header; everywhere else
+  // it is pinned to the viewport.
+  inline: { type: Boolean, default: false },
 })
 const emit = defineEmits(['close'])
 
-const { elevLabel } = useUnits()
+const { elevLabel, tempLabel } = useUnits()
 const { setFocusObservation } = useObservations()
+
+// Elevation and temperature follow the ft/m and °F/°C toggles, so the formatters
+// are handed to the section builder rather than looked up inside it.
+const sections = computed(() => detailSections(props.selected, {
+  elevLabel,
+  tempLabel,
+  precisionLabel: (k) => LOCATION_PRECISION_LABELS[k] || k,
+}))
+const missing = computed(() => missingEnrichment(props.selected))
+const genus = computed(() => {
+  const s = props.selected
+  if (!s) return ''
+  if (hasValue(s.genus)) return s.genus
+  return hasValue(s.species) ? String(s.species).trim().split(/\s+/)[0] : ''
+})
 
 // Photo carousel: fetch the observation's photos from iNaturalist when a point
 // is selected, at a large size (the API's bare `url` is a 75px square thumb).
 const images = ref([])
 const currentImageIndex = ref(0)
+// The same fetch already ran for the photos; keeping the record lets the
+// observer's own notes show without a second request.
+const details = ref(null)
 
 watch(() => props.selected, async (s) => {
   currentImageIndex.value = 0
   images.value = []
+  details.value = null
   if (!s) return
   const id = s.inat_id ?? s.uuid
-  const details = await fetchObservationDetails(id)
+  const fetched = await fetchObservationDetails(id)
   // Guard against a stale response landing after the user picked another point.
   if (props.selected !== s) return
-  images.value = (details?.photos || []).map((p) => inatPhotoUrl(p, 'large')).filter(Boolean)
+  details.value = fetched
+  images.value = (fetched?.photos || []).map((p) => inatPhotoUrl(p, 'large')).filter(Boolean)
 }, { immediate: true })
 
 function prevImage() {
@@ -128,7 +182,7 @@ function openOnMap() {
   font-size: 1.5rem; line-height: 1; color: var(--muted); cursor: pointer;
 }
 .meta { margin: 0 0 14px; display: grid; gap: 5px; }
-.meta div { display: grid; grid-template-columns: 84px 1fr; gap: 8px; }
+.meta div { display: grid; grid-template-columns: 92px 1fr; gap: 8px; align-items: start; }
 .meta dt { color: var(--muted); }
 .meta dd { margin: 0; }
 .chip { display: inline-block; min-width: 20px; padding: 0 7px; border-radius: 10px; color: #fff; font-weight: 600; text-align: center; }
@@ -142,6 +196,34 @@ function openOnMap() {
 .act.map:hover { background: var(--surface-3); }
 .act.inat { background: #2b7a3d; color: #fff; border-color: #2b7a3d; }
 .act.inat:hover { background: #246833; }
+
+
+/* Hosted inside the map's own shell rather than pinned to the viewport, so it
+   sits below the site header instead of over it. Above Leaflet's controls,
+   which live at z-index 1000 and would otherwise take the close button's tap. */
+.drawer.inline { position: absolute; height: 100%; z-index: 1100; }
+
+.group { margin: 0 0 12px; }
+.group h4 {
+  margin: 0 0 6px; font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--muted); font-weight: 700;
+}
+.meta div.warn dd { color: var(--danger, #b00020); }
+.hint { display: block; color: var(--muted); font-size: 0.72rem; line-height: 1.35; margin-top: 2px; }
+.bar {
+  display: block; height: 4px; border-radius: 2px; background: var(--surface-3, #e6e6e6);
+  margin-top: 4px; overflow: hidden;
+}
+.bar > span { display: block; height: 100%; background: var(--accent, #2b7a3d); }
+
+.missing {
+  margin: 0 0 12px; padding: 7px 10px; border-radius: 6px; font-size: 0.76rem;
+  color: var(--muted); background: var(--surface-2); border: 1px solid var(--border);
+}
+.description {
+  margin: 0 0 14px; font-size: 0.84rem; line-height: 1.5; color: var(--text);
+  white-space: pre-wrap; max-height: 160px; overflow-y: auto;
+}
 
 .slide-enter-active, .slide-leave-active { transition: transform 0.2s ease; }
 .slide-enter-from, .slide-leave-to { transform: translateX(100%); }
