@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bg" cx="50%" cy="40%" r="80%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+
+    <!-- Glowing Ray Filter -->
+    <filter id="ray-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- 3D Plane Gradients (Left Face vs Right Face for Isometric Depth) -->
+    <!-- Plane 1 (Top / Widest) -->
+    <linearGradient id="p1-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="p1-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+
+    <!-- Plane 2 -->
+    <linearGradient id="p2-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+    <linearGradient id="p2-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+
+    <!-- Plane 3 -->
+    <linearGradient id="p3-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+    <linearGradient id="p3-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#64748b"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+
+    <!-- Plane 4 (Bottom / Smallest) -->
+    <linearGradient id="p4-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#64748b"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+    <linearGradient id="p4-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Tile -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <g transform="translate(0, -10)">
+    <!-- 1. TOP DASHED ORBITAL ARC -->
+    <path d="M 172 107 A 95 60 0 0 1 256 70 A 95 60 0 0 1 340 107"
+          fill="none"
+          stroke="#38bdf8"
+          stroke-width="5"
+          stroke-dasharray="9 7"
+          stroke-linecap="round"/>
+
+    <!-- ==================== LAYER 1 (TOP PLANE) ==================== -->
+    <!-- Back Half (Top Triangle: 176,150 -> 256,120 -> 336,150): Underneath Ray -->
+    <polygon points="176,150 256,120 256,150" fill="url(#p1-left)"/>
+    <polygon points="256,120 336,150 256,150" fill="url(#p1-right)"/>
+
+    <!-- Ray Segment 1: Enters from top arc (y=70) and passes OVER the back half to center (y=150) -->
+    <line x1="256" y1="70" x2="256" y2="150" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" filter="url(#ray-glow)"/>
+
+    <!-- Front Half (Bottom Triangle: 176,150 -> 256,180 -> 336,150): Over Ray -->
+    <polygon points="176,150 256,180 256,150" fill="url(#p1-left)"/>
+    <polygon points="256,180 336,150 256,150" fill="url(#p1-right)"/>
+
+
+    <!-- ==================== LAYER 2 (MID-UPPER PLANE) ==================== -->
+    <!-- Back Half (Top Triangle: 198,215 -> 256,190 -> 314,215) -->
+    <polygon points="198,215 256,190 256,215" fill="url(#p2-left)"/>
+    <polygon points="256,190 314,215 256,215" fill="url(#p2-right)"/>
+
+    <!-- Ray Segment 2: Travels down from Plane 1 bottom tip (y=180) OVER Plane 2 back half to center (y=215) -->
+    <line x1="256" y1="180" x2="256" y2="215" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" filter="url(#ray-glow)"/>
+
+    <!-- Front Half (Bottom Triangle: 198,215 -> 256,240 -> 314,215) -->
+    <polygon points="198,215 256,240 256,215" fill="url(#p2-left)"/>
+    <polygon points="256,240 314,215 256,215" fill="url(#p2-right)"/>
+
+
+    <!-- ==================== LAYER 3 (MID-LOWER PLANE) ==================== -->
+    <!-- Back Half (Top Triangle: 220,270 -> 256,250 -> 292,270) -->
+    <polygon points="220,270 256,250 256,270" fill="url(#p3-left)"/>
+    <polygon points="256,250 292,270 256,270" fill="url(#p3-right)"/>
+
+    <!-- Ray Segment 3: Travels down from Plane 2 bottom tip (y=240) OVER Plane 3 back half to center (y=270) -->
+    <line x1="256" y1="240" x2="256" y2="270" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" filter="url(#ray-glow)"/>
+
+    <!-- Front Half (Bottom Triangle: 220,270 -> 256,290 -> 292,270) -->
+    <polygon points="220,270 256,290 256,270" fill="url(#p3-left)"/>
+    <polygon points="256,290 292,270 256,270" fill="url(#p3-right)"/>
+
+
+    <!-- ==================== LAYER 4 (BOTTOM PLANE) ==================== -->
+    <!-- Back Half (Top Triangle: 240,310 -> 256,298 -> 272,310) -->
+    <polygon points="240,310 256,298 256,310" fill="url(#p4-left)"/>
+    <polygon points="256,298 272,310 256,310" fill="url(#p4-right)"/>
+
+    <!-- Ray Segment 4: Travels down from Plane 3 bottom tip (y=290) OVER Plane 4 back half to center (y=310) -->
+    <line x1="256" y1="290" x2="256" y2="310" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" filter="url(#ray-glow)"/>
+
+    <!-- Front Half (Bottom Triangle: 240,310 -> 256,322 -> 272,310) -->
+    <polygon points="240,310 256,322 256,310" fill="url(#p4-left)"/>
+    <polygon points="256,322 272,310 256,310" fill="url(#p4-right)"/>
+
+
+    <!-- Final Ray Segment: Emerges from beneath Plane 4 bottom tip (y=322) down to target center (y=350) -->
+    <line x1="256" y1="322" x2="256" y2="350" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" filter="url(#ray-glow)"/>
+
+
+    <!-- 2. PIERCING ENTRY POINTS (Glow Highlights where Ray penetrates plane centers) -->
+    <ellipse cx="256" cy="150" rx="4" ry="2" fill="#ffffff" filter="url(#ray-glow)"/>
+    <ellipse cx="256" cy="215" rx="3.5" ry="1.7" fill="#ffffff" filter="url(#ray-glow)"/>
+    <ellipse cx="256" cy="270" rx="3" ry="1.5" fill="#ffffff" filter="url(#ray-glow)"/>
+    <ellipse cx="256" cy="310" rx="2.5" ry="1.2" fill="#ffffff" filter="url(#ray-glow)"/>
+
+
+    <!-- 3. GEOTAG / FIELD OBSERVATION TARGET AT BASE -->
+    <g filter="url(#ray-glow)">
+      <circle cx="256" cy="350" r="16" fill="none" stroke="#38bdf8" stroke-width="3.5"/>
+      <circle cx="256" cy="350" r="7" fill="#38bdf8"/>
+      <circle cx="256" cy="350" r="3" fill="#ffffff"/>
+    </g>
+  </g>
+
+  <!-- WORDMARK -->
+  <text x="256" y="445"
+        text-anchor="middle"
+        fill="#f8fafc"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        font-size="24"
+        font-weight="700"
+        letter-spacing="6">NEXSTRATA</text>
+</svg>

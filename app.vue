@@ -5,6 +5,7 @@
          shows only the view that was shared. -->
     <header v-if="!isEmbed" class="app-header">
       <NuxtLink to="/" class="brand">
+        <img src="/logo.svg" alt="" class="brand-logo" width="32" height="32" />
         <h1>Nexstrata</h1>
       </NuxtLink>
       <div class="app-controls">
@@ -61,6 +62,7 @@ const { isEmbed } = useShareState()
 useHead({
   title: 'data-map · Mushroom Observations',
   meta: [{ name: 'description', content: 'Mushroom observations enriched with terrain and environmental exposure.' }],
+  link: [{ rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
 })
 
 // The dataset picker itself lives on the Data page; the app still loads the
@@ -212,7 +214,8 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
   padding: 10px 20px; background: var(--header-bg); color: #fff; flex: 0 0 auto;
   border-bottom: 1px solid var(--border);
 }
-.brand { text-decoration: none; color: inherit; }
+.brand { text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 8px; }
+.brand-logo { display: block; width: 32px; height: 32px; border-radius: 7px; flex: 0 0 auto; }
 .brand h1 { margin: 0; font-size: 1.15rem; }
 .brand:hover h1 { opacity: 0.85; }
 
