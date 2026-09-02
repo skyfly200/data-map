@@ -41,7 +41,7 @@ data is dense; a grid can show what is actually in an area.
 | Species richness | How many distinct species | Also effort-sensitive — more visits find more species |
 | Seasonal activity | Share of *this cell's own* finds inside the date window | Effort-neutral; needs 3+ records in the cell |
 | In-season hotspots | That share, weighted by how well-sampled the cell is | A record of past finds, not a forecast |
-| Dominant species | The most-recorded species in the cell | Ties are broken arbitrarily |
+| Most common species | The most-recorded species in the cell | Ties are broken arbitrarily |
 | Wind / aspect vectors | Arrows for wind, or for the way slopes face | Says which source it used |
 
 **Seasonal activity** and **In-season hotspots** take a date and a window
