@@ -58,6 +58,29 @@ export function prettyKey(keys) {
     .join(' + ')
 }
 
+/**
+ * The combination an event represents, in the same form a registration uses.
+ * Exported so the shift rules can be tested — they are subtle enough that a
+ * dead shortcut sat in the map for weeks without anyone noticing.
+ */
+export function eventKeys(e) {
+  const parts = []
+  if (e.ctrlKey) parts.push('ctrl')
+  if (e.metaKey) parts.push('meta')
+  if (e.altKey) parts.push('alt')
+  // Shift is recorded for letters and for named keys, but NOT for other
+  // printable characters: the browser has already folded shift into those, so
+  // "?" arrives as "?" and demanding "shift+?" would never match. A letter is
+  // the opposite case — "O" and "o" read as the same registration, so without
+  // recording shift here "shift+O" could never match either, which is exactly
+  // what had happened to the map's "previous overlay" shortcut.
+  const printable = e.key.length === 1
+  const isLetter = printable && /[a-z]/i.test(e.key)
+  if (e.shiftKey && (!printable || isLetter)) parts.push('shift')
+  parts.push(e.key.toLowerCase())
+  return parts.join('+')
+}
+
 export function useShortcuts() {
   /**
    * Add shortcuts, and remove them again when the caller goes away.
@@ -66,7 +89,10 @@ export function useShortcuts() {
    * `scope` groups them in the help overlay.
    */
   function register(items) {
-    const entries = items.map((i) => ({ ...i, id: `${i.scope}:${i.keys}` }))
+    const entries = items.map((i) => {
+      const keys = String(i.keys).toLowerCase()
+      return { ...i, keys, id: `${i.scope}:${keys}` }
+    })
     const ids = new Set(entries.map((e) => e.id))
     registry.value = [...registry.value.filter((e) => !ids.has(e.id)), ...entries]
 
@@ -77,20 +103,6 @@ export function useShortcuts() {
     // no instance to hook onto.
     try { onUnmounted(unregister) } catch { /* not in a component */ }
     return unregister
-  }
-
-  /** The combination an event represents, in the same form `keys` uses. */
-  function eventKeys(e) {
-    const parts = []
-    if (e.ctrlKey) parts.push('ctrl')
-    if (e.metaKey) parts.push('meta')
-    if (e.altKey) parts.push('alt')
-    // Shift is not recorded for printable characters: the browser has already
-    // applied it, so shift+/ arrives as "?" and recording both would never match.
-    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase()
-    if (e.shiftKey && e.key.length > 1) parts.push('shift')
-    parts.push(key)
-    return parts.join('+')
   }
 
   function handle(e) {
