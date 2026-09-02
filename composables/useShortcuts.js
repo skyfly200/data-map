@@ -17,13 +17,35 @@ import { computed, onUnmounted, ref, shallowRef } from 'vue'
 const registry = shallowRef([])
 const helpOpen = ref(false)
 
-/** Fields where a keystroke is text, not a command. */
-function isTyping(target) {
+// Input types that consume keystrokes themselves: text entry, and the ones the
+// browser drives with arrows and Home/End. A shortcut must not eat those.
+const KEYBOARD_INPUTS = new Set([
+  'text', 'search', 'url', 'tel', 'email', 'password', 'number',
+  'date', 'datetime-local', 'month', 'week', 'time', 'range',
+])
+
+/**
+ * Fields where a keystroke is text, not a command.
+ *
+ * Type matters, not just the tag: a focused checkbox is not typing, and treating
+ * it as such means ticking a box in a panel silently disables every shortcut
+ * until you click elsewhere.
+ */
+export function isTyping(target) {
   if (!target) return false
   if (target.isContentEditable) return true
   const tag = target.tagName
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
+  if (tag === 'TEXTAREA' || tag === 'SELECT') return true
+  if (tag !== 'INPUT') return false
+  // A missing or unknown type is a text field, per the HTML spec's default.
+  const type = (target.getAttribute?.('type') || target.type || 'text').toLowerCase()
+  return KEYBOARD_INPUTS.has(type) || !KNOWN_NON_TEXT.has(type)
 }
+
+// Everything else an <input> can be: none of these are text entry.
+const KNOWN_NON_TEXT = new Set([
+  'checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'color', 'image', 'hidden',
+])
 
 /** "shift+/" → "?" and friends, for display. */
 export function prettyKey(keys) {

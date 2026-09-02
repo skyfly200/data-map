@@ -25,40 +25,18 @@
           <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
         </select>
       </div>
-      <button class="locate" :class="{ busy: locating }"
-              :title="locateError || tip('Centre the map on where you are', 'l')"
-              @click="locateMe">
-        <span class="dot-icon"></span>{{ locating ? 'Locating…' : 'My location' }}
-      </button>
-      <HelpLink option="map-locate" />
-      <!-- Hiding the points leaves the overlay readable on its own; at 48k marks
-           they cover the shading they are meant to sit on top of. -->
-      <button class="locate" :class="{ off: !showPoints }"
-              :title="tip(showPoints ? 'Hide the observation points and show the overlay alone'
-                                     : 'Show the observation points again', 'p')"
-              :aria-pressed="String(showPoints)"
-              @click="showPoints = !showPoints">
-        {{ showPoints ? '👁 Points' : '🚫 Points' }}
-      </button>
-      <HelpLink option="map-show-points" keys="p" />
       <LiveClusterControls />
-      <HelpLink option="map-live-clusters" />
       <AppearanceControls :field="colorBy" :field-label="coloring.title"
                           :values="legendValues" />
       <ShareMenu :map-view="mapView" :color-by="colorBy" :size-by="sizeBy"
                  :title="shareTitle" />
-      <HelpLink option="share-link" />
-      <button class="locate" :disabled="saving"
-              :title="saveError || tip('Save the map, basemap and all, as a PNG', 'e')"
-              @click="saveMap">
-        ⤓ {{ saving ? 'Saving…' : 'Save image' }}
-      </button>
-      <HelpLink option="map-save-image" keys="e" />
-      <label class="toggle">
-        <input type="checkbox" v-model="showFiltered" />
-        Include excluded water / non-terrestrial rows
-        <HelpLink option="data-show-filtered" />
-      </label>
+      <!-- Everything you do not reach for every minute — the points toggle, the
+           excluded-rows option and the two actions — lives behind one button.
+           Spread across the bar they covered the map they were controlling. -->
+      <MapSettings v-model="showPoints"
+                   :locating="locating" :locate-error="locateError"
+                   :saving="saving" :save-error="saveError"
+                   @locate="locateMe" @save="saveMap" />
 
       <!-- Aggregate overlay: grid summaries drawn under the points -->
       <div class="colorby">
@@ -177,7 +155,7 @@ import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useAppearance } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
 
-const { data, filteredData, load, showFiltered, setShowFiltered, speciesFilter, focusObservation, setFocusObservation } = useObservations()
+const { data, filteredData, load, speciesFilter, focusObservation, setFocusObservation } = useObservations()
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const live = useLiveClusters()
 const appearance = useAppearance()
@@ -813,13 +791,6 @@ onBeforeUnmount(() => { if (map) map.remove() })
 }
 .colorby label { color: var(--muted); font-weight: 600; }
 .colorby select { border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; font-size: 13px; }
-.toggle {
-  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
-  padding: 7px 10px; font: 13px system-ui, sans-serif; display: inline-flex; gap: 8px; align-items: center;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-}
-.toggle input { accent-color: #2a78d6; }
-
 .locate {
   background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
   padding: 7px 10px; font: 600 13px system-ui, sans-serif; color: #333; cursor: pointer;
@@ -859,7 +830,6 @@ onBeforeUnmount(() => { if (map) map.remove() })
 .slider-note { margin: 0; color: var(--muted); font-size: 0.72rem; line-height: 1.3; }
 
 /* A control that is currently off reads as off, not just unstyled. */
-.locate.off { opacity: 0.6; text-decoration: line-through; }
 .legend-row span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #222; flex: 0 0 auto; }
 .gradient { height: 12px; border-radius: 3px; border: 1px solid #ccc; }
@@ -868,8 +838,7 @@ onBeforeUnmount(() => { if (map) map.remove() })
 /* Mobile: tighten the on-map controls and legend so they don't swallow the map. */
 @media (max-width: 640px) {
   .controls { top: 8px; left: 8px; right: 8px; gap: 6px; }
-  .colorby, .toggle { padding: 5px 8px; font-size: 12px; }
-  .toggle { flex: 1 1 100%; }
+  .colorby { padding: 5px 8px; font-size: 12px; }
   .legend {
     bottom: 8px; right: 8px; left: auto; max-width: 62vw; max-height: 34vh;
     padding: 8px 10px; font-size: 12px;
