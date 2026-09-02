@@ -5,6 +5,7 @@
               :title="tip(t.hint, String(i + 1))" @click="tab = t.key">
         {{ t.label }}
       </button>
+      <HelpLink :option="tabDocId" />
       <ShareMenu class="tab-share" :title="shareTitle" />
     </nav>
 
@@ -15,6 +16,7 @@
       <p class="scope">
         Analysing <strong>{{ rows.length.toLocaleString() }}</strong> observations —
         whatever the filters on the Data page currently select.
+        <HelpLink option="analysis-scope" />
       </p>
 
       <!-- ─── What relates to what ─────────────────────────────────────────── -->
@@ -182,6 +184,14 @@ shortcuts.register(TABS.map((t, i) => ({
 })))
 
 onMounted(load)
+
+// The ? beside the tabs documents the view you are on — each of these
+// statistics has its own way of misleading, and that is the part worth reading.
+const TAB_DOCS = {
+  drivers: 'analysis-drivers', species: 'analysis-species',
+  seasons: 'analysis-seasons', quality: 'analysis-quality',
+}
+const tabDocId = computed(() => TAB_DOCS[tab.value] || 'analysis-drivers')
 
 const shareTitle = computed(() =>
   `Analysis of ${rows.value.length.toLocaleString()} mushroom observations`)

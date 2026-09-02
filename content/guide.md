@@ -8,6 +8,11 @@ observations, not surveys**. Somewhere with many records may have many mushrooms
 or may simply be near a trailhead. Where a view corrects for that, it says so;
 where it cannot, it says that too.
 
+This page has two halves. What follows is a tour of each part of the app. After
+it, the [Option reference](#reference) documents every individual control — what
+it does, and where it can mislead you. The small **?** beside a control in the
+app links straight to its entry there, so you never have to come here and hunt.
+
 ---
 
 ## Map

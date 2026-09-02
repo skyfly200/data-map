@@ -21,6 +21,7 @@
                 @click="layout.editing.value = !layout.editing.value">
           {{ layout.editing.value ? '✓ Done arranging' : '⇅ Arrange charts' }}
         </button>
+        <HelpLink option="chart-arrange" keys="r" />
         <span v-if="layout.editing.value" class="lb-hint">Use ‹ › to reorder and ✕ to hide.</span>
         <!-- Cards register themselves as they render, which happens after this
              bar is serialised on the server. Render the tally on the client
@@ -36,7 +37,9 @@
                 title="Restore the original order and unhide everything"
                 @click="layout.reset()">Reset layout</button>
         <AppearanceControls field="species" field-label="Species" :values="speciesValues" />
+        <HelpLink option="appearance-palette" />
         <ShareMenu :title="shareTitle" />
+        <HelpLink option="share-link" />
       </div>
 
       <div v-if="layout.editing.value && layout.hiddenCharts.value.length" class="hidden-bar">
@@ -49,7 +52,7 @@
 
       <!-- Saved custom charts (from the Build tab), reorderable -->
       <section v-if="saved.charts.value.length" class="saved">
-        <h2 class="saved-title">My charts</h2>
+        <h2 class="saved-title">My charts <HelpLink option="chart-edit" /></h2>
         <div class="grid">
           <ChartCard v-for="(chart, i) in saved.charts.value" :key="chart.id">
             <div class="saved-tools">

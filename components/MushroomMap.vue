@@ -8,7 +8,7 @@
     <!-- Thematic layer selector -->
     <div v-if="loaded" class="controls">
       <div class="colorby">
-        <label for="colorby-sel">Color by</label>
+        <label for="colorby-sel">Color by <HelpLink option="map-color-by" /></label>
         <select id="colorby-sel" v-model="colorBy">
           <optgroup label="Category">
             <option v-for="o in colorOptions.category" :key="o.key" :value="o.key">{{ o.label }}</option>
@@ -19,7 +19,7 @@
         </select>
       </div>
       <div v-if="colorOptions.numeric.length" class="colorby">
-        <label for="sizeby-sel">Size by</label>
+        <label for="sizeby-sel">Size by <HelpLink option="map-size-by" /></label>
         <select id="sizeby-sel" v-model="sizeBy">
           <option value="">Uniform</option>
           <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
@@ -30,6 +30,7 @@
               @click="locateMe">
         <span class="dot-icon"></span>{{ locating ? 'Locating…' : 'My location' }}
       </button>
+      <HelpLink option="map-locate" />
       <!-- Hiding the points leaves the overlay readable on its own; at 48k marks
            they cover the shading they are meant to sit on top of. -->
       <button class="locate" :class="{ off: !showPoints }"
@@ -39,30 +40,35 @@
               @click="showPoints = !showPoints">
         {{ showPoints ? '👁 Points' : '🚫 Points' }}
       </button>
+      <HelpLink option="map-show-points" keys="p" />
       <LiveClusterControls />
+      <HelpLink option="map-live-clusters" />
       <AppearanceControls :field="colorBy" :field-label="coloring.title"
                           :values="legendValues" />
       <ShareMenu :map-view="mapView" :color-by="colorBy" :size-by="sizeBy"
                  :title="shareTitle" />
+      <HelpLink option="share-link" />
       <button class="locate" :disabled="saving"
               :title="saveError || tip('Save the map, basemap and all, as a PNG', 'e')"
               @click="saveMap">
         ⤓ {{ saving ? 'Saving…' : 'Save image' }}
       </button>
+      <HelpLink option="map-save-image" keys="e" />
       <label class="toggle">
         <input type="checkbox" v-model="showFiltered" />
         Include excluded water / non-terrestrial rows
+        <HelpLink option="data-show-filtered" />
       </label>
 
       <!-- Aggregate overlay: grid summaries drawn under the points -->
       <div class="colorby">
-        <label for="overlay-sel">Overlay</label>
+        <label for="overlay-sel">Overlay <HelpLink :option="overlayDocId" /></label>
         <select id="overlay-sel" v-model="overlayMode" :title="overlayTip">
           <option v-for="o in OVERLAY_MODES" :key="o.key" :value="o.key">{{ o.label }}</option>
         </select>
       </div>
       <div v-if="overlayMode" class="colorby">
-        <label for="overlay-cell">Cell size</label>
+        <label for="overlay-cell">Cell size <HelpLink option="map-cell-size" /></label>
         <select id="overlay-cell" v-model.number="overlayCell"
                 title="Ground size of each grid square. Smaller is more precise and noisier.">
           <option v-for="c in CELL_SIZES" :key="c.value" :value="c.value">{{ c.label }}</option>
@@ -71,14 +77,14 @@
       <div v-if="overlayMode === 'season' || overlayMode === 'hotspots'" class="season">
         <div class="slider">
           <label for="season-day">
-            Date <strong>{{ seasonLabel }}</strong>
+            Date <strong>{{ seasonLabel }}</strong> <HelpLink option="map-season-day" keys="[" />
           </label>
           <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1"
                  :title="tip(`Centre of the date window — currently ${seasonLabel}`, '[')" />
         </div>
         <div class="slider">
           <label for="season-window">
-            Window <strong>±{{ seasonWindow }} days</strong>
+            Window <strong>±{{ seasonWindow }} days</strong> <HelpLink option="map-season-window" />
           </label>
           <input id="season-window" v-model.number="seasonWindow" type="range" min="3" max="60" step="1"
                  title="How wide a window counts as 'in season'. Wider is smoother and less specific." />
@@ -530,6 +536,19 @@ const overlayTip = computed(() => {
     ? tip(`${overlayMeta.value.label}: ${note}`, 'o')
     : tip('Draw a grid summary under the points', 'o')
 })
+
+// The ? beside the overlay picker documents the overlay you actually have
+// selected, not the concept in general — each mode is misleading in its own way,
+// and that caveat is the part worth one click.
+const OVERLAY_DOCS = {
+  density: 'map-overlay-density',
+  richness: 'map-overlay-richness',
+  season: 'map-overlay-season',
+  hotspots: 'map-overlay-hotspots',
+  dominant: 'map-overlay-dominant',
+  wind: 'map-overlay-wind',
+}
+const overlayDocId = computed(() => OVERLAY_DOCS[overlayMode.value] || 'map-overlay')
 
 // Spelling out the window's actual dates removes the arithmetic from reading it.
 const windowSpan = computed(() => {

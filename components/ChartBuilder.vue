@@ -2,7 +2,7 @@
   <div class="explore">
     <div class="panel">
       <label class="ctrl">
-        <span>Chart</span>
+        <span>Chart <HelpLink :option="typeDocId" /></span>
         <select v-model="chartType">
           <option value="scatter">Scatter</option>
           <option value="bar">Bar (aggregate)</option>
@@ -17,50 +17,50 @@
       </label>
 
       <template v-if="chartType === 'scatter'">
-        <label class="ctrl"><span>X</span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Y</span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Colour</span><select v-model="colorField"><option value="">— none —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Shape</span><select v-model="shapeField"><option value="">— none —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Size</span><select v-model="sizeField"><option value="">— none —</option><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label v-if="xField === 'day_of_year'" class="ctrl chk"><input type="checkbox" v-model="showToday" /> Today line</label>
+        <label class="ctrl"><span>X <HelpLink option="chart-x" /></span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Y <HelpLink option="chart-y" /></span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Colour <HelpLink option="chart-color-field" /></span><select v-model="colorField"><option value="">— none —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Shape <HelpLink option="chart-shape-field" /></span><select v-model="shapeField"><option value="">— none —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Size <HelpLink option="chart-size-field" /></span><select v-model="sizeField"><option value="">— none —</option><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label v-if="xField === 'day_of_year'" class="ctrl chk"><input type="checkbox" v-model="showToday" /> Today line <HelpLink option="chart-today" /></label>
       </template>
 
       <template v-else-if="chartType === 'bar'">
-        <label class="ctrl"><span>Group by</span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Measure</span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
-        <label class="ctrl chk"><input type="checkbox" v-model="horizontal" /> Horizontal</label>
+        <label class="ctrl"><span>Group by <HelpLink option="chart-group-by" /></span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Measure <HelpLink option="chart-measure" /></span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
+        <label class="ctrl chk"><input type="checkbox" v-model="horizontal" /> Horizontal <HelpLink option="chart-horizontal" /></label>
       </template>
 
       <template v-else-if="chartType === 'line' || chartType === 'area'">
-        <label class="ctrl"><span>X</span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Y (mean)</span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Series</span><select v-model="seriesField"><option value="">— one line —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Granularity</span><input type="range" min="4" max="60" v-model.number="granularity" /><span class="gval">{{ granularity }}</span></label>
+        <label class="ctrl"><span>X <HelpLink option="chart-x" /></span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Y (mean) <HelpLink option="chart-y" /></span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Series <HelpLink option="chart-series" /></span><select v-model="seriesField"><option value="">— one line —</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Granularity <HelpLink option="chart-granularity" /></span><input type="range" min="4" max="60" v-model.number="granularity" /><span class="gval">{{ granularity }}</span></label>
       </template>
 
       <template v-else-if="chartType === 'box'">
-        <label class="ctrl"><span>Group by</span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Value</span><select v-model="valueField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Group by <HelpLink option="chart-group-by" /></span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Value <HelpLink option="chart-value" /></span><select v-model="valueField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
       </template>
 
       <template v-else-if="chartType === 'histogram'">
-        <label class="ctrl"><span>Value</span><select v-model="valueField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Bins</span><input type="number" min="4" max="30" v-model.number="bins" /></label>
+        <label class="ctrl"><span>Value <HelpLink option="chart-value" /></span><select v-model="valueField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Bins <HelpLink option="chart-bins" /></span><input type="number" min="4" max="30" v-model.number="bins" /></label>
       </template>
 
       <template v-else-if="chartType === 'heatmap'">
-        <label class="ctrl"><span>Rows</span><select v-model="rowField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Columns</span><select v-model="colField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Measure</span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Rows <HelpLink option="chart-rows" /></span><select v-model="rowField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Columns <HelpLink option="chart-columns" /></span><select v-model="colField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Measure <HelpLink option="chart-measure" /></span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
       </template>
 
       <template v-else-if="chartType === 'radar' || chartType === 'donut'">
-        <label class="ctrl"><span>Group by</span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Measure</span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Group by <HelpLink option="chart-group-by" /></span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Measure <HelpLink option="chart-measure" /></span><select v-model="measure"><option value="count">Count</option><option v-for="f in numericFields" :key="f.key" :value="f.key">Mean {{ f.label }}</option></select></label>
       </template>
 
       <label v-if="SORTABLE_TYPES.has(chartType)" class="ctrl">
-        <span>Sort</span>
+        <span>Sort <HelpLink option="chart-sort" /></span>
         <select v-model="sortBy">
           <option v-for="m in SORT_MODES" :key="m.key" :value="m.key">{{ m.label }}</option>
         </select>
@@ -70,6 +70,7 @@
       <div class="actions">
         <ShareMenu :title="shareTitle" :extra="shareExtra" path="/charts"
                    note="This link opens this chart, over the same filtered data." />
+        <HelpLink option="chart-share" />
         <button v-if="editingId" class="save alt" :disabled="!!justSaved"
                 title="Keep the original and save this as a second chart"
                 @click="saveAsNew">
@@ -80,6 +81,7 @@
                 @click="save">
           {{ saveLabel }}
         </button>
+        <HelpLink :option="editingId ? 'chart-edit' : 'chart-save'" />
       </div>
     </div>
 
@@ -149,6 +151,15 @@ const granularity = ref(D.granularity)
 const horizontal = ref(D.horizontal)
 const showToday = ref(D.showToday)
 const sortBy = ref(D.sortBy)
+
+// The ? beside the type picker documents the chart you actually have selected —
+// what it is good for and where it misleads — rather than the idea of charts.
+const TYPE_DOCS = {
+  scatter: 'chart-scatter', bar: 'chart-bar', line: 'chart-line', area: 'chart-line',
+  box: 'chart-box', histogram: 'chart-histogram', heatmap: 'chart-heatmap',
+  radar: 'chart-radar', donut: 'chart-donut',
+}
+const typeDocId = computed(() => TYPE_DOCS[chartType.value] || 'chart-type')
 
 // Only charts that lay categories out in a row have an order worth choosing.
 // A scatter or histogram has no category axis to sort.

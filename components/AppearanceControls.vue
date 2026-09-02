@@ -32,11 +32,11 @@
       </div>
 
       <div class="ap-row">
-        <label for="ap-radius">Point size <span class="val">{{ pointRadius }}px</span></label>
+        <label for="ap-radius">Point size <span class="val">{{ pointRadius }}px</span> <HelpLink option="appearance-point-size" /></label>
         <input id="ap-radius" v-model.number="pointRadius" type="range" min="1" max="10" step="0.5" @change="persist" />
       </div>
       <div class="ap-row">
-        <label for="ap-opacity">Opacity <span class="val">{{ Math.round(pointOpacity * 100) }}%</span></label>
+        <label for="ap-opacity">Opacity <span class="val">{{ Math.round(pointOpacity * 100) }}%</span> <HelpLink option="appearance-point-opacity" /></label>
         <input id="ap-opacity" v-model.number="pointOpacity" type="range" min="0.1" max="1" step="0.05" @change="persist" />
       </div>
       <div class="ap-row">
@@ -45,6 +45,7 @@
           <input id="ap-outline" v-model="pointOutline" type="checkbox" @change="persist" />
           Outline map dots
         </label>
+        <HelpLink option="appearance-point-outline" />
       </div>
 
       <!-- Per-value overrides for whatever categories are on screen -->
