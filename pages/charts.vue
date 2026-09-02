@@ -55,6 +55,11 @@
             <div class="saved-tools">
               <button title="Move left" :disabled="i === 0" @click="saved.move(chart.id, -1)">‹</button>
               <button title="Move right" :disabled="i === saved.charts.value.length - 1" @click="saved.move(chart.id, 1)">›</button>
+              <button :title="`Open “${chartName(chart)}” in the chart builder`"
+                      :aria-label="`Edit ${chartName(chart)}`" @click="editChart(chart.id)">✎</button>
+              <ShareMenu compact :title="chartName(chart)" path="/charts"
+                         :extra="{ tab: 'build', cfg: encodeChartConfig(chart) }"
+                         note="This link opens this chart, over the same filtered data." />
               <button title="Remove" class="rm" @click="saved.remove(chart.id)">✕</button>
             </div>
             <ChartRenderer :config="chart" @select="selected = $event" />
@@ -186,6 +191,8 @@
 import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 import { useSavedCharts } from '~/composables/useSavedCharts'
+import { describeChart, encodeChartConfig } from '~/composables/chartConfig'
+import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 
 // Two tabs on this page: the preset chart gallery and the chart builder.
 // Tab lives in the URL query so /charts?tab=build deep-links (and the old
@@ -214,6 +221,18 @@ shortcuts.register([
 ])
 const shareTitle = computed(() =>
   `${rows.value.length.toLocaleString()} mushroom observations — charts`)
+
+// A saved chart has no title of its own, so name it from what it plots — the
+// share text and the tooltips both need something better than "chart".
+const fieldLabel = (key) => (
+  [...ALL_NUMERIC, ...ALL_CATEGORY].find((f) => f.key === key)?.label || key
+)
+const chartName = (chart) => describeChart(chart, fieldLabel)
+
+/** Open a saved chart in the builder, editing that chart rather than a copy. */
+function editChart(id) {
+  router.push({ path: '/charts', query: { ...route.query, tab: 'build', edit: id, cfg: undefined } })
+}
 // Restore filters/palette from a shared link before the charts compute.
 onMounted(() => share.apply(useRoute().query))
 onMounted(() => {
@@ -581,7 +600,10 @@ const speciesData = computed(() => {
 
 .saved { margin-bottom: 22px; }
 .saved-title { margin: 0 0 10px; font-size: 1rem; color: var(--text); }
-.saved-tools { position: absolute; top: 8px; right: 34px; display: flex; gap: 2px; z-index: 3; }
+/* Above the neighbouring cards, not just above this one: the share panel drops
+   out of the card and would otherwise slide behind the card to its right. */
+.saved-tools { position: absolute; top: 8px; right: 34px; display: flex; gap: 2px; z-index: 400; }
+.saved-tools :deep(.share) { display: flex; }
 .saved-tools button {
   border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer;
   width: 22px; height: 22px; border-radius: 5px; font-size: 0.85rem; line-height: 1; padding: 0;
