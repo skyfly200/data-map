@@ -6,7 +6,7 @@
     <div v-else-if="!loaded" class="overlay">Loading observations…</div>
 
     <!-- Thematic layer selector -->
-    <div v-if="loaded" class="controls">
+    <div v-if="loaded" ref="controlsEl" class="controls">
       <div class="colorby">
         <label for="colorby-sel">Color by <HelpLink option="map-color-by" /></label>
         <select id="colorby-sel" v-model="colorBy">
@@ -163,6 +163,27 @@ const share = useShareState()
 const { pointRadius, pointOpacity, pointOutline, activeColors, colorOverrides } = appearance
 
 const mapEl = ref(null)
+
+// Leaflet parks its own controls in the map's corners, and on a phone the
+// control bar is tall enough (three wrapped rows, more with the season sliders
+// open) that the top-right corner lands inside it — the basemap button sat
+// directly on the "Size by" dropdown. The bar's height is not a constant we can
+// hard-code, so it is measured and published as a variable the stylesheet offsets
+// against.
+const controlsEl = ref(null)
+let controlsResize = null
+
+function trackControlsHeight() {
+  if (!import.meta.client || !controlsEl.value) return
+  const shell = controlsEl.value.parentElement
+  const apply = () => {
+    const h = Math.round(controlsEl.value?.getBoundingClientRect().height || 0)
+    shell?.style.setProperty('--controls-h', `${h}px`)
+  }
+  apply()
+  controlsResize = new ResizeObserver(apply)
+  controlsResize.observe(controlsEl.value)
+}
 const loaded = ref(false)
 const loadError = ref('')
 // Remember the "Color by" dimension per viewer.
@@ -766,7 +787,13 @@ shortcuts.register([
   { scope: 'Map', keys: 'escape', label: 'Close the observation drawer', run: () => { selected.value = null } },
 ])
 
-onBeforeUnmount(() => { if (map) map.remove() })
+// The bar renders behind v-if="loaded", so start measuring when it appears.
+watch(loaded, (ok) => { if (ok) nextTick(trackControlsHeight) }, { immediate: true })
+
+onBeforeUnmount(() => {
+  controlsResize?.disconnect()
+  if (map) map.remove()
+})
 </script>
 
 <style scoped>
@@ -877,6 +904,15 @@ onBeforeUnmount(() => { if (map) map.remove() })
    moves in step with the drawer's own slide. On a narrow screen there is
    nowhere to step to — the control bar already owns the left — so the drawer
    simply covers it until it is closed. */
+/* Below the control bar, whose height varies with how many rows it wraps into
+   and whether the season sliders are open. Without this the basemap button sits
+   on top of the "Size by" dropdown on a phone. */
+@media (max-width: 860px) {
+  .map-shell :deep(.leaflet-top.leaflet-right) {
+    transform: translateY(calc(var(--controls-h, 0px) + 4px));
+  }
+}
+
 @media (min-width: 861px) {
   .map-shell :deep(.leaflet-top.leaflet-right) { transition: transform 0.18s ease; }
   .map-shell.drawer-open :deep(.leaflet-top.leaflet-right) {
