@@ -1,6 +1,7 @@
 <template>
   <div class="home">
     <section class="hero">
+      <AppLogo class="hero-logo" :size="132" wordmark />
       <h1>Mushroom Observations, mapped and enriched</h1>
       <p class="lead">
         iNaturalist mushroom finds enriched with terrain and environmental exposure —
@@ -55,13 +56,14 @@
 const { user, isAuthed, configured, signOut } = useAuth()
 const repoUrl = 'https://github.com/skyfly200/data-map'
 
-useHead({ title: 'data-map · Mushroom Observations' })
+useHead({ title: 'Nexstrata · Mushroom Observations' })
 </script>
 
 <style scoped>
 .home { max-width: 900px; margin: 0 auto; padding: 40px 20px 64px; }
 
 .hero { text-align: center; }
+.hero-logo { margin: 0 auto 18px; border-radius: 26px; }
 .hero h1 { font-size: 1.9rem; margin: 0 0 14px; line-height: 1.2; color: var(--text); }
 .lead { max-width: 640px; margin: 0 auto 24px; color: var(--text); font-size: 1rem; line-height: 1.6; }
 

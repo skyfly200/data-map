@@ -1,6 +1,7 @@
 <template>
   <div class="login">
     <div class="card">
+      <AppLogo class="card-logo" :size="76" wordmark />
       <h2>Sign in</h2>
       <p class="sub">A quick sign-in keeps the live data-fetching endpoints from being abused. Browsing the map, table, and charts stays open to everyone.</p>
 
@@ -182,6 +183,7 @@ async function doSignOut() { await signOut() }
 <style scoped>
 .login { display: flex; justify-content: center; padding: 40px 16px; }
 .card { width: 100%; max-width: 380px; border: 1px solid var(--border); border-radius: 12px; padding: 24px; background: var(--surface); }
+.card-logo { margin: 0 auto 12px; border-radius: 16px; }
 h2 { margin: 0 0 4px; font-size: 1.2rem; }
 .sub { margin: 0 0 16px; color: var(--muted); font-size: 0.82rem; }
 .notice { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; margin: 0 0 14px; }
