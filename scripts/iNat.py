@@ -550,7 +550,24 @@ def main():
             if max_observations and species_total > max_observations:
                 species_total = max_observations
 
-            progress_callback = lambda current, total, species_name=species_name: None
+            print(f"  → {species_name}: {species_total or 'unknown'} observation(s) to fetch...", flush=True)
+
+            # Throttled milestone progress so a long multi-species / multi-location
+            # run shows steady movement instead of going silent between the start
+            # line and the per-species total. Prints once per ~25% of the fetch;
+            # species-prefixed so the parallel workers stay legible interleaved.
+            last_milestone = {'value': -1}
+
+            def progress_callback(current, total, species_name=species_name):
+                if not total:
+                    return
+                milestone = int(current / total * 4)  # 0..4 → every ~25%
+                if milestone == last_milestone['value']:
+                    return
+                last_milestone['value'] = milestone
+                pct = min(100, int(current / total * 100))
+                print(f"    {species_name}: {current}/{total} ({pct}%)", flush=True)
+
             df_species = fetch_inat_data(
                 taxon_name=species_name,
                 quality_grade=quality_grade,
