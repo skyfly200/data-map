@@ -635,6 +635,19 @@ export const OPTION_DOCS = [
     also: ['chart-measure'],
   },
   {
+    id: 'filter-precise-only',
+    group: 'Data',
+    title: 'Precise coordinates only',
+    summary: 'Drop records whose published location is deliberately vague or poorly measured.',
+    detail: [
+      'iNaturalist does not always publish where an observation actually was. A record is **obscured** when the observer asks for it, or automatically when the taxon is threatened — and obscuring is not a rounding: the published point is randomised inside a roughly 0.2° cell, about 20km across. Others are simply **coarse**: an honest location with an accuracy radius wider than a kilometre.',
+      'That matters more here than in most places that show iNaturalist data. Every environmental value in this app is sampled *at the point* — elevation, slope, aspect, NDVI, soil moisture, the seven-day weather lead-up. For an obscured record those readings come from wherever the randomised point happened to land, which can be the far side of a ridge, a different watershed, or 1,000m up. The observation is real; the terrain attached to it describes somewhere else.',
+      'The breakdown under the checkbox counts the whole loaded dataset, not the filtered view, so the numbers that justify the filter do not move when you switch it on. Records where iNaturalist reported no accuracy at all are counted separately as "not reported" — that is missing information, not a guarantee of precision, and the filter drops them too.',
+    ],
+    caveat: 'This is a strong filter and on some taxa it removes most of the data — obscuring is applied to whole species, so a threatened one may have no precise records at all. Turn it on when reading terrain relationships; leave it off when counting where and when people find things, which obscured records still answer honestly at a regional scale.',
+    also: ['analysis-drivers', 'analysis-quality', 'data-show-filtered'],
+  },
+  {
     id: 'filter-saved',
     group: 'Data',
     title: 'Saved subsets',

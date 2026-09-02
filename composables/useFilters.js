@@ -59,6 +59,10 @@ export const EMPTY_FILTERS = {
   // filter this one is not a per-row test — it needs the counts across the
   // whole set first — so it is applied separately, in useObservations.
   minObs: 0, minObsField: 'species',
+  // Keep only records whose coordinates are precise enough to read the ground
+  // under them. Off by default: it is a deliberate narrowing, not a default
+  // view, and on some taxa it removes most of the data.
+  preciseOnly: false,
 }
 
 /**
@@ -106,6 +110,10 @@ export function matchesFilters(feature, f) {
     if (f.month && date.slice(5, 7) !== String(f.month).padStart(2, '0')) return false
     if (f.week && isoWeek(date) !== Number(f.week)) return false
   }
+  // Location precision. An obscured record's point is randomised inside a ~20km
+  // cell, so its elevation, slope, NDVI and soil moisture were sampled somewhere
+  // the mushroom probably was not.
+  if (f.preciseOnly && p.location_precision && p.location_precision !== 'precise') return false
   return true
 }
 
@@ -122,6 +130,7 @@ export function useFilters() {
     if (f.center && f.radiusKm) n++
     for (const k of ['country', 'state', 'county', 'year', 'month', 'week', 'dateFrom', 'dateTo']) if (f[k]) n++
     if (f.minObs > 1) n++
+    if (f.preciseOnly) n++
     return n
   })
 
