@@ -61,13 +61,44 @@
       </div>
       <div class="opt-row">
         <span class="opt-name">
-          Overlay colours
-          <small>The ramp the grid overlays are shaded with.</small>
+          Heatmap colours
+          <small>The ramp the map's grid heatmaps are shaded with.</small>
         </span>
-        <select v-model="overlayRampKey" @change="overlays.persist()">
+        <select v-model="heatmapRampKey" @change="heatmaps.persist()">
           <option v-for="r in RAMP_PRESETS" :key="r.key" :value="r.key">{{ r.label }}</option>
           <option value="custom">Custom (set on the map)</option>
         </select>
+      </div>
+      <div class="opt-row">
+        <span class="opt-name">
+          Heatmap cells
+          <small>The shape the observations are binned into.</small>
+        </span>
+        <select v-model="cellShape" @change="heatmaps.persist()">
+          <option v-for="s in CELL_SHAPES" :key="s.value" :value="s.value">{{ s.label }}</option>
+        </select>
+      </div>
+      <div class="opt-row">
+        <span class="opt-name">
+          Heatmap opacity
+          <small>How strongly the grid cells cover the basemap under them.</small>
+        </span>
+        <span class="opt-slider">
+          <input v-model.number="heatmapOpacity" type="range" min="0.05" max="1" step="0.05"
+                 aria-label="Heatmap opacity" @change="heatmaps.persist()" />
+          <strong>{{ Math.round(heatmapOpacity * 100) }}%</strong>
+        </span>
+      </div>
+      <div class="opt-row">
+        <span class="opt-name">
+          Map layer opacity
+          <small>How strongly the reference tile layers — hillshade, rainfall, land cover — cover the basemap.</small>
+        </span>
+        <span class="opt-slider">
+          <input v-model.number="tileOpacity" type="range" min="0.05" max="1" step="0.05"
+                 aria-label="Map layer opacity" @change="heatmaps.persist()" />
+          <strong>{{ Math.round(tileOpacity * 100) }}%</strong>
+        </span>
       </div>
       <div class="opt-actions">
         <button class="btn" @click="appearance.shuffleColors()">🎨 Shuffle colours</button>
@@ -144,13 +175,13 @@
 import { useUnits } from '~/composables/useUnits'
 import { useAppearance } from '~/composables/useAppearance'
 
-useHead({ title: 'Options · data-map' })
+useHead({ title: 'Options · Nexstrata' })
 
 const { unit, tempUnit } = useUnits()
 const appearance = useAppearance()
 const { PALETTES, paletteKey, activeColors, pointOutline } = appearance
-const overlays = useMapOverlays()
-const { RAMP_PRESETS, overlayRampKey } = overlays
+const heatmaps = useMapHeatmaps()
+const { RAMP_PRESETS, heatmapRampKey, heatmapOpacity, tileOpacity, cellShape, CELL_SHAPES } = heatmaps
 const { filters, setFilter, activeCount } = useFilters()
 const { user, isAuthed, configured, signOut } = useAuth()
 const shortcuts = useShortcuts()
@@ -168,7 +199,7 @@ function setTheme(t) {
 
 onMounted(() => {
   appearance.loadFromStorage()
-  overlays.loadFromStorage()
+  heatmaps.loadFromStorage()
 })
 </script>
 
@@ -192,6 +223,9 @@ h1 { margin: 0 0 8px; font-size: 1.6rem; }
 .opt-group .opt-row:first-of-type { border-top: 0; }
 .opt-name { display: flex; flex-direction: column; gap: 3px; font-weight: 600; min-width: 0; }
 .opt-name small { font-weight: 400; color: var(--muted); font-size: 0.76rem; line-height: 1.4; }
+.opt-slider { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.opt-slider input { width: 130px; }
+.opt-slider strong { font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; }
 .opt-value { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 0.85rem; flex: 0 0 auto; }
 
 .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; flex: 0 0 auto; }

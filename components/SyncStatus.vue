@@ -36,7 +36,7 @@ const cloud = useCloudSync()
 const saved = useSavedCharts()
 const appearance = useAppearance()
 const layout = useChartLayout()
-const overlays = useMapOverlays()
+const heatmaps = useMapHeatmaps()
 const busy = ref(false)
 
 const showDetail = ref(false)
@@ -75,7 +75,7 @@ async function resync() {
     await cloud.sync()
     appearance.loadFromStorage()
     layout.loadFromStorage()
-    overlays.loadFromStorage()
+    heatmaps.loadFromStorage()
     saved.loadFromStorage()
   } finally {
     busy.value = false

@@ -51,17 +51,22 @@
       </button>
       <MapSettings v-model="showPoints" />
 
-      <!-- Aggregate overlay: grid summaries drawn under the points -->
+      <!-- Heatmap: grid summaries computed from the observations and drawn
+           under the points. Named apart from the reference tile layers in the
+           layers control, which are somebody else's imagery, not our numbers. -->
       <div class="colorby">
-        <label for="overlay-sel">Overlay <HelpLink :option="overlayDocId" /></label>
-        <select id="overlay-sel" v-model="overlayMode" :title="overlayTip">
-          <option v-for="o in OVERLAY_MODES" :key="o.key" :value="o.key">{{ o.label }}</option>
+        <label for="overlay-sel">Heatmap <HelpLink :option="heatmapDocId" /></label>
+        <select id="overlay-sel" v-model="heatmapMode" :title="heatmapTip">
+          <option value="">None</option>
+          <optgroup v-for="g in groupedModes" :key="g.label" :label="g.label">
+            <option v-for="o in g.modes" :key="o.key" :value="o.key">{{ o.label }}</option>
+          </optgroup>
         </select>
       </div>
-      <div v-if="overlayMode" class="colorby">
+      <div v-if="heatmapMode" class="colorby">
         <label for="overlay-cell">Cell size <HelpLink option="map-cell-size" /></label>
-        <select id="overlay-cell" v-model.number="overlayCell"
-                title="Ground size of each grid square. Smaller is more precise and noisier.">
+        <select id="overlay-cell" v-model.number="heatmapCell"
+                title="Ground size of each grid cell. Smaller is more precise and noisier.">
           <option v-for="c in CELL_SIZES" :key="c.value" :value="c.value">{{ c.label }}</option>
         </select>
       </div>
@@ -69,9 +74,9 @@
            directly on the map tiles, which made both unreadable and cost a full
            row of the bar. They now collapse to a summary of their own values,
            and expand over a solid panel. -->
-      <div v-if="overlayMode === 'season' || overlayMode === 'hotspots'" ref="seasonEl" class="season">
+      <div v-if="heatmapMode === 'season' || heatmapMode === 'hotspots'" ref="seasonEl" class="season">
         <button class="season-toggle" :class="{ on: seasonOpen }" :aria-expanded="String(seasonOpen)"
-                :title="tip('Set the date and window the seasonal overlays use', 's')"
+                :title="tip('Set the date and window the seasonal heatmaps use', 's')"
                 @click="seasonOpen = !seasonOpen">
           <span class="s-label">Season</span>
           <strong>{{ seasonLabel }} · ±{{ seasonWindow }}d</strong>
@@ -119,30 +124,42 @@
       <div class="legend-title">{{ n.name }}</div>
       <div class="legend-note">{{ n.note }}</div>
     </div>
-    <!-- Overlay legend, with the caveat that belongs with each metric -->
-    <div v-if="overlayLegend" class="legend overlay-legend">
-      <div class="legend-title">{{ overlayMeta.label }}</div>
-      <template v-if="overlayLegend.type === 'sequential'">
-        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${overlayLegend.ramp[0]}, ${overlayLegend.ramp[1]})` }"></div>
-        <div class="gradient-scale"><span>{{ overlayLegend.min }}</span><span>{{ overlayLegend.max }}</span></div>
-        <div class="legend-note">{{ overlayLegend.cells.toLocaleString() }} cells · {{ overlayLegend.note }}</div>
+    <!-- Heatmap key, with the caveat that belongs with each metric -->
+    <div v-if="heatmapLegend" class="legend overlay-legend">
+      <div class="legend-title">{{ heatmapMeta.label }}</div>
+      <template v-if="heatmapLegend.type === 'sequential'">
+        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${heatmapLegend.ramp[0]}, ${heatmapLegend.ramp[1]})` }"></div>
+        <div class="gradient-scale"><span>{{ heatmapLegend.min }}</span><span>{{ heatmapLegend.max }}</span></div>
+        <div class="legend-note">{{ heatmapLegend.cells.toLocaleString() }} cells · {{ heatmapLegend.note }}</div>
       </template>
-      <template v-else-if="overlayLegend.type === 'vector'">
-        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${overlayLegend.ramp[0]}, ${overlayLegend.ramp[1]})` }"></div>
-        <div class="gradient-scale"><span>{{ overlayLegend.min }}</span><span>{{ overlayLegend.max }}</span></div>
+      <template v-else-if="heatmapLegend.type === 'vector'">
+        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${heatmapLegend.ramp[0]}, ${heatmapLegend.ramp[1]})` }"></div>
+        <div class="gradient-scale"><span>{{ heatmapLegend.min }}</span><span>{{ heatmapLegend.max }}</span></div>
         <div class="legend-note">
-          Source: <strong>{{ overlayLegend.source }}</strong> · colour = {{ overlayLegend.colorBy }}<br />
-          {{ overlayLegend.cells.toLocaleString() }} arrows · {{ overlayLegend.note }}
+          Source: <strong>{{ heatmapLegend.source }}</strong> · colour = {{ heatmapLegend.colorBy }}<br />
+          {{ heatmapLegend.cells.toLocaleString() }} arrows · {{ heatmapLegend.note }}
         </div>
       </template>
+      <!-- Direction is circular, so its key is a compass rather than a bar:
+           a low-to-high gradient would put 359° and 1° at opposite ends. -->
+      <template v-else-if="heatmapLegend.type === 'compass'">
+        <div class="compass-key">
+          <span v-for="item in heatmapLegend.items" :key="item.label" class="ck">
+            <span class="swatch" :style="{ background: item.color }"></span>{{ item.label }}
+          </span>
+        </div>
+        <div class="legend-note">{{ heatmapLegend.cells.toLocaleString() }} cells · {{ heatmapLegend.note }}</div>
+      </template>
       <template v-else>
-        <div v-for="item in overlayLegend.items" :key="item.label" class="legend-row hoverable"
+        <div v-for="item in heatmapLegend.items" :key="item.label" class="legend-row hoverable"
              :class="{ dim: hoverValue && hoverValue !== item.label }"
              @mouseenter="hoverValue = item.label" @mouseleave="hoverValue = null">
           <span class="swatch" :style="{ background: item.color }"></span>
           <span><em>{{ item.label }}</em> <span class="legend-n">{{ item.n }}</span></span>
         </div>
-        <div class="legend-note">{{ overlayLegend.total }} species dominate somewhere · {{ overlayMeta.note }}</div>
+        <div class="legend-note">
+          {{ heatmapLegend.total }} values appear somewhere · {{ heatmapLegend.note }}
+        </div>
       </template>
     </div>
 
@@ -237,20 +254,22 @@ let map, geoLayer, L, userLayer, selectedMarker
 
 // Holds enriched observation info (photos, description, etc.) fetched from iNaturalist API
 
-// ─── Aggregate overlays ───────────────────────────────────────────────────────
-// Grid summaries drawn under the points: density, species richness, seasonal
-// activity, an in-season hotspot score, and dominant species. See
-// composables/useMapOverlays.js for what each one means.
-const overlays = useMapOverlays()
+// ─── Heatmaps ─────────────────────────────────────────────────────────────────
+// Grid summaries computed from the observations and drawn under the points:
+// density, species richness, seasonal activity, an in-season hotspot score,
+// dominant species and land cover, and a cell mean of any enriched field —
+// rainfall, soil moisture, NDVI, slope, aspect, TWI, sun and wind exposure.
+// See composables/useMapHeatmaps.js for what each one means.
+const heatmaps = useMapHeatmaps()
 const {
-  mode: overlayMode, cellSize: overlayCell, seasonDay, seasonWindow,
-  activeMode: overlayMeta, OVERLAY_MODES, CELL_SIZES,
-} = overlays
-let overlayLayer = null
+  mode: heatmapMode, cellSize: heatmapCell, cellShape, seasonDay, seasonWindow,
+  activeMode: heatmapMeta, groupedModes, heatmapOpacity, tileOpacity, CELL_SIZES,
+} = heatmaps
+let heatmapLayer = null
 
-const overlayResult = computed(() =>
-  overlays.computeOverlay(filteredData.value?.features || [], overlayMode.value))
-const overlayLegend = computed(() => overlayResult.value.legend)
+const heatmapResult = computed(() =>
+  heatmaps.computeHeatmap(filteredData.value?.features || [], heatmapMode.value))
+const heatmapLegend = computed(() => heatmapResult.value.legend)
 
 /**
  * One arrow for a vector cell: a shaft plus two barbs, as canvas polylines.
@@ -281,29 +300,32 @@ function arrowFor(c) {
   ]
 }
 
-function renderOverlay() {
+function renderHeatmap() {
   if (!map || !L) return
-  if (overlayLayer) { overlayLayer.remove(); overlayLayer = null }
-  const { cells } = overlayResult.value
+  if (heatmapLayer) { heatmapLayer.remove(); heatmapLayer = null }
+  const { cells } = heatmapResult.value
   if (!cells.length) return
 
-  const shapes = overlayResult.value.legend?.type === 'vector'
+  const shapes = heatmapResult.value.legend?.type === 'vector'
     ? cells.flatMap((c) => arrowFor(c))
-    // Rectangles go through the map's canvas renderer, so a few thousand cells
-    // cost one canvas rather than a few thousand DOM nodes.
-    : cells.map((c) => L.rectangle(
-      [[c.lat0, c.lon0], [c.lat1, c.lon1]],
-      { stroke: false, fillColor: c.color, fillOpacity: 0.55, interactive: false },
-    ))
+    // Polygons go through the map's canvas renderer, so a few thousand cells
+    // cost one canvas rather than a few thousand DOM nodes. The grid hands over
+    // an outline whichever shape it is binning into, so this does not care.
+    : cells.map((c) => L.polygon(c.polygon, {
+      stroke: false, fillColor: c.color, fillOpacity: heatmapOpacity.value, interactive: false,
+    }))
 
-  overlayLayer = L.layerGroup(shapes)
-  overlayLayer.addTo(map)
+  heatmapLayer = L.layerGroup(shapes)
+  heatmapLayer.addTo(map)
   // Keep the observation points on top of the shading.
   if (geoLayer) geoLayer.bringToFront()
 }
 
-watch(overlayResult, () => renderOverlay())
-watch([overlayMode, overlayCell, seasonDay, seasonWindow], () => overlays.persist())
+watch(heatmapResult, () => renderHeatmap())
+// Opacity is a redraw rather than a recompute: the cells are unchanged, only
+// how hard they sit on the basemap.
+watch(heatmapOpacity, () => renderHeatmap())
+watch([heatmapMode, heatmapCell, cellShape, seasonDay, seasonWindow], () => heatmaps.persist())
 
 const seasonLabel = computed(() => {
   const d = new Date(Date.UTC(2001, 0, 1))
@@ -356,7 +378,7 @@ const TILE_OVERLAYS = [
 // to, so the bar stays one row until you actually want to move them.
 const seasonEl = ref(null)
 const seasonOpen = ref(false)
-const todayDay = overlays.todayOfYear()
+const todayDay = heatmaps.todayOfYear()
 
 // The legend value under the cursor. Everything not matching it is faded on the
 // map, so a row in the key and the marks it stands for can be seen together.
@@ -364,6 +386,8 @@ const hoverValue = ref(null)
 const tileErrors = ref([])
 // The caveat belonging to whichever reference layers are switched on.
 const activeTileNotes = ref([])
+// The built tile layers, so the opacity slider can reach them after setup.
+const tileLayers = []
 
 const RAMP = ['#e8f1fb', '#0b3d91'] // sequential light → dark blue
 
@@ -586,25 +610,31 @@ const shortcuts = useShortcuts()
 // does it — so shortcuts are discoverable without opening the help overlay.
 const tip = (text, keys) => shortcuts.withKey(text, keys)
 
-const overlayTip = computed(() => {
-  const note = overlayMeta.value?.note
+const heatmapTip = computed(() => {
+  const note = heatmapMeta.value?.note
   return note
-    ? tip(`${overlayMeta.value.label}: ${note}`, 'o')
+    ? tip(`${heatmapMeta.value.label}: ${note}`, 'o')
     : tip('Draw a grid summary under the points', 'o')
 })
 
-// The ? beside the overlay picker documents the overlay you actually have
+// The ? beside the heatmap picker documents the heatmap you actually have
 // selected, not the concept in general — each mode is misleading in its own way,
-// and that caveat is the part worth one click.
-const OVERLAY_DOCS = {
-  density: 'map-overlay-density',
-  richness: 'map-overlay-richness',
-  season: 'map-overlay-season',
-  hotspots: 'map-overlay-hotspots',
-  dominant: 'map-overlay-dominant',
-  wind: 'map-overlay-wind',
+// and that caveat is the part worth one click. The field heatmaps share one
+// entry: what they all get wrong is the same thing (a cell has a value only
+// where somebody looked), and it is said once.
+const HEATMAP_DOCS = {
+  density: 'map-heatmap-density',
+  richness: 'map-heatmap-richness',
+  season: 'map-heatmap-season',
+  hotspots: 'map-heatmap-hotspots',
+  dominant: 'map-heatmap-dominant',
+  land_cover: 'map-heatmap-land-cover',
+  wind: 'map-heatmap-wind',
 }
-const overlayDocId = computed(() => OVERLAY_DOCS[overlayMode.value] || 'map-overlay')
+const heatmapDocId = computed(() => (
+  heatmapMeta.value?.kind === 'field'
+    ? 'map-heatmap-field'
+    : HEATMAP_DOCS[heatmapMode.value] || 'map-heatmap'))
 
 // Spelling out the window's actual dates removes the arithmetic from reading it.
 const windowSpan = computed(() => {
@@ -644,18 +674,17 @@ const shareTitle = computed(() => {
 
 let suppressFit = false
 
-// Overlay cells indexed by their grid key, so the cell under a point is found
-// by arithmetic rather than by scanning thousands of rectangles on every hover.
-const overlayCellIndex = computed(() => {
+// Heatmap cells indexed by their grid key, so the cell under a point is found
+// by arithmetic rather than by scanning thousands of polygons on every hover.
+const heatmapCellIndex = computed(() => {
   const index = new Map()
-  for (const c of overlayResult.value.cells || []) index.set(c.key, c)
+  for (const c of heatmapResult.value.cells || []) index.set(c.key, c)
   return index
 })
 
-function overlayCellAt(lat, lon) {
-  const size = overlayCell.value
-  if (!size || !overlayMode.value) return null
-  return overlayCellIndex.value.get(`${Math.floor(lat / size)}:${Math.floor(lon / size)}`) || null
+function heatmapCellAt(lat, lon) {
+  if (!heatmapCell.value || !heatmapMode.value) return null
+  return heatmapCellIndex.value.get(heatmaps.keyAt(lat, lon)) || null
 }
 
 const esc = (v) => String(v)
@@ -689,18 +718,23 @@ function pointTooltip(feature) {
     rows.push([`${FIELD_LABEL[sizeBy.value] || sizeBy.value} (size)`, fmtNum(p[sizeBy.value])])
   }
 
-  // And what the overlay makes of the cell this point falls in.
-  if (overlayMode.value && co) {
-    const cell = overlayCellAt(co[1], co[0])
+  // And what the heatmap makes of the cell this point falls in.
+  if (heatmapMode.value && co) {
+    const cell = heatmapCellAt(co[1], co[0])
     if (cell) {
-      const m = overlayMode.value
-      const label = overlayMeta.value?.label || 'Overlay'
-      const value = m === 'dominant' ? (cell.label || '—')
-        : m === 'season' || m === 'hotspots'
-          ? `${Math.round((cell.n ? cell.inWindow / cell.n : 0) * 100)}% of ${cell.n} finds`
-          : m === 'richness' ? `${cell.species.size} species`
-            : m === 'wind' ? `${Math.round(cell.aspectDeg ?? 0)}°`
-              : `${cell.n} observations`
+      const m = heatmapMode.value
+      const meta = heatmapMeta.value
+      const label = meta?.label || 'Heatmap'
+      const value = meta?.kind === 'field'
+        // The cell mean, with how many readings went into it — a mean of two is
+        // a different claim from a mean of two hundred.
+        ? `${meta.circular ? `${Math.round(cell.value)}°` : fmtNum(cell.value)} (${cell.samples} obs)`
+        : m === 'dominant' || m === 'land_cover' ? (cell.label || '—')
+          : m === 'season' || m === 'hotspots'
+            ? `${Math.round((cell.n ? cell.inWindow / cell.n : 0) * 100)}% of ${cell.n} finds`
+            : m === 'richness' ? `${cell.species.size} species`
+              : m === 'wind' ? `${Math.round(cell.aspectDeg ?? 0)}°`
+                : `${cell.n} observations`
       rows.push([label, value])
     }
   }
@@ -847,9 +881,15 @@ onMounted(async () => {
     const tileOverlays = {}
     for (const o of TILE_OVERLAYS) {
       const layer = L.tileLayer(o.url, {
-        attribution: o.attribution, maxZoom: o.maxZoom, opacity: o.opacity ?? 1,
+        attribution: o.attribution, maxZoom: o.maxZoom,
+        opacity: (o.opacity ?? 1) * tileOpacity.value,
         crossOrigin: 'anonymous',
       })
+      // Its own opacity is kept beside it: the global dimmer multiplies into
+      // this rather than replacing it, so a hillshade meant to sit at 60%
+      // stays proportionally lighter than a layer meant to sit at full.
+      layer._baseOpacity = o.opacity ?? 1
+      tileLayers.push(layer)
       // A reference layer that fails to load looks exactly like one saying there
       // is nothing there — no trails, no public land — which is the most
       // misleading thing this map could do. Track whether a layer has ever
@@ -884,6 +924,13 @@ onMounted(async () => {
       })
       tileOverlays[o.name] = layer
     }
+    // One slider dims every reference layer at once, which is what you actually
+    // want: they stack, and dimming them one at a time to see the data through
+    // the pile is several controls doing one job.
+    watch(tileOpacity, (v) => {
+      for (const l of tileLayers) l.setOpacity(l._baseOpacity * v)
+      heatmaps.persist()
+    })
     L.control.layers(
       {
         'Light grey': grey,
@@ -898,7 +945,7 @@ onMounted(async () => {
     map.on('moveend zoomend', syncMapView)
     syncMapView()
 
-    overlays.loadFromStorage()
+    heatmaps.loadFromStorage()
     appearance.loadFromStorage()
 
     // A shared link wins over stored preferences: the point of opening one is to
@@ -915,7 +962,7 @@ onMounted(async () => {
     renderPoints(filteredData.value)
     if (shared.view) map.setView(shared.view.center, shared.view.zoom, { animate: false })
     syncMapView()
-    renderOverlay()
+    renderHeatmap()
     loaded.value = true
     // If arriving via "Open on map" from a chart, focus that observation now.
     if (focusObservation.value) applyFocus(focusObservation.value)
@@ -958,10 +1005,10 @@ function locateMe() {
 
 // Only while the map is on screen: pressing "o" on the Charts page should do
 // nothing rather than reach for a control that is not there.
-const OVERLAY_KEYS = OVERLAY_MODES.map((m) => m.key)
-function cycleOverlay(step) {
-  const i = OVERLAY_KEYS.indexOf(overlayMode.value)
-  overlayMode.value = OVERLAY_KEYS[(i + step + OVERLAY_KEYS.length) % OVERLAY_KEYS.length]
+const HEATMAP_KEYS = heatmaps.HEATMAP_MODES.map((m) => m.key)
+function cycleHeatmap(step) {
+  const i = HEATMAP_KEYS.indexOf(heatmapMode.value)
+  heatmapMode.value = HEATMAP_KEYS[(i + step + HEATMAP_KEYS.length) % HEATMAP_KEYS.length]
 }
 function nudgeDay(days) {
   seasonDay.value = ((seasonDay.value - 1 + days + 365) % 365) + 1
@@ -969,12 +1016,12 @@ function nudgeDay(days) {
 
 shortcuts.register([
   { scope: 'Map', keys: 'p', label: 'Show / hide observation points', run: () => { showPoints.value = !showPoints.value } },
-  { scope: 'Map', keys: 'o', label: 'Next overlay', run: () => cycleOverlay(1) },
-  { scope: 'Map', keys: 'shift+O', label: 'Previous overlay', run: () => cycleOverlay(-1) },
+  { scope: 'Map', keys: 'o', label: 'Next heatmap', run: () => cycleHeatmap(1) },
+  { scope: 'Map', keys: 'shift+O', label: 'Previous heatmap', run: () => cycleHeatmap(-1) },
   { scope: 'Map', keys: 'l', label: 'My location', run: () => locateMe() },
   { scope: 'Map', keys: 'e', label: 'Save the map as an image', run: () => saveMap() },
-  { scope: 'Map', keys: '[', label: 'Overlay date back a week', run: () => nudgeDay(-7) },
-  { scope: 'Map', keys: ']', label: 'Overlay date forward a week', run: () => nudgeDay(7) },
+  { scope: 'Map', keys: '[', label: 'Heatmap date back a week', run: () => nudgeDay(-7) },
+  { scope: 'Map', keys: ']', label: 'Heatmap date forward a week', run: () => nudgeDay(7) },
   { scope: 'Map', keys: 's', label: 'Season date and window', run: () => { seasonOpen.value = !seasonOpen.value } },
   { scope: 'Map', keys: 'escape', label: 'Close the observation drawer', run: () => { selected.value = null } },
 ])
@@ -1067,6 +1114,11 @@ onBeforeUnmount(() => {
 }
 .legend-title { font-weight: 600; margin-bottom: 6px; position: sticky; top: 0; }
 .legend-row { display: flex; align-items: center; gap: 8px; }
+
+/* Direction has no low and no high, so its key is four labelled swatches
+   round the compass rather than a bar with two ends. */
+.compass-key { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 2px 0 4px; }
+.compass-key .ck { display: inline-flex; align-items: center; gap: 4px; font-size: 0.74rem; }
 
 /* The overlay legend sits above the point legend, in the same column. */
 /* Pushed to the top of the column, leaving the colouring legend at the bottom —

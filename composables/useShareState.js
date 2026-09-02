@@ -19,7 +19,7 @@ const NUMERIC = new Set(['z', 'cell', 'd', 'w', 'rad', 'yr', 'mo', 'wk'])
 export function useShareState() {
   const { selectedDataset, speciesFilter, setSpeciesFilter, showFiltered, setShowFiltered } = useObservations()
   const { filters, setFilter } = useFilters()
-  const overlays = useMapOverlays()
+  const heatmaps = useMapHeatmaps()
   const appearance = useAppearance()
 
   /**
@@ -37,12 +37,16 @@ export function useShareState() {
     if (colorBy && colorBy !== 'cluster') q.color = colorBy
     if (sizeBy) q.size = sizeBy
 
-    if (overlays.mode.value) {
-      q.ov = overlays.mode.value
-      if (overlays.cellSize.value !== 0.05) q.cell = String(overlays.cellSize.value)
-      if (overlays.mode.value === 'season' || overlays.mode.value === 'hotspots') {
-        q.d = String(overlays.seasonDay.value)
-        q.w = String(overlays.seasonWindow.value)
+    // `ov` rather than `hm`: the parameter predates the rename and links
+    // carrying it are already out there. What it names changed; what it is
+    // called on the wire has to not.
+    if (heatmaps.mode.value) {
+      q.ov = heatmaps.mode.value
+      if (heatmaps.cellSize.value !== 0.05) q.cell = String(heatmaps.cellSize.value)
+      if (heatmaps.cellShape.value !== 'hex') q.cs = heatmaps.cellShape.value
+      if (heatmaps.mode.value === 'season' || heatmaps.mode.value === 'hotspots') {
+        q.d = String(heatmaps.seasonDay.value)
+        q.w = String(heatmaps.seasonWindow.value)
       }
     }
 
@@ -90,20 +94,23 @@ export function useShareState() {
       return Number.isFinite(n) ? n : null
     }
 
-    if (query.ov && overlays.OVERLAY_MODES.some((m) => m.key === query.ov)) {
-      overlays.mode.value = query.ov
+    if (query.ov && heatmaps.HEATMAP_MODES.some((m) => m.key === query.ov)) {
+      heatmaps.mode.value = query.ov
     }
     if (query.cell !== undefined) {
       const c = num(query.cell)
-      if (c && overlays.CELL_SIZES.some((x) => x.value === c)) overlays.cellSize.value = c
+      if (c && heatmaps.CELL_SIZES.some((x) => x.value === c)) heatmaps.cellSize.value = c
+    }
+    if (query.cs && heatmaps.CELL_SHAPES.some((s) => s.value === query.cs)) {
+      heatmaps.cellShape.value = query.cs
     }
     if (query.d !== undefined) {
       const d = num(query.d)
-      if (d !== null && d >= 1 && d <= 366) overlays.seasonDay.value = d
+      if (d !== null && d >= 1 && d <= 366) heatmaps.seasonDay.value = d
     }
     if (query.w !== undefined) {
       const w = num(query.w)
-      if (w !== null && w >= 1 && w <= 182) overlays.seasonWindow.value = w
+      if (w !== null && w >= 1 && w <= 182) heatmaps.seasonWindow.value = w
     }
 
     if (query.sp) setSpeciesFilter(String(query.sp).split('|').filter(Boolean))

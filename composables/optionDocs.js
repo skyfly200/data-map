@@ -42,53 +42,54 @@ export const OPTION_DOCS = [
     id: 'map-show-points',
     group: 'Map',
     title: 'Show observations',
-    summary: 'Hide the individual dots to read an overlay on its own.',
+    summary: 'Hide the individual dots to read a heatmap on its own.',
     detail: [
-      'The points and the grid overlay compete for the same space. Turning the points off leaves the overlay legible, which is the difference between seeing a seasonal pattern and seeing a wall of dots.',
+      'The points and the grid heatmap compete for the same space. Turning the points off leaves the heatmap legible, which is the difference between seeing a seasonal pattern and seeing a wall of dots.',
       'The choice is remembered between visits.',
     ],
-    also: ['map-overlay', 'appearance-point-opacity'],
+    also: ['map-heatmap', 'appearance-point-opacity'],
   },
 
   // ── Map: overlays ─────────────────────────────────────────────────────────
   {
-    id: 'map-overlay',
+    id: 'map-heatmap',
     group: 'Map',
-    title: 'Overlay',
-    summary: 'A grid of per-cell summaries drawn under the points.',
+    title: 'Heatmap',
+    summary: 'A grid of per-cell summaries, computed from the observations and drawn under the points.',
     detail: [
       '48,000 overlapping dots show you where the data is dense. A grid shows what is actually in an area. Each cell aggregates the observations inside it and is shaded by the result.',
-      'The overlays differ mainly in how much they are distorted by recording effort — how many people went looking there. That difference matters more than anything else on this page, so each mode below says where it stands.',
+      'The heatmaps differ mainly in how much they are distorted by recording effort — how many people went looking there. That difference matters more than anything else on this page, so each mode below says where it stands.',
     ],
-    also: ['map-overlay-density', 'map-overlay-richness', 'map-overlay-season',
-      'map-overlay-hotspots', 'map-overlay-dominant', 'map-overlay-wind', 'map-cell-size'],
+    also: ['map-heatmap-density', 'map-heatmap-richness', 'map-heatmap-season',
+      'map-heatmap-hotspots', 'map-heatmap-dominant', 'map-heatmap-land-cover',
+      'map-heatmap-wind', 'map-heatmap-field', 'map-cell-size', 'appearance-cell-shape'],
   },
   {
-    id: 'map-overlay-density',
+    id: 'map-heatmap-density',
     group: 'Map',
-    title: 'Overlay: Observation density',
+    title: 'Heatmap: Observation density',
     summary: 'How many records fall in each cell.',
     detail: [
       'A straight count. Useful for seeing the shape of the dataset — where the records are and where there are none.',
     ],
     caveat: 'This is a map of where people went, not where mushrooms are. Cities, trailheads and popular parks glow because they are visited, not because they are productive. Do not read it as habitat.',
-    also: ['map-overlay-season'],
+    also: ['map-heatmap-season'],
   },
   {
-    id: 'map-overlay-richness',
+    id: 'map-heatmap-richness',
     group: 'Map',
-    title: 'Overlay: Species richness',
+    title: 'Heatmap: Species richness',
     summary: 'How many distinct species were recorded in each cell.',
     detail: [
       'Counts unique species rather than records. A cell with 200 observations of one species scores 1.',
     ],
     caveat: 'Still effort-sensitive, and in a specific direction: more visits find more species, so richness climbs with sampling long before it reflects real diversity. Compare cells with similar record counts, or use Seasonal activity instead.',
-    also: ['map-overlay-density', 'map-overlay-season'],
+    also: ['map-heatmap-density', 'map-heatmap-season'],
   },
   {
-    id: 'map-overlay-season',
+    id: 'map-heatmap-season',
     group: 'Map',
-    title: 'Overlay: Seasonal activity',
+    title: 'Heatmap: Seasonal activity',
     summary: "The share of a cell's own finds that fall inside your date window.",
     detail: [
       'For each cell: of all the observations ever recorded there, what fraction happened within ±window of your chosen day of the year, across all years.',
@@ -96,24 +97,24 @@ export const OPTION_DOCS = [
       'Cells with fewer than 3 records are left blank rather than shown at 0% or 100% on a single observation.',
     ],
     caveat: 'It describes when finds happened historically. It is not a forecast, and a warm or dry year will not match it.',
-    also: ['map-season-day', 'map-season-window', 'map-overlay-hotspots'],
+    also: ['map-season-day', 'map-season-window', 'map-heatmap-hotspots'],
   },
   {
-    id: 'map-overlay-hotspots',
+    id: 'map-heatmap-hotspots',
     group: 'Map',
-    title: 'Overlay: In-season hotspots',
+    title: 'Heatmap: In-season hotspots',
     summary: 'Seasonal activity, weighted by how well-sampled the cell is.',
     detail: [
       'Takes the Seasonal activity share and weights it by how much evidence sits behind it, so a cell at 80% from 4 records does not outrank a cell at 60% from 200.',
       'This is the closest thing here to "where would I go this week", which is why it is weighted — a confident 60% is a better bet than a noisy 80%.',
     ],
     caveat: 'It is a record of past finds, not a prediction. Weighting by sample size also reintroduces some effort bias, since well-sampled cells are well-visited ones.',
-    also: ['map-overlay-season', 'map-season-day', 'map-season-window'],
+    also: ['map-heatmap-season', 'map-season-day', 'map-season-window'],
   },
   {
-    id: 'map-overlay-dominant',
+    id: 'map-heatmap-dominant',
     group: 'Map',
-    title: 'Overlay: Dominant species',
+    title: 'Heatmap: Dominant species',
     summary: 'The most-recorded species in each cell, by colour.',
     detail: [
       'Shows regional character — where one species takes over. Colours match the rest of the app, so a cell can be read against the legend and the charts.',
@@ -122,37 +123,62 @@ export const OPTION_DOCS = [
     also: ['map-color-by'],
   },
   {
-    id: 'map-overlay-wind',
+    id: 'map-heatmap-land-cover',
     group: 'Map',
-    title: 'Overlay: Wind / aspect vectors',
+    title: 'Heatmap: Land cover',
+    summary: 'The most common land-cover class recorded across each cell.',
+    detail: [
+      'Reads the land-cover class the pipeline sampled at each observation and shows whichever one appears most often in the cell — forest, shrubland, grassland, and so on.',
+      'This is land cover *at the finds*, not a land-cover map. It says what kind of ground the records in a cell sit on, which is the question worth asking of a foraging map; a real land-cover raster is available separately as a reference layer in the layers control.',
+    ],
+    caveat: 'Only the winner is shown, so a cell that is half forest and half meadow looks the same as one that is all forest. Cells with no finds are blank, not unclassified ground.',
+    also: ['map-heatmap-dominant', 'map-basemaps'],
+  },
+  {
+    id: 'map-heatmap-wind',
+    group: 'Map',
+    title: 'Heatmap: Wind / aspect vectors',
     summary: 'Arrows for wind where it exists, and for the way slopes face where it does not.',
     detail: [
-      'The observations carry terrain **aspect** — the compass direction a slope faces — and a wind-exposure index, but no measured wind. Until the pipeline samples ERA5 wind into `wind_u` / `wind_v`, this overlay draws mean terrain aspect: arrow direction is the way the ground faces, arrow length is how *consistently* the cell faces one way, and colour is wind exposure.',
-      'When real wind data is present the overlay switches to it automatically and relabels its legend, so the arrows never silently change meaning.',
+      'The observations carry terrain **aspect** — the compass direction a slope faces — and a wind-exposure index, but no measured wind. Until the pipeline samples ERA5 wind into `wind_u` / `wind_v`, this heatmap draws mean terrain aspect: arrow direction is the way the ground faces, arrow length is how *consistently* the cell faces one way, and colour is wind exposure.',
+      'When real wind data is present the heatmap switches to it automatically and relabels its legend, so the arrows never silently change meaning.',
     ],
     caveat: 'A short arrow means mixed terrain, not calm air. Aspect is averaged as a vector, because averaging compass degrees numerically puts the mean of 350° and 10° at 180° — exactly backwards.',
+  },
+  {
+    id: 'map-heatmap-field',
+    group: 'Map',
+    title: 'Heatmap: environmental fields',
+    summary: 'The cell mean of one enriched value — rainfall, soil moisture, NDVI, slope, aspect, TWI, sun or wind exposure.',
+    detail: [
+      'Every observation carries the terrain and weather the pipeline sampled at its location. Averaging that across a grid cell turns 48,000 scattered readings into a surface you can read: where the ground is steep, where it holds water, where the canopy is wet, how much rain fell in the week before finds were made.',
+      'Aspect is the exception and is treated as circular: it is averaged as a vector, so 350° and 10° average to 0° rather than 180°, and its key is a compass wheel rather than a low-to-high bar.',
+      'The tooltip on a point reports the cell mean along with how many observations went into it, because a mean of two is a different claim from a mean of two hundred.',
+    ],
+    caveat: 'These are not rasters. A cell has a value only where somebody recorded a find, so a blank cell means nobody looked there — not that the ground is dry, flat or bare. And because the sample points are wherever people walked, a cell mean describes the places finds were made in that cell, not the cell as a whole.',
+    also: ['map-heatmap', 'map-cell-size', 'appearance-cell-shape'],
   },
   {
     id: 'map-cell-size',
     group: 'Map',
     title: 'Cell size',
-    summary: 'How coarse the overlay grid is, from about 500 m to about 28 km.',
+    summary: 'How coarse the heatmap grid is, from about 500 m to about 28 km.',
     detail: [
       'Smaller cells resolve more detail and hold fewer records each, so they are noisier; larger cells are steadier but blur real boundaries.',
-      'If an overlay looks like static, the cells are probably too small for the number of records in view.',
+      'If a heatmap looks like static, the cells are probably too small for the number of records in view.',
       'Below about a kilometre the grid stops summarising and starts drawing roughly one cell per observation — at which point it is the point layer with square markers. The legend reports the cell count, so compare it against how many records are in view to see whether that has happened.',
     ],
-    also: ['map-overlay'],
+    also: ['map-heatmap'],
   },
   {
     id: 'map-season-day',
     group: 'Map',
     title: 'Date',
-    summary: 'The day of the year the seasonal overlays are centred on.',
+    summary: 'The day of the year the seasonal heatmaps are centred on.',
     detail: [
       'Year is ignored — every year\'s records are pooled by day of the year, so this asks "what happens around this time of year", not "what happened on this date".',
     ],
-    also: ['map-season-window', 'map-overlay-season'],
+    also: ['map-season-window', 'map-heatmap-season'],
   },
   {
     id: 'map-season-window',
@@ -163,7 +189,7 @@ export const OPTION_DOCS = [
       'A narrow window is specific but thin on data; a wide one is steadier but smears the season. ±14 days is a reasonable starting point for most species.',
       'The date span the current setting covers is spelled out under the slider.',
     ],
-    also: ['map-season-day', 'map-overlay-season'],
+    also: ['map-season-day', 'map-heatmap-season'],
   },
 
   // ── Map: other controls ───────────────────────────────────────────────────
@@ -173,7 +199,7 @@ export const OPTION_DOCS = [
     title: 'Basemaps and layers',
     summary: 'A muted basemap by default, with street, terrain and satellite available, plus topo, hillshade, trails and ownership on top.',
     detail: [
-      'One basemap at a time, any number of the overlay layers on top of it.',
+      'One basemap at a time, any number of the reference layers on top of it. Those are somebody else\'s imagery, distinct from the **Heatmap** picker in the control bar, which draws a grid computed from the observations themselves.',
       'The map opens on a light grey canvas on purpose. A street or topo map is drawn to be read on its own, and once 48,000 coloured dots sit on it, its colour competes with the data for the same hues. A grey base leaves the dots as the only saturated thing on screen. For terrain without that cost, keep the grey base and switch on **Hillshade** — relief in grey, colour still reserved for the observations.',
       'These are third-party tile services. If one cannot be reached the map says so rather than drawing nothing — an empty ownership layer would otherwise read as "no public land here".',
     ],
@@ -228,7 +254,7 @@ export const OPTION_DOCS = [
     id: 'map-save-image',
     group: 'Map',
     title: 'Save image',
-    summary: 'Flattens the map — basemap tiles, overlay and points — into a single PNG.',
+    summary: 'Flattens the map — basemap tiles, layers, heatmap and points — into a single PNG.',
     detail: [
       'Composites what is on screen, including the tile layers, rather than exporting only the vector layer.',
     ],
@@ -282,10 +308,10 @@ export const OPTION_DOCS = [
     title: 'Opacity',
     summary: 'How solid the map dots are — lower values let density show through as shading.',
     detail: [
-      'At low opacity, overlapping dots accumulate into darker patches, which turns the point layer into its own density map. This is often more informative than the density overlay because it keeps every point\'s colour.',
+      'At low opacity, overlapping dots accumulate into darker patches, which turns the point layer into its own density map. This is often more informative than the density heatmap because it keeps every point\'s colour.',
       'The outline follows this slider too, so fading the dots fades the whole marker rather than leaving a mesh of solid rings behind.',
     ],
-    also: ['appearance-point-outline', 'map-overlay-density'],
+    also: ['appearance-point-outline', 'map-heatmap-density'],
   },
   {
     id: 'appearance-point-outline',
@@ -299,16 +325,50 @@ export const OPTION_DOCS = [
     also: ['appearance-point-opacity'],
   },
   {
-    id: 'appearance-overlay-ramp',
+    id: 'appearance-heatmap-ramp',
     group: 'Style',
     title: 'Overlay colours',
-    summary: 'The colour ramp the grid overlays are shaded with, and its key on the map.',
+    summary: 'The colour ramp the grid heatmaps are shaded with, and its key on the map.',
     detail: [
-      'Each sequential overlay ships with its own ramp so density, richness, seasonal activity and hotspots stay tellable apart when you switch between them. Choosing a named ramp here applies that one to all of them instead; "Custom" hands you both ends.',
+      'Each sequential heatmap ships with its own ramp so density, richness, seasonal activity and hotspots stay tellable apart when you switch between them. Choosing a named ramp here applies that one to all of them instead; "Custom" hands you both ends.',
       'The key on the map reads from the same setting, so the gradient beside the map always matches what is drawn on it.',
     ],
     caveat: 'Colour on a map is not decoration. A ramp whose light end you cannot separate from the background hides exactly the low values a density map exists to show, and a rainbow implies boundaries in a quantity that has none. The presets all run light to dark for that reason; a custom pair is yours to get wrong.',
-    also: ['map-overlay', 'appearance-palette'],
+    also: ['map-heatmap', 'appearance-palette'],
+  },
+  {
+    id: 'appearance-heatmap-opacity',
+    group: 'Style',
+    title: 'Heatmap opacity',
+    summary: 'How strongly the grid cells cover the basemap under them.',
+    detail: [
+      'The cells sit between the basemap and the points. Turn this down to read terrain, roads or imagery through the shading; turn it up when the heatmap is the thing you are reading and the base is only there for orientation.',
+      'Low values cost contrast at the light end of the ramp, which is where a density map keeps its low values — so if faint cells start disappearing into the basemap, that is why.',
+    ],
+    also: ['appearance-heatmap-ramp', 'appearance-tile-opacity', 'map-show-points'],
+  },
+  {
+    id: 'appearance-cell-shape',
+    group: 'Style',
+    title: 'Cell shape',
+    summary: 'Bin the observations into hexagons or squares.',
+    detail: [
+      'Hexagons are the default. Every neighbour of a hex is the same distance away and shares a full edge, which a square grid cannot manage — its diagonal neighbours are 1.41× further and meet only at a corner. That makes a hex grid read as a continuous surface where a square one reads as a grid, and it keeps a cluster of finds from being split differently depending on how it happens to land against the axes.',
+      'Squares remain available: they line up with latitude and longitude, so a cell boundary is a round number rather than an offset row.',
+      'The two are sized to the same area, so switching shape re-bins the same observations at the same resolution rather than silently coarsening or sharpening the map.',
+    ],
+    also: ['map-cell-size', 'map-heatmap'],
+  },
+  {
+    id: 'appearance-tile-opacity',
+    group: 'Style',
+    title: 'Map layer opacity',
+    summary: 'Dims every reference tile layer switched on in the layers control, together.',
+    detail: [
+      'The reference layers stack — hillshade under rainfall under land ownership — and dimming them one at a time to see the data through the pile would be several controls doing one job.',
+      'Each layer keeps its own built-in weighting: hillshade ships at 60% and land ownership at 45% so they read as context rather than as the map. This multiplies into that rather than replacing it, so their relative strengths hold as you dim them.',
+    ],
+    also: ['map-basemaps', 'appearance-heatmap-opacity'],
   },
   {
     id: 'appearance-overrides',
@@ -759,7 +819,7 @@ export const OPTION_DOCS = [
     id: 'share-link',
     group: 'Sharing',
     title: 'Share',
-    summary: 'A link that reproduces this view — filters, colouring, overlay and position.',
+    summary: 'A link that reproduces this view — filters, colouring, heatmap and position.',
     detail: [
       'Everything that made the view worth showing goes into the query string, so the link opens the same thing rather than the front page. The same link is behind the QR code, the social buttons and the email and text options.',
       'The QR code is generated in the browser rather than through an image service, so the URL — filters and all — is not handed to a third party.',
@@ -786,16 +846,36 @@ export const OPTION_DOCS = [
   },
 ]
 
+// Ids the reference used to publish. The heatmap controls were called overlays
+// until the map grew reference tile layers that deserved that name more, and
+// links carrying the old anchors — shared, bookmarked, or written into the
+// guide's prose — should still land on the right entry rather than nowhere.
+const ID_ALIASES = {
+  'map-overlay': 'map-heatmap',
+  'map-overlay-density': 'map-heatmap-density',
+  'map-overlay-richness': 'map-heatmap-richness',
+  'map-overlay-season': 'map-heatmap-season',
+  'map-overlay-hotspots': 'map-heatmap-hotspots',
+  'map-overlay-dominant': 'map-heatmap-dominant',
+  'map-overlay-wind': 'map-heatmap-wind',
+  'appearance-overlay-ramp': 'appearance-heatmap-ramp',
+}
+
+/** The current id for a possibly-retired one. */
+export function canonicalDocId(id) {
+  return ID_ALIASES[id] || id
+}
+
 const BY_ID = new Map(OPTION_DOCS.map((d) => [d.id, d]))
 
-/** One option's entry, or null. */
+/** One option's entry, or null. Retired ids resolve through the alias table. */
 export function docFor(id) {
-  return BY_ID.get(id) || null
+  return BY_ID.get(id) || BY_ID.get(canonicalDocId(id)) || null
 }
 
 /** The hover text for a control: its summary, or '' when undocumented. */
 export function docSummary(id) {
-  return BY_ID.get(id)?.summary || ''
+  return docFor(id)?.summary || ''
 }
 
 // Reference anchors are namespaced because the guide's prose headings are
