@@ -92,10 +92,31 @@ switches to real wind by itself and relabels the legend.
 ### Other map controls
 
 - **My location** — puts a dot at your position with its accuracy circle
-- **Basemaps** — a light grey canvas by default, so the observations are the only
-  saturated thing on screen; street, terrain and satellite are one click away.
-  On top: USGS topo, USGS imagery, hillshade, relief, **hiking trails** and
-  **land ownership**. Grey base plus hillshade gives relief without colour.
+- **Basemaps and layers** — a light grey canvas by default, so the observations
+  are the only saturated thing on screen; street, terrain and satellite are one
+  click away. On top, grouped by subject:
+  - *Terrain* — hillshade, USGS topo, USGS imagery, OpenTopoMap relief. Grey base
+    plus hillshade gives relief without colour.
+  - *Weather* — live US radar, US rainfall over the past 24 hours, global
+    satellite rainfall, land surface temperature.
+  - *Ground* — ESA WorldCover land cover at 10 m, SMAP soil moisture.
+  - *Vegetation* — MODIS NDVI greenness.
+  - *Context* — place labels, **hiking trails**, **land ownership**.
+
+  Every measured layer carries a key, collected into one **Map layers** panel that
+  appears as you switch layers on. The ones that vary by day carry a date picker
+  there too; it opens a few days back, because every satellite product has
+  latency and asking for today returns blank tiles that would read as "no rain"
+  rather than "not processed yet".
+
+  These are **not** the same as the heatmaps. A layer is somebody else's raster,
+  drawn everywhere because they measured it everywhere, and it shows current or
+  recent conditions over historical finds — so it cannot explain the finds. The
+  rainfall, temperature, soil-moisture and NDVI **heatmaps** use what the pipeline
+  sampled at each observation's own date, which can.
+
+  A layer that cannot be reached says so, rather than drawing nothing: an empty
+  ownership layer would otherwise read as "no public land here".
 - **Live clustering** — k-means in the browser, by features or geography
 - **Save image** — flattens the whole map, tiles and all, into a PNG
 

@@ -120,9 +120,37 @@
         empty ground.
       </div>
     </div>
-    <div v-for="n in activeTileNotes" :key="n.name" class="legend tile-note">
-      <div class="legend-title">{{ n.name }}</div>
-      <div class="legend-note">{{ n.note }}</div>
+    <!-- One key for the whole reference stack, a section per layer that is
+         switched on. A raster nobody can read is decoration, so every measured
+         layer carries a key — but as separate cards, three of them squeezed
+         each other and the heatmap key into strips too short to read. They are
+         one stack of layers; they get one panel. -->
+    <div v-if="activeTileNotes.length" class="legend tile-note">
+      <div class="legend-title">Map layers</div>
+      <div v-for="n in activeTileNotes" :key="n.name" class="tk">
+        <div class="tk-name">{{ n.name }}</div>
+        <template v-if="n.legend?.type === 'ramp'">
+          <div class="gradient" :style="{ background: `linear-gradient(90deg, ${n.legend.stops.join(', ')})` }"></div>
+          <div class="gradient-scale">
+            <span>{{ n.legend.min }}</span>
+            <span class="unit">{{ n.legend.unit }}</span>
+            <span>{{ n.legend.max }}</span>
+          </div>
+        </template>
+        <div v-else-if="n.legend?.type === 'classes'" class="class-key">
+          <span v-for="c in n.legend.items" :key="c.label" class="ck">
+            <span class="swatch" :style="{ background: c.color }"></span>{{ c.label }}
+          </span>
+        </div>
+        <!-- The date the layer is showing, movable for the ones that vary. Each
+             product has its own latency, so "today" is usually blank tiles. -->
+        <div v-if="n.time" class="layer-date">
+          <label :for="`ld-${n.slug}`">Date</label>
+          <input :id="`ld-${n.slug}`" v-model="tileDate" type="date" :max="maxTileDate"
+                 :title="`Which day of ${n.name} to draw. Satellite products lag by days, so recent dates can be blank.`" />
+        </div>
+        <div v-if="n.note" class="legend-note">{{ n.note }}</div>
+      </div>
     </div>
     <!-- Heatmap key, with the caveat that belongs with each metric -->
     <div v-if="heatmapLegend" class="legend overlay-legend">
@@ -333,44 +361,22 @@ const seasonLabel = computed(() => {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
 })
 
-// ─── Reference tile overlays ──────────────────────────────────────────────────
-// Public XYZ services layered over the basemap, for context the observations
-// cannot supply themselves.
-const TILE_OVERLAYS = [
-  { name: 'USGS topo', url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'USGS The National Map', maxZoom: 16 },
-  { name: 'USGS imagery', url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'USGS The National Map', maxZoom: 16 },
-  { name: 'Hillshade', url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Esri', maxZoom: 16, opacity: 0.6 },
-  { name: 'OpenTopoMap relief', url: 'https://tile.opentopomap.org/{z}/{x}/{y}.png',
-    attribution: 'OpenTopoMap (CC-BY-SA)', maxZoom: 17, opacity: 0.5 },
+// ─── Reference tile layers ────────────────────────────────────────────────────
+// Public raster services stacked over the basemap — relief, rainfall, land
+// cover, greenness, soil moisture, trails, ownership. The catalogue and its
+// keys live in composables/mapLayers.js; this wires them to Leaflet.
+//
+// Distinct from the Heatmap picker in the control bar, which bins the
+// observations themselves. A layer covers the whole map because somebody else
+// measured it everywhere; a heatmap covers only where people have looked.
 
-  // The grey basemaps carry no place names, which is what keeps them quiet.
-  // Labels are a separate layer so you can have them or not.
-  { name: 'Place labels', url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Esri', maxZoom: 16 },
-
-  // Where you may legally walk, and where the paths are. Both matter for a
-  // foraging map in a way the terrain layers do not: a productive slope on
-  // private land is not somewhere you can go.
-  //
-  // Waymarked Trails renders OSM's hiking route relations — named, waymarked
-  // routes rather than every footpath — as transparent tiles meant to sit on
-  // another basemap.
-  { name: 'Hiking trails', url: 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png',
-    attribution: 'waymarkedtrails.org · OpenStreetMap (CC-BY-SA)', maxZoom: 18,
-    note: 'Waymarked hiking routes from OpenStreetMap. Not a complete trail map — an unmapped path is missing, not absent.' },
-
-  // BLM's Surface Management Agency layer: which federal agency, state, or
-  // private party manages each parcel. The "without_PriUnk" build leaves private
-  // and unknown parcels unpainted, which is what makes it readable — the colour
-  // is public land, the gaps are everything else.
-  { name: 'Land ownership (US)',
-    url: 'https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_Cached_without_PriUnk/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'BLM Surface Management Agency', maxZoom: 16, opacity: 0.45,
-    note: 'US federal and state land, by managing agency. Unpainted means private or unrecorded, not necessarily open. Always confirm access before relying on it.' },
-]
+// Which day the time-varying layers draw. Defaults to the shortest lag in the
+// catalogue, so switching one on lands on a date that exists rather than on
+// today, which for an 8-day composite is always blank.
+const DEFAULT_LAG = Math.min(...TILE_LAYERS.filter((l) => l.time).map((l) => l.lag ?? 1))
+const tileDate = ref(layerDate(DEFAULT_LAG))
+// Nothing is published for tomorrow, so the picker will not offer it.
+const maxTileDate = layerDate(0)
 
 // Reference layers that could not be reached. Shown rather than swallowed:
 // an empty ownership layer reads as "no public land here".
@@ -877,18 +883,32 @@ onMounted(async () => {
       scrollWheelZoom: true, zoomControl: false, layers: [grey], preferCanvas: true,
     }).setView([39.5, -105.7], 7)
     L.control.zoom({ position: 'bottomleft' }).addTo(map)
-    // Reference tile services as toggleable overlays alongside the basemaps.
+    // ArcGIS MapServer services render from a bbox rather than serving a cut
+    // tile pyramid, so their tiles are asked for by extent. Everything else is
+    // a plain XYZ template.
+    const ArcGISLayer = L.TileLayer.extend({
+      getTileUrl(coords) {
+        return arcgisExportUrl(this.options.service, coords.x, coords.y, coords.z,
+          { size: 256, layers: this.options.serviceLayers })
+      },
+    })
+
+    // Reference tile services as toggleable layers alongside the basemaps.
     const tileOverlays = {}
-    for (const o of TILE_OVERLAYS) {
-      const layer = L.tileLayer(o.url, {
+    for (const o of TILE_LAYERS) {
+      const opts = {
         attribution: o.attribution, maxZoom: o.maxZoom,
         opacity: (o.opacity ?? 1) * tileOpacity.value,
         crossOrigin: 'anonymous',
-      })
+      }
+      const layer = o.arcgis
+        ? new ArcGISLayer('', { ...opts, service: o.arcgis, serviceLayers: o.layers || '' })
+        : L.tileLayer(o.url.replace('{date}', tileDate.value), opts)
       // Its own opacity is kept beside it: the global dimmer multiplies into
       // this rather than replacing it, so a hillshade meant to sit at 60%
       // stays proportionally lighter than a layer meant to sit at full.
       layer._baseOpacity = o.opacity ?? 1
+      layer._spec = o
       tileLayers.push(layer)
       // A reference layer that fails to load looks exactly like one saying there
       // is nothing there — no trails, no public land — which is the most
@@ -907,11 +927,16 @@ onMounted(async () => {
           tileErrors.value = [...tileErrors.value, o.name]
         }
       })
-      // Its caveat travels with it: shown while it is on, gone when it is off.
-      if (o.note) {
+      // Its key and its caveat travel with it: shown while it is on, gone when
+      // it is off. A layer with neither still registers nothing, which is right
+      // — imagery and place labels are pictures, not measurements.
+      if (o.note || o.legend || o.time) {
         layer.on('add', () => {
           if (!activeTileNotes.value.some((n) => n.name === o.name)) {
-            activeTileNotes.value = [...activeTileNotes.value, { name: o.name, note: o.note }]
+            activeTileNotes.value = [...activeTileNotes.value, {
+              name: o.name, note: o.note, legend: o.legend, time: !!o.time,
+              slug: o.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            }]
           }
         })
       }
@@ -922,7 +947,7 @@ onMounted(async () => {
         loaded = 0
         failed = 0
       })
-      tileOverlays[o.name] = layer
+      tileOverlays[`<span class="lg">${o.group}</span> ${o.name}`] = layer
     }
     // One slider dims every reference layer at once, which is what you actually
     // want: they stack, and dimming them one at a time to see the data through
@@ -930,6 +955,16 @@ onMounted(async () => {
     watch(tileOpacity, (v) => {
       for (const l of tileLayers) l.setOpacity(l._baseOpacity * v)
       heatmaps.persist()
+    })
+
+    // Moving the date re-points the time-varying layers at another day's tiles.
+    // setUrl redraws in place, so a layer keeps its position in the stack and
+    // its toggle stays on rather than the layer being rebuilt under the viewer.
+    watch(tileDate, (d) => {
+      if (!d) return
+      for (const l of tileLayers) {
+        if (l._spec?.time && l._spec.url) l.setUrl(l._spec.url.replace('{date}', d))
+      }
     })
     L.control.layers(
       {
@@ -939,6 +974,9 @@ onMounted(async () => {
         'Terrain (OpenTopoMap)': topo,
         'Satellite (Esri)': sat,
       },
+      // Leaflet's layers control takes one flat list, so the group rides in the
+      // label — nine layers unlabelled is a wall, and grouping them by what
+      // they are about is the difference between scanning and hunting.
       tileOverlays, { position: 'topleft', collapsed: true },
     ).addTo(map)
 
@@ -1108,12 +1146,34 @@ onBeforeUnmount(() => {
   padding: 10px 12px; font: 13px/1.4 system-ui, sans-serif; color: #222; min-width: 120px;
   max-width: 100%; max-height: 44vh; overflow-y: auto; overscroll-behavior: contain;
   /* min-height: 0 — a flex item will not shrink below its content without it,
-     so the panel grew past its max-height instead of scrolling. */
+     so the panel grew past its max-height instead of scrolling.
+     flex-shrink 1 is what lets a card give way when the column is crowded; the
+     cap above already keeps any one card from taking the whole column, and
+     without the shrink a tall stack pushes the last card off the map. */
   flex: 0 1 auto; min-height: 0;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 .legend-title { font-weight: 600; margin-bottom: 6px; position: sticky; top: 0; }
 .legend-row { display: flex; align-items: center; gap: 8px; }
+
+/* One section per active layer inside the layers key: a ramp with its units in
+   the middle of the scale, or a list of classes. Rules between them, because
+   without one a note and the next layer's name run together. */
+.tk + .tk { border-top: 1px solid rgba(0, 0, 0, 0.1); margin-top: 8px; padding-top: 8px; }
+.tk-name { font-weight: 600; font-size: 0.8rem; margin-bottom: 4px; }
+.tk .legend-note { margin-top: 4px; }
+
+/* Wraps, because eleven land-cover classes will not fit on one line of a
+   260px card. */
+.class-key { display: flex; flex-wrap: wrap; gap: 3px 9px; margin: 3px 0 5px; }
+.class-key .ck { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; }
+.gradient-scale .unit { color: var(--muted); }
+.layer-date { display: flex; align-items: center; gap: 6px; margin: 6px 0 2px; font-size: 0.74rem; }
+.layer-date label { color: var(--muted); font-weight: 600; }
+.layer-date input {
+  flex: 1 1 auto; min-width: 0; background: var(--input-bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 4px; padding: 2px 5px; font-size: 0.74rem;
+}
 
 /* Direction has no low and no high, so its key is four labelled swatches
    round the compass rather than a bar with two ends. */
@@ -1124,7 +1184,12 @@ onBeforeUnmount(() => {
 /* Pushed to the top of the column, leaving the colouring legend at the bottom —
    the arrangement this had before, now expressed as a relationship between the
    two rather than as two absolute positions that can collide. */
-.overlay-legend { margin-bottom: auto; max-width: 280px; }
+.overlay-legend { max-width: 280px; }
+/* The layers key sits at the top of the column and the colouring key at the
+   bottom, with the heatmap key between them — a relationship between the three
+   rather than three absolute positions that can collide. */
+.tile-note { margin-bottom: auto; }
+.legends > .overlay-legend:first-child { margin-bottom: auto; }
 .legend-note {
   margin-top: 6px; font-size: 11px; line-height: 1.35; color: #555;
   border-top: 1px solid #e6e6e6; padding-top: 5px;
@@ -1247,6 +1312,15 @@ onBeforeUnmount(() => {
    and whether the season sliders are open. The bar occupies the top of the map
    at every width, and the layers control now shares its corner, so this is no
    longer only a phone problem. */
+/* The layers control carries nine reference layers. The group each belongs to
+   is rendered ahead of its name so the list can be scanned by subject —
+   Terrain, Weather, Ground, Vegetation, Context — rather than read end to end. */
+.map-shell :deep(.leaflet-control-layers-overlays .lg) {
+  display: inline-block; min-width: 68px; color: #777;
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.map-shell :deep(.leaflet-control-layers-overlays label) { white-space: nowrap; }
+
 .map-shell :deep(.leaflet-top.leaflet-left) {
   transform: translateY(calc(var(--controls-h, 0px) + 4px));
 }
