@@ -199,7 +199,13 @@ body { font-family: system-ui, -apple-system, sans-serif; color: var(--text); ba
 input, select, textarea { background: var(--input-bg); color: var(--text); }
 input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 
-.app { display: flex; flex-direction: column; height: 100vh; background: var(--bg); }
+/* 100dvh, not 100vh. On a phone `vh` is measured against the viewport with the
+   browser's chrome retracted — its largest state — so a 100vh shell is taller
+   than what you can actually see, the page picks up a scrollbar it should not
+   have, and nudging it hides the top row of the header under the URL bar. `dvh`
+   tracks the chrome as it comes and goes. The vh line stays as a fallback for
+   browsers without dvh. */
+.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: var(--bg); }
 
 .app-header {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
@@ -255,18 +261,18 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 @media (max-width: 860px) {
   .app-header { flex-wrap: wrap; gap: 6px 10px; padding: 6px 12px; }
   .brand h1 { font-size: 1rem; }
-  /* Sits beside the brand rather than claiming a row of its own: at full width
-     the controls pushed the nav onto a third row, and three rows of chrome is a
-     lot of a phone screen to spend before any data.
-
-     `flex: 1 1 0`, not `1 1 auto` — with an auto basis this box is sized by its
-     content, and the nav strip inside it is `width: 100%`, so the two resolve
-     circularly to the nav's full unwrapped width (501px on a 390px screen) and
-     the whole page scrolls sideways. A zero basis breaks the cycle: the box
-     takes the room left over from the brand, and the nav scrolls inside it. */
-  .app-controls { flex: 1 1 0; min-width: 0; flex-wrap: wrap; gap: 6px 8px; justify-content: flex-end; }
+  /* The nav lives inside .app-controls, which sits beside the brand — so the
+     strip was penned into that column, starting a third of the way across and
+     running out of room before the last two links. `display: contents` drops the
+     wrapper out of the layout and lifts its children into the header's own flex
+     line, so the units and theme sit next to the brand and the nav can claim the
+     full width underneath. The wrapper still exists for desktop, where it is a
+     real flex box again. */
+  .app-controls { display: contents; }
+  .brand { margin-right: auto; }
+  .filter-flag, .units, .theme-btn, .auth-box { order: 2; }
   .app-nav {
-    order: 5; width: 100%; min-width: 0; flex-wrap: nowrap; overflow-x: auto;
+    order: 5; flex: 1 0 100%; min-width: 0; flex-wrap: nowrap; overflow-x: auto;
     -webkit-overflow-scrolling: touch; gap: 4px; padding-bottom: 2px;
   }
   .app-nav::-webkit-scrollbar { height: 0; }
