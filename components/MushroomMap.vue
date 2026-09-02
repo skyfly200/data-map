@@ -626,6 +626,71 @@ const shareTitle = computed(() => {
 
 let suppressFit = false
 
+// Overlay cells indexed by their grid key, so the cell under a point is found
+// by arithmetic rather than by scanning thousands of rectangles on every hover.
+const overlayCellIndex = computed(() => {
+  const index = new Map()
+  for (const c of overlayResult.value.cells || []) index.set(c.key, c)
+  return index
+})
+
+function overlayCellAt(lat, lon) {
+  const size = overlayCell.value
+  if (!size || !overlayMode.value) return null
+  return overlayCellIndex.value.get(`${Math.floor(lat / size)}:${Math.floor(lon / size)}`) || null
+}
+
+const esc = (v) => String(v)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/** What the tooltip says about one observation, given how the map is set up. */
+function pointTooltip(feature) {
+  const p = feature?.properties || {}
+  const co = feature?.geometry?.coordinates
+  const rows = []
+
+  const title = p.species || 'Observation'
+  if (p.date) rows.push(['Observed', p.date])
+
+  // The value behind this mark's colour, named by the dimension chosen.
+  const c = coloring.value
+  if (c && typeof c.labelOf === 'function') {
+    const v = c.labelOf(p)
+    // "Cluster · Cluster 1" reads as a stutter, so a value that already carries
+    // its dimension's name stands on its own.
+    if (hasValue(v) && v !== title) {
+      const dim = String(c.title || '')
+      const val = String(v)
+      if (dim && val.toLowerCase().startsWith(dim.toLowerCase())) rows.push(['', val])
+      else rows.push([dim, val])
+    }
+  } else if (colorBy.value && hasValue(p[colorBy.value])) {
+    rows.push([FIELD_LABEL[colorBy.value] || colorBy.value, fmtNum(p[colorBy.value])])
+  }
+  if (sizeBy.value && hasValue(p[sizeBy.value])) {
+    rows.push([`${FIELD_LABEL[sizeBy.value] || sizeBy.value} (size)`, fmtNum(p[sizeBy.value])])
+  }
+
+  // And what the overlay makes of the cell this point falls in.
+  if (overlayMode.value && co) {
+    const cell = overlayCellAt(co[1], co[0])
+    if (cell) {
+      const m = overlayMode.value
+      const label = overlayMeta.value?.label || 'Overlay'
+      const value = m === 'dominant' ? (cell.label || '—')
+        : m === 'season' || m === 'hotspots'
+          ? `${Math.round((cell.n ? cell.inWindow / cell.n : 0) * 100)}% of ${cell.n} finds`
+          : m === 'richness' ? `${cell.species.size} species`
+            : m === 'wind' ? `${Math.round(cell.aspectDeg ?? 0)}°`
+              : `${cell.n} observations`
+      rows.push([label, value])
+    }
+  }
+
+  return `<strong>${esc(title)}</strong>`
+    + rows.map(([k, v]) => `<span class="ot-row">${k ? `<span class="ot-k">${esc(k)}</span>` : ''}${esc(v)}</span>`).join('')
+}
+
 // The drawer shows the coordinates, but a GeoJSON feature keeps them in its
 // geometry rather than its properties — so they are carried across here.
 function selectFeature(feature) {
@@ -648,8 +713,12 @@ function renderPoints(geo) {
   // whichever marker the event came from. Binding them per feature created a
   // Tooltip object and a listener for every observation — ~48k of each — which
   // cost more than drawing the markers did.
-  geoLayer.bindTooltip((lyr) => lyr.feature?.properties?.species || 'Observation',
-                       { direction: 'top', sticky: true })
+  // Hovering a point says what it is AND what the map is currently saying about
+  // it: the value behind its colour and size, and what the overlay reports for
+  // the cell it sits in. Without that, the encodings can only be read by eye
+  // against a legend, and the overlay could not be read at a point at all.
+  geoLayer.bindTooltip((lyr) => pointTooltip(lyr.feature),
+                       { direction: 'top', sticky: true, className: 'obs-tip' })
   geoLayer.on('click', (e) => {
     const feature = e.layer?.feature
     if (!feature) return
@@ -988,6 +1057,17 @@ onBeforeUnmount(() => {
   border-top: 1px solid #e6e6e6; padding-top: 5px;
 }
 .legend-n { color: #777; font-size: 11px; }
+
+/* :deep — Leaflet builds the tooltip outside this component's tree. */
+.map-shell :deep(.obs-tip) {
+  max-width: 260px; padding: 7px 9px; font: 12px/1.45 system-ui, sans-serif;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  box-shadow: 0 2px 10px var(--shadow);
+}
+.map-shell :deep(.obs-tip strong) { display: block; margin-bottom: 3px; font-style: italic; }
+.map-shell :deep(.obs-tip .ot-row) { display: block; white-space: nowrap; }
+.map-shell :deep(.obs-tip .ot-k) { color: var(--muted); margin-right: 6px; }
+.map-shell :deep(.obs-tip::before) { border-top-color: var(--border); }
 .tile-note { max-width: 260px; }
 .tile-warn { max-width: 260px; border-color: #e0b4b4; background: rgba(255, 244, 244, 0.97); }
 .tile-warn .legend-title { color: #b00020; }

@@ -33,12 +33,12 @@
         </nav>
         <ClientOnly>
           <div class="auth-box" v-if="configured">
-            <template v-if="isAuthed">
-              <SyncStatus />
-              <span class="avatar" :title="user?.email || ''">{{ initial }}</span>
-              <span class="who" :title="user?.email || ''">{{ shortEmail }}</span>
-              <button class="auth-btn" @click="signOut">Sign out</button>
-            </template>
+            <!-- Sync state and sign-out used to sit in the header itself, which
+                 spent a third of a phone's width on two things you touch once a
+                 session. They live under the name now, with the sync dot still
+                 on the button so a failure is visible without opening it. -->
+            <AccountMenu v-if="isAuthed" :user="user" :initial="initial"
+                         :short-email="shortEmail" @sign-out="signOut" />
             <NuxtLink v-else to="/login" class="auth-btn as-link">Sign in</NuxtLink>
           </div>
         </ClientOnly>

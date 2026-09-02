@@ -330,8 +330,8 @@ export const OPTION_DOCS = [
     detail: [
       'The controls below the type change with it, because a scatter plot needs an X and a Y while a donut needs a grouping and a measure. Switching type keeps whatever fields still apply.',
     ],
-    also: ['chart-scatter', 'chart-bar', 'chart-line', 'chart-box', 'chart-histogram',
-      'chart-heatmap', 'chart-radar', 'chart-donut'],
+    also: ['chart-scatter', 'chart-bar', 'chart-stacked', 'chart-line', 'chart-box',
+      'chart-histogram', 'chart-heatmap', 'chart-radar', 'chart-donut'],
   },
   {
     id: 'chart-scatter',
@@ -353,6 +353,39 @@ export const OPTION_DOCS = [
       'The workhorse: how many records per species, or the mean elevation per land cover.',
     ],
     also: ['chart-group-by', 'chart-measure', 'chart-horizontal', 'chart-sort'],
+  },
+  {
+    id: 'chart-stacked',
+    group: 'Charts',
+    title: 'Stacked bar',
+    summary: 'One bar per category, split into segments by a second category.',
+    detail: [
+      'The chart for composition: which species make up each land cover, how each year\'s records break down by cluster. A plain bar gives one number per group and a heatmap gives the cells without the totals; this gives both at once.',
+      'Both dimensions are capped — 20 groups and 8 segments — because 900 species stacked is a smear rather than a chart. Whatever falls past the cap is collected into "Other" rather than dropped, so each bar still adds up to the group\'s real total.',
+    ],
+    caveat: 'Only the bottom segment shares a baseline, so segments further up are genuinely hard to compare between bars — the eye has to judge lengths that start in different places. Use it to read composition within a bar; switch to a grouped comparison if you need to compare one segment across bars.',
+    also: ['chart-normalise', 'chart-stack-field', 'chart-bar', 'chart-heatmap'],
+  },
+  {
+    id: 'chart-stack-field',
+    group: 'Charts',
+    title: 'Split by',
+    summary: 'The second category each bar is divided into.',
+    detail: [
+      'Pick the one with fewer values: it becomes the segments, and eight is the readable limit. The many-valued field belongs on "Group by", where each value gets its own bar.',
+    ],
+    also: ['chart-stacked'],
+  },
+  {
+    id: 'chart-normalise',
+    group: 'Charts',
+    title: '100%',
+    summary: 'Stretch every bar to full length, comparing composition instead of size.',
+    detail: [
+      'A stacked bar answers two different questions and cannot answer both at once. Left alone, bar length is the total, so a big group looks big. Normalised, every bar is the same length and only the proportions differ — which is what you want when asking whether the *mix* changes between groups.',
+    ],
+    caveat: 'Normalising hides sample size completely: a bar built from 6 records looks exactly as solid as one built from 6,000. The totals are still on the tooltips; read them before trusting a difference in proportion.',
+    also: ['chart-stacked', 'filter-min-obs'],
   },
   {
     id: 'chart-line',
@@ -400,11 +433,12 @@ export const OPTION_DOCS = [
     id: 'chart-radar',
     group: 'Charts',
     title: 'Radar',
-    summary: 'Values around a circle, for comparing a category across several measures.',
+    summary: 'Values around a circle, one spoke per category.',
     detail: [
-      'Readable for a handful of categories and unreadable beyond that. Bar charts compare lengths more accurately; radar is for shape at a glance.',
+      'Readable for a handful of categories and unreadable beyond that, so it is capped at twelve spokes. Bar charts compare lengths more accurately; radar is for the shape of a profile at a glance.',
+      'Each spoke is labelled and the value is printed at its vertex, because the vertices are the data — the outline between them is interpolation, and the area inside is not a quantity at all.',
     ],
-    caveat: 'The area enclosed grows with the square of the values and changes with the order of the axes, so it exaggerates. Read the vertices, not the area.',
+    caveat: 'The area enclosed grows with the square of the values and changes with the order of the spokes, so it exaggerates differences and can be reshaped without changing a single number. Read the vertices, not the area.',
   },
   {
     id: 'chart-donut',
@@ -531,7 +565,10 @@ export const OPTION_DOCS = [
     group: 'Charts',
     title: 'Today line',
     summary: 'Marks the current day of the year on a day-of-year axis.',
-    detail: ['A reference line for reading a seasonal chart against the date now.'],
+    detail: [
+      'A reference line for reading a seasonal chart against the date now — "is this species in season" answered by where the line falls in its distribution.',
+      'Offered on scatter, line and area charts, wherever the x axis carries day of year.',
+    ],
   },
   {
     id: 'chart-sort',

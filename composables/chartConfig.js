@@ -41,6 +41,8 @@ const FIELDS = [
   ['horizontal', 'h', false, 'bool'],
   ['showToday', 'td', false, 'bool'],
   ['sortBy', 'so', 'value-desc', 'str'],
+  ['stackField', 'st', '', 'str'],
+  ['normalise', 'nm', false, 'bool'],
 ]
 
 /** A fresh configuration with every field at its default. */
@@ -50,7 +52,8 @@ export function defaultChartConfig() {
 
 /** The chart types the builder can render, for validating a decoded link. */
 export const CHART_TYPES = [
-  'scatter', 'bar', 'line', 'area', 'box', 'histogram', 'heatmap', 'radar', 'donut',
+  'scatter', 'bar', 'stacked', 'line', 'area', 'box', 'histogram', 'heatmap',
+  'radar', 'donut',
 ]
 
 /**
@@ -124,6 +127,9 @@ export function describeChart(config = {}, labelFor = (k) => k) {
   if (t === 'histogram') return `Distribution of ${labelFor(config.valueField)}`
   if (t === 'box') return `${labelFor(config.valueField)} by ${labelFor(config.groupField)}`
   if (t === 'heatmap') return `${labelFor(config.rowField)} × ${labelFor(config.colField)}`
+  if (t === 'stacked') {
+    return `${labelFor(config.groupField)} by ${labelFor(config.stackField || config.colorField)}`
+  }
   const measure = config.measure && config.measure !== 'count'
     ? `Mean ${labelFor(config.measure)}` : 'Count'
   return `${measure} by ${labelFor(config.groupField)}`

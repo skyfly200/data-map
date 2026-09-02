@@ -10,9 +10,13 @@
   <HeatmapChart v-else-if="config.type === 'heatmap'" :title="title" :rows="heatmap.rows" :cols="heatmap.cols"
     :matrix="heatmap.matrix" :format="heatFmt" />
   <LineChart v-else-if="config.type === 'line' || config.type === 'area'" :title="title" :series="lineChartSeries"
-    :xLabel="labelOf(config.xField)" :yLabel="labelOf(config.yField)" :xFormat="fmtOf(config.xField)" :yFormat="fmtOf(config.yField)" />
+    :xLabel="labelOf(config.xField)" :yLabel="labelOf(config.yField)" :xFormat="fmtOf(config.xField)" :yFormat="fmtOf(config.yField)"
+    :todayX="todayX" :todayLabel="todayLabel" />
   <PieChart v-else-if="config.type === 'donut'" :title="title" :data="donutData" :format="(v) => String(Math.round(v))" />
-  <BarChart v-else-if="config.type === 'radar'" :title="title" :data="radarData" :format="(v) => String(v)" :horizontal="false" />
+  <RadarChart v-else-if="config.type === 'radar'" :title="title" :data="radarData" :format="radarFmt" />
+  <StackedBarChart v-else-if="config.type === 'stacked'" :title="title" :groups="stackedData.groups"
+    :keys="stackedData.keys" :colors="stackedData.colors" :horizontal="!!config.horizontal"
+    :format="barFmt" :normalise="!!config.normalise" />
   <p v-if="isEmpty" class="cr-empty">No data for this combination.</p>
 </template>
 
@@ -183,6 +187,70 @@ const barData = computed(() => {
   return sortEntries(top, c.value.sortBy)
 })
 const barFmt = computed(() => (c.value.measure === 'count' ? (v) => String(v) : (v) => Number(v).toFixed(1)))
+const radarFmt = computed(() => barFmt.value)
+
+// Stacked bars: one bar per group, split by a second category. This is the
+// chart for "what is the composition of each of these" — which species make up
+// each land cover, how each year's records break down by cluster — a question
+// neither a plain bar (one number per group) nor a heatmap (no totals) answers.
+const stackedData = computed(() => {
+  const splitKey = c.value.stackField || c.value.colorField
+  if (!splitKey) return { groups: [], keys: [], colors: {} }
+
+  const totals = new Map()          // group → total, for ordering
+  const cells = new Map()           // group → (split value → measure)
+  const splitTotals = new Map()     // split value → total, for ordering the stack
+  for (const [label, rs] of groupBy(c.value.groupField)) {
+    const bySplit = new Map()
+    for (const r of rs) {
+      const v = r[splitKey]
+      if (!hasValue(v)) continue
+      const k = String(v)
+      if (c.value.measure === 'count') {
+        bySplit.set(k, (bySplit.get(k) || 0) + 1)
+      } else {
+        const n = numVal(r, c.value.measure)
+        if (n === null) continue
+        const cur = bySplit.get(k) || { sum: 0, n: 0 }
+        cur.sum += n; cur.n += 1
+        bySplit.set(k, cur)
+      }
+    }
+    if (!bySplit.size) continue
+    const row = {}
+    let total = 0
+    for (const [k, v] of bySplit) {
+      // A mean per segment, so a stacked mean is the mean of that slice rather
+      // than a sum masquerading as one.
+      const value = c.value.measure === 'count' ? v : (v.n ? v.sum / v.n : 0)
+      row[k] = value
+      total += value
+      splitTotals.set(k, (splitTotals.get(k) || 0) + value)
+    }
+    cells.set(label, row)
+    totals.set(label, total)
+  }
+
+  // Cap both dimensions: 900 species stacked is a smear, not a chart.
+  const GROUP_CAP = 20
+  const SPLIT_CAP = 8
+  const groupNames = [...totals.entries()].sort((a, b) => b[1] - a[1]).slice(0, GROUP_CAP).map(([g]) => g)
+  const keys = [...splitTotals.entries()].sort((a, b) => b[1] - a[1]).slice(0, SPLIT_CAP).map(([k]) => k)
+  const colors = Object.fromEntries(keys.map((k) => [k, categoryColor(splitKey, k)]))
+
+  const groups = groupNames.map((label) => ({
+    label,
+    short: label,
+    // Anything past the cap is collected rather than dropped, so the bar still
+    // adds up to the group's real total.
+    values: keys.map((k) => cells.get(label)?.[k] || 0),
+    other: Object.entries(cells.get(label) || {})
+      .filter(([k]) => !keys.includes(k))
+      .reduce((sum, [, v]) => sum + v, 0),
+    total: totals.get(label) || 0,
+  }))
+  return { groups: sortEntries(groups, c.value.sortBy, (g) => g.total), keys, colors }
+})
 
 // Line/area series: mean of Y across bins of the ordered X axis, so a trend
 // (e.g. mean elevation over day-of-year) reads as a connected curve. With a

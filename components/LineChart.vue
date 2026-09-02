@@ -16,6 +16,13 @@
           <circle v-for="(pt, i) in s.points" :key="i" :cx="pt.cx" :cy="pt.cy" r="3" class="dot" :style="{ fill: s.color, color: s.color }" />
         </g>
 
+        <!-- Today, when the x axis is a day of the year. Drawn after the series
+             so it reads as a reference against them, not as another one. -->
+        <g v-if="todayX !== null && Number.isFinite(todayX) && todayX >= xDom[0] && todayX <= xDom[1]">
+          <line :x1="sx(todayX)" :y1="padT" :x2="sx(todayX)" :y2="H - padB" class="today-line" />
+          <text :x="sx(todayX) + 4" :y="padT + 12" class="today-label">{{ todayLabel }}</text>
+        </g>
+
         <text :x="(padL + W - padR) / 2" :y="H - 3" class="axis-label">{{ xLabel }}</text>
         <text :x="-(padT + H - padB) / 2" :y="12" transform="rotate(-90)" class="axis-label">{{ yLabel }}</text>
       </svg>
@@ -40,6 +47,9 @@ const props = defineProps({
   series: { type: Array, default: () => [] },
   xLabel: { type: String, default: 'x' },
   yLabel: { type: String, default: 'y' },
+  // Day-of-year of today, when that is what the x axis carries.
+  todayX: { type: Number, default: null },
+  todayLabel: { type: String, default: 'Today' },
   xFormat: {
     type: Function,
     default: (v) => {
@@ -120,6 +130,8 @@ svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .tick { fill: var(--muted); font-size: 10px; }
 .tick-y { text-anchor: end; }
 .tick-x { text-anchor: middle; }
+.today-line { stroke: var(--danger); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.today-label { fill: var(--danger); font-size: 10px; font-weight: 600; }
 .axis-label { fill: var(--muted); font-size: 11px; text-anchor: middle; }
 .line { fill: none; stroke-width: 2; filter: var(--chart-glow); }
 .dot { stroke: var(--surface); stroke-width: 1; filter: var(--chart-glow); }
