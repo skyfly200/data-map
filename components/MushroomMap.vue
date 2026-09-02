@@ -176,7 +176,7 @@ const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const live = useLiveClusters()
 const appearance = useAppearance()
 const share = useShareState()
-const { pointRadius, pointOpacity, activeColors, colorOverrides } = appearance
+const { pointRadius, pointOpacity, pointOutline, activeColors, colorOverrides } = appearance
 
 const mapEl = ref(null)
 const loaded = ref(false)
@@ -460,22 +460,35 @@ function nextImage() {
   currentImageIndex.value = (currentImageIndex.value + 1) % images.value.length
 }
 
-// Re-style markers when the colouring or sizing changes.
-watch([coloring, sizeScale], ([c]) => {
-  if (geoLayer) geoLayer.eachLayer((l) => {
-    l.setStyle({ fillColor: c.colorFn(l.feature.properties), fillOpacity: pointOpacity.value })
-    l.setRadius(radiusFor(l.feature.properties))
-  })
-})
+/**
+ * How one observation is drawn. Every place that styles a marker goes through
+ * here, so creation and re-styling cannot disagree.
+ *
+ * The outline follows the opacity slider rather than staying at full strength:
+ * fading the dots while their rings stayed solid turned a dense area into a grey
+ * mesh — the opposite of what turning the dots down is for.
+ */
+function markerStyle(props) {
+  return {
+    radius: radiusFor(props),
+    fillColor: coloring.value.colorFn(props),
+    fillOpacity: pointOpacity.value,
+    stroke: pointOutline.value,
+    weight: pointOutline.value ? 1 : 0,
+    color: '#222',
+    opacity: pointOutline.value ? pointOpacity.value : 0,
+  }
+}
 
-// Palette, per-value overrides and point styling all restyle the existing
-// layer in place — no need to rebuild it, which would refit the view.
-watch([activeColors, colorOverrides, pointRadius, pointOpacity], () => {
-  const c = coloring.value
+// Colouring, sizing, palette, per-value overrides and point styling all restyle
+// the existing layer in place — no need to rebuild it, which would refit the
+// view.
+watch([coloring, sizeScale, activeColors, colorOverrides, pointRadius, pointOpacity, pointOutline], () => {
   if (!geoLayer) return
   geoLayer.eachLayer((l) => {
-    l.setStyle({ fillColor: c.colorFn(l.feature.properties), fillOpacity: pointOpacity.value })
-    l.setRadius(radiusFor(l.feature.properties))
+    const style = markerStyle(l.feature.properties)
+    l.setStyle(style)
+    l.setRadius(style.radius)
   })
 })
 
@@ -563,11 +576,7 @@ function renderPoints(geo) {
   if (!suppressFit) selected.value = null
 
   geoLayer = L.geoJSON(geo, {
-    pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
-      radius: radiusFor(feature.properties), weight: 1, color: '#222',
-      fillColor: coloring.value.colorFn(feature.properties),
-      fillOpacity: pointOpacity.value,
-    }),
+    pointToLayer: (feature, latlng) => L.circleMarker(latlng, markerStyle(feature.properties)),
   }).addTo(map)
 
   // One tooltip and one click handler for the whole layer, resolved against

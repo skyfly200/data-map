@@ -39,6 +39,13 @@
         <label for="ap-opacity">Opacity <span class="val">{{ Math.round(pointOpacity * 100) }}%</span></label>
         <input id="ap-opacity" v-model.number="pointOpacity" type="range" min="0.1" max="1" step="0.05" @change="persist" />
       </div>
+      <div class="ap-row">
+        <label class="ap-check" for="ap-outline"
+               title="The dark ring around each dot. It separates overlapping finds, but over a dense patch the rings merge into a grey mass.">
+          <input id="ap-outline" v-model="pointOutline" type="checkbox" @change="persist" />
+          Outline map dots
+        </label>
+      </div>
 
       <!-- Per-value overrides for whatever categories are on screen -->
       <template v-if="field && values.length">
@@ -93,7 +100,7 @@ const VALUE_CAP = 24
 const open = ref(false)
 const {
   PALETTES, SHAPE_SETS, ALL_SHAPES,
-  paletteKey, shapeSetKey, pointRadius, pointOpacity,
+  paletteKey, shapeSetKey, pointRadius, pointOpacity, pointOutline,
   activeColors, activeShapes, shapeOverrides, overrideCount,
   persist, reset, setColor, clearColor, setShape, clearShape, hasOverride,
 } = useAppearance()
@@ -148,6 +155,8 @@ function shapePath(shape, cx, cy, r) {
 .ap-row label { color: var(--muted); font-weight: 600; }
 .ap-row .val { color: var(--text); font-weight: 400; }
 .ap-row select, .ap-row input[type="range"] { width: 100%; }
+.ap-row .ap-check { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+.ap-row .ap-check input { width: auto; margin: 0; accent-color: var(--accent); }
 .ap-row select {
   background: var(--input-bg); color: var(--text);
   border: 1px solid var(--border); border-radius: 5px; padding: 4px 6px;

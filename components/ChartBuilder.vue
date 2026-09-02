@@ -313,6 +313,18 @@ function stopEditing() {
    on screen without the page scrolling. */
 .stage { flex: 1 1 auto; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
 .panel { flex: 0 0 auto; }
+/* The card body is a plain block in the gallery, where every chart is clipped to
+   a fixed card height. Here the chart is the whole point, so the body has to be
+   a flex column for the figure's `flex: 1 1 auto` to mean anything. Without it
+   the figure keeps its content height — the title and nothing else — and any
+   chart sized as a percentage of its parent (scatter, line, area) resolves to
+   zero and renders invisibly. Bar and friends only escaped that by setting a
+   pixel height of their own. */
+.stage :deep(.card-body) { display: flex; flex-direction: column; }
+/* One chart type has a height the data decides: a box plot grows a row per
+   category, so 40 species do not fit whatever the card is. Its own chart area
+   scrolls, which needs a definite height to scroll within — which the flex
+   column above now gives it. */
 .stage :deep(figure) { flex: 1 1 auto; min-height: 0; min-width: 0; margin: 0; display: flex; flex-direction: column; }
 .stage :deep(figure > div) { flex: 1 1 auto; min-height: 0; }
 .stage :deep(svg) { width: 100%; height: 100%; max-height: 100%; display: block; }
