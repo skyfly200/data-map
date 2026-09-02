@@ -1,9 +1,11 @@
 <template>
   <div ref="root" class="settings">
     <button class="set-btn" :class="{ on: open }"
-            :title="tip('Map display and data options', ',')"
+            :title="tip('Map display and data options', ',')" aria-label="Map settings"
             :aria-expanded="String(open)" @click="open = !open">
-      <span class="gear" aria-hidden="true">⚙</span> Settings
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1l-.4-2.6h-4l-.4 2.6c-.6.2-1.2.6-1.7 1l-2.4-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.8 1.7 1l.4 2.6h4l.4-2.6c.6-.2 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z" />
+      </svg>
     </button>
 
     <div v-if="open" class="set-panel">
@@ -41,24 +43,6 @@
         </p>
       </div>
 
-      <div class="set-group">
-        <span class="set-label">Actions</span>
-        <button class="set-action" :class="{ busy: locating }" :disabled="locating"
-                :title="locateError || tip('Centre the map on where you are', 'l')"
-                @click="$emit('locate')">
-          <span class="dot-icon"></span>{{ locating ? 'Locating…' : 'My location' }}
-          <HelpLink option="map-locate" />
-        </button>
-        <p v-if="locateError" class="set-err">{{ locateError }}</p>
-
-        <button class="set-action" :disabled="saving"
-                :title="saveError || tip('Save the map, basemap and all, as a PNG', 'e')"
-                @click="$emit('save')">
-          ⤓ {{ saving ? 'Saving…' : 'Save image' }}
-          <HelpLink option="map-save-image" keys="e" />
-        </button>
-        <p v-if="saveError" class="set-err">{{ saveError }}</p>
-      </div>
     </div>
   </div>
 </template>
@@ -67,18 +51,15 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useObservations } from '~/composables/useObservations'
 
-// The options that were eating the control bar. None of them are things you
-// reach for every minute — the encodings and the overlay are — so they belong
-// behind one button rather than spread across the top of the map.
+// The options that were eating the control bar: things you SET, not things you
+// do. The two actions that briefly lived here — my location, save image — moved
+// back out as icons, because a button you press to make something happen does
+// not belong behind a menu of preferences.
 defineProps({
   // Whether the observation points are drawn. v-model, because the map owns it.
   modelValue: { type: Boolean, default: true },
-  locating: { type: Boolean, default: false },
-  locateError: { type: String, default: '' },
-  saving: { type: Boolean, default: false },
-  saveError: { type: String, default: '' },
 })
-defineEmits(['update:modelValue', 'locate', 'save'])
+defineEmits(['update:modelValue'])
 
 const { data, showFiltered } = useObservations()
 
@@ -114,11 +95,11 @@ defineExpose({ close: () => { open.value = false } })
 /* Matches the other on-map controls rather than the in-page panels. */
 .set-btn {
   background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
-  padding: 7px 10px; font: 600 13px system-ui, sans-serif; color: #333; cursor: pointer;
-  display: inline-flex; gap: 6px; align-items: center; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  width: 34px; height: 34px; padding: 0; color: #333; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 .set-btn:hover, .set-btn.on { background: #fff; }
-.gear { font-size: 14px; line-height: 1; }
 
 .set-panel {
   position: absolute; top: calc(100% + 6px); left: 0; z-index: 900; width: 280px;
@@ -149,18 +130,6 @@ defineExpose({ close: () => { open.value = false } })
 .set-text { flex: 1 1 auto; min-width: 0; }
 .set-note { margin: 5px 0 0 22px; color: var(--muted); font-size: 0.74rem; line-height: 1.45; }
 
-.set-action {
-  display: flex; align-items: center; gap: 7px; width: 100%; margin-bottom: 6px;
-  border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
-  border-radius: 6px; padding: 6px 10px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
-  text-align: left;
-}
-.set-action:hover:not(:disabled) { background: var(--surface-3); }
-.set-action:disabled { opacity: 0.7; cursor: progress; }
-.set-action .dot-icon {
-  width: 11px; height: 11px; border-radius: 50%; background: #2a78d6; border: 2px solid #fff;
-  box-shadow: 0 0 0 1px #2a78d6; flex: 0 0 auto;
-}
 .set-err { margin: 0 0 8px; color: var(--danger); font-size: 0.74rem; line-height: 1.4; }
 
 @media (max-width: 640px) {

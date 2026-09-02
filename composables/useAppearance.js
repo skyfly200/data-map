@@ -14,36 +14,68 @@
 
 import { computed, ref } from 'vue'
 
+// Twelve colours each, not eight. The map's legend shows up to twelve
+// categories, so an eight-colour palette guaranteed repeated swatches in a key
+// whose whole job is telling categories apart — no hashing scheme can fix a
+// palette smaller than the legend.
 export const PALETTES = [
   {
     key: 'default', label: 'Default',
     colors: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100',
-             '#e87ba4', '#008300', '#4a3aa7', '#e34948'],
+             '#e87ba4', '#008300', '#4a3aa7', '#e34948',
+             '#00a3c4', '#b5651d', '#7d3c98', '#5d8a2f'],
   },
   {
     // Okabe–Ito: designed to stay distinguishable with the common forms of
     // colour-vision deficiency. Worth having, given the app leans on colour to
     // carry species and cluster identity.
+    //
+    // Their published set ends in black, which belongs on a white page and not
+    // on this map: on the dark theme it is invisible, and on any basemap it
+    // reads as a hole rather than a category. It is replaced here, and the set
+    // extended with mixes of the originals that keep their separation.
     key: 'okabe', label: 'Colour-blind safe',
     colors: ['#0072b2', '#e69f00', '#009e73', '#cc79a7',
-             '#56b4e9', '#d55e00', '#f0e442', '#000000'],
+             '#56b4e9', '#d55e00', '#f0e442', '#8c5a9e',
+             '#3f7a6d', '#b8860b', '#7ba3d0', '#a34f2a'],
   },
   {
     key: 'vivid', label: 'Vivid',
     colors: ['#e6194b', '#3cb44b', '#4363d8', '#f58231',
-             '#911eb4', '#42d4f4', '#f032e6', '#bfef45'],
+             '#911eb4', '#42d4f4', '#f032e6', '#bfef45',
+             '#fabed4', '#469990', '#dcbeff', '#9a6324'],
   },
   {
     key: 'earth', label: 'Earth',
     colors: ['#8c6d31', '#637939', '#8c564b', '#bd9e39',
-             '#7b4173', '#31696d', '#a55194', '#556b2f'],
+             '#7b4173', '#31696d', '#a55194', '#556b2f',
+             '#a67c52', '#6b8e6b', '#9c6644', '#4f6d7a'],
   },
   {
     key: 'pastel', label: 'Pastel',
     colors: ['#8ecae6', '#ffb703', '#90be6d', '#f4978e',
-             '#cdb4db', '#b5e2fa', '#ffc8dd', '#a2d2ff'],
+             '#cdb4db', '#b5e2fa', '#ffc8dd', '#a2d2ff',
+             '#bde0fe', '#ffd6a5', '#caffbf', '#e4c1f9'],
   },
 ]
+
+// Shades of each base colour, so the number of distinguishable categories is a
+// multiple of the palette rather than its length. A dataset has hundreds of
+// species and no palette has hundreds of colours; the alternative to shading is
+// repeating a colour every eight species.
+//
+// Neither end reaches white or black: a category must never be invisible, which
+// is the failure the black in Okabe–Ito was causing.
+const SHADES = [0, 0.3, -0.28]
+
+/** Mix a hex colour toward white (t > 0) or black (t < 0). */
+export function shade(hex, t) {
+  if (!/^#[0-9a-f]{6}$/i.test(String(hex)) || !t) return hex
+  const target = t > 0 ? 255 : 0
+  const k = Math.min(1, Math.abs(t))
+  const parts = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
+  return `#${parts.map((v) => Math.round(v + (target - v) * k).toString(16).padStart(2, '0')).join('')}`
+}
 
 export const ALL_SHAPES = ['circle', 'square', 'triangle', 'diamond', 'cross', 'wye']
 
@@ -123,10 +155,17 @@ export function stableColor(value) {
   let h = 0
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
   const colors = activeColors.value
+  // Base colour and shade both come from the hash, giving palette × shades
+  // distinct colours instead of palette alone.
+  //
   // The seed shifts every assignment together. Still deterministic: the same
   // seed gives the same colours on the map, in every chart and for anyone
   // opening a shared link, so shuffling is a choice rather than a coin toss.
-  return colors[(h + colorSeed.value) % colors.length]
+  const span = colors.length * SHADES.length
+  const i = (h + colorSeed.value) % span
+  // Walk the bases first so the commonest values land on undiluted colours
+  // before any shading starts.
+  return shade(colors[i % colors.length], SHADES[Math.floor(i / colors.length)])
 }
 
 // Colour for a (field, value) pair. An explicit override wins; clusters keep

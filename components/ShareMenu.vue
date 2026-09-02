@@ -1,12 +1,12 @@
 <template>
   <div class="share">
-    <button class="sh-btn" :class="{ on: open, compact }"
+    <button class="sh-btn" :class="{ on: open, compact, 'icon-only': iconOnly }"
             :title="compact ? `Share “${title}”` : 'Share this view'"
-            :aria-label="compact ? `Share “${title}”` : null" @click="toggle">
+            :aria-label="compact || iconOnly ? `Share “${title}”` : null" @click="toggle">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
         <path fill="currentColor" d="M18 16.1a3 3 0 0 0-2 .8l-7.1-4.2a3 3 0 0 0 0-1.4L16 7.1a3 3 0 1 0-1-2.1l-7.1 4.2a3 3 0 1 0 0 5.6L15 19a3 3 0 1 0 3-2.9z" />
       </svg>
-      <template v-if="!compact">Share</template>
+      <template v-if="!compact && !iconOnly">Share</template>
     </button>
 
     <div v-if="open" class="sh-panel" :class="{ right: compact }">
@@ -66,6 +66,8 @@ const props = defineProps({
   path: { type: String, default: '' },
   // Icon-only, for sitting in a chart card's toolbar rather than a control bar.
   compact: { type: Boolean, default: false },
+  // Icon-only at full button size, for the map's control bar.
+  iconOnly: { type: Boolean, default: false },
   note: { type: String, default: 'This link reproduces what you are looking at — filters, colouring and overlay included.' },
 })
 
@@ -155,6 +157,11 @@ async function copy(value, what) {
   border-radius: 6px; padding: 5px 10px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
 }
 .sh-btn:hover, .sh-btn.on { background: var(--surface-2); }
+/* Square, for a control bar where every label costs a row. */
+.sh-btn.icon-only {
+  width: 34px; height: 34px; padding: 0; justify-content: center;
+}
+
 /* Sits in a chart card's toolbar, matching the buttons beside it. */
 .sh-btn.compact {
   width: 22px; height: 22px; padding: 0; border-radius: 5px;

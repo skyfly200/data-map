@@ -26,17 +26,30 @@
         </select>
       </div>
       <LiveClusterControls />
-      <AppearanceControls :field="colorBy" :field-label="coloring.title"
+      <AppearanceControls icon-only :field="colorBy" :field-label="coloring.title"
                           :values="legendValues" />
-      <ShareMenu :map-view="mapView" :color-by="colorBy" :size-by="sizeBy"
+      <ShareMenu icon-only :map-view="mapView" :color-by="colorBy" :size-by="sizeBy"
                  :title="shareTitle" />
       <!-- Everything you do not reach for every minute — the points toggle, the
            excluded-rows option and the two actions — lives behind one button.
            Spread across the bar they covered the map they were controlling. -->
-      <MapSettings v-model="showPoints"
-                   :locating="locating" :locate-error="locateError"
-                   :saving="saving" :save-error="saveError"
-                   @locate="locateMe" @save="saveMap" />
+      <!-- Actions are one tap each rather than two: they were folded into
+           Settings to save bar space, but a button you press to DO something
+           does not belong behind a menu of things you set. As icons they cost
+           almost nothing. -->
+      <button class="icon-btn" :class="{ busy: locating }"
+              :title="locateError || tip('Centre the map on where you are', 'l')"
+              aria-label="My location" @click="locateMe">
+        <span class="dot-icon"></span>
+      </button>
+      <button class="icon-btn" :disabled="saving"
+              :title="saveError || tip('Save the map, basemap and all, as a PNG', 'e')"
+              aria-label="Save image" @click="saveMap">
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+          <path fill="currentColor" d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z" />
+        </svg>
+      </button>
+      <MapSettings v-model="showPoints" />
 
       <!-- Aggregate overlay: grid summaries drawn under the points -->
       <div class="colorby">
@@ -879,7 +892,7 @@ onMounted(async () => {
         'Terrain (OpenTopoMap)': topo,
         'Satellite (Esri)': sat,
       },
-      tileOverlays, { position: 'topright', collapsed: true },
+      tileOverlays, { position: 'topleft', collapsed: true },
     ).addTo(map)
 
     map.on('moveend zoomend', syncMapView)
@@ -1038,7 +1051,7 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
   /* The column spans the map so the two ends are reachable; only the panels
      themselves should catch a click. */
-  pointer-events: none; max-width: 46vw;
+  pointer-events: none; max-width: 46vw; min-height: 0;
 }
 .legends > * { pointer-events: auto; }
 
@@ -1046,7 +1059,10 @@ onBeforeUnmount(() => {
   position: static; z-index: 500;
   background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
   padding: 10px 12px; font: 13px/1.4 system-ui, sans-serif; color: #222; min-width: 120px;
-  max-width: 100%; max-height: 44vh; overflow-y: auto; flex: 0 1 auto;
+  max-width: 100%; max-height: 44vh; overflow-y: auto; overscroll-behavior: contain;
+  /* min-height: 0 — a flex item will not shrink below its content without it,
+     so the panel grew past its max-height instead of scrolling. */
+  flex: 0 1 auto; min-height: 0;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 .legend-title { font-weight: 600; margin-bottom: 6px; position: sticky; top: 0; }
@@ -1081,6 +1097,21 @@ onBeforeUnmount(() => {
 /* Collapsed, it is one chip the width of its own summary. Expanded, it floats
    over a solid panel rather than pushing the bar taller — which also keeps the
    bar's measured height, and so Leaflet's offset, stable. */
+/* Square icon buttons, matching the other on-map controls' chrome. */
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
+  color: #333; cursor: pointer; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); padding: 0;
+}
+.icon-btn:hover:not(:disabled) { background: #fff; }
+.icon-btn:disabled { opacity: 0.6; cursor: progress; }
+.icon-btn.busy { opacity: 0.7; cursor: progress; }
+.icon-btn .dot-icon {
+  width: 11px; height: 11px; border-radius: 50%; background: #2a78d6;
+  border: 2px solid #fff; box-shadow: 0 0 0 1px #2a78d6;
+}
+
 .season { position: relative; }
 .season-toggle {
   display: inline-flex; align-items: center; gap: 7px;
@@ -1146,7 +1177,7 @@ onBeforeUnmount(() => {
   }
   .overlay-legend { margin-bottom: 0; }
   .legend {
-    max-height: 22vh; padding: 8px 10px; font-size: 12px;
+    max-height: 22vh; min-height: 0; padding: 8px 10px; font-size: 12px;
   }
 }
 
@@ -1161,20 +1192,14 @@ onBeforeUnmount(() => {
    nowhere to step to — the control bar already owns the left — so the drawer
    simply covers it until it is closed. */
 /* Below the control bar, whose height varies with how many rows it wraps into
-   and whether the season sliders are open. Without this the basemap button sits
-   on top of the "Size by" dropdown on a phone. */
-@media (max-width: 860px) {
-  .map-shell :deep(.leaflet-top.leaflet-right) {
-    transform: translateY(calc(var(--controls-h, 0px) + 4px));
-  }
+   and whether the season sliders are open. The bar occupies the top of the map
+   at every width, and the layers control now shares its corner, so this is no
+   longer only a phone problem. */
+.map-shell :deep(.leaflet-top.leaflet-left) {
+  transform: translateY(calc(var(--controls-h, 0px) + 4px));
 }
 
-@media (min-width: 861px) {
-  .map-shell :deep(.leaflet-top.leaflet-right) { transition: transform 0.18s ease; }
-  .map-shell.drawer-open :deep(.leaflet-top.leaflet-right) {
-    transform: translateX(calc(-1 * var(--drawer-w) - 8px));
-  }
-}
+
 
 .photos { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
 .obs-photo { max-width: 100%; height: auto; border-radius: 4px; }
