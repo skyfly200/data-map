@@ -159,6 +159,15 @@ def _parse_locations_with_radius(env_value: str, default_radius: float) -> list[
     return locations
 
 def parse_plus_codes(env_value: str, default_radius: float) -> list[dict]:
+    """Turn ``INAT_PLUS_CODES`` into bounding-box locations.
+
+    A plus code names a rectangular cell, so we fetch that box directly rather
+    than reusing the circular ``radius`` model — the box is the footprint the
+    code actually describes, and its own length sets the size (a 6-char code is
+    ~14km, an 8-char code ~275m). Each entry is just a full plus code; any extra
+    comma-separated field is ignored (radius does not apply to a box).
+    ``default_radius`` is accepted for signature symmetry but unused.
+    """
     locations = []
     if not env_value:
         return locations
@@ -166,12 +175,14 @@ def parse_plus_codes(env_value: str, default_radius: float) -> list[dict]:
         entry = entry.strip()
         if not entry:
             continue
-        parts = entry.split(",")
+        plus = entry.split(",")[0].strip()
         try:
-            plus = parts[0]
-            lat, lng = olc_utils.decode_olc(plus)
-            rad = float(parts[1]) if len(parts) > 1 else default_radius
-            locations.append({"lat": lat, "lng": lng, "radius": rad})
+            swlat, swlng, nelat, nelng = olc_utils.decode_olc_bounds(plus)
+            locations.append({
+                "swlat": swlat, "swlng": swlng,
+                "nelat": nelat, "nelng": nelng,
+                "label": plus,
+            })
         except Exception as exc:
             print(f"[!] Invalid plus-code entry ignored: {entry} ({exc})")
     return locations
@@ -335,18 +346,29 @@ def classify_location_precision(obscured, geoprivacy, taxon_geoprivacy, public_a
         return 'unknown'
     return 'coarse' if public_accuracy > COARSE_ACCURACY_M else 'precise'
 
-def get_species_observation_total(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0):
+def _geo_query(lat=None, lng=None, radius=None, bounds=None):
+    """iNaturalist geo params: a bounding box when ``bounds`` is given, else the
+    point+radius model. ``bounds`` is (swlat, swlng, nelat, nelng).
+
+    A bounding box is how a plus code's rectangular cell is fetched faithfully —
+    the API's nelat/nelng/swlat/swlng, not a circle around the centroid.
+    """
+    if bounds is not None:
+        swlat, swlng, nelat, nelng = bounds
+        return {'nelat': nelat, 'nelng': nelng, 'swlat': swlat, 'swlng': swlng}
+    return {'lat': lat, 'lng': lng, 'radius': radius}
+
+
+def get_species_observation_total(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, bounds=None):
     try:
         response = get_observations(
             taxon_name=taxon_name,
-            lat=lat,
-            lng=lng,
             quality_grade=quality_grade,
-            radius=radius,
             captive=False,
             geo=True,
             per_page=1,
             page=1,
+            **_geo_query(lat, lng, radius, bounds),
         )
         if not isinstance(response, dict):
             return 0
@@ -368,7 +390,7 @@ def _get_observations_with_retry(max_retries=3, **kwargs):
             time.sleep(1.0 * attempt)
     return None
 
-def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, per_page=200, max_observations=None, progress_callback=None, total_count=None, existing_ids=None):
+def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, bounds=None, per_page=200, max_observations=None, progress_callback=None, total_count=None, existing_ids=None):
     observations = []
     page = 1
     per_page = max(1, int(per_page or resolve_inat_page_size()))
@@ -382,14 +404,12 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
         results = _get_observations_with_retry(
             max_retries=3,
             taxon_name=taxon_name,
-            lat=lat,
-            lng=lng,
             quality_grade=quality_grade,
-            radius=radius,
             captive=False,
             geo=True,
             per_page=per_page,
             page=page,
+            **_geo_query(lat, lng, radius, bounds),
         )
         if not results:
             break
@@ -534,18 +554,28 @@ def main():
 
     frames = []
     for loc in locations:
-        lat = loc['lat']
-        lng = loc['lng']
-        radius = loc['radius']
-        print(f"Fetching iNaturalist data for {', '.join(species_list)} near {lat}, {lng} within {radius}km (per_page={per_page}, max_per_species={max_observations or 'unlimited'}, parallel_workers={parallel_fetches}, refresh_all={refresh_all})...")
-        
-        def fetch_single_species(species_name, target_lat=lat, target_lng=lng, target_radius=radius):
+        # A location is either a bounding box (from a plus code) or the
+        # point+radius model. Build the geo kwargs once and a label for the log.
+        if 'nelat' in loc:
+            target_bounds = (loc['swlat'], loc['swlng'], loc['nelat'], loc['nelng'])
+            where = (f"plus-code box {loc.get('label', '')} "
+                     f"[{loc['swlat']:.4f},{loc['swlng']:.4f} → {loc['nelat']:.4f},{loc['nelng']:.4f}]")
+        else:
+            target_bounds = None
+            where = f"near {loc['lat']}, {loc['lng']} within {loc['radius']}km"
+        print(f"Fetching iNaturalist data for {', '.join(species_list)} {where} "
+              f"(per_page={per_page}, max_per_species={max_observations or 'unlimited'}, "
+              f"parallel_workers={parallel_fetches}, refresh_all={refresh_all})...")
+
+        def fetch_single_species(species_name, target_lat=loc.get('lat'), target_lng=loc.get('lng'),
+                                 target_radius=loc.get('radius'), target_bounds=target_bounds):
             species_total = get_species_observation_total(
                 taxon_name=species_name,
                 quality_grade=quality_grade,
                 lat=target_lat,
                 lng=target_lng,
                 radius=target_radius,
+                bounds=target_bounds,
             )
             if max_observations and species_total > max_observations:
                 species_total = max_observations
@@ -574,6 +604,7 @@ def main():
                 lat=target_lat,
                 lng=target_lng,
                 radius=target_radius,
+                bounds=target_bounds,
                 per_page=per_page,
                 max_observations=max_observations or None,
                 progress_callback=progress_callback,
