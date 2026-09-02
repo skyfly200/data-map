@@ -18,9 +18,11 @@ from iNat import (
     get_elevation,
     get_parallel_fetch_workers,
     parse_species_list,
+    parse_plus_codes,
     resolve_inat_page_size,
     should_refresh_all,
     filter_new_observations,
+    _geo_query,
 )
 from run_pipeline import should_skip_stage
 from terrain_pipeline import _find_dem
@@ -74,6 +76,59 @@ class ObservationProgressTests(unittest.TestCase):
     def test_parallel_fetch_workers_are_configurable(self):
         self.assertEqual(get_parallel_fetch_workers({'INAT_PARALLEL_FETCHES': '4'}), 4)
         self.assertEqual(get_parallel_fetch_workers({}), 3)
+
+
+class PlusCodeAreaTests(unittest.TestCase):
+    def test_plus_code_becomes_a_bounding_box_not_a_radius(self):
+        # A full plus code decodes to its rectangular cell; the location carries
+        # the four corners, never a radius.
+        locations = parse_plus_codes('84QW4600+', default_radius=500.0)
+        self.assertEqual(len(locations), 1)
+        loc = locations[0]
+        self.assertEqual(set(loc), {'swlat', 'swlng', 'nelat', 'nelng', 'label'})
+        self.assertNotIn('radius', loc)
+        self.assertLess(loc['swlat'], loc['nelat'])
+        self.assertLess(loc['swlng'], loc['nelng'])
+        # The code's own centroid must fall inside its box.
+        self.assertTrue(loc['swlat'] <= 45.10 <= loc['nelat'])
+        self.assertTrue(loc['swlng'] <= -121.775 <= loc['nelng'])
+
+    def test_trailing_radius_field_is_ignored_for_plus_codes(self):
+        # Radius does not apply to a box; an extra field must not change the area.
+        with_extra = parse_plus_codes('84QW4600+,50', default_radius=500.0)[0]
+        plain = parse_plus_codes('84QW4600+', default_radius=500.0)[0]
+        self.assertEqual(with_extra, plain)
+
+    def test_invalid_plus_code_is_skipped(self):
+        self.assertEqual(parse_plus_codes('not-a-code', default_radius=500.0), [])
+
+    def test_geo_query_prefers_bounds_over_point_radius(self):
+        bounds = (45.10, -121.80, 45.15, -121.75)  # swlat, swlng, nelat, nelng
+        self.assertEqual(
+            _geo_query(lat=1.0, lng=2.0, radius=50.0, bounds=bounds),
+            {'nelat': 45.15, 'nelng': -121.75, 'swlat': 45.10, 'swlng': -121.80},
+        )
+
+    def test_geo_query_falls_back_to_point_radius(self):
+        self.assertEqual(
+            _geo_query(lat=40.0, lng=-105.0, radius=500.0),
+            {'lat': 40.0, 'lng': -105.0, 'radius': 500.0},
+        )
+
+    def test_fetch_inat_data_sends_bounding_box_to_the_api(self):
+        payload = {'results': []}
+        with mock.patch('iNat.get_observations', return_value=payload) as mock_obs:
+            fetch_inat_data(taxon_name='morchella',
+                            bounds=(45.10, -121.80, 45.15, -121.75),
+                            per_page=100)
+        _, kwargs = mock_obs.call_args
+        self.assertEqual(kwargs['nelat'], 45.15)
+        self.assertEqual(kwargs['nelng'], -121.75)
+        self.assertEqual(kwargs['swlat'], 45.10)
+        self.assertEqual(kwargs['swlng'], -121.80)
+        # No circular query params when a box is requested.
+        self.assertNotIn('radius', kwargs)
+        self.assertNotIn('lat', kwargs)
 
 
 class ResumeAndCompressionTests(unittest.TestCase):
