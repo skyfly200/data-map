@@ -43,6 +43,13 @@
         </p>
       </div>
 
+      <div class="set-group">
+        <span class="set-label">Offline <HelpLink option="map-offline" /></span>
+        <ClientOnly>
+          <OfflineControls :bounds="bounds" :templates="templates" :dataset-label="datasetLabel" />
+        </ClientOnly>
+      </div>
+
     </div>
   </div>
 </template>
@@ -58,6 +65,11 @@ import { useObservations } from '~/composables/useObservations'
 defineProps({
   // Whether the observation points are drawn. v-model, because the map owns it.
   modelValue: { type: Boolean, default: true },
+  // What is on screen, so "save this view" can mean the view. The map owns the
+  // viewport and the active tile templates; this panel only passes them on.
+  bounds: { type: Object, default: null },
+  templates: { type: Array, default: () => [] },
+  datasetLabel: { type: String, default: '' },
 })
 defineEmits(['update:modelValue'])
 
@@ -107,6 +119,9 @@ defineExpose({ close: () => { open.value = false } })
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
   box-shadow: 0 4px 16px var(--shadow); padding: 12px; font-size: 0.82rem; color: var(--text);
 }
+/* The offline panel is the tallest thing in here, and the one worth widening
+   for: its rows are a label, an explanation and a button on one line. */
+.set-panel { width: 320px; }
 .set-head {
   display: flex; align-items: center; justify-content: space-between;
   font-weight: 700; margin-bottom: 10px;

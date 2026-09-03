@@ -1,0 +1,25 @@
+{
+  "name": "Nexstrata — Mushroom Observations",
+  "short_name": "Nexstrata",
+  "description": "Mushroom observations enriched with terrain and environmental exposure.",
+  "start_url": "/map",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0e1217",
+  "theme_color": "#12181f",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -120,6 +120,32 @@ switches to real wind by itself and relabels the legend.
   ownership layer would otherwise read as "no public land here".
 - **Live clustering** — k-means in the browser, by features or geography
 - **Save image** — flattens the whole map, tiles and all, into a PNG
+- **Offline** — under Settings, and on the Options page
+
+### Offline
+
+A map of where things grow is most often read standing in the place it
+describes, which is where there is least likely to be a connection. Three things
+can be saved into the browser, separately, because they cost very different
+amounts:
+
+- **The app** — every page and the code behind it, so Charts and Analysis open
+  offline too and not just the page you happened to be on.
+- **Observations** — the dataset the map, table and charts all read from. This
+  is the big one.
+- **Map tiles for this view** — basemap imagery for the area on screen, plus
+  however many zoom levels closer you ask for. Pan to where you are going first;
+  the tile count and a rough size are shown before anything downloads, because
+  the count roughly quadruples per extra zoom level.
+
+Nothing is saved on its own beyond the app shell — pulling a dataset and a few
+hundred tiles onto someone's mobile data unasked is not a feature. Saved data
+lives in this browser on this device, is not uploaded, does not follow your
+account, and goes when you clear the browser's site data. The app is also
+installable to a home screen.
+
+Tile services set their own terms on bulk downloading. Save the area you are
+going to, not a region.
 
 ### Taxonomy
 

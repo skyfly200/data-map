@@ -107,6 +107,19 @@
     </section>
 
     <section class="opt-group">
+      <h2>Offline</h2>
+      <p class="opt-lede">
+        Keep the app and its data in this browser so it opens with no signal — which is
+        where a map of where things grow is most often read. Map tiles for a particular
+        area are saved from the map's settings, where the app knows what is on screen.
+      </p>
+      <ClientOnly>
+        <OfflineControls />
+        <template #fallback><p class="opt-note">Loading…</p></template>
+      </ClientOnly>
+    </section>
+
+    <section class="opt-group">
       <h2>Data</h2>
       <div class="opt-row">
         <span class="opt-name">
@@ -222,6 +235,7 @@ h1 { margin: 0 0 8px; font-size: 1.6rem; }
 }
 .opt-group .opt-row:first-of-type { border-top: 0; }
 .opt-name { display: flex; flex-direction: column; gap: 3px; font-weight: 600; min-width: 0; }
+.opt-lede { margin: 0 0 14px; color: var(--muted); font-size: 0.84rem; line-height: 1.55; }
 .opt-name small { font-weight: 400; color: var(--muted); font-size: 0.76rem; line-height: 1.4; }
 .opt-slider { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 .opt-slider input { width: 130px; }

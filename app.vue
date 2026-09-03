@@ -76,6 +76,9 @@ useHead({
     { rel: 'icon', type: 'image/svg+xml', href: '/icon.svg' },
     { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
     { rel: 'apple-touch-icon', href: '/logo.svg' },
+    // Installable, and the same manifest tells the browser what to open when it
+    // is launched from a home screen with no connection.
+    { rel: 'manifest', href: '/manifest.webmanifest' },
   ],
 })
 

@@ -194,6 +194,21 @@ export const OPTION_DOCS = [
 
   // ── Map: other controls ───────────────────────────────────────────────────
   {
+    id: 'map-offline',
+    group: 'Map',
+    title: 'Offline',
+    summary: 'Keep the app, the observations and an area of map tiles in this browser, for use with no signal.',
+    detail: [
+      'A map of where things grow is most often read standing in the place it describes, which is where there is least likely to be a connection. Three things can be saved, separately, because they cost very different amounts:',
+      '**The app** — every page and the code behind it, so Charts and Analysis open offline too and not just the page you happened to be on.',
+      '**Observations** — the dataset the map, table and charts all read from. This is the big one, tens of megabytes.',
+      '**Map tiles for this view** — the basemap imagery for the area on screen, plus however many zoom levels closer you ask for. Pan and zoom to where you are going first: this saves what is in front of you, not the world. The tile count and a rough size are shown before anything is downloaded, because the count roughly quadruples per extra zoom level.',
+      'Nothing is saved on its own beyond the app shell. Downloading a dataset and a few hundred tiles onto someone\'s mobile data without being asked is not a feature.',
+    ],
+    caveat: 'Saved data lives in this browser on this device — it is not uploaded, does not follow your account, and clearing the browser\'s site data removes it. Tile services also set their own terms on bulk downloading; save the area you are going to, not a region.',
+    also: ['map-basemaps', 'data-species'],
+  },
+  {
     id: 'map-basemaps',
     group: 'Map',
     title: 'Basemaps and layers',
