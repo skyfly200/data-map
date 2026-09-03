@@ -53,14 +53,49 @@ _WEATHER_CACHE = {}
 _INAT_SESSION = None
 _INAT_SESSION_READY = False
 
-# The "failed; using cached response" tracebacks are pyinaturalist / requests_cache
-# logging that a live request throttled (429) and it fell back to a cached
-# response — noisy, but not fatal (the call still returns data). Quiet them to
-# ERROR so a run isn't buried in stack traces; our own retry/backoff still logs a
-# concise line when it actually waits.
-for _noisy in ('requests_cache', 'pyinaturalist', 'pyrate_limiter'):
+# When a live iNaturalist request is throttled (429), pyinaturalist / requests_cache
+# fall back to a previously cached response and log it with a full stack trace —
+# alarming, but NOT fatal: the call still returns (older) data. Rather than hide it
+# or dump a traceback, rewrite that log line into one clear, plain-English message,
+# and quiet the unrelated rate-limiter chatter.
+import logging as _logging
+
+_CACHE_TAXON_RE = re.compile(r'taxon_name=([^&\s]+)')
+
+
+class _CachedINatFilter(_logging.Filter):
+    """Turn requests_cache's 'failed; using cached response' + traceback into a
+    single clear line, so a throttled run reads as an explained fallback rather
+    than a wall of stack traces."""
+
+    def filter(self, record):
+        try:
+            message = record.getMessage()
+        except Exception:
+            return True
+        if 'using cached response' in message:
+            taxon = _CACHE_TAXON_RE.search(message)
+            who = f" for '{taxon.group(1)}'" if taxon else ''
+            record.msg = (
+                f"[iNaturalist] rate-limited{who} — returned previously CACHED "
+                f"observations instead of a fresh fetch. Re-run later (or lower "
+                f"INAT_PER_MINUTE) to pull fresh data.")
+            record.args = ()
+            record.exc_info = None      # drop the traceback
+            record.exc_text = None
+        return True
+
+
+for _name in ('requests_cache', 'requests_cache.session'):
     try:
-        __import__('logging').getLogger(_noisy).setLevel(__import__('logging').ERROR)
+        _lg = _logging.getLogger(_name)
+        _lg.addFilter(_CachedINatFilter())
+        _lg.setLevel(_logging.WARNING)  # keep the (now-clear) line visible
+    except Exception:
+        pass
+for _noisy in ('pyinaturalist', 'pyrate_limiter'):
+    try:
+        _logging.getLogger(_noisy).setLevel(_logging.ERROR)
     except Exception:
         pass
 
