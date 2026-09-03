@@ -128,6 +128,54 @@
       </p>
     </section>
 
+    <!-- ── The pipeline ────────────────────────────────────────────────────
+         The environmental fields are not in iNaturalist's data; something has
+         to go and sample them. That step is the substance of the project, and
+         it is reproducible, so it is worth a section rather than a footnote. -->
+    <section class="pipeline">
+      <h2>Where the data comes from</h2>
+      <p class="pl-lede">
+        iNaturalist supplies the observations: a name, a date and a coordinate. Everything
+        else on this site is sampled afterwards by a Python pipeline, which reads terrain
+        from a digital elevation model, canopy and moisture from satellite imagery, and the
+        weather for the week before each find, then clusters the results by environmental
+        similarity. It is open, and you can run it yourself.
+      </p>
+
+      <div class="pl-grid">
+        <a class="pl-card" :href="KAGGLE_URL" target="_blank" rel="noopener noreferrer">
+          <h3>Run it on Kaggle</h3>
+          <p>
+            The whole pipeline in a hosted notebook, no local setup. Add your Earth Engine
+            project, authenticate, and run. The notebook is one
+            <code>run_pipeline.run_all()</code> call, so it cannot drift out of step with
+            the command line version.
+          </p>
+          <span class="pl-go">Open the Kaggle notebook</span>
+        </a>
+
+        <a class="pl-card" :href="`${repoUrl}#python-script-pipeline`"
+           target="_blank" rel="noopener noreferrer">
+          <h3>Run it locally</h3>
+          <p>
+            <code>pip install -r requirements.txt</code>, put an Earth Engine project in
+            <code>.env</code>, then <code>python run_pipeline.py</code>. Individual stages
+            are importable too, which is the gentler option against Earth Engine's quota.
+          </p>
+          <span class="pl-go">Setup and credentials in the README</span>
+        </a>
+      </div>
+
+      <p class="pl-note">
+        Earth Engine supplies the environmental layers and is the only credential the
+        pipeline needs. Both routes run the same code:
+        <code>run_pipeline.run_all()</code> is the entry point behind
+        <code>python run_pipeline.py</code>, so the notebook never restates the stage order
+        or repeats a skip rule. The notebook file is in the repository at
+        <code>notebooks/kaggle_pipeline.ipynb</code>.
+      </p>
+    </section>
+
     <section class="foot">
       <ClientOnly>
         <div class="auth-cta" v-if="configured">
@@ -143,10 +191,12 @@
           </template>
         </div>
       </ClientOnly>
-      <br><br>
-      <a class="repo" :href="repoUrl" target="_blank" rel="noopener noreferrer">
-        <IconGithub class="repo-ico" /> <span>View the source on GitHub</span>
-      </a>
+
+      <p class="repo-line">
+        <a class="repo" :href="repoUrl" target="_blank" rel="noopener noreferrer">
+          <IconGithub class="repo-ico" /> <span>View the source on GitHub</span>
+        </a>
+      </p>
     </section>
   </div>
 </template>
@@ -156,6 +206,7 @@ import { computed } from 'vue'
 
 const { user, isAuthed, configured, signOut } = useAuth()
 const repoUrl = 'https://github.com/skyfly200/data-map'
+const KAGGLE_URL = 'https://www.kaggle.com/code/skylerflywilson/nexstrata-data-enrichment-pipeline'
 
 // The manifest is a couple of kilobytes and app.vue already loads it, so the
 // headline number is the real one rather than a figure baked into the copy that
@@ -307,13 +358,19 @@ useHead({
 /* ── Hero ─────────────────────────────────────────────────────────────── */
 .hero { text-align: center; }
 .hero-logo { margin: 0 auto 20px; border-radius: 30px; }
+/* The title is the name now, with the tagline under it, so the two are sized
+   as a pair: the name carries the weight, the tagline is a subtitle rather than
+   a second heading competing with it. Capped to the lead's measure so the block
+   below does not have to match a line length it cannot. */
 .hero h1 {
-  /* Capped to the lead's measure. Left to run the full 940px it set a line
-     length the paragraph under it could not match, and the two read as
-     unrelated blocks rather than as a headline and its subtitle. */
-  max-width: 700px; margin: 0 auto 16px;
-  font-size: 2.05rem; line-height: 1.15; color: var(--text-strong);
+  max-width: 700px; margin: 0 auto 6px;
+  font-size: 2.6rem; line-height: 1.1; color: var(--text-strong);
   letter-spacing: -0.02em;
+}
+.hero h3 {
+  max-width: 620px; margin: 0 auto 18px;
+  font-size: 1.05rem; font-weight: 500; line-height: 1.35;
+  color: var(--muted); letter-spacing: 0.01em;
 }
 .lead { max-width: 620px; margin: 0 auto 26px; color: var(--text); font-size: 1.05rem; line-height: 1.6; }
 
@@ -421,6 +478,24 @@ useHead({
 .feature h3 { margin: 0 0 6px; font-size: 0.96rem; color: var(--text); }
 .feature p { margin: 0; font-size: 0.84rem; color: var(--muted); line-height: 1.55; }
 
+/* ── Pipeline ─────────────────────────────────────────────────────────── */
+.pl-lede { margin: 0 0 16px; color: var(--muted); font-size: 0.92rem; line-height: 1.65; }
+.pl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.pl-card {
+  display: block; text-decoration: none;
+  border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; background: var(--surface);
+}
+.pl-card:hover { background: var(--surface-2); border-color: var(--accent); }
+.pl-card h3 { margin: 0 0 6px; font-size: 0.98rem; color: var(--text); }
+.pl-card p { margin: 0 0 10px; font-size: 0.84rem; color: var(--muted); line-height: 1.55; }
+.pl-go { font-size: 0.82rem; font-weight: 600; color: var(--accent); }
+.pl-go::after { content: ' \2192'; }
+.pl-note { margin: 14px 0 0; color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
+.pipeline code {
+  background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 4px;
+  padding: 1px 5px; font-size: 0.92em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 /* ── Caveat ───────────────────────────────────────────────────────────── */
 .caveat {
   border: 1px solid var(--border); border-left: 3px solid var(--accent);
@@ -441,6 +516,9 @@ useHead({
 }
 .auth-cta .hint, .auth-cta .signed { font-size: 0.85rem; color: var(--muted); }
 
+/* Its own line: sharing one with the sign-in box put two unrelated calls to
+   action side by side, and the GitHub link lost to the buttons beside it. */
+.repo-line { margin: 0; }
 .repo { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; font-size: 0.88rem; font-weight: 600; }
 .repo:hover { text-decoration: underline; }
 .repo-ico { width: 18px; height: 18px; }
@@ -448,11 +526,13 @@ useHead({
 @media (max-width: 720px) {
   .home { padding: 28px 16px 56px; }
   .home section + section { margin-top: 42px; }
-  .hero h1 { font-size: 1.65rem; }
+  .hero h1 { font-size: 2rem; }
+  .hero h3 { font-size: 0.96rem; }
   .lead { font-size: 0.98rem; }
   /* The stack sits under the prose rather than beside it, and stops insetting —
      on a narrow screen the receding effect just eats the labels. */
   .name-grid { grid-template-columns: 1fr; gap: 22px; }
+  .pl-grid { grid-template-columns: 1fr; }
   .strata { max-width: 320px; margin: 0 auto; }
   .stratum { margin-left: calc(var(--inset) / 2); margin-right: calc(var(--inset) / 2); }
 }
