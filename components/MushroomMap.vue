@@ -288,9 +288,9 @@ let map, geoLayer, L, userLayer, selectedMarker
 // ─── Heatmaps ─────────────────────────────────────────────────────────────────
 // Grid summaries computed from the observations and drawn under the points:
 // density, species richness, seasonal activity, an in-season hotspot score,
-// dominant species and land cover, and a cell mean of any enriched field —
-// rainfall, soil moisture, NDVI, slope, aspect, TWI, sun and wind exposure.
-// See composables/useMapHeatmaps.js for what each one means.
+// the most common species and land cover, and a cell mean of any enriched
+// field — rainfall, soil moisture, NDVI, slope, aspect, TWI, sun and wind
+// exposure. See composables/useMapHeatmaps.js for what each one means.
 const heatmaps = useMapHeatmaps()
 const {
   mode: heatmapMode, cellSize: heatmapCell, cellShape, seasonDay, seasonWindow,
@@ -653,7 +653,7 @@ const HEATMAP_DOCS = {
   richness: 'map-heatmap-richness',
   season: 'map-heatmap-season',
   hotspots: 'map-heatmap-hotspots',
-  dominant: 'map-heatmap-dominant',
+  common: 'map-heatmap-common',
   land_cover: 'map-heatmap-land-cover',
   wind: 'map-heatmap-wind',
 }
@@ -785,7 +785,7 @@ function pointTooltip(feature) {
         // The cell mean, with how many readings went into it — a mean of two is
         // a different claim from a mean of two hundred.
         ? `${meta.circular ? `${Math.round(cell.value)}°` : fmtNum(cell.value)} (${cell.samples} obs)`
-        : m === 'dominant' || m === 'land_cover' ? (cell.label || '—')
+        : m === 'common' || m === 'land_cover' ? (cell.label || '—')
           : m === 'season' || m === 'hotspots'
             ? `${Math.round((cell.n ? cell.inWindow / cell.n : 0) * 100)}% of ${cell.n} finds`
             : m === 'richness' ? `${cell.species.size} species`

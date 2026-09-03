@@ -18,9 +18,13 @@ from iNat import (
     get_elevation,
     get_parallel_fetch_workers,
     parse_species_list,
+    parse_plus_codes,
+    parse_plus_code_ranges,
     resolve_inat_page_size,
     should_refresh_all,
     filter_new_observations,
+    _geo_query,
+    _retry_after_seconds,
 )
 from run_pipeline import should_skip_stage
 from terrain_pipeline import _find_dem
@@ -74,6 +78,110 @@ class ObservationProgressTests(unittest.TestCase):
     def test_parallel_fetch_workers_are_configurable(self):
         self.assertEqual(get_parallel_fetch_workers({'INAT_PARALLEL_FETCHES': '4'}), 4)
         self.assertEqual(get_parallel_fetch_workers({}), 3)
+
+
+class PlusCodeAreaTests(unittest.TestCase):
+    def test_plus_code_becomes_a_bounding_box_not_a_radius(self):
+        # A full plus code decodes to its rectangular cell; the location carries
+        # the four corners, never a radius.
+        locations = parse_plus_codes('84QW4600+', default_radius=500.0)
+        self.assertEqual(len(locations), 1)
+        loc = locations[0]
+        self.assertEqual(set(loc), {'swlat', 'swlng', 'nelat', 'nelng', 'label'})
+        self.assertNotIn('radius', loc)
+        self.assertLess(loc['swlat'], loc['nelat'])
+        self.assertLess(loc['swlng'], loc['nelng'])
+        # The code's own centroid must fall inside its box.
+        self.assertTrue(loc['swlat'] <= 45.10 <= loc['nelat'])
+        self.assertTrue(loc['swlng'] <= -121.775 <= loc['nelng'])
+
+    def test_trailing_radius_field_is_ignored_for_plus_codes(self):
+        # Radius does not apply to a box; an extra field must not change the area.
+        with_extra = parse_plus_codes('84QW4600+,50', default_radius=500.0)[0]
+        plain = parse_plus_codes('84QW4600+', default_radius=500.0)[0]
+        self.assertEqual(with_extra, plain)
+
+    def test_invalid_plus_code_is_skipped(self):
+        self.assertEqual(parse_plus_codes('not-a-code', default_radius=500.0), [])
+
+    def test_geo_query_prefers_bounds_over_point_radius(self):
+        bounds = (45.10, -121.80, 45.15, -121.75)  # swlat, swlng, nelat, nelng
+        self.assertEqual(
+            _geo_query(lat=1.0, lng=2.0, radius=50.0, bounds=bounds),
+            {'nelat': 45.15, 'nelng': -121.75, 'swlat': 45.10, 'swlng': -121.80},
+        )
+
+    def test_geo_query_falls_back_to_point_radius(self):
+        self.assertEqual(
+            _geo_query(lat=40.0, lng=-105.0, radius=500.0),
+            {'lat': 40.0, 'lng': -105.0, 'radius': 500.0},
+        )
+
+    def test_plus_code_range_unions_two_cells_into_one_box(self):
+        loc = parse_plus_code_ranges('84QWJF00+:84QWQM00+')[0]
+        self.assertEqual(set(loc), {'swlat', 'swlng', 'nelat', 'nelng', 'label'})
+        # The union must contain both codes' own cells.
+        a_sw_lat, a_sw_lng, a_ne_lat, a_ne_lng = __import__('utils.olc', fromlist=['decode_olc_bounds']).decode_olc_bounds('84QWJF00+')
+        self.assertLessEqual(loc['swlat'], a_sw_lat)
+        self.assertGreaterEqual(loc['nelat'], a_ne_lat)
+        self.assertLess(loc['swlat'], loc['nelat'])
+        self.assertLess(loc['swlng'], loc['nelng'])
+
+    def test_plus_code_range_is_order_independent(self):
+        self.assertEqual(
+            parse_plus_code_ranges('84QV0000+ 84QX0000+'),
+            parse_plus_code_ranges('84QX0000+ 84QV0000+'),
+        )
+
+    def test_plus_code_range_accepts_colon_or_space_separator(self):
+        self.assertEqual(
+            parse_plus_code_ranges('84QV0000+:84QX0000+'),
+            parse_plus_code_ranges('84QV0000+ 84QX0000+'),
+        )
+
+    def test_plus_code_range_needs_exactly_two_codes(self):
+        self.assertEqual(parse_plus_code_ranges('84QV0000+'), [])
+        self.assertEqual(parse_plus_code_ranges(''), [])
+        self.assertEqual(parse_plus_code_ranges('84QV0000+ 84QX0000+ 84QW0000+'), [])
+
+    def test_fetch_inat_data_sends_bounding_box_to_the_api(self):
+        payload = {'results': []}
+        with mock.patch('iNat.get_observations', return_value=payload) as mock_obs:
+            fetch_inat_data(taxon_name='morchella',
+                            bounds=(45.10, -121.80, 45.15, -121.75),
+                            per_page=100)
+        _, kwargs = mock_obs.call_args
+        self.assertEqual(kwargs['nelat'], 45.15)
+        self.assertEqual(kwargs['nelng'], -121.75)
+        self.assertEqual(kwargs['swlat'], 45.10)
+        self.assertEqual(kwargs['swlng'], -121.80)
+        # No circular query params when a box is requested.
+        self.assertNotIn('radius', kwargs)
+        self.assertNotIn('lat', kwargs)
+
+
+class ThrottleBackoffTests(unittest.TestCase):
+    class _Resp:
+        def __init__(self, status, headers=None):
+            self.status_code = status
+            self.headers = headers or {}
+
+    class _Err(Exception):
+        def __init__(self, resp):
+            self.response = resp
+
+    def test_429_honours_retry_after_header(self):
+        err = self._Err(self._Resp(429, {'Retry-After': '30'}))
+        self.assertEqual(_retry_after_seconds(err, 1), 30.0)
+
+    def test_429_without_header_backs_off_exponentially_and_caps(self):
+        self.assertEqual(_retry_after_seconds(self._Err(self._Resp(429)), 1), 5.0)
+        self.assertEqual(_retry_after_seconds(self._Err(self._Resp(429)), 3), 20.0)
+        self.assertEqual(_retry_after_seconds(self._Err(self._Resp(429)), 10), 60.0)
+
+    def test_non_429_uses_short_linear_backoff(self):
+        self.assertEqual(_retry_after_seconds(self._Err(self._Resp(500)), 2), 2.0)
+        self.assertEqual(_retry_after_seconds(Exception('boom'), 3), 3.0)
 
 
 class ResumeAndCompressionTests(unittest.TestCase):

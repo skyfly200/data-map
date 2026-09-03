@@ -47,7 +47,7 @@ heatmap is our own numbers, binned.
 | Species richness | How many distinct species | Also effort-sensitive — more visits find more species |
 | Seasonal activity | Share of *this cell's own* finds inside the date window | Effort-neutral; needs 3+ records in the cell |
 | In-season hotspots | That share, weighted by how well-sampled the cell is | A record of past finds, not a forecast |
-| Dominant species | The most-recorded species in the cell | Ties are broken arbitrarily |
+| Most common species | The most-recorded species in the cell | Ties are broken arbitrarily |
 | Land cover | The most common land-cover class across the cell's finds | Only the winner shows; a 50/50 cell looks pure |
 | Wind / aspect vectors | Arrows for wind, or for the way slopes face | Says which source it used |
 | *Environmental fields* | The cell mean of one enriched value | Sampled at the finds, so a blank cell means nobody looked |

@@ -61,7 +61,7 @@ export const OPTION_DOCS = [
       'The heatmaps differ mainly in how much they are distorted by recording effort — how many people went looking there. That difference matters more than anything else on this page, so each mode below says where it stands.',
     ],
     also: ['map-heatmap-density', 'map-heatmap-richness', 'map-heatmap-season',
-      'map-heatmap-hotspots', 'map-heatmap-dominant', 'map-heatmap-land-cover',
+      'map-heatmap-hotspots', 'map-heatmap-common', 'map-heatmap-land-cover',
       'map-heatmap-wind', 'map-heatmap-field', 'map-cell-size', 'appearance-cell-shape'],
   },
   {
@@ -112,9 +112,9 @@ export const OPTION_DOCS = [
     also: ['map-heatmap-season', 'map-season-day', 'map-season-window'],
   },
   {
-    id: 'map-heatmap-dominant',
+    id: 'map-heatmap-common',
     group: 'Map',
-    title: 'Heatmap: Dominant species',
+    title: 'Heatmap: Most common species',
     summary: 'The most-recorded species in each cell, by colour.',
     detail: [
       'Shows regional character — where one species takes over. Colours match the rest of the app, so a cell can be read against the legend and the charts.',
@@ -132,7 +132,7 @@ export const OPTION_DOCS = [
       'This is land cover *at the finds*, not a land-cover map. It says what kind of ground the records in a cell sit on, which is the question worth asking of a foraging map; a real land-cover raster is available separately as a reference layer in the layers control.',
     ],
     caveat: 'Only the winner is shown, so a cell that is half forest and half meadow looks the same as one that is all forest. Cells with no finds are blank, not unclassified ground.',
-    also: ['map-heatmap-dominant', 'map-basemaps'],
+    also: ['map-heatmap-common', 'map-basemaps'],
   },
   {
     id: 'map-heatmap-wind',
@@ -920,7 +920,12 @@ const ID_ALIASES = {
   'map-overlay-richness': 'map-heatmap-richness',
   'map-overlay-season': 'map-heatmap-season',
   'map-overlay-hotspots': 'map-heatmap-hotspots',
-  'map-overlay-dominant': 'map-heatmap-dominant',
+  // Two renames landed on this one: 'dominant' -> 'common' (the label became
+  // "Most common species") on top of 'overlay' -> 'heatmap'. Every old spelling
+  // resolves, since links carrying them are already out there.
+  'map-overlay-dominant': 'map-heatmap-common',
+  'map-overlay-common': 'map-heatmap-common',
+  'map-heatmap-dominant': 'map-heatmap-common',
   'map-overlay-wind': 'map-heatmap-wind',
   'appearance-overlay-ramp': 'appearance-heatmap-ramp',
 }

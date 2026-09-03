@@ -219,10 +219,12 @@ class TemperatureStageTests(_EEStageTest):
 
         real_sample = ee_enrich._sample_points
 
-        def spy(ee, image, points, scale, reducer=None):
+        # **kw rather than the real signature spelled out: a keyword added to
+        # _sample_points should not break a spy that does not care about it.
+        def spy(ee, image, points, scale, reducer=None, **kw):
             captured['bands'] = list(image.bands)
             captured['calls'] = captured.get('calls', 0) + 1
-            return real_sample(ee, image, points, scale, reducer)
+            return real_sample(ee, image, points, scale, reducer, **kw)
 
         with mock.patch.object(ee_enrich, '_sample_points', spy):
             self.run_stage(ee_enrich.enrich_temperature_ee, df, values)
@@ -263,9 +265,11 @@ class PrecipitationStageTests(_EEStageTest):
 
         real_sample = ee_enrich._sample_points
 
-        def spy(ee, image, points, scale, reducer=None):
+        # **kw rather than the real signature spelled out: a keyword added to
+        # _sample_points should not break a spy that does not care about it.
+        def spy(ee, image, points, scale, reducer=None, **kw):
             calls.append(len(points))
-            return real_sample(ee, image, points, scale, reducer)
+            return real_sample(ee, image, points, scale, reducer, **kw)
 
         with mock.patch.object(ee_enrich, '_sample_points', spy):
             self.run_stage(ee_enrich.enrich_precip_ee, df, values)
@@ -307,10 +311,12 @@ class LandCoverStageTests(_EEStageTest):
         captured = {}
         real_sample = ee_enrich._sample_points
 
-        def spy(ee, image, points, scale, reducer=None):
+        # **kw rather than the real signature spelled out: a keyword added to
+        # _sample_points should not break a spy that does not care about it.
+        def spy(ee, image, points, scale, reducer=None, **kw):
             captured['reducer'] = reducer
             captured['scale'] = scale
-            return real_sample(ee, image, points, scale, reducer)
+            return real_sample(ee, image, points, scale, reducer, **kw)
 
         with mock.patch.object(ee_enrich, '_sample_points', spy):
             out = self.run_stage(ee_enrich.enrich_landcover_ee, df, {'land_cover': 10})
