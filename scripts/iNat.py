@@ -42,6 +42,47 @@ if sys.platform == 'win32' and hasattr(sys.stdout, 'reconfigure'):
 _ELEVATION_CACHE = {}
 _WEATHER_CACHE = {}
 
+# One shared, rate-limited session for every iNaturalist call. Without it each
+# parallel worker (and each retry) uses its own default session, so their
+# per-session limiters don't coordinate and together they burst past
+# iNaturalist's limit — which is what produced the 429 "normal_throttling"
+# errors. A single session shared across threads throttles them as a group,
+# staying under ~1 request/second and 60/minute (iNaturalist's published
+# ceiling), and carries pyinaturalist's own 429-aware retry/backoff.
+_INAT_SESSION = None
+_INAT_SESSION_READY = False
+
+def _inat_session():
+    global _INAT_SESSION, _INAT_SESSION_READY
+    if _INAT_SESSION_READY:
+        return _INAT_SESSION
+    _INAT_SESSION_READY = True
+    try:
+        from pyinaturalist import ClientSession
+        _INAT_SESSION = ClientSession(
+            per_second=1,        # iNaturalist asks for ~1 request/second
+            per_minute=60,       # and no more than 60/minute
+            per_day=10000,
+            burst=1,             # no bursts — bursts are what tripped the throttle
+            max_retries=5,
+            backoff_factor=2.0,  # 429s back off exponentially inside the session
+        )
+    except Exception as exc:
+        # Older pyinaturalist, or a constructor change: fall back to the default
+        # session rather than failing the fetch. Rate limiting is then weaker,
+        # but the custom retry/backoff below still applies.
+        print(f"[!] Could not build a shared rate-limited iNaturalist session "
+              f"({exc}); using the default session.", file=sys.stderr)
+        _INAT_SESSION = None
+    return _INAT_SESSION
+
+def _observation_kwargs(**kwargs):
+    """Common get_observations kwargs, adding the shared session when available."""
+    session = _inat_session()
+    if session is not None:
+        kwargs['session'] = session
+    return kwargs
+
 def load_env_file(path=None):
     config_path = Path(path or os.getenv('ENV_FILE') or '.env')
     if not config_path.exists():
@@ -408,7 +449,7 @@ def _geo_query(lat=None, lng=None, radius=None, bounds=None):
 
 def get_species_observation_total(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, bounds=None):
     try:
-        response = get_observations(
+        response = get_observations(**_observation_kwargs(
             taxon_name=taxon_name,
             quality_grade=quality_grade,
             captive=False,
@@ -416,7 +457,7 @@ def get_species_observation_total(taxon_name='morchella', quality_grade='researc
             per_page=1,
             page=1,
             **_geo_query(lat, lng, radius, bounds),
-        )
+        ))
         if not isinstance(response, dict):
             return 0
         total = response.get('total_results')
@@ -447,7 +488,7 @@ def _retry_after_seconds(err, attempt):
 def _get_observations_with_retry(max_retries=5, **kwargs):
     for attempt in range(1, max_retries + 1):
         try:
-            return get_observations(**kwargs)
+            return get_observations(**_observation_kwargs(**kwargs))
         except Exception as err:
             if attempt == max_retries:
                 taxon = kwargs.get('taxon_name')
