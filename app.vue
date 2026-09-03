@@ -71,9 +71,12 @@ useHead({
     { name: 'twitter:card', content: 'summary' },
   ],
   link: [
-    // SVG first: browsers that understand it get the vector, and the .ico stays
-    // as the fallback rather than being replaced.
-    { rel: 'icon', type: 'image/svg+xml', href: '/icon.svg' },
+    // The logo itself, vector first: browsers that understand SVG favicons get
+    // it at every size. The .ico is the same logo rendered to fixed sizes for
+    // the clients that still want one — regenerate it with
+    //   magick -background none public/logo.svg \
+    //     -define icon:auto-resize=256,128,64,48,32,24,16 public/favicon.ico
+    { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' },
     { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
     { rel: 'apple-touch-icon', href: '/logo.svg' },
     // Installable, and the same manifest tells the browser what to open when it

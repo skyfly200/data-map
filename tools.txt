@@ -1,0 +1,3 @@
+C:\Program Files\ImageMagick-7.0.10-Q16-HDRI\magick.exe
+INFO: Could not find "inkscape".
+INFO: Could not find "rsvg-convert".
