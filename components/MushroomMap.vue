@@ -181,7 +181,8 @@
       <template v-else>
         <div v-for="item in heatmapLegend.items" :key="item.label" class="legend-row hoverable"
              :class="{ dim: hoverValue && hoverValue !== item.label }"
-             @mouseenter="hoverValue = item.label" @mouseleave="hoverValue = null">
+             @pointerenter="hoverEnter(item.label, $event)" @pointerleave="hoverLeave($event)"
+             @pointerup="pickValue(item.label, $event)">
           <span class="swatch" :style="{ background: item.color }"></span>
           <span><em>{{ item.label }}</em> <span class="legend-n">{{ item.n }}</span></span>
         </div>
@@ -199,7 +200,8 @@
              species otherwise leaves you matching hues by eye. -->
         <div v-for="item in coloring.legend" :key="item.label" class="legend-row hoverable"
              :class="{ dim: hoverValue && hoverValue !== item.label }"
-             @mouseenter="hoverValue = item.label">
+             @pointerenter="hoverEnter(item.label, $event)"
+             @pointerup="pickValue(item.label, $event)">
           <span class="swatch" :style="{ background: item.color }"></span>
           <span>{{ item.label }}</span>
         </div>
@@ -389,6 +391,23 @@ const todayDay = heatmaps.todayOfYear()
 // The legend value under the cursor. Everything not matching it is faded on the
 // map, so a row in the key and the marks it stands for can be seen together.
 const hoverValue = ref(null)
+
+// Hover is a mouse idea, and highlighting a legend row has to work without one.
+//
+// A touch screen synthesises a mouseenter on tap but never a matching
+// mouseleave, so a tapped row isolated a category and left the reader with a
+// faded map and no way to clear it. Adding a click handler on top made it
+// worse: the synthesised enter set the value and the click immediately toggled
+// it back off, so tapping did nothing at all.
+//
+// Pointer events carry the device that raised them, so each gets what suits it
+// — transient hover on a mouse, a sticky toggle on a finger.
+function hoverEnter(label, e) { if (e.pointerType === 'mouse') hoverValue.value = label }
+function hoverLeave(e) { if (!e || e.pointerType === 'mouse') hoverValue.value = null }
+function pickValue(label, e) {
+  if (e && e.pointerType === 'mouse') return
+  hoverValue.value = hoverValue.value === label ? null : label
+}
 const tileErrors = ref([])
 // The caveat belonging to whichever reference layers are switched on.
 const activeTileNotes = ref([])
@@ -879,8 +898,19 @@ onMounted(async () => {
     // each one its own SVG <path>. At ~48k observations the SVG renderer put
     // 48k interactive nodes in the DOM, which is what made panning and zooming
     // crawl; the canvas renderer keeps that flat as the dataset grows.
+    // A dot is drawn at 3px. On a mouse that is a fine target; on a finger it
+    // is roughly a tenth of the contact patch, and tapping one was a matter of
+    // luck. The canvas renderer's `tolerance` widens the hit test without
+    // widening the mark, so points stay small and become tappable — and the
+    // padding it needs is the fingertip's, not the mouse's.
+    const coarse = import.meta.client
+      && window.matchMedia?.('(pointer: coarse)').matches
     map = L.map(mapEl.value, {
       scrollWheelZoom: true, zoomControl: false, layers: [grey], preferCanvas: true,
+      renderer: L.canvas({ tolerance: coarse ? 12 : 2 }),
+      // Two fingers to pan the page-length map on touch would be right if the
+      // map were incidental; here it IS the page, so one finger pans it.
+      tap: true, tapTolerance: 20,
     }).setView([39.5, -105.7], 7)
     L.control.zoom({ position: 'bottomleft' }).addTo(map)
     // ArcGIS MapServer services render from a bbox rather than serving a cut
@@ -1173,6 +1203,39 @@ onBeforeUnmount(() => {
 .layer-date input {
   flex: 1 1 auto; min-width: 0; background: var(--input-bg); color: var(--text);
   border: 1px solid var(--border); border-radius: 4px; padding: 2px 5px; font-size: 0.74rem;
+}
+
+/* ── Touch ────────────────────────────────────────────────────────────────
+   A fingertip is about 9mm across. The control bar's icon buttons ship at
+   34px and Leaflet's zoom at 30px, both under half of that, so on a coarse
+   pointer they get real hit areas — 40px of reach without 40px of bulk where
+   the bulk would crowd the map. */
+@media (pointer: coarse) {
+  .map-shell .icon-btn,
+  .map-shell :deep(.ap-btn.icon-only),
+  .map-shell :deep(.sh-btn.icon-only),
+  .map-shell :deep(.set-btn) { width: 40px; height: 40px; }
+
+  .map-shell :deep(.leaflet-control-zoom a),
+  .map-shell :deep(.leaflet-control-layers-toggle) { width: 40px; height: 40px; line-height: 40px; }
+
+  /* A legend row is a tap target now, not just a hover target, so it needs
+     the height of one — and it must not select its own text when held. */
+  .legend-row.hoverable {
+    min-height: 32px; -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .legend-row.hoverable:active { background: rgba(0, 0, 0, 0.06); border-radius: 4px; }
+
+  /* Scrolling a key must scroll the key, not pan the map underneath it. */
+  .legends > * { touch-action: pan-y; }
+
+  /* A range input's own box is only as tall as its thumb, so the band you can
+     start a drag in is a few pixels. Height here is hit area, not appearance:
+     the thumb stays centred and the browser keeps its native look, which
+     restyling it (appearance: none) would throw away along with the track.
+     touch-action stops a horizontal drag on the slider from panning the map. */
+  .map-shell input[type="range"] { height: 32px; touch-action: none; }
 }
 
 /* Direction has no low and no high, so its key is four labelled swatches
