@@ -2,7 +2,8 @@
   <div class="home">
     <section class="hero">
       <AppLogo class="hero-logo" :size="168" />
-      <h1>Every find, read through the layers it happened in</h1>
+      <h1>Nexstrata</h1>
+      <h3>Data abundance distilled into actionable insights</h3>
       <p class="lead">
         Mushroom observations from iNaturalist, each one carrying the ground it was
         found on: terrain, weather, canopy, soil and exposure. So you can ask what the
@@ -305,13 +306,19 @@ useHead({
 /* ── Hero ─────────────────────────────────────────────────────────────── */
 .hero { text-align: center; }
 .hero-logo { margin: 0 auto 20px; border-radius: 30px; }
+/* The title is the name now, with the tagline under it, so the two are sized
+   as a pair: the name carries the weight, the tagline is a subtitle rather than
+   a second heading competing with it. Capped to the lead's measure so the block
+   below does not have to match a line length it cannot. */
 .hero h1 {
-  /* Capped to the lead's measure. Left to run the full 940px it set a line
-     length the paragraph under it could not match, and the two read as
-     unrelated blocks rather than as a headline and its subtitle. */
-  max-width: 700px; margin: 0 auto 16px;
-  font-size: 2.05rem; line-height: 1.15; color: var(--text-strong);
+  max-width: 700px; margin: 0 auto 6px;
+  font-size: 2.6rem; line-height: 1.1; color: var(--text-strong);
   letter-spacing: -0.02em;
+}
+.hero h3 {
+  max-width: 620px; margin: 0 auto 18px;
+  font-size: 1.05rem; font-weight: 500; line-height: 1.35;
+  color: var(--muted); letter-spacing: 0.01em;
 }
 .lead { max-width: 620px; margin: 0 auto 26px; color: var(--text); font-size: 1.05rem; line-height: 1.6; }
 
@@ -449,7 +456,8 @@ useHead({
 @media (max-width: 720px) {
   .home { padding: 28px 16px 56px; }
   .home section + section { margin-top: 42px; }
-  .hero h1 { font-size: 1.65rem; }
+  .hero h1 { font-size: 2rem; }
+  .hero h3 { font-size: 0.96rem; }
   .lead { font-size: 0.98rem; }
   /* The stack sits under the prose rather than beside it, and stops insetting —
      on a narrow screen the receding effect just eats the labels. */
