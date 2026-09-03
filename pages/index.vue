@@ -121,7 +121,7 @@
           </template>
         </div>
       </ClientOnly>
-
+      <br><br>
       <a class="repo" :href="repoUrl" target="_blank" rel="noopener noreferrer">
         <IconGithub class="repo-ico" /> <span>View the source on GitHub</span>
       </a>
