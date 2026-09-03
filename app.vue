@@ -320,13 +320,15 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
      handled by hit-area expansion below. */
   button, [role="button"], .auth-btn, .nav-link, .filter-flag, .brand,
   .ref-nav a, .opt-also a, .hb-chip {
-    min-height: 36px;
+    min-height: 40px;
   }
   button, [role="button"], .auth-btn, .nav-link, .filter-flag, .brand, .ref-nav a {
     display: inline-flex; align-items: center;
   }
-  .app-header .units button { padding: 0 14px; justify-content: center; }
-  .app-header .theme-btn { width: 38px; justify-content: center; }
+  /* The unit and theme toggles sit in a row of their own, so they can take the
+     width as well as the height without crowding anything. */
+  .app-header .units button { min-width: 46px; padding: 0 14px; justify-content: center; }
+  .app-header .theme-btn { width: 42px; justify-content: center; }
 
   /* The icon controls opt back out: a 36px minimum would turn a card's quiet
      ⤓ and ⤢ into a pair of chunky buttons. They get reach, not bulk. */
@@ -335,15 +337,34 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
     min-height: 0;
   }
 
-  /* Checkboxes ship at 13px, which is under half a fingertip. */
-  input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; }
+  /* Checkboxes ship at 13px — under a sixth of a fingertip's area. 22px is
+     still small to look at and large enough to hit, and the label beside one is
+     a target too wherever it is wrapped in a <label>. */
+  input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; }
 
   /* Form controls tall enough to hit, and 16px text so iOS does not zoom the
      page when one takes focus. */
   select, input[type="text"], input[type="number"], input[type="search"],
   input[type="date"], input[type="email"], input[type="password"] {
-    min-height: 36px; font-size: 16px;
+    min-height: 40px; font-size: 16px;
   }
+
+  /* A range input's box is only as tall as its thumb, so the band you can start
+     a drag in is a few pixels. Height here is hit area, not appearance: the
+     browser keeps its native thumb, which restyling would throw away along with
+     the track. touch-action stops the drag from scrolling the page instead. */
+  input[type="range"] { height: 32px; touch-action: none; }
+
+  /* Nothing that exists to be tapped should select its own text when held, or
+     flash a grey box that outlives the tap. */
+  button, [role="button"], .nav-link, .legend-row, .tabs button, summary {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none; user-select: none;
+  }
+
+  /* Sideways-scrolling regions — the table, wide charts — should take a
+     horizontal drag without the page fighting them for it. */
+  .table-wrap, .stage, [class*="scroll"] { -webkit-overflow-scrolling: touch; }
 
   /* Invisible hit area, centred on the icon, without disturbing the layout. */
   a.help, .card-tools .tool, .saved-tools button, .saved-tools .sh-btn {
