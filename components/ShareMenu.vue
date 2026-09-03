@@ -68,7 +68,7 @@ const props = defineProps({
   compact: { type: Boolean, default: false },
   // Icon-only at full button size, for the map's control bar.
   iconOnly: { type: Boolean, default: false },
-  note: { type: String, default: 'This link reproduces what you are looking at — filters, colouring and overlay included.' },
+  note: { type: String, default: 'This link reproduces what you are looking at, including its filters, colouring and overlay.' },
 })
 
 const share = useShareState()
@@ -128,7 +128,7 @@ watch([url, showQr, open], () => {
   } catch (e) {
     // A very long link (a big species filter) can exceed the largest QR version.
     qrSvg.value = ''
-    qrError.value = 'This view is too detailed to fit in a QR code — use the link instead.'
+    qrError.value = 'This view is too detailed to fit in a QR code, use the link instead.'
   }
 }, { immediate: true })
 

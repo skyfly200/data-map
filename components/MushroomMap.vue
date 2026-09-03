@@ -95,7 +95,7 @@
                       @click="seasonDay = todayDay">Today</button>
             </label>
             <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1"
-                   :title="tip(`Centre of the date window — currently ${seasonLabel}`, '[')" />
+                   :title="tip(`Centre of the date window: currently ${seasonLabel}`, '[')" />
           </div>
           <div class="slider">
             <label for="season-window">
@@ -725,7 +725,7 @@ const datasetLabel = computed(() => {
 const shareTitle = computed(() => {
   const n = filteredData.value?.features?.length || 0
   const what = speciesFilter.value?.length === 1 ? speciesFilter.value[0] : 'mushroom observations'
-  return `${n.toLocaleString()} ${what} — data-map`
+  return `${n.toLocaleString()} ${what}: data-map`
 })
 
 let suppressFit = false
@@ -785,7 +785,7 @@ function pointTooltip(feature) {
         // The cell mean, with how many readings went into it — a mean of two is
         // a different claim from a mean of two hundred.
         ? `${meta.circular ? `${Math.round(cell.value)}°` : fmtNum(cell.value)} (${cell.samples} obs)`
-        : m === 'common' || m === 'land_cover' ? (cell.label || '—')
+        : m === 'common' || m === 'land_cover' ? (cell.label || ', ')
           : m === 'season' || m === 'hotspots'
             ? `${Math.round((cell.n ? cell.inWindow / cell.n : 0) * 100)}% of ${cell.n} finds`
             : m === 'richness' ? `${cell.species.size} species`

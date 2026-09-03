@@ -15,7 +15,7 @@
       <p class="sy-msg">{{ cloud.error.value }}</p>
       <p v-if="cloud.errorHint.value" class="sy-hint">{{ cloud.errorHint.value }}</p>
       <p class="sy-note">
-        Your settings and charts are safe in this browser — only syncing to the
+        Your settings and charts are safe in this browser, only syncing to the
         account is affected.
       </p>
       <details v-if="cloud.errorRaw.value" class="sy-raw">
@@ -55,12 +55,12 @@ const label = computed(() => ({
 }[cloud.status.value] || 'Sync'))
 
 const tooltip = computed(() => {
-  if (cloud.status.value === 'error') return `${cloud.error.value} — click for detail`
+  if (cloud.status.value === 'error') return `${cloud.error.value}, click for detail`
   if (cloud.lastSynced.value) {
     return `Settings and charts saved to your account · last synced ${
       new Date(cloud.lastSynced.value).toLocaleTimeString()} · click to sync now`
   }
-  return 'Settings and charts follow your account — click to sync now'
+  return 'Settings and charts follow your account: click to sync now'
 })
 
 /**

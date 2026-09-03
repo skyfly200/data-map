@@ -3,7 +3,7 @@
     <h1>Options</h1>
     <p class="lede">
       Everything the app remembers about how you like it, in one place. These are
-      the same settings the panels on each page expose — changed here or there,
+      the same settings the panels on each page expose; changed here or there,
       it is the same setting.
     </p>
 
@@ -92,7 +92,7 @@
       <div class="opt-row">
         <span class="opt-name">
           Map layer opacity
-          <small>How strongly the reference tile layers — hillshade, rainfall, land cover — cover the basemap.</small>
+          <small>How strongly the reference tile layers (hillshade, rainfall, land cover) cover the basemap.</small>
         </span>
         <span class="opt-slider">
           <input v-model.number="tileOpacity" type="range" min="0.05" max="1" step="0.05"
@@ -109,7 +109,7 @@
     <section class="opt-group">
       <h2>Offline</h2>
       <p class="opt-lede">
-        Keep the app and its data in this browser so it opens with no signal — which is
+        Keep the app and its data in this browser so it opens with no signal, which is
         where a map of where things grow is most often read. Map tiles for a particular
         area are saved from the map's settings, where the app knows what is on screen.
       </p>

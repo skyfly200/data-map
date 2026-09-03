@@ -125,7 +125,7 @@ export const TILE_LAYERS = [
     name: 'Radar (US, now)', group: 'Weather',
     arcgis: 'https://mapservices.weather.noaa.gov/eventdriven/rest/services/radar/radar_base_reflectivity/MapServer',
     attribution: 'NOAA / NWS', maxZoom: 12, opacity: 0.7,
-    note: 'Live NEXRAD base reflectivity over the US. Reflectivity is not rainfall — hail, bright banding and ground clutter all show up as returns.',
+    note: 'Live NEXRAD base reflectivity over the US. Reflectivity is not rainfall: hail, bright banding and ground clutter all show up as returns.',
     legend: {
       type: 'ramp', unit: 'dBZ', min: '5', max: '75',
       stops: ['#04e9e7', '#019ff4', '#02fd02', '#fdf802', '#fd9500', '#fd0000', '#bc0000', '#f800fd'],
@@ -136,7 +136,7 @@ export const TILE_LAYERS = [
     arcgis: 'https://mapservices.weather.noaa.gov/raster/rest/services/obs/rfc_qpe/MapServer',
     layers: 'show:3',
     attribution: 'NOAA / NWS River Forecast Centers', maxZoom: 12, opacity: 0.65,
-    note: 'Quantitative precipitation estimate — gauge-corrected radar, so it is an estimate of what fell, not a gauge reading. US only.',
+    note: 'Quantitative precipitation estimate from gauge-corrected radar, so it is an estimate of what fell, not a gauge reading. US only.',
     legend: {
       type: 'ramp', unit: 'in', min: '0.01', max: '8+',
       stops: ['#c9e8c0', '#7fc97f', '#2b8cbe', '#253494', '#7a0177', '#c51b8a', '#fd8d3c', '#bd0026'],
@@ -156,7 +156,7 @@ export const TILE_LAYERS = [
     name: 'Land surface temp', group: 'Weather',
     url: gibsUrl('MODIS_Terra_Land_Surface_Temp_Day', { level: 7 }),
     attribution: 'NASA GIBS / MODIS Terra', maxZoom: 9, opacity: 0.6, time: true, lag: 3,
-    note: 'Daytime skin temperature of the ground itself, not air temperature — bare rock in sun reads far hotter than the air above it. Cloudy days are gaps.',
+    note: 'Daytime skin temperature of the ground itself, not air temperature: bare rock in sun reads far hotter than the air above it. Cloudy days are gaps.',
     legend: {
       type: 'ramp', unit: '°C', min: '−25', max: '45',
       stops: ['#3b1a8c', '#2a6fb0', '#48b3a8', '#c8dd52', '#e8a020', '#b81414'],
@@ -180,7 +180,7 @@ export const TILE_LAYERS = [
       + '&LAYER=WORLDCOVER_2021_MAP&STYLE=&FORMAT=image%2Fpng'
       + '&TILEMATRIXSET=EPSG:3857&TILEMATRIX=EPSG:3857:{z}&TILEROW={y}&TILECOL={x}',
     attribution: 'ESA WorldCover 2021 (CC BY 4.0) via Terrascope', maxZoom: 14, opacity: 0.55,
-    note: 'ESA WorldCover at 10 m, from 2021. High resolution but not current — a burn, a clear-cut or a new development since then is not in it.',
+    note: 'ESA WorldCover at 10 m, from 2021. High resolution but not current: a burn, a clear-cut or a new development since then is not in it.',
     legend: { type: 'classes', items: WORLDCOVER_CLASSES },
   },
 
@@ -216,7 +216,7 @@ export const TILE_LAYERS = [
     name: 'Hiking trails', group: 'Context',
     url: 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png',
     attribution: 'waymarkedtrails.org · OpenStreetMap (CC-BY-SA)', maxZoom: 18,
-    note: 'Waymarked hiking routes from OpenStreetMap. Not a complete trail map — an unmapped path is missing, not absent.',
+    note: 'Waymarked hiking routes from OpenStreetMap. Not a complete trail map: an unmapped path is missing, not absent.',
   },
 
   // BLM's Surface Management Agency layer: which federal agency, state, or

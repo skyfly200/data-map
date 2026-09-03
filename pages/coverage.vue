@@ -165,7 +165,7 @@ function mb(bytes) {
   return v >= 1000 ? `${(v / 1000).toFixed(1)} GB` : `${v.toFixed(1)} MB`
 }
 function bboxLabel(b) {
-  if (!b) return '—'
+  if (!b) return ', '
   const ns = (v) => `${Math.abs(v).toFixed(1)}°${v >= 0 ? 'N' : 'S'}`
   const ew = (v) => `${Math.abs(v).toFixed(1)}°${v >= 0 ? 'E' : 'W'}`
   return `${ns(b[1])}–${ns(b[3])}, ${ew(b[0])}–${ew(b[2])}`

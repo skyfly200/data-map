@@ -19,7 +19,7 @@ export const OPTION_DOCS = [
     id: 'map-color-by',
     group: 'Map',
     title: 'Color by',
-    summary: 'What the colour of each dot means — pick any category or measurement.',
+    summary: 'What the colour of each dot means, pick any category or measurement.',
     detail: [
       'Categories (species, genus, cluster, land cover, year, month, enrichment level) get distinct colours from the active palette. Numeric fields (elevation, slope, NDVI, soil moisture, temperature, exposure) get a light-to-dark gradient instead, because a ramp reads as "more" and a set of hues does not.',
       'Category colours are stable and shared: a species is the same colour here, in every chart, and in the legend. That is what makes it possible to look at the map and a box plot side by side and match them up. Change one under Style and it changes everywhere.',
@@ -33,7 +33,7 @@ export const OPTION_DOCS = [
     summary: 'Scale each dot by a numeric field, so two dimensions read at once.',
     detail: [
       'Dot area follows the chosen measurement, so you can colour by species and size by elevation and see both together.',
-      'Area, not radius, carries the value — sizing by radius makes a value twice as large look four times as big.',
+      'Area, not radius, carries the value, sizing by radius makes a value twice as large look four times as big.',
     ],
     caveat: 'With 48,000 overlapping points, size is easy to misjudge in dense areas. Use it to spot gradients across a region, not to compare two individual dots.',
     also: ['map-color-by', 'appearance-point-size'],
@@ -58,7 +58,7 @@ export const OPTION_DOCS = [
     summary: 'A grid of per-cell summaries, computed from the observations and drawn under the points.',
     detail: [
       '48,000 overlapping dots show you where the data is dense. A grid shows what is actually in an area. Each cell aggregates the observations inside it and is shaded by the result.',
-      'The heatmaps differ mainly in how much they are distorted by recording effort — how many people went looking there. That difference matters more than anything else on this page, so each mode below says where it stands.',
+      'The heatmaps differ mainly in how much they are distorted by recording effort, how many people went looking there. That difference matters more than anything else on this page, so each mode below says where it stands.',
     ],
     also: ['map-heatmap-density', 'map-heatmap-richness', 'map-heatmap-season',
       'map-heatmap-hotspots', 'map-heatmap-common', 'map-heatmap-land-cover',
@@ -70,7 +70,7 @@ export const OPTION_DOCS = [
     title: 'Heatmap: Observation density',
     summary: 'How many records fall in each cell.',
     detail: [
-      'A straight count. Useful for seeing the shape of the dataset — where the records are and where there are none.',
+      'A straight count. Useful for seeing the shape of the dataset, where the records are and where there are none.',
     ],
     caveat: 'This is a map of where people went, not where mushrooms are. Cities, trailheads and popular parks glow because they are visited, not because they are productive. Do not read it as habitat.',
     also: ['map-heatmap-season'],
@@ -93,7 +93,7 @@ export const OPTION_DOCS = [
     summary: "The share of a cell's own finds that fall inside your date window.",
     detail: [
       'For each cell: of all the observations ever recorded there, what fraction happened within ±window of your chosen day of the year, across all years.',
-      'Dividing by the cell\'s own total is what makes this worth trusting. A cell visited 500 times and a cell visited 10 times are on the same scale, because effort cancels out of a ratio — the seasonal *shape* of a place does not depend on how many people went, only on when they found things.',
+      'Dividing by the cell\'s own total is what makes this worth trusting. A cell visited 500 times and a cell visited 10 times are on the same scale, because effort cancels out of a ratio, the seasonal *shape* of a place does not depend on how many people went, only on when they found things.',
       'Cells with fewer than 3 records are left blank rather than shown at 0% or 100% on a single observation.',
     ],
     caveat: 'It describes when finds happened historically. It is not a forecast, and a warm or dry year will not match it.',
@@ -106,7 +106,7 @@ export const OPTION_DOCS = [
     summary: 'Seasonal activity, weighted by how well-sampled the cell is.',
     detail: [
       'Takes the Seasonal activity share and weights it by how much evidence sits behind it, so a cell at 80% from 4 records does not outrank a cell at 60% from 200.',
-      'This is the closest thing here to "where would I go this week", which is why it is weighted — a confident 60% is a better bet than a noisy 80%.',
+      'This is the closest thing here to "where would I go this week", which is why it is weighted, a confident 60% is a better bet than a noisy 80%.',
     ],
     caveat: 'It is a record of past finds, not a prediction. Weighting by sample size also reintroduces some effort bias, since well-sampled cells are well-visited ones.',
     also: ['map-heatmap-season', 'map-season-day', 'map-season-window'],
@@ -117,7 +117,7 @@ export const OPTION_DOCS = [
     title: 'Heatmap: Most common species',
     summary: 'The most-recorded species in each cell, by colour.',
     detail: [
-      'Shows regional character — where one species takes over. Colours match the rest of the app, so a cell can be read against the legend and the charts.',
+      'Shows regional character, where one species takes over. Colours match the rest of the app, so a cell can be read against the legend and the charts.',
     ],
     caveat: 'Only the winner is shown, so a cell split 51/49 between two species looks identical to one that is 100% a single species. Ties are broken arbitrarily.',
     also: ['map-color-by'],
@@ -128,7 +128,7 @@ export const OPTION_DOCS = [
     title: 'Heatmap: Land cover',
     summary: 'The most common land-cover class recorded across each cell.',
     detail: [
-      'Reads the land-cover class the pipeline sampled at each observation and shows whichever one appears most often in the cell — forest, shrubland, grassland, and so on.',
+      'Reads the land-cover class the pipeline sampled at each observation and shows whichever one appears most often in the cell: forest, shrubland, grassland, and so on.',
       'This is land cover *at the finds*, not a land-cover map. It says what kind of ground the records in a cell sit on, which is the question worth asking of a foraging map; a real land-cover raster is available separately as a reference layer in the layers control.',
     ],
     caveat: 'Only the winner is shown, so a cell that is half forest and half meadow looks the same as one that is all forest. Cells with no finds are blank, not unclassified ground.',
@@ -140,22 +140,22 @@ export const OPTION_DOCS = [
     title: 'Heatmap: Wind / aspect vectors',
     summary: 'Arrows for wind where it exists, and for the way slopes face where it does not.',
     detail: [
-      'The observations carry terrain **aspect** — the compass direction a slope faces — and a wind-exposure index, but no measured wind. Until the pipeline samples ERA5 wind into `wind_u` / `wind_v`, this heatmap draws mean terrain aspect: arrow direction is the way the ground faces, arrow length is how *consistently* the cell faces one way, and colour is wind exposure.',
+      'The observations carry terrain **aspect**: the compass direction a slope faces, and a wind-exposure index, but no measured wind. Until the pipeline samples ERA5 wind into `wind_u` / `wind_v`, this heatmap draws mean terrain aspect: arrow direction is the way the ground faces, arrow length is how *consistently* the cell faces one way, and colour is wind exposure.',
       'When real wind data is present the heatmap switches to it automatically and relabels its legend, so the arrows never silently change meaning.',
     ],
-    caveat: 'A short arrow means mixed terrain, not calm air. Aspect is averaged as a vector, because averaging compass degrees numerically puts the mean of 350° and 10° at 180° — exactly backwards.',
+    caveat: 'A short arrow means mixed terrain, not calm air. Aspect is averaged as a vector, because averaging compass degrees numerically puts the mean of 350° and 10° at 180°, exactly backwards.',
   },
   {
     id: 'map-heatmap-field',
     group: 'Map',
     title: 'Heatmap: environmental fields',
-    summary: 'The cell mean of one enriched value — rainfall, soil moisture, NDVI, slope, aspect, TWI, sun or wind exposure.',
+    summary: 'The cell mean of one enriched value, rainfall, soil moisture, NDVI, slope, aspect, TWI, sun or wind exposure.',
     detail: [
       'Every observation carries the terrain and weather the pipeline sampled at its location. Averaging that across a grid cell turns 48,000 scattered readings into a surface you can read: where the ground is steep, where it holds water, where the canopy is wet, how much rain fell in the week before finds were made.',
       'Aspect is the exception and is treated as circular: it is averaged as a vector, so 350° and 10° average to 0° rather than 180°, and its key is a compass wheel rather than a low-to-high bar.',
       'The tooltip on a point reports the cell mean along with how many observations went into it, because a mean of two is a different claim from a mean of two hundred.',
     ],
-    caveat: 'These are not rasters. A cell has a value only where somebody recorded a find, so a blank cell means nobody looked there — not that the ground is dry, flat or bare. And because the sample points are wherever people walked, a cell mean describes the places finds were made in that cell, not the cell as a whole.',
+    caveat: 'These are not rasters. A cell has a value only where somebody recorded a find, so a blank cell means nobody looked there, not that the ground is dry, flat or bare. And because the sample points are wherever people walked, a cell mean describes the places finds were made in that cell, not the cell as a whole.',
     also: ['map-heatmap', 'map-cell-size', 'appearance-cell-shape'],
   },
   {
@@ -166,7 +166,7 @@ export const OPTION_DOCS = [
     detail: [
       'Smaller cells resolve more detail and hold fewer records each, so they are noisier; larger cells are steadier but blur real boundaries.',
       'If a heatmap looks like static, the cells are probably too small for the number of records in view.',
-      'Below about a kilometre the grid stops summarising and starts drawing roughly one cell per observation — at which point it is the point layer with square markers. The legend reports the cell count, so compare it against how many records are in view to see whether that has happened.',
+      'Below about a kilometre the grid stops summarising and starts drawing roughly one cell per observation, at which point it is the point layer with square markers. The legend reports the cell count, so compare it against how many records are in view to see whether that has happened.',
     ],
     also: ['map-heatmap'],
   },
@@ -176,7 +176,7 @@ export const OPTION_DOCS = [
     title: 'Date',
     summary: 'The day of the year the seasonal heatmaps are centred on.',
     detail: [
-      'Year is ignored — every year\'s records are pooled by day of the year, so this asks "what happens around this time of year", not "what happened on this date".',
+      'Year is ignored, every year\'s records are pooled by day of the year, so this asks "what happens around this time of year", not "what happened on this date".',
     ],
     also: ['map-season-window', 'map-heatmap-season'],
   },
@@ -200,12 +200,12 @@ export const OPTION_DOCS = [
     summary: 'Keep the app, the observations and an area of map tiles in this browser, for use with no signal.',
     detail: [
       'A map of where things grow is most often read standing in the place it describes, which is where there is least likely to be a connection. Three things can be saved, separately, because they cost very different amounts:',
-      '**The app** — every page and the code behind it, so Charts and Analysis open offline too and not just the page you happened to be on.',
-      '**Observations** — the dataset the map, table and charts all read from. This is the big one, tens of megabytes.',
-      '**Map tiles for this view** — the basemap imagery for the area on screen, plus however many zoom levels closer you ask for. Pan and zoom to where you are going first: this saves what is in front of you, not the world. The tile count and a rough size are shown before anything is downloaded, because the count roughly quadruples per extra zoom level.',
+      '**The app**: every page and the code behind it, so Charts and Analysis open offline too and not just the page you happened to be on.',
+      '**Observations**, the dataset the map, table and charts all read from. This is the big one, tens of megabytes.',
+      '**Map tiles for this view**: the basemap imagery for the area on screen, plus however many zoom levels closer you ask for. Pan and zoom to where you are going first: this saves what is in front of you, not the world. The tile count and a rough size are shown before anything is downloaded, because the count roughly quadruples per extra zoom level.',
       'Nothing is saved on its own beyond the app shell. Downloading a dataset and a few hundred tiles onto someone\'s mobile data without being asked is not a feature.',
     ],
-    caveat: 'Saved data lives in this browser on this device — it is not uploaded, does not follow your account, and clearing the browser\'s site data removes it. Tile services also set their own terms on bulk downloading; save the area you are going to, not a region.',
+    caveat: 'Saved data lives in this browser on this device. It is not uploaded, does not follow your account, and clearing the browser\'s site data removes it. Tile services also set their own terms on bulk downloading; save the area you are going to, not a region.',
     also: ['map-basemaps', 'data-species'],
   },
   {
@@ -215,8 +215,8 @@ export const OPTION_DOCS = [
     summary: 'A muted basemap, plus reference layers on top: weather, land cover, greenness, relief, trails and ownership.',
     detail: [
       'One basemap at a time, any number of the reference layers on top of it. Those are somebody else\'s imagery, distinct from the **Heatmap** picker in the control bar, which draws a grid computed from the observations themselves.',
-      'The map opens on a light grey canvas on purpose. A street or topo map is drawn to be read on its own, and once 48,000 coloured dots sit on it, its colour competes with the data for the same hues. A grey base leaves the dots as the only saturated thing on screen. For terrain without that cost, keep the grey base and switch on **Hillshade** — relief in grey, colour still reserved for the observations.',
-      'These are third-party tile services. If one cannot be reached the map says so rather than drawing nothing — an empty ownership layer would otherwise read as "no public land here".',
+      'The map opens on a light grey canvas on purpose. A street or topo map is drawn to be read on its own, and once 48,000 coloured dots sit on it, its colour competes with the data for the same hues. A grey base leaves the dots as the only saturated thing on screen. For terrain without that cost, keep the grey base and switch on **Hillshade**, relief in grey, colour still reserved for the observations.',
+      'These are third-party tile services. If one cannot be reached the map says so rather than drawing nothing, an empty ownership layer would otherwise read as "no public land here".',
     ],
     also: ['map-layer-weather', 'map-layer-ground', 'map-trails', 'map-land-ownership',
       'appearance-tile-opacity', 'map-heatmap'],
@@ -227,13 +227,13 @@ export const OPTION_DOCS = [
     title: 'Weather layers',
     summary: 'Live US radar, US rainfall over the past 24 hours, global satellite rainfall, and land surface temperature.',
     detail: [
-      '**Radar (US, now)** is live NEXRAD base reflectivity. It is what the radar is seeing this minute, not an accumulation, and reflectivity is not rainfall — hail, bright banding at the melting layer, and ground clutter near the antenna all return signal.',
+      '**Radar (US, now)** is live NEXRAD base reflectivity. It is what the radar is seeing this minute, not an accumulation, and reflectivity is not rainfall: hail, bright banding at the melting layer, and ground clutter near the antenna all return signal.',
       '**Rain past 24h (US)** is the River Forecast Centers\' quantitative precipitation estimate: radar corrected against gauges. It is the closest thing here to "how much fell", and it is still an estimate.',
       '**Rainfall (global)** is NASA\'s GPM IMERG precipitation rate at about 10 km. That cell is larger than most of the places on this map, so it tells you the weather over an area, not whether it rained on a particular hillside.',
-      '**Land surface temp** is the temperature of the ground itself, not the air — bare rock in full sun reads far hotter than the air above it, and a forest canopy reads cooler.',
+      '**Land surface temp** is the temperature of the ground itself, not the air, bare rock in full sun reads far hotter than the air above it, and a forest canopy reads cooler.',
       'The global layers vary by day, and the key carries a date picker. Each product has its own latency, so the date opens a few days back: asking for today generally returns blank tiles, which would read as "no rain" rather than "not processed yet".',
     ],
-    caveat: 'None of these is measured at the observations. They are current or recent conditions drawn over historical finds, so they cannot explain the finds — for that, the rainfall and temperature **heatmaps** use the values the pipeline sampled at each observation\'s own date.',
+    caveat: 'None of these is measured at the observations. They are current or recent conditions drawn over historical finds, so they cannot explain the finds, for that, the rainfall and temperature **heatmaps** use the values the pipeline sampled at each observation\'s own date.',
     also: ['map-heatmap-field', 'appearance-tile-opacity'],
   },
   {
@@ -242,7 +242,7 @@ export const OPTION_DOCS = [
     title: 'Ground and vegetation layers',
     summary: 'ESA land cover at 10 m, modelled soil moisture, and MODIS greenness.',
     detail: [
-      '**Land cover (ESA)** is WorldCover 2021 at 10 m — the highest-resolution global land-cover map there is, with its own official class colours so it matches every other rendering of the product. It is from 2021: a burn, a clear-cut or a new development since then is not in it.',
+      '**Land cover (ESA)** is WorldCover 2021 at 10 m, the highest-resolution global land-cover map there is, with its own official class colours so it matches every other rendering of the product. It is from 2021: a burn, a clear-cut or a new development since then is not in it.',
       '**Soil moisture** is SMAP L4, a model that assimilates satellite retrievals, giving water in the top 5 cm at about 9 km. A model output over a wide cell is not a reading of your patch.',
       '**NDVI (greenness)** is an 8-day MODIS composite at 250 m. Dense conifer and dense broadleaf both saturate near the top of the scale, so it separates bare ground from vegetation far better than it separates one forest from another.',
     ],
@@ -255,7 +255,7 @@ export const OPTION_DOCS = [
     title: 'Hiking trails layer',
     summary: 'Waymarked hiking routes from OpenStreetMap, drawn over the basemap.',
     detail: [
-      'Renders OpenStreetMap\'s hiking *route relations* — named, waymarked routes — rather than every footpath in the database. It answers "how would I get near this" for a cluster of finds that looks promising.',
+      'Renders OpenStreetMap\'s hiking *route relations*, named, waymarked routes, rather than every footpath in the database. It answers "how would I get near this" for a cluster of finds that looks promising.',
     ],
     caveat: 'An unmapped path is missing from this layer, not absent from the ground, and a mapped one may be closed, overgrown or on land you cannot enter. It is a planning aid, not a permission.',
     also: ['map-land-ownership', 'map-basemaps'],
@@ -266,10 +266,10 @@ export const OPTION_DOCS = [
     title: 'Land ownership layer',
     summary: 'US federal and state land, coloured by the agency that manages it.',
     detail: [
-      'The BLM\'s Surface Management Agency layer: which agency — Forest Service, BLM, Park Service, state — manages each parcel. This is the layer that turns a promising slope into somewhere you can actually go, or cannot.',
+      'The BLM\'s Surface Management Agency layer: which agency (Forest Service, BLM, Park Service, state) manages each parcel. This is the layer that turns a promising slope into somewhere you can actually go, or cannot.',
       'The build used here leaves private and unrecorded parcels unpainted, which is what makes it readable: the colour is public land and the gaps are everything else.',
     ],
-    caveat: 'Unpainted means private **or unrecorded** — not that the land is open. Public land is also not uniformly open to collecting: rules differ by agency, by unit, and by species, and a national park is not a national forest. Confirm access and collecting rules before relying on this.',
+    caveat: 'Unpainted means private **or unrecorded**, not that the land is open. Public land is also not uniformly open to collecting: rules differ by agency, by unit, and by species, and a national park is not a national forest. Confirm access and collecting rules before relying on this.',
     also: ['map-trails', 'map-basemaps'],
   },
   {
@@ -278,7 +278,7 @@ export const OPTION_DOCS = [
     title: 'My location',
     summary: 'Puts a dot at your position, with a circle showing its accuracy.',
     detail: [
-      'Uses the browser\'s geolocation, so it asks permission first. The circle is the accuracy the device reports — a wide circle means the fix is poor, not that the area is interesting.',
+      'Uses the browser\'s geolocation, so it asks permission first. The circle is the accuracy the device reports, a wide circle means the fix is poor, not that the area is interesting.',
       'Your position is never sent anywhere; it is only drawn on your own map.',
     ],
   },
@@ -288,7 +288,7 @@ export const OPTION_DOCS = [
     title: 'Live clustering',
     summary: 'Group observations by k-means in the browser, by environment or by geography.',
     detail: [
-      'Runs k-means over the observations currently in view. Clustering by *features* groups finds that share an environment — similar elevation, temperature, moisture — wherever they are. Clustering by *geography* groups them by location alone.',
+      'Runs k-means over the observations currently in view. Clustering by *features* groups finds that share an environment, similar elevation, temperature, moisture, wherever they are. Clustering by *geography* groups them by location alone.',
       'The result becomes available as a colouring and as a chart field, so a cluster can be inspected rather than just admired.',
       'This is exploratory: k-means will always return the number of groups you ask for, whether or not the data has that many. Changing k and seeing whether the groups survive is the check.',
     ],
@@ -298,7 +298,7 @@ export const OPTION_DOCS = [
     id: 'map-save-image',
     group: 'Map',
     title: 'Save image',
-    summary: 'Flattens the map — basemap tiles, layers, heatmap and points — into a single PNG.',
+    summary: 'Flattens the map, basemap tiles, layers, heatmap and points, into a single PNG.',
     detail: [
       'Composites what is on screen, including the tile layers, rather than exporting only the vector layer.',
     ],
@@ -309,10 +309,10 @@ export const OPTION_DOCS = [
     title: 'Include excluded water / non-terrestrial rows',
     summary: 'Show observations the pipeline flagged as falling on water, ice or built-up land.',
     detail: [
-      'The enrichment pipeline looks up the land cover under every observation and flags the ones landing on open water, permanent snow and ice, or built-up surfaces (land-cover codes 50, 70 and 80). Those are almost always a GPS error or a coordinate rounded off a shoreline, not a mushroom growing in a lake — so they are excluded from the terrestrial dataset the analysis uses. This checkbox puts them back in view.',
+      'The enrichment pipeline looks up the land cover under every observation and flags the ones landing on open water, permanent snow and ice, or built-up surfaces (land-cover codes 50, 70 and 80). Those are almost always a GPS error or a coordinate rounded off a shoreline, not a mushroom growing in a lake, so they are excluded from the terrestrial dataset the analysis uses. This checkbox puts them back in view.',
       '**In the currently published dataset this control does nothing, and the reason is worth knowing.** The pipeline sets the `water_mask` flag and then drops the flagged rows before exporting, so the published file contains 48,233 observations of which zero are flagged. The toggle only has something to reveal if the pipeline is run with `FILTER_NON_PRODUCTIVE_LANDCOVER=0`, which keeps the flagged rows in the export and leaves the decision to the viewer.',
     ],
-    caveat: 'Turning this on does not recover observations from the published dataset — they were removed upstream, not hidden downstream.',
+    caveat: 'Turning this on does not recover observations from the published dataset; they were removed upstream, not hidden downstream.',
   },
 
   // ── Appearance ────────────────────────────────────────────────────────────
@@ -323,7 +323,7 @@ export const OPTION_DOCS = [
     summary: 'The set of colours categories are drawn from.',
     detail: [
       'Okabe–Ito is the safe default for colour-vision deficiency; the others trade some of that for contrast or for a more muted look on satellite imagery.',
-      'A palette change applies everywhere at once — map, charts and legends — because category colours are shared.',
+      'A palette change applies everywhere at once, map, charts and legends, because category colours are shared.',
     ],
     also: ['appearance-overrides', 'map-color-by'],
   },
@@ -350,7 +350,7 @@ export const OPTION_DOCS = [
     id: 'appearance-point-opacity',
     group: 'Style',
     title: 'Opacity',
-    summary: 'How solid the map dots are — lower values let density show through as shading.',
+    summary: 'How solid the map dots are, lower values let density show through as shading.',
     detail: [
       'At low opacity, overlapping dots accumulate into darker patches, which turns the point layer into its own density map. This is often more informative than the density heatmap because it keeps every point\'s colour.',
       'The outline follows this slider too, so fading the dots fades the whole marker rather than leaving a mesh of solid rings behind.',
@@ -361,7 +361,7 @@ export const OPTION_DOCS = [
     id: 'appearance-point-outline',
     group: 'Style',
     title: 'Outline map dots',
-    summary: 'The dark ring around each dot — helpful when sparse, a grey mass when dense.',
+    summary: 'The dark ring around each dot, helpful when sparse, a grey mass when dense.',
     detail: [
       'The ring separates overlapping finds and makes pale colours readable against a light basemap. Over a dense patch the rings merge into grey and hide the colours they were drawn to separate, so it can be turned off.',
       'Turning it off is usually the right move when zoomed out over a well-sampled region; turning it back on helps when inspecting a handful of points.',
@@ -387,7 +387,7 @@ export const OPTION_DOCS = [
     summary: 'How strongly the grid cells cover the basemap under them.',
     detail: [
       'The cells sit between the basemap and the points. Turn this down to read terrain, roads or imagery through the shading; turn it up when the heatmap is the thing you are reading and the base is only there for orientation.',
-      'Low values cost contrast at the light end of the ramp, which is where a density map keeps its low values — so if faint cells start disappearing into the basemap, that is why.',
+      'Low values cost contrast at the light end of the ramp, which is where a density map keeps its low values. If faint cells start disappearing into the basemap, that is why.',
     ],
     also: ['appearance-heatmap-ramp', 'appearance-tile-opacity', 'map-show-points'],
   },
@@ -397,7 +397,7 @@ export const OPTION_DOCS = [
     title: 'Cell shape',
     summary: 'Bin the observations into hexagons or squares.',
     detail: [
-      'Hexagons are the default. Every neighbour of a hex is the same distance away and shares a full edge, which a square grid cannot manage — its diagonal neighbours are 1.41× further and meet only at a corner. That makes a hex grid read as a continuous surface where a square one reads as a grid, and it keeps a cluster of finds from being split differently depending on how it happens to land against the axes.',
+      'Hexagons are the default. Every neighbour of a hex is the same distance away and shares a full edge, which a square grid cannot manage, its diagonal neighbours are 1.41× further and meet only at a corner. That makes a hex grid read as a continuous surface where a square one reads as a grid, and it keeps a cluster of finds from being split differently depending on how it happens to land against the axes.',
       'Squares remain available: they line up with latitude and longitude, so a cell boundary is a round number rather than an offset row.',
       'The two are sized to the same area, so switching shape re-bins the same observations at the same resolution rather than silently coarsening or sharpening the map.',
     ],
@@ -409,7 +409,7 @@ export const OPTION_DOCS = [
     title: 'Map layer opacity',
     summary: 'Dims every reference tile layer switched on in the layers control, together.',
     detail: [
-      'The reference layers stack — hillshade under rainfall under land ownership — and dimming them one at a time to see the data through the pile would be several controls doing one job.',
+      'The reference layers stack, hillshade under rainfall under land ownership, and dimming them one at a time to see the data through the pile would be several controls doing one job.',
       'Each layer keeps its own built-in weighting: hillshade ships at 60% and land ownership at 45% so they read as context rather than as the map. This multiplies into that rather than replacing it, so their relative strengths hold as you dim them.',
     ],
     also: ['map-basemaps', 'appearance-heatmap-opacity'],
@@ -420,7 +420,7 @@ export const OPTION_DOCS = [
     title: 'Per-value colour and shape',
     summary: 'Pin a specific species (or other category) to a colour or shape of your choosing.',
     detail: [
-      'Click a swatch to recolour that value. The override applies across the map and every chart, and persists — so the species you care about can keep the same colour across sessions and shared links.',
+      'Click a swatch to recolour that value. The override applies across the map and every chart, and persists, so the species you care about can keep the same colour across sessions and shared links.',
     ],
     also: ['appearance-palette', 'appearance-shapes'],
   },
@@ -430,7 +430,7 @@ export const OPTION_DOCS = [
     id: 'chart-type',
     group: 'Charts',
     title: 'Chart type',
-    summary: 'What kind of chart to draw — which then decides which fields you can set.',
+    summary: 'What kind of chart to draw, which then decides which fields you can set.',
     detail: [
       'The controls below the type change with it, because a scatter plot needs an X and a Y while a donut needs a grouping and a measure. Switching type keeps whatever fields still apply.',
     ],
@@ -445,7 +445,7 @@ export const OPTION_DOCS = [
     detail: [
       'The only chart here that shows individual records rather than aggregates, so it is where relationships and outliers actually appear. Click any point to open that observation.',
     ],
-    caveat: 'With tens of thousands of points, overplotting hides density — a solid mass could be 500 records or 50,000. Lower the opacity to read it.',
+    caveat: 'With tens of thousands of points, overplotting hides density, a solid mass could be 500 records or 50,000. Lower the opacity to read it.',
     also: ['chart-x', 'chart-y', 'appearance-point-opacity'],
   },
   {
@@ -465,9 +465,9 @@ export const OPTION_DOCS = [
     summary: 'One bar per category, split into segments by a second category.',
     detail: [
       'The chart for composition: which species make up each land cover, how each year\'s records break down by cluster. A plain bar gives one number per group and a heatmap gives the cells without the totals; this gives both at once.',
-      'Both dimensions are capped — 20 groups and 8 segments — because 900 species stacked is a smear rather than a chart. Whatever falls past the cap is collected into "Other" rather than dropped, so each bar still adds up to the group\'s real total.',
+      'Both dimensions are capped, 20 groups and 8 segments, because 900 species stacked is a smear rather than a chart. Whatever falls past the cap is collected into "Other" rather than dropped, so each bar still adds up to the group\'s real total.',
     ],
-    caveat: 'Only the bottom segment shares a baseline, so segments further up are genuinely hard to compare between bars — the eye has to judge lengths that start in different places. Use it to read composition within a bar; switch to a grouped comparison if you need to compare one segment across bars.',
+    caveat: 'Only the bottom segment shares a baseline, so segments further up are genuinely hard to compare between bars, the eye has to judge lengths that start in different places. Use it to read composition within a bar; switch to a grouped comparison if you need to compare one segment across bars.',
     also: ['chart-normalise', 'chart-stack-field', 'chart-bar', 'chart-heatmap'],
   },
   {
@@ -486,7 +486,7 @@ export const OPTION_DOCS = [
     title: '100%',
     summary: 'Stretch every bar to full length, comparing composition instead of size.',
     detail: [
-      'A stacked bar answers two different questions and cannot answer both at once. Left alone, bar length is the total, so a big group looks big. Normalised, every bar is the same length and only the proportions differ — which is what you want when asking whether the *mix* changes between groups.',
+      'A stacked bar answers two different questions and cannot answer both at once. Left alone, bar length is the total, so a big group looks big. Normalised, every bar is the same length and only the proportions differ, which is what you want when asking whether the *mix* changes between groups.',
     ],
     caveat: 'Normalising hides sample size completely: a bar built from 6 records looks exactly as solid as one built from 6,000. The totals are still on the tooltips; read them before trusting a difference in proportion.',
     also: ['chart-stacked', 'filter-min-obs'],
@@ -519,7 +519,7 @@ export const OPTION_DOCS = [
     title: 'Histogram',
     summary: 'The distribution of a single measurement, in bins.',
     detail: [
-      'Answers "what values are common" for one field — whether elevations cluster at one band or spread evenly.',
+      'Answers "what values are common" for one field, whether elevations cluster at one band or spread evenly.',
     ],
     also: ['chart-value', 'chart-bins'],
   },
@@ -529,7 +529,7 @@ export const OPTION_DOCS = [
     title: 'Heatmap',
     summary: 'Two categories crossed, with each cell shaded by a count or a mean.',
     detail: [
-      'Good for questions of the form "which species turn up in which land cover" — the pattern of filled and empty cells is usually more informative than any single number in it.',
+      'Good for questions of the form "which species turn up in which land cover", the pattern of filled and empty cells is usually more informative than any single number in it.',
     ],
     also: ['chart-rows', 'chart-columns', 'chart-measure'],
   },
@@ -540,7 +540,7 @@ export const OPTION_DOCS = [
     summary: 'Values around a circle, one spoke per category.',
     detail: [
       'Readable for a handful of categories and unreadable beyond that, so it is capped at twelve spokes. Bar charts compare lengths more accurately; radar is for the shape of a profile at a glance.',
-      'Each spoke is labelled and the value is printed at its vertex, because the vertices are the data — the outline between them is interpolation, and the area inside is not a quantity at all.',
+      'Each spoke is labelled and the value is printed at its vertex, because the vertices are the data, the outline between them is interpolation, and the area inside is not a quantity at all.',
     ],
     caveat: 'The area enclosed grows with the square of the values and changes with the order of the spokes, so it exaggerates differences and can be reshaped without changing a single number. Read the vertices, not the area.',
   },
@@ -550,7 +550,7 @@ export const OPTION_DOCS = [
     title: 'Donut',
     summary: 'Shares of a whole, as segments of a ring.',
     detail: [
-      'Works when a few categories make up most of the total. Beyond about six segments the small ones become indistinguishable — a sorted bar chart says the same thing more clearly.',
+      'Works when a few categories make up most of the total. Beyond about six segments the small ones become indistinguishable, a sorted bar chart says the same thing more clearly.',
     ],
     also: ['chart-bar'],
   },
@@ -591,7 +591,7 @@ export const OPTION_DOCS = [
     group: 'Charts',
     title: 'Size',
     summary: 'A measurement that scales each mark.',
-    detail: ['A third dimension on a scatter plot. Best kept for a field with a wide range — a narrow one produces marks that all look alike.'],
+    detail: ['A third dimension on a scatter plot. Best kept for a field with a wide range, a narrow one produces marks that all look alike.'],
   },
   {
     id: 'chart-series',
@@ -614,7 +614,7 @@ export const OPTION_DOCS = [
     title: 'Measure',
     summary: 'What each bar or cell is: a count of records, or the mean of a field.',
     detail: [
-      'Count answers "how many"; a mean answers "how much, typically". They can point in opposite directions — the species with the most records is often not the one found highest.',
+      'Count answers "how many"; a mean answers "how much, typically". They can point in opposite directions, the species with the most records is often not the one found highest.',
     ],
     caveat: 'A mean over very few records is unstable. Use the minimum-records filter to hold it to a sample size worth reporting.',
     also: ['filter-min-obs'],
@@ -670,7 +670,7 @@ export const OPTION_DOCS = [
     title: 'Today line',
     summary: 'Marks the current day of the year on a day-of-year axis.',
     detail: [
-      'A reference line for reading a seasonal chart against the date now — "is this species in season" answered by where the line falls in its distribution.',
+      'A reference line for reading a seasonal chart against the date now, "is this species in season" answered by where the line falls in its distribution.',
       'Offered on scatter, line and area charts, wherever the x axis carries day of year.',
     ],
   },
@@ -678,7 +678,7 @@ export const OPTION_DOCS = [
     id: 'chart-sort',
     group: 'Charts',
     title: 'Sort',
-    summary: 'The order categories appear in — by value or by label.',
+    summary: 'The order categories appear in, by value or by label.',
     detail: [
       'Sorting by value ranks; sorting by label makes two charts comparable side by side, since the categories stay in the same places.',
     ],
@@ -731,7 +731,7 @@ export const OPTION_DOCS = [
     summary: 'Which environmental variables move together, by rank correlation.',
     detail: [
       'Spearman rank correlation between every pair of fields, computed pairwise-complete so a field with gaps still contributes where it has data. Rank rather than linear, so a relationship that is consistent but not straight still registers.',
-      'Values run from −1 to +1. Around zero means no monotonic relationship — which is not the same as no relationship.',
+      'Values run from −1 to +1. Around zero means no monotonic relationship, which is not the same as no relationship.',
     ],
     caveat: 'Correlation here is not cause, and the confound is usually season. Elevation and temperature correlate at +0.43 across the dataset, which looks like altitude warming things; hold the season still and it flattens to about zero. High finds happen in summer, low ones in spring and autumn.',
   },
@@ -770,7 +770,7 @@ export const OPTION_DOCS = [
     id: 'analysis-scope',
     group: 'Analysis',
     title: 'Scope',
-    summary: 'Which observations the analysis runs over — everything, or the current filters.',
+    summary: 'Which observations the analysis runs over, everything, or the current filters.',
     detail: ['Narrowing the scope narrows every statistic on the page, including the sample sizes reported next to them.'],
     also: ['filter-panel'],
   },
@@ -780,7 +780,7 @@ export const OPTION_DOCS = [
     id: 'filter-panel',
     group: 'Data',
     title: 'Filters',
-    summary: 'Restrict the dataset — every view follows the same filters.',
+    summary: 'Restrict the dataset, every view follows the same filters.',
     detail: [
       'Filters are shared across the map, charts, analysis and table, so a filter set once holds while you move between them. They are also carried in a shared link.',
     ],
@@ -801,7 +801,7 @@ export const OPTION_DOCS = [
     title: 'Time',
     summary: 'Year, month, week of the year, or an explicit date range.',
     detail: [
-      'Month and week ignore the year, so they select a season across every year at once — which is usually what you want for a phenology question. From/To select an actual span.',
+      'Month and week ignore the year, so they select a season across every year at once, which is usually what you want for a phenology question. From/To select an actual span.',
     ],
   },
   {
@@ -821,11 +821,11 @@ export const OPTION_DOCS = [
     title: 'Precise coordinates only',
     summary: 'Drop records whose published location is deliberately vague or poorly measured.',
     detail: [
-      'iNaturalist does not always publish where an observation actually was. A record is **obscured** when the observer asks for it, or automatically when the taxon is threatened — and obscuring is not a rounding: the published point is randomised inside a roughly 0.2° cell, about 20km across. Others are simply **coarse**: an honest location with an accuracy radius wider than a kilometre.',
-      'That matters more here than in most places that show iNaturalist data. Every environmental value in this app is sampled *at the point* — elevation, slope, aspect, NDVI, soil moisture, the seven-day weather lead-up. For an obscured record those readings come from wherever the randomised point happened to land, which can be the far side of a ridge, a different watershed, or 1,000m up. The observation is real; the terrain attached to it describes somewhere else.',
-      'The breakdown under the checkbox counts the whole loaded dataset, not the filtered view, so the numbers that justify the filter do not move when you switch it on. Records where iNaturalist reported no accuracy at all are counted separately as "not reported" — that is missing information, not a guarantee of precision, and the filter drops them too.',
+      'iNaturalist does not always publish where an observation actually was. A record is **obscured** when the observer asks for it, or automatically when the taxon is threatened, and obscuring is not a rounding: the published point is randomised inside a roughly 0.2° cell, about 20km across. Others are simply **coarse**: an honest location with an accuracy radius wider than a kilometre.',
+      'That matters more here than in most places that show iNaturalist data. Every environmental value in this app is sampled *at the point*, elevation, slope, aspect, NDVI, soil moisture, the seven-day weather lead-up. For an obscured record those readings come from wherever the randomised point happened to land, which can be the far side of a ridge, a different watershed, or 1,000m up. The observation is real; the terrain attached to it describes somewhere else.',
+      'The breakdown under the checkbox counts the whole loaded dataset, not the filtered view, so the numbers that justify the filter do not move when you switch it on. Records where iNaturalist reported no accuracy at all are counted separately as "not reported": that is missing information, not a guarantee of precision, and the filter drops them too.',
     ],
-    caveat: 'This is a strong filter and on some taxa it removes most of the data — obscuring is applied to whole species, so a threatened one may have no precise records at all. Turn it on when reading terrain relationships; leave it off when counting where and when people find things, which obscured records still answer honestly at a regional scale.',
+    caveat: 'This is a strong filter and on some taxa it removes most of the data, obscuring is applied to whole species, so a threatened one may have no precise records at all. Turn it on when reading terrain relationships; leave it off when counting where and when people find things, which obscured records still answer honestly at a regional scale.',
     also: ['analysis-drivers', 'analysis-quality', 'data-show-filtered'],
   },
   {
@@ -849,14 +849,14 @@ export const OPTION_DOCS = [
     id: 'data-taxon-rank',
     group: 'Data',
     title: 'Taxon rank',
-    summary: 'Which rank the taxon picker lists and filters at — kingdom down to species.',
+    summary: 'Which rank the taxon picker lists and filters at, kingdom down to species.',
     detail: [
       'Each observation carries its full ancestry: kingdom, phylum, class, order, family, genus, species. The rank chosen here decides both what the list shows and what the filter applies to, so the same picker narrows a view to one kingdom or to one species.',
       'This used to be derived by splitting the species name on its spaces, which gave a genus only when a record happened to be identified to species and could not reach family or above at all. The pipeline now resolves the real ancestry against iNaturalist, so every rank is a column you can filter, group, colour and analyse by.',
       'Only ranks the loaded dataset actually populates are offered. A dataset exported before this existed carries species and genus and nothing else, and the picker will say so by offering only those.',
       'Switching rank clears the current selection, because the names do not carry across: "Amanita muscaria" is not a family, and keeping it would silently filter everything away.',
     ],
-    caveat: 'A record identified only to family has a family and an empty genus and species. That is the honest answer — but it means filtering at species level quietly drops every record that was never pinned down that far. Filter at the coarsest rank that answers your question.',
+    caveat: 'A record identified only to family has a family and an empty genus and species. That is the honest answer, but it means filtering at species level quietly drops every record that was never pinned down that far. Filter at the coarsest rank that answers your question.',
     also: ['data-species', 'map-color-by', 'filter-min-obs'],
   },
   {
@@ -870,7 +870,7 @@ export const OPTION_DOCS = [
     id: 'data-fetch',
     group: 'Data',
     title: 'Fetch new',
-    summary: 'Pull fresh observations for a taxon — at any rank — from iNaturalist.',
+    summary: 'Pull fresh observations for a taxon at any rank, from iNaturalist.',
     detail: [
       'Name a species, a genus, a family or a whole kingdom: iNaturalist matches the name at whatever level it sits, and every record comes back with its own full ancestry resolved, so a mixed import stays filterable and groupable at every rank.',
       'Newly fetched records carry only what iNaturalist provides; the environmental fields appear after the enrichment pipeline runs over them.',
@@ -883,10 +883,10 @@ export const OPTION_DOCS = [
     id: 'share-link',
     group: 'Sharing',
     title: 'Share',
-    summary: 'A link that reproduces this view — filters, colouring, heatmap and position.',
+    summary: 'A link that reproduces this view, filters, colouring, heatmap and position.',
     detail: [
       'Everything that made the view worth showing goes into the query string, so the link opens the same thing rather than the front page. The same link is behind the QR code, the social buttons and the email and text options.',
-      'The QR code is generated in the browser rather than through an image service, so the URL — filters and all — is not handed to a third party.',
+      'The QR code is generated in the browser rather than through an image service, so the URL, filters and all: is not handed to a third party.',
     ],
     also: ['share-embed', 'chart-share'],
   },

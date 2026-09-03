@@ -44,7 +44,7 @@
           <strong>Map tiles for this view</strong>
           <small>
             {{ estimate.tiles.toLocaleString() }} tiles, roughly {{ formatBytes(estimate.bytes) }}.
-            Pan and zoom to the area you want first — this saves what is on screen now,
+            Pan and zoom to the area you want first: this saves what is on screen now,
             plus <span class="off-num">{{ extraZoom }}</span> zoom level{{ extraZoom === 1 ? '' : 's' }} closer.
           </small>
           <label class="off-zoom">
@@ -70,7 +70,7 @@
         <!-- Sizes come from Content-Length, so they are transfer sizes — what
              it cost to fetch, not exactly what it occupies. Reading every body
              back to measure it would cost as much as the download again. -->
-        <span class="off-usage" title="Approximate — measured as what was downloaded">
+        <span class="off-usage" title="Approximate: measured as what was downloaded">
           Saved: ~{{ formatBytes(savedBytes) }}<template v-if="savedTiles"> · {{ savedTiles.toLocaleString() }} tiles</template>
           <template v-if="!online"> · <strong>offline now</strong></template>
         </span>
@@ -146,7 +146,7 @@ async function saveArea() {
   const res = await offline.saveTiles(urls)
   if (!res) return
   lastResult.value = res.failed
-    ? `Saved ${res.done - res.failed} of ${res.total} tiles — the rest could not be reached.`
+    ? `Saved ${res.done - res.failed} of ${res.total} tiles, the rest could not be reached.`
     : `${res.done.toLocaleString()} tiles saved for this area.`
 }
 

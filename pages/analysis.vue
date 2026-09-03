@@ -14,8 +14,7 @@
 
     <template v-else>
       <p class="scope">
-        Analysing <strong>{{ rows.length.toLocaleString() }}</strong> observations —
-        whatever the filters on the Data page currently select.
+        Analysing <strong>{{ rows.length.toLocaleString() }}</strong> observations, whatever the filters on the Data page currently select.
         <HelpLink option="analysis-scope" />
       </p>
 
@@ -27,7 +26,7 @@
           <p class="note">
             Rank correlation, so a relationship counts even when it bends. Each cell uses
             only the rows where <em>both</em> variables are present, because coverage is
-            very uneven — dropping rows missing any variable would compute the whole
+            very uneven: dropping rows missing any variable would compute the whole
             matrix on an unrepresentative remainder.
           </p>
         </ChartCard>
@@ -49,7 +48,7 @@
             Correlation is not cause, and two confounds run through every row of this
             table. <strong>Season</strong> is the big one: high-elevation finds happen in
             summer and low ones in spring and autumn, which is why elevation and
-            temperature appear to rise together — hold the month still and that
+            temperature appear to rise together, hold the month still and that
             relationship flattens to roughly zero. <strong>Effort</strong> is the other:
             people record where people go.
           </p>
@@ -82,9 +81,9 @@
           </table>
           <p v-else class="note">Not enough co-located records in the current selection.</p>
           <p class="note">
-            Same ~5 km cell, same month-long window. Scored by <strong>lift</strong> — how
+            Same ~5 km cell, same month-long window. Scored by <strong>lift</strong>: how
             much more often a pair appears together than their individual frequencies
-            predict — because a raw count would just rank the two commonest species first
+            predict, because a raw count would just rank the two commonest species first
             whether or not they have anything to do with each other.
           </p>
         </ChartCard>
@@ -142,7 +141,7 @@
           <p class="note">
             A chart drawn from a 20%-covered column looks exactly as confident as one drawn
             from a full column. This is which is which. Anything thin here is thin because
-            the enrichment pipeline has not reached those rows yet — re-running it fills them.
+            the enrichment pipeline has not reached those rows yet, re-running it fills them.
           </p>
         </ChartCard>
 
@@ -205,9 +204,9 @@ const rhoColor = (v) => (Math.abs(v) >= 0.5 ? 'var(--accent)' : 'var(--text)')
 function strength(v) {
   const a = Math.abs(v)
   const dir = v > 0 ? 'rise together' : 'move opposite'
-  if (a >= 0.7) return `strong — ${dir}`
-  if (a >= 0.4) return `moderate — ${dir}`
-  if (a >= 0.2) return `weak — ${dir}`
+  if (a >= 0.7) return `strong, ${dir}`
+  if (a >= 0.4) return `moderate, ${dir}`
+  if (a >= 0.2) return `weak: ${dir}`
   return 'little or none'
 }
 

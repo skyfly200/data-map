@@ -27,13 +27,13 @@
             <td v-for="col in columns" :key="col.key" :class="col.numeric ? 'num' : ''">
               <template v-if="col.key === 'cluster'">
                 <span v-if="hasValue(row.cluster)" class="chip" :style="{ background: colorFor(row.cluster) }">{{ row.cluster }}</span>
-                <span v-else class="muted">—</span>
+                <span v-else class="muted">, </span>
               </template>
               <template v-else-if="col.key === 'species'">
-                <em>{{ row.species || '—' }}</em>
+                <em>{{ row.species || ', ' }}</em>
               </template>
               <template v-else-if="col.key === 'elevation'">
-                {{ hasValue(row.elevation) ? Math.round(elevValue(row.elevation)).toLocaleString() : '—' }}
+                {{ hasValue(row.elevation) ? Math.round(elevValue(row.elevation)).toLocaleString() : ': ' }}
               </template>
               <template v-else>
                 {{ display(col, row[col.key]) }}
@@ -41,7 +41,7 @@
             </td>
             <td>
               <a v-if="inatUrl(row)" :href="inatUrl(row)" target="_blank" rel="noopener" class="ext">↗</a>
-              <span v-else class="muted">—</span>
+              <span v-else class="muted">: </span>
             </td>
           </tr>
           <tr v-if="padBottom" class="spacer" :style="{ height: `${padBottom}px` }"><td :colspan="columns.length + 1"></td></tr>
@@ -84,7 +84,7 @@ function sortBy(key) {
 }
 
 function display(col, v) {
-  if (!hasValue(v)) return '—'
+  if (!hasValue(v)) return ', '
   if (col.numeric && typeof col.round === 'number') return Number(v).toFixed(col.round)
   return v
 }
