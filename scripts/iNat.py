@@ -53,20 +53,55 @@ _WEATHER_CACHE = {}
 _INAT_SESSION = None
 _INAT_SESSION_READY = False
 
+# The "failed; using cached response" tracebacks are pyinaturalist / requests_cache
+# logging that a live request throttled (429) and it fell back to a cached
+# response — noisy, but not fatal (the call still returns data). Quiet them to
+# ERROR so a run isn't buried in stack traces; our own retry/backoff still logs a
+# concise line when it actually waits.
+for _noisy in ('requests_cache', 'pyinaturalist', 'pyrate_limiter'):
+    try:
+        __import__('logging').getLogger(_noisy).setLevel(__import__('logging').ERROR)
+    except Exception:
+        pass
+
+
+def _inat_rate():
+    """(per_second, per_minute) for the shared session, tunable for a shared IP.
+
+    Kaggle runs many notebooks behind shared egress IPs, so iNaturalist's
+    per-IP throttle can trip even at the documented ~1 req/s. Lower these
+    (e.g. INAT_PER_MINUTE=30) if 429s persist."""
+    def _num(name, default):
+        raw = os.getenv(name)
+        if raw is None or str(raw).strip() == '':
+            return default
+        try:
+            v = float(raw)
+            return v if v > 0 else default
+        except (TypeError, ValueError):
+            return default
+    return _num('INAT_PER_SECOND', 1.0), _num('INAT_PER_MINUTE', 60.0)
+
+
 def _inat_session():
     global _INAT_SESSION, _INAT_SESSION_READY
     if _INAT_SESSION_READY:
         return _INAT_SESSION
     _INAT_SESSION_READY = True
+    per_second, per_minute = _inat_rate()
+    user_agent = os.getenv(
+        'INAT_USER_AGENT',
+        'data-map-pipeline/1.0 (+https://github.com/skyfly200/data-map)')
     try:
         from pyinaturalist import ClientSession
         _INAT_SESSION = ClientSession(
-            per_second=1,        # iNaturalist asks for ~1 request/second
-            per_minute=60,       # and no more than 60/minute
+            per_second=per_second,  # iNaturalist asks for ~1 request/second
+            per_minute=per_minute,  # and no more than 60/minute
             per_day=10000,
-            burst=1,             # no bursts — bursts are what tripped the throttle
+            burst=1,                # no bursts — bursts are what tripped the throttle
             max_retries=5,
-            backoff_factor=2.0,  # 429s back off exponentially inside the session
+            backoff_factor=2.0,     # 429s back off exponentially inside the session
+            user_agent=user_agent,  # identify the app — iNaturalist throttles anonymous traffic harder
         )
     except Exception as exc:
         # Older pyinaturalist, or a constructor change: fall back to the default
@@ -328,10 +363,14 @@ def get_parallel_fetch_workers(env=None):
         raw = values.get(key)
         if raw is None or str(raw).strip() == '':
             continue
-        parsed = _coerce_int(raw, 3, minimum=1)
+        parsed = _coerce_int(raw, 1, minimum=1)
         if parsed > 0:
             return parsed
-    return 3
+    # Default 1: the shared session rate-limits all requests as a group anyway,
+    # so extra workers add no throughput — they only pile up concurrent requests
+    # that trip iNaturalist's per-IP throttle. Raise INAT_PARALLEL_FETCHES only
+    # if you are not sharing an egress IP (i.e. not on Kaggle).
+    return 1
 
 def should_refresh_all(env=None):
     values = {**(env or {})}
