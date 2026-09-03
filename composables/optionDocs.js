@@ -793,11 +793,12 @@ export const OPTION_DOCS = [
     id: 'filter-min-obs',
     group: 'Data',
     title: 'Sample size',
-    summary: 'Drop species or genera with fewer than N records in the current view.',
+    summary: 'Drop taxa with fewer than N records in the current view.',
     detail: [
       'Counted *after* the other filters, so the threshold means "enough records in what you are actually looking at", not "enough somewhere in the dataset". That distinction matters: a species with 400 records nationally may have 2 in the county you filtered to, and a mean over those 2 should not be on the chart.',
+      'Which rank counts as "a taxon" is yours to pick, and it changes what the number means: 3 records is thin for a species and nothing at all for a family.',
     ],
-    also: ['chart-measure'],
+    also: ['chart-measure', 'data-taxon-rank'],
   },
   {
     id: 'filter-precise-only',
@@ -827,6 +828,21 @@ export const OPTION_DOCS = [
     detail: [
       'Observations are kept as one file per species, so a working set can be loaded without pulling everything. Fewer species loaded means a faster app.',
     ],
+    also: ['data-taxon-rank'],
+  },
+  {
+    id: 'data-taxon-rank',
+    group: 'Data',
+    title: 'Taxon rank',
+    summary: 'Which rank the taxon picker lists and filters at — kingdom down to species.',
+    detail: [
+      'Each observation carries its full ancestry: kingdom, phylum, class, order, family, genus, species. The rank chosen here decides both what the list shows and what the filter applies to, so the same picker narrows a view to one kingdom or to one species.',
+      'This used to be derived by splitting the species name on its spaces, which gave a genus only when a record happened to be identified to species and could not reach family or above at all. The pipeline now resolves the real ancestry against iNaturalist, so every rank is a column you can filter, group, colour and analyse by.',
+      'Only ranks the loaded dataset actually populates are offered. A dataset exported before this existed carries species and genus and nothing else, and the picker will say so by offering only those.',
+      'Switching rank clears the current selection, because the names do not carry across: "Amanita muscaria" is not a family, and keeping it would silently filter everything away.',
+    ],
+    caveat: 'A record identified only to family has a family and an empty genus and species. That is the honest answer — but it means filtering at species level quietly drops every record that was never pinned down that far. Filter at the coarsest rank that answers your question.',
+    also: ['data-species', 'map-color-by', 'filter-min-obs'],
   },
   {
     id: 'data-table',
@@ -839,8 +855,12 @@ export const OPTION_DOCS = [
     id: 'data-fetch',
     group: 'Data',
     title: 'Fetch new',
-    summary: 'Pull fresh observations for a species from iNaturalist.',
-    detail: ['Newly fetched records carry only what iNaturalist provides; the environmental fields appear after the enrichment pipeline runs over them.'],
+    summary: 'Pull fresh observations for a taxon — at any rank — from iNaturalist.',
+    detail: [
+      'Name a species, a genus, a family or a whole kingdom: iNaturalist matches the name at whatever level it sits, and every record comes back with its own full ancestry resolved, so a mixed import stays filterable and groupable at every rank.',
+      'Newly fetched records carry only what iNaturalist provides; the environmental fields appear after the enrichment pipeline runs over them.',
+    ],
+    also: ['data-taxon-rank'],
   },
 
   // ── Sharing and coverage ──────────────────────────────────────────────────

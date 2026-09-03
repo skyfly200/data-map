@@ -21,11 +21,12 @@ Every observation as a point, with a grid of summaries underneath.
 
 ### Colouring and sizing
 
-**Color by** takes any category (species, genus, cluster, land cover, year,
-month, enrichment level) or any numeric field (elevation, slope, NDVI, soil
-moisture, temperature, exposure). Categories get stable colours — a species is
-the same colour here, in every chart, and in the legend. Numeric fields get a
-light-to-dark gradient.
+**Color by** takes any category — every taxonomic rank from kingdom down to
+species, plus common name, the rank a record was identified to, cluster, land
+cover, year, month, enrichment level — or any numeric field (elevation, slope,
+NDVI, soil moisture, temperature, exposure). Categories get stable colours — a
+species is the same colour here, in every chart, and in the legend. Numeric
+fields get a light-to-dark gradient.
 
 **Size by** scales each point by a numeric field, so two dimensions can be read
 at once.
@@ -119,6 +120,31 @@ switches to real wind by itself and relabels the legend.
   ownership layer would otherwise read as "no public land here".
 - **Live clustering** — k-means in the browser, by features or geography
 - **Save image** — flattens the whole map, tiles and all, into a PNG
+
+### Taxonomy
+
+Every observation carries its full ancestry — **kingdom, phylum, class, order,
+family, genus, species** — resolved against iNaturalist when the record is
+fetched. All seven are dimensions you can colour by, group by, filter to, and
+run the analysis over.
+
+This replaces splitting the species name on its spaces, which gave a genus only
+when a record happened to be identified to species and could not reach family or
+above at all. A record identified only to *Amanitaceae* used to have a "species"
+of "Amanitaceae" and a genus to match; it now has a family, and an empty genus
+and species. That is the honest answer — and it means filtering at species level
+quietly drops every record nobody pinned down that far, so filter at the coarsest
+rank that answers your question.
+
+On **Data → Species**, the **Rank** selector decides both what the list shows and
+what the filter applies to, so the same picker narrows a view to one kingdom or
+to one species. Only ranks the loaded dataset populates are offered — a dataset
+exported before this existed carries species and genus and nothing else.
+Switching rank clears the selection, because the names do not carry across.
+
+**Fetch new** takes a name at any rank. "Amanita muscaria" imports one species,
+"Amanitaceae" the family, "Fungi" the kingdom — and a dataset mixing kingdoms
+stays comparable, because every record knows its own place in the tree.
 
 ---
 

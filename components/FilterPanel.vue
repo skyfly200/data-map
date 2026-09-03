@@ -120,8 +120,7 @@
           <label>records per
             <select :value="filters.minObsField || 'species'"
                     @change="setFilter('minObsField', $event.target.value)">
-              <option value="species">Species</option>
-              <option value="genus">Genus</option>
+              <option v-for="r in ranks" :key="r.key" :value="r.key">{{ r.label }}</option>
             </select>
           </label>
         </div>
@@ -161,7 +160,13 @@
 
 <script setup>
 import { LOCATION_PRECISION_LABELS } from '~/composables/useObservations'
-const { filterOptions, filteredData, data } = useObservations()
+const { filterOptions, filteredData, data, availableRanks } = useObservations()
+// The sample-size threshold counts records per taxon, and which rank counts as
+// "a taxon" is the reader's call: 3 records is thin for a species and nothing
+// at all for a family. Only ranks the dataset populates are offered.
+const ranks = computed(() => (availableRanks.value.length
+  ? availableRanks.value
+  : [{ key: 'species', label: 'Species' }]))
 const { filters, setFilter, setCenter, reset, activeCount } = useFilters()
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']

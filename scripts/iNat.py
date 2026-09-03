@@ -5,7 +5,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-from pyinaturalist import get_observations
+from pyinaturalist import get_observations, get_taxa_by_id
 import pandas as pd
 try:
     from meteostat import Point, stations, daily
@@ -33,6 +33,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 import species_store as store
+import taxonomy
 import utils.olc as olc_utils
 
 if sys.platform == 'win32' and hasattr(sys.stdout, 'reconfigure'):
@@ -335,6 +336,55 @@ def classify_location_precision(obscured, geoprivacy, taxon_geoprivacy, public_a
         return 'unknown'
     return 'coarse' if public_accuracy > COARSE_ACCURACY_M else 'precise'
 
+def fetch_taxa(taxon_ids, batch_size=30, fetcher=get_taxa_by_id):
+    """id -> taxon record, for every id given.
+
+    Batched because /v1/taxa/{ids} takes a comma-separated list, and a dataset
+    spanning a few hundred taxa is a handful of requests rather than one per
+    record. A batch that fails is skipped rather than aborting the run: an
+    unresolved ancestor costs one rank on some rows, where a raised exception
+    would cost the whole fetch.
+    """
+    ids = sorted({int(t) for t in taxon_ids if t is not None})
+    out = {}
+    for start in range(0, len(ids), batch_size):
+        batch = ids[start:start + batch_size]
+        try:
+            response = fetcher(batch)
+        except Exception as err:  # noqa: BLE001 - a lookup is not worth the run
+            print(f"[!] Taxon lookup failed for {len(batch)} id(s): {err}")
+            continue
+        for record in (response or {}).get('results', []) or []:
+            record_id = record.get('id')
+            if record_id is not None:
+                out[int(record_id)] = record
+    return out
+
+
+def resolve_taxonomy(rows, fetcher=get_taxa_by_id):
+    """Fill kingdom..species on every row, in place, and drop the raw taxon.
+
+    Resolving the union of taxa once is what makes this affordable. It also
+    means a record identified to family gets a family and an empty genus, rather
+    than the genus that splitting a name string used to invent.
+    """
+    observations = [{'taxon': row.get('_taxon')} for row in rows]
+    by_id = fetch_taxa(taxonomy.taxon_ids_in(observations), fetcher=fetcher)
+    if by_id:
+        print(f"Resolved {len(by_id)} taxa for {len(rows)} observation(s).")
+
+    for row in rows:
+        resolved = taxonomy.taxonomy_for(
+            row.pop('_taxon', None), by_id, fallback_name=row.pop('_asked_for', None))
+        # The fetch already wrote a species from the taxon name. Keep it when
+        # the ancestry could not do better, so a resolution failure never blanks
+        # a column that previously had a value.
+        for key, value in resolved.items():
+            if value or not row.get(key):
+                row[key] = value
+    return rows
+
+
 def get_species_observation_total(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0):
     try:
         response = get_observations(
@@ -402,7 +452,7 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
             if not isinstance(obs, dict):
                 continue
             if max_allowed is not None and len(observations) >= max_allowed:
-                return pd.DataFrame(observations)
+                return pd.DataFrame(resolve_taxonomy(observations))
 
             obs_id = obs.get('id')
             obs_uuid = obs.get('uuid')
@@ -436,11 +486,8 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
             if not isinstance(weather, dict):
                 weather = {}
 
-            species_name_found = (obs.get('taxon') or {}).get('name', '') if isinstance(obs.get('taxon'), dict) else ''
-
-            genus_name_found = ''
-            if species_name_found:
-                genus_name_found = species_name_found.split()[0] if species_name_found else ''
+            taxon_obj = obs.get('taxon') if isinstance(obs.get('taxon'), dict) else None
+            species_name_found = (taxon_obj or {}).get('name', '')
 
             # How much to trust the coordinates.
             #
@@ -487,8 +534,11 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
                 'windspeed': weather.get('wspd', None),
                 'winddirection': weather.get('wdir', None),
                 'presure': weather.get('pres', None),
+                # Full ranks are filled in by resolve_taxonomy once the whole
+                # batch is in hand; the raw taxon rides along until then.
+                '_taxon': taxon_obj,
+                '_asked_for': taxon_name,
                 'species': species_name_found or taxon_name,
-                'genus': genus_name_found or (taxon_name.split()[0] if taxon_name else ''),
                 'location': obs.get('place_guess', ''),
                 'num_identification_agreements': obs.get('num_identification_agreements', 0),
             })
@@ -499,7 +549,7 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
             break
         page += 1
 
-    return pd.DataFrame(observations)
+    return pd.DataFrame(resolve_taxonomy(observations))
 
 def main():
     env_file = os.getenv('ENV_FILE') or '.env'

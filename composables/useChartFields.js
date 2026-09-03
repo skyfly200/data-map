@@ -61,9 +61,25 @@ export function clampDomain([lo, hi], bounds, values) {
   return [outLo, outHi]
 }
 
-export const ALL_CATEGORY = [
-  { key: 'species', label: 'Species' },
+// The taxonomic ranks, coarse to fine. Every one of them is a dimension you can
+// colour, group, filter and analyse by — which is the point of resolving the
+// ancestry rather than splitting a binomial: a record identified to family used
+// to be unusable above species, and a dataset spanning kingdoms could not be
+// compared at all.
+export const TAXON_RANKS = [
+  { key: 'kingdom', label: 'Kingdom' },
+  { key: 'phylum', label: 'Phylum' },
+  { key: 'class', label: 'Class' },
+  { key: 'order', label: 'Order' },
+  { key: 'family', label: 'Family' },
   { key: 'genus', label: 'Genus' },
+  { key: 'species', label: 'Species' },
+]
+
+export const ALL_CATEGORY = [
+  ...TAXON_RANKS,
+  { key: 'common_name', label: 'Common name' },
+  { key: 'taxon_rank', label: 'Identified to rank' },
   { key: 'land_cover_label', label: 'Land cover' },
   { key: 'cluster', label: 'Cluster' },
   { key: 'live_cluster', label: 'Live cluster' },

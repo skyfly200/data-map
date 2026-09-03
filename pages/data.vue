@@ -24,7 +24,7 @@
         <!-- ── Full observation table ─────────────────────────────────── -->
         <ObservationsTable v-else-if="tab === 'table'" />
 
-        <!-- ── Taxon selection (genus / species / subspecies) ─────────── -->
+        <!-- ── Taxon selection, at any rank ──────────────────────────── -->
         <template v-else>
           <div class="head">
             <div>
@@ -33,11 +33,9 @@
             </div>
             <div class="actions">
               <label class="level">
-                <span>Level</span>
-                <select v-model="level">
-                  <option value="genus">Genus</option>
-                  <option value="species">Species</option>
-                  <option value="subspecies">Subspecies</option>
+                <span>Rank</span>
+                <select :value="level" @change="setLevel($event.target.value)">
+                  <option v-for="r in ranks" :key="r.key" :value="r.key">{{ r.label }}</option>
                 </select>
               </label>
               <span class="count">{{ selectedGroups }} / {{ groupedOptions.length }} selected</span>
@@ -53,7 +51,7 @@
 
           <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
           <p v-else-if="pending && !speciesOptions.length" class="msg">Loading…</p>
-          <p v-else-if="!speciesOptions.length" class="msg">No species in the current dataset.</p>
+          <p v-else-if="!speciesOptions.length" class="msg">No {{ levelLabel.toLowerCase() }} in the current dataset.</p>
           <p v-else-if="!visibleGroups.length" class="msg">No {{ levelLabel.toLowerCase() }} match “{{ speciesQuery }}”.</p>
 
           <div v-else class="table-wrap">
@@ -62,16 +60,16 @@
                 <tr>
                   <th class="c-check"><input type="checkbox" :checked="allChecked" :indeterminate.prop="someChecked" @change="toggleAll" /></th>
                   <th>{{ levelLabel }}</th>
-                  <th class="c-num" v-if="level !== 'subspecies'">Taxa</th>
+                  <th v-if="level !== 'species'" class="c-num" title="Distinct species recorded under this group">Species</th>
                   <th class="c-num">Observations</th>
                   <th class="c-bar"></th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="opt in visibleGroups" :key="opt.key" :class="{ off: groupState(opt) === 'off' }" @click="toggleGroup(opt)">
-                  <td class="c-check"><input type="checkbox" :checked="groupState(opt) === 'on'" :indeterminate.prop="groupState(opt) === 'some'" @click.stop="toggleGroup(opt)" /></td>
+                <tr v-for="opt in visibleGroups" :key="opt.key" :class="{ off: !selected.has(opt.key) }" @click="toggleGroup(opt)">
+                  <td class="c-check"><input type="checkbox" :checked="selected.has(opt.key)" @click.stop="toggleGroup(opt)" /></td>
                   <td class="sp"><em>{{ opt.key }}</em></td>
-                  <td class="c-num" v-if="level !== 'subspecies'">{{ opt.members.length }}</td>
+                  <td v-if="level !== 'species'" class="c-num">{{ opt.species }}</td>
                   <td class="c-num">{{ opt.count }}</td>
                   <td class="c-bar"><span class="bar" :style="{ width: barWidth(opt.count) }"></span></td>
                 </tr>
@@ -87,8 +85,9 @@
 <script setup>
 import { useObservations } from '~/composables/useObservations'
 
-const { speciesOptions, speciesFilter, setSpeciesFilter, error, pending, load,
-  selectedDataset, availableDatasets, setDataset } = useObservations()
+const { data, speciesOptions, speciesFilter, setSpeciesFilter, error, pending, load,
+  selectedDataset, availableDatasets, setDataset,
+  taxonRank, setTaxonRank, availableRanks } = useObservations()
 onMounted(load)
 
 // Tabs (in the URL so /data?tab=table deep-links, and old /table redirects here).
@@ -100,36 +99,56 @@ const tab = computed({
   set: (v) => router.replace({ query: { ...route.query, tab: v } }),
 })
 
-// Taxonomic level to filter/group at. The underlying filter is always a set of
-// full species names; the level only changes how they're grouped in this list
-// and how a row's toggle expands to member species.
+// Which rank to filter at. This used to derive genus and subspecies by
+// splitting the species binomial on its spaces, which works only when a record
+// happens to be identified to species and cannot reach family or above at all.
+// The pipeline now resolves the real ancestry, so the rank is a column and the
+// filter is applied at whichever one is chosen — the same picker narrows to a
+// kingdom or to one species.
+//
+// Only the ranks the loaded dataset actually populates are offered; a dataset
+// exported before the taxonomy work carries species and genus and nothing else.
 const LEVEL_KEY = 'data-taxon-level'
-const level = ref('species')
-if (import.meta.client) {
-  const saved = localStorage.getItem(LEVEL_KEY)
-  if (['genus', 'species', 'subspecies'].includes(saved)) level.value = saved
-}
-watch(level, (v) => { if (import.meta.client) localStorage.setItem(LEVEL_KEY, v) })
-const levelLabel = computed(() => ({ genus: 'Genus', species: 'Species', subspecies: 'Subspecies' }[level.value]))
+const ranks = computed(() => (availableRanks.value.length
+  ? availableRanks.value
+  : [{ key: 'species', label: 'Species' }]))
+const level = computed(() => taxonRank.value)
+const levelLabel = computed(() =>
+  ranks.value.find((r) => r.key === level.value)?.label || 'Species')
 
-function taxonKey(name) {
-  const parts = String(name).trim().split(/\s+/)
-  if (level.value === 'genus') return parts[0] || name
-  if (level.value === 'species') return parts.slice(0, 2).join(' ') || name
-  return name // subspecies = full name
+function setLevel(rank) {
+  setTaxonRank(rank)
+  if (import.meta.client) localStorage.setItem(LEVEL_KEY, rank)
 }
-
-const groupedOptions = computed(() => {
-  const groups = new Map()
-  for (const o of speciesOptions.value) {
-    const key = taxonKey(o.species)
-    const g = groups.get(key) || { key, count: 0, members: [] }
-    g.count += o.count
-    g.members.push(o.species)
-    groups.set(key, g)
-  }
-  return [...groups.values()].sort((a, b) => b.count - a.count)
+onMounted(() => {
+  const saved = import.meta.client ? localStorage.getItem(LEVEL_KEY) : null
+  if (saved && saved !== taxonRank.value) setTaxonRank(saved)
 })
+// A dataset that does not carry the remembered rank would otherwise leave the
+// picker on a column of blanks.
+watch(ranks, (list) => {
+  if (list.length && !list.some((r) => r.key === level.value)) setTaxonRank(list.at(-1).key)
+})
+
+// How many distinct species sit under each value at the chosen rank. At species
+// level that column is the row itself, so it is not shown.
+const speciesUnder = computed(() => {
+  const rank = level.value
+  if (rank === 'species') return new Map()
+  const out = new Map()
+  for (const f of data.value?.features || []) {
+    const key = f.properties?.[rank]
+    const sp = f.properties?.species
+    if (!key || !sp) continue
+    if (!out.has(key)) out.set(key, new Set())
+    out.get(key).add(sp)
+  }
+  return out
+})
+
+const groupedOptions = computed(() => speciesOptions.value.map((o) => ({
+  key: o.species, count: o.count, species: speciesUnder.value.get(o.species)?.size ?? 1,
+})))
 
 // Local selection mirrors the global filter. Empty filter == all species shown.
 const selected = ref(new Set())
@@ -145,16 +164,12 @@ function commit() {
   setSpeciesFilter(selected.value.size === all.length ? [] : [...selected.value])
 }
 
-function groupState(group) {
-  const on = group.members.filter((m) => selected.value.has(m)).length
-  if (on === 0) return 'off'
-  if (on === group.members.length) return 'on'
-  return 'some'
-}
+// One row is now one value at the chosen rank, so a row is simply on or off —
+// the tri-state this had was only there because a genus row stood for a set of
+// species names that could be partly selected.
 function toggleGroup(group) {
   const s = new Set(selected.value)
-  const turnOff = groupState(group) === 'on'
-  for (const m of group.members) (turnOff ? s.delete(m) : s.add(m))
+  if (s.has(group.key)) s.delete(group.key); else s.add(group.key)
   selected.value = s
   commit()
 }
@@ -169,7 +184,7 @@ const visibleGroups = computed(() => {
   return groupedOptions.value.filter((g) => g.key.toLowerCase().includes(q))
 })
 
-const selectedGroups = computed(() => groupedOptions.value.filter((g) => groupState(g) !== 'off').length)
+const selectedGroups = computed(() => groupedOptions.value.filter((g) => selected.value.has(g.key)).length)
 const allChecked = computed(() => selected.value.size === speciesOptions.value.length && speciesOptions.value.length > 0)
 const someChecked = computed(() => selected.value.size > 0 && !allChecked.value)
 
