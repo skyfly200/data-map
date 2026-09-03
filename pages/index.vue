@@ -62,6 +62,28 @@
       </div>
     </section>
 
+    <!-- ── The data layers ──────────────────────────────────────────────────
+         The strata figure above names the layers; this grounds each one in
+         the dataset it is actually sampled from. Same five, same order, and
+         the sources match the guide's data table. -->
+    <section class="layers">
+      <h2>The data layers</h2>
+      <p class="layers-sub">
+        Every observation carries the value of each layer at its own coordinate
+        and date. Column by column, what each one is and where it comes from:
+        <NuxtLink to="/guide#where-the-data-comes-from">the source table</NuxtLink>;
+        how much of each the records actually carry:
+        <NuxtLink to="/coverage">coverage</NuxtLink>.
+      </p>
+      <div class="layer-grid">
+        <div v-for="l in LAYERS" :key="l.name" class="layer">
+          <h3>{{ l.name }}</h3>
+          <p>{{ l.body }}</p>
+          <p class="src">{{ l.source }}</p>
+        </div>
+      </div>
+    </section>
+
     <!-- ── Goals ───────────────────────────────────────────────────────────── -->
     <section class="goals">
       <h2>What it is trying to do</h2>
@@ -157,6 +179,36 @@ const STRATA = [
   { name: 'Ground', fields: 'soil moisture, land cover' },
   { name: 'Terrain', fields: 'elevation, slope, aspect, wetness' },
   { name: 'Exposure', fields: 'sun, wind' },
+]
+
+// The same five strata with the datasets they are actually sampled from — the
+// guide's source table, in the same coarse-to-fine order as STRATA above.
+const LAYERS = [
+  {
+    name: 'Weather',
+    body: 'Seven days of rain and daily high/low temperatures before the find, plus the wind that day.',
+    source: 'CHIRPS · ERA5-Land',
+  },
+  {
+    name: 'Canopy',
+    body: 'Greenness (NDVI) and vegetation water content (NDMI) around the point.',
+    source: 'Sentinel-2, 10 m',
+  },
+  {
+    name: 'Ground',
+    body: 'Soil moisture, and the land cover class the point falls on.',
+    source: 'ERA5-Land · ESA WorldCover, 10 m',
+  },
+  {
+    name: 'Terrain',
+    body: 'Elevation, slope, and the direction the ground faces.',
+    source: 'SRTM digital elevation model',
+  },
+  {
+    name: 'Exposure',
+    body: 'How much sun and wind the shape of the ground lets through, and how wet it stays.',
+    source: 'Derived from SRTM + MERIT Hydro',
+  },
 ]
 
 const GOALS = [
@@ -289,6 +341,24 @@ useHead({
   color: #38bdf8; font-weight: 700; letter-spacing: 0.02em;
 }
 .name-close { color: var(--muted) !important; border-top: 1px solid var(--border-soft); padding-top: 12px; }
+
+/* ── Data layers ──────────────────────────────────────────────────────── */
+.layers-sub { max-width: 640px; margin: 0 0 16px; color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+.layers-sub a { color: var(--accent); }
+.layer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.layer {
+  border: 1px solid var(--border); border-radius: 10px; padding: 15px 17px; background: var(--surface);
+}
+.layer:hover { border-color: var(--accent); }
+.layer h3 { margin: 0 0 6px; font-size: 0.96rem; color: var(--text); }
+.layer p { margin: 0 0 8px; font-size: 0.84rem; color: var(--muted); line-height: 1.55; }
+.layer p:last-child { margin-bottom: 0; }
+/* The source line reads as a caption, in the same mono voice as the etymology
+   above — the dataset names are the citation, not part of the prose. */
+.layer .src {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem; color: #38bdf8; letter-spacing: 0.01em;
+}
 
 /* The layer stack: the logo's idea with the layers named. Each plate is inset a
    little more than the one above so the stack reads as receding, and the beam
