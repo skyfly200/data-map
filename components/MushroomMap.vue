@@ -49,7 +49,8 @@
           <path fill="currentColor" d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z" />
         </svg>
       </button>
-      <MapSettings v-model="showPoints" />
+      <MapSettings v-model="showPoints" :bounds="viewBounds" :templates="activeTileTemplates"
+                   :dataset-label="datasetLabel" />
 
       <!-- Heatmap: grid summaries computed from the observations and drawn
            under the points. Named apart from the reference tile layers in the
@@ -689,7 +690,37 @@ async function saveMap() {
 function syncMapView() {
   if (!map) return
   mapView.value = { center: map.getCenter(), zoom: map.getZoom() }
+  const b = map.getBounds()
+  viewBounds.value = {
+    north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest(),
+    zoom: map.getZoom(),
+  }
 }
+
+// What is on screen, for saving an area to read with no signal. Kept beside
+// mapView rather than derived from it: a centre and a zoom do not give you the
+// edges without knowing the container's size, which Leaflet already knows.
+const viewBounds = ref(null)
+
+// The URL templates of the layers actually drawn right now — the basemap in use
+// plus whatever reference layers are switched on. Saving the whole catalogue
+// would spend a viewer's data on layers they are not looking at.
+const activeTileTemplates = ref([])
+function syncActiveTemplates() {
+  if (!map) return
+  const out = []
+  map.eachLayer((l) => {
+    // ArcGIS export layers build their URLs per tile rather than from a
+    // template, so they cannot be enumerated ahead of time and are skipped.
+    if (l._url && typeof l._url === 'string' && l._url.includes('{z}')) out.push(l._url)
+  })
+  activeTileTemplates.value = out
+}
+
+const datasetLabel = computed(() => {
+  const n = filteredData.value?.features?.length || 0
+  return n ? `${n.toLocaleString()} observations` : ''
+})
 
 const shareTitle = computed(() => {
   const n = filteredData.value?.features?.length || 0
@@ -1011,7 +1042,9 @@ onMounted(async () => {
     ).addTo(map)
 
     map.on('moveend zoomend', syncMapView)
+    map.on('layeradd layerremove baselayerchange overlayadd overlayremove', syncActiveTemplates)
     syncMapView()
+    syncActiveTemplates()
 
     heatmaps.loadFromStorage()
     appearance.loadFromStorage()
