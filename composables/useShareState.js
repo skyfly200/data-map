@@ -17,7 +17,8 @@ import { computed } from 'vue'
 const NUMERIC = new Set(['z', 'cell', 'd', 'w', 'rad', 'yr', 'mo', 'wk'])
 
 export function useShareState() {
-  const { selectedDataset, speciesFilter, setSpeciesFilter, showFiltered, setShowFiltered } = useObservations()
+  const { selectedDataset, speciesFilter, setSpeciesFilter, showFiltered, setShowFiltered,
+    taxonRank, setTaxonRank } = useObservations()
   const { filters, setFilter } = useFilters()
   const heatmaps = useMapHeatmaps()
   const appearance = useAppearance()
@@ -52,7 +53,12 @@ export function useShareState() {
 
     // Species can be a long list; it is the filter most worth sharing, so it
     // goes in whole rather than being truncated into something misleading.
-    if (speciesFilter.value?.length) q.sp = speciesFilter.value.join('|')
+    if (speciesFilter.value?.length) {
+      q.sp = speciesFilter.value.join('|')
+      // The names in `sp` mean nothing without the rank they were picked at —
+      // "Amanitaceae" filters everything away if applied as a species.
+      if (taxonRank.value !== 'species') q.rank = taxonRank.value
+    }
     if (showFiltered.value) q.wf = '1'
 
     for (const [key, param] of [['country', 'co'], ['state', 'st'], ['county', 'cty'],
@@ -113,6 +119,9 @@ export function useShareState() {
       if (w !== null && w >= 1 && w <= 182) heatmaps.seasonWindow.value = w
     }
 
+    // Rank first: setTaxonRank clears the selection, so applying it after the
+    // names would throw them away.
+    if (query.rank) setTaxonRank(String(query.rank))
     if (query.sp) setSpeciesFilter(String(query.sp).split('|').filter(Boolean))
     if (query.wf === '1') setShowFiltered(true)
 

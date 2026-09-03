@@ -1,13 +1,18 @@
 <template>
   <div class="fetch">
     <div class="fetch-new">
-      <label>Fetch a new species from iNaturalist</label>
+      <label>Fetch a taxon from iNaturalist</label>
       <template v-if="configured && !isAuthed">
         <span class="fmsg">Live fetching is rate-protected.</span>
         <NuxtLink to="/login" class="signin-link">Sign in to fetch</NuxtLink>
       </template>
       <template v-else>
-        <input v-model="newSpecies" type="text" placeholder="e.g. Amanita muscaria" :disabled="fetching" @keyup.enter="fetchNew" />
+        <!-- Any rank: iNaturalist matches a taxon name at whatever level it
+             sits, so "Amanitaceae" imports the family and "Fungi" the kingdom.
+             The pipeline resolves each record's own ancestry on the way in, so
+             a mixed import stays filterable at every rank. -->
+        <input v-model="newSpecies" type="text" placeholder="e.g. Amanita muscaria, Amanitaceae, Fungi"
+               :disabled="fetching" @keyup.enter="fetchNew" />
         <button :disabled="fetching || !newSpecies.trim()" @click="fetchNew">{{ fetching ? 'Fetching…' : 'Fetch' }}</button>
         <span v-if="fetchMsg && !fetching" :class="['fmsg', fetchOk ? 'ok' : 'err']">{{ fetchMsg }}</span>
       </template>
@@ -16,12 +21,14 @@
     <div v-if="fetching" class="fetch-progress">
       <div class="pbar"><span class="pfill"></span></div>
       <span class="ptext">Fetching &amp; clustering “{{ fetchingName }}”… {{ elapsed }}s
-        <em>(large species can take up to a minute)</em></span>
+        <em>(a genus or family can take a minute or more)</em></span>
     </div>
 
     <p class="hint">
-      A fetch pulls research-grade observations for the species (scoped to any active location/time
-      filters) and loads them into this session. To add a species to the committed dataset, add it to
+      A fetch pulls research-grade observations for the taxon (scoped to any active location/time
+      filters) and loads them into this session. Name it at any rank — a species, a genus, a family,
+      or a whole kingdom — and every record comes back with its full ancestry, so the result stays
+      filterable and groupable at each level. To add a taxon to the committed dataset, add it to
       the pipeline (<code>INAT_TAXON_NAME</code>) and re-run.
     </p>
   </div>

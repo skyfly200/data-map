@@ -2,6 +2,7 @@
 // Data is fetched once on the client and cached in Nuxt state across pages.
 
 import { markRaw } from 'vue'
+import { TAXON_RANKS } from '~/composables/useChartFields'
 
 // Fallback dataset list. The real list is loaded at runtime from the manifest
 // public/data/datasets.json (written by export_geojson.py), which lists the
@@ -269,9 +270,15 @@ export function useObservations() {
   }
 
   // Convenience: a flat array of property objects (with lon/lat attached).
-  // Optional species filter (a Set of species names). Empty = show all.
+  // Optional taxon filter (a Set of names at one rank). Empty = show all.
   // Applied to every view (map/table/charts/explore) via filteredData + rows.
+  //
+  // The rank is part of the filter, not fixed at species. Picking twelve
+  // species one at a time is a different job from picking one family, and a
+  // dataset spanning kingdoms could not be narrowed to one of them at all
+  // while the only rank on offer was the finest.
   const speciesFilter = useState('observations-species-filter', () => [])
+  const taxonRank = useState('observations-taxon-rank', () => 'species')
 
   const { filters } = useFilters()
 
@@ -284,7 +291,7 @@ export function useObservations() {
     let out = feats.filter((feat) => {
       // Non-productive land cover (water) is hidden unless the user opts in.
       if (hideFiltered && feat.properties?.water_mask) return false
-      if (set && !set.has(feat.properties?.species)) return false
+      if (set && !set.has(feat.properties?.[taxonRank.value])) return false
       return matchesFilters(feat, f)
     })
 
@@ -297,18 +304,35 @@ export function useObservations() {
     return { type: 'FeatureCollection', features: out }
   })
 
-  // Species present in the loaded dataset with counts (unfiltered), for pickers.
+  // Values present at the chosen rank, with counts (unfiltered), for pickers.
+  // `species` is kept as the property name on each entry so the callers that
+  // render this list did not all have to be renamed along with the concept.
   const speciesOptions = computed(() => {
     const counts = new Map()
+    const rank = taxonRank.value
     for (const f of data.value?.features || []) {
-      const s = f.properties?.species
+      const s = f.properties?.[rank]
       if (!s) continue
       counts.set(s, (counts.get(s) || 0) + 1)
     }
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([species, count]) => ({ species, count }))
   })
 
+  /** Ranks the loaded dataset actually populates, coarse to fine. */
+  const availableRanks = computed(() => {
+    const feats = data.value?.features || []
+    return TAXON_RANKS.filter((r) => feats.some((f) => hasValue(f.properties?.[r.key])))
+  })
+
   function setSpeciesFilter(list) { speciesFilter.value = [...list] }
+
+  // Switching rank invalidates the selection: "Amanita muscaria" is not a
+  // family, so keeping it would silently filter everything away.
+  function setTaxonRank(rank) {
+    if (rank === taxonRank.value) return
+    taxonRank.value = rank
+    speciesFilter.value = []
+  }
 
   // A single observation the user asked to "open on the map" (from a chart).
   // The map watches this, selects the matching point, and pans to it.
@@ -346,6 +370,7 @@ export function useObservations() {
   return {
     data, filteredData, rows, error, pending, load, loadDatasets, setDataset, addInlineDataset,
     selectedDataset, availableDatasets, speciesFilter, speciesOptions, setSpeciesFilter, filterOptions,
+    taxonRank, setTaxonRank, availableRanks, TAXON_RANKS,
     showFiltered, setShowFiltered, focusObservation, setFocusObservation,
   }
 }
