@@ -42,7 +42,6 @@ data/archive/
 # Python
 __pycache__/
 *.pyc
-.env.example
 
 # Enrichment checkpoint markers (resumable pipeline)
 *.csv.done

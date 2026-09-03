@@ -104,7 +104,7 @@ export const HEATMAP_MODES = [
     note: 'Where finds have actually concentrated in this window, weighted by how well-sampled the cell is. A record of past finds, not a forecast.',
   },
   {
-    key: 'dominant', label: 'Dominant species', kind: 'categorical', group: 'Observations',
+    key: 'common', label: 'Most common species', kind: 'categorical', group: 'Observations',
     note: 'The most-recorded species in each cell, coloured to match the points.',
   },
   {
@@ -257,9 +257,13 @@ export function useMapHeatmaps() {
     try {
       const saved = JSON.parse(localStorage.getItem('map-overlay') || 'null')
       if (!saved) return
-      // 'fruiting' was the old name for 'hotspots'; carry the saved choice over
-      // rather than silently dropping the viewer back to no heatmap.
-      const savedMode = saved.mode === 'fruiting' ? 'hotspots' : saved.mode
+      // Retired mode keys, carried over rather than silently dropping the
+      // viewer back to no heatmap: 'fruiting' became 'hotspots', and
+      // 'dominant' became 'common' when it was relabelled "Most common
+      // species". A key is not just a label — it is in every shared link and
+      // every viewer's saved settings.
+      const RENAMED = { fruiting: 'hotspots', dominant: 'common' }
+      const savedMode = RENAMED[saved.mode] || saved.mode
       if (HEATMAP_MODES.some((m) => m.key === savedMode)) mode.value = savedMode
       if (CELL_SIZES.some((c) => c.value === saved.cellSize)) cellSize.value = saved.cellSize
       if (CELL_SHAPES.some((s) => s.value === saved.cellShape)) cellShape.value = saved.cellShape
@@ -487,7 +491,7 @@ export function useMapHeatmaps() {
 
     if (m === 'wind') return windField(cells, meta)
     if (meta.kind === 'field') return fieldMeans(cells, meta)
-    if (m === 'dominant') return modalField(cells, meta, (c) => c.species, 'species')
+    if (m === 'common') return modalField(cells, meta, (c) => c.species, 'species')
     if (m === 'land_cover') return modalField(cells, meta, (c) => c.cover, 'land_cover_label')
 
     // Sequential modes: compute a raw value per cell, then scale to the range

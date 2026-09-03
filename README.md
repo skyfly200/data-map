@@ -13,13 +13,20 @@ through every stratum onto a geotag on the ground.
 
 The repository is still `data-map`; the app is Nexstrata.
 
-## Python data pipeline
+## Python Script Pipeline
 
 Install the pipeline dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
+
+### Python Notebook Pipeline
+[View the notebook on Kaggle](https://www.kaggle.com/code/skylerflywilson/nexstrata-data-enrichment-pipeline)
+
+Find the .ipynb file in the notebook directory
+[Kaggle Notebook File](kaggle_pipeline.ipynb)
+
 
 ### Credentials
 

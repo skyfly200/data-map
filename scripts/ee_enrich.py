@@ -111,16 +111,23 @@ def init_ee():
 
 # ─── Core sampling primitive ──────────────────────────────────────────────────
 
-def _sample_points(ee, image, points, scale, reducer=None):
+def _sample_points(ee, image, points, scale, reducer=None, progress_label=None):
     """Sample every band of ``image`` at ``points`` → {position: {band: value}}.
 
     ``points`` is a list of ``(position, lon, lat)``. The position is an opaque
     caller-side key (not a DataFrame label), so callers stay free of assumptions
     about the frame's index type. Points are chunked to bound request size.
+
+    Each chunk is a single blocking ``getInfo()`` round trip. For a static layer
+    sampled over thousands of points that is many seconds of silence per chunk,
+    so ``progress_label`` prints a throttled per-chunk line — otherwise the
+    terrain and land-cover stages look frozen while they are in fact working.
     """
     reducer = reducer or ee.Reducer.first()
     out = {}
-    for c in range(0, len(points), CHUNK_SIZE):
+    total_chunks = max(1, math.ceil(len(points) / CHUNK_SIZE))
+    start = time.monotonic()
+    for chunk_i, c in enumerate(range(0, len(points), CHUNK_SIZE), 1):
         chunk = points[c:c + CHUNK_SIZE]
         fc = ee.FeatureCollection([
             ee.Feature(ee.Geometry.Point([lon, lat]), {'pidx': int(pos)})
@@ -132,6 +139,14 @@ def _sample_points(ee, image, points, scale, reducer=None):
             pos = props.pop('pidx', None)
             if pos is not None:
                 out[pos] = props
+        # Only worth a line when there is more than one chunk to wait through.
+        if progress_label and total_chunks > 1:
+            done = min(c + CHUNK_SIZE, len(points))
+            elapsed = time.monotonic() - start
+            eta = (elapsed / chunk_i) * (total_chunks - chunk_i)
+            print(f"  [{done}/{len(points)}] {done / len(points) * 100:5.1f}% "
+                  f"{progress_label} · chunk {chunk_i}/{total_chunks} · "
+                  f"{elapsed:4.0f}s elapsed, ~{eta:4.0f}s left", flush=True)
     return out
 
 
@@ -275,7 +290,7 @@ def enrich_terrain_ee(df, radii_m=(150, 500, 1500), prevailing_wind_deg=270.0,
 
     points = [(pos, lon, lat) for pos, (_idx, lon, lat) in enumerate(pending)]
     t0 = time.monotonic()
-    sampled = _sample_points(ee, image, points, SCALE_SRTM)
+    sampled = _sample_points(ee, image, points, SCALE_SRTM, progress_label="terrain")
     _progress("terrain", len(points), len(points), t0)
 
     idx_of = [idx for idx, _lon, _lat in pending]
@@ -357,7 +372,7 @@ def enrich_landcover_ee(df, checkpoint=None):
     points = [(pos, lon, lat) for pos, (_idx, lon, lat) in enumerate(pending)]
 
     t0 = time.monotonic()
-    sampled = _sample_points(ee, image, points, SCALE_WORLDCOVER)
+    sampled = _sample_points(ee, image, points, SCALE_WORLDCOVER, progress_label="land cover")
     _progress("land cover", len(points), len(points), t0)
 
     filled = 0
