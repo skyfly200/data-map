@@ -61,7 +61,7 @@ export const OPTION_DOCS = [
       'The overlays differ mainly in how much they are distorted by recording effort — how many people went looking there. That difference matters more than anything else on this page, so each mode below says where it stands.',
     ],
     also: ['map-overlay-density', 'map-overlay-richness', 'map-overlay-season',
-      'map-overlay-hotspots', 'map-overlay-dominant', 'map-overlay-wind', 'map-cell-size'],
+      'map-overlay-hotspots', 'map-overlay-common', 'map-overlay-wind', 'map-cell-size'],
   },
   {
     id: 'map-overlay-density',
@@ -111,9 +111,9 @@ export const OPTION_DOCS = [
     also: ['map-overlay-season', 'map-season-day', 'map-season-window'],
   },
   {
-    id: 'map-overlay-dominant',
+    id: 'map-overlay-common',
     group: 'Map',
-    title: 'Overlay: Dominant species',
+    title: 'Overlay: Most common species',
     summary: 'The most-recorded species in each cell, by colour.',
     detail: [
       'Shows regional character — where one species takes over. Colours match the rest of the app, so a cell can be read against the legend and the charts.',

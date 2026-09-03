@@ -53,7 +53,7 @@ export const OVERLAY_MODES = [
     note: 'Where finds have actually concentrated in this window, weighted by how well-sampled the cell is. A record of past finds, not a forecast.',
   },
   {
-    key: 'dominant', label: 'Dominant species', kind: 'categorical',
+    key: 'common', label: 'Most common species', kind: 'categorical',
     note: 'The most-recorded species in each cell, coloured to match the points.',
   },
   {
@@ -301,7 +301,7 @@ export function useMapOverlays() {
 
     if (m === 'wind') return windField(cells, meta)
 
-    if (m === 'dominant') {
+    if (m === 'common') {
       for (const c of cells) {
         let best = null, bestN = 0
         for (const [sp, n] of c.species) if (n > bestN) { best = sp; bestN = n }
