@@ -239,7 +239,7 @@ let map, geoLayer, L, userLayer, selectedMarker
 
 // ─── Aggregate overlays ───────────────────────────────────────────────────────
 // Grid summaries drawn under the points: density, species richness, seasonal
-// activity, an in-season hotspot score, and dominant species. See
+// activity, an in-season hotspot score, and the most common species. See
 // composables/useMapOverlays.js for what each one means.
 const overlays = useMapOverlays()
 const {
@@ -601,7 +601,7 @@ const OVERLAY_DOCS = {
   richness: 'map-overlay-richness',
   season: 'map-overlay-season',
   hotspots: 'map-overlay-hotspots',
-  dominant: 'map-overlay-dominant',
+  common: 'map-overlay-common',
   wind: 'map-overlay-wind',
 }
 const overlayDocId = computed(() => OVERLAY_DOCS[overlayMode.value] || 'map-overlay')
@@ -695,7 +695,7 @@ function pointTooltip(feature) {
     if (cell) {
       const m = overlayMode.value
       const label = overlayMeta.value?.label || 'Overlay'
-      const value = m === 'dominant' ? (cell.label || '—')
+      const value = m === 'common' ? (cell.label || '—')
         : m === 'season' || m === 'hotspots'
           ? `${Math.round((cell.n ? cell.inWindow / cell.n : 0) * 100)}% of ${cell.n} finds`
           : m === 'richness' ? `${cell.species.size} species`

@@ -19,10 +19,12 @@ from iNat import (
     get_parallel_fetch_workers,
     parse_species_list,
     parse_plus_codes,
+    parse_plus_code_ranges,
     resolve_inat_page_size,
     should_refresh_all,
     filter_new_observations,
     _geo_query,
+    _retry_after_seconds,
 )
 from run_pipeline import should_skip_stage
 from terrain_pipeline import _find_dem
@@ -115,6 +117,33 @@ class PlusCodeAreaTests(unittest.TestCase):
             {'lat': 40.0, 'lng': -105.0, 'radius': 500.0},
         )
 
+    def test_plus_code_range_unions_two_cells_into_one_box(self):
+        loc = parse_plus_code_ranges('84QWJF00+:84QWQM00+')[0]
+        self.assertEqual(set(loc), {'swlat', 'swlng', 'nelat', 'nelng', 'label'})
+        # The union must contain both codes' own cells.
+        a_sw_lat, a_sw_lng, a_ne_lat, a_ne_lng = __import__('utils.olc', fromlist=['decode_olc_bounds']).decode_olc_bounds('84QWJF00+')
+        self.assertLessEqual(loc['swlat'], a_sw_lat)
+        self.assertGreaterEqual(loc['nelat'], a_ne_lat)
+        self.assertLess(loc['swlat'], loc['nelat'])
+        self.assertLess(loc['swlng'], loc['nelng'])
+
+    def test_plus_code_range_is_order_independent(self):
+        self.assertEqual(
+            parse_plus_code_ranges('84QV0000+ 84QX0000+'),
+            parse_plus_code_ranges('84QX0000+ 84QV0000+'),
+        )
+
+    def test_plus_code_range_accepts_colon_or_space_separator(self):
+        self.assertEqual(
+            parse_plus_code_ranges('84QV0000+:84QX0000+'),
+            parse_plus_code_ranges('84QV0000+ 84QX0000+'),
+        )
+
+    def test_plus_code_range_needs_exactly_two_codes(self):
+        self.assertEqual(parse_plus_code_ranges('84QV0000+'), [])
+        self.assertEqual(parse_plus_code_ranges(''), [])
+        self.assertEqual(parse_plus_code_ranges('84QV0000+ 84QX0000+ 84QW0000+'), [])
+
     def test_fetch_inat_data_sends_bounding_box_to_the_api(self):
         payload = {'results': []}
         with mock.patch('iNat.get_observations', return_value=payload) as mock_obs:
@@ -129,6 +158,30 @@ class PlusCodeAreaTests(unittest.TestCase):
         # No circular query params when a box is requested.
         self.assertNotIn('radius', kwargs)
         self.assertNotIn('lat', kwargs)
+
+
+class ThrottleBackoffTests(unittest.TestCase):
+    class _Resp:
+        def __init__(self, status, headers=None):
+            self.status_code = status
+            self.headers = headers or {}
+
+    class _Err(Exception):
+        def __init__(self, resp):
+            self.response = resp
+
+    def test_429_honours_retry_after_header(self):
+        err = self._Err(self._Resp(429, {'Retry-After': '30'}))
+        self.assertEqual(_retry_after_seconds(err, 1), 30.0)
+
+    def test_429_without_header_backs_off_exponentially_and_caps(self):
+        self.assertEqual(_retry_after_seconds(self._Err(self._Resp(429)), 1), 5.0)
+        self.assertEqual(_retry_after_seconds(self._Err(self._Resp(429)), 3), 20.0)
+        self.assertEqual(_retry_after_seconds(self._Err(self._Resp(429)), 10), 60.0)
+
+    def test_non_429_uses_short_linear_backoff(self):
+        self.assertEqual(_retry_after_seconds(self._Err(self._Resp(500)), 2), 2.0)
+        self.assertEqual(_retry_after_seconds(Exception('boom'), 3), 3.0)
 
 
 class ResumeAndCompressionTests(unittest.TestCase):

@@ -42,6 +42,47 @@ if sys.platform == 'win32' and hasattr(sys.stdout, 'reconfigure'):
 _ELEVATION_CACHE = {}
 _WEATHER_CACHE = {}
 
+# One shared, rate-limited session for every iNaturalist call. Without it each
+# parallel worker (and each retry) uses its own default session, so their
+# per-session limiters don't coordinate and together they burst past
+# iNaturalist's limit — which is what produced the 429 "normal_throttling"
+# errors. A single session shared across threads throttles them as a group,
+# staying under ~1 request/second and 60/minute (iNaturalist's published
+# ceiling), and carries pyinaturalist's own 429-aware retry/backoff.
+_INAT_SESSION = None
+_INAT_SESSION_READY = False
+
+def _inat_session():
+    global _INAT_SESSION, _INAT_SESSION_READY
+    if _INAT_SESSION_READY:
+        return _INAT_SESSION
+    _INAT_SESSION_READY = True
+    try:
+        from pyinaturalist import ClientSession
+        _INAT_SESSION = ClientSession(
+            per_second=1,        # iNaturalist asks for ~1 request/second
+            per_minute=60,       # and no more than 60/minute
+            per_day=10000,
+            burst=1,             # no bursts — bursts are what tripped the throttle
+            max_retries=5,
+            backoff_factor=2.0,  # 429s back off exponentially inside the session
+        )
+    except Exception as exc:
+        # Older pyinaturalist, or a constructor change: fall back to the default
+        # session rather than failing the fetch. Rate limiting is then weaker,
+        # but the custom retry/backoff below still applies.
+        print(f"[!] Could not build a shared rate-limited iNaturalist session "
+              f"({exc}); using the default session.", file=sys.stderr)
+        _INAT_SESSION = None
+    return _INAT_SESSION
+
+def _observation_kwargs(**kwargs):
+    """Common get_observations kwargs, adding the shared session when available."""
+    session = _inat_session()
+    if session is not None:
+        kwargs['session'] = session
+    return kwargs
+
 def load_env_file(path=None):
     config_path = Path(path or os.getenv('ENV_FILE') or '.env')
     if not config_path.exists():
@@ -163,10 +204,13 @@ def parse_plus_codes(env_value: str, default_radius: float) -> list[dict]:
 
     A plus code names a rectangular cell, so we fetch that box directly rather
     than reusing the circular ``radius`` model — the box is the footprint the
-    code actually describes, and its own length sets the size (a 6-char code is
-    ~14km, an 8-char code ~275m). Each entry is just a full plus code; any extra
-    comma-separated field is ignored (radius does not apply to a box).
-    ``default_radius`` is accepted for signature symmetry but unused.
+    code actually describes, and its own length sets the size. A shorter,
+    zero-padded full code covers a larger box: ``84QW4600+`` is ~0.05° (~5.5km),
+    ``84QW0000+`` is ~1° (~111km), ``85000000+`` is ~20°. Padding must drop whole
+    pairs, so an odd-padded code like ``84Q00000+`` is not a valid full code and
+    is skipped. Each entry is just a full plus code; any extra comma-separated
+    field is ignored (radius does not apply to a box). ``default_radius`` is
+    accepted for signature symmetry but unused.
     """
     locations = []
     if not env_value:
@@ -185,6 +229,50 @@ def parse_plus_codes(env_value: str, default_radius: float) -> list[dict]:
             })
         except Exception as exc:
             print(f"[!] Invalid plus-code entry ignored: {entry} ({exc})")
+    return locations
+
+def parse_plus_code_ranges(env_value: str) -> list[dict]:
+    """Turn ``INAT_PLUS_CODE_RANGES`` into bounding-box locations.
+
+    Where ``INAT_PLUS_CODES`` fetches one code's cell, a range fetches the box
+    that *spans two* codes — the union of their cells — so two corner codes can
+    describe an area of any size and aspect, not just the fixed square grid a
+    single code offers. Each entry is two full plus codes separated by ``:`` (or
+    whitespace), semicolon-separated between entries:
+
+        INAT_PLUS_CODES_RANGES=84QWJF00+:85GRHM00+; 84QV0000+ 84QX0000+
+
+    The two cells' corners are merged into one south-west / north-east box, so
+    the order of the two codes does not matter.
+    """
+    locations = []
+    if not env_value:
+        return locations
+    for entry in env_value.split(";"):
+        entry = entry.strip()
+        if not entry:
+            continue
+        parts = [p for p in re.split(r'[:\s]+', entry) if p]
+        if len(parts) != 2:
+            print(f"[!] Plus-code range needs exactly two codes, ignoring: {entry}")
+            continue
+        try:
+            a = olc_utils.decode_olc_bounds(parts[0])
+            b = olc_utils.decode_olc_bounds(parts[1])
+            # a, b are (swlat, swlng, nelat, nelng); union the two cells.
+            swlat = min(a[0], b[0])
+            swlng = min(a[1], b[1])
+            nelat = max(a[2], b[2])
+            nelng = max(a[3], b[3])
+            # Sorted label so the two orderings produce identical locations.
+            lo, hi = sorted((parts[0], parts[1]))
+            locations.append({
+                "swlat": swlat, "swlng": swlng,
+                "nelat": nelat, "nelng": nelng,
+                "label": f"{lo}:{hi}",
+            })
+        except Exception as exc:
+            print(f"[!] Invalid plus-code range ignored: {entry} ({exc})")
     return locations
 
 def render_progress_bar(current, total, width=20):
@@ -361,7 +449,7 @@ def _geo_query(lat=None, lng=None, radius=None, bounds=None):
 
 def get_species_observation_total(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, bounds=None):
     try:
-        response = get_observations(
+        response = get_observations(**_observation_kwargs(
             taxon_name=taxon_name,
             quality_grade=quality_grade,
             captive=False,
@@ -369,7 +457,7 @@ def get_species_observation_total(taxon_name='morchella', quality_grade='researc
             per_page=1,
             page=1,
             **_geo_query(lat, lng, radius, bounds),
-        )
+        ))
         if not isinstance(response, dict):
             return 0
         total = response.get('total_results')
@@ -377,17 +465,43 @@ def get_species_observation_total(taxon_name='morchella', quality_grade='researc
     except Exception:
         return 0
 
-def _get_observations_with_retry(max_retries=3, **kwargs):
+def _retry_after_seconds(err, attempt):
+    """How long to wait before retrying, in seconds.
+
+    A 429 (throttled) is a rate limit, not a transient blip, so it needs a real
+    pause: honour the server's ``Retry-After`` header when present, otherwise
+    back off exponentially from a floor well above iNaturalist's ~1 req/s limit.
+    Other errors keep the short linear backoff.
+    """
+    response = getattr(err, 'response', None)
+    status = getattr(response, 'status_code', None)
+    if status == 429:
+        retry_after = (getattr(response, 'headers', None) or {}).get('Retry-After')
+        if retry_after:
+            try:
+                return max(float(retry_after), 1.0)
+            except (TypeError, ValueError):
+                pass
+        return min(60.0, 5.0 * (2 ** (attempt - 1)))  # 5s, 10s, 20s, ... capped
+    return 1.0 * attempt
+
+def _get_observations_with_retry(max_retries=5, **kwargs):
     for attempt in range(1, max_retries + 1):
         try:
-            return get_observations(**kwargs)
+            return get_observations(**_observation_kwargs(**kwargs))
         except Exception as err:
             if attempt == max_retries:
                 taxon = kwargs.get('taxon_name')
                 page = kwargs.get('page', 1)
                 print(f"\n[!] iNaturalist query failed for taxon '{taxon}' on page {page}: {err}")
                 return None
-            time.sleep(1.0 * attempt)
+            delay = _retry_after_seconds(err, attempt)
+            status = getattr(getattr(err, 'response', None), 'status_code', None)
+            if status == 429:
+                print(f"  [throttled] iNaturalist 429 for '{kwargs.get('taxon_name')}' "
+                      f"page {kwargs.get('page', 1)}; waiting {delay:.0f}s "
+                      f"(attempt {attempt}/{max_retries})...", flush=True)
+            time.sleep(delay)
     return None
 
 def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, lng=-105.0, radius=500.0, bounds=None, per_page=200, max_observations=None, progress_callback=None, total_count=None, existing_ids=None):
@@ -535,6 +649,10 @@ def main():
     plus_locations = parse_plus_codes(os.getenv('INAT_PLUS_CODES'), default_radius)
     if plus_locations:
         locations.extend(plus_locations)
+    range_locations = parse_plus_code_ranges(
+        os.getenv('INAT_PLUS_CODE_RANGES') or os.getenv('INAT_PLUS_CODES_RANGES'))
+    if range_locations:
+        locations.extend(range_locations)
     if not locations:
         lat, lng = _resolve_location_from_env(default_lat=40.0, default_lng=-105.0)
         locations = [{'lat': lat, 'lng': lng, 'radius': default_radius}]
@@ -630,6 +748,9 @@ def main():
                 except Exception as e:
                     print(f"[!] Error fetching taxon '{species_name}': {e}")
 
+    # Drop empty / all-NA frames before concat: pandas warns (and will change
+    # dtype behavior) when these are mixed in, and they carry no rows anyway.
+    frames = [f for f in frames if f is not None and not f.empty and not f.isna().all(axis=None)]
     if not frames:
         print('No new observations found; leaving the existing canonical dataset unchanged.')
         return
