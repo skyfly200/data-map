@@ -1,8 +1,17 @@
-# data-map
+# Nexstrata
 
 A map of environmental conditions around mushroom observations. iNaturalist
 observations are enriched with remotely-sensed environmental layers and then
 clustered by environmental similarity. The frontend is a Nuxt app.
+
+**The name.** *strata* — layers. Where a mushroom grows is not one fact but a
+stack of them: the weather of the week before, the canopy over it, the moisture
+in the soil, the shape and aspect of the ground, how much sun and wind that
+shape lets through. *nex* — from *nexus*, a binding together. An observation is
+the one place all those layers meet. The mark shows it: a beam passing down
+through every stratum onto a geotag on the ground.
+
+The repository is still `data-map`; the app is Nexstrata.
 
 ## Python data pipeline
 
