@@ -2,7 +2,8 @@
   <div class="home">
     <section class="hero">
       <AppLogo class="hero-logo" :size="168" />
-      <h1>Every find, read through the layers it happened in</h1>
+      <h1>Nexstrata</h1>
+      <h3>Data abundance distilled into actionable insights</h3>
       <p class="lead">
         Mushroom observations from iNaturalist, each one carrying the ground it was
         found on: terrain, weather, canopy, soil and exposure. So you can ask what the
