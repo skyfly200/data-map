@@ -63,7 +63,7 @@ export const FIELD_MODES = [
   { key: 'soil_moisture', group: 'Ground', ramp: ['#fbf3e4', '#00695c'],
     note: 'Mean modelled soil moisture at the finds in this cell.' },
   { key: 'water_retention', group: 'Terrain', ramp: ['#f1f8e9', '#1a237e'],
-    note: 'Topographic wetness index — how much upslope area drains through here. High means water collects.' },
+    note: 'Topographic wetness index, how much upslope area drains through here. High means water collects.' },
   { key: 'slope', group: 'Terrain', ramp: ['#f5f5f5', '#4e342e'],
     note: 'Mean ground steepness at the finds in this cell.' },
   { key: 'aspect', group: 'Terrain', ramp: null, circular: true,
@@ -97,7 +97,7 @@ export const HEATMAP_MODES = [
   },
   {
     key: 'season', label: 'Seasonal activity', kind: 'sequential', group: 'Observations',
-    note: "Share of the cell's own finds that fall in the selected window — effort-neutral, so it shows when an area fruits.",
+    note: "Share of the cell's own finds that fall in the selected window, effort-neutral, so it shows when an area fruits.",
   },
   {
     key: 'hotspots', label: 'In-season hotspots', kind: 'sequential', group: 'Observations',

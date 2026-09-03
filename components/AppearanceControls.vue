@@ -1,7 +1,7 @@
 <template>
   <div class="appearance">
     <button class="ap-btn" :class="{ on: open, 'icon-only': iconOnly }"
-            :title="`Palette, point and heatmap styling${overrideCount ? ` — ${overrideCount} override(s)` : ''}`"
+            :title="`Palette, point and heatmap styling${overrideCount ? `: ${overrideCount} override(s)` : ''}`"
             :aria-label="iconOnly ? 'Style' : null" @click="open = !open">
       <!-- The swatches are the icon: they say what the palette currently is,
            which a paint-pot glyph could not. -->
@@ -88,7 +88,7 @@
           <HelpLink option="appearance-tile-opacity" />
         </label>
         <input id="ap-tile-op" v-model.number="tileOpacity" type="range" min="0.05" max="1" step="0.05"
-               title="Dims every reference layer switched on in the layers control — hillshade, rainfall, land cover — together."
+               title="Dims every reference layer switched on in the layers control, hillshade, rainfall, land cover, together."
                @change="heatmaps.persist()" />
       </div>
 
@@ -114,7 +114,7 @@
       </template>
 
       <div class="ap-buttons">
-        <button class="ap-shuffle" title="Deal the palette out differently. Same colours, different assignment — for when two species land on shades you cannot tell apart."
+        <button class="ap-shuffle" title="Deal the palette out differently. Same colours, different assignment: for when two species land on shades you cannot tell apart."
                 @click="shuffleColors">🎨 Shuffle colours</button>
         <button class="ap-reset" @click="reset">Reset</button>
       </div>

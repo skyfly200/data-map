@@ -168,7 +168,7 @@ async function addPasskey() {
   try {
     await registerPasskey()
     ok.value = true
-    msg.value = 'Passkey added — use “Sign in with a passkey” next time.'
+    msg.value = 'Passkey added, use “Sign in with a passkey” next time.'
   } catch (e) {
     ok.value = false
     msg.value = e.message || String(e)

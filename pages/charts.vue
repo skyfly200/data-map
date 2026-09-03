@@ -124,7 +124,7 @@
           xLabel="Day of year" :yLabel="`Elevation (${unit})`"
           :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v).toLocaleString()"
           @select="selected = $event" />
-        <p class="note">Each point is one observation, coloured by cluster — seasonal timing across elevation.</p>
+        <p class="note">Each point is one observation, coloured by cluster: seasonal timing across elevation.</p>
       </GalleryChart>
 
       <GalleryChart id="elev-vs-temp" v-if="elevVsTemp.length">
@@ -152,7 +152,7 @@
       <GalleryChart id="phenology" v-if="phenologyBySpecies.length">
         <BoxPlot title="Fruiting season by species" :data="phenologyBySpecies" xLabel="Day of year" valueKey="day_of_year"
           :format="(v) => Math.round(v)" />
-        <p class="note">When each species (≥3 obs) is found through the year — the forager's calendar.</p>
+        <p class="note">When each species (≥3 obs) is found through the year, the forager's calendar.</p>
       </GalleryChart>
 
       <GalleryChart id="elevation-by-species" v-if="elevationBySpecies.length">
@@ -164,7 +164,7 @@
       <GalleryChart id="cluster-profile" v-if="clusterProfile.rows.length">
         <HeatmapChart title="Environmental cluster profiles" :rows="clusterProfile.rows"
           :cols="clusterProfile.cols" :matrix="clusterProfile.matrix" :format="(v) => v.toFixed(2)" />
-        <p class="note">Mean of each feature per cluster, scaled 0–1 across clusters — what defines each group.</p>
+        <p class="note">Mean of each feature per cluster, scaled 0–1 across clusters: what defines each group.</p>
       </GalleryChart>
 
       <GalleryChart id="species-landcover" v-if="speciesLandcover.rows.length">
@@ -223,7 +223,7 @@ shortcuts.register([
   { scope: 'Charts', keys: 'escape', label: 'Close the observation drawer', run: () => { selected.value = null } },
 ])
 const shareTitle = computed(() =>
-  `${rows.value.length.toLocaleString()} mushroom observations — charts`)
+  `${rows.value.length.toLocaleString()} mushroom observations, charts`)
 
 // A saved chart has no title of its own, so name it from what it plots — the
 // share text and the tooltips both need something better than "chart".
@@ -264,7 +264,7 @@ const clusterLegend = computed(() => {
   let hasNull = false
   for (const r of rows.value) { if (hasValue(r.cluster)) seen.add(r.cluster); else hasNull = true }
   const out = [...seen].sort((a, b) => a - b).map((c) => ({ label: `C${c}`, color: colorFor(c) }))
-  if (hasNull) out.push({ label: '—', color: UNCLUSTERED })
+  if (hasNull) out.push({ label: ', ', color: UNCLUSTERED })
   return out
 })
 
@@ -502,7 +502,7 @@ const clusterData = computed(() => {
   }
   const out = [...counts.entries()].sort((a, b) => a[0] - b[0])
     .map(([c, n]) => ({ label: `Cluster ${c}`, short: `C${c}`, value: n, color: colorFor(c) }))
-  if (unclustered) out.push({ label: 'Unclustered', short: '—', value: unclustered, color: UNCLUSTERED })
+  if (unclustered) out.push({ label: 'Unclustered', short: ': ', value: unclustered, color: UNCLUSTERED })
   return out
 })
 

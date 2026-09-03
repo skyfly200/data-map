@@ -38,7 +38,7 @@
             <input type="checkbox" :value="f.key" v-model="features" /> {{ f.label }}
           </label>
         </div>
-        <p v-else class="empty">No environmental features in this dataset yet — enrich to enable feature clustering.</p>
+        <p v-else class="empty">No environmental features in this dataset yet, enrich to enable feature clustering.</p>
       </div>
 
       <div v-if="sizes.length" class="sizes">

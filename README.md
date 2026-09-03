@@ -4,10 +4,10 @@ A map of environmental conditions around mushroom observations. iNaturalist
 observations are enriched with remotely-sensed environmental layers and then
 clustered by environmental similarity. The frontend is a Nuxt app.
 
-**The name.** *strata* — layers. Where a mushroom grows is not one fact but a
+**The name.** *strata*: layers. Where a mushroom grows is not one fact but a
 stack of them: the weather of the week before, the canopy over it, the moisture
 in the soil, the shape and aspect of the ground, how much sun and wind that
-shape lets through. *nex* — from *nexus*, a binding together. An observation is
+shape lets through. *nex*, from *nexus*, a binding together. An observation is
 the one place all those layers meet. The mark shows it: a beam passing down
 through every stratum onto a geotag on the ground.
 
@@ -33,13 +33,13 @@ Find the .ipynb file in the notebook directory
 Earth Engine supplies every environmental layer, so it is the only credential
 the pipeline needs. The rest are for the raster fallback described below.
 
-**Finding `EARTHENGINE_PROJECT`** — it is the *project ID* of a Google Cloud
+**Finding `EARTHENGINE_PROJECT`**: it is the *project ID* of a Google Cloud
 project registered for Earth Engine (e.g. `my-project-451208`), not the display
 name and not the project number:
 
-- [console.cloud.google.com](https://console.cloud.google.com/) — the project
+- [console.cloud.google.com](https://console.cloud.google.com/), the project
   picker lists every project with its ID column
-- [code.earthengine.google.com](https://code.earthengine.google.com/) — the Code
+- [code.earthengine.google.com](https://code.earthengine.google.com/): the Code
   Editor shows the active project top-right and in the Assets tab
 - not registered yet? [code.earthengine.google.com/register](https://code.earthengine.google.com/register)
   attaches a Cloud project to Earth Engine (free for noncommercial use)
@@ -56,13 +56,13 @@ EARTHENGINE_PROJECT=your-project-id
 | For | Set |
 | --- | --- |
 | **Everything environmental (Earth Engine)** | run `python gauth.py` once; set `EARTHENGINE_PROJECT` to your Google Cloud project id |
-| DEM ([OpenTopography](https://portal.opentopography.org/login)) — *fallback only* | `OPENTOPOGRAPHY_API_KEY` |
-| Soil moisture ([Copernicus CDS](https://cds.climate.copernicus.eu)) — *fallback only* | copy `.cdsapirc.example` to `~/.cdsapirc` with your key (and accept the ERA5-Land license on the CDS site) |
+| DEM ([OpenTopography](https://portal.opentopography.org/login)): *fallback only* | `OPENTOPOGRAPHY_API_KEY` |
+| Soil moisture ([Copernicus CDS](https://cds.climate.copernicus.eu)), *fallback only* | copy `.cdsapirc.example` to `~/.cdsapirc` with your key (and accept the ERA5-Land license on the CDS site) |
 
 ### Data layout (per-species CSV store)
 
-Observations live as one lightweight CSV per species — not a single monolithic
-file — under a dedicated folder, with enriched copies alongside:
+Observations live as one lightweight CSV per species, not a single monolithic
+file, under a dedicated folder, with enriched copies alongside:
 
 ```
 data/
@@ -73,7 +73,7 @@ data/
 
 `species_store.py` is the shared accessor every stage reads/writes through; set
 `DATA_DIR` to relocate the whole store (defaults to `data`). Coming from the old
-monolithic `mushroom_observations*.csv` files? Run the one-shot migration — it
+monolithic `mushroom_observations*.csv` files? Run the one-shot migration: it
 merges every root CSV (de-duped on uuid), splits by species, and archives the
 originals:
 
@@ -82,12 +82,12 @@ python migrate_data_layout.py --dry-run   # preview
 python migrate_data_layout.py             # migrate (archives originals)
 ```
 
-Stages (run in order — or just `python run_pipeline.py`, which chains them):
+Stages (run in order, or just `python run_pipeline.py`, which chains them):
 
-1. **`iNat.py`** — pull mushroom observations from iNaturalist (+ elevation and
+1. **`iNat.py`**: pull mushroom observations from iNaturalist (+ elevation and
    weather) → per-species CSVs in `data/species/` (incremental runs merge and
    de-dupe on uuid; `REFRESH_ALL=1` overwrites).
-2. **`enrich_with_rasters.py`** — fill in every environmental column for those
+2. **`enrich_with_rasters.py`**: fill in every environmental column for those
    observations → per-species files in `data/enriched/` (resumable; a `.done`
    marker signals completion). `ee_enrich.py` samples each layer from Earth
    Engine *at the observation points*, so nothing bulky is downloaded:
@@ -107,13 +107,13 @@ Stages (run in order — or just `python run_pipeline.py`, which chains them):
    trip per date rather than one per observation (the old Open-Meteo stage made
    an HTTP request per observation) or seven file downloads.
 
-3. **`cluster.py`** — KMeans-cluster observations by environmental similarity
+3. **`cluster.py`**: KMeans-cluster observations by environmental similarity
    *globally* across all species, writing the `cluster` label back into each
    `data/enriched/` file. Tune the count with `CLUSTER_COUNT` or `--clusters`.
 
 #### Raster fallback
 
-The original path — download the source rasters, then sample them locally — is
+The original path, download the source rasters, then sample them locally, is
 still there and runs automatically whenever Earth Engine is unavailable. Each
 raster stage only touches rows still missing its column, so after a successful
 Earth Engine pass they are no-ops.
@@ -144,13 +144,13 @@ run_pipeline.run_all()                 # identical to `python run_pipeline.py`
 run_pipeline.run_all(root="/kaggle/working")   # or point it at another checkout
 ```
 
-`run_all` runs the stages from the repo root — where the per-species store and
-raster caches live — and restores the caller's working directory afterwards.
+`run_all` runs the stages from the repo root, where the per-species store and
+raster caches live, and restores the caller's working directory afterwards.
 `notebooks/kaggle_pipeline.ipynb` is exactly this: configure credentials,
 authenticate Earth Engine, one `run_all()` call, then review the results.
 
-Every module is also import-safe — the run logic lives in functions behind an
-`if __name__ == "__main__"` guard — so you can still drive individual steps:
+Every module is also import-safe, the run logic lives in functions behind an
+`if __name__ == "__main__"` guard, so you can still drive individual steps:
 
 ```python
 import ee_enrich, species_store as store
@@ -197,9 +197,9 @@ comparison export a fine-resolution satellite moisture layer over the DEM
 footprint. `fetch.py` can export two, both via Earth Engine to Google Drive
 (folder `EarthEngineMoisture`):
 
-- **`fetch_sentinel1_moisture`** — Sentinel-1 VV backscatter (90 m), the
+- **`fetch_sentinel1_moisture`**: Sentinel-1 VV backscatter (90 m), the
   strongest soil-moisture proxy (SAR, all-weather).
-- **`fetch_sentinel2_ndmi`** — Sentinel-2 NDMI `(B8−B11)/(B8+B11)` (20 m),
+- **`fetch_sentinel2_ndmi`**: Sentinel-2 NDMI `(B8−B11)/(B8+B11)` (20 m),
   optical vegetation/surface moisture.
 
 These are large exports, so they only run when opted in:
@@ -217,8 +217,7 @@ vegetation and built-up/water (via `--landcover`) sharpens the comparison.
 ### Raster coverage summary
 
 `raster_coverage.py` scans the environmental-layer cache (CHIRPS precip, ERA5
-soil, NDVI, tree cover, DEM, WorldCover) and writes `public/data/coverage.json`
-— per layer: file count, date range, on-disk size, and geographic extent, plus
+soil, NDVI, tree cover, DEM, WorldCover) and writes `public/data/coverage.json`. Per layer: file count, date range, on-disk size, and geographic extent, plus
 a date→layers index. `run_pipeline.py` runs it after the export step, and the
 frontend **Coverage** tab renders it as layer cards plus a date × layer matrix
 so gaps are obvious at a glance.
@@ -232,11 +231,11 @@ python raster_coverage.py --pretty   # human-readable
 
 The frontend is a Nuxt 3 app that renders the observations on a Leaflet map,
 coloured by environmental cluster, with the enriched attributes in each popup.
-It reads a **static GeoJSON** file — no backend or database.
+It reads a **static GeoJSON** file, no backend or database.
 
 **Filtering.** The **Data** tab is the control centre: pick species, and narrow
-by **location** (country / state / county — parsed from each record's place
-string — or a lat/lng centre + radius in km) and **time** (year, month, ISO
+by **location** (country / state / county, parsed from each record's place
+string, or a lat/lng centre + radius in km) and **time** (year, month, ISO
 week, or a from/to date range). Filters live in shared state, so they apply
 everywhere at once (map, table, charts, explore); a "Filters: N" chip in the
 header links back to the Data tab from any view. When you fetch a *new* species
@@ -267,7 +266,7 @@ npm run dev        # http://localhost:3000
 
 **Netlify:** `netlify.toml` pins the build (`npm run build`, publish `dist`,
 Node 20); Nuxt's Nitro auto-selects the Netlify preset. Only the small GeoJSON
-in `public/data/` is served — keep the raster folders (`soil/ ndvi/ dem/ …`)
+in `public/data/` is served: keep the raster folders (`soil/ ndvi/ dem/ …`)
 out of the deploy (they are gitignored). Do **not** put Earth Engine /
 OpenTopography / CDS credentials in Netlify; those belong only to the offline
 pipeline.
@@ -277,8 +276,8 @@ pipeline.
 Two schedules refresh the map, split by what each environment can run:
 
 - **GitHub Action** (`.github/workflows/refresh-data.yml`, daily) runs the
-  Python pipeline headless — the parts that need Python (raster download,
-  terrain derivation, enrichment, clustering) — and commits an updated
+  Python pipeline headless, the parts that need Python (raster download,
+  terrain derivation, enrichment, clustering), and commits an updated
   `public/data/observations.geojson`, which triggers a Netlify redeploy. Earth
   Engine steps are skipped (`SKIP_EARTH_ENGINE=1`, since EE exports to Drive
   can't run headless). Put `OPENTOPOGRAPHY_API_KEY` (and optionally
@@ -305,7 +304,7 @@ Two schedules refresh the map, split by what each environment can run:
 By default the datasets live in `public/data/` (committed) and the interim
 refresh uses Netlify Blobs. You can instead store them in **Supabase Storage**,
 which becomes the source of truth the frontend and functions read from. It's
-entirely opt-in — with no `SUPABASE_*` env set, everything falls back to the
+entirely opt-in: with no `SUPABASE_*` env set, everything falls back to the
 committed files / Blobs.
 
 Setup:
@@ -322,7 +321,7 @@ Setup:
      functions read/write Storage instead of Blobs), and
      `NUXT_PUBLIC_DATASETS_MANIFEST_URL` = the bucket's public
      `datasets.json` URL (so the frontend loads datasets from Supabase).
-3. The service-role key is **write-only server-side** — it lives in Actions /
+3. The service-role key is **write-only server-side**, it lives in Actions /
    Netlify env, never in the browser bundle.
 
 Data flow: Python pipeline → `public/data/` → `upload_datasets.mjs` → Supabase
@@ -333,8 +332,8 @@ bucket.
 ### Sign-in to protect the live-fetch endpoints (Supabase Auth)
 
 Browsing (map, table, charts, explore) is fully open. The endpoints that make
-**on-demand outbound API calls** — `fetch-species` (Data tab) and
-`run-data-pipeline` — are gated behind **Supabase Auth** so they can't be
+**on-demand outbound API calls**: `fetch-species` (Data tab) and
+`run-data-pipeline`: are gated behind **Supabase Auth** so they can't be
 hammered anonymously.
 
 - **Server side:** `netlify/lib/auth.mjs` validates the caller's Supabase
@@ -352,13 +351,13 @@ hammered anonymously.
   Providers): Email (password + magic link) is on by default; enable **GitHub**
   and **Google** OAuth and add your site URL + `…/login` to the redirect
   allow-list. Turn on **Passkeys / WebAuthn** there too. The `/login` page
-  surfaces all of these — "Sign in with a passkey" for returning users, and
+  surfaces all of these: "Sign in with a passkey" for returning users, and
   "Add a passkey to this account" once you're signed in (the client enables the
   experimental passkey API automatically).
 
 When Supabase public keys are **not** set, the login UI shows a
 “not configured” notice and fetches run unauthenticated (which the functions
-allow only because the server is likewise unconfigured) — so local dev works
+allow only because the server is likewise unconfigured), so local dev works
 with zero credentials.
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.

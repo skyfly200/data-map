@@ -27,7 +27,7 @@ Observation records shown in the app come from **iNaturalist** and remain subjec
 
 ## No warranty
 
-The app is provided without warranties of any kind, express or implied, including accuracy, fitness for a particular purpose, or availability. Observation and environmental data may be incomplete or wrong. Do not rely on the app to determine whether any mushroom is safe to eat — misidentification can be dangerous. Always consult a qualified expert.
+The app is provided without warranties of any kind, express or implied, including accuracy, fitness for a particular purpose, or availability. Observation and environmental data may be incomplete or wrong. Do not rely on the app to determine whether any mushroom is safe to eat, misidentification can be dangerous. Always consult a qualified expert.
 
 ## Limitation of liability
 

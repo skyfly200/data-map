@@ -42,7 +42,7 @@ const syncState = computed(() => {
   return cloud?.status?.value || ''
 })
 const syncTitle = computed(() => (syncState.value === 'error'
-  ? 'Sync failed — open the menu for details'
+  ? 'Sync failed, open the menu for details'
   : `Sync: ${syncState.value}`))
 
 const open = ref(false)

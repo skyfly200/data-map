@@ -36,7 +36,7 @@
           Observations the pipeline flagged as landing on water, ice or built-up
           ground.
           <template v-if="!excludedCount">
-            None are present in this dataset — the pipeline drops them before
+            None are present in this dataset, the pipeline drops them before
             export, so this reveals nothing here.
           </template>
           <template v-else>{{ excludedCount.toLocaleString() }} in this dataset.</template>

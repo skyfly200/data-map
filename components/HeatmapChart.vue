@@ -119,7 +119,7 @@ function textColor(v) {
   const t = (v - lo.value) / ((hi.value - lo.value) || 1)
   return t > 0.55 ? '#fff' : 'var(--text)'
 }
-function cellText(v) { return Number.isFinite(v) ? props.format(v) : '—' }
+function cellText(v) { return Number.isFinite(v) ? props.format(v) : ': ' }
 
 const active = ref(null)
 const ptr = ref({ x: 0, y: 0 })

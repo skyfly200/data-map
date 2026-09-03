@@ -1,12 +1,12 @@
 <template>
   <div class="home">
     <section class="hero">
-      <AppLogo class="hero-logo" :size="128" wordmark />
+      <AppLogo class="hero-logo" :size="168" />
       <h1>Every find, read through the layers it happened in</h1>
       <p class="lead">
         Mushroom observations from iNaturalist, each one carrying the ground it was
-        found on — terrain, weather, canopy, soil and exposure — so you can ask what
-        the places have in common instead of only where the dots are.
+        found on: terrain, weather, canopy, soil and exposure. So you can ask what the
+        places have in common, instead of only where the dots are.
       </p>
 
       <div class="cta">
@@ -30,18 +30,18 @@
       <div class="name-grid">
         <div class="name-text">
           <p>
-            <strong class="etym">strata</strong> — layers. Where a mushroom grows is not
+            <strong class="etym">strata</strong>: layers. Where a mushroom grows is not
             one fact but a stack of them: the weather of the week before, the canopy over
             it, the moisture in the soil, the shape and aspect of the ground, how much sun
             and wind that shape lets through.
           </p>
           <p>
-            <strong class="etym">nex</strong> — from <em>nexus</em>, a binding together.
+            <strong class="etym">nex</strong>: from <em>nexus</em>, a binding together.
             An observation is the one place all those layers meet. Somebody stood at a
             point, found something, and every layer had a value there at that moment.
           </p>
           <p class="name-close">
-            So: the binding of the layers at a point. That is what the mark shows — a beam
+            So: the binding of the layers at a point. That is what the mark shows: a beam
             passing down through every stratum and landing on a geotag on the ground. This
             app is the beam.
           </p>
@@ -98,7 +98,7 @@
         So the app says where it stands. Views that correct for recording effort say so;
         views that cannot say that too. Every control has an entry in the
         <NuxtLink to="/guide#reference">option reference</NuxtLink> covering what it does
-        <em>and</em> where it will mislead you — the seasonal heatmaps divide by each
+        <em>and</em> where it will mislead you: the seasonal heatmaps divide by each
         cell's own total so effort cancels out, obscured coordinates are flagged because
         their terrain describes somewhere the mushroom probably was not, and a blank cell
         means nobody looked there rather than nothing grows there.
@@ -162,8 +162,8 @@ const GOALS = [
   {
     title: 'Attach the place to the find',
     body: 'A record from iNaturalist is a name, a date and a coordinate. The pipeline '
-      + 'samples what the ground was like there — terrain from a digital elevation model, '
-      + 'canopy and moisture from satellite imagery, the weather in the week before — so '
+      + 'samples what the ground was like there: terrain from a digital elevation model, '
+      + 'canopy and moisture from satellite imagery, the weather in the week before. So '
       + 'the observation carries its own context instead of just its position.',
   },
   {
@@ -200,8 +200,8 @@ const FEATURES = [
     to: '/map',
     title: 'Reference layers',
     body: 'Rainfall and radar, land surface temperature, ESA land cover at 10 m, soil '
-      + 'moisture, greenness, hillshade, hiking trails and US land ownership — each with '
-      + 'a key, and each saying what it gets wrong.',
+      + 'moisture, greenness, hillshade, hiking trails and US land ownership. Each has a '
+      + 'key, and each says what it gets wrong.',
   },
   {
     to: '/data',
@@ -221,8 +221,8 @@ const FEATURES = [
     to: '/analysis',
     title: 'Statistics',
     body: 'Rank correlations across every populated field, species fingerprints in '
-      + 'standard deviations from the dataset mean, and the confounds — season and '
-      + 'recording effort — named rather than left for you to find.',
+      + 'standard deviations from the dataset mean, and the confounds (season and '
+      + 'recording effort) named rather than left for you to find.',
   },
   {
     to: '/coverage',
@@ -238,7 +238,7 @@ useHead({
   meta: [{
     name: 'description',
     content: 'Mushroom observations from iNaturalist, each carrying the terrain, weather, '
-      + 'canopy and soil it was found in — mapped, charted and honest about its limits.',
+      + 'canopy and soil it was found in, mapped, charted and honest about its limits.',
   }],
 })
 </script>
@@ -253,7 +253,7 @@ useHead({
 
 /* ── Hero ─────────────────────────────────────────────────────────────── */
 .hero { text-align: center; }
-.hero-logo { margin: 0 auto 20px; border-radius: 26px; }
+.hero-logo { margin: 0 auto 20px; border-radius: 30px; }
 .hero h1 {
   /* Capped to the lead's measure. Left to run the full 940px it set a line
      length the paragraph under it could not match, and the two read as

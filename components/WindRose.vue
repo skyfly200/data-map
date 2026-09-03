@@ -2,7 +2,7 @@
   <figure class="chart">
     <figcaption v-if="title" class="chart-title">{{ title }}</figcaption>
     <div v-if="!values.length" class="empty">
-      Needs slope aspect — run the DEM/terrain step to populate this.
+      Needs slope aspect, run the DEM/terrain step to populate this.
     </div>
     <div v-else class="chart-area" @mousemove="onMove" @mouseleave="active = null">
       <svg :viewBox="`0 0 ${W} ${W}`" role="img" :aria-label="title">
