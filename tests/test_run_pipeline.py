@@ -40,25 +40,35 @@ class WorkingDirectoryTests(unittest.TestCase):
                     raise SystemExit('stage failed')
         self.assertEqual(os.getcwd(), before)
 
-    def test_run_all_runs_from_the_repo_root_by_default(self):
-        seen = {}
+    @staticmethod
+    def _stubbed_run_all(seen):
+        """run_all with every stage replaced, so only its cwd behaviour is under test.
 
-        def fake_stages(python_executable=None):
+        The stage list is patched rather than a single private helper: the
+        stages became a list of functions, and a test that patches a name which
+        no longer exists fails on the mock rather than on the behaviour.
+        """
+        def fake_stage(python_executable, root=None):
             seen['cwd'] = os.getcwd()
 
-        with mock.patch.object(run_pipeline, '_run_stages', fake_stages):
-            run_pipeline.run_all()
+        return mock.patch.multiple(
+            run_pipeline,
+            STAGES=[fake_stage],
+            _prepare=mock.Mock(return_value='python3'),
+            run_preflight=mock.Mock(),
+            report_precision=mock.Mock(),
+        )
 
+    def test_run_all_runs_from_the_repo_root_by_default(self):
+        seen = {}
+        with self._stubbed_run_all(seen):
+            run_pipeline.run_all()
         self.assertEqual(Path(seen['cwd']).resolve(), run_pipeline.ROOT_DIR.resolve())
 
     def test_run_all_honours_an_explicit_root(self):
         seen = {}
-
-        def fake_stages(python_executable=None):
-            seen['cwd'] = os.getcwd()
-
         with tempfile.TemporaryDirectory() as tmp:
-            with mock.patch.object(run_pipeline, '_run_stages', fake_stages):
+            with self._stubbed_run_all(seen):
                 run_pipeline.run_all(root=tmp)
             self.assertEqual(Path(seen['cwd']).resolve(), Path(tmp).resolve())
 
