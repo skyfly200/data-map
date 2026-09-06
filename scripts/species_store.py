@@ -81,7 +81,14 @@ def write_split(df, base=SPECIES_DIR, key='species', dedup='uuid', merge=True):
         path = species_csv_path(species, base)
         if merge and os.path.exists(path):
             try:
-                group = pd.concat([pd.read_csv(path), group], ignore_index=True)
+                existing = pd.read_csv(path)
+                # Drop entirely-empty columns from each side before concat: an
+                # all-NA column (e.g. an enrichment field not yet filled for this
+                # species) triggers a pandas FutureWarning about dtype inference,
+                # and carries no data anyway — the other side supplies it if it
+                # has values, and stages re-create any missing column.
+                parts = [p.dropna(axis=1, how='all') for p in (existing, group) if not p.empty]
+                group = pd.concat(parts, ignore_index=True) if parts else group
             except Exception:  # noqa: BLE001 — a corrupt file shouldn't lose the new rows
                 pass
         if dedup and dedup in group.columns:

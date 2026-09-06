@@ -149,51 +149,66 @@ def working_directory(path):
         os.chdir(previous)
 
 
-def run_all(python_executable=None, root=None):
-    """Run the full pipeline. Shared by ``main()`` and the notebook."""
-    with working_directory(root or ROOT_DIR):
-        _run_stages(python_executable)
+# ─── Stages ───────────────────────────────────────────────────────────────────
+# Each stage is a standalone function so the notebook (or any caller) can re-run
+# just one part — e.g. re-do enrichment without re-fetching. ``run_all`` runs
+# them in order; every stage does its own chdir + env load + interpreter
+# resolution, so the stages are safe to call individually and in any order.
 
+_RESOLVED_PYTHON = None
 
-def _run_stages(python_executable=None):
+def _prepare(python_executable=None):
+    """Load .env, ensure scripts/ is importable, and resolve the interpreter.
+
+    Idempotent and cheap to call once per stage: the resolved interpreter is
+    cached so repeated stage calls don't re-probe it."""
+    global _RESOLVED_PYTHON
     env_file = Path(os.getenv('ENV_FILE', '.env'))
     if env_file.exists():
-        print(f"Loading env file: {env_file}")
         load_env_into_os(env_file)
-
-    # Report which data sources are configured before doing any work, so the
-    # run's gaps (skipped terrain / NDVI / soil) are predictable up front.
-    try:
-        from preflight import print_preflight
-        print_preflight()
-    except Exception as exc:
-        print(f"[!] Pre-flight check skipped: {exc}")
-
-    refresh_all = os.getenv('REFRESH_ALL', '').strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
-
-    python_executable = python_executable or _resolve_python()
-    print(f"Using Python interpreter: {python_executable}")
-    print(f"Working directory: {os.getcwd()}")
-
-    # The whole pipeline reads and writes the per-species store under data/;
-    # each script defaults to it, so stages need no CSV paths passed between them.
     if str(SCRIPTS_DIR) not in sys.path:
         sys.path.insert(0, str(SCRIPTS_DIR))
-    import species_store as store
+    if python_executable:
+        return python_executable
+    if _RESOLVED_PYTHON is None:
+        _RESOLVED_PYTHON = _resolve_python()
+    return _RESOLVED_PYTHON
 
-    # 1. Observations — run incremental fetch by default so new taxa or fresh sightings are captured.
-    skip_fetch = os.getenv('SKIP_INAT_FETCH', '').strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
-    species_files_before = set(store.species_slugs(store.SPECIES_DIR))
-    counts_before = store.store_counts(store.SPECIES_DIR)
 
-    if skip_fetch and species_files_before:
-        print(f"Using cached observations in {store.SPECIES_DIR}/ "
-              f"({len(species_files_before)} species files); skipping iNaturalist fetch (SKIP_INAT_FETCH=1).")
-    else:
-        run_step("Fetch iNaturalist observations", python_executable, "iNat.py")
+def _refresh_all():
+    return os.getenv('REFRESH_ALL', '').strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
+
+
+def run_preflight(root=None):
+    """Print which data sources are configured, so gaps are predictable up front."""
+    with working_directory(root or ROOT_DIR):
+        _prepare()
+        try:
+            from preflight import print_preflight
+            print_preflight()
+        except Exception as exc:
+            print(f"[!] Pre-flight check skipped: {exc}")
+
+
+def run_fetch(python_executable=None, root=None):
+    """Stage 1 — fetch iNaturalist observations into the per-species store.
+
+    Honours SKIP_INAT_FETCH (reuse the cache). When the fetch adds species or
+    rows, the enrichment ``.done`` marker is cleared so enrichment re-runs for
+    the new data."""
+    with working_directory(root or ROOT_DIR):
+        py = _prepare(python_executable)
+        import species_store as store
+        skip_fetch = os.getenv('SKIP_INAT_FETCH', '').strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
+        species_files_before = set(store.species_slugs(store.SPECIES_DIR))
+        counts_before = store.store_counts(store.SPECIES_DIR)
+        if skip_fetch and species_files_before:
+            print(f"Using cached observations in {store.SPECIES_DIR}/ "
+                  f"({len(species_files_before)} species files); skipping iNaturalist fetch (SKIP_INAT_FETCH=1).")
+            return
+        run_step("Fetch iNaturalist observations", py, "iNat.py")
         species_files_after = set(store.species_slugs(store.SPECIES_DIR))
         counts_after = store.store_counts(store.SPECIES_DIR)
-        # If new species files or new rows were added, ensure enrichment runs for them
         if species_files_after != species_files_before or counts_after != counts_before:
             if os.path.exists(store.ENRICHED_DONE):
                 try:
@@ -201,16 +216,21 @@ def _run_stages(python_executable=None):
                 except OSError:
                     pass
 
-    # 2. Enrichment — env-layer downloads + raster sampling → per-species enriched
-    # store. Only skip when a full run finished (.done marker); a bare checkpoint
-    # means an interrupted run, which enrich_with_rasters resumes automatically.
-    if not refresh_all and os.path.exists(store.ENRICHED_DONE):
-        print(f"Skipping enrichment: {store.ENRICHED_DIR}/ already complete.")
-    else:
-        # fetch.py and terrain_pipeline.py download and derive the bulk rasters.
-        # Earth Engine serves the same layers as point samples during enrichment,
-        # so both are skipped unless EE is off or FETCH_RASTERS=1 asks for the
-        # local rasters (still used by validate_wetness.py and the Coverage page).
+
+def run_enrichment(python_executable=None, root=None):
+    """Stage 2 — enrich observations (Earth Engine samples, or cached rasters).
+
+    Skips when a full run already finished (the ``.done`` marker) unless
+    REFRESH_ALL is set; an interrupted run resumes automatically."""
+    with working_directory(root or ROOT_DIR):
+        py = _prepare(python_executable)
+        import species_store as store
+        if not _refresh_all() and os.path.exists(store.ENRICHED_DONE):
+            print(f"Skipping enrichment: {store.ENRICHED_DIR}/ already complete "
+                  "(set REFRESH_ALL=1 to force).")
+            return
+        # Earth Engine serves every layer as a point sample, so the bulk raster
+        # downloads are skipped unless EE is off or FETCH_RASTERS=1 asks for them.
         from fetch import skip_raster_downloads
         from preflight import earth_engine_ready
         ee_ready, _note = earth_engine_ready()
@@ -218,34 +238,60 @@ def _run_stages(python_executable=None):
             print("\nSkipping raster downloads and DEM processing — enrichment samples "
                   "every layer from Earth Engine.\nSet FETCH_RASTERS=1 to download them anyway.")
         else:
-            run_step("Download environmental layers", python_executable, "fetch.py")
-            run_step("Process terrain DEM", python_executable, "terrain_pipeline.py")
-        run_step("Enrich observations", python_executable, "enrich_with_rasters.py")
+            run_step("Download environmental layers", py, "fetch.py")
+            run_step("Process terrain DEM", py, "terrain_pipeline.py")
+        run_step("Enrich observations", py, "enrich_with_rasters.py")
 
-    # 3. Clustering — global KMeans, cluster labels written back into the store.
-    run_step("Cluster observations", python_executable, "cluster.py")
 
-    # 4. GeoJSON export for the map (per-species files + combined + manifest).
-    run_step("Export GeoJSON for map", python_executable, "export_geojson.py")
+def run_clustering(python_executable=None, root=None):
+    """Stage 3 — global KMeans; cluster labels written back into the store."""
+    with working_directory(root or ROOT_DIR):
+        py = _prepare(python_executable)
+        run_step("Cluster observations", py, "cluster.py")
 
-    # 5. Summarize the raster cache for the Coverage page (best effort — a missing
-    # rasterio or empty cache just yields a smaller summary, never a hard fail).
-    try:
-        run_step("Summarize raster coverage", python_executable, "raster_coverage.py")
-    except Exception as exc:
-        print(f"[!] Raster coverage summary skipped: {exc}")
 
-    # 6. Say how much of the terrain enrichment can actually be trusted. The
-    # pipeline samples every environmental value AT the observation's point, and
-    # iNaturalist randomises obscured points inside a ~20km cell — so for those
-    # rows the elevation, slope, NDVI and moisture describe somewhere else. That
-    # is worth stating at the end of a run rather than leaving to be discovered.
-    try:
-        _report_location_precision()
-    except Exception as exc:
-        print(f"[!] Location precision summary skipped: {exc}")
+def run_export(python_executable=None, root=None):
+    """Stage 4 — export the map GeoJSON (per-species + combined + manifest)."""
+    with working_directory(root or ROOT_DIR):
+        py = _prepare(python_executable)
+        run_step("Export GeoJSON for map", py, "export_geojson.py")
 
-    print("\n✅ Full data pipeline completed successfully.")
+
+def run_coverage(python_executable=None, root=None):
+    """Stage 5 — summarize the raster cache for the Coverage page (best effort)."""
+    with working_directory(root or ROOT_DIR):
+        py = _prepare(python_executable)
+        try:
+            run_step("Summarize raster coverage", py, "raster_coverage.py")
+        except Exception as exc:
+            print(f"[!] Raster coverage summary skipped: {exc}")
+
+
+def report_precision(root=None):
+    """Stage 6 — report how much of the terrain enrichment can be trusted."""
+    with working_directory(root or ROOT_DIR):
+        _prepare()
+        try:
+            _report_location_precision()
+        except Exception as exc:
+            print(f"[!] Location precision summary skipped: {exc}")
+
+
+# The stages in run order, so run_all and the notebook agree on the sequence.
+STAGES = [run_fetch, run_enrichment, run_clustering, run_export, run_coverage]
+
+
+def run_all(python_executable=None, root=None):
+    """Run the full pipeline. Shared by ``main()`` and the notebook."""
+    with working_directory(root or ROOT_DIR):
+        py = _prepare(python_executable)
+        print(f"Using Python interpreter: {py}")
+        print(f"Working directory: {os.getcwd()}")
+        run_preflight(root='.')
+        for stage in STAGES:
+            stage(py, root='.')
+        report_precision(root='.')
+        print("\n✅ Full data pipeline completed successfully.")
 
 
 def _report_location_precision():

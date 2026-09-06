@@ -102,11 +102,52 @@ def init_ee():
         except Exception:
             ee.Authenticate(quiet=True)
             ee.Initialize(project=project)
+        # Bound every request so a slow or hung getInfo() fails fast and is
+        # retried, instead of blocking a stage indefinitely (which reads as the
+        # notebook "pausing"). Tunable via EE_REQUEST_DEADLINE_MS; 0 disables.
+        deadline = _ee_request_deadline_ms()
+        if deadline:
+            try:
+                ee.data.setDeadline(deadline)
+            except Exception:
+                pass  # older ee without setDeadline — retries still bound hangs
         _ee = ee
         return ee
     except Exception as exc:
         print(f"[!] Earth Engine unavailable — falling back to cached rasters: {exc}")
         return None
+
+
+def _ee_request_deadline_ms():
+    """Per-request Earth Engine deadline in milliseconds (0 = no deadline)."""
+    raw = os.environ.get('EE_REQUEST_DEADLINE_MS') or os.environ.get('EE_DEADLINE_MS')
+    if raw is not None and str(raw).strip() != '':
+        try:
+            value = int(float(raw))
+            return value if value > 0 else 0
+        except (TypeError, ValueError):
+            pass
+    return 120000  # 2 minutes: generous for heavy composites, short enough to unstick
+
+
+def _getinfo(obj, *, retries=4, base_delay=3.0, label=''):
+    """``obj.getInfo()`` with retry/backoff, printing on each retry.
+
+    A getInfo() can stall (a slow composite, a transient Earth Engine error, a
+    hit deadline). Retrying with backoff recovers the transient cases, and every
+    attempt prints a line so a long wait never looks like a silent freeze. The
+    final failure is re-raised for the caller to record (per-date workers count
+    it as a failed batch; those points stay null and resume next run)."""
+    for attempt in range(1, retries + 1):
+        try:
+            return obj.getInfo()
+        except Exception as exc:  # noqa: BLE001 — EEException, timeouts, transport errors
+            if attempt == retries:
+                raise
+            delay = base_delay * (2 ** (attempt - 1))
+            print(f"  [ee-retry] {label or 'request'} failed ({type(exc).__name__}: {exc}); "
+                  f"retrying in {delay:.0f}s ({attempt}/{retries})...", flush=True)
+            time.sleep(delay)
 
 
 # ─── Core sampling primitive ──────────────────────────────────────────────────
@@ -133,7 +174,9 @@ def _sample_points(ee, image, points, scale, reducer=None, progress_label=None):
             ee.Feature(ee.Geometry.Point([lon, lat]), {'pidx': int(pos)})
             for pos, lon, lat in chunk
         ])
-        reduced = image.reduceRegions(collection=fc, reducer=reducer, scale=scale).getInfo()
+        reduced = _getinfo(
+            image.reduceRegions(collection=fc, reducer=reducer, scale=scale),
+            label=f"{progress_label or 'sample'} chunk {chunk_i}/{total_chunks}")
         for feat in reduced.get('features', []):
             props = dict(feat.get('properties', {}))
             pos = props.pop('pidx', None)
