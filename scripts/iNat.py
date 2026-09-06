@@ -53,20 +53,90 @@ _WEATHER_CACHE = {}
 _INAT_SESSION = None
 _INAT_SESSION_READY = False
 
+# When a live iNaturalist request is throttled (429), pyinaturalist / requests_cache
+# fall back to a previously cached response and log it with a full stack trace —
+# alarming, but NOT fatal: the call still returns (older) data. Rather than hide it
+# or dump a traceback, rewrite that log line into one clear, plain-English message,
+# and quiet the unrelated rate-limiter chatter.
+import logging as _logging
+
+_CACHE_TAXON_RE = re.compile(r'taxon_name=([^&\s]+)')
+
+
+class _CachedINatFilter(_logging.Filter):
+    """Turn requests_cache's 'failed; using cached response' + traceback into a
+    single clear line, so a throttled run reads as an explained fallback rather
+    than a wall of stack traces."""
+
+    def filter(self, record):
+        try:
+            message = record.getMessage()
+        except Exception:
+            return True
+        if 'using cached response' in message:
+            taxon = _CACHE_TAXON_RE.search(message)
+            who = f" for '{taxon.group(1)}'" if taxon else ''
+            record.msg = (
+                f"[iNaturalist] rate-limited{who} — returned previously CACHED "
+                f"observations instead of a fresh fetch. Re-run later (or lower "
+                f"INAT_PER_MINUTE) to pull fresh data.")
+            record.args = ()
+            record.exc_info = None      # drop the traceback
+            record.exc_text = None
+        return True
+
+
+for _name in ('requests_cache', 'requests_cache.session'):
+    try:
+        _lg = _logging.getLogger(_name)
+        _lg.addFilter(_CachedINatFilter())
+        _lg.setLevel(_logging.WARNING)  # keep the (now-clear) line visible
+    except Exception:
+        pass
+for _noisy in ('pyinaturalist', 'pyrate_limiter'):
+    try:
+        _logging.getLogger(_noisy).setLevel(_logging.ERROR)
+    except Exception:
+        pass
+
+
+def _inat_rate():
+    """(per_second, per_minute) for the shared session, tunable for a shared IP.
+
+    Kaggle runs many notebooks behind shared egress IPs, so iNaturalist's
+    per-IP throttle can trip even at the documented ~1 req/s. Lower these
+    (e.g. INAT_PER_MINUTE=30) if 429s persist."""
+    def _num(name, default):
+        raw = os.getenv(name)
+        if raw is None or str(raw).strip() == '':
+            return default
+        try:
+            v = float(raw)
+            return v if v > 0 else default
+        except (TypeError, ValueError):
+            return default
+    return _num('INAT_PER_SECOND', 1.0), _num('INAT_PER_MINUTE', 60.0)
+
+
 def _inat_session():
     global _INAT_SESSION, _INAT_SESSION_READY
     if _INAT_SESSION_READY:
         return _INAT_SESSION
     _INAT_SESSION_READY = True
+    per_second, per_minute = _inat_rate()
+    user_agent = os.getenv(
+        'INAT_USER_AGENT',
+        'data-map-pipeline/1.0 (+https://github.com/skyfly200/data-map)')
     try:
         from pyinaturalist import ClientSession
         _INAT_SESSION = ClientSession(
-            per_second=1,        # iNaturalist asks for ~1 request/second
-            per_minute=60,       # and no more than 60/minute
+            per_second=per_second,  # iNaturalist asks for ~1 request/second
+            per_minute=per_minute,  # and no more than 60/minute
             per_day=10000,
-            burst=1,             # no bursts — bursts are what tripped the throttle
+            burst=1,                # no bursts — bursts are what tripped the throttle
             max_retries=5,
-            backoff_factor=2.0,  # 429s back off exponentially inside the session
+            backoff_factor=2.0,     # 429s back off exponentially inside the session
+            user_agent=user_agent,  # identify the app — iNaturalist throttles anonymous traffic harder
         )
     except Exception as exc:
         # Older pyinaturalist, or a constructor change: fall back to the default
@@ -328,10 +398,14 @@ def get_parallel_fetch_workers(env=None):
         raw = values.get(key)
         if raw is None or str(raw).strip() == '':
             continue
-        parsed = _coerce_int(raw, 3, minimum=1)
+        parsed = _coerce_int(raw, 1, minimum=1)
         if parsed > 0:
             return parsed
-    return 3
+    # Default 1: the shared session rate-limits all requests as a group anyway,
+    # so extra workers add no throughput — they only pile up concurrent requests
+    # that trip iNaturalist's per-IP throttle. Raise INAT_PARALLEL_FETCHES only
+    # if you are not sharing an egress IP (i.e. not on Kaggle).
+    return 1
 
 def should_refresh_all(env=None):
     values = {**(env or {})}
@@ -734,7 +808,39 @@ def main():
     else:
         print('Full refresh enabled: REFRESH_ALL=1, reloading all observations.')
 
-    frames = []
+    # Persist each species to the store as it finishes rather than holding
+    # everything in memory and writing once at the very end. If the run is
+    # interrupted partway (a timeout, a crash, a throttle giving up), the
+    # species already fetched are on disk and the incremental refresh resumes
+    # the rest next time — instead of losing the whole fetch.
+    group_by = os.getenv('GROUP_BY', 'genus')
+    written_slugs = {}
+
+    # A full refresh clears the store up front so the incremental per-species
+    # writes below can always merge (union across locations) without re-reading
+    # stale rows from a previous run.
+    if refresh_all:
+        cleared = 0
+        for path in store.list_species_files(store.SPECIES_DIR):
+            try:
+                os.remove(path)
+                cleared += 1
+            except OSError:
+                pass
+        if cleared:
+            print(f"Full refresh: cleared {cleared} existing species file(s) before fetching.")
+
+    def persist_species(df_species):
+        """Write one completed species' rows to the store immediately."""
+        if df_species is None or df_species.empty or df_species.isna().all(axis=None):
+            return
+        key_col = group_by if group_by in df_species.columns else 'species'
+        # merge=True unions with what is already on disk (this run's earlier
+        # locations, or a prior incremental run) and de-dups on uuid.
+        w = store.write_split(df_species, base=store.SPECIES_DIR, key=key_col, merge=True)
+        for slug, n in w.items():
+            written_slugs[slug] = n
+
     for loc in locations:
         # A location is either a bounding box (from a plus code) or the
         # point+radius model. Build the geo kwargs once and a label for the log.
@@ -807,30 +913,27 @@ def main():
                 species_name = future_map[future]
                 try:
                     df_species = future.result()
-                    if df_species is not None and not df_species.empty:
-                        frames.append(df_species)
+                    # Write this species to disk now, so partial runs persist.
+                    persist_species(df_species)
                 except Exception as e:
                     print(f"[!] Error fetching taxon '{species_name}': {e}")
 
-    # Drop empty / all-NA frames before concat: pandas warns (and will change
-    # dtype behavior) when these are mixed in, and they carry no rows anyway.
-    frames = [f for f in frames if f is not None and not f.empty and not f.isna().all(axis=None)]
-    if not frames:
+    if not written_slugs:
         print('No new observations found; leaving the existing canonical dataset unchanged.')
         return
 
-    df_inat = pd.concat(frames, ignore_index=True)
     print("Data fetched successfully.")
 
-    # Check GROUP_BY env var to determine how to split files
-    group_by = os.getenv('GROUP_BY', 'genus')
-    key_column = group_by if group_by in df_inat.columns else 'species'
+    # GeoJSON tiles are derived from the whole store; regenerate them once from
+    # the final on-disk state (a later export stage rewrites them anyway, but
+    # this keeps a partial fetch immediately usable).
+    try:
+        store.write_geojson_tiles(store.load_all(store.SPECIES_DIR))
+    except Exception as exc:  # noqa: BLE001 — tiles are best-effort here
+        print(f"[!] GeoJSON tile write skipped: {exc}")
 
-    written = store.write_split(df_inat, base=store.SPECIES_DIR, key=key_column, merge=not refresh_all)
-
-    store.write_geojson_tiles(df_inat)
-    total = sum(written.values())
-    print(f"Saved {len(df_inat)} fetched observation(s) into {len(written)} {key_column} file(s) "
+    total = sum(written_slugs.values())
+    print(f"Saved observations into {len(written_slugs)} {group_by} file(s) "
           f"under {store.SPECIES_DIR}/ ({total} rows on disk after merge/dedup).")
 
 if __name__ == "__main__":

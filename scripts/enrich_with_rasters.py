@@ -634,6 +634,163 @@ def _postprocess_landcover(df):
     return df
 
 
+# ─── Area-chunked enrichment ──────────────────────────────────────────────────
+# Instead of enriching the whole store at once, optionally process it one
+# plus-code area at a time (ENRICH_BY_AREA=1): each area is fully sampled and
+# checkpointed before the next starts, so an interrupted run leaves whole areas
+# finished rather than every area half-done. Points that share an area still
+# batch together per date, so the per-request efficiency is preserved within the
+# area; the only cost is that two distant areas no longer share one request.
+
+def enrichment_columns_present(df):
+    """True when a representative enrichment column has no gaps in ``df``.
+
+    Used to skip an area that is already fully enriched (resume) without
+    re-running its stages. Conservative: any missing column or gap → not done."""
+    for col in ('slope', 'prcp_d0', 'tmax_d0', 'land_cover'):
+        if col not in df.columns or df[col].isna().any():
+            return False
+    return True
+
+
+def _fill_stages(df):
+    """Run every value-filling enrichment stage on ``df`` (Earth Engine first,
+    cached rasters as fallback) and return it.
+
+    Excludes the two whole-dataset steps — the land-cover row filter (it drops
+    rows) and the same-location NDVI gap fill (it rewrites the date column) —
+    which the area loop runs once at the end instead."""
+    if ee_enrich.earth_engine_enabled():
+        for label, fn in ee_enrich.EE_STAGES:
+            print(f"\n=== {label} ===")
+            try:
+                df = fn(df, checkpoint=lambda: None)
+            except Exception as exc:  # noqa: BLE001 — keep earlier stages' data
+                print(f"[!] Stage '{label}' failed ({exc}); continuing with partial data.")
+    else:
+        print("\nEarth Engine sampling disabled — using cached rasters only.")
+    print("Total dates needed (for precip):", len(get_needed_raster_dates(df)))
+    for label, fn in (
+        ("NDVI + soil (cached rasters)", lambda d: enrich_df_with_rasters(d, ndvi_dir="ndvi/", soil_dir="soil/")),
+        ("Precipitation history", lambda d: enrich_with_precip(d, precip_dir="precip/", checkpoint=lambda: None)),
+        ("Land cover", lambda d: enrich_with_worldcover(d, checkpoint=lambda: None)),
+        ("Terrain exposure", lambda d: enrich_with_terrain(d, checkpoint=lambda: None)),
+        ("Temperature history", lambda d: enrich_with_temperature_history(d, checkpoint=lambda: None)),
+    ):
+        print(f"\n=== {label} ===")
+        try:
+            df = fn(df)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[!] Stage '{label}' failed ({exc}); continuing with partial data.")
+    return df
+
+
+def _area_bin_length():
+    """How many leading plus-code characters define an area (2–8, default 4).
+
+    Coarser = larger areas: 2≈20°, 4≈1° (~110 km), 6≈0.05° (~5.5 km). The stored
+    ``olc`` code is length-6, so 7–8 add no resolution. A shorter length groups
+    more points per area, which batches more per Earth Engine request. Set
+    AREA_BIN_PLUS_LENGTH to override."""
+    try:
+        n = int(os.getenv('AREA_BIN_PLUS_LENGTH', '4'))
+    except (TypeError, ValueError):
+        n = 4
+    return max(2, min(8, n))
+
+
+def _area_bins(df, length):
+    """Group row indices by the first ``length`` chars of their ``olc`` code.
+
+    Returns [(bin_id, Index)], largest bins first so a partial run covers the
+    densest areas soonest. Rows without a code fall in an 'unknown' bin."""
+    if 'olc' not in df.columns:
+        return [('all', df.index)]
+
+    def key(value):
+        return value[:length] if isinstance(value, str) and len(value) >= length else 'unknown'
+
+    groups = [(bin_id, idx) for bin_id, idx in df.groupby(df['olc'].map(key)).groups.items()]
+    groups.sort(key=lambda g: -len(g[1]))
+    return groups
+
+
+def _apply_back(df, sub):
+    """Write a bin's enriched values back into the master frame by index."""
+    for col in sub.columns:
+        if col not in df.columns:
+            df[col] = pd.NA
+    df.update(sub)
+
+
+def enrich_by_area(df, checkpoint_path):
+    """Enrich ``df`` one plus-code area at a time, checkpointing after each.
+
+    Each area is fully sampled before the next begins, so a stop mid-run leaves
+    completed areas intact (and the resume skips them). The row filter and the
+    cross-row NDVI gap fill run once at the end on the whole frame."""
+    length = _area_bin_length()
+    bins = _area_bins(df, length)
+    total = len(bins)
+    print(f"\n=== Enriching by area: {total} plus-code bin(s) at prefix length {length} ===")
+    for i, (bin_id, idx) in enumerate(bins, 1):
+        sub = df.loc[idx].copy()
+        header = f"[area {i}/{total}] {bin_id} — {len(idx)} point(s)"
+        if enrichment_columns_present(sub):
+            print(f"{header}: already complete, skipping.")
+            continue
+        print(f"\n########## {header} ##########", flush=True)
+        try:
+            sub = _fill_stages(sub)
+        except KeyboardInterrupt:
+            _apply_back(df, sub)
+            _checkpoint(df, checkpoint_path)
+            print("[!] Interrupted — saved progress for completed areas.")
+            raise
+        _apply_back(df, sub)
+        _checkpoint(df, checkpoint_path)
+        print(f"  💾 area {i}/{total} checkpoint → {checkpoint_path}", flush=True)
+        # Grow the map's GeoJSON as each area lands, so a run that freezes
+        # part-way still leaves a usable (and steadily larger) map.
+        _export_progress(df, f"area {i}/{total}")
+
+    # Whole-dataset finishers: fill NDVI gaps across same locations, then label
+    # land cover and drop non-productive rows.
+    df = run_stage("Fill missing NDVI", lambda d: fill_missing_ndvi(d, max_days_gap=7), df, checkpoint_path)
+    df = run_stage("Land-cover labels / filter", _postprocess_landcover, df, checkpoint_path)
+    return df
+
+
+def enrich_by_area_enabled():
+    return os.getenv('ENRICH_BY_AREA', '').strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
+
+
+def _incremental_export_enabled():
+    """Export the GeoJSON after each area by default (only while enriching by
+    area); EXPORT_EACH_AREA=0 turns it off."""
+    raw = os.getenv('EXPORT_EACH_AREA')
+    if raw is None or str(raw).strip() == '':
+        return True
+    return str(raw).strip().lower() not in {'0', 'false', 'no', 'off'}
+
+
+def _export_progress(df, label=''):
+    """Best-effort per-area GeoJSON export. Writes the map's per-species files and
+    the combined dataset from everything enriched so far, so the frontend can be
+    refreshed mid-run. Never fails the enrichment — a bad export is logged and
+    skipped."""
+    if not _incremental_export_enabled():
+        return
+    try:
+        import export_geojson
+        group_by = os.getenv('GROUP_BY', 'genus')
+        export_geojson.export_all(df, group_by=group_by)
+        print(f"  🗺️  GeoJSON updated after {label}." if label else "  🗺️  GeoJSON updated.",
+              flush=True)
+    except Exception as exc:  # noqa: BLE001 — export is a convenience here, not the job
+        print(f"[!] Incremental GeoJSON export skipped ({label}): {exc}", flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Enrich observation rows with raster and terrain data")
     parser.add_argument("--input", default=None,
@@ -706,27 +863,33 @@ if __name__ == "__main__":
 
     checkpoint_path = checkpoint_file if store_mode else output_file
 
-    # ─── Earth Engine first ───────────────────────────────────────────────────
-    # Every environmental column is available from Earth Engine as a point
-    # sample, which is far cheaper than downloading the source rasters. These
-    # stages fill what they can; the raster stages below then run as a fallback,
-    # and since each of those only touches rows still missing its column, they
-    # cost nothing when EE has already supplied the data.
-    if ee_enrich.earth_engine_enabled():
-        for label, fn in ee_enrich.EE_STAGES:
-            df = run_stage(label, lambda d, _fn=fn: _fn(d, checkpoint=save), df, checkpoint_path)
+    if store_mode and enrich_by_area_enabled():
+        # Area-chunked: enrich one plus-code area at a time so completed areas
+        # persist across an interruption (each area's points still batch per
+        # date within its own requests).
+        df = enrich_by_area(df, checkpoint_path)
     else:
-        print("\nEarth Engine sampling disabled — using cached rasters only.")
+        # ─── Earth Engine first ─────────────────────────────────────────────
+        # Every environmental column is available from Earth Engine as a point
+        # sample, which is far cheaper than downloading the source rasters. These
+        # stages fill what they can; the raster stages below then run as a
+        # fallback, and since each only touches rows still missing its column,
+        # they cost nothing when EE has already supplied the data.
+        if ee_enrich.earth_engine_enabled():
+            for label, fn in ee_enrich.EE_STAGES:
+                df = run_stage(label, lambda d, _fn=fn: _fn(d, checkpoint=save), df, checkpoint_path)
+        else:
+            print("\nEarth Engine sampling disabled — using cached rasters only.")
 
-    # ─── Cached-raster fallback ───────────────────────────────────────────────
-    print("Total dates needed (for precip):", len(get_needed_raster_dates(df)))
-    df = run_stage("NDVI + soil (cached rasters)", lambda d: enrich_df_with_rasters(d, ndvi_dir="ndvi/", soil_dir="soil/"), df, checkpoint_path)
-    df = run_stage("Precipitation history", lambda d: enrich_with_precip(d, precip_dir="precip/", checkpoint=save), df, checkpoint_path)
-    df = run_stage("Land cover", lambda d: enrich_with_worldcover(d, checkpoint=save), df, checkpoint_path)
-    df = run_stage("Land-cover labels / filter", _postprocess_landcover, df, checkpoint_path)
-    df = run_stage("Terrain exposure", lambda d: enrich_with_terrain(d, checkpoint=save), df, checkpoint_path)
-    df = run_stage("Temperature history", lambda d: enrich_with_temperature_history(d, checkpoint=save), df, checkpoint_path)
-    df = run_stage("Fill missing NDVI", lambda d: fill_missing_ndvi(d, max_days_gap=7), df, checkpoint_path)
+        # ─── Cached-raster fallback ─────────────────────────────────────────
+        print("Total dates needed (for precip):", len(get_needed_raster_dates(df)))
+        df = run_stage("NDVI + soil (cached rasters)", lambda d: enrich_df_with_rasters(d, ndvi_dir="ndvi/", soil_dir="soil/"), df, checkpoint_path)
+        df = run_stage("Precipitation history", lambda d: enrich_with_precip(d, precip_dir="precip/", checkpoint=save), df, checkpoint_path)
+        df = run_stage("Land cover", lambda d: enrich_with_worldcover(d, checkpoint=save), df, checkpoint_path)
+        df = run_stage("Land-cover labels / filter", _postprocess_landcover, df, checkpoint_path)
+        df = run_stage("Terrain exposure", lambda d: enrich_with_terrain(d, checkpoint=save), df, checkpoint_path)
+        df = run_stage("Temperature history", lambda d: enrich_with_temperature_history(d, checkpoint=save), df, checkpoint_path)
+        df = run_stage("Fill missing NDVI", lambda d: fill_missing_ndvi(d, max_days_gap=7), df, checkpoint_path)
 
     if store_mode:
         # Split the completed frame into per-species enriched files, drop the

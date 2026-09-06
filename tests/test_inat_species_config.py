@@ -77,7 +77,9 @@ class ObservationProgressTests(unittest.TestCase):
 
     def test_parallel_fetch_workers_are_configurable(self):
         self.assertEqual(get_parallel_fetch_workers({'INAT_PARALLEL_FETCHES': '4'}), 4)
-        self.assertEqual(get_parallel_fetch_workers({}), 3)
+        # Default is serial (1): the shared session rate-limits as a group, so
+        # extra workers only add per-IP throttle pressure.
+        self.assertEqual(get_parallel_fetch_workers({}), 1)
 
 
 class PlusCodeAreaTests(unittest.TestCase):
