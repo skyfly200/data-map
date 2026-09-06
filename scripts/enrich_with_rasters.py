@@ -750,6 +750,9 @@ def enrich_by_area(df, checkpoint_path):
         _apply_back(df, sub)
         _checkpoint(df, checkpoint_path)
         print(f"  💾 area {i}/{total} checkpoint → {checkpoint_path}", flush=True)
+        # Grow the map's GeoJSON as each area lands, so a run that freezes
+        # part-way still leaves a usable (and steadily larger) map.
+        _export_progress(df, f"area {i}/{total}")
 
     # Whole-dataset finishers: fill NDVI gaps across same locations, then label
     # land cover and drop non-productive rows.
@@ -760,6 +763,32 @@ def enrich_by_area(df, checkpoint_path):
 
 def enrich_by_area_enabled():
     return os.getenv('ENRICH_BY_AREA', '').strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
+
+
+def _incremental_export_enabled():
+    """Export the GeoJSON after each area by default (only while enriching by
+    area); EXPORT_EACH_AREA=0 turns it off."""
+    raw = os.getenv('EXPORT_EACH_AREA')
+    if raw is None or str(raw).strip() == '':
+        return True
+    return str(raw).strip().lower() not in {'0', 'false', 'no', 'off'}
+
+
+def _export_progress(df, label=''):
+    """Best-effort per-area GeoJSON export. Writes the map's per-species files and
+    the combined dataset from everything enriched so far, so the frontend can be
+    refreshed mid-run. Never fails the enrichment — a bad export is logged and
+    skipped."""
+    if not _incremental_export_enabled():
+        return
+    try:
+        import export_geojson
+        group_by = os.getenv('GROUP_BY', 'genus')
+        export_geojson.export_all(df, group_by=group_by)
+        print(f"  🗺️  GeoJSON updated after {label}." if label else "  🗺️  GeoJSON updated.",
+              flush=True)
+    except Exception as exc:  # noqa: BLE001 — export is a convenience here, not the job
+        print(f"[!] Incremental GeoJSON export skipped ({label}): {exc}", flush=True)
 
 
 if __name__ == "__main__":
