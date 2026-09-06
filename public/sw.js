@@ -18,7 +18,8 @@
  */
 
 const VERSION = 'v1'
-const SHELL = `nexstrata-shell-${VERSION}`
+const SHELL_VERSION = 'v2'
+const SHELL = `nexstrata-shell-${SHELL_VERSION}`
 const DATA = `nexstrata-data-${VERSION}`
 const TILES = `nexstrata-tiles-${VERSION}`
 const OURS = new Set([SHELL, DATA, TILES])
@@ -50,6 +51,15 @@ const isTile = (url) => /\/\d+\/\d+\/\d+(\.\w+)?(\?|$)/.test(url.pathname)
 
 const isDataset = (url) => url.pathname.startsWith('/data/') && url.pathname.endsWith('.geojson')
 
+const isBuildMeta = (url) => url.pathname.startsWith('/_nuxt/builds/')
+
+const EMPTY_MANIFEST = JSON.stringify({
+  id: '',
+  timestamp: 0,
+  matcher: { static: {}, wildcard: {}, dynamic: {} },
+  prerendered: [],
+})
+
 self.addEventListener('fetch', (event) => {
   const { request } = event
   if (request.method !== 'GET') return
@@ -78,6 +88,25 @@ self.addEventListener('fetch', (event) => {
       const hit = await cache.match(request, { ignoreSearch: true })
       return hit || fetch(request)
     }))
+    return
+  }
+
+  // Nuxt app manifest / build metadata: if requested (e.g. by an older cached shell),
+  // try network first, but if it returns 404 or fails, return an empty manifest
+  // response so the client never encounters a 404 error.
+  if (isBuildMeta(url)) {
+    event.respondWith(
+      fetch(request).then((res) => {
+        if (res.ok) return res
+        return new Response(EMPTY_MANIFEST, {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      }).catch(() => new Response(EMPTY_MANIFEST, {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }))
+    )
     return
   }
 
@@ -198,7 +227,9 @@ self.addEventListener('message', (event) => {
     event.waitUntil(usage().then((u) => reply({ type: 'usage', usage: u })))
   } else if (msg.type === 'clear') {
     const names = msg.which === 'all' ? [SHELL, DATA, TILES]
-      : msg.which === 'tiles' ? [TILES] : msg.which === 'data' ? [DATA] : []
+      : msg.which === 'tiles' ? [TILES]
+      : msg.which === 'data' ? [DATA]
+      : msg.which === 'shell' ? [SHELL] : []
     event.waitUntil(Promise.all(names.map((n) => caches.delete(n))).then(() => reply({ type: 'cleared' })))
   }
 })
