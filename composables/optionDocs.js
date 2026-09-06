@@ -757,6 +757,21 @@ export const OPTION_DOCS = [
     caveat: 'Median timing is reported rather than mean, because a handful of very late finds drag a mean and leave a median alone.',
   },
   {
+    id: 'analysis-phenology',
+    group: 'Analysis',
+    title: 'What moves the season',
+    summary: 'Whether a species is fruiting earlier or later, and whether rain or warmth explains it.',
+    detail: [
+      'For each complete year, the median day a species was found. That series is the timing, and the slope through it is the shift, in days per year. The rank correlation beside it says how consistently the years line up, which is a different question from how big the shift is: four scattered years will happily produce a dramatic slope.',
+      '**The effort correction is the default and matters more than anything else here.** A species moving ten days earlier means nothing if every species moved ten days earlier, because that is a change in when people went out. Subtracting the median of all observations in the same year leaves the part specific to the species. The raw date is still available beside it.',
+      '**Where the weather comes from.** Every observation carries the rain and temperature of the seven days before it. Those windows overlap between finds, so pooling them across a cell reconstructs a daily series, and a daily series gives what one observation cannot: the rain over the previous 30, 60 or 90 days, and the warmth accumulated over the same. This is only sound because the overlaps agree, and they do: across the shipped dataset 61,794 cell-days are reported by two or more observations, with a median disagreement of 0.00mm.',
+      '**Held apart** is a partial correlation. A wet year is often a cool one, so a correlation between timing and rainfall is partly warmth showing through, and the reverse. Each condition is therefore also correlated with the rival family held constant. When the two columns disagree, the plain one was borrowing and the partial is the one to read.',
+      '**Calendar or conditions** tests the phenological hypothesis directly. If fruiting waits for a threshold rather than a date, the conditions at the peak should hold steadier across years than the date does. Both are compared by coefficient of variation, which has no units, so millimetres and days can be set beside each other at all.',
+    ],
+    caveat: 'This is a hypothesis generator, not a result. Six or eight years is very little to fit anything to; the weather is reconstructed rather than measured at a station; totals since 1 January are deliberately not offered because the reconstruction only covers the season people were out recording; and a correlation across years cannot separate a cause from anything that moved with it. Follow these up, do not quote them.',
+    also: ['analysis-seasons', 'map-heatmap-season', 'filter-min-obs'],
+  },
+  {
     id: 'analysis-quality',
     group: 'Analysis',
     title: 'Data quality',

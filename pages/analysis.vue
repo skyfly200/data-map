@@ -122,6 +122,15 @@
       </section>
 
       <!-- ─── How much to trust it ─────────────────────────────────────────── -->
+      <!-- ── What moves the season ────────────────────────────────────
+           The timing question needs an apparatus of its own: a weather series
+           stitched from the lead-up windows, an effort correction, and
+           correlations that can tell rain from warmth. It lives in its own
+           component rather than inline here. -->
+      <section v-else-if="tab === 'phenology'" class="pane">
+        <PhenologyPanel :features="filteredData?.features || []" />
+      </section>
+
       <section v-else class="pane">
         <ChartCard class="wide">
           <h3 class="ct">Field coverage</h3>
@@ -167,11 +176,12 @@ const TABS = [
   { key: 'drivers', label: 'What relates to what', hint: 'Which environmental variables move together' },
   { key: 'species', label: 'Species', hint: 'What each species prefers, and which are found together' },
   { key: 'seasons', label: 'Year over year', hint: 'Season timing and elevation by year, against recording effort' },
+  { key: 'phenology', label: 'What moves the season', hint: 'Whether a species is fruiting earlier or later, and whether rain or warmth explains it' },
   { key: 'quality', label: 'Data quality', hint: 'How much of each field is actually filled in' },
 ]
 const MIN_SPECIES_OBS = 20
 
-const { rows, error, pending, load } = useObservations()
+const { rows, filteredData, error, pending, load } = useObservations()
 const { unit, elevValue } = useUnits()
 const analysis = useAnalysis()
 const tab = ref('drivers')
@@ -189,6 +199,7 @@ onMounted(load)
 const TAB_DOCS = {
   drivers: 'analysis-drivers', species: 'analysis-species',
   seasons: 'analysis-seasons', quality: 'analysis-quality',
+  phenology: 'analysis-phenology',
 }
 const tabDocId = computed(() => TAB_DOCS[tab.value] || 'analysis-drivers')
 
