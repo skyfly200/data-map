@@ -484,3 +484,135 @@ export function driverTable(rows, { timingKey = 'median' } = {}) {
     }
   }).sort((a, b) => Math.abs(b.rho ?? 0) - Math.abs(a.rho ?? 0))
 }
+
+/**
+ * Rain in the days before a find, read back as far as the series allows.
+ *
+ * The seven-day version reads the prcp_d0..d6 fields each observation carries.
+ * This reads the reconstructed series instead, which is what lets the window
+ * run to a month or more: the fields stop at seven days, the series does not.
+ *
+ * Coverage is reported per lag and falls off with distance, because a day
+ * thirty back is only known if somebody was recording within a week of it. A
+ * lag with few observations behind it is a thinner claim than one beside it,
+ * and the chart has to be able to say so.
+ */
+export function leadUpFromSeries(features, series, { days = 30, cellSize = WEATHER_CELL } = {}) {
+  const sums = new Array(days).fill(0)
+  const counts = new Array(days).fill(0)
+
+  for (const f of features) {
+    const p = f?.properties || {}
+    const co = f?.geometry?.coordinates
+    if (!co || !p.date) continue
+    const lat = num(co[1]); const lon = num(co[0])
+    if (lat === null || lon === null) continue
+    const year = yearOf(p.date)
+    const doy = num(p.day_of_year) ?? doyOf(p.date)
+    if (!year || doy === null) continue
+    const s = series.get(`${cellKey(lat, lon, cellSize)}|${year}`)
+    if (!s) continue
+    for (let d = 0; d < days; d += 1) {
+      const v = s.rain.get(doy - d)
+      if (v === undefined) continue
+      sums[d] += v
+      counts[d] += 1
+    }
+  }
+
+  return sums.map((sum, d) => ({
+    lag: d,
+    mean: counts[d] ? sum / counts[d] : null,
+    n: counts[d],
+  }))
+}
+
+/**
+ * Rainfall through the year, one curve per year, against the multi-year mean.
+ *
+ * Each point is the rain over the `window` days ending there, which is the
+ * shape that actually matters: a running total shows the wet spells and dry
+ * spells a cumulative curve smooths away, and it is the same quantity the
+ * driver table found signal in.
+ *
+ * Pooled across `cells` — the places the species is found — so the curve is the
+ * weather where it grows rather than an average over the whole dataset. A cell
+ * only contributes where its window is adequately covered, and a point with no
+ * adequately covered cell is a gap rather than a zero.
+ */
+export function rainfallCurves(series, {
+  cells, years, window = 30, step = 4, minCover = 1 / 3, from = 1, to = 366,
+  minPoints = 20,
+} = {}) {
+  const wanted = new Set(cells)
+  const out = []
+
+  for (const year of years) {
+    const points = []
+    for (let doy = from; doy <= to; doy += step) {
+      const totals = []
+      for (const cell of wanted) {
+        const s = series.get(`${cell}|${year}`)
+        if (!s) continue
+        const t = trailingWindow(s, doy, window)
+        if (t.rainCovered >= window * minCover) totals.push(t.rain * (window / t.rainCovered))
+      }
+      if (totals.length) {
+        points.push({ doy, mm: totals.reduce((a, b) => a + b, 0) / totals.length, cells: totals.length })
+      }
+    }
+    // A year known on a handful of days is not a curve, and averaging it in
+    // drags the normal toward whatever those few days happened to be. Three
+    // points in October read as a drought once the other nine months are
+    // scored as zero.
+    if (points.length >= minPoints) out.push({ year, points })
+  }
+
+  // The mean across years at each day, over whichever years reached it. A day
+  // covered in two years and a day covered in eight are both reported, with the
+  // count, rather than one being silently dropped or the other silently trusted.
+  const byDoy = new Map()
+  for (const { points } of out) {
+    for (const pt of points) {
+      if (!byDoy.has(pt.doy)) byDoy.set(pt.doy, [])
+      byDoy.get(pt.doy).push(pt.mm)
+    }
+  }
+  const mean = [...byDoy.entries()]
+    .map(([doy, vs]) => ({ doy, mm: vs.reduce((a, b) => a + b, 0) / vs.length, years: vs.length }))
+    .sort((a, b) => a.doy - b.doy)
+
+  return { years: out.sort((a, b) => a.year - b.year), mean, window }
+}
+
+/** The cells a set of observations occupies, per year and overall. */
+export function cellsUsed(features, { cellSize = WEATHER_CELL } = {}) {
+  const all = new Set()
+  for (const f of features) {
+    const co = f?.geometry?.coordinates
+    if (!co) continue
+    const lat = num(co[1]); const lon = num(co[0])
+    if (lat === null || lon === null) continue
+    all.add(cellKey(lat, lon, cellSize))
+  }
+  return all
+}
+
+/**
+ * How a year's rainfall compared with the average, as a single number per year.
+ *
+ * The ratio of that year's mean running total to the mean across all years,
+ * over the days both cover. Restricting to shared days is what makes the
+ * comparison fair: a year whose series starts in June would otherwise be
+ * compared against an average that includes April.
+ */
+export function rainfallAnomaly(curves) {
+  const meanByDoy = new Map(curves.mean.map((p) => [p.doy, p.mm]))
+  return curves.years.map(({ year, points }) => {
+    const pairs = points.filter((p) => meanByDoy.has(p.doy))
+    if (!pairs.length) return { year, ratio: null, n: 0 }
+    const mine = pairs.reduce((a, p) => a + p.mm, 0) / pairs.length
+    const norm = pairs.reduce((a, p) => a + meanByDoy.get(p.doy), 0) / pairs.length
+    return { year, ratio: norm > 0 ? mine / norm : null, mm: mine, normal: norm, n: pairs.length }
+  })
+}
