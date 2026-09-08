@@ -399,6 +399,8 @@ def _find_dem(dem_dir="dem/"):
 
 if __name__ == "__main__":
     import argparse
+    import log_utils
+    log_utils.enable_timestamps()
 
     parser = argparse.ArgumentParser(description="Derive terrain exposure layers from a DEM")
     parser.add_argument("--dem", default=None, help="Path to a DEM GeoTIFF (default: first file in dem/)")
