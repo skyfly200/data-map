@@ -163,6 +163,11 @@ def _prepare(python_executable=None):
     Idempotent and cheap to call once per stage: the resolved interpreter is
     cached so repeated stage calls don't re-probe it."""
     global _RESOLVED_PYTHON
+    try:
+        import log_utils
+        log_utils.enable_timestamps()
+    except Exception:
+        pass
     env_file = Path(os.getenv('ENV_FILE', '.env'))
     if env_file.exists():
         load_env_into_os(env_file)
