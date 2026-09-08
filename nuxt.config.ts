@@ -2,6 +2,9 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
+  experimental: {
+    appManifest: false,
+  },
   nitro: {
     // The observation GeoJSON is ~48 MB of highly repetitive JSON that gzips to
     // under 7 MB. Without this it ships uncompressed: Nitro serves public/
