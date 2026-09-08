@@ -5,6 +5,7 @@ import {
   GDD_BASE, WINDOWS, accumulate, completeYears, conditionsByYear, dailySeries, doyOf,
   driverTable, leadUpProfile, partialCorrelation, quantile, relativeTiming, thresholdTest,
   timingByYear, timingTrend, trailingWindow,
+  cellsUsed, leadUpFromSeries, rainfallAnomaly, rainfallCurves,
 } from '../composables/phenology.js'
 
 /** An observation with a 7-day lead-up window ending on `doy`. */
@@ -266,4 +267,78 @@ test('the driver table ranks by strength and names what it held constant', () =>
 test('the driver table stays quiet when there are too few years', () => {
   const rows = [2022, 2023].map((year, i) => ({ year, median: 200 + i, rain30: i, gdd30: i }))
   for (const d of driverTable(rows)) assert.equal(d.rho, null)
+})
+
+test('the lead-up reads past seven days, which the per-find fields cannot', () => {
+  // Finds every three days through a month, so the stitched series covers the
+  // whole run and a 30-day window has something to read at every lag.
+  const f = []
+  for (let doy = 100; doy <= 200; doy += 3) f.push(obs({ doy, rain: [1, 1, 1, 1, 1, 1, 1] }))
+  const series = dailySeries(f)
+  const prof = leadUpFromSeries(f.filter((o) => o.properties.day_of_year >= 160), series, { days: 30 })
+  assert.equal(prof.length, 30)
+  assert.ok(prof[20].n > 0, 'day 20 back is reachable through the series')
+  assert.equal(prof[20].mean, 1)
+})
+
+test('the lead-up reports how many finds knew each day', () => {
+  // Coverage falls off with distance: a day thirty back is only known if
+  // somebody recorded within a week of it, and the chart has to say so.
+  const f = [obs({ doy: 100, rain: [1, 1, 1, 1, 1, 1, 1] })]
+  const prof = leadUpFromSeries(f, dailySeries(f), { days: 30 })
+  assert.equal(prof[3].n, 1)
+  assert.equal(prof[20].n, 0, 'nothing reaches back that far from one find')
+  assert.equal(prof[20].mean, null)
+})
+
+test('rainfall curves run per year with a mean across them', () => {
+  const f = []
+  for (const year of [2022, 2023]) {
+    for (let doy = 10; doy <= 300; doy += 3) {
+      f.push(obs({ year, doy, rain: new Array(7).fill(year === 2022 ? 1 : 3) }))
+    }
+  }
+  const series = dailySeries(f)
+  const curves = rainfallCurves(series, { cells: cellsUsed(f), years: [2022, 2023], window: 30 })
+  assert.equal(curves.years.length, 2)
+  const wet = curves.years.find((y) => y.year === 2023)
+  const dry = curves.years.find((y) => y.year === 2022)
+  assert.ok(wet.points[10].mm > dry.points[10].mm * 2.5, 'the wet year reads wetter')
+  // 30 days at 1mm and at 3mm average to 2mm.
+  const meanPoint = curves.mean.find((p) => p.doy === wet.points[10].doy)
+  assert.equal(meanPoint.years, 2)
+  assert.ok(Math.abs(meanPoint.mm - 60) < 1)
+})
+
+test('a year known on a handful of days is kept out of the normal', () => {
+  // Three points in October would otherwise be averaged in as if the other
+  // nine months were zero, and drag every other year above "normal".
+  const f = []
+  for (let doy = 10; doy <= 300; doy += 3) f.push(obs({ year: 2023, doy, rain: new Array(7).fill(2) }))
+  for (const doy of [280, 283, 286]) f.push(obs({ year: 2011, doy, rain: new Array(7).fill(0) }))
+  const curves = rainfallCurves(dailySeries(f), {
+    cells: cellsUsed(f), years: [2011, 2023], window: 30,
+  })
+  assert.deepEqual(curves.years.map((y) => y.year), [2023])
+})
+
+test('a year is compared with the normal only over the days they share', () => {
+  // A year whose series starts in June must not be scored against an average
+  // that includes April.
+  const f = []
+  for (let doy = 10; doy <= 300; doy += 3) f.push(obs({ year: 2023, doy, rain: new Array(7).fill(2) }))
+  for (let doy = 150; doy <= 300; doy += 3) f.push(obs({ year: 2024, doy, rain: new Array(7).fill(2) }))
+  const curves = rainfallCurves(dailySeries(f), { cells: cellsUsed(f), years: [2023, 2024], window: 30 })
+  const anomalies = rainfallAnomaly(curves)
+  for (const a of anomalies) {
+    assert.ok(Math.abs(a.ratio - 1) < 0.05, `${a.year} rained the same as the other, so it is normal`)
+  }
+  const late = anomalies.find((a) => a.year === 2024)
+  const full = anomalies.find((a) => a.year === 2023)
+  assert.ok(late.n < full.n, 'the shorter year is scored over fewer shared days')
+})
+
+test('cellsUsed collects the places a set of finds occupies', () => {
+  const f = [obs({ doy: 100 }), obs({ doy: 101 }), obs({ doy: 102, lat: 50 })]
+  assert.equal(cellsUsed(f).size, 2)
 })

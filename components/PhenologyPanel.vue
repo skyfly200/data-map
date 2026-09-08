@@ -95,27 +95,97 @@
           </p>
         </figure>
 
-        <!-- ── The week before a find ────────────────────────────────────── -->
-        <figure class="ph-card">
+        <!-- ── The month before a find ───────────────────────────────────── -->
+        <figure class="ph-card wide">
           <figcaption>
-            Rain in the week before a find
+            Rain in the {{ LEAD_DAYS_SHOWN }} days before a find
             <span class="cap-sub">
               This species against every observation in view, so the comparison is with a day
-              somebody was out recording rather than with nothing.
+              somebody was out recording rather than with nothing. Past the first week the days
+              come from the reconstructed series rather than from the find's own record, so
+              fewer finds know them; the band under the axis is how many did.
             </span>
           </figcaption>
-          <svg class="lead" :viewBox="`0 0 ${LW} ${LH}`" role="img" aria-label="Rainfall in the seven days before a find">
-            <g v-for="(p, i) in leadUp.species" :key="p.lag">
-              <rect :x="lx(i) - 11" :y="ly(p.mean)" width="10" :height="Math.max(0, LH - 26 - ly(p.mean))" class="b-sp" />
-              <rect v-if="leadUp.baseline" :x="lx(i) + 1" :y="ly(leadUp.baseline[i].mean)"
-                    width="10" :height="Math.max(0, LH - 26 - ly(leadUp.baseline[i].mean))" class="b-bg" />
-              <text :x="lx(i)" :y="LH - 8" class="tick">{{ p.lag === 0 ? 'day of' : `-${p.lag}` }}</text>
+          <svg class="lead" :viewBox="`0 0 ${LW} ${LH}`" role="img"
+               :aria-label="`Rainfall in the ${LEAD_DAYS_SHOWN} days before a find`">
+            <g v-for="t in [0, 0.5, 1]" :key="t">
+              <line :x1="36" :y1="ly(t * leadMax)" :x2="LW - 6" :y2="ly(t * leadMax)" class="grid" />
+              <text :x="32" :y="ly(t * leadMax) + 3" class="tick end">{{ (t * leadMax).toFixed(1) }}</text>
             </g>
-            <text :x="4" :y="12" class="tick">mm</text>
+            <polyline :points="leadPath(leadUp.baseline)" class="l-bg" />
+            <polyline :points="leadPath(leadUp.species)" class="l-sp" />
+            <!-- How much of the window each lag is actually built on. -->
+            <rect v-for="(p, i) in leadUp.species" :key="`c${p.lag}`"
+                  :x="lx(i) - 2" :y="LH - 22" width="4"
+                  :height="Math.max(0.5, 10 * (p.n / Math.max(1, leadUp.total)))" class="cov" />
+            <g v-for="p in leadTicks" :key="`t${p}`">
+              <text :x="lx(p)" :y="LH - 4" class="tick">{{ p === 0 ? 'day of' : `-${p}` }}</text>
+            </g>
+            <text :x="4" :y="12" class="tick start">mm/day</text>
           </svg>
           <p class="ph-legend">
             <span class="sw sp"></span>{{ species }}
             <span class="sw bg"></span>all observations
+            <span class="sw cov"></span>how many finds knew that day
+          </p>
+        </figure>
+
+        <!-- ── Rainfall, year against year ───────────────────────────────── -->
+        <figure v-if="curves.years.length" class="ph-card wide">
+          <figcaption>
+            Rainfall through the year, against the average
+            <span class="cap-sub">
+              Rain over the {{ curves.window }} days ending at each point, in the cells this species
+              is found in. A running total rather than a cumulative one, so wet and dry spells stay
+              visible instead of averaging away. The thick line is the mean across these years; the
+              dots mark where the species fruited that year.
+            </span>
+          </figcaption>
+          <div class="year-pick">
+            <button v-for="y in curves.years" :key="y.year"
+                    :class="{ on: y.year === highlightYear }"
+                    @click="highlightYear = highlightYear === y.year ? null : y.year">{{ y.year }}</button>
+          </div>
+          <svg :viewBox="`0 0 ${RW} ${RH}`" role="img" aria-label="Rainfall through the year by year">
+            <g v-for="t in rainYTicks" :key="`ry${t}`">
+              <line :x1="40" :y1="ry(t)" :x2="RW - 8" :y2="ry(t)" class="grid" />
+              <text :x="36" :y="ry(t) + 3" class="tick end">{{ t }}</text>
+            </g>
+            <g v-for="t in monthTicks" :key="`rx${t.doy}`">
+              <text :x="rx(t.doy)" :y="RH - 6" class="tick">{{ t.label }}</text>
+            </g>
+            <polyline v-for="y in curves.years" :key="y.year" :points="rainPath(y.points)"
+                      class="r-year" :class="{ dim: highlightYear && y.year !== highlightYear,
+                                               up: y.year === highlightYear }" />
+            <polyline :points="rainPath(curves.mean)" class="r-mean" />
+            <g v-for="d in fruitDots" :key="`fd${d.year}`">
+              <circle :cx="rx(d.doy)" :cy="ry(d.mm)" r="3.5" class="r-dot"
+                      :class="{ dim: highlightYear && d.year !== highlightYear }" />
+            </g>
+            <text :x="6" :y="14" class="tick start">mm / {{ curves.window }}d</text>
+          </svg>
+          <table class="ph-tbl compact anomaly">
+            <thead>
+              <tr><th>Year</th><th class="num">Rain</th><th class="num">vs average</th><th>Season</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="a in anomalies" :key="a.year"
+                  :class="{ on: a.year === highlightYear }"
+                  @click="highlightYear = highlightYear === a.year ? null : a.year">
+                <td>{{ a.year }}</td>
+                <td class="num">{{ a.mm === null ? '—' : `${Math.round(a.mm)} mm` }}</td>
+                <td class="num">
+                  <span class="an-bar" :style="anomalyStyle(a.ratio)"></span>
+                  {{ a.ratio === null ? '—' : `${Math.round(a.ratio * 100)}%` }}
+                </td>
+                <td class="verdict-cell">{{ a.season }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="ph-note">
+            A year is compared with the average only over the days both cover, so a year whose
+            series starts late is not scored against an average that includes the spring it
+            never saw. Years known on too few days are left out of the average entirely.
           </p>
         </figure>
 
@@ -165,8 +235,8 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import {
-  completeYears, conditionsByYear, driverTable, leadUpProfile, relativeTiming,
-  thresholdTest, timingByYear, timingTrend,
+  cellsUsed, completeYears, conditionsByYear, dailySeries, driverTable, leadUpFromSeries,
+  rainfallAnomaly, rainfallCurves, relativeTiming, thresholdTest, timingByYear, timingTrend,
 } from '~/composables/phenology'
 
 // A species needs both: enough finds in a year for a median to mean anything,
@@ -247,9 +317,62 @@ const verdict = computed(() => {
   return `Consistently ${dir}, year after year`
 })
 
+// The stitched series, computed once and shared by everything below it. This is
+// the expensive step, so it is deliberately one computed rather than one per
+// chart, and it depends only on the features rather than on the species.
+const series = computed(() => dailySeries(props.features))
+
+// A month rather than a week. The prcp_d0..d6 fields each find carries stop at
+// seven days; the reconstructed series does not, which is the whole reason it
+// exists.
+const LEAD_DAYS_SHOWN = 30
+
 const leadUp = computed(() => {
   const rows = bySpecies.value.get(species.value) || []
-  return leadUpProfile(rows, props.features)
+  return {
+    species: leadUpFromSeries(rows, series.value, { days: LEAD_DAYS_SHOWN }),
+    baseline: leadUpFromSeries(props.features, series.value, { days: LEAD_DAYS_SHOWN }),
+    total: rows.length,
+  }
+})
+
+// ─── Rainfall, year against year ────────────────────────────────────────────
+const highlightYear = ref(null)
+
+const curves = computed(() => {
+  const rows = bySpecies.value.get(species.value)
+  const years = rowsForSpecies.value.map((r) => r.year)
+  if (!rows || !years.length) return { years: [], mean: [], window: 30 }
+  return rainfallCurves(series.value, { cells: cellsUsed(rows), years, window: 30 })
+})
+
+const anomalies = computed(() => {
+  const timing = new Map(rowsForSpecies.value.map((r) => [r.year, r]))
+  return rainfallAnomaly(curves.value).map((a) => {
+    const t = timing.get(a.year)
+    const rel = t?.relative
+    return {
+      ...a,
+      season: !Number.isFinite(rel) ? ''
+        : Math.abs(rel) < 4 ? 'about usual'
+          : `${Math.abs(Math.round(rel))} days ${rel < 0 ? 'early' : 'late'}`,
+    }
+  })
+})
+
+/** Where each year's median find sits on that year's rainfall curve. */
+const fruitDots = computed(() => {
+  const out = []
+  for (const row of rowsForSpecies.value) {
+    const curve = curves.value.years.find((y) => y.year === row.year)
+    if (!curve) continue
+    const doy = Math.round(row.median)
+    // The nearest point the curve actually has, since it is sampled in steps.
+    const near = curve.points.reduce((best, p) =>
+      (Math.abs(p.doy - doy) < Math.abs(best.doy - doy) ? p : best), curve.points[0])
+    if (Math.abs(near.doy - doy) <= 10) out.push({ year: row.year, doy: near.doy, mm: near.mm })
+  }
+  return out
 })
 
 const thresholds = computed(() => {
@@ -283,15 +406,51 @@ const yRow = (i) => 28 + i * 22
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const monthTicks = MONTHS.map((label, i) => ({ label, doy: Math.round(i * 30.44) + 1 }))
 
-const LW = 300
-const LH = 150
-const lx = (i) => 34 + i * ((LW - 46) / 7) + 10
+// The lead-up runs right to left: day of the find at the left, a month back at
+// the right, which is the direction you read a lead-up in.
+const LW = 560
+const LH = 190
+const lx = (i) => 40 + (i / (LEAD_DAYS_SHOWN - 1)) * (LW - 52)
+const leadTicks = [0, 3, 7, 14, 21, 29]
 const leadMax = computed(() => {
   const vs = [...leadUp.value.species, ...(leadUp.value.baseline || [])]
     .map((p) => p.mean).filter(Number.isFinite)
-  return Math.max(0.5, ...vs)
+  return Math.max(0.5, ...vs) * 1.1
 })
 const ly = (v) => (Number.isFinite(v) ? (LH - 26) - (v / leadMax.value) * (LH - 46) : LH - 26)
+function leadPath(points) {
+  if (!points) return ''
+  return points.map((p, i) => (Number.isFinite(p.mean) ? `${lx(i)},${ly(p.mean)}` : null))
+    .filter(Boolean).join(' ')
+}
+
+// ─── Rainfall curves ────────────────────────────────────────────────────────
+const RW = 560
+const RH = 230
+const rx = (doy) => 40 + ((doy - 1) / 365) * (RW - 50)
+const rainMax = computed(() => {
+  const vs = curves.value.years.flatMap((y) => y.points.map((p) => p.mm))
+  return Math.max(10, ...vs) * 1.05
+})
+const ry = (mm) => (RH - 20) - (Math.max(0, mm) / rainMax.value) * (RH - 36)
+const rainYTicks = computed(() => {
+  const max = rainMax.value
+  const stepSize = max > 300 ? 100 : max > 150 ? 50 : max > 60 ? 25 : 10
+  const out = []
+  for (let v = 0; v <= max; v += stepSize) out.push(v)
+  return out
+})
+const rainPath = (points) => points.map((p) => `${rx(p.doy)},${ry(p.mm)}`).join(' ')
+
+function anomalyStyle(ratio) {
+  if (!Number.isFinite(ratio)) return { width: '0' }
+  // Centred on 1: drier is a warm bar, wetter is a blue one.
+  const off = Math.max(-1, Math.min(1, ratio - 1))
+  return {
+    width: `${Math.abs(off) * 40}px`,
+    background: off < 0 ? '#c98b3a' : '#4a86c8',
+  }
+}
 
 const fmt = (v) => (Number.isFinite(v) ? v.toFixed(2) : '—')
 function barStyle(rho) {
@@ -342,7 +501,45 @@ function barStyle(rho) {
    fill a 1364px card scaled it 2.4x and turned a 328px chart into 781px of
    mostly gap. */
 .ph-card svg { width: 100%; max-width: 640px; height: auto; display: block; margin: 0 auto; }
-.ph-card svg.lead { max-width: 340px; }
+
+/* Lines rather than paired bars: thirty lags of two bars each is sixty marks
+   for a shape you read as a curve. */
+.l-sp { fill: none; stroke: var(--accent); stroke-width: 2; }
+.l-bg { fill: none; stroke: var(--muted); stroke-width: 1.5; opacity: 0.55; stroke-dasharray: 4 3; }
+.cov { fill: var(--muted); opacity: 0.5; }
+.tick.end { text-anchor: end; }
+.tick.start { text-anchor: start; }
+.sw.cov { background: var(--muted); opacity: 0.5; margin-left: 8px; }
+
+/* One faint line per year, the mean picked out over them, and a click to lift
+   one out of the bundle. */
+.year-pick { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.year-pick button {
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--muted);
+  border-radius: 5px; padding: 3px 8px; font-size: 0.74rem; cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.year-pick button:hover { color: var(--text); }
+.year-pick button.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+.r-year { fill: none; stroke: var(--accent); stroke-width: 1.2; opacity: 0.4; }
+.r-year.dim { opacity: 0.12; }
+.r-year.up { opacity: 1; stroke-width: 2.4; }
+.r-mean { fill: none; stroke: var(--text); stroke-width: 2.4; opacity: 0.8; }
+.r-dot { fill: #c98b3a; stroke: var(--surface); stroke-width: 1.5; }
+.r-dot.dim { opacity: 0.2; }
+
+/* Its own widths: the compact rule gives the first column 45%, which here
+   squeezed the ratio and the season note into each other. */
+.anomaly { margin-top: 10px; }
+.anomaly td:first-child, .anomaly th:first-child { width: 12%; }
+.anomaly td:nth-child(2), .anomaly th:nth-child(2) { width: 18%; }
+.anomaly td:nth-child(3), .anomaly th:nth-child(3) { width: 24%; padding-right: 14px; }
+.anomaly td:last-child { padding-left: 0; }
+.anomaly tbody tr { cursor: pointer; }
+.anomaly tbody tr:hover td { background: var(--surface-2); }
+.anomaly tbody tr.on td { background: var(--surface-3); }
+.an-bar { display: inline-block; height: 7px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
 
 .grid { stroke: var(--grid); stroke-width: 1; }
 .tick { fill: var(--muted); font-size: 9px; text-anchor: middle; }
