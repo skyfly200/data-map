@@ -5,6 +5,15 @@
     <div v-if="loadError" class="overlay error">{{ loadError }}</div>
     <div v-else-if="!loaded" class="overlay">Loading observations…</div>
 
+    <!-- Bottom-left, out of the way of the controls and the legends. It says
+         what is happening rather than only that something is: "loading this
+         area" is a different state from "showing a thinned sample", and a
+         viewer zoomed out is looking at the second one. -->
+    <div v-if="loaded && chunkStatus" class="chunk-status" :class="{ busy: chunks.busy.value }">
+      <span v-if="chunks.busy.value" class="spinner" aria-hidden="true"></span>
+      <span>{{ chunkStatus }}</span>
+    </div>
+
     <!-- Thematic layer selector -->
     <div v-if="loaded" ref="controlsEl" class="controls">
       <div class="colorby">
@@ -230,7 +239,10 @@ import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { useAppearance } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
 
-const { data, filteredData, load, speciesFilter, focusObservation, setFocusObservation } = useObservations()
+const {
+  data, filteredData, load, loadProgressive, chunks, partial,
+  speciesFilter, focusObservation, setFocusObservation,
+} = useObservations()
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const live = useLiveClusters()
 const appearance = useAppearance()
@@ -385,6 +397,19 @@ const maxTileDate = layerDate(0)
 // an empty ownership layer reads as "no public land here".
 // The season sliders collapse by default: their summary says what they are set
 // to, so the bar stays one row until you actually want to move them.
+// What the corner indicator says. Silent once everything in view is loaded,
+// because a permanent badge is furniture rather than information.
+const chunkStatus = computed(() => {
+  if (!chunks.available.value) return ''
+  const s = chunks.stats.value
+  if (chunks.busy.value) return 'Loading this area…'
+  if (mapView.value && mapView.value.zoom < DETAIL_ZOOM && s.thinned > 1) {
+    return `Showing 1 in ${s.thinned}. Zoom in for every record.`
+  }
+  if (partial.value) return `${s.loaded.toLocaleString()} of ${s.total.toLocaleString()} loaded`
+  return ''
+})
+
 const seasonEl = ref(null)
 const seasonOpen = ref(false)
 const todayDay = heatmaps.todayOfYear()
@@ -697,6 +722,28 @@ function syncMapView() {
   }
 }
 
+/** The viewport, as the chunk loader wants it. */
+function currentView() {
+  if (!map) return {}
+  const b = map.getBounds()
+  const c = map.getCenter()
+  return {
+    bounds: { north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest() },
+    zoom: map.getZoom(),
+    centre: [c.lat, c.lng],
+  }
+}
+
+// Panning into new ground loads that ground. Debounced, because a drag fires
+// moveend once but a pinch-zoom fires several, and each would otherwise start
+// its own round of fetches for overlapping cells.
+let panTimer = null
+function loadVisible() {
+  if (!chunks.available.value) return
+  clearTimeout(panTimer)
+  panTimer = setTimeout(() => { loadProgressive(currentView()) }, 220)
+}
+
 // What is on screen, for saving an area to read with no signal. Kept beside
 // mapView rather than derived from it: a centre and a zoom do not give you the
 // edges without knowing the container's size, which Leaflet already knows.
@@ -729,6 +776,9 @@ const shareTitle = computed(() => {
 })
 
 let suppressFit = false
+// Whether the map has ever been fitted to data. Until it has, a fit is the
+// thing that puts the viewer somewhere sensible at all.
+let fittedOnce = false
 
 // Heatmap cells indexed by their grid key, so the cell under a point is found
 // by arithmetic rather than by scanning thousands of polygons on every hover.
@@ -840,11 +890,30 @@ function renderPoints(geo) {
   const bounds = geoLayer.getBounds()
   // Non-animated: an in-flight fit animation would block a subsequent zoom-in to
   // a focused observation (Leaflet ignores zoom changes mid-animation).
-  if (bounds.isValid() && !suppressFit) map.fitBounds(bounds.pad(0.1), { animate: false })
+  if (bounds.isValid() && !suppressFit) {
+    map.fitBounds(bounds.pad(0.1), { animate: false })
+    fittedOnce = true
+  }
   suppressFit = false // one-shot
 }
 
-watch(filteredData, (geo) => renderPoints(geo))
+// Fitting the view to the data is right when a filter narrows to one species,
+// and wrong when a chunk lands. The viewer panned somewhere deliberately; the
+// ground under them arriving is not a reason to throw them back to the extent
+// of the whole dataset. Worse, the fit fires moveend, which asks for the cells
+// of the view it just jumped to, which lands another chunk: the map would sit
+// there flicking between where you were and the whole country.
+//
+// The first chunked render is the overview, which is everything, so that one
+// still fits. After that only a real data change moves the map.
+let seenChunkVersion = 0
+watch(filteredData, (geo) => {
+  if (chunks.version.value !== seenChunkVersion) {
+    seenChunkVersion = chunks.version.value
+    if (fittedOnce) suppressFit = true
+  }
+  renderPoints(geo)
+})
 
 // "Open on map" from a chart: select the matching observation and pan to it.
 function applyFocus(target) {
@@ -1042,7 +1111,14 @@ onMounted(async () => {
     ).addTo(map)
 
     map.on('moveend zoomend', syncMapView)
-    map.on('layeradd layerremove baselayerchange overlayadd overlayremove', syncActiveTemplates)
+    map.on('moveend zoomend', loadVisible)
+    // Only the layers-control events. `layeradd` and `layerremove` fire once
+    // per layer, and every observation marker is a layer: binding a handler
+    // that walks map.eachLayer() to them made adding n markers cost n squared
+    // layer visits. At 9,647 markers that was 3.2 seconds of eachLayer on the
+    // main thread; at the full 48,233 it is 25 times worse, which is most of
+    // why the map used to sit there and never appear.
+    map.on('baselayerchange overlayadd overlayremove', syncActiveTemplates)
     syncMapView()
     syncActiveTemplates()
 
@@ -1055,13 +1131,22 @@ onMounted(async () => {
     if (shared.colorBy) colorBy.value = shared.colorBy
     if (shared.sizeBy !== null) sizeBy.value = shared.sizeBy
 
-    await load()
+    // Chunks first: the overview paints at once and the cells under the view
+    // follow. Only when they were never built does this fall back to fetching
+    // all 49.7 MB before drawing anything, which is what it used to do always.
+    const chunked = await loadProgressive(currentView())
+    if (!chunked) await load()
     if (!data.value) throw new Error('no data')
     // A link carrying a view sets it explicitly; skip the fit-to-data that would
     // otherwise throw that view away.
     if (shared.view) suppressFit = true
     renderPoints(filteredData.value)
-    if (shared.view) map.setView(shared.view.center, shared.view.zoom, { animate: false })
+    if (shared.view) {
+      map.setView(shared.view.center, shared.view.zoom, { animate: false })
+      // The map is now deliberately placed, so the chunks that arrive for this
+      // view must not refit it away.
+      fittedOnce = true
+    }
     syncMapView()
     renderHeatmap()
     loaded.value = true
@@ -1236,6 +1321,27 @@ onBeforeUnmount(() => {
 .layer-date input {
   flex: 1 1 auto; min-width: 0; background: var(--input-bg); color: var(--text);
   border: 1px solid var(--border); border-radius: 4px; padding: 2px 5px; font-size: 0.74rem;
+}
+
+/* The chunk indicator: bottom-left, above Leaflet's zoom control, and quiet
+   enough to ignore while still being legible over imagery. */
+.chunk-status {
+  position: absolute; left: 12px; bottom: 92px; z-index: 500;
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
+  padding: 5px 10px; font: 12px/1.35 system-ui, sans-serif; color: #333;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); max-width: 240px;
+}
+.spinner {
+  width: 11px; height: 11px; flex: 0 0 auto; border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.15); border-top-color: #2b7a3d;
+  animation: chunk-spin 0.8s linear infinite;
+}
+@keyframes chunk-spin { to { transform: rotate(360deg); } }
+/* A viewer who has asked for no motion gets a pulse instead of a spin. */
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: chunk-pulse 1.4s ease-in-out infinite; }
+  @keyframes chunk-pulse { 50% { opacity: 0.35; } }
 }
 
 /* ── Touch ────────────────────────────────────────────────────────────────

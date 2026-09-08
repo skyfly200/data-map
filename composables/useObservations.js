@@ -226,7 +226,10 @@ export function useObservations() {
   }
 
   async function load() {
-    if (data.value || pending.value) return // already loaded (shared across views)
+    // `partial` means the map filled this from spatial chunks for its own
+    // viewport. Every other view needs all of it, so a partial store is not
+    // "already loaded" and must not short-circuit the full fetch.
+    if ((data.value && !partial.value) || pending.value) return
     pending.value = true
     try {
       // markRaw: the dataset is ~48k features x ~43 properties, and assigning it
@@ -237,12 +240,52 @@ export function useObservations() {
       // whole object still triggers the ref, so the deep tracking bought
       // nothing.
       data.value = markRaw(deriveFields(await fetchObservations(selectedDataset.value)))
+      partial.value = false
       error.value = ''
     } catch (e) {
       error.value = e.message
     } finally {
       pending.value = false
     }
+  }
+
+  /**
+   * Fill the store from spatial chunks, for the map.
+   *
+   * The map does not need every observation to draw the ones in front of you,
+   * and waiting for all 49.7 MB before drawing any of them is why it never
+   * appeared on a slow connection. The overview lands first as a thinned
+   * everything, then the cells the viewport touches arrive at full detail.
+   *
+   * The store is marked `partial` while this is the source, so any view that
+   * needs the whole dataset still fetches it. When the chunks were never built
+   * this reports false and the caller falls back to load().
+   */
+  async function loadProgressive(view = {}) {
+    if (!import.meta.client) return false
+    // Only the combined dataset is chunked; a single-species file is small
+    // enough to fetch whole, and switching datasets goes through setDataset.
+    if (selectedDataset.value !== DEFAULT_DATASET) return false
+
+    await chunks.loadIndex()
+    if (!chunks.available.value) return false
+
+    // Nothing new arriving must not produce a new FeatureCollection. Every pan
+    // calls this, and handing consumers a fresh object each time re-derives the
+    // fields of tens of thousands of features and re-renders the map for no
+    // reason, which on the map also means refitting the view out from under
+    // whoever just panned it.
+    const before = chunks.version.value
+    await chunks.loadOverview()
+    await chunks.loadForView(view)
+    if (data.value && chunks.version.value === before) return true
+
+    const features = chunks.features.value
+    if (!features.length) return false
+    data.value = markRaw(deriveFields({ type: 'FeatureCollection', features }))
+    partial.value = chunks.stats.value.loaded < chunks.stats.value.total
+    error.value = ''
+    return true
   }
 
   function setDataset(path) {
@@ -281,6 +324,11 @@ export function useObservations() {
   const taxonRank = useState('observations-taxon-rank', () => 'species')
 
   const { filters } = useFilters()
+
+  // True while the store holds only what the map's viewport needed. Any view
+  // that summarises the whole dataset has to fetch the rest first.
+  const partial = useState('observations-partial', () => false)
+  const chunks = useMapChunks()
 
   const filteredData = computed(() => {
     const feats = data.value?.features || []
@@ -370,6 +418,7 @@ export function useObservations() {
   return {
     data, filteredData, rows, error, pending, load, loadDatasets, setDataset, addInlineDataset,
     selectedDataset, availableDatasets, speciesFilter, speciesOptions, setSpeciesFilter, filterOptions,
+    partial, loadProgressive, chunks,
     taxonRank, setTaxonRank, availableRanks, TAXON_RANKS,
     showFiltered, setShowFiltered, focusObservation, setFocusObservation,
   }
