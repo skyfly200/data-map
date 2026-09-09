@@ -792,6 +792,8 @@ def _export_progress(df, label=''):
 
 
 if __name__ == "__main__":
+    import log_utils
+    log_utils.enable_timestamps()
     parser = argparse.ArgumentParser(description="Enrich observation rows with raster and terrain data")
     parser.add_argument("--input", default=None,
                         help="Single input CSV (default: the per-species store data/species/)")

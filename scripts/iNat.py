@@ -534,17 +534,26 @@ def fetch_taxa(taxon_ids, batch_size=30, fetcher=_taxa_lookup):
     """
     ids = sorted({int(t) for t in taxon_ids if t is not None})
     out = {}
-    for start in range(0, len(ids), batch_size):
+    n_batches = (len(ids) + batch_size - 1) // batch_size
+    # Only announce it when it's more than a single quick lookup, so a per-species
+    # resolution (one small batch) stays quiet but a big one shows progress and
+    # a clock — this is a network step that can stall.
+    announce = n_batches > 1
+    if announce:
+        print(f"    [taxonomy] looking up {len(ids)} unique taxa in {n_batches} batch(es)...", flush=True)
+    for i, start in enumerate(range(0, len(ids), batch_size), 1):
         batch = ids[start:start + batch_size]
         try:
             response = fetcher(batch)
         except Exception as err:  # noqa: BLE001 - a lookup is not worth the run
-            print(f"[!] Taxon lookup failed for {len(batch)} id(s): {err}")
+            print(f"    [taxonomy] [!] lookup failed for {len(batch)} id(s): {err}", flush=True)
             continue
         for record in (response or {}).get('results', []) or []:
             record_id = record.get('id')
             if record_id is not None:
                 out[int(record_id)] = record
+        if announce:
+            print(f"    [taxonomy] batch {i}/{n_batches} — {len(out)} taxa resolved so far", flush=True)
     return out
 
 
@@ -557,8 +566,6 @@ def resolve_taxonomy(rows, fetcher=_taxa_lookup):
     """
     observations = [{'taxon': row.get('_taxon')} for row in rows]
     by_id = fetch_taxa(taxonomy.taxon_ids_in(observations), fetcher=fetcher)
-    if by_id:
-        print(f"Resolved {len(by_id)} taxa for {len(rows)} observation(s).")
 
     for row in rows:
         resolved = taxonomy.taxonomy_for(
@@ -569,6 +576,16 @@ def resolve_taxonomy(rows, fetcher=_taxa_lookup):
         for key, value in resolved.items():
             if value or not row.get(key):
                 row[key] = value
+
+    # Say plainly what the resolution actually produced: how many of these
+    # observations now carry a genus and a species. A low count here (vs the row
+    # total) means many records were identified only to a coarse rank.
+    if rows:
+        n = len(rows)
+        with_genus = sum(1 for r in rows if r.get('genus'))
+        with_species = sum(1 for r in rows if r.get('species'))
+        print(f"    [taxonomy] resolved {len(by_id)} taxa → genus for {with_genus}/{n}, "
+              f"species for {with_species}/{n} observation(s).", flush=True)
     return rows
 
 
@@ -774,6 +791,8 @@ def fetch_inat_data(taxon_name='morchella', quality_grade='research', lat=40.0, 
     return pd.DataFrame(resolve_taxonomy(observations))
 
 def main():
+    import log_utils
+    log_utils.enable_timestamps()
     env_file = os.getenv('ENV_FILE') or '.env'
     species_value = getenv_with_file('INAT_TAXON_NAME', default=(getenv_with_file('SPECIES', default='morchella', env_file=env_file)), env_file=env_file)
     species_list = parse_species_list(species_value)

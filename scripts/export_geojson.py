@@ -276,6 +276,8 @@ def build_parser():
 
 
 def main():
+    import log_utils
+    log_utils.enable_timestamps()
     parser = build_parser()
     args = parser.parse_args()
 
