@@ -119,7 +119,15 @@ def init_ee():
 
 
 def _ee_request_deadline_ms():
-    """Per-request Earth Engine deadline in milliseconds (0 = no deadline)."""
+    """Per-request Earth Engine deadline in milliseconds (0 = no deadline).
+
+    Off by default: a fixed deadline turned out to *lose data*, because the heavy
+    samplers — the WorldCover land-cover mosaic, the Sentinel-2 NDVI median
+    composite, ERA5 soil moisture — legitimately take longer than the light ones
+    (SRTM terrain, CHIRPS/ERA5 daily precip & temp), so a deadline short enough
+    to unstick a true hang was killing requests that would have succeeded and
+    leaving those columns empty. The retry/backoff in ``_getinfo`` still recovers
+    transient errors; set EE_REQUEST_DEADLINE_MS>0 only to bound a genuine hang."""
     raw = os.environ.get('EE_REQUEST_DEADLINE_MS') or os.environ.get('EE_DEADLINE_MS')
     if raw is not None and str(raw).strip() != '':
         try:
@@ -127,7 +135,7 @@ def _ee_request_deadline_ms():
             return value if value > 0 else 0
         except (TypeError, ValueError):
             pass
-    return 120000  # 2 minutes: generous for heavy composites, short enough to unstick
+    return 0  # no client-side deadline; rely on retry/backoff instead
 
 
 def _getinfo(obj, *, retries=4, base_delay=3.0, label=''):
@@ -174,9 +182,18 @@ def _sample_points(ee, image, points, scale, reducer=None, progress_label=None):
             ee.Feature(ee.Geometry.Point([lon, lat]), {'pidx': int(pos)})
             for pos, lon, lat in chunk
         ])
-        reduced = _getinfo(
-            image.reduceRegions(collection=fc, reducer=reducer, scale=scale),
-            label=f"{progress_label or 'sample'} chunk {chunk_i}/{total_chunks}")
+        try:
+            reduced = _getinfo(
+                image.reduceRegions(collection=fc, reducer=reducer, scale=scale),
+                label=f"{progress_label or 'sample'} chunk {chunk_i}/{total_chunks}")
+        except Exception as exc:  # noqa: BLE001
+            # A chunk that keeps failing (throttle, transient EE error) must not
+            # zero out the whole stage: skip it, keep every other chunk's points,
+            # and let the resume fill these rows on a later run.
+            print(f"  [!] {progress_label or 'sample'} chunk {chunk_i}/{total_chunks} "
+                  f"gave up ({type(exc).__name__}: {exc}); leaving its points for a re-run.",
+                  flush=True)
+            continue
         for feat in reduced.get('features', []):
             props = dict(feat.get('properties', {}))
             pos = props.pop('pidx', None)

@@ -64,10 +64,15 @@ _SENTINEL = ('__done__', None)
 
 
 def _stream_enrich_workers():
+    # Default 1: with more than one worker, several locations sample Earth Engine
+    # at the same time (each stage already fans out internally), and EE throttles
+    # the pile-up — the per-stage failures are swallowed and whole columns
+    # (land cover, soil, NDVI) come back empty. One enrichment worker still
+    # overlaps with the fetch producer; raise this only if EE is keeping up.
     try:
-        n = int(os.getenv('STREAM_ENRICH_WORKERS', '2'))
+        n = int(os.getenv('STREAM_ENRICH_WORKERS', '1'))
     except (TypeError, ValueError):
-        n = 2
+        n = 1
     return max(1, n)
 
 
