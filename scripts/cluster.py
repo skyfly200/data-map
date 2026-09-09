@@ -70,6 +70,8 @@ def cluster_environmental(df, features=None, n_clusters=4):
 
 
 def main():
+    import log_utils
+    log_utils.enable_timestamps()
     parser = argparse.ArgumentParser(description="Cluster mushroom observations by environmental similarity")
     parser.add_argument("--input", default=None,
                         help="Single enriched CSV (default: the per-species enriched store data/enriched/)")

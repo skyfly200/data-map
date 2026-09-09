@@ -654,6 +654,8 @@ def skip_raster_downloads(ee_available=True, env=None):
 
 
 def main(csv_path=None):
+    import log_utils
+    log_utils.enable_timestamps()
     skip_ee = os.environ.get("SKIP_EARTH_ENGINE") == "1"
     if not skip_ee:
         skip_ee = not init_earth_engine()
