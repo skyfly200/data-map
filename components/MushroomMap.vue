@@ -720,6 +720,14 @@ function syncMapView() {
     north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest(),
     zoom: map.getZoom(),
   }
+  // Left where another page can find it: the pipeline job form offers "use the
+  // current map view" for its area, and asking someone to read four numbers off
+  // one screen and type them into another is not a feature.
+  try {
+    localStorage.setItem('map-last-view', JSON.stringify({
+      bounds: viewBounds.value, zoom: map.getZoom(), at: Date.now(),
+    }))
+  } catch { /* private mode or quota */ }
 }
 
 /** The viewport, as the chunk loader wants it. */

@@ -72,12 +72,33 @@ export async function initEarthEngine() {
   return session
 }
 
-/** getInfo as a promise, with a deadline so one call cannot hang a worker. */
-export function evaluate(obj, { timeoutMs = 120000 } = {}) {
+/**
+ * The per-request deadline, in milliseconds. Zero means none, and zero is the
+ * default.
+ *
+ * A fixed deadline here loses data rather than protecting anything. The heavy
+ * samplers — the WorldCover mosaic, the Sentinel-2 median composite, ERA5 soil
+ * moisture — legitimately take much longer than the light ones, so any deadline
+ * short enough to unstick a real hang also kills requests that would have
+ * succeeded, and the symptom is a column that comes back entirely empty rather
+ * than an error. scripts/ee_enrich.py hit exactly this and turned it off; the
+ * retry and backoff below is what actually recovers transient failures.
+ */
+function requestDeadlineMs() {
+  const raw = process.env.EE_REQUEST_DEADLINE_MS ?? process.env.EE_DEADLINE_MS
+  if (raw === undefined || String(raw).trim() === '') return 0
+  const value = Number(raw)
+  return Number.isFinite(value) && value > 0 ? value : 0
+}
+
+/** getInfo as a promise. Deadline off unless one is configured; see above. */
+export function evaluate(obj, { timeoutMs = requestDeadlineMs() } = {}) {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Earth Engine request timed out.')), timeoutMs)
+    const timer = timeoutMs > 0
+      ? setTimeout(() => reject(new Error('Earth Engine request timed out.')), timeoutMs)
+      : null
     obj.evaluate((value, err) => {
-      clearTimeout(timer)
+      if (timer) clearTimeout(timer)
       if (err) reject(new Error(String(err)))
       else resolve(value)
     })
@@ -125,13 +146,26 @@ function shiftDays(isoDay, delta) {
   return d.toISOString().slice(0, 10)
 }
 
-/** Sample one image at up to CHUNK_SIZE points. Returns rows aligned to input. */
-async function sampleChunk(image, points, scale, reducer = ee.Reducer.first()) {
+/**
+ * Sample one image at up to CHUNK_SIZE points. Returns rows aligned to input.
+ *
+ * A chunk that keeps failing after its retries is SKIPPED, not thrown: one
+ * throttled 500-point chunk must not zero out the whole column for everyone
+ * else in the job. The skipped points stay null and are reported, so the caller
+ * can say how complete the result is.
+ */
+async function sampleChunk(image, points, scale, reducer = ee.Reducer.first(), skipped = { n: 0 }) {
   const fc = ee.FeatureCollection(points.map((p, i) => ee.Feature(
     ee.Geometry.Point([p.lon, p.lat]), { __i: i },
   )))
   const sampled = image.reduceRegions({ collection: fc, reducer, scale })
-  const info = await withRetry(() => evaluate(sampled), { label: 'sampling' })
+  let info
+  try {
+    info = await withRetry(() => evaluate(sampled), { label: 'sampling' })
+  } catch {
+    skipped.n += points.length
+    return new Array(points.length).fill(null)
+  }
   const out = new Array(points.length).fill(null)
   for (const feature of info?.features || []) {
     const props = feature.properties || {}
@@ -152,7 +186,7 @@ function chunk(items, size = CHUNK_SIZE) {
 // Each writes its own columns into `columns` (a Map of band name → array) and
 // reports fractional progress within its own slice of the bar.
 
-async function runTerrain(points, columns, tick) {
+async function runTerrain(points, columns, tick, skipped) {
   const dem = ee.Image(SRTM)
   const terrain = ee.Terrain.products(dem)
   // TPI at three radii, each reprojected so the circular kernel spans roughly
@@ -173,7 +207,7 @@ async function runTerrain(points, columns, tick) {
 
   const groups = chunk(points)
   for (let g = 0; g < groups.length; g += 1) {
-    const rows = await sampleChunk(image, groups[g], STAGES.terrain.scale)
+    const rows = await sampleChunk(image, groups[g], STAGES.terrain.scale, ee.Reducer.first(), skipped)
     rows.forEach((props, i) => {
       const at = groups[g][i].index
       for (const band of ['elevation', 'slope', 'aspect', 'tpi_150m', 'tpi_500m', 'tpi_1500m', 'upstream_area']) {
@@ -195,11 +229,11 @@ async function runTerrain(points, columns, tick) {
   for (const [band, values] of Object.entries(derived)) columns.set(band, values)
 }
 
-async function runLandcover(points, columns, tick) {
+async function runLandcover(points, columns, tick, skipped) {
   const image = ee.Image(WORLDCOVER).select('Map').rename('land_cover')
   const groups = chunk(points)
   for (let g = 0; g < groups.length; g += 1) {
-    const rows = await sampleChunk(image, groups[g], STAGES.landcover.scale, ee.Reducer.mode())
+    const rows = await sampleChunk(image, groups[g], STAGES.landcover.scale, ee.Reducer.mode(), skipped)
     rows.forEach((props, i) => {
       const at = groups[g][i].index
       const cls = props?.land_cover ?? null
@@ -213,7 +247,7 @@ async function runLandcover(points, columns, tick) {
 }
 
 /** Shared shape for the stages that sample an image chosen by the record's date. */
-async function runDated(points, columns, tick, { scale, reducer, bands, imageFor }) {
+async function runDated(points, columns, tick, { scale, reducer, bands, imageFor, skipped }) {
   const byDate = new Map()
   for (const p of points) {
     if (!p.date) continue
@@ -225,7 +259,7 @@ async function runDated(points, columns, tick, { scale, reducer, bands, imageFor
   for (const date of dates) {
     const image = imageFor(date)
     for (const group of chunk(byDate.get(date))) {
-      const rows = await sampleChunk(image, group, scale, reducer)
+      const rows = await sampleChunk(image, group, scale, reducer, skipped)
       rows.forEach((props, i) => {
         const at = group[i].index
         for (const band of bands) columns.get(band)[at] = props?.[band] ?? null
@@ -238,9 +272,9 @@ async function runDated(points, columns, tick, { scale, reducer, bands, imageFor
 
 const DAYS = 7
 
-async function runSoilMoisture(points, columns, tick) {
+async function runSoilMoisture(points, columns, tick, skipped) {
   const era5 = ee.ImageCollection(ERA5_DAILY)
-  await runDated(points, columns, tick, {
+  await runDated(points, columns, tick, { skipped,
     scale: STAGES.soil_moisture.scale,
     reducer: ee.Reducer.mean(),
     bands: ['soil_moisture'],
@@ -248,9 +282,9 @@ async function runSoilMoisture(points, columns, tick) {
   })
 }
 
-async function runPrecip(points, columns, tick) {
+async function runPrecip(points, columns, tick, skipped) {
   const chirps = ee.ImageCollection(CHIRPS_DAILY)
-  await runDated(points, columns, tick, {
+  await runDated(points, columns, tick, { skipped,
     scale: STAGES.precip.scale,
     reducer: ee.Reducer.mean(),
     bands: STAGES.precip.bands,
@@ -262,9 +296,9 @@ async function runPrecip(points, columns, tick) {
   })
 }
 
-async function runTemperature(points, columns, tick) {
+async function runTemperature(points, columns, tick, skipped) {
   const era5 = ee.ImageCollection(ERA5_DAILY)
-  await runDated(points, columns, tick, {
+  await runDated(points, columns, tick, { skipped,
     scale: STAGES.temperature.scale,
     reducer: ee.Reducer.mean(),
     bands: STAGES.temperature.bands,
@@ -275,9 +309,9 @@ async function runTemperature(points, columns, tick) {
   })
 }
 
-async function runNdvi(points, columns, tick) {
+async function runNdvi(points, columns, tick, skipped) {
   const s2 = ee.ImageCollection(S2_SR)
-  await runDated(points, columns, tick, {
+  await runDated(points, columns, tick, { skipped,
     scale: STAGES.ndvi.scale,
     reducer: ee.Reducer.mean(),
     bands: ['ndvi', 'ndmi'],
@@ -336,17 +370,23 @@ export async function runPipeline({ spec, features, plan, onProgress = () => {} 
   // the map offers.
   if (spec.stages.includes('terrain')) columns.set('upstream_area', new Array(features.length).fill(null))
 
+  // Counted per stage rather than once for the job, so a result can say which
+  // layer is thin instead of only that something was.
+  const skippedByStage = {}
+
   for (const step of plan) {
     const runner = RUNNERS[step.key]
     if (!runner) continue
     onProgress({ fraction: step.from, stage: step.key, message: `${step.label}…` })
+    const skipped = { n: 0 }
     await runner(points, columns, (within) => {
       onProgress({
         fraction: step.from + (step.to - step.from) * Math.min(1, Math.max(0, within)),
         stage: step.key,
         message: `${step.label}…`,
       })
-    })
+    }, skipped)
+    if (skipped.n) skippedByStage[step.key] = skipped.n
   }
 
   columns.delete('upstream_area')
@@ -357,5 +397,13 @@ export async function runPipeline({ spec, features, plan, onProgress = () => {} 
   })
 
   onProgress({ fraction: 1, stage: 'done', message: 'Finished.' })
-  return { features: out, bands: [...columns.keys()], sampled: points.length }
+  return {
+    features: out,
+    bands: [...columns.keys()],
+    sampled: points.length,
+    // A job that skipped chunks still succeeded, and the member should be told
+    // rather than left to notice the gaps: those points can be filled by
+    // running it again, which only re-samples what is still empty.
+    skipped: skippedByStage,
+  }
 }

@@ -19,6 +19,12 @@
 
       <div class="acct-sync"><SyncStatus /></div>
 
+      <!-- Members get the pipeline; admins also get the console. Hidden rather
+           than disabled for people whose tier does not reach them, since a menu
+           of things you cannot do is not useful. The server gates both anyway;
+           this is only about what is worth showing. -->
+      <NuxtLink v-if="isMember" to="/jobs" class="acct-item" @click="open = false">Pipeline jobs</NuxtLink>
+      <NuxtLink v-if="isAdmin" to="/admin" class="acct-item" @click="open = false">Administration</NuxtLink>
       <NuxtLink to="/options" class="acct-item" @click="open = false">⚙ Options</NuxtLink>
       <NuxtLink to="/guide" class="acct-item" @click="open = false">Guide</NuxtLink>
       <button class="acct-item danger" @click="onSignOut">Sign out</button>
@@ -35,6 +41,10 @@ const props = defineProps({
   shortEmail: { type: String, default: '' },
 })
 const emit = defineEmits(['sign-out'])
+
+// Read from the token's claim, so the menu is right on first paint without a
+// request of its own.
+const { isMember, isAdmin } = useMembership()
 
 const cloud = safeCloudSync()
 const syncState = computed(() => {
