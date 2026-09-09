@@ -29,6 +29,10 @@ const PRCP = [0, 1, 2, 3, 4, 5, 6]
 /** Numeric value of a field for one row, or null. `rain7` is a derived sum. */
 export function fieldValue(row, key) {
   if (key === 'rain7') {
+    // The map's thinned overview carries the total already, summed at build
+    // time so it costs one number instead of seven (see scripts/mapChunks.mjs).
+    // Everywhere else the seven daily columns are present and it is summed here.
+    if (isPresent(row.rain7) && Number.isFinite(Number(row.rain7))) return Number(row.rain7)
     let sum = 0
     let any = false
     for (const d of PRCP) {
@@ -36,6 +40,19 @@ export function fieldValue(row, key) {
       if (isPresent(v)) { sum += Number(v); any = true }
     }
     return any ? sum : null
+  }
+  if (key === 'tavg') {
+    // The pipeline's own tavg column is empty across the shipped dataset, but
+    // the daily maximum and minimum for the day of the find are both there, and
+    // their midpoint is what tavg means. Deriving it turns a menu entry that
+    // showed nothing into one that shows the temperature.
+    if (isPresent(row.tavg) && Number.isFinite(Number(row.tavg))) return Number(row.tavg)
+    const hi = Number(row.tmax_d0)
+    const lo = Number(row.tmin_d0)
+    if (Number.isFinite(hi) && Number.isFinite(lo)) return (hi + lo) / 2
+    if (Number.isFinite(hi)) return hi
+    if (Number.isFinite(lo)) return lo
+    return null
   }
   const v = row[key]
   return isPresent(v) && Number.isFinite(Number(v)) ? Number(v) : null

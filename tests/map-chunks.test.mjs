@@ -11,7 +11,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { CELL_SIZE, cellKey, splitFeatures, buildOverview, slim } from '../scripts/mapChunks.mjs'
+import {
+  CELL_SIZE, DERIVED, OVERVIEW_FIELDS, buildOverview, cellKey, slim, splitFeatures,
+} from '../scripts/mapChunks.mjs'
 import { cellKeyFor, cellsForBounds, pickCells, MAX_CELLS_PER_MOVE } from '../composables/useMapChunks.js'
 
 const point = (lat, lon, props = {}) => ({
@@ -148,4 +150,53 @@ test('slim keeps the geometry and drops the fields the map does not draw', () =>
   // difference between `null` and absent is megabytes.
   assert.ok(!('twi' in out.properties))
   assert.ok(!('notes' in out.properties))
+})
+
+test('the overview carries a column for every field heatmap', () => {
+  // The regression this guards: the first version of OVERVIEW_FIELDS held only
+  // what a point is drawn from, so every field heatmap except elevation drew a
+  // blank map at the zoom the overview is showing. A mode offered in the menu
+  // must have its column here — or be derivable from one.
+  const HEATMAP_FIELDS = [
+    'rain7', 'tavg', 'soil_moisture', 'water_retention', 'slope', 'aspect',
+    'solar_exposure', 'wind_exposure', 'ndvi', 'ndmi', 'elevation',
+  ]
+  for (const field of HEATMAP_FIELDS) {
+    assert.ok(OVERVIEW_FIELDS.includes(field), `${field} is missing from the overview`)
+  }
+})
+
+test('rain7 is summed at build time rather than carried as seven columns', () => {
+  const props = { prcp_d0: 1.5, prcp_d1: 2, prcp_d2: 0, prcp_d3: null, prcp_d4: '', prcp_d5: 3, prcp_d6: 0.25 }
+  assert.equal(DERIVED.rain7(props), 6.75)
+  // Absent throughout is null, not zero: no data is not the same as no rain,
+  // and a zero would colour a cell as dry.
+  assert.equal(DERIVED.rain7({}), null)
+  assert.equal(DERIVED.rain7({ prcp_d0: null }), null)
+  // A single present day still totals.
+  assert.equal(DERIVED.rain7({ prcp_d3: 4 }), 4)
+})
+
+test('tavg is the midpoint of the day s max and min', () => {
+  assert.equal(DERIVED.tavg({ tmax_d0: 20, tmin_d0: 10 }), 15)
+  // One end missing is better than nothing; both missing is null.
+  assert.equal(DERIVED.tavg({ tmax_d0: 20 }), 20)
+  assert.equal(DERIVED.tavg({ tmin_d0: 10 }), 10)
+  assert.equal(DERIVED.tavg({}), null)
+  // A real tavg column wins over the derivation, so a future pipeline run that
+  // fills it in is used as-is.
+  assert.equal(DERIVED.tavg({ tavg: 12.5, tmax_d0: 20, tmin_d0: 10 }), 12.5)
+  // Below freezing has to survive: mushroom season runs into hard frosts.
+  assert.equal(DERIVED.tavg({ tmax_d0: -1, tmin_d0: -9 }), -5)
+})
+
+test('slim rounds the numbers it copies and keeps the strings', () => {
+  const f = point(39.7, -105.2, {
+    species: 'Amanita muscaria', slope: 12.3456789, prcp_d0: 1.111, prcp_d1: 2.222,
+  })
+  const out = slim(f, ['species', 'slope', 'rain7'])
+  assert.equal(out.properties.species, 'Amanita muscaria')
+  // Four decimals is far finer than a colour ramp over a grid cell can show.
+  assert.equal(out.properties.slope, 12.3457)
+  assert.equal(out.properties.rain7, 3.33)
 })

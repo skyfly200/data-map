@@ -14,6 +14,40 @@
       <span>{{ chunkStatus }}</span>
     </div>
 
+    <!-- What the map says about one spot you picked, rather than about a
+         record someone else made. The observations answer "what was found
+         here"; this answers "what is this place like", which is the question
+         you have when scouting ground nobody has posted from. -->
+    <div v-if="pin" class="pin-panel">
+      <div class="pin-head">
+        <strong>Dropped point</strong>
+        <button class="pin-x" title="Remove this point" @click="clearPin">×</button>
+      </div>
+      <button class="pin-coords" :title="copied ? 'Copied' : 'Copy coordinates'" @click="copyPin">
+        {{ pin.lat.toFixed(5) }}, {{ pin.lon.toFixed(5) }}
+        <span class="pin-copy">{{ copied ? 'copied' : 'copy' }}</span>
+      </button>
+      <dl class="pin-facts">
+        <div v-if="pinCell">
+          <dt>{{ heatmapMeta.label }}</dt>
+          <dd>{{ pinCellValue }}</dd>
+        </div>
+        <div v-if="pinCell">
+          <dt>Finds in this cell</dt>
+          <dd>{{ pinCell.n.toLocaleString() }}</dd>
+        </div>
+        <div v-if="pinNearest">
+          <dt>Nearest find</dt>
+          <dd>{{ pinNearest.label }}</dd>
+        </div>
+      </dl>
+      <p v-if="!pinCell && heatmapMode" class="pin-note">
+        No cell here. The heatmap is built from observations, so ground nobody
+        has recorded from is blank rather than zero.
+      </p>
+      <p v-if="!pinNearest" class="pin-note">No loaded observations nearby.</p>
+    </div>
+
     <!-- Thematic layer selector -->
     <div v-if="loaded" ref="controlsEl" class="controls">
       <div class="colorby">
@@ -34,6 +68,12 @@
           <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
         </select>
       </div>
+      <!-- A mode rather than a plain click handler: the map already uses a
+           click to open an observation, and making an empty click drop a pin
+           would put one down every time someone missed a dot. -->
+      <button class="icon-btn" :class="{ on: pinMode }" :aria-pressed="String(pinMode)"
+              :title="pinMode ? 'Click the map to place a point (Esc to stop)' : 'Drop a point on the map'"
+              @click="togglePinMode">📍</button>
       <LiveClusterControls />
       <AppearanceControls icon-only :field="colorBy" :field-label="coloring.title"
                           :values="legendValues" />
@@ -159,10 +199,24 @@
           <input :id="`ld-${n.slug}`" v-model="tileDate" type="date" :max="maxTileDate"
                  :title="`Which day of ${n.name} to draw. Satellite products lag by days, so recent dates can be blank.`" />
         </div>
+        <!-- Past its native level the layer is being stretched, not resolved
+             finer. Rainfall at 10 km does not become 30 m detail by zooming,
+             and a blurry square that looks like data is worse than a caption. -->
+        <div v-if="upscaleNote(n)" class="legend-note upscaled">{{ upscaleNote(n) }}</div>
         <div v-if="n.note" class="legend-note">{{ n.note }}</div>
       </div>
     </div>
     <!-- Heatmap key, with the caveat that belongs with each metric -->
+    <!-- A heatmap that produced nothing has to say so. Drawing an empty map and
+         leaving the viewer to work out whether the field is missing, the filter
+         is too tight, or the feature is broken is what made this read as
+         broken — the answer is usually that the column is simply not in the
+         data yet. -->
+    <div v-if="!heatmapLegend && heatmapMode && loaded" class="legend overlay-legend">
+      <div class="legend-title">{{ heatmapMeta.label }}</div>
+      <div class="legend-note">{{ emptyHeatmapReason }}</div>
+    </div>
+
     <div v-if="heatmapLegend" class="legend overlay-legend">
       <div class="legend-title">{{ heatmapMeta.label }}</div>
       <template v-if="heatmapLegend.type === 'sequential'">
@@ -236,6 +290,7 @@ import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservations } from '~/composables/useObservations'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
+import { fieldValue } from '~/composables/statistics'
 import { useAppearance } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
 
@@ -315,6 +370,30 @@ const heatmapResult = computed(() =>
 const heatmapLegend = computed(() => heatmapResult.value.legend)
 
 /**
+ * Why a heatmap came out empty, distinguishing the three reasons.
+ *
+ * "Not in the data yet" is by far the most common and the least guessable: the
+ * pipeline's NDVI and vegetation-moisture stages have not populated the shipped
+ * dataset, so those modes have nothing to draw however far you zoom. Saying
+ * that is the difference between a known gap and an apparently broken feature.
+ */
+const emptyHeatmapReason = computed(() => {
+  const field = heatmapMeta.value?.field
+  const feats = filteredData.value?.features || []
+  if (!feats.length) return 'No observations match the current filters.'
+  if (!field) return 'Nothing to show for the current filters.'
+
+  const present = feats.some((f) => Number.isFinite(fieldValue(f.properties || {}, field)))
+  if (!present) {
+    // Label as written, not lowercased: NDVI and TWI are acronyms and "no ndvi
+    // values" reads like a typo.
+    return `No ${heatmapMeta.value.label} values in this dataset. `
+      + 'The pipeline has not filled this column in yet, so it will stay blank until it is re-run.'
+  }
+  return 'No cells at this zoom. Zoom in, or widen the filters.'
+})
+
+/**
  * One arrow for a vector cell: a shaft plus two barbs, as canvas polylines.
  *
  * Directions are in compass space (dx east, dy north), so the shaft is drawn in
@@ -384,6 +463,29 @@ const seasonLabel = computed(() => {
 // Distinct from the Heatmap picker in the control bar, which bins the
 // observations themselves. A layer covers the whole map because somebody else
 // measured it everywhere; a heatmap covers only where people have looked.
+
+// How far in the map will go. Every tile layer is given this as its maxZoom
+// and its own tile ceiling as maxNativeZoom, so the map's limit is a decision
+// made here rather than an accident of whichever basemap happens to be on.
+//
+// 19 is roughly individual-tree scale, which is the scale a foray is planned
+// at: "the north side of that draw" is a question about tens of metres. Past
+// its native level a layer is upscaled, and upscaleNote below says so.
+const MAP_MAX_ZOOM = 19
+
+/**
+ * Warn when a visible layer has run out of real tiles.
+ *
+ * Leaflet upscales past maxNativeZoom, which is what keeps these layers on
+ * screen at all — but an upscaled tile looks like a measurement at that scale
+ * and is not one. Rainfall sampled at 10 km does not resolve to 30 m because
+ * the map was zoomed; it just gets blockier.
+ */
+function upscaleNote(n) {
+  const zoom = mapView.value?.zoom
+  if (!n?.native || !Number.isFinite(zoom) || zoom <= n.native) return ''
+  return `Zoomed past this layer's detail — the tiles are stretched from zoom ${n.native}, not resolved finer.`
+}
 
 // Which day the time-varying layers draw. Defaults to the shortest lag in the
 // catalogue, so switching one on lands on a date that exists rather than on
@@ -796,6 +898,97 @@ const heatmapCellIndex = computed(() => {
   return index
 })
 
+// ─── Dropped point ───────────────────────────────────────────────────────────
+// Somewhere the viewer picked, as opposed to somewhere a record exists. Held as
+// plain numbers rather than a Leaflet marker so the panel can be reactive and
+// the marker stays a detail of the map.
+const pinMode = ref(false)
+const pin = ref(null)
+const copied = ref(false)
+let pinMarker = null
+
+function togglePinMode() {
+  pinMode.value = !pinMode.value
+  if (map) L.DomUtil[pinMode.value ? 'addClass' : 'removeClass'](map.getContainer(), 'picking')
+}
+
+function setPin(lat, lon) {
+  pin.value = { lat, lon }
+  copied.value = false
+  if (!map || !L) return
+  if (pinMarker) { pinMarker.setLatLng([lat, lon]); return }
+  pinMarker = L.marker([lat, lon], {
+    draggable: true,
+    // Above the canvas the observations draw into, so the pin is never lost
+    // under a dense patch of dots.
+    zIndexOffset: 1000,
+    title: 'Dropped point — drag to move',
+  }).addTo(map)
+  // Dragging is how you correct a click that landed a hundred metres off,
+  // which on a phone is most of them.
+  pinMarker.on('drag move', () => {
+    const ll = pinMarker.getLatLng()
+    pin.value = { lat: ll.lat, lon: ll.lng }
+    copied.value = false
+  })
+}
+
+function clearPin() {
+  pin.value = null
+  if (pinMarker) { pinMarker.remove(); pinMarker = null }
+}
+
+async function copyPin() {
+  if (!pin.value) return
+  const text = `${pin.value.lat.toFixed(5)}, ${pin.value.lon.toFixed(5)}`
+  try {
+    await navigator.clipboard.writeText(text)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 1600)
+  } catch {
+    // Clipboard access is refused in plenty of contexts; selecting the text is
+    // still possible, so this is not worth an error message.
+  }
+}
+
+/** The heatmap cell under the pin, if a heatmap is on and it has one there. */
+const pinCell = computed(() => (pin.value ? heatmapCellAt(pin.value.lat, pin.value.lon) : null))
+
+const pinCellValue = computed(() => {
+  const cell = pinCell.value
+  if (!cell) return ''
+  const v = cell.value
+  if (v === null || v === undefined) return '—'
+  return typeof v === 'number' ? fmtNum(v) : String(v)
+})
+
+/** The closest loaded observation, so the pin has something to be relative to. */
+const pinNearest = computed(() => {
+  if (!pin.value) return null
+  const feats = filteredData.value?.features || []
+  if (!feats.length) return null
+  const { lat, lon } = pin.value
+  // Equirectangular is plenty at these distances and avoids a trig call per
+  // feature across tens of thousands of them.
+  const scale = Math.cos((lat * Math.PI) / 180)
+  let best = null
+  let bestD = Infinity
+  for (const f of feats) {
+    const co = f.geometry?.coordinates
+    if (!co) continue
+    const dx = (Number(co[0]) - lon) * scale
+    const dy = Number(co[1]) - lat
+    const d = dx * dx + dy * dy
+    if (d < bestD) { bestD = d; best = f }
+  }
+  if (!best) return null
+  const km = Math.sqrt(bestD) * 111.32
+  const p = best.properties || {}
+  const name = p.species || p.genus || 'a record'
+  const away = km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
+  return { label: `${name}, ${away} away`, feature: best }
+})
+
 function heatmapCellAt(lat, lon) {
   if (!heatmapCell.value || !heatmapMode.value) return null
   return heatmapCellIndex.value.get(heatmaps.keyAt(lat, lon)) || null
@@ -972,11 +1165,23 @@ onMounted(async () => {
 
     // crossOrigin: the image export composites these tiles onto a canvas, and a
     // tile fetched without it taints the canvas so toBlob() throws.
+    //
+    // maxNativeZoom, not maxZoom, on every layer that runs out of tiles before
+    // MAP_MAX_ZOOM. The two mean different things and the difference is what
+    // used to break this map: maxZoom tells Leaflet the layer does not exist
+    // past that level, so it HIDES it, while maxNativeZoom says the tiles stop
+    // there and Leaflet keeps showing the last real level, upscaled.
+    //
+    // Getting that wrong cost more than the base map. The default grey canvas
+    // stops at 16, and Leaflet takes the map's own zoom ceiling from its
+    // layers, so 16 was as far as the whole map would go.
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors', maxZoom: 19, crossOrigin: 'anonymous',
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 19, crossOrigin: 'anonymous',
     })
     const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17, crossOrigin: 'anonymous',
+      attribution: '© OpenTopoMap (CC-BY-SA)',
+      maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 17, crossOrigin: 'anonymous',
     })
     // Muted basemaps, and the default. A street or topo map is drawn to be read
     // on its own; the moment 48k coloured dots sit on top of it, its own colour
@@ -989,15 +1194,16 @@ onMounted(async () => {
     // nothing downstream can tell it apart from a map. These come from the same
     // host as the satellite and hillshade layers the app already uses.
     const grey = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Esri, HERE, Garmin, © OpenStreetMap contributors', maxZoom: 16,
-      crossOrigin: 'anonymous',
+      attribution: 'Esri, HERE, Garmin, © OpenStreetMap contributors',
+      maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 16, crossOrigin: 'anonymous',
     })
     const greyDark = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Esri, HERE, Garmin, © OpenStreetMap contributors', maxZoom: 16,
-      crossOrigin: 'anonymous',
+      attribution: 'Esri, HERE, Garmin, © OpenStreetMap contributors',
+      maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 16, crossOrigin: 'anonymous',
     })
     const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Imagery © Esri', maxZoom: 19, crossOrigin: 'anonymous',
+      attribution: 'Imagery © Esri',
+      maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 19, crossOrigin: 'anonymous',
     })
 
     // Zoom control on the bottom-left so it never overlaps the top-left
@@ -1019,6 +1225,7 @@ onMounted(async () => {
       // Two fingers to pan the page-length map on touch would be right if the
       // map were incidental; here it IS the page, so one finger pans it.
       tap: true, tapTolerance: 20,
+      maxZoom: MAP_MAX_ZOOM,
     }).setView([39.5, -105.7], 7)
     L.control.zoom({ position: 'bottomleft' }).addTo(map)
     // ArcGIS MapServer services render from a bbox rather than serving a cut
@@ -1035,7 +1242,11 @@ onMounted(async () => {
     const tileOverlays = {}
     for (const o of TILE_LAYERS) {
       const opts = {
-        attribution: o.attribution, maxZoom: o.maxZoom,
+        // The catalogue's maxZoom is where each service's tiles stop, which is
+        // maxNativeZoom here. Passed as maxZoom it made every coarse layer —
+        // all of Weather, Ground and Vegetation — vanish the moment the map was
+        // zoomed past it, so ticking them appeared to do nothing at all.
+        attribution: o.attribution, maxZoom: MAP_MAX_ZOOM, maxNativeZoom: o.maxZoom,
         opacity: (o.opacity ?? 1) * tileOpacity.value,
         crossOrigin: 'anonymous',
       }
@@ -1073,6 +1284,7 @@ onMounted(async () => {
           if (!activeTileNotes.value.some((n) => n.name === o.name)) {
             activeTileNotes.value = [...activeTileNotes.value, {
               name: o.name, note: o.note, legend: o.legend, time: !!o.time,
+              native: o.maxZoom,
               slug: o.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
             }]
           }
@@ -1117,6 +1329,13 @@ onMounted(async () => {
       // they are about is the difference between scanning and hunting.
       tileOverlays, { position: 'topleft', collapsed: true },
     ).addTo(map)
+
+    // Only while the mode is on, so an ordinary click that misses a dot still
+    // does nothing rather than littering the map with pins.
+    map.on('click', (e) => {
+      if (!pinMode.value) return
+      setPin(e.latlng.lat, e.latlng.lng)
+    })
 
     map.on('moveend zoomend', syncMapView)
     map.on('moveend zoomend', loadVisible)
@@ -1228,10 +1447,24 @@ function onDocClick(e) {
     seasonOpen.value = false
   }
 }
-onMounted(() => document.addEventListener('click', onDocClick))
+// Escape leaves pin mode, and leaves it again to clear the pin. A mode with no
+// keyboard way out is a trap on a laptop, where the toggle can be off-screen.
+function onKeydown(e) {
+  if (e.key !== 'Escape') return
+  if (pinMode.value) pinMode.value = false
+  else if (pin.value) clearPin()
+  else return
+  if (map) L.DomUtil.removeClass(map.getContainer(), 'picking')
+}
+
+onMounted(() => {
+  document.addEventListener('click', onDocClick)
+  document.addEventListener('keydown', onKeydown)
+})
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', onDocClick)
+  document.removeEventListener('keydown', onKeydown)
   controlsResize?.disconnect()
   if (map) map.remove()
 })
@@ -1406,6 +1639,43 @@ onBeforeUnmount(() => {
 }
 .legend-n { color: #777; font-size: 11px; }
 
+/* Dropped point */
+.map-shell :deep(.leaflet-container.picking) { cursor: crosshair; }
+.pin-panel {
+  position: absolute; left: 12px; bottom: 96px; z-index: 620;
+  width: 232px; max-width: calc(100vw - 24px);
+  background: rgba(255, 255, 255, 0.96); border: 1px solid #d8d8d8; border-radius: 8px;
+  padding: 9px 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.13);
+  font: 12px/1.4 system-ui, sans-serif; color: #333;
+}
+.pin-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pin-x {
+  background: none; border: none; font-size: 17px; line-height: 1; color: #888;
+  cursor: pointer; padding: 0 2px;
+}
+.pin-x:hover { color: #333; }
+.pin-coords {
+  display: flex; align-items: baseline; gap: 6px; width: 100%; margin-top: 6px;
+  background: #f4f4f4; border: 1px solid #e2e2e2; border-radius: 5px;
+  padding: 4px 6px; font: 11px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #333; cursor: pointer; text-align: left;
+}
+.pin-coords:hover { border-color: #bbb; }
+.pin-copy { margin-left: auto; font-family: system-ui, sans-serif; color: #777; font-size: 10px; }
+.pin-facts { margin: 7px 0 0; display: flex; flex-direction: column; gap: 3px; }
+.pin-facts > div { display: flex; justify-content: space-between; gap: 10px; }
+.pin-facts dt { color: #777; }
+.pin-facts dd { margin: 0; font-weight: 600; text-align: right; }
+.pin-note { margin: 6px 0 0; font-size: 11px; line-height: 1.35; color: #777; }
+
+@media (prefers-color-scheme: dark) {
+  .pin-panel { background: rgba(32, 32, 34, 0.96); border-color: #444; color: #ddd; }
+  .pin-coords { background: #2a2a2c; border-color: #444; color: #ddd; }
+  .pin-facts dt, .pin-note, .pin-copy { color: #999; }
+}
+/* A caveat about the data being stretched should read as a caveat. */
+.legend-note.upscaled { color: #8a5a1f; }
+
 /* :deep — Leaflet builds the tooltip outside this component's tree. */
 .map-shell :deep(.obs-tip) {
   max-width: 260px; padding: 7px 9px; font: 12px/1.45 system-ui, sans-serif;
@@ -1432,6 +1702,8 @@ onBeforeUnmount(() => {
   color: #333; cursor: pointer; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); padding: 0;
 }
 .icon-btn:hover:not(:disabled) { background: #fff; }
+/* A mode that is on has to look on, or the crosshair cursor is the only clue. */
+.icon-btn.on { background: #2a78d6; border-color: #2a78d6; box-shadow: 0 0 0 2px rgba(42, 120, 214, 0.25); }
 .icon-btn:disabled { opacity: 0.6; cursor: progress; }
 .icon-btn.busy { opacity: 0.7; cursor: progress; }
 .icon-btn .dot-icon {
