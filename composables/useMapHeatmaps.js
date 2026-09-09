@@ -21,6 +21,7 @@ import { computed, ref } from 'vue'
 import { categoryColor, hasValue } from '~/composables/useObservations'
 import { cellAt, cellKeyAt, CELL_SHAPES } from '~/composables/gridCells'
 import { ALL_NUMERIC } from '~/composables/useChartFields'
+import { fieldValue } from '~/composables/statistics'
 
 // CELL_SHAPES is deliberately not re-exported: Nuxt auto-imports every
 // composables/ export by name, and a second export of the same symbol makes
@@ -343,7 +344,11 @@ export function useMapHeatmaps() {
       // eleven on every one of 48k features would cost eleven times as much for
       // ten results nobody asked for.
       for (const key of wanted) {
-        const v = Number(p[key])
+        // fieldValue rather than p[key], because not every field mode is a
+        // stored column. `rain7` is the sum of prcp_d0..d6 and exists nowhere
+        // on the feature, so reading it directly gave NaN for every record and
+        // the whole heatmap came out blank.
+        const v = fieldValue(p, key)
         if (!Number.isFinite(v)) continue
         let acc = cell.fields.get(key)
         if (!acc) { acc = { sum: 0, x: 0, y: 0, n: 0 }; cell.fields.set(key, acc) }

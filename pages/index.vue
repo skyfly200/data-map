@@ -181,11 +181,12 @@
         <div class="auth-cta" v-if="configured">
           <template v-if="isAuthed">
             <span class="signed">Signed in as <strong>{{ user?.email || 'your account' }}</strong>.</span>
-            <NuxtLink to="/data?tab=fetch" class="btn small">Fetch a taxon</NuxtLink>
+            <!-- The fetch link is hidden with the tab it points at, while
+                 that backend is replaced. -->
             <button class="btn small ghost" @click="signOut">Sign out</button>
           </template>
           <template v-else>
-            <span class="hint">Browsing is open to everyone. Sign in to pull new taxa from iNaturalist:</span>
+            <span class="hint">Browsing is open to everyone. Sign in to save your settings across devices:</span>
             <NuxtLink to="/login" class="btn small">Sign in</NuxtLink>
             <NuxtLink to="/login?mode=signup" class="btn small ghost">Sign up</NuxtLink>
           </template>

@@ -36,10 +36,68 @@ export const CELL_SIZE = 0.5
 
 // What the map itself draws with. Everything else belongs to the drawer, which
 // opens one record at a time out of that record's own cell file.
+//
+// "Draws with" includes the heatmaps, which is wider than it first looks. The
+// first version of this list carried only what a POINT is drawn from, and every
+// field heatmap except elevation came out blank at the zoom the overview is
+// showing — the values were simply not in the file. A mode offered in a menu
+// has to have its column here.
 export const OVERVIEW_FIELDS = [
   'species', 'genus', 'date', 'day_of_year', 'cluster',
-  'elevation', 'land_cover_label', 'inat_id',
+  'land_cover_label', 'inat_id',
+  // The eleven field heatmaps in composables/useMapHeatmaps.js. Keep in step:
+  // a mode added there without its column here is a menu entry that does
+  // nothing, which is worse than not offering it.
+  'elevation', 'tavg', 'soil_moisture', 'water_retention', 'slope', 'aspect',
+  'solar_exposure', 'wind_exposure', 'ndvi', 'ndmi',
+  // rain7 is not a stored column; DERIVED below sums it from prcp_d0..d6, so
+  // the overview carries one number where it would otherwise carry seven.
+  'rain7',
 ]
+
+/**
+ * Fields computed at build time rather than copied.
+ *
+ * The 7-day rain total is the sum of seven daily columns. Carrying the seven
+ * costs seven numbers per record for one heatmap; carrying the sum costs one.
+ * The daily values are still in the cell files, where the charts read them.
+ */
+export const DERIVED = {
+  rain7: (props) => {
+    let sum = 0
+    let any = false
+    for (let d = 0; d < 7; d += 1) {
+      const v = props[`prcp_d${d}`]
+      if (v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v))) {
+        sum += Number(v)
+        any = true
+      }
+    }
+    return any ? Math.round(sum * 100) / 100 : null
+  },
+  // Same reason: the pipeline's tavg column is empty across the shipped
+  // dataset, while the day's max and min are both present. Their midpoint is
+  // what tavg means. Kept in step with fieldValue in composables/statistics.js.
+  tavg: (props) => {
+    if (props.tavg !== null && props.tavg !== undefined && props.tavg !== ''
+        && Number.isFinite(Number(props.tavg))) return Number(props.tavg)
+    const hi = Number(props.tmax_d0)
+    const lo = Number(props.tmin_d0)
+    if (Number.isFinite(hi) && Number.isFinite(lo)) return Math.round(((hi + lo) / 2) * 100) / 100
+    if (Number.isFinite(hi)) return hi
+    if (Number.isFinite(lo)) return lo
+    return null
+  },
+}
+
+/**
+ * Digits kept for the overview's numeric columns.
+ *
+ * These drive a colour ramp over a grid cell, not a readout. Full float
+ * precision on ten columns across ten thousand records is bytes spent on
+ * digits that cannot change a pixel.
+ */
+const PRECISION = 4
 
 // The overview exists to paint fast, so it has a budget.
 export const OVERVIEW_MAX = 12000
@@ -75,8 +133,12 @@ export function slim(feature, fields = OVERVIEW_FIELDS) {
   const props = feature?.properties || {}
   const out = {}
   for (const k of fields) {
-    const v = props[k]
-    if (v !== null && v !== undefined && v !== '') out[k] = v
+    const v = DERIVED[k] ? DERIVED[k](props) : props[k]
+    if (v === null || v === undefined || v === '') continue
+    // Rounded rather than copied: see PRECISION.
+    out[k] = typeof v === 'number' && Number.isFinite(v)
+      ? Math.round(v * 10 ** PRECISION) / 10 ** PRECISION
+      : v
   }
   return { type: 'Feature', geometry: feature.geometry, properties: out }
 }
