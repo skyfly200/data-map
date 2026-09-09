@@ -14,6 +14,7 @@
 // to fail closed and refuse traffic until Supabase is configured.
 
 import { createClient } from '@supabase/supabase-js'
+import { atLeast, effectiveTier, tierFromToken } from './tiers.mjs'
 
 export function authEnforced() {
   if (String(process.env.AUTH_DISABLED).toLowerCase() === 'true') return false
@@ -22,7 +23,7 @@ export function authEnforced() {
     && (process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY))
 }
 
-function bearer(request) {
+export function bearer(request) {
   const h = request.headers.get('authorization') || request.headers.get('Authorization') || ''
   const m = /^Bearer\s+(.+)$/i.exec(h.trim())
   return m ? m[1].trim() : null
@@ -49,8 +50,14 @@ export async function verifyToken(token) {
 //   { ok: true, user }            authenticated (or auth not enforced → user null)
 //   { ok: false, response }       a 401 Response to return immediately
 export async function requireUser(request) {
-  if (!authEnforced()) return { ok: true, user: null }
-  const user = await verifyToken(bearer(request))
+  // Unenforced means no Supabase at all: a local dev run, where the whole app
+  // is already open and there is nobody to be an administrator over. 'admin'
+  // here lets that run reach the admin screens; it is not a tier anyone can
+  // reach on a deployment, because authEnforced() is true wherever Supabase is
+  // configured.
+  if (!authEnforced()) return { ok: true, user: null, tier: 'admin', token: null }
+  const token = bearer(request)
+  const user = await verifyToken(token)
   if (!user) {
     return {
       ok: false,
@@ -60,5 +67,87 @@ export async function requireUser(request) {
       ),
     }
   }
-  return { ok: true, user }
+  // The token has just been validated by Supabase Auth, so the claims inside it
+  // — including the tier stamped on by the custom access token hook — can be
+  // trusted without a second round trip.
+  return { ok: true, user, token, tier: tierFromToken(token) }
+}
+
+function deny(status, error, extra = {}) {
+  return new Response(JSON.stringify({ ok: false, error, ...extra }),
+    { status, headers: { 'content-type': 'application/json' } })
+}
+
+/**
+ * A gate on tier, answered from the token.
+ *
+ * Fast, and stale by up to one token refresh. Right for reads and for showing
+ * work someone has already paid for; wrong on its own for anything that spends
+ * Earth Engine quota, which must call loadProfile and judge the row instead.
+ * See requireMemberFresh.
+ */
+export async function requireTier(request, required = 'member') {
+  const auth = await requireUser(request)
+  if (!auth.ok) return auth
+  if (!authEnforced()) return auth
+  if (!atLeast(auth.tier, required)) {
+    return {
+      ok: false,
+      response: deny(403,
+        required === 'admin'
+          ? 'That is an administrator action.'
+          : 'Running pipeline jobs is a membership benefit.',
+        { tier: auth.tier, required }),
+    }
+  }
+  return auth
+}
+
+export const requireMember = (request) => requireTier(request, 'member')
+export const requireAdmin = (request) => requireTier(request, 'admin')
+
+/** Service-role client, for reading rows the caller's own key must not reach. */
+export function adminClient() {
+  const url = process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return null
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
+}
+
+/** A member's profile row, read past RLS. Null when Supabase is unconfigured. */
+export async function loadProfile(userId) {
+  const client = adminClient()
+  if (!client || !userId) return null
+  const { data } = await client.from('profiles').select('*').eq('user_id', userId).maybeSingle()
+  return data || null
+}
+
+/**
+ * Membership checked against the database rather than the token.
+ *
+ * Used by the paths that spend quota. They have to read the profile for the
+ * limits anyway, so insisting on a fresh answer costs nothing — and it closes
+ * the hour-long window in which a cancelled membership still carries a valid
+ * token saying otherwise.
+ */
+export async function requireMemberFresh(request) {
+  const auth = await requireTier(request, 'member')
+  if (!auth.ok) return auth
+  if (!authEnforced()) return { ...auth, profile: null }
+
+  const profile = await loadProfile(auth.user.id)
+  // No profile row and Supabase configured means the trigger in migration 002
+  // has not run. Failing open here would hand out unmetered Earth Engine.
+  const tier = effectiveTier(profile)
+  if (!atLeast(tier, 'member')) {
+    return {
+      ok: false,
+      response: deny(403,
+        profile?.member_until
+          ? 'Your membership has lapsed. Renew it to run pipeline jobs.'
+          : 'Running pipeline jobs is a membership benefit.',
+        { tier }),
+    }
+  }
+  return { ...auth, tier, profile }
 }
