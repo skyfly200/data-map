@@ -27,7 +27,8 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { usePanelFit } from '~/composables/usePanelFit'
 
 // A control that costs one icon until someone wants it.
 //
@@ -54,30 +55,8 @@ const open = ref(false)
 const root = ref(null)
 const panel = ref(null)
 
-// How far to slide the panel back into view.
-//
-// The panel is anchored to its button, so a button near the right edge opens a
-// panel that runs off it — which on a phone is most of the bar. Measured rather
-// than guessed, because it depends on the button's position, the panel's
-// content and the viewport, none of which CSS can compare to each other.
-const shift = ref(0)
-
-const EDGE = 8
-
-async function reposition() {
-  shift.value = 0
-  if (!open.value) return
-  await nextTick()
-  const el = panel.value
-  if (!el) return
-  const r = el.getBoundingClientRect()
-  let dx = 0
-  if (r.right > window.innerWidth - EDGE) dx = window.innerWidth - EDGE - r.right
-  // Never push it off the other edge doing so: a panel wider than the viewport
-  // is clamped by max-width, and this keeps its left edge on screen.
-  if (r.left + dx < EDGE) dx = EDGE - r.left
-  shift.value = dx
-}
+// Kept inside the window; see composables/usePanelFit.js.
+const { shift } = usePanelFit(panel, open)
 
 function toggle() { open.value = !open.value }
 function close() { open.value = false }
@@ -110,16 +89,10 @@ onBeforeUnmount(() => {
 // whole screen. Broadcast on a shared event rather than a store: this component
 // has no idea who its siblings are.
 watch(open, (v) => {
-  reposition()
   if (!v || !import.meta.client) return
   window.dispatchEvent(new CustomEvent('popover-open', { detail: root.value }))
 })
 
-// A rotation or a resize while a panel is open changes the answer.
-onMounted(() => {
-  window.addEventListener('resize', reposition)
-  onBeforeUnmount(() => window.removeEventListener('resize', reposition))
-})
 onMounted(() => {
   const others = (e) => { if (e.detail !== root.value) close() }
   window.addEventListener('popover-open', others)

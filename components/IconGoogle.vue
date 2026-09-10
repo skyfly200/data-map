@@ -1,5 +1,5 @@
 <template>
-  <!-- Google "G" mark in its four brand colours. -->
+  <!-- Google "G" mark in its four brand colors. -->
   <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
     <path fill="#4285F4" d="M23.52 12.27c0-.79-.07-1.54-.2-2.27H12v4.51h6.47a5.54 5.54 0 0 1-2.4 3.64v3h3.88c2.27-2.09 3.57-5.17 3.57-8.88Z" />
     <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.75-2.1-6.69-4.93H1.3v3.09A12 12 0 0 0 12 24Z" />

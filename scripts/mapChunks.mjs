@@ -10,7 +10,7 @@
  *
  * **Every observation carried 40 enrichment fields the map does not draw.** A
  * feature averages 1,030 bytes, of which the map needs the position, the name,
- * the date, and whatever is currently being coloured or sized by. The rest is
+ * the date, and whatever is currently being colored or sized by. The rest is
  * the drawer's, and the drawer opens one record at a time. So there are two
  * shapes:
  *
@@ -93,7 +93,7 @@ export const DERIVED = {
 /**
  * Digits kept for the overview's numeric columns.
  *
- * These drive a colour ramp over a grid cell, not a readout. Full float
+ * These drive a color ramp over a grid cell, not a readout. Full float
  * precision on ten columns across ten thousand records is bytes spent on
  * digits that cannot change a pixel.
  */

@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <!-- Colour key: full category labels (the y-axis labels are truncated). -->
+    <!-- Color key: full category labels (the y-axis labels are truncated). -->
     <div v-if="showKey && boxes.length" class="boxkey">
       <span v-for="b in boxes" :key="b.label" class="k" :class="{ on: active && active.label === b.label }"
             @click="active = b">

@@ -8,7 +8,8 @@
       </svg>
     </button>
 
-    <div v-if="open" class="set-panel">
+    <div v-if="open" ref="panel" class="set-panel"
+         :style="shift ? { transform: `translateX(${shift}px)` } : null">
       <div class="set-head">
         <span>Map settings</span>
         <button class="set-close" aria-label="Close" @click="open = false">×</button>
@@ -85,6 +86,10 @@ const shortcuts = useShortcuts()
 const tip = (text, keys) => shortcuts.withKey(text, keys)
 
 const open = ref(false)
+// A 300px panel under a button near the right edge runs off a phone. Shared
+// with the other dropdowns rather than solved once here; see the composable.
+const panel = ref(null)
+const { shift } = usePanelFit(panel, open)
 shortcuts.register([
   { scope: 'Map', keys: ',', label: 'Map settings', run: () => { open.value = !open.value } },
 ])
@@ -115,6 +120,9 @@ defineExpose({ close: () => { open.value = false } })
 
 .set-panel {
   position: absolute; top: calc(100% + 6px); left: 0; z-index: 900; width: 280px;
+  /* Never wider than the window: sliding a panel that does not fit only
+     moves which edge it hangs off. */
+  max-width: calc(100vw - 24px);
   max-height: 70vh; overflow-y: auto;
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
   box-shadow: 0 4px 16px var(--shadow); padding: 12px; font-size: 0.82rem; color: var(--text);

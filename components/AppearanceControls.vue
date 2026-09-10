@@ -33,20 +33,20 @@
       </div>
       <div class="ap-row">
         <label class="ap-check" for="ap-outline"
-               title="The dark ring around each dot. It separates overlapping finds, but over a dense patch the rings merge into a grey mass.">
+               title="The dark ring around each dot. It separates overlapping finds, but over a dense patch the rings merge into a gray mass.">
           <input id="ap-outline" v-model="pointOutline" type="checkbox" @change="persist" />
           Outline map dots
         </label>
         <HelpLink option="appearance-point-outline" />
       </div>
 
-      <!-- Heatmap styling: the grid cells have their own colours and their own
+      <!-- Heatmap styling: the grid cells have their own colors and their own
            opacity, and the key on the map reads from the same place. Kept apart
            from the map's reference tile layers below, which are a different
            stack at a different depth. -->
       <div class="ap-sub"><span>Heatmap</span></div>
       <div class="ap-row">
-        <label for="ap-ramp">Colours <HelpLink option="appearance-heatmap-ramp" /></label>
+        <label for="ap-ramp">Colors <HelpLink option="appearance-heatmap-ramp" /></label>
         <select id="ap-ramp" v-model="heatmapRampKey" @change="onRampChange">
           <option v-for="r in RAMP_PRESETS" :key="r.key" :value="r.key">{{ r.label }}</option>
           <option value="custom">Custom…</option>
@@ -96,12 +96,12 @@
       <template v-if="field && values.length">
         <div class="ap-sub">
           <span>{{ fieldLabel || field }}</span>
-          <span class="ap-hint">click a swatch to recolour</span>
+          <span class="ap-hint">click a swatch to recolor</span>
         </div>
         <div class="ap-values">
           <div v-for="(v, i) in values.slice(0, VALUE_CAP)" :key="v" class="ap-value">
             <input type="color" class="ap-color" :value="toHex(categoryColor(field, v))"
-                   :aria-label="`Colour for ${v}`"
+                   :aria-label="`Color for ${v}`"
                    @input="setColor(field, v, $event.target.value)" />
             <span class="ap-label" :title="String(v)">{{ v }}</span>
             <button v-if="hasOverride(field, v)" class="ap-clear" title="Back to automatic"
@@ -114,8 +114,8 @@
       </template>
 
       <div class="ap-buttons">
-        <button class="ap-shuffle" title="Deal the palette out differently. Same colours, different assignment: for when two species land on shades you cannot tell apart."
-                @click="shuffleColors">🎨 Shuffle colours</button>
+        <button class="ap-shuffle" title="Deal the palette out differently. Same colors, different assignment: for when two species land on shades you cannot tell apart."
+                @click="shuffleColors">🎨 Shuffle colors</button>
         <button class="ap-reset" @click="reset">Reset</button>
       </div>
     </div>
@@ -128,7 +128,7 @@ import { categoryColor } from '~/composables/useObservations'
 import { overrideKey, useAppearance } from '~/composables/useAppearance'
 
 const props = defineProps({
-  // The category dimension currently being coloured, and the values present in
+  // The category dimension currently being colored, and the values present in
   // it — supplied by the host view so the override list matches what is on
   // screen rather than every value in the dataset.
   field: { type: String, default: '' },
@@ -139,7 +139,7 @@ const props = defineProps({
 })
 
 // Long tails (hundreds of species) make the panel unusable; the host passes
-// values most-common-first, so the cap keeps the ones worth recolouring.
+// values most-common-first, so the cap keeps the ones worth recoloring.
 const VALUE_CAP = 24
 
 // The grid heatmaps draw from their own ramp, chosen here and keyed on the map.
@@ -168,7 +168,7 @@ function setRampEnd(i, hex) {
 }
 
 const open = ref(false)
-// Shapes are no longer offered here: colour already carries category identity
+// Shapes are no longer offered here: color already carries category identity
 // on this map, and a second encoding of the same thing added a control without
 // adding information. The shape encoding still exists for charts that ask for it
 // explicitly — it just runs on its defaults rather than being configured here.
@@ -179,7 +179,7 @@ const {
   persist, reset, shuffleColors, setColor, clearColor, clearShape, hasOverride,
 } = useAppearance()
 
-// <input type="color"> only accepts #rrggbb, so shorthand and named colours
+// <input type="color"> only accepts #rrggbb, so shorthand and named colors
 // have to be normalised or the swatch silently shows black.
 function toHex(color) {
   if (typeof color !== 'string') return '#000000'

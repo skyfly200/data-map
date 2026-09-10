@@ -20,7 +20,7 @@
       <template v-if="chartType === 'scatter'">
         <label class="ctrl"><span>X <HelpLink option="chart-x" /></span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Y <HelpLink option="chart-y" /></span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
-        <label class="ctrl"><span>Colour <HelpLink option="chart-color-field" /></span><select v-model="colorField"><option value="">(none)</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Color <HelpLink option="chart-color-field" /></span><select v-model="colorField"><option value="">(none)</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Shape <HelpLink option="chart-shape-field" /></span><select v-model="shapeField"><option value="">(none)</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Size <HelpLink option="chart-size-field" /></span><select v-model="sizeField"><option value="">(none)</option><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label v-if="xField === 'day_of_year'" class="ctrl chk"><input type="checkbox" v-model="showToday" /> Today line <HelpLink option="chart-today" /></label>

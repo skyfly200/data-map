@@ -19,10 +19,10 @@ export const OPTION_DOCS = [
     id: 'map-color-by',
     group: 'Map',
     title: 'Color by',
-    summary: 'What the colour of each dot means, pick any category or measurement.',
+    summary: 'What the color of each dot means, pick any category or measurement.',
     detail: [
-      'Categories (species, genus, cluster, land cover, year, month, enrichment level) get distinct colours from the active palette. Numeric fields (elevation, slope, NDVI, soil moisture, temperature, exposure) get a light-to-dark gradient instead, because a ramp reads as "more" and a set of hues does not.',
-      'Category colours are stable and shared: a species is the same colour here, in every chart, and in the legend. That is what makes it possible to look at the map and a box plot side by side and match them up. Change one under Style and it changes everywhere.',
+      'Categories (species, genus, cluster, land cover, year, month, enrichment level) get distinct colors from the active palette. Numeric fields (elevation, slope, NDVI, soil moisture, temperature, exposure) get a light-to-dark gradient instead, because a ramp reads as "more" and a set of hues does not.',
+      'Category colors are stable and shared: a species is the same color here, in every chart, and in the legend. That is what makes it possible to look at the map and a box plot side by side and match them up. Change one under Style and it changes everywhere.',
     ],
     also: ['map-size-by', 'appearance-palette', 'appearance-overrides'],
   },
@@ -32,7 +32,7 @@ export const OPTION_DOCS = [
     title: 'Size by',
     summary: 'Scale each dot by a numeric field, so two dimensions read at once.',
     detail: [
-      'Dot area follows the chosen measurement, so you can colour by species and size by elevation and see both together.',
+      'Dot area follows the chosen measurement, so you can color by species and size by elevation and see both together.',
       'Area, not radius, carries the value, sizing by radius makes a value twice as large look four times as big.',
     ],
     caveat: 'With 48,000 overlapping points, size is easy to misjudge in dense areas. Use it to spot gradients across a region, not to compare two individual dots.',
@@ -115,9 +115,9 @@ export const OPTION_DOCS = [
     id: 'map-heatmap-common',
     group: 'Map',
     title: 'Heatmap: Most common species',
-    summary: 'The most-recorded species in each cell, by colour.',
+    summary: 'The most-recorded species in each cell, by color.',
     detail: [
-      'Shows regional character, where one species takes over. Colours match the rest of the app, so a cell can be read against the legend and the charts.',
+      'Shows regional character, where one species takes over. Colors match the rest of the app, so a cell can be read against the legend and the charts.',
     ],
     caveat: 'Only the winner is shown, so a cell split 51/49 between two species looks identical to one that is 100% a single species. Ties are broken arbitrarily.',
     also: ['map-color-by'],
@@ -140,7 +140,7 @@ export const OPTION_DOCS = [
     title: 'Heatmap: Wind / aspect vectors',
     summary: 'Arrows for wind where it exists, and for the way slopes face where it does not.',
     detail: [
-      'The observations carry terrain **aspect**: the compass direction a slope faces, and a wind-exposure index, but no measured wind. Until the pipeline samples ERA5 wind into `wind_u` / `wind_v`, this heatmap draws mean terrain aspect: arrow direction is the way the ground faces, arrow length is how *consistently* the cell faces one way, and colour is wind exposure.',
+      'The observations carry terrain **aspect**: the compass direction a slope faces, and a wind-exposure index, but no measured wind. Until the pipeline samples ERA5 wind into `wind_u` / `wind_v`, this heatmap draws mean terrain aspect: arrow direction is the way the ground faces, arrow length is how *consistently* the cell faces one way, and color is wind exposure.',
       'When real wind data is present the heatmap switches to it automatically and relabels its legend, so the arrows never silently change meaning.',
     ],
     caveat: 'A short arrow means mixed terrain, not calm air. Aspect is averaged as a vector, because averaging compass degrees numerically puts the mean of 350° and 10° at 180°, exactly backwards.',
@@ -215,7 +215,7 @@ export const OPTION_DOCS = [
     summary: 'A muted basemap, plus reference layers on top: weather, land cover, greenness, relief, trails and ownership.',
     detail: [
       'One basemap at a time, any number of the reference layers on top of it. Those are somebody else\'s imagery, distinct from the **Heatmap** picker in the control bar, which draws a grid computed from the observations themselves.',
-      'The map opens on a light grey canvas on purpose. A street or topo map is drawn to be read on its own, and once 48,000 coloured dots sit on it, its colour competes with the data for the same hues. A grey base leaves the dots as the only saturated thing on screen. For terrain without that cost, keep the grey base and switch on **Hillshade**, relief in grey, colour still reserved for the observations.',
+      'The map opens on a light grey canvas on purpose. A street or topo map is drawn to be read on its own, and once 48,000 colored dots sit on it, its color competes with the data for the same hues. A grey base leaves the dots as the only saturated thing on screen. For terrain without that cost, keep the grey base and switch on **Hillshade**, relief in grey, color still reserved for the observations.',
       'These are third-party tile services. If one cannot be reached the map says so rather than drawing nothing, an empty ownership layer would otherwise read as "no public land here".',
     ],
     also: ['map-layer-weather', 'map-layer-ground', 'map-trails', 'map-land-ownership',
@@ -242,7 +242,7 @@ export const OPTION_DOCS = [
     title: 'Ground and vegetation layers',
     summary: 'ESA land cover at 10 m, modelled soil moisture, and MODIS greenness.',
     detail: [
-      '**Land cover (ESA)** is WorldCover 2021 at 10 m, the highest-resolution global land-cover map there is, with its own official class colours so it matches every other rendering of the product. It is from 2021: a burn, a clear-cut or a new development since then is not in it.',
+      '**Land cover (ESA)** is WorldCover 2021 at 10 m, the highest-resolution global land-cover map there is, with its own official class colors so it matches every other rendering of the product. It is from 2021: a burn, a clear-cut or a new development since then is not in it.',
       '**Soil moisture** is SMAP L4, a model that assimilates satellite retrievals, giving water in the top 5 cm at about 9 km. A model output over a wide cell is not a reading of your patch.',
       '**NDVI (greenness)** is an 8-day MODIS composite at 250 m. Dense conifer and dense broadleaf both saturate near the top of the scale, so it separates bare ground from vegetation far better than it separates one forest from another.',
     ],
@@ -264,10 +264,10 @@ export const OPTION_DOCS = [
     id: 'map-land-ownership',
     group: 'Map',
     title: 'Land ownership layer',
-    summary: 'US federal and state land, coloured by the agency that manages it.',
+    summary: 'US federal and state land, colored by the agency that manages it.',
     detail: [
       'The BLM\'s Surface Management Agency layer: which agency (Forest Service, BLM, Park Service, state) manages each parcel. This is the layer that turns a promising slope into somewhere you can actually go, or cannot.',
-      'The build used here leaves private and unrecorded parcels unpainted, which is what makes it readable: the colour is public land and the gaps are everything else.',
+      'The build used here leaves private and unrecorded parcels unpainted, which is what makes it readable: the color is public land and the gaps are everything else.',
     ],
     caveat: 'Unpainted means private **or unrecorded**, not that the land is open. Public land is also not uniformly open to collecting: rules differ by agency, by unit, and by species, and a national park is not a national forest. Confirm access and collecting rules before relying on this.',
     also: ['map-trails', 'map-basemaps'],
@@ -289,7 +289,7 @@ export const OPTION_DOCS = [
     summary: 'Group observations by k-means in the browser, by environment or by geography.',
     detail: [
       'Runs k-means over the observations currently in view. Clustering by *features* groups finds that share an environment, similar elevation, temperature, moisture, wherever they are. Clustering by *geography* groups them by location alone.',
-      'The result becomes available as a colouring and as a chart field, so a cluster can be inspected rather than just admired.',
+      'The result becomes available as a coloring and as a chart field, so a cluster can be inspected rather than just admired.',
       'This is exploratory: k-means will always return the number of groups you ask for, whether or not the data has that many. Changing k and seeing whether the groups survive is the check.',
     ],
     caveat: 'Clusters are descriptions of this dataset, not species categories or habitat types. Two runs with different k are not comparable.',
@@ -320,10 +320,10 @@ export const OPTION_DOCS = [
     id: 'appearance-palette',
     group: 'Style',
     title: 'Palette',
-    summary: 'The set of colours categories are drawn from.',
+    summary: 'The set of colors categories are drawn from.',
     detail: [
-      'Okabe–Ito is the safe default for colour-vision deficiency; the others trade some of that for contrast or for a more muted look on satellite imagery.',
-      'A palette change applies everywhere at once, map, charts and legends, because category colours are shared.',
+      'Okabe–Ito is the safe default for color-vision deficiency; the others trade some of that for contrast or for a more muted look on satellite imagery.',
+      'A palette change applies everywhere at once, map, charts and legends, because category colors are shared.',
     ],
     also: ['appearance-overrides', 'map-color-by'],
   },
@@ -333,7 +333,7 @@ export const OPTION_DOCS = [
     title: 'Shape set',
     summary: 'Which marker shapes are used when a chart encodes a category by shape.',
     detail: [
-      'Shape survives printing in black and white and is readable to anyone who cannot separate two hues, so it is worth using alongside colour rather than instead of it.',
+      'Shape survives printing in black and white and is readable to anyone who cannot separate two hues, so it is worth using alongside color rather than instead of it.',
     ],
   },
   {
@@ -352,7 +352,7 @@ export const OPTION_DOCS = [
     title: 'Opacity',
     summary: 'How solid the map dots are, lower values let density show through as shading.',
     detail: [
-      'At low opacity, overlapping dots accumulate into darker patches, which turns the point layer into its own density map. This is often more informative than the density heatmap because it keeps every point\'s colour.',
+      'At low opacity, overlapping dots accumulate into darker patches, which turns the point layer into its own density map. This is often more informative than the density heatmap because it keeps every point\'s color.',
       'The outline follows this slider too, so fading the dots fades the whole marker rather than leaving a mesh of solid rings behind.',
     ],
     also: ['appearance-point-outline', 'map-heatmap-density'],
@@ -363,7 +363,7 @@ export const OPTION_DOCS = [
     title: 'Outline map dots',
     summary: 'The dark ring around each dot, helpful when sparse, a grey mass when dense.',
     detail: [
-      'The ring separates overlapping finds and makes pale colours readable against a light basemap. Over a dense patch the rings merge into grey and hide the colours they were drawn to separate, so it can be turned off.',
+      'The ring separates overlapping finds and makes pale colors readable against a light basemap. Over a dense patch the rings merge into grey and hide the colors they were drawn to separate, so it can be turned off.',
       'Turning it off is usually the right move when zoomed out over a well-sampled region; turning it back on helps when inspecting a handful of points.',
     ],
     also: ['appearance-point-opacity'],
@@ -371,13 +371,13 @@ export const OPTION_DOCS = [
   {
     id: 'appearance-heatmap-ramp',
     group: 'Style',
-    title: 'Overlay colours',
-    summary: 'The colour ramp the grid heatmaps are shaded with, and its key on the map.',
+    title: 'Overlay colors',
+    summary: 'The color ramp the grid heatmaps are shaded with, and its key on the map.',
     detail: [
       'Each sequential heatmap ships with its own ramp so density, richness, seasonal activity and hotspots stay tellable apart when you switch between them. Choosing a named ramp here applies that one to all of them instead; "Custom" hands you both ends.',
       'The key on the map reads from the same setting, so the gradient beside the map always matches what is drawn on it.',
     ],
-    caveat: 'Colour on a map is not decoration. A ramp whose light end you cannot separate from the background hides exactly the low values a density map exists to show, and a rainbow implies boundaries in a quantity that has none. The presets all run light to dark for that reason; a custom pair is yours to get wrong.',
+    caveat: 'Color on a map is not decoration. A ramp whose light end you cannot separate from the background hides exactly the low values a density map exists to show, and a rainbow implies boundaries in a quantity that has none. The presets all run light to dark for that reason; a custom pair is yours to get wrong.',
     also: ['map-heatmap', 'appearance-palette'],
   },
   {
@@ -417,10 +417,10 @@ export const OPTION_DOCS = [
   {
     id: 'appearance-overrides',
     group: 'Style',
-    title: 'Per-value colour and shape',
-    summary: 'Pin a specific species (or other category) to a colour or shape of your choosing.',
+    title: 'Per-value color and shape',
+    summary: 'Pin a specific species (or other category) to a color or shape of your choosing.',
     detail: [
-      'Click a swatch to recolour that value. The override applies across the map and every chart, and persists, so the species you care about can keep the same colour across sessions and shared links.',
+      'Click a swatch to recolor that value. The override applies across the map and every chart, and persists, so the species you care about can keep the same color across sessions and shared links.',
     ],
     also: ['appearance-palette', 'appearance-shapes'],
   },
@@ -573,9 +573,9 @@ export const OPTION_DOCS = [
   {
     id: 'chart-color-field',
     group: 'Charts',
-    title: 'Colour',
-    summary: 'The category that decides each mark\'s colour.',
-    detail: ['Shares the app-wide colours, so a species keeps its colour here, on the map and in the legend.'],
+    title: 'Color',
+    summary: 'The category that decides each mark\'s color.',
+    detail: ['Shares the app-wide colors, so a species keeps its color here, on the map and in the legend.'],
     also: ['appearance-palette'],
   },
   {
@@ -583,7 +583,7 @@ export const OPTION_DOCS = [
     group: 'Charts',
     title: 'Shape',
     summary: 'The category that decides each mark\'s shape.',
-    detail: ['Encoding the same field by both colour and shape makes a chart readable in black and white and to viewers with colour-vision deficiency.'],
+    detail: ['Encoding the same field by both color and shape makes a chart readable in black and white and to viewers with color-vision deficiency.'],
     also: ['appearance-shapes'],
   },
   {
@@ -867,7 +867,7 @@ export const OPTION_DOCS = [
     summary: 'Which rank the taxon picker lists and filters at, kingdom down to species.',
     detail: [
       'Each observation carries its full ancestry: kingdom, phylum, class, order, family, genus, species. The rank chosen here decides both what the list shows and what the filter applies to, so the same picker narrows a view to one kingdom or to one species.',
-      'This used to be derived by splitting the species name on its spaces, which gave a genus only when a record happened to be identified to species and could not reach family or above at all. The pipeline now resolves the real ancestry against iNaturalist, so every rank is a column you can filter, group, colour and analyse by.',
+      'This used to be derived by splitting the species name on its spaces, which gave a genus only when a record happened to be identified to species and could not reach family or above at all. The pipeline now resolves the real ancestry against iNaturalist, so every rank is a column you can filter, group, color and analyse by.',
       'Only ranks the loaded dataset actually populates are offered. A dataset exported before this existed carries species and genus and nothing else, and the picker will say so by offering only those.',
       'Switching rank clears the current selection, because the names do not carry across: "Amanita muscaria" is not a family, and keeping it would silently filter everything away.',
     ],
@@ -898,7 +898,7 @@ export const OPTION_DOCS = [
     id: 'share-link',
     group: 'Sharing',
     title: 'Share',
-    summary: 'A link that reproduces this view, filters, colouring, heatmap and position.',
+    summary: 'A link that reproduces this view, filters, coloring, heatmap and position.',
     detail: [
       'Everything that made the view worth showing goes into the query string, so the link opens the same thing rather than the front page. The same link is behind the QR code, the social buttons and the email and text options.',
       'The QR code is generated in the browser rather than through an image service, so the URL, filters and all: is not handed to a third party.',

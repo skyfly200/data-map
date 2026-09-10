@@ -9,7 +9,8 @@
       <template v-if="!compact && !iconOnly">Share</template>
     </button>
 
-    <div v-if="open" class="sh-panel" :class="{ right: compact }">
+    <div v-if="open" ref="panel" class="sh-panel" :class="{ right: compact }"
+         :style="shift ? { transform: `translateX(${shift}px)` } : null">
       <p class="sh-note">{{ note }}</p>
 
       <div class="sh-url">
@@ -74,11 +75,15 @@ const props = defineProps({
   compact: { type: Boolean, default: false },
   // Icon-only at full button size, for the map's control bar.
   iconOnly: { type: Boolean, default: false },
-  note: { type: String, default: 'This link reproduces what you are looking at, including its filters, colouring and overlay.' },
+  note: { type: String, default: 'This link reproduces what you are looking at, including its filters, coloring and overlay.' },
 })
 
 const share = useShareState()
 const open = ref(false)
+// A 300px panel under a button near the right edge runs off a phone. Shared
+// with the other dropdowns rather than solved once here; see the composable.
+const panel = ref(null)
+const { shift } = usePanelFit(panel, open)
 const showQr = ref(false)
 const copied = ref('')
 const qrError = ref('')
@@ -177,6 +182,9 @@ async function copy(value, what) {
 
 .sh-panel {
   position: absolute; top: calc(100% + 6px); left: 0; z-index: 900; width: 300px;
+  /* Never wider than the window: sliding a panel that does not fit only
+     moves which edge it hangs off. */
+  max-width: calc(100vw - 24px);
   max-height: 70vh; overflow-y: auto;
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
   box-shadow: 0 4px 16px var(--shadow); padding: 12px; font-size: 0.82rem;

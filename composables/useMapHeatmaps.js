@@ -71,7 +71,7 @@ export const FIELD_MODES = [
   { key: 'slope', group: 'Terrain', ramp: ['#f5f5f5', '#4e342e'],
     note: 'Mean ground steepness at the finds in this cell.' },
   { key: 'aspect', group: 'Terrain', ramp: null, circular: true,
-    note: 'Mean compass direction the ground faces, averaged as vectors so north does not average to south. Colour is the direction itself, not a magnitude.' },
+    note: 'Mean compass direction the ground faces, averaged as vectors so north does not average to south. Color is the direction itself, not a magnitude.' },
   { key: 'solar_exposure', group: 'Exposure', ramp: ['#fffde7', '#e65100'],
     note: 'Modelled sun the ground receives, from slope and aspect. High is an open south face; low is a shaded draw.' },
   { key: 'wind_exposure', group: 'Exposure', ramp: ['#eceff1', '#263238'],
@@ -109,7 +109,7 @@ export const HEATMAP_MODES = [
   },
   {
     key: 'common', label: 'Most common species', kind: 'categorical', group: 'Observations',
-    note: 'The most-recorded species in each cell, coloured to match the points.',
+    note: 'The most-recorded species in each cell, colored to match the points.',
   },
   {
     key: 'land_cover', label: 'Land cover', kind: 'categorical', group: 'Observations',
@@ -117,7 +117,7 @@ export const HEATMAP_MODES = [
   },
   {
     key: 'wind', label: 'Wind / aspect vectors', kind: 'vector', group: 'Terrain',
-    note: 'Arrows point the way slopes face; length is how consistent the aspect is, colour is wind exposure.',
+    note: 'Arrows point the way slopes face; length is how consistent the aspect is, color is wind exposure.',
     windNote: 'Arrows point downwind (ERA5 10 m mean); length is wind speed.',
   },
   // Cell means of the enriched fields, generated so a new enrichment column
@@ -150,7 +150,7 @@ export const DEFAULT_RAMPS = {
   ...Object.fromEntries(FIELD_MODES.filter((f) => f.ramp).map((f) => [`f:${f.key}`, f.ramp])),
 }
 
-// A named set to pick from, plus whatever the viewer sets by hand. Colour on a
+// A named set to pick from, plus whatever the viewer sets by hand. Color on a
 // map is not decoration — a ramp that a reader cannot separate at the light end
 // hides exactly the low values a density map is meant to show — so the presets
 // are all light-to-dark in luminance, and a custom pair is theirs to get wrong.
@@ -164,7 +164,7 @@ export const RAMP_PRESETS = [
   { key: 'mono', label: 'Greyscale', ramp: ['#f2f2f2', '#1a1a1a'] },
 ]
 
-// Overridden per viewer, from the style panel. Module-level so the colour
+// Overridden per viewer, from the style panel. Module-level so the color
 // helpers below track it the same way the point palette does.
 export const heatmapRampKey = ref('default')
 export const heatmapRampCustom = ref(null)   // [from, to] hex, when set by hand
@@ -202,7 +202,7 @@ export function dayDistance(a, b) {
 }
 
 /**
- * Colour for a compass bearing.
+ * Color for a compass bearing.
  *
  * Direction is circular, so it needs a circular ramp: a light-to-dark one would
  * paint 359° and 1° at opposite ends of the scale. This walks the hue wheel,
@@ -402,7 +402,7 @@ export function useMapHeatmaps() {
     const ramp = RAMPS.wind
     for (const c of out) {
       c.t = hi === lo ? 0.5 : (c.magnitude - lo) / (hi - lo)
-      // Colour by exposure when it is populated (that is the forager-relevant
+      // Color by exposure when it is populated (that is the forager-relevant
       // signal); fall back to the vector's own magnitude.
       const shade = c.exposure ?? c.t
       c.color = hexLerp(ramp[0], ramp[1], shade)
@@ -485,7 +485,7 @@ export function useMapHeatmaps() {
   }
 
   /**
-   * Cells with a colour and a display value for the active mode.
+   * Cells with a color and a display value for the active mode.
    * `features` is the already-filtered FeatureCollection's features.
    */
   function computeHeatmap(features, m = mode.value) {

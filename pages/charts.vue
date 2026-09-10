@@ -73,7 +73,7 @@
     <div class="grid">
       <GalleryChart id="clusters">
         <BarChart title="Observations per environmental cluster" :data="clusterData" :format="int" />
-        <p class="note">Colours match the map. “Unclustered” = missing every clustering feature.</p>
+        <p class="note">Colors match the map. “Unclustered” = missing every clustering feature.</p>
       </GalleryChart>
 
       <GalleryChart id="rain-leadup">
@@ -124,7 +124,7 @@
           xLabel="Day of year" :yLabel="`Elevation (${unit})`"
           :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v).toLocaleString()"
           @select="selected = $event" />
-        <p class="note">Each point is one observation, coloured by cluster: seasonal timing across elevation.</p>
+        <p class="note">Each point is one observation, colored by cluster: seasonal timing across elevation.</p>
       </GalleryChart>
 
       <GalleryChart id="elev-vs-temp" v-if="elevVsTemp.length">
@@ -243,8 +243,8 @@ onMounted(() => {
 })
 
 // Species present, most common first — what the appearance panel offers for
-// per-value recolouring. Species is the dimension worth pinning: it carries the
-// same colour across the map and every chart.
+// per-value recoloring. Species is the dimension worth pinning: it carries the
+// same color across the map and every chart.
 const speciesValues = computed(() =>
   [...countBy(rows.value, (r) => r.species).entries()]
     .sort((a, b) => b[1] - a[1]).map(([v]) => v))
@@ -257,7 +257,7 @@ const deg = (v) => `${v}°`
 const hasDayTemp = computed(() => rows.value.some((r) => hasValue(r.tmax) || hasValue(r.tmin)))
 const hasTempHistory = computed(() => rows.value.some((r) => hasValue(r.tmax_d0)))
 
-// ── Scatter plots (per-observation granularity, coloured by cluster) ──────────
+// ── Scatter plots (per-observation granularity, colored by cluster) ──────────
 const ptColor = (r) => (hasValue(r.cluster) ? colorFor(r.cluster) : UNCLUSTERED)
 const clusterLegend = computed(() => {
   const seen = new Set()
@@ -301,7 +301,7 @@ function speciesGroups(valueFn) {
     .filter(([, vals]) => vals.length >= MIN_PER_SPECIES)
     .sort((a, b) => b[1].length - a[1].length)
     // categoryColor, not a positional palette index: a species then keeps the
-    // same colour here, on the map, and in every other chart — and honours a
+    // same color here, on the map, and in every other chart — and honours a
     // per-value override from the appearance panel.
     .map(([label, values]) => ({ label, values, color: categoryColor('species', label) }))
 }

@@ -193,7 +193,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', shortcuts.handle))
   --glow: 0.9; /* chart glow strength (0 = off) */
   --tooltip-bg: #0b0f14;
   --tooltip-fg: #f4f6f8;
-  /* Soft edge-glow for chart marks (uses each mark's own colour via currentColor). */
+  /* Soft edge-glow for chart marks (uses each mark's own color via currentColor). */
   --chart-glow: drop-shadow(0 0 2px currentColor);
 }
 :root[data-theme="light"] {
@@ -281,7 +281,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 .nav-item.router-link-active { color: var(--accent, #7fd0a0); font-weight: 600; }
 
 /* The header is dark whatever the page theme is, so the buttons in it are
-   styled for that rather than inheriting the surface colours. */
+   styled for that rather than inheriting the surface colors. */
 .app-header :deep(.pop-btn.hdr-btn) {
   background: transparent; color: #cbd2d9; border-color: #52606d;
 }
@@ -392,7 +392,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
   input[type="range"] { height: 32px; touch-action: none; }
 
   /* Nothing that exists to be tapped should select its own text when held, or
-     flash a grey box that outlives the tap. */
+     flash a gray box that outlives the tap. */
   button, [role="button"], .nav-link, .legend-row, .tabs button, summary {
     -webkit-tap-highlight-color: transparent;
     -webkit-user-select: none; user-select: none;

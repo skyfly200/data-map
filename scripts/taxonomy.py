@@ -10,7 +10,7 @@ neither.
 This resolves the ancestry properly: collect every taxon id in the fetched
 observations, look up the ancestors once each, and read the ranks off the chain.
 That makes kingdom, phylum, class, order, family, genus and species available to
-filter, group, colour and analyse by — at whatever level a record was actually
+filter, group, color and analyse by — at whatever level a record was actually
 identified to, rather than at the one level the name string happened to encode.
 
 The lookup is separated from the parsing so the parsing can be tested without a

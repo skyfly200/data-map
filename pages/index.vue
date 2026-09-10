@@ -297,7 +297,7 @@ const FEATURES = [
   {
     to: '/map',
     title: 'Map and heatmaps',
-    body: 'Every observation as a point, coloured by any dimension. Under them, a hex grid '
+    body: 'Every observation as a point, colored by any dimension. Under them, a hex grid '
       + 'summarising density, species richness, seasonal activity, in-season hotspots, or '
       + 'the cell mean of any environmental field.',
   },
@@ -312,7 +312,7 @@ const FEATURES = [
     to: '/data',
     title: 'Taxonomy at every rank',
     body: 'Kingdom through species, resolved from each record’s real ancestry. Filter, '
-      + 'group, colour and analyse at whichever rank answers your question, and import a '
+      + 'group, color and analyse at whichever rank answers your question, and import a '
       + 'species, a family or a whole kingdom.',
   },
   {
