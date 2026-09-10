@@ -22,6 +22,37 @@ export function slugify(text) {
     .replace(/^-+|-+$/g, '')
 }
 
+/**
+ * The headings of a document, for building a contents list beside it.
+ *
+ * Reads the same lines the renderer does and slugs them the same way, so a
+ * contents entry and the anchor it points at cannot drift apart — the failure
+ * would be a link that scrolls nowhere, which is quiet and annoying.
+ *
+ * Fenced code is skipped: a `# comment` inside one is not a heading, and
+ * treating it as a section would put nonsense in the sidebar.
+ */
+export function extractHeadings(source, { min = 2, max = 3 } = {}) {
+  const out = []
+  let fenced = false
+  for (const line of String(source || '').split(/\r?\n/)) {
+    if (/^```/.test(line.trim())) { fenced = !fenced; continue }
+    if (fenced) continue
+    const m = /^(#{1,4})\s+(.*)$/.exec(line)
+    if (!m) continue
+    const level = m[1].length
+    if (level < min || level > max) continue
+    const text = m[2]
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/\*+/g, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .trim()
+    const id = slugify(m[2])
+    if (id && text) out.push({ level, text, id })
+  }
+  return out
+}
+
 function escapeHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
@@ -86,6 +117,33 @@ export function renderMarkdown(md) {
         + body.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')
         + '</tbody></table>',
       )
+      continue
+    }
+
+    // A blockquote, used for the callouts the guide leans on. Consecutive
+    // "> " lines become one, so a callout can run to a few sentences.
+    //
+    // When the first line starts with a bold word — "> **Note**" — that word
+    // becomes the callout's label and the rest its body, which is the shape
+    // every documentation site uses and the reason this exists: a caveat woven
+    // into a paragraph reads as commentary, and the same caveat set apart reads
+    // as something to act on.
+    if (/^>\s?/.test(line)) {
+      flushPara(); flushList()
+      const quoted = []
+      while (i < lines.length && /^>\s?/.test(lines[i].trim())) {
+        quoted.push(lines[i].trim().replace(/^>\s?/, ''))
+        i++
+      }
+      i--
+      const text = quoted.join(' ').trim()
+      const labelled = /^\*\*([^*]+)\*\*[:.]?\s*(.*)$/.exec(text)
+      const kind = labelled ? slugify(labelled[1]) : ''
+      out.push(labelled
+        ? `<blockquote class="callout callout-${kind}">`
+          + `<strong class="callout-label">${inline(labelled[1])}</strong> `
+          + `<span>${inline(labelled[2])}</span></blockquote>`
+        : `<blockquote class="callout">${inline(text)}</blockquote>`)
       continue
     }
 

@@ -33,6 +33,29 @@ const html = computed(() => renderMarkdown(props.source))
 .legal :deep(strong) { color: var(--text-strong); }
 .legal :deep(hr) { border: 0; border-top: 1px solid var(--border); margin: 24px 0; }
 
+/* Callouts. Set apart rather than woven in, because a caveat inside a paragraph
+   reads as commentary and the same caveat in a box reads as something to act
+   on — which, for most of the ones in the guide, it is. */
+.legal :deep(blockquote.callout) {
+  margin: 0 0 14px; padding: 10px 14px;
+  border-left: 3px solid var(--border);
+  background: var(--surface-2); border-radius: 0 6px 6px 0;
+  font-size: 0.9rem; line-height: 1.5; color: var(--text);
+}
+.legal :deep(.callout-label) {
+  color: var(--text-strong); font-weight: 700;
+}
+.legal :deep(.callout-label)::after { content: ''; }
+/* Three kinds, by the word the author used. Anything else stays neutral rather
+   than picking a colour at random. */
+.legal :deep(blockquote.callout-note) { border-left-color: var(--accent); }
+.legal :deep(blockquote.callout-caution),
+.legal :deep(blockquote.callout-warning) { border-left-color: #b3822f; }
+.legal :deep(blockquote.callout-caution) .callout-label,
+.legal :deep(blockquote.callout-warning) .callout-label { color: #b3822f; }
+.legal :deep(blockquote.callout-tip) { border-left-color: #3d8b5f; }
+.legal :deep(blockquote.callout-tip) .callout-label { color: #3d8b5f; }
+
 .legal :deep(code) {
   font: 0.86em/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
   background: var(--surface-2); border: 1px solid var(--border-soft);

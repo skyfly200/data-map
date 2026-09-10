@@ -1,7 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { renderInline, renderMarkdown, slugify } from '../composables/useMarkdown.js'
+import { readFileSync } from 'node:fs'
+
+import { extractHeadings, renderInline, renderMarkdown, slugify } from '../composables/useMarkdown.js'
 
 test('headings, paragraphs, lists and rules still render', () => {
   const html = renderMarkdown('# Title\n\nSome text.\n\n- one\n- two\n\n---')
@@ -93,4 +95,82 @@ test('a heading that slugs to nothing is still rendered, just unanchored', () =>
 test('renderInline applies the same escaping as the block renderer', () => {
   assert.equal(renderInline('<script>'), '&lt;script&gt;')
   assert.equal(renderInline('**bold** and `code`'), '<strong>bold</strong> and <code>code</code>')
+})
+
+// ── Contents extraction ──────────────────────────────────────────────────────
+
+test('headings come back with the same ids the renderer gives them', () => {
+  // The whole point: a contents entry that does not match its anchor scrolls
+  // nowhere, which is quiet and infuriating.
+  const src = '# Page\n\n## Map\n\n### Colour and size\n\n## Where the data comes from\n'
+  const heads = extractHeadings(src)
+  const html = renderMarkdown(src)
+  for (const h of heads) {
+    assert.ok(html.includes(`id="${h.id}"`), `no anchor rendered for ${h.text}`)
+  }
+})
+
+test('only the requested heading levels are listed', () => {
+  const src = '# Page\n\n## Two\n\n### Three\n\n#### Four\n'
+  assert.deepEqual(extractHeadings(src, { min: 2, max: 3 }).map((h) => h.text), ['Two', 'Three'])
+  assert.deepEqual(extractHeadings(src, { min: 2, max: 2 }).map((h) => h.text), ['Two'])
+  // The h1 is the page itself, never a section of it.
+  assert.ok(!extractHeadings(src).some((h) => h.text === 'Page'))
+})
+
+test('inline markup is stripped from a contents entry', () => {
+  const heads = extractHeadings('## The **Points** control\n\n## A `code` heading\n')
+  assert.deepEqual(heads.map((h) => h.text), ['The Points control', 'A code heading'])
+})
+
+test('a heading inside a fenced block is not a section', () => {
+  // Otherwise "# comment" in an example would appear in the sidebar.
+  const src = '## Real\n\n```\n# not a heading\n## also not\n```\n\n## Also real\n'
+  assert.deepEqual(extractHeadings(src).map((h) => h.text), ['Real', 'Also real'])
+})
+
+test('extraction survives an empty or absent document', () => {
+  assert.deepEqual(extractHeadings(''), [])
+  assert.deepEqual(extractHeadings(null), [])
+  assert.deepEqual(extractHeadings('just a paragraph'), [])
+})
+
+// ── Callouts ────────────────────────────────────────────────────────────────
+
+test('a labelled blockquote becomes a callout of that kind', () => {
+  const html = renderMarkdown('> **Caution** Layers are not heatmaps.')
+  assert.match(html, /blockquote class="callout callout-caution"/)
+  assert.match(html, /callout-label">Caution</)
+  assert.match(html, /Layers are not heatmaps\./)
+})
+
+test('consecutive quote lines are one callout', () => {
+  // A caveat worth setting apart is usually longer than one line.
+  const html = renderMarkdown('> **Note** First line\n> and its continuation.')
+  assert.equal((html.match(/<blockquote/g) || []).length, 1)
+  assert.match(html, /First line and its continuation\./)
+})
+
+test('an unlabelled blockquote is still a callout, just untyped', () => {
+  const html = renderMarkdown('> Plain aside.')
+  assert.match(html, /blockquote class="callout"/)
+  assert.ok(!/callout-label/.test(html))
+})
+
+test('a callout ends where the quoting ends', () => {
+  const html = renderMarkdown('> **Note** Inside.\n\nOutside.')
+  assert.match(html, /<blockquote[^>]*>.*Inside\..*<\/blockquote>/s)
+  assert.match(html, /<p>Outside\.<\/p>/)
+})
+
+test('the shipped guide renders its callouts and lists every section', () => {
+  // The real document, since a renderer that passes on fixtures and fails on
+  // the one file it exists for is not much use.
+  const src = readFileSync(new URL('../content/guide.md', import.meta.url), 'utf8')
+  const html = renderMarkdown(src)
+  const heads = extractHeadings(src)
+  assert.ok(heads.length > 15, `only ${heads.length} sections found`)
+  assert.ok(html.includes('callout-caution'), 'no caution callouts rendered')
+  assert.ok(html.includes('callout-note'), 'no note callouts rendered')
+  for (const h of heads) assert.ok(html.includes(`id="${h.id}"`), `${h.text} has no anchor`)
 })
