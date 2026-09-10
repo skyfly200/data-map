@@ -12,7 +12,7 @@ import assert from 'node:assert/strict'
 
 import {
   EE_LAYER_CATALOGUE, EE_LAYER_KEYS, EE_TILE_LAYERS, LayerError,
-  MODIS_FIRST_YEAR, cacheKey, describeLayer, resolveLayer,
+  DEFAULT_TIER, MODIS_FIRST_YEAR, cacheKey, describeLayer, resolveLayer, tierFor,
 } from '../netlify/lib/ee-tile-layers.mjs'
 
 const YEAR = new Date().getUTCFullYear()
@@ -217,4 +217,36 @@ test('the look-back never reaches before the data starts', () => {
   const { layer, params } = resolveLayer('years-since-fire', { through: 2005, window: 25 })
   layer.build(ee, params)
   assert.equal(dates[0], `${MODIS_FIRST_YEAR}-01-01`)
+})
+
+// ── Tiers ────────────────────────────────────────────────────────────────────
+
+test('the two layers that answer where to look are open to everyone', () => {
+  // Years since fire and burn severity together answer "which burn scar is
+  // worth walking next spring", which is the question the society exists to
+  // help with. Gating it would gate the reason to visit at all.
+  assert.equal(tierFor('years-since-fire'), 'free')
+  assert.equal(tierFor('burn-severity'), 'free')
+})
+
+test('the layers that spend real compute per tile need membership', () => {
+  // dNBR is calculated from raw Sentinel-2 scenes as you look at it, so it does
+  // not share one cached render the way a published asset does.
+  assert.equal(tierFor('dnbr'), DEFAULT_TIER)
+  assert.equal(DEFAULT_TIER, 'member')
+})
+
+test('an unknown layer is gated at the strictest tier, not the loosest', () => {
+  // A layer added to the catalogue without a tier, or a key that does not
+  // exist, must not fall open.
+  assert.equal(tierFor('nope'), DEFAULT_TIER)
+  assert.equal(tierFor(''), DEFAULT_TIER)
+  assert.equal(tierFor(undefined), DEFAULT_TIER)
+})
+
+test('every layer declares a tier the gate understands', () => {
+  for (const entry of EE_LAYER_CATALOGUE) {
+    assert.ok(['free', 'member', 'admin'].includes(entry.tier),
+      `${entry.key} has an unusable tier: ${entry.tier}`)
+  }
 })

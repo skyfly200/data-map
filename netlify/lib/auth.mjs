@@ -86,19 +86,18 @@ function deny(status, error, extra = {}) {
  * Earth Engine quota, which must call loadProfile and judge the row instead.
  * See requireMemberFresh.
  */
-export async function requireTier(request, required = 'member') {
+export async function requireTier(request, required = 'member', { message = '' } = {}) {
   const auth = await requireUser(request)
   if (!auth.ok) return auth
   if (!authEnforced()) return auth
   if (!atLeast(auth.tier, required)) {
-    return {
-      ok: false,
-      response: deny(403,
-        required === 'admin'
-          ? 'That is an administrator action.'
-          : 'Running pipeline jobs is a membership benefit.',
-        { tier: auth.tier, required }),
-    }
+    // Callers pass their own message where the default would be wrong: a map
+    // layer refused because of tier is not "running pipeline jobs", and being
+    // told about a feature you were not using is how a refusal reads as a bug.
+    const why = message || (required === 'admin'
+      ? 'That is an administrator action.'
+      : 'Running pipeline jobs is a membership benefit.')
+    return { ok: false, response: deny(403, why, { tier: auth.tier, required }) }
   }
   return auth
 }

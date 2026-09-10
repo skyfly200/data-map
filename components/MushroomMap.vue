@@ -992,7 +992,12 @@ async function addEeLayers() {
       eeErrors.value = eeErrors.value.filter((e) => e.key !== spec.key)
     })
 
-    layersControl?.addOverlay(layer, `<span class="lg">${spec.group}</span> ${spec.name}`)
+    // A layer the viewer's tier cannot render is still listed, marked, rather
+    // than hidden: knowing the society computes it is part of what membership
+    // is for. Ticking it explains itself through the error card.
+    const gated = spec.tier && spec.tier !== 'free'
+    const badge = gated ? ' <span class="lg-tier">members</span>' : ''
+    layersControl?.addOverlay(layer, `<span class="lg">${spec.group}</span> ${spec.name}${badge}`)
   }
 }
 
@@ -1929,6 +1934,12 @@ onBeforeUnmount(() => {
   font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em;
 }
 .map-shell :deep(.leaflet-control-layers-overlays label) { white-space: nowrap; }
+/* Quiet: it marks a layer, it does not advertise at someone mid-task. */
+.map-shell :deep(.leaflet-control-layers-overlays .lg-tier) {
+  margin-left: 5px; padding: 1px 5px; border-radius: 999px;
+  background: #eee; color: #777; font-size: 0.62rem; text-transform: uppercase;
+  letter-spacing: 0.04em; vertical-align: 1px;
+}
 
 .map-shell :deep(.leaflet-top.leaflet-left) {
   transform: translateY(calc(var(--controls-h, 0px) + 4px));
