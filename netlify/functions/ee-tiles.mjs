@@ -118,6 +118,32 @@ export default async function handler(request) {
 
   try {
     const ee = await initEarthEngine()
+
+    // Is there anything published for the window being asked for?
+    //
+    // Reducing an empty collection gives an image with NO bands, and Earth
+    // Engine refuses a palette on that — so a year the dataset has not reached
+    // yet failed with a message about bands, which tells the reader nothing
+    // about the actual problem. One extra call on a cache miss buys an answer
+    // they can act on.
+    if (layer.count) {
+      const n = await new Promise((resolve, reject) => {
+        layer.count(ee, params).evaluate((v, err) => (err ? reject(new Error(String(err))) : resolve(v)))
+      })
+      if (!n) {
+        const when = params.year ?? params.through
+        return json({
+          ok: false,
+          error: `No ${layer.name} data has been published for `
+            + `${when !== undefined ? when : `the last ${params.days} days`} yet. `
+            + 'These products lag real time; try an earlier period.',
+          layer: key,
+          params,
+          empty: true,
+        }, 404)
+      }
+    }
+
     const { image, vis } = layer.build(ee, params)
     const template = await getMapTemplate(ee, image, vis)
 
