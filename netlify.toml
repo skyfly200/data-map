@@ -21,9 +21,24 @@
 
 [functions]
   node_bundler = "esbuild"
-  # Bundle the baseline GeoJSON (and terrain rasters, if committed) so the
-  # functions can read them at runtime.
-  included_files = [
-    "public/data/observations.geojson",
-    "data/terrain/*.tif",
-  ]
+
+# The baseline GeoJSON is ~48 MB, and included_files at the top level puts it in
+# EVERY function bundle — twelve of them, of which four actually read it. The
+# other eight were packaging half a gigabyte between them for nothing, on every
+# build. Scoped per function instead.
+#
+# The old config also globbed data/terrain/*.tif, which matches no files.
+
+[functions."observations"]
+  included_files = ["public/data/observations.geojson"]
+
+[functions."refresh-observations"]
+  included_files = ["public/data/observations.geojson"]
+
+# Both reach the baseline through lib/job-source.mjs, to resolve the area a
+# pipeline job covers.
+[functions."ee-jobs"]
+  included_files = ["public/data/observations.geojson"]
+
+[functions."ee-worker"]
+  included_files = ["public/data/observations.geojson"]
