@@ -2,7 +2,7 @@
   <div class="leadup">
     <!-- Rain: daily precipitation over the 7 days up to the observation -->
     <div v-if="rain.some((d) => d.value !== null)" class="lc">
-      <div class="lc-title">Rain leading up (mm)</div>
+      <div class="lc-title" :title="TIPS.rain">Rain leading up (mm)</div>
       <svg :viewBox="`0 0 ${W} ${H}`" class="lc-svg">
         <g v-for="t in rainTicks" :key="`rt${t.v}`">
           <line :x1="axL" :y1="t.y" :x2="W - padR" :y2="t.y" class="grid" />
@@ -21,7 +21,7 @@
 
     <!-- Temperature: daily min–max band + high/low lines -->
     <div v-if="hasTempHistory" class="lc">
-      <div class="lc-title">Temp leading up (°{{ tempUnit }}, min–max)</div>
+      <div class="lc-title" :title="TIPS.temp">Temp leading up (°{{ tempUnit }}, min–max)</div>
       <svg :viewBox="`0 0 ${W} ${H}`" class="lc-svg">
         <g v-for="t in tempTicks" :key="`tt${t.v}`">
           <line :x1="axL" :y1="t.y" :x2="W - padR" :y2="t.y" class="grid" />
@@ -37,7 +37,7 @@
 
     <!-- Fallback: observation-day temp only (daily history not yet in the data) -->
     <div v-else-if="hasDayTemp" class="lc">
-      <div class="lc-title">Temperature (observation day)</div>
+      <div class="lc-title" :title="TIPS.dayTemp">Temperature (observation day)</div>
       <div class="day-temp">
         <span>low {{ tempLabel(p.tmin) }}</span>
         <span class="avg">avg {{ tempLabel(p.tavg) }}</span>
@@ -50,6 +50,18 @@
 
 <script setup>
 import { useUnits } from '~/composables/useUnits'
+
+// What these two little charts are showing. They carry no axis labels beyond
+// "days before", because there is no room for them in a 340px drawer, so the
+// explanation goes on hover instead of being left out.
+const TIPS = {
+  rain: 'Daily rainfall for each of the seven days up to and including the find, from CHIRPS. '
+    + 'Read the shape rather than the values: a wet spell a few days before a find is the pattern worth noticing.',
+  temp: 'The daily low-to-high range for each of the seven days before the find, from ERA5-Land. '
+    + 'The band is the spread between them; the two lines are the highs and the lows.',
+  dayTemp: 'The low, average and high air temperature on the day of the find. '
+    + 'Shown instead of the week when the daily history has not been sampled for this record.',
+}
 
 const props = defineProps({ p: { type: Object, required: true } })
 const p = computed(() => props.p)

@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
+  COARSE_ACCURACY_M, STAT_TIPS,
   compassPoint, detailSections, indexFraction, missingEnrichment, rainLeadUp,
 } from '../composables/observationDetail.js'
 
@@ -110,4 +111,88 @@ test('missing enrichment is reported rather than left as a silent gap', () => {
   assert.deepEqual(missingEnrichment({ slope: 3, ndvi: 0.4, prcp_d0: 1 }), [])
   assert.deepEqual(missingEnrichment({ aspect: 90, soil_moisture: 0.2, prcp_d6: 0 }), [])
   assert.deepEqual(missingEnrichment(null), [])
+})
+
+// ── Hover explanations ───────────────────────────────────────────────────────
+
+test('every row the drawer can produce carries an explanation', () => {
+  // The guard that matters: a row added later without a tip is a bare number in
+  // a panel, and several of these are modelled indices where that is actively
+  // misleading. A fully-populated record exercises every branch.
+  const full = {
+    date: '2026-09-14', day_of_year: 257, location: 'Gunnison County, CO',
+    lat: 38.87, lon: -106.99, location_precision: 'precise',
+    public_positional_accuracy: 30, num_identification_agreements: 3,
+    elevation: 2840, slope: 17.4, aspect: 212, land_cover_label: 'Tree cover',
+    ndvi: 0.71, soil_moisture: 0.28, water_retention: 0.44,
+    solar_exposure: 0.62, wind_exposure: 0.31,
+    tmax: 18.2, tmin: 3.1,
+    prcp_d0: 2.1, prcp_d1: 0, prcp_d2: 8.4, prcp_d3: 1.2,
+    prcp_d4: 0, prcp_d5: 0, prcp_d6: 3.3,
+  }
+  const sections = detailSections(full, { precisionLabel: (k) => k })
+  const rows = sections.flatMap((s) => s.rows)
+  assert.ok(rows.length >= 15, `only ${rows.length} rows built`)
+  for (const r of rows) {
+    assert.ok(r.tip && r.tip.length > 20, `“${r.label}” has no usable tip`)
+  }
+})
+
+test('the tip table has no entry for a row that does not exist', () => {
+  // A stale tip is a promise the drawer does not keep, and it is how the table
+  // and the rows drift apart. Genus and Cluster are built in the component
+  // rather than here, so they are the only ones allowed to be unmatched.
+  const full = {
+    date: '2026-09-14', location: 'x', lat: 1, lon: 2, location_precision: 'precise',
+    public_positional_accuracy: 30, num_identification_agreements: 1,
+    elevation: 1, slope: 1, aspect: 1, land_cover_label: 'x',
+    ndvi: 0.1, soil_moisture: 0.1, water_retention: 0.1,
+    solar_exposure: 0.1, wind_exposure: 0.1, tmax: 1, tmin: 0, prcp_d0: 1,
+  }
+  const built = new Set(detailSections(full, { precisionLabel: (k) => k })
+    .flatMap((s) => s.rows).map((r) => r.label))
+  const componentOnly = new Set(['Genus', 'Cluster'])
+  for (const label of Object.keys(STAT_TIPS)) {
+    assert.ok(built.has(label) || componentOnly.has(label),
+      `STAT_TIPS documents “${label}”, which no row produces`)
+  }
+})
+
+// ── Location accuracy ────────────────────────────────────────────────────────
+
+test('accuracy is shown in metres, and in km once it stops being useful', () => {
+  const at = (v) => detailSections({ lat: 1, lon: 2, public_positional_accuracy: v })
+    .flatMap((s) => s.rows).find((r) => r.label === 'Accuracy')
+
+  assert.equal(at(30).value, '±30 m')
+  assert.equal(at(950).value, '±950 m')
+  assert.equal(at(2400).value, '±2.4 km')
+  // An obscured record is ~20 km, where a decimal place is false precision.
+  assert.equal(at(20000).value, '±20 km')
+})
+
+test('an accuracy wider than the terrain sampling is flagged', () => {
+  const at = (v) => detailSections({ lat: 1, lon: 2, public_positional_accuracy: v })
+    .flatMap((s) => s.rows).find((r) => r.label === 'Accuracy')
+
+  assert.equal(at(COARSE_ACCURACY_M - 1).warn, false)
+  assert.equal(at(COARSE_ACCURACY_M).warn, false)
+  assert.equal(at(COARSE_ACCURACY_M + 1).warn, true)
+  assert.match(at(5000).hint, /district, not the spot/)
+  assert.equal(at(30).hint, null)
+})
+
+test('a record with no accuracy simply has no accuracy row', () => {
+  // Which is the common case: iNaturalist often reports none, and inventing a
+  // number or showing an empty row would both be worse than omitting it.
+  const rows = detailSections({ lat: 1, lon: 2 }).flatMap((s) => s.rows)
+  assert.ok(!rows.some((r) => r.label === 'Accuracy'))
+  const bad = detailSections({ lat: 1, lon: 2, public_positional_accuracy: 'unknown' })
+    .flatMap((s) => s.rows)
+  assert.ok(!bad.some((r) => r.label === 'Accuracy'))
+})
+
+test('positional_accuracy is used when the public one is absent', () => {
+  const rows = detailSections({ lat: 1, lon: 2, positional_accuracy: 45 }).flatMap((s) => s.rows)
+  assert.equal(rows.find((r) => r.label === 'Accuracy').value, '±45 m')
 })
