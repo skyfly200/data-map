@@ -160,7 +160,16 @@
 
     <!-- Both legends share one column, so they cannot overlap each other or the
          control bar, and neither needs to know how tall the other is. -->
-    <div v-if="loaded" class="legends">
+    <div v-if="loaded" class="legends" :class="{ collapsed: keyCollapsed }">
+      <!-- The key can be in the way as easily as it can be wanted — it is the
+           tallest thing on the map when several layers are on. This folds it to
+           its header and remembers the choice. -->
+      <button class="key-toggle" :aria-expanded="String(!keyCollapsed)"
+              :title="keyCollapsed ? 'Show the map key' : 'Hide the map key'"
+              @click="setKeyCollapsed(!keyCollapsed)">
+        <span class="caret" aria-hidden="true">{{ keyCollapsed ? '▸' : '▾' }}</span>
+        Key
+      </button>
     <!-- A reference layer that will not load looks the same as one reporting
          empty ground, so it says so instead. -->
     <div v-if="tileErrors.length" class="legend tile-warn">
@@ -528,6 +537,20 @@ const chunkStatus = computed(() => {
   }
   if (partial.value) return `${s.loaded.toLocaleString()} of ${s.total.toLocaleString()} loaded`
   return ''
+})
+
+// Whether the map key is folded away. Remembered, because it is a standing
+// preference about screen space rather than a per-visit decision.
+const KEY_COLLAPSED = 'map-key-collapsed'
+const keyCollapsed = ref(false)
+function setKeyCollapsed(v) {
+  keyCollapsed.value = v
+  try { localStorage.setItem(KEY_COLLAPSED, v ? '1' : '0') } catch { /* private mode */ }
+}
+onMounted(() => {
+  // Read on the client only: the server has no localStorage, and rendering the
+  // key expanded there and collapsed here is a hydration mismatch.
+  try { keyCollapsed.value = localStorage.getItem(KEY_COLLAPSED) === '1' } catch { /* ignore */ }
 })
 
 const seasonEl = ref(null)
@@ -1183,7 +1206,14 @@ function pointTooltip(feature) {
 function selectFeature(feature) {
   if (!feature) return null
   const co = feature.geometry?.coordinates
-  return co ? { ...feature.properties, lon: co[0], lat: co[1] } : feature.properties
+  // Whether this point is the thinned copy from the overview or the full record
+  // from its cell. The drawer needs to know: an unenriched-looking record that
+  // is merely un-fetched must not be reported as one the pipeline never
+  // sampled. The flag lives on the feature, not its properties, so it has to be
+  // carried across explicitly.
+  const thinned = chunks.available.value && !feature.__full
+  const base = { ...feature.properties, __thinned: thinned }
+  return co ? { ...base, lon: co[0], lat: co[1] } : base
 }
 
 // Rebuild the point layer whenever the dataset changes (e.g. species switch).
@@ -1603,7 +1633,10 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.map-shell { --drawer-w: 320px; }
+/* Must match .drawer's width in ObservationDrawer.vue: the key column steps
+   aside by exactly this when the drawer opens. It was 320 here and 340 there,
+   which nothing noticed only because nothing read it. */
+.map-shell { --drawer-w: 340px; }
 
 .map-shell { position: relative; width: 100%; height: 100%; }
 .map { width: 100%; height: 100%; }
@@ -1649,6 +1682,10 @@ onBeforeUnmount(() => {
    so neither has to know how tall the other is. */
 .legends {
   position: absolute; bottom: 18px; right: 12px; z-index: 500;
+  /* Slides aside when the drawer opens rather than being buried under it: the
+     key is how you read the colours on the map, and opening a record is exactly
+     when you want to check what a colour meant. */
+  transition: right 0.22s ease;
   /* Below the control bar, whose height depends on how many rows it wraps into —
      picking an overlay adds a "Cell size" dropdown and a second row, which is
      exactly when the overlay legend appears to collide with it. */
@@ -1660,6 +1697,32 @@ onBeforeUnmount(() => {
   pointer-events: none; max-width: 46vw; min-height: 0;
 }
 .legends > * { pointer-events: auto; }
+
+/* Beside the drawer rather than under it. */
+.map-shell.drawer-open .legends { right: calc(var(--drawer-w) + 12px); }
+
+/* Collapsed: the toggle stays, everything it controls goes. */
+.legends.collapsed .legend { display: none; }
+
+/* Where the drawer takes most of the screen there is no "beside" to move to,
+   so the key folds to its header and the viewer opens it when they want it.
+   Sliding it off the left edge instead would just lose it. */
+@media (max-width: 760px) {
+  .map-shell.drawer-open .legends { right: 12px; }
+  .map-shell.drawer-open .legends .legend { display: none; }
+}
+
+.key-toggle {
+  align-self: flex-end; pointer-events: auto;
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
+  padding: 4px 9px; font: 600 11px/1 system-ui, sans-serif; color: #444;
+  cursor: pointer; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+.key-toggle:hover { border-color: #bbb; }
+.key-toggle .caret { font-size: 9px; color: #888; }
+
+@media (prefers-reduced-motion: reduce) { .legends { transition: none; } }
 
 .legend {
   position: static; z-index: 500;

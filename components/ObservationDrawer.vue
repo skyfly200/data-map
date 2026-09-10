@@ -17,11 +17,32 @@
         <div class="image-counter">{{ currentImageIndex + 1 }} / {{ images.length }}</div>
       </div>
 
+      <!-- Sections fold. A fully enriched record runs to seventeen rows plus
+           two charts, which is a lot of scrolling to reach the thing you opened
+           it for. Record stays open because it is what identifies the record;
+           the rest remember whether you had them open. -->
       <section v-for="sec in sections" :key="sec.title" class="group">
-        <h4>{{ sec.title }}</h4>
-        <dl class="meta">
+        <h4>
+          <button type="button" class="sec-toggle" :aria-expanded="String(isOpen(sec.title))"
+                  @click="toggleSection(sec.title)">
+            <span class="caret" aria-hidden="true">{{ isOpen(sec.title) ? '▾' : '▸' }}</span>
+            {{ sec.title }}
+            <span v-if="!isOpen(sec.title)" class="sec-count">{{ sec.rows.length }}</span>
+          </button>
+        </h4>
+        <dl v-show="isOpen(sec.title)" class="meta">
           <div v-for="r in sec.rows" :key="r.label" :class="{ warn: r.warn }">
-            <dt>{{ r.label }}</dt>
+            <!-- The label explains itself. On a pointer the title is enough; on
+                 a touch screen there is no hover at all, so it is also a button
+                 that expands the same text inline. Several of these values are
+                 modelled rather than measured, and a bare "0.62" gives a reader
+                 no way to know that. -->
+            <dt>
+              <button v-if="r.tip" type="button" class="tip-label" :title="r.tip"
+                      :aria-expanded="String(openTips.has(r.label))"
+                      @click="toggleTip(r.label)">{{ r.label }}</button>
+              <template v-else>{{ r.label }}</template>
+            </dt>
             <dd>
               {{ r.value }}
               <!-- A 0-1 index means little as a bare number; the bar puts it on
@@ -30,22 +51,46 @@
                 <span :style="{ width: `${Math.round(r.bar * 100)}%` }"></span>
               </span>
               <small v-if="r.hint" class="hint">{{ r.hint }}</small>
+              <small v-if="openTips.has(r.label)" class="hint tip-body">{{ r.tip }}</small>
             </dd>
           </div>
         </dl>
       </section>
 
       <dl v-if="hasValue(selected.cluster) || genus" class="meta">
-        <div v-if="genus"><dt>Genus</dt><dd><em>{{ genus }}</em></dd></div>
+        <!-- Built here rather than in detailSections because neither depends on
+             the unit formatters, but they take their explanations from the same
+             table so the drawer speaks with one voice. -->
+        <div v-if="genus">
+          <dt><button type="button" class="tip-label" :title="STAT_TIPS.Genus"
+                      :aria-expanded="String(openTips.has('Genus'))"
+                      @click="toggleTip('Genus')">Genus</button></dt>
+          <dd>
+            <em>{{ genus }}</em>
+            <small v-if="openTips.has('Genus')" class="hint tip-body">{{ STAT_TIPS.Genus }}</small>
+          </dd>
+        </div>
         <div v-if="hasValue(selected.cluster)">
-          <dt>Cluster</dt>
-          <dd><span class="chip" :style="{ background: colorFor(selected.cluster) }">{{ selected.cluster }}</span></dd>
+          <dt><button type="button" class="tip-label" :title="STAT_TIPS.Cluster"
+                      :aria-expanded="String(openTips.has('Cluster'))"
+                      @click="toggleTip('Cluster')">Cluster</button></dt>
+          <dd>
+            <span class="chip" :style="{ background: colorFor(selected.cluster) }">{{ selected.cluster }}</span>
+            <small v-if="openTips.has('Cluster')" class="hint tip-body">{{ STAT_TIPS.Cluster }}</small>
+          </dd>
         </div>
       </dl>
 
-      <!-- Say what has not been sampled, rather than leaving a gap the reader
-           has to notice on their own. -->
-      <p v-if="missing.length" class="missing">
+      <!-- Two different absences, and conflating them would be a lie. A thinned
+           point carries only the handful of fields the map draws with; its
+           terrain and weather exist and simply have not been fetched. Saying
+           "no terrain data on this record" there would blame the pipeline for
+           the loader's laziness. -->
+      <p v-if="selected.__thinned" class="missing">
+        Showing the overview copy of this record. Zoom in to load its full
+        terrain and weather.
+      </p>
+      <p v-else-if="missing.length" class="missing">
         No {{ missing.join(', ') }} data on this record yet.
       </p>
 
@@ -61,13 +106,52 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import {
   LOCATION_PRECISION_LABELS, colorFor, hasValue, inatUrl, inatPhotoUrl,
   useObservations, fetchObservationDetails,
 } from '~/composables/useObservations'
-import { detailSections, missingEnrichment } from '~/composables/observationDetail'
+import { STAT_TIPS, detailSections, missingEnrichment } from '~/composables/observationDetail'
 import { useUnits } from '~/composables/useUnits'
+
+// Which sections are folded open. Remembered across records and across visits,
+// because it is a preference about how much detail you want, not a decision
+// about one observation — the opposite of the tips below, which are.
+//
+// Record is open by default: it is what tells you which record this is. The
+// enrichment sections are the ones worth folding away.
+const SECTIONS_KEY = 'drawer-sections'
+const DEFAULT_OPEN = ['Record']
+const openSections = ref(new Set(DEFAULT_OPEN))
+const isOpen = (title) => openSections.value.has(title)
+
+function toggleSection(title) {
+  const next = new Set(openSections.value)
+  if (next.has(title)) next.delete(title)
+  else next.add(title)
+  openSections.value = next
+  try { localStorage.setItem(SECTIONS_KEY, JSON.stringify([...next])) } catch { /* private mode */ }
+}
+
+onMounted(() => {
+  // Client only: the server has no localStorage, and rendering a section open
+  // there and closed here is a hydration mismatch.
+  try {
+    const saved = JSON.parse(localStorage.getItem(SECTIONS_KEY) || 'null')
+    if (Array.isArray(saved)) openSections.value = new Set(saved)
+  } catch { /* ignore */ }
+})
+
+// Which explanations are expanded. Cleared when the record changes: they are
+// about a field, but the reader opened them about THIS record, and leaving them
+// open across a selection makes the next drawer look permanently annotated.
+const openTips = ref(new Set())
+function toggleTip(label) {
+  const next = new Set(openTips.value)
+  if (next.has(label)) next.delete(label)
+  else next.add(label)
+  openTips.value = next
+}
 
 const props = defineProps({
   selected: { type: Object, default: null },
@@ -111,6 +195,7 @@ watch(() => props.selected, async (s) => {
   currentImageIndex.value = 0
   images.value = []
   details.value = null
+  openTips.value = new Set()
   if (!s) return
   const id = s.inat_id ?? s.uuid
   const fetched = await fetchObservationDetails(id)
@@ -208,8 +293,32 @@ function openOnMap() {
   margin: 0 0 6px; font-size: 0.7rem; text-transform: uppercase;
   letter-spacing: 0.05em; color: var(--muted); font-weight: 700;
 }
+/* The whole heading is the hit target, not just the caret: a 0.7rem triangle
+   is not something to ask a thumb to find. */
+.sec-toggle {
+  display: flex; align-items: center; gap: 6px; width: 100%;
+  background: none; border: 0; padding: 3px 0; font: inherit; color: inherit;
+  text-transform: inherit; letter-spacing: inherit; cursor: pointer; text-align: left;
+}
+.sec-toggle:hover { color: var(--text); }
+.sec-toggle .caret { font-size: 0.6rem; opacity: 0.8; }
+.sec-count {
+  margin-left: auto; font-weight: 600; letter-spacing: 0;
+  background: var(--surface-2, #eee); border-radius: 999px; padding: 0 6px;
+}
+
 .meta div.warn dd { color: var(--danger, #b00020); }
 .hint { display: block; color: var(--muted); font-size: 0.72rem; line-height: 1.35; margin-top: 2px; }
+/* The label is the affordance. A dotted underline says "there is more here"
+   without putting a row of question marks down a 340px panel. */
+.tip-label {
+  background: none; border: 0; padding: 0; font: inherit; color: inherit;
+  text-align: left; cursor: help;
+  text-decoration: underline dotted; text-underline-offset: 2px;
+  text-decoration-color: var(--border);
+}
+.tip-label:hover, .tip-label:focus-visible { color: var(--text); text-decoration-color: currentColor; }
+.tip-body { border-left: 2px solid var(--border); padding-left: 6px; margin-top: 4px; }
 .bar {
   display: block; height: 4px; border-radius: 2px; background: var(--surface-3, #e6e6e6);
   margin-top: 4px; overflow: hidden;
