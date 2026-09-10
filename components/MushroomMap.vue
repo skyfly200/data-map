@@ -170,6 +170,13 @@
         empty ground.
       </div>
     </div>
+    <!-- An Earth Engine layer that failed to render says why, by name. Blank
+         ground on a fire map reads as ground that never burned, so a silent
+         failure here would be worse than no layer at all. -->
+    <div v-for="e in eeErrors" :key="e.key" class="legend tile-warn">
+      <div class="legend-title">{{ e.name }} could not be rendered</div>
+      <div class="legend-note">{{ e.message }}</div>
+    </div>
     <!-- One key for the whole reference stack, a section per layer that is
          switched on. A raster nobody can read is decoration, so every measured
          layer carries a key — but as separate cards, three of them squeezed
@@ -194,6 +201,17 @@
         </div>
         <!-- The date the layer is showing, movable for the ones that vary. Each
              product has its own latency, so "today" is usually blank tiles. -->
+        <!-- The knobs an Earth Engine layer exposes. Which year, how far back
+             to look: these change what is rendered, so they re-mint the tiles. -->
+        <div v-for="(p, name) in (n.eeParams || {})" :key="name" class="layer-date">
+          <label :for="`ee-${n.slug}-${name}`">{{ p.label }}</label>
+          <input :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
+                 :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                 @change="setEeParam(n.ee, name, Number($event.target.value))" />
+        </div>
+        <div v-if="n.slow" class="legend-note">
+          Computed as you look at it, so tiles arrive slowly the first time.
+        </div>
         <div v-if="n.time" class="layer-date">
           <label :for="`ld-${n.slug}`">Date</label>
           <input :id="`ld-${n.slug}`" v-model="tileDate" type="date" :max="maxTileDate"
@@ -898,6 +916,111 @@ const heatmapCellIndex = computed(() => {
   return index
 })
 
+// ─── Earth Engine layers ─────────────────────────────────────────────────────
+// These have no fixed URL: the server asks Earth Engine to render the layer and
+// returns a tile template, which is then used like any other. So the layer is
+// created empty, and the template is fetched the first time it is switched on —
+// minting one for a layer nobody looks at would spend quota for nothing.
+const eeTiles = useEeTiles()
+const eeParams = ref({})
+const eeErrors = ref([])
+let layersControl = null
+const eeLayers = new Map()
+
+/** The parameters a layer is currently set to, defaulted from its schema. */
+function paramsFor(spec) {
+  const held = eeParams.value[spec.key] || {}
+  const out = {}
+  for (const [name, p] of Object.entries(spec.params || {})) {
+    out[name] = held[name] ?? p.default
+  }
+  return out
+}
+
+async function refreshEeLayer(spec) {
+  const layer = eeLayers.get(spec.key)
+  if (!layer || !map.hasLayer(layer)) return
+  eeErrors.value = eeErrors.value.filter((e) => e.key !== spec.key)
+  try {
+    const minted = await eeTiles.template(spec.key, paramsFor(spec))
+    // setUrl rather than a rebuild, so the layer keeps its place in the stack
+    // and its toggle stays on.
+    layer.setUrl(minted.template)
+  } catch (err) {
+    // Loud and by name. A layer that fails quietly is indistinguishable from
+    // one showing that nothing is there, and on a fire map that is a lie.
+    eeErrors.value = [...eeErrors.value, { key: spec.key, name: spec.name, message: err.message }]
+  }
+}
+
+async function addEeLayers() {
+  const layers = await eeTiles.loadCatalogue()
+  if (!layers.length || !map || !L) return
+
+  for (const spec of layers) {
+    // An empty URL until it is switched on. Leaflet is content with that and
+    // simply draws nothing, which is what an unrequested layer should do.
+    const layer = L.tileLayer('', {
+      attribution: spec.attribution,
+      opacity: (spec.opacity ?? 1) * tileOpacity.value,
+      maxZoom: MAP_MAX_ZOOM,
+      // Earth Engine renders any zoom it is asked for, so there is no native
+      // ceiling to upsample from.
+      crossOrigin: 'anonymous',
+    })
+    layer._baseOpacity = spec.opacity ?? 1
+    layer._spec = { ...spec, ee: true }
+    tileLayers.push(layer)
+    eeLayers.set(spec.key, layer)
+
+    layer.on('add', () => {
+      if (!activeTileNotes.value.some((n) => n.name === spec.name)) {
+        activeTileNotes.value = [...activeTileNotes.value, {
+          name: spec.name,
+          note: spec.note,
+          legend: spec.legend,
+          ee: spec.key,
+          eeParams: spec.params,
+          slow: spec.slow,
+          slug: spec.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        }]
+      }
+      refreshEeLayer(spec)
+    })
+    layer.on('remove', () => {
+      activeTileNotes.value = activeTileNotes.value.filter((n) => n.name !== spec.name)
+      eeErrors.value = eeErrors.value.filter((e) => e.key !== spec.key)
+    })
+
+    layersControl?.addOverlay(layer, `<span class="lg">${spec.group}</span> ${spec.name}`)
+  }
+}
+
+/**
+ * A parameter changed on an active Earth Engine layer: re-render it.
+ *
+ * Clamped to the schema the server sent. A number box can be typed into as well
+ * as stepped, so "5" lands in a year field easily enough, and the server would
+ * rightly refuse it — spending a round trip to be told what the schema already
+ * says here. The server still checks; this only avoids asking a question whose
+ * answer is known.
+ */
+function setEeParam(key, name, value) {
+  const spec = eeTiles.catalogue.value.find((l) => l.key === key)
+  if (!spec) return
+  const p = spec.params?.[name]
+  let next = Math.floor(Number(value))
+  if (!Number.isFinite(next)) next = p?.default ?? 0
+  if (p && Number.isFinite(p.min)) next = Math.max(p.min, next)
+  if (p && Number.isFinite(p.max)) next = Math.min(p.max, next)
+
+  eeParams.value = {
+    ...eeParams.value,
+    [key]: { ...(eeParams.value[key] || {}), [name]: next },
+  }
+  refreshEeLayer(spec)
+}
+
 // ─── Dropped point ───────────────────────────────────────────────────────────
 // Somewhere the viewer picked, as opposed to somewhere a record exists. Held as
 // plain numbers rather than a Leaflet marker so the panel can be reactive and
@@ -1316,7 +1439,7 @@ onMounted(async () => {
         if (l._spec?.time && l._spec.url) l.setUrl(l._spec.url.replace('{date}', d))
       }
     })
-    L.control.layers(
+    layersControl = L.control.layers(
       {
         'Light grey': grey,
         'Dark grey': greyDark,
@@ -1329,6 +1452,10 @@ onMounted(async () => {
       // they are about is the difference between scanning and hunting.
       tileOverlays, { position: 'topleft', collapsed: true },
     ).addTo(map)
+
+    // Earth Engine layers arrive after their catalogue does, so they join the
+    // control rather than being in it from the start.
+    addEeLayers()
 
     // Only while the mode is on, so an ordinary click that misses a dot still
     // does nothing rather than littering the map with pins.
