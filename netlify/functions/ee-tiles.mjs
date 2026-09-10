@@ -20,20 +20,13 @@
 import { getStore } from '@netlify/blobs'
 
 import { requireTier } from '../lib/auth.mjs'
-import { LayerError, EE_LAYER_CATALOGUE, cacheKey, describeLayer, resolveLayer } from '../lib/ee-tile-layers.mjs'
+import {
+  LayerError, EE_LAYER_CATALOGUE, cacheKey, describeLayer, resolveLayer, tierFor,
+} from '../lib/ee-tile-layers.mjs'
 import { earthEngineConfigured, initEarthEngine } from '../lib/ee-runner.mjs'
 
 /** How long a minted template is reused. Well inside Earth Engine's own expiry. */
 const TTL_MS = 6 * 60 * 60 * 1000
-
-/**
- * Which tier may mint one.
- *
- * Rendering costs the society's Earth Engine quota, and the computed layers
- * cost real time, so this follows the same rule as the pipeline: it is what
- * membership buys. Change to 'free' to put the fire layers on the public map.
- */
-const REQUIRED_TIER = 'member'
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -84,7 +77,14 @@ export default async function handler(request) {
   // knowing a layer exists is not the same as being able to render it.
   if (!key) return json({ ok: true, layers: EE_LAYER_CATALOGUE })
 
-  const auth = await requireTier(request, REQUIRED_TIER)
+  // Gated per layer, not globally: years-since-fire and burn severity answer
+  // the question the society exists to help with and are open to everyone,
+  // while the layers that spend real compute per tile are what membership buys.
+  // See DEFAULT_TIER in ../lib/ee-tile-layers.mjs.
+  const auth = await requireTier(request, tierFor(key), {
+    message: `“${describeLayer(key)?.name || key}” is a members' layer. `
+      + 'Years since fire and burn severity are open to everyone.',
+  })
   if (!auth.ok) return auth.response
 
   if (!earthEngineConfigured()) {

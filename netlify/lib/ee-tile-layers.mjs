@@ -27,6 +27,22 @@
 
 export class LayerError extends Error {}
 
+/**
+ * The tier a layer is gated on.
+ *
+ * Per layer rather than one switch over all of them, because they do not cost
+ * the same. A published asset rendered at a fixed palette is cheap and its
+ * result is cached and shared by everyone; a composite calculated from raw
+ * Sentinel-2 scenes as you look at it is not.
+ *
+ * The two that answer "where should I look for morels next spring" are open to
+ * everyone. That is the question the society exists to help people answer, and
+ * gating it would be gating the reason someone would visit at all. What
+ * membership buys is the expensive end: running the pipeline, and the computed
+ * layers that spend real time per tile.
+ */
+export const DEFAULT_TIER = 'member'
+
 /** Earth Engine asset ids, in one place so a correction is a one-line change. */
 export const ASSETS = {
   MODIS_BURN: 'MODIS/061/MCD64A1',
@@ -124,6 +140,9 @@ export const EE_TILE_LAYERS = {
   'years-since-fire': {
     name: 'Years since fire',
     group: 'Fire',
+    // Open to everyone: this is the layer that answers where to look next
+    // spring, and it is one cached render shared by every viewer.
+    tier: 'free',
     attribution: 'NASA MODIS MCD64A1 via Google Earth Engine',
     opacity: 0.75,
     note: 'Years since the last detected burn, from MODIS burned area at 500 m. '
@@ -158,6 +177,10 @@ export const EE_TILE_LAYERS = {
   'burn-severity': {
     name: 'Burn severity (US)',
     group: 'Fire',
+    // Also open. Severity is what decides whether a burn scar is worth walking,
+    // so it is half of the same question, and MTBS is a published product that
+    // costs one cached render per year rather than per viewer.
+    tier: 'free',
     attribution: 'USFS / MTBS via Google Earth Engine',
     opacity: 0.7,
     note: 'Monitoring Trends in Burn Severity, 30 m, US only, one year at a time. '
@@ -291,6 +314,11 @@ export const EE_TILE_LAYERS = {
 
 export const EE_LAYER_KEYS = Object.keys(EE_TILE_LAYERS)
 
+/** The tier a layer requires. Unknown layers are treated as the strictest. */
+export function tierFor(key) {
+  return EE_TILE_LAYERS[key]?.tier || DEFAULT_TIER
+}
+
 /** A layer and its validated parameters, or a LayerError saying what is wrong. */
 export function resolveLayer(key, input = {}) {
   const layer = EE_TILE_LAYERS[key]
@@ -324,6 +352,7 @@ export function describeLayer(key) {
     note: layer.note,
     legend: layer.legend,
     slow: !!layer.slow,
+    tier: layer.tier || DEFAULT_TIER,
     params: Object.fromEntries(Object.entries(layer.params || {}).map(([k, spec]) => [k, {
       label: spec.label,
       type: spec.type,
