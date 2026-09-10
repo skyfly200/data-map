@@ -50,24 +50,31 @@
 
     <!-- Thematic layer selector -->
     <div v-if="loaded" ref="controlsEl" class="controls">
-      <div class="colorby">
-        <label for="colorby-sel">Color by <HelpLink option="map-color-by" /></label>
-        <select id="colorby-sel" v-model="colorBy">
-          <optgroup label="Category">
-            <option v-for="o in colorOptions.category" :key="o.key" :value="o.key">{{ o.label }}</option>
-          </optgroup>
-          <optgroup v-if="colorOptions.numeric.length" label="Numeric">
+      <!-- How the points are drawn, behind one button. Two labelled selects
+           side by side were the widest things on the bar and wrapped it to a
+           second row on anything narrower than a laptop. The badge keeps the
+           current answer visible, so the common case never needs opening. -->
+      <PopoverMenu icon="🎨" label="Points" title="How the points are drawn"
+                   :badge="coloring.title">
+        <div class="pop-field">
+          <label for="colorby-sel">Color by <HelpLink option="map-color-by" /></label>
+          <select id="colorby-sel" v-model="colorBy">
+            <optgroup label="Category">
+              <option v-for="o in colorOptions.category" :key="o.key" :value="o.key">{{ o.label }}</option>
+            </optgroup>
+            <optgroup v-if="colorOptions.numeric.length" label="Numeric">
+              <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
+            </optgroup>
+          </select>
+        </div>
+        <div v-if="colorOptions.numeric.length" class="pop-field">
+          <label for="sizeby-sel">Size by <HelpLink option="map-size-by" /></label>
+          <select id="sizeby-sel" v-model="sizeBy">
+            <option value="">Uniform</option>
             <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
-          </optgroup>
-        </select>
-      </div>
-      <div v-if="colorOptions.numeric.length" class="colorby">
-        <label for="sizeby-sel">Size by <HelpLink option="map-size-by" /></label>
-        <select id="sizeby-sel" v-model="sizeBy">
-          <option value="">Uniform</option>
-          <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
-        </select>
-      </div>
+          </select>
+        </div>
+      </PopoverMenu>
       <!-- A mode rather than a plain click handler: the map already uses a
            click to open an observation, and making an empty click drop a pin
            would put one down every time someone missed a dot. -->
@@ -104,41 +111,36 @@
       <!-- Heatmap: grid summaries computed from the observations and drawn
            under the points. Named apart from the reference tile layers in the
            layers control, which are somebody else's imagery, not our numbers. -->
-      <div class="colorby">
-        <label for="overlay-sel">Heatmap <HelpLink :option="heatmapDocId" /></label>
-        <select id="overlay-sel" v-model="heatmapMode" :title="heatmapTip">
-          <option value="">None</option>
-          <optgroup v-for="g in groupedModes" :key="g.label" :label="g.label">
-            <option v-for="o in g.modes" :key="o.key" :value="o.key">{{ o.label }}</option>
-          </optgroup>
-        </select>
-      </div>
-      <div v-if="heatmapMode" class="colorby">
-        <label for="overlay-cell">Cell size <HelpLink option="map-cell-size" /></label>
-        <select id="overlay-cell" v-model.number="heatmapCell"
-                title="Ground size of each grid cell. Smaller is more precise and noisier.">
-          <option v-for="c in CELL_SIZES" :key="c.value" :value="c.value">{{ c.label }}</option>
-        </select>
-      </div>
-      <!-- The date and window sliders were bare text and a bare track sitting
-           directly on the map tiles, which made both unreadable and cost a full
-           row of the bar. They now collapse to a summary of their own values,
-           and expand over a solid panel. -->
-      <div v-if="heatmapMode === 'season' || heatmapMode === 'hotspots'" ref="seasonEl" class="season">
-        <button class="season-toggle" :class="{ on: seasonOpen }" :aria-expanded="String(seasonOpen)"
-                :title="tip('Set the date and window the seasonal heatmaps use', 's')"
-                @click="seasonOpen = !seasonOpen">
-          <span class="s-label">Season</span>
-          <strong>{{ seasonLabel }} · ±{{ seasonWindow }}d</strong>
-          <span class="caret" aria-hidden="true">{{ seasonOpen ? '▴' : '▾' }}</span>
-        </button>
+      <!-- The heatmap and everything that shapes it: the mode, the cell size,
+           and for the seasonal modes the date window. These belong together and
+           were spread across the bar, where the cell size and the season panel
+           appeared and disappeared as the mode changed and reflowed everything
+           around them. -->
+      <PopoverMenu ref="heatmapPop" icon="▦" label="Heatmap" title="Grid summary drawn under the points"
+                   :active="!!heatmapMode" :badge="heatmapMode ? heatmapMeta.label : ''">
+        <div class="pop-field">
+          <label for="overlay-sel">Show <HelpLink :option="heatmapDocId" /></label>
+          <select id="overlay-sel" v-model="heatmapMode" :title="heatmapTip">
+            <option value="">None</option>
+            <optgroup v-for="g in groupedModes" :key="g.label" :label="g.label">
+              <option v-for="o in g.modes" :key="o.key" :value="o.key">{{ o.label }}</option>
+            </optgroup>
+          </select>
+        </div>
+        <div v-if="heatmapMode" class="pop-field">
+          <label for="overlay-cell">Cell size <HelpLink option="map-cell-size" /></label>
+          <select id="overlay-cell" v-model.number="heatmapCell"
+                  title="Ground size of each grid cell. Smaller is more precise and noisier.">
+            <option v-for="c in CELL_SIZES" :key="c.value" :value="c.value">{{ c.label }}</option>
+          </select>
+        </div>
 
-        <div v-if="seasonOpen" class="season-panel">
-          <div class="slider">
+        <!-- Only the seasonal modes use a date window, so it appears with them
+             rather than being a permanent control that does nothing. -->
+        <template v-if="heatmapMode === 'season' || heatmapMode === 'hotspots'">
+          <div class="pop-field">
             <label for="season-day">
               Date <strong>{{ seasonLabel }}</strong> <HelpLink option="map-season-day" keys="[" />
-              <!-- The slider opens on today, but the setting is remembered, so a
-                   return visit lands wherever it was left. This is the way back. -->
               <button class="today-btn" :disabled="seasonDay === todayDay"
                       title="Centre the window on today"
                       @click="seasonDay = todayDay">Today</button>
@@ -146,7 +148,7 @@
             <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1"
                    :title="tip(`Centre of the date window: currently ${seasonLabel}`, '[')" />
           </div>
-          <div class="slider">
+          <div class="pop-field">
             <label for="season-window">
               Window <strong>±{{ seasonWindow }} days</strong> <HelpLink option="map-season-window" />
             </label>
@@ -154,8 +156,8 @@
                    title="How wide a window counts as 'in season'. Wider is smoother and less specific." />
           </div>
           <p class="slider-note">{{ windowSpan }}</p>
-        </div>
-      </div>
+        </template>
+      </PopoverMenu>
     </div>
 
     <!-- Both legends share one column, so they cannot overlap each other or the
@@ -553,8 +555,9 @@ onMounted(() => {
   try { keyCollapsed.value = localStorage.getItem(KEY_COLLAPSED) === '1' } catch { /* ignore */ }
 })
 
-const seasonEl = ref(null)
-const seasonOpen = ref(false)
+// The heatmap popover, so the keyboard shortcut can still reach the season
+// controls now that they live inside it.
+const heatmapPop = ref(null)
 const todayDay = heatmaps.todayOfYear()
 
 // The legend value under the cursor. Everything not matching it is faded on the
@@ -1597,18 +1600,13 @@ shortcuts.register([
   { scope: 'Map', keys: 'e', label: 'Save the map as an image', run: () => saveMap() },
   { scope: 'Map', keys: '[', label: 'Heatmap date back a week', run: () => nudgeDay(-7) },
   { scope: 'Map', keys: ']', label: 'Heatmap date forward a week', run: () => nudgeDay(7) },
-  { scope: 'Map', keys: 's', label: 'Season date and window', run: () => { seasonOpen.value = !seasonOpen.value } },
+  { scope: 'Map', keys: 's', label: 'Heatmap and season window', run: () => heatmapPop.value?.toggle() },
   { scope: 'Map', keys: 'escape', label: 'Close the observation drawer', run: () => { selected.value = null } },
 ])
 
 // The bar renders behind v-if="loaded", so start measuring when it appears.
 watch(loaded, (ok) => { if (ok) nextTick(trackControlsHeight) }, { immediate: true })
 
-function onDocClick(e) {
-  if (seasonOpen.value && seasonEl.value && !seasonEl.value.contains(e.target)) {
-    seasonOpen.value = false
-  }
-}
 // Escape leaves pin mode, and leaves it again to clear the pin. A mode with no
 // keyboard way out is a trap on a laptop, where the toggle can be off-screen.
 function onKeydown(e) {
@@ -1620,12 +1618,10 @@ function onKeydown(e) {
 }
 
 onMounted(() => {
-  document.addEventListener('click', onDocClick)
   document.addEventListener('keydown', onKeydown)
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', onDocClick)
   document.removeEventListener('keydown', onKeydown)
   controlsResize?.disconnect()
   if (map) map.remove()
@@ -1907,34 +1903,15 @@ onBeforeUnmount(() => {
 }
 
 .season { position: relative; }
-.season-toggle {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
-  padding: 7px 10px; font: 13px system-ui, sans-serif; color: #333; cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); white-space: nowrap;
+/* Fields inside a popover: label above control, full width. On the bar these
+   were label-beside-control, which is what made them wide. */
+.pop-field { display: flex; flex-direction: column; gap: 4px; }
+.pop-field label {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.78rem; color: var(--muted); white-space: nowrap;
 }
-.season-toggle:hover, .season-toggle.on { background: #fff; }
-.season-toggle .s-label { color: var(--muted); font-weight: 600; }
-.season-toggle .caret { color: var(--muted); font-size: 10px; }
-
-.season-panel {
-  position: absolute; top: calc(100% + 6px); left: 0; z-index: 900; width: 260px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-  box-shadow: 0 4px 16px var(--shadow); padding: 12px;
-  display: flex; flex-direction: column; gap: 10px; font-size: 0.8rem; color: var(--text);
-}
-.slider { display: flex; flex-direction: column; gap: 3px; }
-.slider label { color: var(--muted); display: flex; align-items: center; gap: 6px; }
-.slider label strong { color: var(--text); }
-.season-panel input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); }
-.slider-note { margin: 0; color: var(--muted); font-size: 0.74rem; line-height: 1.35; }
-.today-btn {
-  margin-left: auto; border: 1px solid var(--border); background: var(--surface-2);
-  color: var(--text); border-radius: 5px; padding: 2px 8px; font-size: 0.72rem;
-  font-weight: 600; cursor: pointer;
-}
-.today-btn:hover:not(:disabled) { background: var(--surface-3); }
-.today-btn:disabled { opacity: 0.4; cursor: default; }
+.pop-field select { width: 100%; }
+.pop-field input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); }
 
 @media (max-width: 640px) {
   .season-panel { width: min(260px, calc(100vw - 40px)); }
