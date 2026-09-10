@@ -17,6 +17,12 @@
         <button class="sh-copy" @click="copy(url, 'link')">{{ copied === 'link' ? '✓' : 'Copy' }}</button>
       </div>
 
+      <!-- Saving a picture and sharing a link are the same intent — getting
+           this view to somebody else — so they are one menu rather than two
+           buttons side by side. The host supplies the action, because only it
+           knows how to render itself. -->
+      <div v-if="$slots.actions" class="sh-own"><slot name="actions" /></div>
+
       <div class="sh-actions">
         <a v-for="s in socials" :key="s.name" :href="s.href" target="_blank" rel="noopener"
            class="sh-act" :title="`Share on ${s.name}`">{{ s.name }}</a>
@@ -189,6 +195,15 @@ async function copy(value, what) {
   border-radius: 5px; padding: 5px 10px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
 }
 .sh-copy.wide { width: 100%; margin-top: 5px; }
+
+.sh-own { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
+.sh-own :deep(button) {
+  width: 100%; text-align: left; background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px;
+  font: inherit; font-size: 0.82rem; cursor: pointer;
+}
+.sh-own :deep(button:hover:not(:disabled)) { border-color: var(--muted); }
+.sh-own :deep(button:disabled) { opacity: 0.6; cursor: progress; }
 
 .sh-actions { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
 .sh-act {

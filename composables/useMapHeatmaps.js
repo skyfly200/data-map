@@ -31,9 +31,12 @@ import { fieldValue } from '~/composables/statistics'
 // Grid resolutions in degrees of latitude, with a rough ground distance.
 export const CELL_SIZES = [
   // Below about a kilometre the grid stops summarising and starts drawing one
-  // cell per observation, which is the point layer with square markers — so
-  // these are offered, but the legend reports the cell count so you can see
-  // when that has happened.
+  // cell per observation, which is the point layer with square markers. These
+  // are offered anyway, because at 100 m and 250 m the question changes from
+  // which hillside a species favours to which side of a gully — and the
+  // legend's cell count is how you tell when it has stopped summarising.
+  { value: 0.001, label: '~100 m' },
+  { value: 0.0025, label: '~250 m' },
   { value: 0.005, label: '~500 m' },
   { value: 0.01, label: '~1 km' },
   { value: 0.02, label: '~2 km' },
