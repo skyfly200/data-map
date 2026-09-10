@@ -1,7 +1,13 @@
 <template>
   <div class="lc">
-    <label class="lc-toggle" title="Cluster the loaded observations live with k-means">
-      <input type="checkbox" v-model="enabled" /> Live clusters
+    <label class="lc-toggle" :class="{ on: enabled }"
+           title="Cluster the loaded observations live with k-means">
+      <input type="checkbox" v-model="enabled" />
+      <span class="lc-icon" aria-hidden="true">◈</span>
+      <!-- The words go on a narrow screen; the icon and the checked state carry
+           it there. This was the widest thing left on the map's control bar
+           after the dropdowns folded away, and it was forcing a second row. -->
+      <span class="lc-text">Live clusters</span>
     </label>
     <button v-if="enabled" class="lc-gear" :class="{ on: open }" title="Clustering options" @click="open = !open">⚙</button>
 
@@ -71,6 +77,13 @@ function setAll(on) { features.value = on ? presentFeatures.value.map((f) => f.k
   position: relative; display: inline-flex; align-items: center; gap: 8px;
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
   padding: 6px 10px; font-size: 0.82rem; color: var(--text);
+}
+.lc-icon { display: none; font-size: 0.95rem; line-height: 1; }
+@media (max-width: 720px) {
+  .lc-text { display: none; }
+  .lc-icon { display: inline; }
+  .lc-toggle input[type="checkbox"] { display: none; }
+  .lc-toggle.on { border-color: var(--accent, #2b7a3d); box-shadow: 0 0 0 2px rgba(43, 122, 61, 0.18); }
 }
 .lc-toggle { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; }
 .lc-toggle input { accent-color: var(--accent); }

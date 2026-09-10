@@ -12,35 +12,27 @@
         <NuxtLink v-if="filterCount" to="/data" class="filter-flag" title="Active filters — manage on the Data tab">
           Filters: {{ filterCount }}
         </NuxtLink>
-        <div class="units" role="group" aria-label="Elevation units">
-          <button :class="{ active: unit === 'ft' }" @click="unit = 'ft'">ft</button>
-          <button :class="{ active: unit === 'm' }" @click="unit = 'm'">m</button>
-        </div>
-        <div class="units" role="group" aria-label="Temperature units">
-          <button :class="{ active: tempUnit === 'F' }" @click="tempUnit = 'F'">°F</button>
-          <button :class="{ active: tempUnit === 'C' }" @click="tempUnit = 'C'">°C</button>
-        </div>
-        <button class="theme-btn" :title="`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`" @click="toggleTheme">
-          {{ theme === 'dark' ? '☀' : '☾' }}
-        </button>
+        <!-- Seven destinations do not fit across a phone, and a row that
+             scrolls sideways hides the ones nobody scrolls to. Below the
+             breakpoint this is a menu; above it, the links themselves. -->
         <nav class="app-nav">
-          <NuxtLink to="/" class="nav-link">Home</NuxtLink>
-          <NuxtLink to="/map" class="nav-link">Map</NuxtLink>
-          <NuxtLink to="/charts" class="nav-link">Charts</NuxtLink>
-          <NuxtLink to="/analysis" class="nav-link">Analysis</NuxtLink>
-          <NuxtLink to="/data" class="nav-link">Data</NuxtLink>
-          <NuxtLink to="/coverage" class="nav-link">Coverage</NuxtLink>
-          <NuxtLink to="/guide" class="nav-link">Guide</NuxtLink>
+          <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-link">{{ l.label }}</NuxtLink>
         </nav>
+        <PopoverMenu class="nav-pop" icon="☰" title="Go to" align="right" btn-class="hdr-btn">
+          <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-item">{{ l.label }}</NuxtLink>
+        </PopoverMenu>
         <ClientOnly>
-          <div class="auth-box" v-if="configured">
+          <div class="auth-box">
             <!-- Sync state and sign-out used to sit in the header itself, which
                  spent a third of a phone's width on two things you touch once a
                  session. They live under the name now, with the sync dot still
                  on the button so a failure is visible without opening it. -->
-            <AccountMenu v-if="isAuthed" :user="user" :initial="initial"
-                         :short-email="shortEmail" @sign-out="signOut" />
-            <NuxtLink v-else to="/login" class="auth-btn as-link">Sign in</NuxtLink>
+            <!-- Always present, signed in or not: it now holds units and theme
+                 as well as the account, and someone who has never made an
+                 account still needs to switch to metric. -->
+            <AccountMenu :signed-in="isAuthed" :configured="configured" :theme="theme"
+                         :user="user" :initial="initial" :short-email="shortEmail"
+                         @sign-out="signOut" @set-theme="setTheme" />
           </div>
         </ClientOnly>
       </div>
@@ -92,6 +84,18 @@ onMounted(loadDatasets)
 
 const { activeCount: filterCount } = useFilters()
 
+// One list, rendered twice: as a row on a wide screen and as a menu on a narrow
+// one. Two copies would drift the moment a page was added.
+const NAV = [
+  { to: '/', label: 'Home' },
+  { to: '/map', label: 'Map' },
+  { to: '/charts', label: 'Charts' },
+  { to: '/analysis', label: 'Analysis' },
+  { to: '/data', label: 'Data' },
+  { to: '/coverage', label: 'Coverage' },
+  { to: '/guide', label: 'Guide' },
+]
+
 
 
 const { user, isAuthed, configured, signOut } = useAuth()
@@ -110,10 +114,12 @@ const theme = useState('theme', () => 'dark')
 function applyTheme(t) {
   if (import.meta.client) document.documentElement.setAttribute('data-theme', t)
 }
-function toggleTheme() {
-  theme.value = theme.value === 'dark' ? 'light' : 'dark'
-  applyTheme(theme.value)
-  if (import.meta.client) localStorage.setItem('theme', theme.value)
+// Set rather than toggle: in a panel showing both choices, "switch to the other
+// one" is the wrong verb — the viewer is picking, not flipping.
+function setTheme(next) {
+  theme.value = next
+  applyTheme(next)
+  if (import.meta.client) localStorage.setItem('theme', next)
 }
 
 // Units: default feet + Fahrenheit, remembered per viewer.
@@ -153,7 +159,8 @@ shortcuts.register([
   { scope: 'Navigate', keys: 'g', label: 'Guide', run: go('/guide') },
   { scope: 'General', keys: '?', label: 'Show this help', run: () => { shortcuts.helpOpen.value = !shortcuts.helpOpen.value } },
   { scope: 'General', keys: 'escape', label: 'Close dialogs and panels', run: () => { shortcuts.helpOpen.value = false } },
-  { scope: 'General', keys: 't', label: 'Light / dark theme', run: () => toggleTheme() },
+  // The keyboard shortcut still flips, which is what a shortcut is for.
+  { scope: 'General', keys: 't', label: 'Light / dark theme', run: () => setTheme(theme.value === 'dark' ? 'light' : 'dark') },
   { scope: 'General', keys: 'u', label: 'Metric / imperial units', run: () => { unit.value = unit.value === 'ft' ? 'm' : 'ft' } },
 ])
 
@@ -259,6 +266,30 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 .units button.active { background: #3e4c59; color: #fff; }
 
 .app-nav { display: flex; gap: 6px; }
+/* The menu form of the nav exists only below the breakpoint; the row form only
+   above it. Exactly one is in the layout at any width. */
+/* Scoped to the header for specificity: PopoverMenu's own `.pop` sets
+   display:inline-flex, and two single-class selectors are decided by injection
+   order, which put the child's stylesheet last and left the hamburger showing
+   on desktop beside the full nav. */
+.app-header .nav-pop { display: none; }
+.nav-item {
+  display: block; padding: 7px 8px; border-radius: 6px;
+  color: var(--text); text-decoration: none; font-size: 0.9rem;
+}
+.nav-item:hover { background: var(--surface-2, rgba(255, 255, 255, 0.08)); }
+.nav-item.router-link-active { color: var(--accent, #7fd0a0); font-weight: 600; }
+
+/* The header is dark whatever the page theme is, so the buttons in it are
+   styled for that rather than inheriting the surface colours. */
+.app-header :deep(.pop-btn.hdr-btn) {
+  background: transparent; color: #cbd2d9; border-color: #52606d;
+}
+.app-header :deep(.pop-btn.hdr-btn:hover) { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.app-header :deep(.pop-btn.hdr-btn.on) { background: #3e4c59; color: #fff; }
+
+.pref { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pref-label { font-size: 0.82rem; color: var(--muted); }
 .nav-link {
   color: #cbd2d9; text-decoration: none; font-size: 0.9rem; font-weight: 500;
   padding: 6px 12px; border-radius: 6px;
@@ -298,13 +329,12 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
      real flex box again. */
   .app-controls { display: contents; }
   .brand { margin-right: auto; }
-  .filter-flag, .units, .theme-btn, .auth-box { order: 2; }
-  .app-nav {
-    order: 5; flex: 1 0 100%; min-width: 0; flex-wrap: nowrap; overflow-x: auto;
-    -webkit-overflow-scrolling: touch; gap: 4px; padding-bottom: 2px;
-  }
-  .app-nav::-webkit-scrollbar { height: 0; }
-  .nav-link { white-space: nowrap; padding: 6px 10px; }
+  .filter-flag, .auth-box { order: 2; }
+  /* The scrolling strip is gone: it kept the header to two rows but hid
+     whichever links fell off the right edge, and nobody scrolls a nav they
+     cannot see the end of. The menu shows all seven. */
+  .app-nav { display: none; }
+  .app-header .nav-pop { display: inline-flex; order: 2; }
 }
 @media (max-width: 480px) {
   .brand h1 { font-size: 0.95rem; }

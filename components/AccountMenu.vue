@@ -1,9 +1,11 @@
 <template>
   <div ref="root" class="acct">
     <button class="acct-btn" :class="{ on: open }" :aria-expanded="String(open)"
-            :title="user?.email || 'Account'" @click="open = !open">
-      <span class="avatar">{{ initial }}</span>
-      <span class="who">{{ shortEmail }}</span>
+            :title="user?.email || 'Account and display settings'" @click="open = !open">
+      <!-- A gear signed out, not a hamburger: the hamburger beside it is the
+           nav, and two of them would be a puzzle. -->
+      <span class="avatar" :class="{ anon: !signedIn }">{{ signedIn ? initial : '⚙' }}</span>
+      <span v-if="signedIn" class="who">{{ shortEmail }}</span>
       <!-- The sync dot rides on the button so its state is visible with the
            menu shut. Burying a failure inside a menu nobody opens is how a
            broken sync goes unnoticed for a week. -->
@@ -12,12 +14,43 @@
     </button>
 
     <div v-if="open" class="acct-menu">
-      <div class="acct-head">
+      <div v-if="signedIn" class="acct-head">
         <span class="avatar big">{{ initial }}</span>
-        <span class="email" :title="user?.email || ''">{{ user?.email || 'Signed in' }}</span>
+        <span class="email" :title="user?.email || ''">{{ user?.email }}</span>
       </div>
 
-      <div class="acct-sync"><SyncStatus /></div>
+      <div v-if="signedIn" class="acct-sync"><SyncStatus /></div>
+
+      <!-- Units and theme live here rather than in the header. They are set once
+           and then left alone for months, and they were taking two thirds of the
+           header's width on a phone to do it.
+
+           Which is also why this menu is shown signed out: it is no longer only
+           an account menu, and someone who has not made an account still needs
+           to switch to metric. -->
+      <div class="acct-prefs">
+        <div class="pref">
+          <span class="pref-label">Elevation</span>
+          <div class="seg" role="group" aria-label="Elevation units">
+            <button :class="{ active: unit === 'ft' }" @click="unit = 'ft'">ft</button>
+            <button :class="{ active: unit === 'm' }" @click="unit = 'm'">m</button>
+          </div>
+        </div>
+        <div class="pref">
+          <span class="pref-label">Temperature</span>
+          <div class="seg" role="group" aria-label="Temperature units">
+            <button :class="{ active: tempUnit === 'F' }" @click="tempUnit = 'F'">°F</button>
+            <button :class="{ active: tempUnit === 'C' }" @click="tempUnit = 'C'">°C</button>
+          </div>
+        </div>
+        <div class="pref">
+          <span class="pref-label">Theme</span>
+          <div class="seg" role="group" aria-label="Theme">
+            <button :class="{ active: theme === 'dark' }" @click="$emit('set-theme', 'dark')">☾</button>
+            <button :class="{ active: theme === 'light' }" @click="$emit('set-theme', 'light')">☀</button>
+          </div>
+        </div>
+      </div>
 
       <!-- Members get the pipeline; admins also get the console. Hidden rather
            than disabled for people whose tier does not reach them, since a menu
@@ -27,20 +60,27 @@
       <NuxtLink v-if="isAdmin" to="/admin" class="acct-item" @click="open = false">Administration</NuxtLink>
       <NuxtLink to="/options" class="acct-item" @click="open = false">⚙ Options</NuxtLink>
       <NuxtLink to="/guide" class="acct-item" @click="open = false">Guide</NuxtLink>
-      <button class="acct-item danger" @click="onSignOut">Sign out</button>
+      <button v-if="signedIn" class="acct-item danger" @click="onSignOut">Sign out</button>
+      <NuxtLink v-else-if="configured" to="/login" class="acct-item" @click="open = false">Sign in</NuxtLink>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useUnits } from '~/composables/useUnits'
 
 const props = defineProps({
+  signedIn: { type: Boolean, default: false },
+  configured: { type: Boolean, default: false },
+  theme: { type: String, default: 'dark' },
   user: { type: Object, default: null },
   initial: { type: String, default: '?' },
   shortEmail: { type: String, default: '' },
 })
-const emit = defineEmits(['sign-out'])
+const emit = defineEmits(['sign-out', 'set-theme'])
+
+const { unit, tempUnit } = useUnits()
 
 // Read from the token's claim, so the menu is right on first paint without a
 // request of its own.
@@ -112,6 +152,22 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
   cursor: pointer; text-decoration: none;
 }
 .acct-item:hover { background: var(--surface-2); }
+.acct-prefs {
+  display: flex; flex-direction: column; gap: 7px;
+  padding: 8px 4px; margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.pref { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pref-label { font-size: 0.8rem; color: var(--muted); }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.seg button {
+  background: transparent; border: 0; color: var(--muted);
+  padding: 4px 10px; font: inherit; font-size: 0.78rem; cursor: pointer; min-width: 38px;
+}
+.seg button:hover { background: var(--surface-2, rgba(127, 127, 127, 0.12)); color: var(--text); }
+.seg button.active { background: var(--accent, #2b7a3d); color: #fff; }
+.avatar.anon { background: transparent; border: 1px solid #52606d; color: #cbd2d9; }
+
 .acct-item.danger { color: var(--danger, #b00020); }
 
 @media (max-width: 480px) {
