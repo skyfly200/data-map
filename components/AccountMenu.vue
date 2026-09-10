@@ -2,10 +2,13 @@
   <div ref="root" class="acct">
     <button class="acct-btn" :class="{ on: open }" :aria-expanded="String(open)"
             :title="user?.email || 'Account and display settings'" @click="open = !open">
-      <!-- A gear signed out, not a hamburger: the hamburger beside it is the
-           nav, and two of them would be a puzzle. -->
-      <span class="avatar" :class="{ anon: !signedIn }">{{ signedIn ? initial : '⚙' }}</span>
+      <!-- Signed in, the initial is the badge and it is the same at every
+           width. Signed out, a bare gear said nothing about there being an
+           account to make: it now says so in words, which fit because they
+           replace the email that is not there. -->
+      <span class="avatar" :class="{ anon: !signedIn }">{{ signedIn ? initial : '☺' }}</span>
       <span v-if="signedIn" class="who">{{ shortEmail }}</span>
+      <span v-else-if="configured" class="who signin">Sign in</span>
       <!-- The sync dot rides on the button so its state is visible with the
            menu shut. Burying a failure inside a menu nobody opens is how a
            broken sync goes unnoticed for a week. -->
@@ -166,6 +169,10 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
 .seg button:hover { background: var(--surface-2, rgba(127, 127, 127, 0.12)); color: var(--text); }
 .seg button.active { background: var(--accent, #2b7a3d); color: #fff; }
 .avatar.anon { background: transparent; border: 1px solid #52606d; color: #cbd2d9; }
+/* The email is the first thing worth losing when space is short, because the
+   avatar already says who is signed in. "Sign in" is the opposite: it IS the
+   message, so it stays at every width. */
+.who.signin { display: inline !important; font-weight: 600; }
 
 .acct-item.danger { color: var(--danger, #b00020); }
 

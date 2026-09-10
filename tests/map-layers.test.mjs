@@ -123,7 +123,7 @@ test('every layer that could read as empty ground carries its caveat', () => {
   }
 })
 
-test('WorldCover uses the product\'s own class colours', () => {
+test('WorldCover uses the product\'s own class colors', () => {
   assert.equal(WORLDCOVER_CLASSES.length, 11)
   assert.equal(WORLDCOVER_CLASSES[0].color, '#006400')  // tree cover
   assert.equal(WORLDCOVER_CLASSES[7].color, '#0064c8')  // permanent water

@@ -113,7 +113,7 @@ function fmtOf(key) {
   }
 }
 
-// Colour a category value the same way the map does, so keys stay consistent.
+// Color a category value the same way the map does, so keys stay consistent.
 function categoryColoring(field) {
   if (!field) return { colorOf: () => SERIES_1, legend: [] }
   const uniq = [...new Set(rows.value.map((r) => catVal(r, field)).filter((v) => v !== null))]
@@ -145,8 +145,8 @@ function sizeScale(field) {
 }
 const sizing = computed(() => sizeScale(c.value.sizeField))
 
-// Colour a grouped mark (bar/box/donut/radar slice) by its category value, so
-// the same category is the same colour here and on the map.
+// Color a grouped mark (bar/box/donut/radar slice) by its category value, so
+// the same category is the same color here and on the map.
 function groupColor(label) { return categoryColor(c.value.groupField, label) }
 
 const scatterData = computed(() => rows.value.map((r) => {
@@ -288,7 +288,7 @@ const lineChartSeries = computed(() => {
     .map(([label, subset]) => ({ label, color: categoryColor(field, label), data: bin(subset) }))
 })
 
-// Real donut: composition by category (top 8 + grey Other). Count, or the sum
+// Real donut: composition by category (top 8 + gray Other). Count, or the sum
 // of a numeric measure — both are valid parts-of-a-whole.
 const donutData = computed(() => {
   const entries = [...groupBy(c.value.groupField)].map(([label, rs]) => {

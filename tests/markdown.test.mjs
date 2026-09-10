@@ -73,9 +73,9 @@ test('empty and malformed input does not throw', () => {
 })
 
 test('headings carry an anchor id, so a tooltip can link to a section', () => {
-  const html = renderMarkdown('## Map\n\n### Colouring and sizing')
+  const html = renderMarkdown('## Map\n\n### Coloring and sizing')
   assert.match(html, /<h2 id="map">Map<\/h2>/)
-  assert.match(html, /<h3 id="colouring-and-sizing">/)
+  assert.match(html, /<h3 id="coloring-and-sizing">/)
 })
 
 test('slugs ignore inline markup, so styled headings still anchor', () => {
@@ -102,7 +102,7 @@ test('renderInline applies the same escaping as the block renderer', () => {
 test('headings come back with the same ids the renderer gives them', () => {
   // The whole point: a contents entry that does not match its anchor scrolls
   // nowhere, which is quiet and infuriating.
-  const src = '# Page\n\n## Map\n\n### Colour and size\n\n## Where the data comes from\n'
+  const src = '# Page\n\n## Map\n\n### Color and size\n\n## Where the data comes from\n'
   const heads = extractHeadings(src)
   const html = renderMarkdown(src)
   for (const h of heads) {

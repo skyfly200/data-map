@@ -1,7 +1,7 @@
 // Encode the current view into the URL, and restore it from one.
 //
 // Sharing a screenshot of this app loses everything that made the view worth
-// showing — which filters were on, what the marks were coloured by, which
+// showing — which filters were on, what the marks were colored by, which
 // overlay was up, where the map was pointed. This puts that state in the query
 // string so a link reproduces the view, and everything else (QR, social, email,
 // embed) is just that link in a different wrapper.

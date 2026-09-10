@@ -24,10 +24,10 @@ const html = computed(() => renderMarkdown(props.source))
 .legal :deep(ul) { margin: 0 0 12px; padding-left: 20px; }
 .legal :deep(li) { margin: 4px 0; }
 .legal :deep(h4) { font-size: 0.9rem; margin: 16px 0 6px; }
-/* var(--accent), not a fixed green: the hardcoded colour was near-invisible on
+/* var(--accent), not a fixed green: the hardcoded color was near-invisible on
    the dark theme, which is the default. */
 .legal :deep(a) { color: var(--accent); }
-/* Emphasis should stand out, so it keeps the body colour rather than being
+/* Emphasis should stand out, so it keeps the body color rather than being
    dimmed to muted. */
 .legal :deep(em) { font-style: italic; }
 .legal :deep(strong) { color: var(--text-strong); }
@@ -47,7 +47,7 @@ const html = computed(() => renderMarkdown(props.source))
 }
 .legal :deep(.callout-label)::after { content: ''; }
 /* Three kinds, by the word the author used. Anything else stays neutral rather
-   than picking a colour at random. */
+   than picking a color at random. */
 .legal :deep(blockquote.callout-note) { border-left-color: var(--accent); }
 .legal :deep(blockquote.callout-caution),
 .legal :deep(blockquote.callout-warning) { border-left-color: #b3822f; }

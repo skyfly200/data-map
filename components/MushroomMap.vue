@@ -262,7 +262,7 @@
         <div class="gradient" :style="{ background: `linear-gradient(90deg, ${heatmapLegend.ramp[0]}, ${heatmapLegend.ramp[1]})` }"></div>
         <div class="gradient-scale"><span>{{ heatmapLegend.min }}</span><span>{{ heatmapLegend.max }}</span></div>
         <div class="legend-note">
-          Source: <strong>{{ heatmapLegend.source }}</strong> · colour = {{ heatmapLegend.colorBy }}<br />
+          Source: <strong>{{ heatmapLegend.source }}</strong> · color = {{ heatmapLegend.colorBy }}<br />
           {{ heatmapLegend.cells.toLocaleString() }} arrows · {{ heatmapLegend.note }}
         </div>
       </template>
@@ -592,7 +592,7 @@ const CATEGORY_KEYS = new Set(ALL_CATEGORY.map((f) => f.key))
 const FIELD_LABEL = Object.fromEntries([...ALL_CATEGORY, ...ALL_NUMERIC].map((f) => [f.key, f.label]))
 
 // Offer only the dimensions that actually carry data in the current dataset,
-// so an un-enriched layer (e.g. NDVI still empty) doesn't yield an all-grey map.
+// so an un-enriched layer (e.g. NDVI still empty) doesn't yield an all-gray map.
 const colorOptions = computed(() => {
   const feats = filteredData.value?.features || []
   const present = (list) => list.filter((f) => (
@@ -619,7 +619,7 @@ function hexLerp(a, b, t) {
   return `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`
 }
 
-// Build the colour function + legend for the current "color by" dimension.
+// Build the color function + legend for the current "color by" dimension.
 const coloring = computed(() => {
   const feats = filteredData.value?.features || []
   const key = colorBy.value
@@ -662,7 +662,7 @@ const coloring = computed(() => {
   }
 
   // Any other categorical dimension (land cover, species, …): assign palette
-  // colours to the distinct values present, most frequent first. The legend is
+  // colors to the distinct values present, most frequent first. The legend is
   // capped (a dataset can have hundreds of species) with a "+N more" row.
   if (CATEGORY_KEYS.has(key)) {
     const counts = new Map()
@@ -672,7 +672,7 @@ const coloring = computed(() => {
     }
     const cats = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
     const LEGEND_CAP = 12
-    // Stable per-value colours, so a species/year/class matches its colour in
+    // Stable per-value colors, so a species/year/class matches its color in
     // the charts. Legend shows the most frequent values first.
     const legend = cats.slice(0, LEGEND_CAP).map((v) => ({ label: String(v), color: categoryColor(key, v) }))
     if (cats.length > LEGEND_CAP) legend.push({ label: `+${cats.length - LEGEND_CAP} more`, color: UNCLUSTERED })
@@ -739,7 +739,7 @@ function radiusFor(props) {
  * here, so creation and re-styling cannot disagree.
  *
  * The outline follows the opacity slider rather than staying at full strength:
- * fading the dots while their rings stayed solid turned a dense area into a grey
+ * fading the dots while their rings stayed solid turned a dense area into a gray
  * mesh — the opposite of what turning the dots down is for.
  */
 function markerStyle(props) {
@@ -761,7 +761,7 @@ function markerStyle(props) {
   }
 }
 
-// Colouring, sizing, palette, per-value overrides and point styling all restyle
+// Coloring, sizing, palette, per-value overrides and point styling all restyle
 // the existing layer in place — no need to rebuild it, which would refit the
 // view.
 watch([coloring, sizeScale, activeColors, colorOverrides, pointRadius, pointOpacity, pointOutline, colorSeed, hoverValue], () => {
@@ -1193,7 +1193,7 @@ function pointTooltip(feature) {
   const title = p.species || 'Observation'
   if (p.date) rows.push(['Observed', p.date])
 
-  // The value behind this mark's colour, named by the dimension chosen.
+  // The value behind this mark's color, named by the dimension chosen.
   const c = coloring.value
   if (c && typeof c.labelOf === 'function') {
     const v = c.labelOf(p)
@@ -1267,7 +1267,7 @@ function renderPoints(geo) {
   // Tooltip object and a listener for every observation — ~48k of each — which
   // cost more than drawing the markers did.
   // Hovering a point says what it is AND what the map is currently saying about
-  // it: the value behind its colour and size, and what the overlay reports for
+  // it: the value behind its color and size, and what the overlay reports for
   // the cell it sits in. Without that, the encodings can only be read by eye
   // against a legend, and the overlay could not be read at a point at all.
   geoLayer.bindTooltip((lyr) => pointTooltip(lyr.feature),
@@ -1366,7 +1366,7 @@ onMounted(async () => {
     // past that level, so it HIDES it, while maxNativeZoom says the tiles stop
     // there and Leaflet keeps showing the last real level, upscaled.
     //
-    // Getting that wrong cost more than the base map. The default grey canvas
+    // Getting that wrong cost more than the base map. The default gray canvas
     // stops at 16, and Leaflet takes the map's own zoom ceiling from its
     // layers, so 16 was as far as the whole map would go.
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1378,12 +1378,12 @@ onMounted(async () => {
       maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 17, crossOrigin: 'anonymous',
     })
     // Muted basemaps, and the default. A street or topo map is drawn to be read
-    // on its own; the moment 48k coloured dots sit on top of it, its own colour
-    // is competing with the data for the same hues. A grey canvas gives the dots
+    // on its own; the moment 48k colored dots sit on top of it, its own color
+    // is competing with the data for the same hues. A gray canvas gives the dots
     // the only saturation on screen — which is why it is the conventional base
     // for a point map, and why it is what this one opens with. Terrain is still
-    // one click away, and the hillshade overlay puts relief back without colour.
-    // Esri's grey canvas rather than CARTO's, which now demands an API key and
+    // one click away, and the hillshade overlay puts relief back without color.
+    // Esri's gray canvas rather than CARTO's, which now demands an API key and
     // answers without one by serving a tile that says so — a 200 response, so
     // nothing downstream can tell it apart from a map. These come from the same
     // host as the satellite and hillshade layers the app already uses.
@@ -1537,8 +1537,8 @@ onMounted(async () => {
     // map in its own white box, and Leaflet's takes one flat list, so grouping
     // had to be smuggled into the labels as markup.
     baseLayers.value = [
-      { key: 'grey', name: 'Light grey', layer: grey },
-      { key: 'greyDark', name: 'Dark grey', layer: greyDark },
+      { key: 'grey', name: 'Light gray', layer: grey },
+      { key: 'greyDark', name: 'Dark gray', layer: greyDark },
       { key: 'osm', name: 'Street (OSM)', layer: osm },
       { key: 'topo', name: 'Terrain (OpenTopoMap)', layer: topo },
       { key: 'sat', name: 'Satellite (Esri)', layer: sat },
@@ -1733,7 +1733,7 @@ onBeforeUnmount(() => {
 /* One look for every button in the bar, wherever its component happens to
    define it. Five components contribute controls here and each had its own
    height, radius, border and background — a light one next to a dark one next
-   to a coloured one — so side by side they read as several toolbars that had
+   to a colored one — so side by side they read as several toolbars that had
    collided rather than one. The rules live here because this bar is the only
    place they sit together; each component keeps its own styling everywhere
    else it is used. */
@@ -1804,7 +1804,7 @@ onBeforeUnmount(() => {
 }
 
 /* One column down the right-hand side holds both legends. They used to place
-   themselves independently — the overlay legend pinned to the top, the colouring
+   themselves independently — the overlay legend pinned to the top, the coloring
    legend to the bottom — which works only while the control bar is a single row.
    On a phone the bar is three rows tall and the overlay legend landed on top of
    it; worse, the mobile rule added `bottom` without clearing the `top` it
@@ -1815,8 +1815,8 @@ onBeforeUnmount(() => {
 .legends {
   position: absolute; bottom: 18px; right: 12px; z-index: 500;
   /* Slides aside when the drawer opens rather than being buried under it: the
-     key is how you read the colours on the map, and opening a record is exactly
-     when you want to check what a colour meant. */
+     key is how you read the colors on the map, and opening a record is exactly
+     when you want to check what a color meant. */
   transition: right 0.22s ease;
   /* Below the control bar, whose height depends on how many rows it wraps into —
      picking an overlay adds a "Cell size" dropdown and a second row, which is
@@ -1904,7 +1904,11 @@ onBeforeUnmount(() => {
   .map-shell :deep(.sh-btn.icon-only),
   .map-shell :deep(.set-btn) { width: 40px; height: 40px; }
 
+  /* The locate button belongs in this list. It sits directly on top of the
+     zoom pair, so a different width reads as a misalignment rather than as two
+     controls. */
   .map-shell :deep(.leaflet-control-zoom a),
+  .map-shell :deep(.locate-ctl a),
   .map-shell :deep(.leaflet-control-layers-toggle) { width: 40px; height: 40px; line-height: 40px; }
 
   /* A legend row is a tap target now, not just a hover target, so it needs
@@ -1932,11 +1936,11 @@ onBeforeUnmount(() => {
 .compass-key .ck { display: inline-flex; align-items: center; gap: 4px; font-size: 0.74rem; }
 
 /* The overlay legend sits above the point legend, in the same column. */
-/* Pushed to the top of the column, leaving the colouring legend at the bottom —
+/* Pushed to the top of the column, leaving the coloring legend at the bottom —
    the arrangement this had before, now expressed as a relationship between the
    two rather than as two absolute positions that can collide. */
 .overlay-legend { max-width: 280px; }
-/* The layers key sits at the top of the column and the colouring key at the
+/* The layers key sits at the top of the column and the coloring key at the
    bottom, with the heatmap key between them — a relationship between the three
    rather than three absolute positions that can collide. */
 .tile-note { margin-bottom: auto; }
@@ -1948,9 +1952,14 @@ onBeforeUnmount(() => {
 .legend-n { color: #777; font-size: 11px; }
 
 /* The locate control, styled to match Leaflet's own zoom buttons it sits on. */
+/* Deliberately no width or height. Leaflet sizes .leaflet-bar a itself, and the
+   locate button sits directly on top of the zoom pair — so inheriting that
+   sizing is the only way the two cannot drift apart. Setting 30px here is what
+   made it 30 against the zoom's 40: the coarse-pointer rule above enlarges both,
+   but this rule comes later in the file and won on equal specificity. */
 .map-shell :deep(.locate-ctl a) {
   display: flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; background: #fff; cursor: pointer;
+  background: #fff; cursor: pointer;
 }
 .map-shell :deep(.locate-ctl a.busy) { opacity: 0.6; cursor: progress; }
 .map-shell :deep(.locate-ctl .dot-icon) {

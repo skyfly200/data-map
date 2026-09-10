@@ -2,7 +2,7 @@
 // k-means. Toggle on, pick what to cluster on — environmental features,
 // geographic location, or both (weighted) — choose which features, and set k.
 // The result is a reactive Map (uuid → cluster index) that the map and charts
-// colour by, computed live with no pipeline run.
+// color by, computed live with no pipeline run.
 
 import { useObservations } from '~/composables/useObservations'
 

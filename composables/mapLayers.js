@@ -66,7 +66,7 @@ export function layerDate(lagDays, now = new Date()) {
   return d.toISOString().slice(0, 10)
 }
 
-// ESA WorldCover's own class colours, so the map matches every other rendering
+// ESA WorldCover's own class colors, so the map matches every other rendering
 // of this product rather than inventing a second palette for the same classes.
 export const WORLDCOVER_CLASSES = [
   { color: '#006400', label: 'Tree cover' },
@@ -85,7 +85,7 @@ export const WORLDCOVER_CLASSES = [
 /**
  * The catalogue.
  *
- * `legend` is what the key on the map draws: a `ramp` of colour stops with its
+ * `legend` is what the key on the map draws: a `ramp` of color stops with its
  * end labels, or a list of `classes`. A layer without one is a layer a reader
  * cannot interpret, so every raster here has one — the imagery and label layers,
  * which are pictures rather than measurements, do not need one.
@@ -221,7 +221,7 @@ export const TILE_LAYERS = [
 
   // BLM's Surface Management Agency layer: which federal agency, state, or
   // private party manages each parcel. The "without_PriUnk" build leaves private
-  // and unknown parcels unpainted, which is what makes it readable — the colour
+  // and unknown parcels unpainted, which is what makes it readable — the color
   // is public land, the gaps are everything else.
   {
     name: 'Land ownership (US)', group: 'Context',

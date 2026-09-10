@@ -220,7 +220,7 @@ export const EE_TILE_LAYERS = {
         .select('Severity')
         .max()
       // 0 is background and 6 a processing mask; painting either would cover
-      // the continent in a colour that means nothing.
+      // the continent in a color that means nothing.
       const burned = image.gte(1).and(image.lte(5))
       return {
         image: image.updateMask(burned),
@@ -234,7 +234,7 @@ export const EE_TILE_LAYERS = {
     group: 'Fire',
     attribution: 'NASA MODIS MCD64A1 via Google Earth Engine',
     opacity: 0.75,
-    note: 'What burned during the chosen year, coloured by when in the year it burned. '
+    note: 'What burned during the chosen year, colored by when in the year it burned. '
       + 'A late-summer burn and an early-spring one are different prospects for the following spring.',
     params: {
       year: {

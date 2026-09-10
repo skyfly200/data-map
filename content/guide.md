@@ -11,9 +11,9 @@ what each number means.
 
 ## Start here
 
-1. Open the **Map**. Every observation is a point; the colours are environmental
+1. Open the **Map**. Every observation is a point; the colors are environmental
    clusters by default.
-2. Use **Points** to colour or size by something else, and **Heatmap** to draw a
+2. Use **Points** to color or size by something else, and **Heatmap** to draw a
    grid summary underneath.
 3. Narrow what you are looking at on **Data → Filters**. Filters apply to every
    view at once.
@@ -28,14 +28,14 @@ Every control has a small **?** beside it that links to its entry in the
 
 Every observation as a point, with an optional grid of summaries underneath.
 
-### Colour and size
+### Color and size
 
 Open the **Points** control.
 
 - **Color by** accepts any category — every taxonomic rank from kingdom to
   species, plus common name, identification rank, cluster, land cover, year,
   month and enrichment level — or any numeric field. Categories get stable
-  colours: a species is the same colour on the map, in every chart and in the
+  colors: a species is the same color on the map, in every chart and in the
   legend. Numeric fields get a light-to-dark gradient.
 - **Size by** scales each point by a numeric field, so you can read two
   dimensions at once.
@@ -96,7 +96,7 @@ heatmap is the normal case.
 The observations carry terrain **aspect** (the compass direction a slope faces)
 and a wind-exposure index, but no measured wind. The vector heatmap therefore
 draws mean terrain aspect: arrow length shows how *consistently* a cell faces one
-way, and colour shows wind exposure.
+way, and color shows wind exposure.
 
 > **Note** A short arrow means mixed terrain, not calm air. Once the pipeline
 > samples ERA5 wind into `wind_u` and `wind_v`, this heatmap switches to real
@@ -104,12 +104,12 @@ way, and colour shows wind exposure.
 
 ### Basemaps and layers
 
-The layers control offers a light grey basemap by default, so the observations
+The layers control offers a light gray basemap by default, so the observations
 are the only saturated thing on screen. Street, terrain and satellite are one
 click away. Reference layers stack on top, grouped by subject:
 
-- **Terrain** — hillshade, USGS topo, USGS imagery, OpenTopoMap relief. Grey base
-  plus hillshade gives relief without colour.
+- **Terrain** — hillshade, USGS topo, USGS imagery, OpenTopoMap relief. Gray base
+  plus hillshade gives relief without color.
 - **Weather** — live US radar, US rainfall over the past 24 hours, global
   satellite rainfall, land surface temperature.
 - **Ground** — ESA WorldCover land cover at 10 m, SMAP soil moisture.
@@ -192,7 +192,7 @@ to a home screen.
 
 Every observation carries its full ancestry — **kingdom, phylum, class, order,
 family, genus, species** — resolved against iNaturalist when the record is
-fetched. All seven are dimensions you can colour by, group by, filter to, and
+fetched. All seven are dimensions you can color by, group by, filter to, and
 run the analysis over.
 
 This replaces splitting the species name on its spaces, which produced a genus
@@ -227,7 +227,7 @@ is clipped with a fade; full screen shows it uncut.
 ### Build
 
 Compose your own chart: scatter, bar, line, area, box plot, histogram, heatmap,
-radar or donut. Pick fields for each axis, colour, shape, size and series, then
+radar or donut. Pick fields for each axis, color, shape, size and series, then
 choose **Save to Charts** to keep it.
 
 **Sort** orders grouped charts by value or by label. Largest-first answers "which
@@ -236,12 +236,12 @@ choosing A–Z never pushes the biggest categories off the chart.
 
 ### Style
 
-Five palettes including a colour-blind-safe one, plus point size, opacity and
-outline, the colour ramp and opacity the grid heatmaps use, the cell shape they
+Five palettes including a color-blind-safe one, plus point size, opacity and
+outline, the color ramp and opacity the grid heatmaps use, the cell shape they
 bin into, the opacity of reference layers, and per-value overrides. Pin a species
-to a colour and it holds across the map and every chart.
+to a color and it holds across the map and every chart.
 
-**Shuffle colours** deals the same palette out differently, for when two species
+**Shuffle colors** deals the same palette out differently, for when two species
 land on shades you cannot separate. It is deterministic, so a shuffled view looks
 the same to whoever opens your shared link. Settings persist per viewer.
 
@@ -369,7 +369,7 @@ map, charts and analysis all read it.
 ## Sharing and saving
 
 **Share** builds a link that reproduces the current view. Map position, filters,
-colouring, heatmap and date window all travel with it. From there you can produce
+coloring, heatmap and date window all travel with it. From there you can produce
 a QR code (generated locally, so the link never reaches a third party), or share
 to X, Bluesky, Facebook, Reddit, email, SMS, or an iframe embed that drops the
 site header.

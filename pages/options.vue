@@ -61,7 +61,7 @@
       </div>
       <div class="opt-row">
         <span class="opt-name">
-          Heatmap colours
+          Heatmap colors
           <small>The ramp the map's grid heatmaps are shaded with.</small>
         </span>
         <select v-model="heatmapRampKey" @change="heatmaps.persist()">
@@ -101,7 +101,7 @@
         </span>
       </div>
       <div class="opt-actions">
-        <button class="btn" @click="appearance.shuffleColors()">🎨 Shuffle colours</button>
+        <button class="btn" @click="appearance.shuffleColors()">🎨 Shuffle colors</button>
         <button class="btn" @click="appearance.reset()">Reset appearance</button>
       </div>
     </section>

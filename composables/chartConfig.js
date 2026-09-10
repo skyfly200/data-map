@@ -1,7 +1,7 @@
 // The shape of a built chart, and how one travels in a URL.
 //
 // A chart is worth sharing on its own — "look at elevation against day of year,
-// coloured by cluster" is a claim someone else should be able to open, check and
+// colored by cluster" is a claim someone else should be able to open, check and
 // argue with. That means the configuration has to survive a link, and the link
 // has to be short enough to fit in a QR code alongside the filters that produced
 // the data.

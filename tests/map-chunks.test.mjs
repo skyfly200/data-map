@@ -170,7 +170,7 @@ test('rain7 is summed at build time rather than carried as seven columns', () =>
   const props = { prcp_d0: 1.5, prcp_d1: 2, prcp_d2: 0, prcp_d3: null, prcp_d4: '', prcp_d5: 3, prcp_d6: 0.25 }
   assert.equal(DERIVED.rain7(props), 6.75)
   // Absent throughout is null, not zero: no data is not the same as no rain,
-  // and a zero would colour a cell as dry.
+  // and a zero would color a cell as dry.
   assert.equal(DERIVED.rain7({}), null)
   assert.equal(DERIVED.rain7({ prcp_d0: null }), null)
   // A single present day still totals.
@@ -196,7 +196,7 @@ test('slim rounds the numbers it copies and keeps the strings', () => {
   })
   const out = slim(f, ['species', 'slope', 'rain7'])
   assert.equal(out.properties.species, 'Amanita muscaria')
-  // Four decimals is far finer than a colour ramp over a grid cell can show.
+  // Four decimals is far finer than a color ramp over a grid cell can show.
   assert.equal(out.properties.slope, 12.3457)
   assert.equal(out.properties.rain7, 3.33)
 })

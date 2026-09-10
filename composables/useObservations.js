@@ -13,10 +13,10 @@ export const OBSERVATION_DATASETS = [
   { id: 'all', label: 'All species', path: DEFAULT_DATASET },
 ]
 
-// Mark colours live in useAppearance, which owns the active palette and the
+// Mark colors live in useAppearance, which owns the active palette and the
 // per-value overrides. Re-exported here so every existing import site keeps
 // working, and so callers get the palette currently in effect rather than a
-// hard-coded one. Identity is never colour-alone: the map has a legend, popups
+// hard-coded one. Identity is never color-alone: the map has a legend, popups
 // name the cluster, charts direct-label, and a full table view exists.
 export {
   PALETTE, UNCLUSTERED, SERIES_1,
@@ -111,7 +111,7 @@ const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 // "enrichment level" is how many of these carry data — a quick coverage lens.
 const ENRICH_COLS = ['ndvi', 'soil_moisture', 'slope', 'solar_exposure', 'land_cover_label', 'prcp_d0']
 
-// Derive lightweight fields the views can group/colour/plot by without a
+// Derive lightweight fields the views can group/color/plot by without a
 // pipeline change — genus (from the binomial), year/month (from the date), and
 // an enrichment-level bucket. Mutates features in place; idempotent.
 function deriveFields(geojson) {

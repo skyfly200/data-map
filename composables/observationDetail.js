@@ -91,7 +91,7 @@ export const STAT_TIPS = {
   'Low that day': 'The daily minimum air temperature on the day of the find, from ERA5-Land.',
   'Rain, 7 days before': 'Total rainfall over the week up to and including the day of the find, from CHIRPS. The lead-up that most often precedes a flush.',
   Genus: 'The genus this identification sits in, from the iNaturalist taxonomy.',
-  Cluster: 'Which environmental cluster this record fell into. Clusters group records with similar terrain and weather, and the colour matches the map.',
+  Cluster: 'Which environmental cluster this record fell into. Clusters group records with similar terrain and weather, and the color matches the map.',
 }
 
 /** A 0–1 index as a percentage of its scale, for the little bar in the drawer. */

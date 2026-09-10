@@ -1,21 +1,21 @@
 // Per-viewer control over how marks look: which palette categories draw from,
-// which shapes they rotate through, per-value colour and shape overrides, and
+// which shapes they rotate through, per-value color and shape overrides, and
 // point size/opacity.
 //
-// The colour functions live here rather than in useObservations because they
+// The color functions live here rather than in useObservations because they
 // have to READ this state, and they are called from inside computeds all over
 // the app. Keeping the state in module-level refs means every one of those
 // computeds tracks it automatically — change the palette and the map, the
-// legend and every chart re-colour themselves without a single explicit watch.
+// legend and every chart re-color themselves without a single explicit watch.
 //
 // Nothing here is SSR state: it is a display preference, loaded from
 // localStorage on the client. The charts have no data server-side, so no mark
-// colours are serialised and there is nothing to mismatch on hydration.
+// colors are serialised and there is nothing to mismatch on hydration.
 
 import { computed, ref } from 'vue'
 
-// Twelve colours each, not eight. The map's legend shows up to twelve
-// categories, so an eight-colour palette guaranteed repeated swatches in a key
+// Twelve colors each, not eight. The map's legend shows up to twelve
+// categories, so an eight-color palette guaranteed repeated swatches in a key
 // whose whole job is telling categories apart — no hashing scheme can fix a
 // palette smaller than the legend.
 export const PALETTES = [
@@ -27,14 +27,14 @@ export const PALETTES = [
   },
   {
     // Okabe–Ito: designed to stay distinguishable with the common forms of
-    // colour-vision deficiency. Worth having, given the app leans on colour to
+    // color-vision deficiency. Worth having, given the app leans on color to
     // carry species and cluster identity.
     //
     // Their published set ends in black, which belongs on a white page and not
     // on this map: on the dark theme it is invisible, and on any basemap it
     // reads as a hole rather than a category. It is replaced here, and the set
     // extended with mixes of the originals that keep their separation.
-    key: 'okabe', label: 'Colour-blind safe',
+    key: 'okabe', label: 'Color-blind safe',
     colors: ['#0072b2', '#e69f00', '#009e73', '#cc79a7',
              '#56b4e9', '#d55e00', '#f0e442', '#8c5a9e',
              '#3f7a6d', '#b8860b', '#7ba3d0', '#a34f2a'],
@@ -59,16 +59,16 @@ export const PALETTES = [
   },
 ]
 
-// Shades of each base colour, so the number of distinguishable categories is a
+// Shades of each base color, so the number of distinguishable categories is a
 // multiple of the palette rather than its length. A dataset has hundreds of
-// species and no palette has hundreds of colours; the alternative to shading is
-// repeating a colour every eight species.
+// species and no palette has hundreds of colors; the alternative to shading is
+// repeating a color every eight species.
 //
 // Neither end reaches white or black: a category must never be invisible, which
 // is the failure the black in Okabe–Ito was causing.
 const SHADES = [0, 0.3, -0.28]
 
-/** Mix a hex colour toward white (t > 0) or black (t < 0). */
+/** Mix a hex color toward white (t > 0) or black (t < 0). */
 export function shade(hex, t) {
   if (!/^#[0-9a-f]{6}$/i.test(String(hex)) || !t) return hex
   const target = t > 0 ? 255 : 0
@@ -95,8 +95,8 @@ const DEFAULTS = {
   // Off by default: the ring helps a handful of sparse points and hurts
   // everywhere else, and this dataset is dense far more often than it is sparse.
   pointOutline: false,
-  // Reshuffles which palette colour each category lands on. Two species can
-  // hash to neighbouring colours and become hard to tell apart; there is no
+  // Reshuffles which palette color each category lands on. Two species can
+  // hash to neighbouring colors and become hard to tell apart; there is no
   // "right" assignment to fix that, only a different one.
   colorSeed: 0,
   colorOverrides: {},   // "field:value" → hex
@@ -105,14 +105,14 @@ const DEFAULTS = {
 
 const STORAGE_KEY = 'appearance'
 
-// Module-level refs: read by the colour helpers below, so every computed that
+// Module-level refs: read by the color helpers below, so every computed that
 // calls one tracks them.
 const paletteKey = ref(DEFAULTS.palette)
 const shapeSetKey = ref(DEFAULTS.shapeSet)
 const pointRadius = ref(DEFAULTS.pointRadius)
 const pointOpacity = ref(DEFAULTS.pointOpacity)
 // The dark ring around each dot. It separates overlapping finds, but over a
-// dense cluster the rings merge into a grey mass and hide the colours they were
+// dense cluster the rings merge into a grey mass and hide the colors they were
 // drawn to separate — so it can be turned off.
 const pointOutline = ref(DEFAULTS.pointOutline)
 const colorSeed = ref(DEFAULTS.colorSeed)
@@ -137,38 +137,38 @@ export const SERIES_1 = '#2a78d6'
 
 export const overrideKey = (field, value) => `${field}:${value}`
 
-/** Index-based colour, used by pipeline clusters (0, 1, 2 …). */
+/** Index-based color, used by pipeline clusters (0, 1, 2 …). */
 export function colorFor(cluster) {
   if (cluster === null || cluster === undefined || Number.isNaN(cluster)) return UNCLUSTERED
   const colors = activeColors.value
-  // Shuffling has to reach clusters too. They are coloured by index rather than
+  // Shuffling has to reach clusters too. They are colored by index rather than
   // by hash, so without the seed here the button appeared to do nothing at all
-  // while the map was coloured by cluster — which is the default.
+  // while the map was colored by cluster — which is the default.
   return colors[(cluster + colorSeed.value) % colors.length]
 }
 
-// Deterministic colour for a category value, so the same value (a species, a
-// year, a land-cover class) gets the SAME colour on the map and in every chart.
+// Deterministic color for a category value, so the same value (a species, a
+// year, a land-cover class) gets the SAME color on the map and in every chart.
 export function stableColor(value) {
   if (value === null || value === undefined || value === '') return UNCLUSTERED
   const s = String(value)
   let h = 0
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
   const colors = activeColors.value
-  // Base colour and shade both come from the hash, giving palette × shades
-  // distinct colours instead of palette alone.
+  // Base color and shade both come from the hash, giving palette × shades
+  // distinct colors instead of palette alone.
   //
   // The seed shifts every assignment together. Still deterministic: the same
-  // seed gives the same colours on the map, in every chart and for anyone
+  // seed gives the same colors on the map, in every chart and for anyone
   // opening a shared link, so shuffling is a choice rather than a coin toss.
   const span = colors.length * SHADES.length
   const i = (h + colorSeed.value) % span
-  // Walk the bases first so the commonest values land on undiluted colours
+  // Walk the bases first so the commonest values land on undiluted colors
   // before any shading starts.
   return shade(colors[i % colors.length], SHADES[Math.floor(i / colors.length)])
 }
 
-// Colour for a (field, value) pair. An explicit override wins; clusters keep
+// Color for a (field, value) pair. An explicit override wins; clusters keep
 // their index-based palette; everything else uses the stable hash.
 export function categoryColor(field, value) {
   if (value === null || value === undefined || value === '') return UNCLUSTERED

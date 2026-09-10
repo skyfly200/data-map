@@ -62,7 +62,7 @@ export function clampDomain([lo, hi], bounds, values) {
 }
 
 // The taxonomic ranks, coarse to fine. Every one of them is a dimension you can
-// colour, group, filter and analyse by — which is the point of resolving the
+// color, group, filter and analyse by — which is the point of resolving the
 // ancestry rather than splitting a binomial: a record identified to family used
 // to be unusable above species, and a dataset spanning kingdoms could not be
 // compared at all.

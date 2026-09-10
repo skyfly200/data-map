@@ -230,7 +230,7 @@ python raster_coverage.py --pretty   # human-readable
 ## Nuxt frontend & Netlify deploy
 
 The frontend is a Nuxt 3 app that renders the observations on a Leaflet map,
-coloured by environmental cluster, with the enriched attributes in each popup.
+colored by environmental cluster, with the enriched attributes in each popup.
 It reads a **static GeoJSON** file, no backend or database.
 
 **Filtering.** The **Data** tab is the control centre: pick species, and narrow
