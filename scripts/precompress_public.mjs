@@ -73,7 +73,17 @@ for await (const file of walk(PUBLIC_DIR)) {
     [`${file}.br`, () => zlib.createBrotliCompress({
       params: {
         [zlib.constants.BROTLI_PARAM_MODE]: zlib.constants.BROTLI_MODE_TEXT,
-        [zlib.constants.BROTLI_PARAM_QUALITY]: zlib.constants.BROTLI_MAX_QUALITY,
+        // Quality 9, not 11. Measured on 8.4 MB of this very dataset:
+        //
+        //   q11  17.3 s  ->  0.82 MB
+        //   q9    0.6 s  ->  0.99 MB
+        //
+        // Twenty-nine times the CPU for seventeen percent smaller. Across the
+        // ~99 MB of GeoJSON in public/ that is three and a half minutes of every
+        // build against seven seconds, and on a fresh CI checkout the staleness
+        // check below cannot skip any of it because the siblings are not in git.
+        // Nobody's download is meaningfully worse for the difference.
+        [zlib.constants.BROTLI_PARAM_QUALITY]: 9,
         [zlib.constants.BROTLI_PARAM_SIZE_HINT]: size,
       },
     })],
