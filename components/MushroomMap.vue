@@ -5,15 +5,6 @@
     <div v-if="loadError" class="overlay error">{{ loadError }}</div>
     <div v-else-if="!loaded" class="overlay">Loading observations…</div>
 
-    <!-- Bottom-left, out of the way of the controls and the legends. It says
-         what is happening rather than only that something is: "loading this
-         area" is a different state from "showing a thinned sample", and a
-         viewer zoomed out is looking at the second one. -->
-    <div v-if="loaded && chunkStatus" class="chunk-status" :class="{ busy: chunks.busy.value }">
-      <span v-if="chunks.busy.value" class="spinner" aria-hidden="true"></span>
-      <span>{{ chunkStatus }}</span>
-    </div>
-
     <!-- What the map says about one spot you picked, rather than about a
          record someone else made. The observations answer "what was found
          here"; this answers "what is this place like", which is the question
@@ -75,17 +66,18 @@
           </select>
         </div>
       </PopoverMenu>
-      <!-- A mode rather than a plain click handler: the map already uses a
-           click to open an observation, and making an empty click drop a pin
-           would put one down every time someone missed a dot. -->
-      <button class="icon-btn" :class="{ on: pinMode }" :aria-pressed="String(pinMode)"
-              :title="pinMode ? 'Click the map to place a point (Esc to stop)' : 'Drop a point on the map'"
-              @click="togglePinMode">📍</button>
       <LiveClusterControls />
       <AppearanceControls icon-only :field="colorBy" :field-label="coloring.title"
                           :values="legendValues" />
       <ShareMenu icon-only :map-view="mapView" :color-by="colorBy" :size-by="sizeBy"
-                 :title="shareTitle" />
+                 :title="shareTitle">
+        <template #actions>
+          <button :disabled="saving" :title="saveError || tip('Save the map, basemap and all, as a PNG', 'e')"
+                  @click="saveMap">
+            {{ saving ? 'Saving…' : 'Save this map as a PNG' }}
+          </button>
+        </template>
+      </ShareMenu>
       <!-- Everything you do not reach for every minute — the points toggle, the
            excluded-rows option and the two actions — lives behind one button.
            Spread across the bar they covered the map they were controlling. -->
@@ -93,18 +85,6 @@
            Settings to save bar space, but a button you press to DO something
            does not belong behind a menu of things you set. As icons they cost
            almost nothing. -->
-      <button class="icon-btn" :class="{ busy: locating }"
-              :title="locateError || tip('Centre the map on where you are', 'l')"
-              aria-label="My location" @click="locateMe">
-        <span class="dot-icon"></span>
-      </button>
-      <button class="icon-btn" :disabled="saving"
-              :title="saveError || tip('Save the map, basemap and all, as a PNG', 'e')"
-              aria-label="Save image" @click="saveMap">
-        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
-          <path fill="currentColor" d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z" />
-        </svg>
-      </button>
       <MapSettings v-model="showPoints" :bounds="viewBounds" :templates="activeTileTemplates"
                    :dataset-label="datasetLabel" />
 
@@ -116,6 +96,31 @@
            were spread across the bar, where the cell size and the season panel
            appeared and disappeared as the mode changed and reflowed everything
            around them. -->
+      <!-- The layer picker, in the bar with everything else. It used to be a
+           Leaflet control floating over the map in its own white box, on a line
+           of its own. -->
+      <PopoverMenu icon="≣" label="Layers" title="Basemap and reference layers"
+                   :active="activeOverlays.size > 0"
+                   :badge="activeOverlays.size ? String(activeOverlays.size) : ''">
+        <div class="pop-head">Basemap</div>
+        <label v-for="b in baseLayers" :key="b.key" class="lay-row">
+          <input type="radio" name="basemap" :value="b.key" :checked="activeBase === b.key"
+                 @change="setBase(b.key)" />
+          <span>{{ b.name }}</span>
+        </label>
+
+        <template v-for="g in overlayGroups" :key="g.label">
+          <div class="pop-head">{{ g.label }}</div>
+          <label v-for="o in g.items" :key="o.key" class="lay-row">
+            <input type="checkbox" :checked="activeOverlays.has(o.key)" @change="toggleOverlay(o)" />
+            <span>{{ o.name }}</span>
+            <!-- Listed but marked, rather than hidden: knowing the society
+                 computes it is part of what membership is for. -->
+            <em v-if="o.tier && o.tier !== 'free'" class="lay-tier">members</em>
+          </label>
+        </template>
+      </PopoverMenu>
+
       <PopoverMenu ref="heatmapPop" icon="▦" label="Heatmap" title="Grid summary drawn under the points"
                    :active="!!heatmapMode" :badge="heatmapMode ? heatmapMeta.label : ''">
         <div class="pop-field">
@@ -375,8 +380,14 @@ if (import.meta.client) {
 watch(sizeBy, (v) => { if (import.meta.client) localStorage.setItem(SIZEBY_KEY, v) })
 const selected = ref(null)
 const selectedLatLng = ref(null)
+// The locate button lives in a Leaflet control rather than the Vue template, so
+// its busy state is applied by hand. One class on one element is a smaller cost
+// than teleporting a component into a control container.
+let locateBtn = null
 const locating = ref(false)
 const locateError = ref('')
+watch(locating, (v) => { if (locateBtn) locateBtn.classList.toggle('busy', v) })
+watch(locateError, (msg) => { if (locateBtn && msg) locateBtn.title = msg })
 let map, geoLayer, L, userLayer, selectedMarker
 
 // Holds enriched observation info (photos, description, etc.) fetched from iNaturalist API
@@ -528,19 +539,6 @@ const maxTileDate = layerDate(0)
 // an empty ownership layer reads as "no public land here".
 // The season sliders collapse by default: their summary says what they are set
 // to, so the bar stays one row until you actually want to move them.
-// What the corner indicator says. Silent once everything in view is loaded,
-// because a permanent badge is furniture rather than information.
-const chunkStatus = computed(() => {
-  if (!chunks.available.value) return ''
-  const s = chunks.stats.value
-  if (chunks.busy.value) return 'Loading this area…'
-  if (mapView.value && mapView.value.zoom < DETAIL_ZOOM && s.thinned > 1) {
-    return `Showing 1 in ${s.thinned}. Zoom in for every record.`
-  }
-  if (partial.value) return `${s.loaded.toLocaleString()} of ${s.total.toLocaleString()} loaded`
-  return ''
-})
-
 // Whether the map key is folded away. Remembered, because it is a standing
 // preference about screen space rather than a per-visit decision.
 const KEY_COLLAPSED = 'map-key-collapsed'
@@ -950,7 +948,48 @@ const heatmapCellIndex = computed(() => {
 const eeTiles = useEeTiles()
 const eeParams = ref({})
 const eeErrors = ref([])
-let layersControl = null
+// The layer picker's contents. Populated once the map and its layers exist, so
+// the Vue side never has to know how Leaflet builds them.
+const baseLayers = ref([])
+const overlayLayers = ref([])
+const activeBase = ref('grey')
+// A Set of the overlay keys currently on. Replaced rather than mutated so the
+// template re-renders.
+const activeOverlays = ref(new Set())
+
+/** Overlays grouped for display, in catalogue order. */
+const overlayGroups = computed(() => {
+  const groups = new Map()
+  for (const o of overlayLayers.value) {
+    if (!groups.has(o.group)) groups.set(o.group, [])
+    groups.get(o.group).push(o)
+  }
+  return [...groups.entries()].map(([label, items]) => ({ label, items }))
+})
+
+function setBase(key) {
+  const next = baseLayers.value.find((b) => b.key === key)
+  if (!next || !map) return
+  for (const b of baseLayers.value) if (b.layer !== next.layer) map.removeLayer(b.layer)
+  if (!map.hasLayer(next.layer)) next.layer.addTo(map)
+  // Basemaps sit under everything; without this a basemap switched on later
+  // draws over the reference layers and the points.
+  next.layer.bringToBack()
+  activeBase.value = key
+  syncActiveTemplates()
+}
+
+function toggleOverlay(entry) {
+  if (!map) return
+  const on = map.hasLayer(entry.layer)
+  if (on) map.removeLayer(entry.layer)
+  else entry.layer.addTo(map)
+  const next = new Set(activeOverlays.value)
+  if (on) next.delete(entry.key)
+  else next.add(entry.key)
+  activeOverlays.value = next
+  syncActiveTemplates()
+}
 const eeLayers = new Map()
 
 /** The parameters a layer is currently set to, defaulted from its schema. */
@@ -1021,9 +1060,9 @@ async function addEeLayers() {
     // A layer the viewer's tier cannot render is still listed, marked, rather
     // than hidden: knowing the society computes it is part of what membership
     // is for. Ticking it explains itself through the error card.
-    const gated = spec.tier && spec.tier !== 'free'
-    const badge = gated ? ' <span class="lg-tier">members</span>' : ''
-    layersControl?.addOverlay(layer, `<span class="lg">${spec.group}</span> ${spec.name}${badge}`)
+    overlayLayers.value = [...overlayLayers.value, {
+      key: spec.key, name: spec.name, group: spec.group, layer, tier: spec.tier,
+    }]
   }
 }
 
@@ -1056,15 +1095,9 @@ function setEeParam(key, name, value) {
 // Somewhere the viewer picked, as opposed to somewhere a record exists. Held as
 // plain numbers rather than a Leaflet marker so the panel can be reactive and
 // the marker stays a detail of the map.
-const pinMode = ref(false)
 const pin = ref(null)
 const copied = ref(false)
 let pinMarker = null
-
-function togglePinMode() {
-  pinMode.value = !pinMode.value
-  if (map) L.DomUtil[pinMode.value ? 'addClass' : 'removeClass'](map.getContainer(), 'picking')
-}
 
 function setPin(lat, lon) {
   pin.value = { lat, lon }
@@ -1388,6 +1421,28 @@ onMounted(async () => {
       tap: true, tapTolerance: 20,
       maxZoom: MAP_MAX_ZOOM,
     }).setView([39.5, -105.7], 7)
+    // Locate first, then zoom: Leaflet stacks a corner's controls in the order
+    // they are added, so this puts the crosshair directly above the +/- pair
+    // rather than in the control bar at the top, which is where it was competing
+    // with controls about the data rather than about the view.
+    const LocateControl = L.Control.extend({
+      onAdd() {
+        const wrap = L.DomUtil.create('div', 'leaflet-bar locate-ctl')
+        const btn = L.DomUtil.create('a', '', wrap)
+        btn.href = '#'
+        btn.role = 'button'
+        btn.title = tip('Centre the map on where you are', 'l')
+        btn.setAttribute('aria-label', 'My location')
+        btn.innerHTML = '<span class="dot-icon"></span>'
+        locateBtn = btn
+        // stop() as well as preventDefault: without it the click reaches the map
+        // underneath and, in pin mode, drops a point behind the button.
+        L.DomEvent.on(btn, 'click', (e) => { L.DomEvent.stop(e); locateMe() })
+        L.DomEvent.disableClickPropagation(wrap)
+        return wrap
+      },
+    })
+    new LocateControl({ position: 'bottomleft' }).addTo(map)
     L.control.zoom({ position: 'bottomleft' }).addTo(map)
     // ArcGIS MapServer services render from a bbox rather than serving a cut
     // tile pyramid, so their tiles are asked for by extent. Everything else is
@@ -1400,7 +1455,7 @@ onMounted(async () => {
     })
 
     // Reference tile services as toggleable layers alongside the basemaps.
-    const tileOverlays = {}
+    const tileOverlayList = []
     for (const o of TILE_LAYERS) {
       const opts = {
         // The catalogue's maxZoom is where each service's tiles stop, which is
@@ -1458,7 +1513,7 @@ onMounted(async () => {
         loaded = 0
         failed = 0
       })
-      tileOverlays[`<span class="lg">${o.group}</span> ${o.name}`] = layer
+      tileOverlayList.push({ key: o.name, name: o.name, group: o.group, layer })
     }
     // One slider dims every reference layer at once, which is what you actually
     // want: they stack, and dimming them one at a time to see the data through
@@ -1477,30 +1532,59 @@ onMounted(async () => {
         if (l._spec?.time && l._spec.url) l.setUrl(l._spec.url.replace('{date}', d))
       }
     })
-    layersControl = L.control.layers(
-      {
-        'Light grey': grey,
-        'Dark grey': greyDark,
-        'Street (OSM)': osm,
-        'Terrain (OpenTopoMap)': topo,
-        'Satellite (Esri)': sat,
-      },
-      // Leaflet's layers control takes one flat list, so the group rides in the
-      // label — nine layers unlabelled is a wall, and grouping them by what
-      // they are about is the difference between scanning and hunting.
-      tileOverlays, { position: 'topleft', collapsed: true },
-    ).addTo(map)
+    // Our own layer picker rather than L.control.layers, for two reasons. It
+    // sits in the control bar with everything else instead of floating over the
+    // map in its own white box, and Leaflet's takes one flat list, so grouping
+    // had to be smuggled into the labels as markup.
+    baseLayers.value = [
+      { key: 'grey', name: 'Light grey', layer: grey },
+      { key: 'greyDark', name: 'Dark grey', layer: greyDark },
+      { key: 'osm', name: 'Street (OSM)', layer: osm },
+      { key: 'topo', name: 'Terrain (OpenTopoMap)', layer: topo },
+      { key: 'sat', name: 'Satellite (Esri)', layer: sat },
+    ]
+    overlayLayers.value = tileOverlayList
 
     // Earth Engine layers arrive after their catalogue does, so they join the
-    // control rather than being in it from the start.
+    // list rather than being in it from the start.
     addEeLayers()
 
-    // Only while the mode is on, so an ordinary click that misses a dot still
-    // does nothing rather than littering the map with pins.
-    map.on('click', (e) => {
-      if (!pinMode.value) return
-      setPin(e.latlng.lat, e.latlng.lng)
-    })
+    // Right-click, or a long press on a touch screen. A plain click already
+    // opens an observation, and a mode button for something used this rarely was
+    // a permanent icon paying for an occasional action.
+    map.on('contextmenu', (e) => setPin(e.latlng.lat, e.latlng.lng))
+
+    // Long press, done by hand. Leaflet maps a native contextmenu to its own
+    // event, but which browsers synthesise one from a long press is uneven —
+    // iOS Safari in particular does not — so the gesture is timed here.
+    const container = map.getContainer()
+    let pressTimer = null
+    let pressAt = null
+    const cancelPress = () => { clearTimeout(pressTimer); pressTimer = null; pressAt = null }
+
+    container.addEventListener('touchstart', (ev) => {
+      // One finger only: a two-finger touch is a pinch-zoom starting.
+      if (ev.touches.length !== 1) return cancelPress()
+      const t = ev.touches[0]
+      pressAt = { x: t.clientX, y: t.clientY }
+      pressTimer = setTimeout(() => {
+        pressTimer = null
+        const pt = map.mouseEventToLatLng({ clientX: pressAt.x, clientY: pressAt.y })
+        setPin(pt.lat, pt.lng)
+        // A pin that appears with no other feedback feels like a glitch; a tick
+        // of haptics is what every map app uses to say "that registered".
+        navigator.vibrate?.(15)
+      }, 550)
+    }, { passive: true })
+
+    // A finger that has moved is a pan, not a press.
+    container.addEventListener('touchmove', (ev) => {
+      if (!pressAt || !ev.touches.length) return
+      const t = ev.touches[0]
+      if (Math.hypot(t.clientX - pressAt.x, t.clientY - pressAt.y) > 10) cancelPress()
+    }, { passive: true })
+    container.addEventListener('touchend', cancelPress, { passive: true })
+    container.addEventListener('touchcancel', cancelPress, { passive: true })
 
     map.on('moveend zoomend', syncMapView)
     map.on('moveend zoomend', loadVisible)
@@ -1611,10 +1695,8 @@ watch(loaded, (ok) => { if (ok) nextTick(trackControlsHeight) }, { immediate: tr
 // keyboard way out is a trap on a laptop, where the toggle can be off-screen.
 function onKeydown(e) {
   if (e.key !== 'Escape') return
-  if (pinMode.value) pinMode.value = false
-  else if (pin.value) clearPin()
-  else return
-  if (map) L.DomUtil.removeClass(map.getContainer(), 'picking')
+  if (!pin.value) return
+  clearPin()
 }
 
 onMounted(() => {
@@ -1648,6 +1730,64 @@ onBeforeUnmount(() => {
   position: absolute; top: 12px; left: 12px; z-index: 500; display: flex; gap: 10px; align-items: center;
   flex-wrap: wrap;
 }
+/* One look for every button in the bar, wherever its component happens to
+   define it. Five components contribute controls here and each had its own
+   height, radius, border and background — a light one next to a dark one next
+   to a coloured one — so side by side they read as several toolbars that had
+   collided rather than one. The rules live here because this bar is the only
+   place they sit together; each component keeps its own styling everywhere
+   else it is used. */
+.controls :deep(.pop-btn),
+.controls .icon-btn,
+.controls :deep(.lc-toggle),
+.controls :deep(.sh-btn),
+.controls :deep(.ap-btn),
+.controls :deep(.set-btn) {
+  box-sizing: border-box;
+  min-height: 34px; height: 34px; min-width: 34px; padding: 0 9px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  background: var(--surface, rgba(255, 255, 255, 0.95));
+  color: var(--text, #333);
+  border: 1px solid var(--border, #ddd); border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  font: inherit; font-size: 0.82rem; font-weight: 500;
+  white-space: nowrap; cursor: pointer;
+}
+/* A finger is not a cursor. The app-wide rule already asks for 40px on a coarse
+   pointer, but it does that with min-height on `button`, and min-height beats
+   height whatever the specificity — so three of the six grew and three did not,
+   which is how the bar ended up with two heights on a phone and one on a
+   desktop. Setting both here makes them agree, at the larger size, which is the
+   one a thumb wants. */
+@media (pointer: coarse) {
+  .controls :deep(.pop-btn),
+  .controls .icon-btn,
+  .controls :deep(.lc-toggle),
+  .controls :deep(.sh-btn),
+  .controls :deep(.ap-btn),
+  .controls :deep(.set-btn) {
+    min-height: 40px; height: 40px; min-width: 40px;
+  }
+}
+
+.controls :deep(.pop-btn):hover,
+.controls .icon-btn:hover:not(:disabled),
+.controls :deep(.lc-toggle):hover,
+.controls :deep(.sh-btn):hover,
+.controls :deep(.ap-btn):hover,
+.controls :deep(.set-btn):hover { border-color: var(--muted, #999); }
+
+/* One "this is doing something" state, rather than three. */
+.controls :deep(.pop-btn.on),
+.controls .icon-btn.on,
+.controls :deep(.lc-toggle.on),
+.controls :deep(.sh-btn.on),
+.controls :deep(.ap-btn.on),
+.controls :deep(.set-btn.on) {
+  border-color: var(--accent, #2b7a3d);
+  box-shadow: 0 0 0 2px rgba(43, 122, 61, 0.18);
+}
+
 .colorby {
   background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
   padding: 7px 10px; font: 13px system-ui, sans-serif; display: flex; gap: 8px; align-items: center;
@@ -1757,25 +1897,6 @@ onBeforeUnmount(() => {
 
 /* The chunk indicator: bottom-left, above Leaflet's zoom control, and quiet
    enough to ignore while still being legible over imagery. */
-.chunk-status {
-  position: absolute; left: 12px; bottom: 92px; z-index: 500;
-  display: flex; align-items: center; gap: 7px;
-  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
-  padding: 5px 10px; font: 12px/1.35 system-ui, sans-serif; color: #333;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); max-width: 240px;
-}
-.spinner {
-  width: 11px; height: 11px; flex: 0 0 auto; border-radius: 50%;
-  border: 2px solid rgba(0, 0, 0, 0.15); border-top-color: #2b7a3d;
-  animation: chunk-spin 0.8s linear infinite;
-}
-@keyframes chunk-spin { to { transform: rotate(360deg); } }
-/* A viewer who has asked for no motion gets a pulse instead of a spin. */
-@media (prefers-reduced-motion: reduce) {
-  .spinner { animation: chunk-pulse 1.4s ease-in-out infinite; }
-  @keyframes chunk-pulse { 50% { opacity: 0.35; } }
-}
-
 /* ── Touch ────────────────────────────────────────────────────────────────
    A fingertip is about 9mm across. The control bar's icon buttons ship at
    34px and Leaflet's zoom at 30px, both under half of that, so on a coarse
@@ -1829,6 +1950,17 @@ onBeforeUnmount(() => {
   border-top: 1px solid #e6e6e6; padding-top: 5px;
 }
 .legend-n { color: #777; font-size: 11px; }
+
+/* The locate control, styled to match Leaflet's own zoom buttons it sits on. */
+.map-shell :deep(.locate-ctl a) {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; background: #fff; cursor: pointer;
+}
+.map-shell :deep(.locate-ctl a.busy) { opacity: 0.6; cursor: progress; }
+.map-shell :deep(.locate-ctl .dot-icon) {
+  width: 11px; height: 11px; border-radius: 50%; background: #2a78d6;
+  border: 2px solid #fff; box-shadow: 0 0 0 1px #2a78d6;
+}
 
 /* Dropped point */
 .map-shell :deep(.leaflet-container.picking) { cursor: crosshair; }
@@ -1911,6 +2043,20 @@ onBeforeUnmount(() => {
   font-size: 0.78rem; color: var(--muted); white-space: nowrap;
 }
 .pop-field select { width: 100%; }
+
+/* Layer rows. A whole row is the hit target, not just the box. */
+.lay-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 2px; font-size: 0.82rem; cursor: pointer; line-height: 1.3;
+}
+.lay-row:hover { color: var(--text); }
+.lay-row input { flex: 0 0 auto; margin: 0; }
+.lay-row span { flex: 1 1 auto; }
+.lay-tier {
+  font-style: normal; font-size: 0.62rem; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--muted);
+  background: var(--surface-2); border-radius: 999px; padding: 1px 6px;
+}
 .pop-field input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); }
 
 @media (max-width: 640px) {
