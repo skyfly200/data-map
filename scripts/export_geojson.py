@@ -154,12 +154,72 @@ def _read_features(path):
         return []
 
 
-def _species_label(features, fallback):
-    for feat in features:
-        s = (feat.get("properties") or {}).get("species")
-        if s:
-            return s
-    return fallback
+# A grouping column has to place most records to be worth using. Below this the
+# "Unknown" bucket IS the dataset and the real groups are a rounding error.
+MIN_GROUP_COVERAGE = 0.5
+
+
+def column_coverage(df, col):
+    """Fraction of rows where `col` holds something."""
+    if col not in df.columns or not len(df):
+        return 0.0
+    values = df[col].dropna().astype(str).str.strip()
+    return float((values != '').sum()) / float(len(df))
+
+
+def pick_group_column(df, group_by, min_coverage=MIN_GROUP_COVERAGE):
+    """The column to split the export by, or None if nothing usable exists.
+
+    Existence is not enough, and neither is a handful of values. The taxonomy
+    stage adds `genus` and the other rank columns whether or not it resolves
+    anything, and in the shipped store it resolved 373 rows out of 19,462 — two
+    percent. Grouping by a column that can place two percent of the data puts
+    the other ninety-eight into one bucket named "Unknown": a 47 MB
+    near-duplicate of the whole dataset, listed in the UI as though it were a
+    single taxon, and doubling what the build compresses and deploys.
+
+    So the column has to place a majority of records. Otherwise fall back to
+    species, which is populated for everything.
+    """
+    for col in (group_by, 'species'):
+        if not col or col not in df.columns:
+            continue
+        if column_coverage(df, col) >= min_coverage:
+            return col
+
+    # Nothing clears the bar. A column with SOME values still beats writing one
+    # undivided file, so take the best of what is there.
+    candidates = [c for c in (group_by, 'species') if c and c in df.columns]
+    best = max(candidates, key=lambda c: column_coverage(df, c), default=None)
+    return best if best and column_coverage(df, best) > 0 else None
+
+
+def _label_for_group(features, fallback):
+    """What to call a group file, from its own contents.
+
+    Taking the first member's species name is what labelled a 48,221-record
+    bucket "Agaricus abruptibulbus". A group is named after what its members
+    share: their species if they are all one species, their genus if they share
+    one, and otherwise the slug — which at least does not claim to be a taxon.
+    """
+    def shared(field):
+        seen = set()
+        for feat in features:
+            v = (feat.get("properties") or {}).get(field)
+            if not v:
+                return None                 # a missing value means "not shared"
+            seen.add(str(v).strip())
+            if len(seen) > 1:
+                return None
+        return seen.pop() if len(seen) == 1 else None
+
+    return shared("species") or shared("genus") or _titlecase_slug(fallback)
+
+
+def _titlecase_slug(slug):
+    """"front-range" -> "Front range". Readable, and visibly not a taxon name."""
+    text = str(slug).replace('-', ' ').replace('_', ' ').strip()
+    return text[:1].upper() + text[1:] if text else str(slug)
 
 
 def rebuild_from_species_dir(data_dir=os.path.join('public', 'data')):
@@ -186,7 +246,7 @@ def rebuild_from_species_dir(data_dir=os.path.join('public', 'data')):
             continue
         all_features.extend(feats)
         slug = os.path.splitext(os.path.basename(path))[0]
-        label = _species_label(feats, slug)
+        label = _label_for_group(feats, slug)
         entries.append({
             "id": slug,
             "label": f"{label} ({len(feats)})",
@@ -199,10 +259,13 @@ def rebuild_from_species_dir(data_dir=os.path.join('public', 'data')):
         json.dump({"type": "FeatureCollection", "features": all_features}, f)
 
     entries.sort(key=lambda e: e["count"], reverse=True)
-    group_label = "genus" if entries and any(e['id'] == _slugify((e.get('label', '').split()[0] if e.get('label') else '')) for e in entries) else "species"
+    # "All observations" rather than guessing at the grouping and pluralising it
+    # by appending an s, which produced "All genuss". What the files are split
+    # by is not what the combined dataset is, so naming it after them was odd
+    # even when the plural came out right.
     manifest = [{
         "id": "all",
-        "label": f"All {group_label}s ({len(all_features)})",
+        "label": f"All observations ({len(all_features)})",
         "path": "/data/observations.geojson",
         "count": len(all_features),
     }] + entries
@@ -212,7 +275,7 @@ def rebuild_from_species_dir(data_dir=os.path.join('public', 'data')):
         json.dump(manifest, f, indent=2)
 
     print(f"✅ Rebuilt combined ({len(all_features)} features) + manifest "
-          f"({len(manifest)} datasets) from {len(entries)} {group_label} files")
+          f"({len(manifest)} datasets) from {len(entries)} group file(s)")
     return manifest
 
 
@@ -232,9 +295,9 @@ def export_all(df, data_dir=os.path.join('public', 'data'), combined_path=None, 
     species_dir = os.path.join(data_dir, 'species')
     os.makedirs(species_dir, exist_ok=True)
 
-    group_col = group_by if group_by in df.columns else 'species'
+    group_col = pick_group_column(df, group_by)
 
-    if group_col in df.columns:
+    if group_col:
         counts = df[group_col].fillna("Unknown").value_counts()
         for group_name, count in counts.items():
             slug = _slugify(group_name)

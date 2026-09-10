@@ -1,17 +1,19 @@
 <template>
-  <div class="lc">
-    <label class="lc-toggle" :class="{ on: enabled }"
-           title="Cluster the loaded observations live with k-means">
+  <!-- One button, one panel. This used to be a checkbox that had to be ticked
+       before a cog appeared beside it, which was then the thing that opened the
+       options — two controls and two clicks to reach a panel whose first row
+       could just as well be the switch. -->
+  <PopoverMenu icon="◈" label="Clusters" title="Cluster the loaded observations live with k-means"
+               :active="enabled" :badge="enabled ? `k=${k}` : ''">
+    <label class="lc-on">
       <input type="checkbox" v-model="enabled" />
-      <span class="lc-icon" aria-hidden="true">◈</span>
-      <!-- The words go on a narrow screen; the icon and the checked state carry
-           it there. This was the widest thing left on the map's control bar
-           after the dropdowns folded away, and it was forcing a second row. -->
-      <span class="lc-text">Live clusters</span>
+      <span>Live clustering</span>
     </label>
-    <button v-if="enabled" class="lc-gear" :class="{ on: open }" title="Clustering options" @click="open = !open">⚙</button>
 
-    <div v-if="enabled && open" class="lc-panel">
+    <!-- The settings are shown whether or not it is on, so you can set it up
+         and then switch it on, rather than having to switch it on to find out
+         what it will do. -->
+    <div class="lc-body" :class="{ off: !enabled }">
       <label class="row">
         <span>Cluster by</span>
         <select v-model="mode">
@@ -53,14 +55,13 @@
         </span>
       </div>
     </div>
-  </div>
+  </PopoverMenu>
 </template>
 
 <script setup>
 import { colorFor } from '~/composables/useObservations'
 
 const { enabled, k, mode, features, geoWeight, presentFeatures, sizes } = useLiveClusters()
-const open = ref(false)
 
 // Slide freely; only re-cluster on release (k-means over the whole dataset is
 // cheap but not free), keeping the drag smooth.
@@ -73,38 +74,26 @@ function setAll(on) { features.value = on ? presentFeatures.value.map((f) => f.k
 </script>
 
 <style scoped>
-.lc {
-  position: relative; display: inline-flex; align-items: center; gap: 8px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-  padding: 6px 10px; font-size: 0.82rem; color: var(--text);
+.lc-on {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 0.85rem; cursor: pointer;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
 }
-.lc-icon { display: none; font-size: 0.95rem; line-height: 1; }
-@media (max-width: 720px) {
-  .lc-text { display: none; }
-  .lc-icon { display: inline; }
-  .lc-toggle input[type="checkbox"] { display: none; }
-  .lc-toggle.on { border-color: var(--accent, #2b7a3d); box-shadow: 0 0 0 2px rgba(43, 122, 61, 0.18); }
-}
-.lc-toggle { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; }
-.lc-toggle input { accent-color: var(--accent); }
-.lc-gear {
-  border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer;
-  width: 24px; height: 24px; border-radius: 6px; font-size: 0.85rem; line-height: 1; padding: 0;
-}
-.lc-gear.on, .lc-gear:hover { background: var(--surface-3); }
+.lc-on input { accent-color: var(--accent); }
 
-.lc-panel {
-  position: absolute; top: calc(100% + 6px); left: 0; z-index: 1100; width: 260px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-  box-shadow: 0 4px 16px var(--shadow); padding: 10px 12px; display: grid; gap: 8px;
-}
+.lc-body { display: grid; gap: 8px; }
+/* Dimmed rather than hidden or disabled: it says these do nothing yet without
+   the panel changing height as you tick the box, which would move the controls
+   out from under the cursor that just ticked it. */
+.lc-body.off { opacity: 0.55; }
+
 .row { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: 8px; color: var(--muted); }
-.row span { font-weight: 600; }
+.row span { font-weight: 600; font-size: 0.8rem; }
 .row b { color: var(--text); min-width: 2.4em; text-align: right; }
 .row select { border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; font-size: 0.8rem; background: var(--input-bg); color: var(--text); }
 .row input[type="range"] { width: 100%; accent-color: var(--accent); }
 
-.feats-head { display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 600; }
+.feats-head { display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 600; font-size: 0.8rem; }
 .feats-head .mini { margin-left: auto; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 5px; padding: 1px 7px; font-size: 0.72rem; cursor: pointer; }
 .feats-head .mini + .mini { margin-left: 4px; }
 .feats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; margin-top: 5px; }

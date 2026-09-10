@@ -1739,7 +1739,6 @@ onBeforeUnmount(() => {
    else it is used. */
 .controls :deep(.pop-btn),
 .controls .icon-btn,
-.controls :deep(.lc-toggle),
 .controls :deep(.sh-btn),
 .controls :deep(.ap-btn),
 .controls :deep(.set-btn) {
@@ -1762,8 +1761,7 @@ onBeforeUnmount(() => {
 @media (pointer: coarse) {
   .controls :deep(.pop-btn),
   .controls .icon-btn,
-  .controls :deep(.lc-toggle),
-  .controls :deep(.sh-btn),
+    .controls :deep(.sh-btn),
   .controls :deep(.ap-btn),
   .controls :deep(.set-btn) {
     min-height: 40px; height: 40px; min-width: 40px;
@@ -1772,7 +1770,6 @@ onBeforeUnmount(() => {
 
 .controls :deep(.pop-btn):hover,
 .controls .icon-btn:hover:not(:disabled),
-.controls :deep(.lc-toggle):hover,
 .controls :deep(.sh-btn):hover,
 .controls :deep(.ap-btn):hover,
 .controls :deep(.set-btn):hover { border-color: var(--muted, #999); }
@@ -1780,7 +1777,6 @@ onBeforeUnmount(() => {
 /* One "this is doing something" state, rather than three. */
 .controls :deep(.pop-btn.on),
 .controls .icon-btn.on,
-.controls :deep(.lc-toggle.on),
 .controls :deep(.sh-btn.on),
 .controls :deep(.ap-btn.on),
 .controls :deep(.set-btn.on) {
