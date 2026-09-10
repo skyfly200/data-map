@@ -12,7 +12,8 @@ import assert from 'node:assert/strict'
 
 import {
   EE_LAYER_CATALOGUE, EE_LAYER_KEYS, EE_TILE_LAYERS, LayerError,
-  DEFAULT_TIER, MODIS_FIRST_YEAR, cacheKey, describeLayer, resolveLayer, tierFor,
+  DEFAULT_TIER, MODIS_FIRST_YEAR, MODIS_LAG_YEARS, MTBS_LAG_YEARS,
+  cacheKey, describeLayer, resolveLayer, tierFor,
 } from '../netlify/lib/ee-tile-layers.mjs'
 
 const YEAR = new Date().getUTCFullYear()
@@ -56,7 +57,9 @@ test('the described catalogue is safe to send to a browser', () => {
 
 test('missing parameters fall back to their defaults', () => {
   const { params } = resolveLayer('years-since-fire')
-  assert.equal(params.through, YEAR)
+  // Behind the dataset's publication lag, not the current year — see the
+  // publication-lag tests below for why.
+  assert.equal(params.through, YEAR - MODIS_LAG_YEARS)
   assert.equal(params.window, 12)
 })
 
@@ -249,4 +252,51 @@ test('every layer declares a tier the gate understands', () => {
     assert.ok(['free', 'member', 'admin'].includes(entry.tier),
       `${entry.key} has an unusable tier: ${entry.tier}`)
   }
+})
+
+// ── Publication lag ──────────────────────────────────────────────────────────
+
+test('no layer defaults to a period its dataset has not published', () => {
+  // The bug this guards: reducing an empty collection gives an image with no
+  // bands, and Earth Engine refuses a palette on that — so "burn scars this
+  // year" failed outright rather than drawing an empty map. Defaults now sit
+  // behind each dataset's own lag.
+  assert.equal(resolveLayer('burn-severity').params.year, YEAR - MTBS_LAG_YEARS)
+  assert.equal(resolveLayer('burn-date').params.year, YEAR - MODIS_LAG_YEARS)
+  assert.equal(resolveLayer('years-since-fire').params.through, YEAR - MODIS_LAG_YEARS)
+})
+
+test('the current year is still reachable, just not the default', () => {
+  // Somebody who knows this year is partly published should be able to ask.
+  assert.equal(resolveLayer('burn-date', { year: YEAR }).params.year, YEAR)
+})
+
+test('every dated layer can say whether its window holds anything', () => {
+  // Without a count, an empty window surfaces as a message about bands, which
+  // tells the reader nothing about what to do.
+  for (const key of ['burn-severity', 'burn-date', 'active-fire']) {
+    assert.equal(typeof EE_TILE_LAYERS[key].count, 'function', `${key} cannot be pre-checked`)
+  }
+})
+
+test('a single-band image is what reaches the palette', () => {
+  // MTBS mosaics carry several bands, and a palette on a multi-band image is
+  // refused outright — this failed even in years the data exists for.
+  const selected = []
+  const chain = new Proxy(function stub() {}, {
+    get: (t, prop) => (prop === 'then' ? undefined : chain),
+    apply: () => chain,
+  })
+  const ee = {
+    ImageCollection: () => ({
+      filterDate: () => ({
+        select: (b) => { selected.push(b); return { max: () => chain } },
+        max: () => chain,
+      }),
+    }),
+    Image: Object.assign(() => chain, { constant: () => chain }),
+  }
+  const { layer, params } = resolveLayer('burn-severity')
+  layer.build(ee, params)
+  assert.deepEqual(selected, ['Severity'])
 })

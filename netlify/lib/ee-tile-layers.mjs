@@ -53,6 +53,22 @@ export const ASSETS = {
 
 const THIS_YEAR = () => new Date().getUTCFullYear()
 
+/**
+ * Publication lag, in years, for the datasets that have one.
+ *
+ * Every one of these is published well behind real time, and defaulting to the
+ * current year asks for a window that does not exist yet. An empty window is
+ * not an empty map: reducing an empty collection gives an image with no bands,
+ * and visualising that with a palette fails outright — which is what "could not
+ * be loaded" was.
+ *
+ * MTBS is compiled annually and runs one to two years behind. MODIS burned area
+ * is published a couple of months in arrears, so the current year is only
+ * partly there and the year before is the last complete one.
+ */
+export const MTBS_LAG_YEARS = 2
+export const MODIS_LAG_YEARS = 1
+
 // MODIS burned area starts in November 2000; asking for earlier returns an
 // empty collection, which would render as "never burned" rather than "no data".
 export const MODIS_FIRST_YEAR = 2001
@@ -151,7 +167,7 @@ export const EE_TILE_LAYERS = {
       + `${MODIS_FIRST_YEAR}, not that none happened: at 500 m a small fire can be missed entirely.`,
     params: {
       through: {
-        type: 'int', label: 'Through year', default: THIS_YEAR,
+        type: 'int', label: 'Through year', default: () => THIS_YEAR() - MODIS_LAG_YEARS,
         min: MODIS_FIRST_YEAR, max: () => THIS_YEAR(),
       },
       window: { type: 'int', label: 'Years to look back', default: 12, min: 2, max: 25 },
@@ -188,14 +204,20 @@ export const EE_TILE_LAYERS = {
       + 'lightly burned ground largely does not.',
     params: {
       year: {
-        type: 'int', label: 'Fire year', default: () => THIS_YEAR() - 1,
+        type: 'int', label: 'Fire year', default: () => THIS_YEAR() - MTBS_LAG_YEARS,
         min: MTBS_FIRST_YEAR, max: () => THIS_YEAR(),
       },
     },
     legend: { type: 'classes', items: MTBS_CLASSES.slice(1, 5) },
+    count: (ee, { year }) => ee.ImageCollection(ASSETS.MTBS_SEVERITY)
+      .filterDate(`${year}-01-01`, `${year}-12-31`).size(),
     build(ee, { year }) {
+      // select() is not optional here. Without it the mosaic keeps every band
+      // it has, and Earth Engine refuses a palette on a multi-band image — so
+      // this failed even in years where the data is published.
       const image = ee.ImageCollection(ASSETS.MTBS_SEVERITY)
         .filterDate(`${year}-01-01`, `${year}-12-31`)
+        .select('Severity')
         .max()
       // 0 is background and 6 a processing mask; painting either would cover
       // the continent in a colour that means nothing.
@@ -216,7 +238,7 @@ export const EE_TILE_LAYERS = {
       + 'A late-summer burn and an early-spring one are different prospects for the following spring.',
     params: {
       year: {
-        type: 'int', label: 'Year', default: () => THIS_YEAR(),
+        type: 'int', label: 'Year', default: () => THIS_YEAR() - MODIS_LAG_YEARS,
         min: MODIS_FIRST_YEAR, max: () => THIS_YEAR(),
       },
     },
@@ -224,6 +246,8 @@ export const EE_TILE_LAYERS = {
       type: 'ramp', unit: 'day of year', min: 'Jan', max: 'Dec',
       stops: ['#2c7bb6', '#abd9e9', '#ffffbf', '#fdae61', '#d7191c'],
     },
+    count: (ee, { year }) => ee.ImageCollection(ASSETS.MODIS_BURN)
+      .filterDate(`${year}-01-01`, `${year}-12-31`).size(),
     build(ee, { year }) {
       const image = ee.ImageCollection(ASSETS.MODIS_BURN)
         .filterDate(`${year}-01-01`, `${year}-12-31`)
@@ -249,6 +273,12 @@ export const EE_TILE_LAYERS = {
     legend: {
       type: 'ramp', unit: 'K (brightness)', min: '300', max: '400',
       stops: ['#ffeda0', '#feb24c', '#f03b20', '#bd0026'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.FIRMS)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
     },
     build(ee, { days }) {
       const end = new Date()
