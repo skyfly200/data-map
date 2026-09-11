@@ -366,6 +366,37 @@ map, charts and analysis all read it.
 
 ---
 
+## Your own Earth Engine layers
+
+An administrator can add map layers computed in Earth Engine, alongside the
+built-in ones.
+
+1. Build the layer in the Earth Engine Code Editor.
+2. Export it with `Export.image.toAsset()` into your own Earth Engine project.
+3. Grant the app's service account read access to the asset.
+4. Register it on **Administration → Map layers**: the asset ID, which band to
+   draw, a palette, and who can see it.
+
+It then appears in the map's layer picker under whatever group you name, with
+its own key, and renders through the same path as every built-in layer.
+
+Each layer carries its own access level — **everyone**, **members** or
+**administrators** — so a finished layer can be public while a draft stays
+internal. The picker lists a layer the viewer cannot render, marked, rather than
+hiding it; switching it on explains why.
+
+> **Note** What is stored is an asset ID, never a script. An asset ID names
+> something already computed under your own project, where a script would be
+> arbitrary compute on the society's Earth Engine budget. Exporting first also
+> makes the layer cheap to draw, because the work happened once.
+
+> **Caution** If the asset has more than one band, name the band. Earth Engine
+> refuses a palette on a multi-band image, and the layer will not render. Set
+> **Hide values below** as well when the asset's no-data is zero, or the whole
+> world paints as the bottom of the ramp.
+
+---
+
 ## Sharing and saving
 
 **Share** builds a link that reproduces the current view. Map position, filters,
