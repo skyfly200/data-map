@@ -14,6 +14,27 @@
 -- An asset ID names something already computed under an account we control; a
 -- script would be arbitrary compute on the society's billing.
 
+-- Checked up front so a half-applied 002 says so, rather than failing forty
+-- lines down with "function public.is_member() does not exist" — an error that
+-- names this file and gives no hint that the cause is the previous one.
+do $$
+declare
+  missing text;
+begin
+  select string_agg(name, ', ' order by name) into missing
+  from unnest(array['is_member', 'is_admin', 'current_tier', 'set_updated_at']) as name
+  where to_regprocedure('public.' || name || '()') is null;
+
+  if missing is not null then
+    raise exception using
+      message = format('Migration 002 has not been applied in full: %s missing.', missing),
+      hint = 'Re-run supabase_migrations/002_membership_jobs_and_admin.sql, then this file. '
+             || 'An earlier version of 002 could abort partway on deployments without a '
+             || 'supabase_auth_admin role, creating its tables but not its functions.';
+  end if;
+end
+$$;
+
 create table if not exists public.ee_custom_layers (
   id uuid primary key default gen_random_uuid(),
 

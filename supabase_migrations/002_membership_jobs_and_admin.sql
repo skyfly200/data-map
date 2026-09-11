@@ -124,17 +124,17 @@ begin
 end;
 $$;
 
--- The hook runs as supabase_auth_admin, which is outside the usual API roles.
-grant usage on schema public to supabase_auth_admin;
-grant execute on function public.custom_access_token_hook(jsonb) to supabase_auth_admin;
--- Nobody else may call it: it is not a secret, but an API role that can invoke
--- it gains nothing and the smaller surface is free.
-revoke execute on function public.custom_access_token_hook(jsonb) from authenticated, anon, public;
-grant select on public.profiles to supabase_auth_admin;
-
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Reading the tier back out, inside the database
 -- ─────────────────────────────────────────────────────────────────────────────
+--
+-- These come BEFORE the grants below, deliberately. Everything downstream
+-- depends on them — the row-level security policies in this file, and the whole
+-- of migration 003 — while the grants depend on a role that is not present on
+-- every deployment. Putting the fragile statement first meant one failed grant
+-- aborted the script and left the database with tables but no is_member(),
+-- which surfaced later as "function public.is_member() does not exist" from a
+-- migration that looked unrelated.
 
 -- The tier carried by the current request's token. Used by the policies below
 -- so they never have to join back to profiles, which would recurse: reading a
@@ -165,6 +165,52 @@ language sql
 stable
 as $$
   select public.current_tier() in ('member', 'admin');
+$$;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Letting the auth service call the hook
+-- ─────────────────────────────────────────────────────────────────────────────
+--
+-- The hook runs as supabase_auth_admin, a role hosted Supabase provides and a
+-- self-hosted or older project may not. Guarded rather than assumed: a missing
+-- role should cost the token hook, which can be fixed later, not the entire
+-- migration and everything defined after it.
+do $$
+begin
+  if exists (select 1 from pg_roles where rolname = 'supabase_auth_admin') then
+    grant usage on schema public to supabase_auth_admin;
+    grant execute on function public.custom_access_token_hook(jsonb) to supabase_auth_admin;
+    grant select on public.profiles to supabase_auth_admin;
+  else
+    raise notice 'No supabase_auth_admin role: skipping the access token hook grants. %',
+      'Tiers will read as free until the hook can be enabled.';
+  end if;
+exception
+  when insufficient_privilege then
+    raise notice 'Not permitted to grant to supabase_auth_admin; run those grants as a superuser.';
+end
+$$;
+
+-- Nobody else may call the hook: it is not a secret, but an API role that can
+-- invoke it gains nothing and the smaller surface is free.
+--
+-- Guarded for the same reason as the block above. authenticated and anon are
+-- PostgREST's roles, present on hosted Supabase and absent on a plain Postgres,
+-- and naming an absent role in a revoke is an error like any other.
+do $$
+declare
+  api_role text;
+begin
+  foreach api_role in array array['authenticated', 'anon'] loop
+    if exists (select 1 from pg_roles where rolname = api_role) then
+      execute format(
+        'revoke execute on function public.custom_access_token_hook(jsonb) from %I', api_role);
+    end if;
+  end loop;
+  -- PUBLIC is not a role but a keyword, so it needs no guard and covers any
+  -- role the deployment has that the two above do not.
+  revoke execute on function public.custom_access_token_hook(jsonb) from public;
+end
 $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -288,10 +334,18 @@ create policy "admins manage profiles" on public.profiles
   for update using (public.is_admin()) with check (public.is_admin());
 
 -- The token hook reads this table as supabase_auth_admin, which RLS would
--- otherwise block, leaving every token stamped 'free'.
-drop policy if exists "auth admin reads profiles" on public.profiles;
-create policy "auth admin reads profiles" on public.profiles
-  as permissive for select to supabase_auth_admin using (true);
+-- otherwise block, leaving every token stamped 'free'. Guarded like the grants
+-- above: naming a role that does not exist aborts the script, and everything
+-- below this line is more important than the hook.
+do $$
+begin
+  if exists (select 1 from pg_roles where rolname = 'supabase_auth_admin') then
+    drop policy if exists "auth admin reads profiles" on public.profiles;
+    create policy "auth admin reads profiles" on public.profiles
+      as permissive for select to supabase_auth_admin using (true);
+  end if;
+end
+$$;
 
 -- Jobs: you see your own, an admin sees all. Nobody inserts from the browser —
 -- submission goes through the API, which checks quota and normalises params
