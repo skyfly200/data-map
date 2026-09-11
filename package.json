@@ -16,9 +16,10 @@
   "dependencies": {
     "@google/earthengine": "^1.7.43",
     "@netlify/blobs": "^8.1.0",
-    "@supabase/supabase-js": "^2.112.4",
+    "@supabase/supabase-js": "^2.116.0",
     "geotiff": "^2.1.3",
     "leaflet": "^1.9.4",
+    "node-fetch": "^3.3.2",
     "nuxt": "^3.16.2",
     "open-location-code": "^1",
     "qrcode-generator": "^2.0.4",
