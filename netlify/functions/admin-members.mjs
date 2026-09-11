@@ -15,6 +15,7 @@
 import { adminClient, requireAdmin } from '../lib/auth.mjs'
 import { DEFAULT_LIMITS, summariseUsage } from '../lib/quotas.mjs'
 import { TIERS } from '../lib/tiers.mjs'
+import { CustomLayerError, normaliseCustomLayer } from '../lib/ee-custom-layers.mjs'
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json' },
@@ -78,6 +79,12 @@ export default async function handler(request) {
           .select('*').order('created_at', { ascending: false })
         if (error) throw new Error(error.message)
         return json({ ok: true, datasets: data || [] })
+      }
+      if (what === 'layers') {
+        const { data, error } = await client.from('ee_custom_layers')
+          .select('*').order('name')
+        if (error) throw new Error(error.message)
+        return json({ ok: true, layers: data || [] })
       }
       return json({ ok: true, members: await listMembers(client), limitFields: LIMIT_FIELDS })
     } catch (err) {
@@ -161,8 +168,38 @@ export default async function handler(request) {
       return json({ ok: true, deleted: body.id })
     }
 
+    // ── Custom Earth Engine layers ──────────────────────────────────────────
+    if (body.action === 'save-layer') {
+      // Validated before it is stored, not before it is used: a bad asset ID
+      // saved now is a broken layer found later, by somebody else.
+      const layer = normaliseCustomLayer(body)
+      const row = { ...layer, created_by: auth.user?.id || null }
+
+      const { data, error } = body.id
+        ? await client.from('ee_custom_layers').update(layer).eq('id', body.id).select().single()
+        : await client.from('ee_custom_layers').insert(row).select().single()
+      if (error) {
+        // A duplicate slug is the common mistake and its raw message is
+        // Postgres talking about a unique constraint.
+        throw new Error(/duplicate key|unique/i.test(error.message)
+          ? `A layer with the short name “${layer.slug}” already exists.`
+          : error.message)
+      }
+      return json({ ok: true, layer: data })
+    }
+
+    if (body.action === 'delete-layer') {
+      if (!body.id) throw new Error('Which layer?')
+      const { error } = await client.from('ee_custom_layers').delete().eq('id', body.id)
+      if (error) throw new Error(error.message)
+      return json({ ok: true, deleted: body.id })
+    }
+
     throw new Error(`Unknown action “${body.action}”.`)
   } catch (err) {
+    // A CustomLayerError is the administrator's form being wrong and its
+    // message is written for them.
+    if (err instanceof CustomLayerError) return json({ ok: false, error: err.message }, 400)
     return json({ ok: false, error: err.message }, 400)
   }
 }

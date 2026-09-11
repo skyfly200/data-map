@@ -17,6 +17,7 @@
         <div class="tabs" role="tablist">
           <button :class="{ on: tab === 'members' }" role="tab" @click="show('members')">Members</button>
           <button :class="{ on: tab === 'datasets' }" role="tab" @click="show('datasets')">Datasets</button>
+          <button :class="{ on: tab === 'layers' }" role="tab" @click="show('layers')">Map layers</button>
         </div>
 
         <p v-if="error" class="msg error">{{ error }}</p>
@@ -76,6 +77,101 @@
           </ul>
         </section>
 
+        <!-- ── Custom Earth Engine layers ─────────────────────────────── -->
+        <section v-if="tab === 'layers' && !loading" class="panel">
+          <p class="hint lead">
+            Compute a layer in the Earth Engine Code Editor, export it with
+            <code>Export.image.toAsset()</code>, then register the asset here. The app
+            renders it like any built-in layer. An asset ID is stored, never a
+            script: what you register names something already computed under your
+            own Earth Engine project.
+          </p>
+
+          <div class="grid">
+            <label class="stack"><span>Name</span>
+              <input v-model="draftLayer.name" placeholder="Chanterelle habitat index" /></label>
+            <label class="stack"><span>Short name (URL)</span>
+              <input v-model="draftLayer.slug" placeholder="chanterelle-habitat" /></label>
+            <label class="stack"><span>Group</span>
+              <input v-model="draftLayer.group" placeholder="Custom" /></label>
+            <label class="stack"><span>Who can see it</span>
+              <select v-model="draftLayer.tier">
+                <option value="free">Everyone</option>
+                <option value="member">Members</option>
+                <option value="admin">Administrators</option>
+              </select></label>
+          </div>
+
+          <label class="stack wide"><span>Earth Engine asset ID</span>
+            <input v-model="draftLayer.asset_id" spellcheck="false"
+                   placeholder="projects/your-project/assets/chanterelle-index" /></label>
+
+          <div class="grid">
+            <label class="stack"><span>Asset type</span>
+              <select v-model="draftLayer.asset_type">
+                <option value="image">Single image</option>
+                <option value="image_collection">Image collection</option>
+              </select></label>
+            <label class="stack"><span>Band</span>
+              <input v-model="draftLayer.band" spellcheck="false" placeholder="b1" /></label>
+            <template v-if="draftLayer.asset_type === 'image_collection'">
+              <label class="stack"><span>Combine with</span>
+                <select v-model="draftLayer.reducer">
+                  <option value="mosaic">Most recent (mosaic)</option>
+                  <option value="mean">Mean</option>
+                  <option value="median">Median</option>
+                  <option value="max">Maximum</option>
+                  <option value="min">Minimum</option>
+                  <option value="first">First</option>
+                </select></label>
+              <label class="stack"><span>From</span>
+                <input v-model="draftLayer.date_from" type="date" /></label>
+              <label class="stack"><span>To</span>
+                <input v-model="draftLayer.date_to" type="date" /></label>
+            </template>
+          </div>
+
+          <div class="grid">
+            <label class="stack"><span>Minimum</span>
+              <input v-model="draftLayer.vis_min" type="number" step="any" /></label>
+            <label class="stack"><span>Maximum</span>
+              <input v-model="draftLayer.vis_max" type="number" step="any" /></label>
+            <label class="stack"><span>Hide values below</span>
+              <input v-model="draftLayer.mask_below" type="number" step="any" placeholder="0" /></label>
+            <label class="stack"><span>Opacity</span>
+              <input v-model="draftLayer.opacity" type="number" min="0.05" max="1" step="0.05" /></label>
+          </div>
+
+          <label class="stack wide"><span>Palette (hex colors, low to high)</span>
+            <input v-model="draftLayer.palette" spellcheck="false"
+                   placeholder="#f7fcb9, #addd8e, #31a354" /></label>
+          <label class="stack wide"><span>Attribution</span>
+            <input v-model="draftLayer.attribution" placeholder="Your society, from Sentinel-2" /></label>
+          <label class="stack wide"><span>Caveat shown with the key</span>
+            <textarea v-model="draftLayer.note" rows="2"
+                      placeholder="What it shows, and where it should not be trusted."></textarea></label>
+
+          <div class="actions">
+            <button class="btn primary" :disabled="saving" @click="saveLayer">
+              {{ saving ? 'Saving…' : (draftLayer.id ? 'Save changes' : 'Add layer') }}
+            </button>
+            <button v-if="draftLayer.id" class="btn" @click="resetLayer">Cancel</button>
+          </div>
+
+          <p v-if="!layers.length" class="msg">No custom layers yet.</p>
+          <ul v-else class="rows">
+            <li v-for="l in layers" :key="l.id" class="row-item">
+              <div class="row-top">
+                <strong>{{ l.name }}</strong>
+                <span class="tier-badge" :class="l.tier">{{ l.tier }}</span>
+                <span class="usage">{{ l.group }} · <code>{{ l.asset_id }}</code></span>
+                <button class="linkish" @click="editLayer(l)">Edit</button>
+                <button class="linkish danger" @click="removeLayer(l)">Remove</button>
+              </div>
+            </li>
+          </ul>
+        </section>
+
         <!-- ── Datasets ───────────────────────────────────────────────── -->
         <section v-if="tab === 'datasets' && !loading" class="panel">
           <p v-if="!datasets.length" class="msg">No saved datasets yet.</p>
@@ -126,6 +222,66 @@ const LIMIT_FIELDS = Object.keys(DEFAULT_LIMITS)
 const tab = ref('members')
 const members = ref([])
 const datasets = ref([])
+const layers = ref([])
+
+/** A blank registration form. Defaults that render something rather than nothing. */
+const BLANK_LAYER = {
+  id: null, name: '', slug: '', group: 'Custom', tier: 'member',
+  asset_id: '', asset_type: 'image', band: '', reducer: 'mosaic',
+  date_from: '', date_to: '',
+  vis_min: '', vis_max: '', mask_below: '', opacity: 0.8,
+  palette: '#f7fcb9, #addd8e, #31a354', attribution: '', note: '',
+}
+const draftLayer = reactive({ ...BLANK_LAYER })
+
+function resetLayer() { Object.assign(draftLayer, BLANK_LAYER) }
+
+function editLayer(l) {
+  Object.assign(draftLayer, {
+    ...BLANK_LAYER,
+    ...l,
+    // Stored as an array and edited as text; the server takes either.
+    palette: (l.palette || []).join(', '),
+    // <input type="date"> wants exactly YYYY-MM-DD and shows nothing for an
+    // ISO timestamp.
+    date_from: l.date_from ? String(l.date_from).slice(0, 10) : '',
+    date_to: l.date_to ? String(l.date_to).slice(0, 10) : '',
+    vis_min: l.vis_min ?? '', vis_max: l.vis_max ?? '', mask_below: l.mask_below ?? '',
+  })
+}
+
+async function saveLayer() {
+  saving.value = true
+  error.value = ''
+  note.value = ''
+  try {
+    await call('/.netlify/functions/admin-members', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'save-layer', ...draftLayer }),
+    })
+    note.value = draftLayer.id ? 'Layer saved.' : 'Layer added. It appears in the map’s layer picker.'
+    resetLayer()
+    await show('layers')
+  } catch (e) {
+    error.value = e.message
+  } finally {
+    saving.value = false
+  }
+}
+
+async function removeLayer(l) {
+  if (!confirm(`Remove the layer “${l.name}”?`)) return
+  error.value = ''
+  try {
+    await call('/.netlify/functions/admin-members', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'delete-layer', id: l.id }),
+    })
+    await show('layers')
+  } catch (e) {
+    error.value = e.message
+  }
+}
 const loading = ref(false)
 const saving = ref(false)
 const error = ref('')
@@ -171,6 +327,7 @@ async function show(which) {
   try {
     const data = await call(`/.netlify/functions/admin-members?what=${which}`)
     if (which === 'members') members.value = data.members || []
+    else if (which === 'layers') layers.value = data.layers || []
     else datasets.value = data.datasets || []
   } catch (e) {
     error.value = e.message
@@ -297,4 +454,11 @@ input, select, textarea { background: var(--bg); color: var(--text); border: 1px
 .msg.error { color: #b3492f; }
 .msg.ok { color: #3d8b5f; }
 .hint { margin: 10px 0 0; font-size: 0.76rem; color: var(--muted); }
+.hint.lead { margin: 0 0 14px; font-size: 0.82rem; line-height: 1.5; max-width: 68ch; }
+.hint code, .row-top code {
+  font: 0.9em ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--surface-2); border-radius: 4px; padding: 1px 5px;
+}
+.linkish.danger { color: #b3492f; margin-left: 10px; }
+.row-top code { font-size: 0.72rem; }
 </style>

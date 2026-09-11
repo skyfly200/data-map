@@ -24,6 +24,23 @@ import {
   LayerError, EE_LAYER_CATALOGUE, cacheKey, describeLayer, resolveLayer, tierFor,
 } from '../lib/ee-tile-layers.mjs'
 import { earthEngineConfigured, initEarthEngine } from '../lib/ee-runner.mjs'
+import {
+  buildCustomLayer, describeCustomLayer, isCustomKey, slugFromKey,
+} from '../lib/ee-custom-layers.mjs'
+import { adminClient } from '../lib/auth.mjs'
+
+/**
+ * The layers an administrator has registered, for the catalogue and for
+ * rendering. Read past RLS so the catalogue is one query rather than one per
+ * tier — the tile path checks the tier itself before spending anything.
+ */
+async function customLayers() {
+  const client = adminClient()
+  if (!client) return []
+  const { data, error } = await client.from('ee_custom_layers').select('*').order('name')
+  if (error) return []
+  return data || []
+}
 
 /** How long a minted template is reused. Well inside Earth Engine's own expiry. */
 const TTL_MS = 6 * 60 * 60 * 1000
@@ -69,13 +86,74 @@ function getMapTemplate(ee, image, vis) {
   })
 }
 
+async function renderCustom(request, key) {
+  const rows = await customLayers()
+  const layer = rows.find((l) => l.slug === slugFromKey(key))
+  if (!layer) return json({ ok: false, error: 'That layer no longer exists.' }, 404)
+
+  const auth = await requireTier(request, layer.tier, {
+    message: `“${layer.name}” is a members' layer.`,
+  })
+  if (!auth.ok) return auth.response
+
+  if (!earthEngineConfigured()) {
+    return json({ ok: false, error: 'Earth Engine is not configured on this deployment.' }, 503)
+  }
+
+  const described = describeCustomLayer(layer)
+  // The updated_at timestamp is part of the key, so editing a layer's palette
+  // or band shows the change immediately instead of serving the cached render
+  // of the previous settings for up to six hours.
+  const id = `${key}|${layer.updated_at}`
+  const blobs = store()
+
+  if (blobs) {
+    try {
+      const hit = await blobs.get(id, { type: 'json' })
+      if (hit && hit.expires > Date.now()) {
+        return json({ ok: true, ...described, template: hit.template, cached: true })
+      }
+    } catch { /* a cache that cannot be read is a cache miss */ }
+  }
+
+  try {
+    const ee = await initEarthEngine()
+    const { image, vis } = buildCustomLayer(ee, layer)
+    const template = await getMapTemplate(ee, image, vis)
+    if (blobs) {
+      try { await blobs.setJSON(id, { template, expires: Date.now() + TTL_MS }) } catch { /* not fatal */ }
+    }
+    return json({ ok: true, ...described, template, cached: false })
+  } catch (err) {
+    // The likeliest faults are an asset that does not exist, one the service
+    // account cannot read, or a palette on a multi-band image. Earth Engine
+    // says which, so its words are passed through rather than summarised.
+    const detail = String(err?.message || err).slice(0, 300)
+    return json({
+      ok: false,
+      error: `Earth Engine could not render “${layer.name}”: ${detail}`,
+      hint: 'Check the asset ID, that the service account has read access to it, '
+        + 'and that a band is named if the asset has more than one.',
+      layer: key,
+    }, 502)
+  }
+}
+
 export default async function handler(request) {
   const url = new URL(request.url)
   const key = url.searchParams.get('layer')
 
   // The catalogue is not gated: the map needs it to know what to offer, and
   // knowing a layer exists is not the same as being able to render it.
-  if (!key) return json({ ok: true, layers: EE_LAYER_CATALOGUE })
+  if (!key) {
+    const custom = (await customLayers()).map(describeCustomLayer)
+    return json({ ok: true, layers: [...EE_LAYER_CATALOGUE, ...custom] })
+  }
+
+  // A layer an administrator registered, pointing at their own Earth Engine
+  // asset. Same gate, same cache, same error reporting as a built-in — only
+  // where the recipe comes from differs.
+  if (isCustomKey(key)) return renderCustom(request, key)
 
   // Gated per layer, not globally: years-since-fire and burn severity answer
   // the question the society exists to help with and are open to everyone,
