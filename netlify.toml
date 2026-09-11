@@ -12,6 +12,7 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -21,6 +22,7 @@
 
 [functions]
   node_bundler = "esbuild"
+  external_node_modules = ["@google/earthengine"]
 
 # The baseline GeoJSON is ~48 MB, and included_files at the top level puts it in
 # EVERY function bundle — twelve of them, of which four actually read it. The
