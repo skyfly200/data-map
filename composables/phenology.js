@@ -137,16 +137,6 @@ export function accumulate(series, { base = GDD_BASE, maxDoy = 366 } = {}) {
   return { rain, gdd }
 }
 
-/** Rain falling in the `window` days up to and including `doy`. */
-export function trailingRain(series, doy, window) {
-  let total = 0; let covered = 0
-  for (let d = doy - window + 1; d <= doy; d += 1) {
-    const v = series.rain.get(d)
-    if (v !== undefined) { total += v; covered += 1 }
-  }
-  return { total, covered, window }
-}
-
 /**
  * When a set of observations happened, per year.
  *

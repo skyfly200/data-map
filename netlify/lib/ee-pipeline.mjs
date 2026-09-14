@@ -99,11 +99,11 @@ export const STAGE_KEYS = Object.keys(STAGES)
 /** The default set: everything the shipped dataset carries. */
 export const DEFAULT_STAGES = ['terrain', 'landcover', 'soil_moisture', 'precip', 'temperature', 'ndvi']
 
-// Bounds on what one job may ask for. These are not the per-member quota (that
-// is in quotas.mjs); they are the outer edge of what the pipeline can do at all
-// without an export task, and they apply to admins too.
+// Bounds on the shape of one job: how wide an area and how long a span the
+// pipeline can cover at all without an Earth Engine export task. These are not
+// the per-member quota — how many POINTS a job may sample is `ee_max_points` in
+// quotas.mjs, which is what is actually enforced per member.
 export const MAX_BBOX_DEGREES = 20      // a job is a region, not a hemisphere
-export const MAX_POINTS = 50000
 export const MAX_DAYS = 366 * 5
 
 export class SpecError extends Error {}

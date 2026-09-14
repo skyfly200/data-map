@@ -238,10 +238,6 @@ function toHex(color) {
   width: 26px; height: 22px; padding: 0; border: 1px solid var(--border);
   border-radius: 4px; background: none; cursor: pointer;
 }
-.ap-shape {
-  background: var(--input-bg); color: var(--text); border: 1px solid var(--border);
-  border-radius: 4px; font-size: 0.72rem; padding: 2px 3px;
-}
 .ap-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ap-clear {
   border: 0; background: transparent; color: var(--muted); cursor: pointer;

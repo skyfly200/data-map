@@ -122,21 +122,3 @@ export function overlay(baseline, extras) {
   return { type: 'FeatureCollection', features: [...(baseline?.features || []), ...add] }
 }
 
-// Add only the fresh features whose uuid is not already in the baseline.
-export function mergeByUuid(baseline, fresh) {
-  const features = [...(baseline?.features || [])]
-  const seen = new Set(features.map((f) => f.properties?.uuid).filter(Boolean))
-  const addedUuids = []
-  for (const f of fresh) {
-    const id = f.properties?.uuid
-    if (id && seen.has(id)) continue
-    if (id) seen.add(id)
-    features.push(f)
-    addedUuids.push(id)
-  }
-  return {
-    collection: { type: 'FeatureCollection', features },
-    added: addedUuids.length,
-    addedUuids,
-  }
-}

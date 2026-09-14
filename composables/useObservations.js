@@ -96,11 +96,6 @@ export const LOCATION_PRECISION_LABELS = {
 // The values whose terrain enrichment cannot be taken at face value.
 export const IMPRECISE_PRECISIONS = new Set(['obscured', 'coarse'])
 
-/** True when a record's coordinates are too vague to read the ground under. */
-export function isImprecise(props) {
-  return IMPRECISE_PRECISIONS.has(props?.location_precision)
-}
-
 export function hasValue(v) {
   return v !== null && v !== undefined && v !== ''
 }

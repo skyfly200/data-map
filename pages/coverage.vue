@@ -34,13 +34,6 @@
         </div>
       </div>
 
-      <PlusCodeInput @update-plus-codes="handlePlusCodes" />
-      <div class="charts">
-        <CoverageTemporalChart :plus-codes="plusCodes" />
-        <CoverageNDVIChart :plus-codes="plusCodes" />
-        <CoverageRichnessChart :plus-codes="plusCodes" />
-      </div>
-
       <template v-if="matrixDates.length">
         <div class="cal-head">
           <h3 class="section">Coverage by date</h3>
@@ -74,15 +67,14 @@
 <script setup>
 import { PALETTE, UNCLUSTERED } from '~/composables/useObservations'
 import { ref, computed, onMounted } from 'vue'
-import PlusCodeInput from '~/components/PlusCodeInput.vue'
-import CoverageTemporalChart from '~/components/CoverageTemporalChart.vue'
-import CoverageNDVIChart from '~/components/CoverageNDVIChart.vue'
-import CoverageRichnessChart from '~/components/CoverageRichnessChart.vue'
 
-const plusCodes = ref('')
-function handlePlusCodes(codes) {
-  plusCodes.value = codes
-}
+// A Plus Code box and three Vega charts used to sit between the layer cards and
+// the calendar. They fetched /data/richness/, /data/ndvi/ and /data/temporal/ —
+// three directories that do not exist and that nothing in the pipeline writes —
+// so every request 404'd, the chart spec stayed null, and all three sat on
+// "Loading…" permanently. They were built on vue-vega, whose only published
+// version declares a Vue 2 peer, in a Vue 3 app. Removed rather than repaired:
+// there is no data source to repair them against.
 
 // The coverage summary written by raster_coverage.py. Everything below reads
 // through `cov`, so it has to exist before the fetch assigns into it — without
@@ -189,7 +181,6 @@ function bboxLabel(b) {
 .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .card-top h3 { margin: 0; font-size: 0.92rem; }
 .dot { width: 11px; height: 11px; border-radius: 50%; flex: 0 0 auto; }
-.dot.sm { width: 8px; height: 8px; display: inline-block; margin-right: 5px; }
 dl { margin: 0; display: flex; flex-direction: column; gap: 5px; }
 dl > div { display: flex; justify-content: space-between; gap: 10px; font-size: 0.82rem; }
 dt { color: var(--muted); }
