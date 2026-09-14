@@ -61,6 +61,7 @@
            this is only about what is worth showing. -->
       <NuxtLink v-if="isMember" to="/jobs" class="acct-item" @click="open = false">Pipeline jobs</NuxtLink>
       <NuxtLink v-if="isAdmin" to="/admin" class="acct-item" @click="open = false">Administration</NuxtLink>
+      <NuxtLink to="/offline" class="acct-item" @click="open = false">⬇ Offline</NuxtLink>
       <NuxtLink to="/options" class="acct-item" @click="open = false">⚙ Options</NuxtLink>
       <button v-if="signedIn" class="acct-item danger" @click="onSignOut">Sign out</button>
       <NuxtLink v-else-if="configured" to="/login" class="acct-item" @click="open = false">Sign in</NuxtLink>

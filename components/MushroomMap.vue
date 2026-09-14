@@ -5,6 +5,15 @@
     <div v-if="loadError" class="overlay error">{{ loadError }}</div>
     <div v-else-if="!loaded" class="overlay">Loading observations…</div>
 
+    <!-- Over the map rather than modal, because whether a layer is worth having
+         on is a question you answer by looking at the map. -->
+    <LayerManager
+      :open="showLayers" :groups="overlayGroups" :active="activeOverlays"
+      :order="overlayOrder" :opacity="layerOpacity"
+      @toggle="toggleOverlayByKey" @opacity="setLayerOpacity" @move="moveOverlay"
+      @clear="clearOverlays" @close="showLayers = false"
+    />
+
     <!-- What the map says about one spot you picked, rather than about a
          record someone else made. The observations answer "what was found
          here"; this answers "what is this place like", which is the question
@@ -85,7 +94,7 @@
            Settings to save bar space, but a button you press to DO something
            does not belong behind a menu of things you set. As icons they cost
            almost nothing. -->
-      <MapSettings v-model="showPoints" :bounds="viewBounds" :templates="activeTileTemplates"
+      <MapSettings v-model="showPoints" :bounds="viewBounds" :sources="activeTileTemplates"
                    :dataset-label="datasetLabel" />
 
       <!-- Heatmap: grid summaries computed from the observations and drawn
@@ -96,30 +105,30 @@
            were spread across the bar, where the cell size and the season panel
            appeared and disappeared as the mode changed and reflowed everything
            around them. -->
-      <!-- The layer picker, in the bar with everything else. It used to be a
-           Leaflet control floating over the map in its own white box, on a line
-           of its own. -->
-      <PopoverMenu icon="≣" label="Layers" title="Basemap and reference layers"
-                   :active="activeOverlays.size > 0"
-                   :badge="activeOverlays.size ? String(activeOverlays.size) : ''">
-        <div class="pop-head">Basemap</div>
+      <!-- Basemap and overlays are two different questions and were one
+           control. The basemap is a single choice from five, made rarely and
+           never revisited; the overlays are dozens, toggled constantly, and the
+           thing you actually manage. Putting them in one dropdown meant
+           scrolling past the ground you are standing on to reach the radios
+           for what it is drawn like. -->
+      <PopoverMenu icon="◱" label="Basemap" title="The map underneath everything"
+                   :badge="activeBaseName">
         <label v-for="b in baseLayers" :key="b.key" class="lay-row">
           <input type="radio" name="basemap" :value="b.key" :checked="activeBase === b.key"
                  @change="setBase(b.key)" />
           <span>{{ b.name }}</span>
         </label>
-
-        <template v-for="g in overlayGroups" :key="g.label">
-          <div class="pop-head">{{ g.label }}</div>
-          <label v-for="o in g.items" :key="o.key" class="lay-row">
-            <input type="checkbox" :checked="activeOverlays.has(o.key)" @change="toggleOverlay(o)" />
-            <span>{{ o.name }}</span>
-            <!-- Listed but marked, rather than hidden: knowing the society
-                 computes it is part of what membership is for. -->
-            <em v-if="o.tier && o.tier !== 'free'" class="lay-tier">members</em>
-          </label>
-        </template>
       </PopoverMenu>
+
+      <!-- A window rather than a dropdown; see components/LayerManager.vue. -->
+      <button class="tool-btn" :class="{ on: showLayers || activeOverlays.size > 0 }"
+              :aria-expanded="String(showLayers)"
+              :title="tip('Manage the overlay layers', 'shift+L')"
+              @click="showLayers = !showLayers">
+        <span class="tool-icon" aria-hidden="true">≣</span>
+        <span class="tool-label">Layers</span>
+        <span v-if="activeOverlays.size" class="tool-badge">{{ activeOverlays.size }}</span>
+      </button>
 
       <PopoverMenu ref="heatmapPop" icon="▦" label="Heatmap" title="Grid summary drawn under the points"
                    :active="!!heatmapMode" :badge="heatmapMode ? heatmapMeta.label : ''">
@@ -790,6 +799,9 @@ const saveError = ref('')
 // readable, so it is a first-class toggle rather than an appearance setting.
 const POINTS_KEY = 'map-show-points'
 const showPoints = ref(true)
+// Whether the layer manager window is up. Not a popover: it stays open while
+// you work the map, because that is how you tell whether a layer was worth it.
+const showLayers = ref(false)
 if (import.meta.client) {
   showPoints.value = localStorage.getItem(POINTS_KEY) !== '0'
 }
@@ -901,9 +913,14 @@ function loadVisible() {
 // edges without knowing the container's size, which Leaflet already knows.
 const viewBounds = ref(null)
 
-// The URL templates of the layers actually drawn right now — the basemap in use
-// plus whatever reference layers are switched on. Saving the whole catalogue
-// would spend a viewer's data on layers they are not looking at.
+// The layers actually drawn right now — the basemap in use plus whatever
+// reference layers are switched on. Saving the whole catalogue would spend a
+// viewer's data on layers they are not looking at.
+//
+// Each one carries a stable id as well as its template. For most layers the two
+// are the same string, but an Earth Engine template holds a token that expires
+// within hours: filed under its URL, a saved tile is unreachable by the time
+// anyone is standing in the woods reading it. The id is what the cache keys on.
 const activeTileTemplates = ref([])
 function syncActiveTemplates() {
   if (!map) return
@@ -911,7 +928,8 @@ function syncActiveTemplates() {
   map.eachLayer((l) => {
     // ArcGIS export layers build their URLs per tile rather than from a
     // template, so they cannot be enumerated ahead of time and are skipped.
-    if (l._url && typeof l._url === 'string' && l._url.includes('{z}')) out.push(l._url)
+    if (!l._url || typeof l._url !== 'string' || !l._url.includes('{z}')) return
+    out.push({ template: l._url, id: l._spec?.ee ? l._spec.key : l._url })
   })
   activeTileTemplates.value = out
 }
@@ -946,6 +964,9 @@ const heatmapCellIndex = computed(() => {
 // created empty, and the template is fetched the first time it is switched on —
 // minting one for a layer nobody looks at would spend quota for nothing.
 const eeTiles = useEeTiles()
+// Only for registering minted templates against their layer, so saved Earth
+// Engine tiles survive a token rotation. The saving itself lives in the panel.
+const offline = useOffline()
 const eeParams = ref({})
 const eeErrors = ref([])
 // The layer picker's contents. Populated once the map and its layers exist, so
@@ -979,17 +1000,75 @@ function setBase(key) {
   syncActiveTemplates()
 }
 
+// The stacking order of the overlays that are on, topmost first, and how see-
+// through each one is. Both are per-layer because both were global and that was
+// wrong: overlays hide one another, so land ownership under a hillshade is a
+// different map from the same two the other way up, and dimming the pile to
+// read through it dimmed the one thing you were trying to read.
+const overlayOrder = ref([])
+const layerOpacity = ref({})
+
+/** Push the current order down into Leaflet as z-indexes. */
+function applyOverlayOrder() {
+  if (!map) return
+  const n = overlayOrder.value.length
+  overlayOrder.value.forEach((key, i) => {
+    const entry = overlayLayers.value.find((o) => o.key === key)
+    // Topmost first in the list, so the first entry gets the highest index.
+    entry?.layer?.setZIndex?.(200 + (n - i))
+  })
+}
+
 function toggleOverlay(entry) {
   if (!map) return
   const on = map.hasLayer(entry.layer)
   if (on) map.removeLayer(entry.layer)
   else entry.layer.addTo(map)
   const next = new Set(activeOverlays.value)
-  if (on) next.delete(entry.key)
-  else next.add(entry.key)
+  if (on) {
+    next.delete(entry.key)
+    overlayOrder.value = overlayOrder.value.filter((k) => k !== entry.key)
+  } else {
+    next.add(entry.key)
+    // A layer just switched on goes on top, which is where someone who just
+    // asked for it expects to see it.
+    overlayOrder.value = [entry.key, ...overlayOrder.value]
+  }
   activeOverlays.value = next
+  applyOverlayOrder()
   syncActiveTemplates()
 }
+
+function toggleOverlayByKey(key) {
+  const entry = overlayLayers.value.find((o) => o.key === key)
+  if (entry) toggleOverlay(entry)
+}
+
+function moveOverlay(key, delta) {
+  const order = [...overlayOrder.value]
+  const i = order.indexOf(key)
+  const to = i + delta
+  if (i < 0 || to < 0 || to >= order.length) return
+  order.splice(to, 0, ...order.splice(i, 1))
+  overlayOrder.value = order
+  applyOverlayOrder()
+}
+
+/** One layer's own opacity, multiplied into the global dimmer. */
+function setLayerOpacity(key, value) {
+  const entry = overlayLayers.value.find((o) => o.key === key)
+  if (!entry) return
+  layerOpacity.value = { ...layerOpacity.value, [key]: value }
+  entry.layer.setOpacity(entry.layer._baseOpacity * value * tileOpacity.value)
+  heatmaps.persist()
+}
+
+function clearOverlays() {
+  for (const key of [...activeOverlays.value]) toggleOverlayByKey(key)
+}
+
+const activeBaseName = computed(() =>
+  baseLayers.value.find((b) => b.key === activeBase.value)?.name || '')
 const eeLayers = new Map()
 
 /** The parameters a layer is currently set to, defaulted from its schema. */
@@ -1011,6 +1090,11 @@ async function refreshEeLayer(spec) {
     // setUrl rather than a rebuild, so the layer keeps its place in the stack
     // and its toggle stays on.
     layer.setUrl(minted.template)
+    // Tell the offline worker which layer this token belongs to. Without it a
+    // tile saved under an earlier token cannot be matched to this request, and
+    // an area saved this morning draws blank this afternoon.
+    offline.registerEeTemplate(spec.key, minted.template)
+    syncActiveTemplates()
   } catch (err) {
     // Loud and by name. A layer that fails quietly is indistinguishable from
     // one showing that nothing is there, and on a fire map that is a lie.
@@ -1061,7 +1145,7 @@ async function addEeLayers() {
     // than hidden: knowing the society computes it is part of what membership
     // is for. Ticking it explains itself through the error card.
     overlayLayers.value = [...overlayLayers.value, {
-      key: spec.key, name: spec.name, group: spec.group, layer, tier: spec.tier,
+      key: spec.key, name: spec.name, group: spec.group, layer, tier: spec.tier, note: spec.note,
     }]
   }
 }
@@ -1513,13 +1597,18 @@ onMounted(async () => {
         loaded = 0
         failed = 0
       })
-      tileOverlayList.push({ key: o.name, name: o.name, group: o.group, layer })
+      tileOverlayList.push({ key: o.name, name: o.name, group: o.group, layer, note: o.note })
     }
-    // One slider dims every reference layer at once, which is what you actually
-    // want: they stack, and dimming them one at a time to see the data through
-    // the pile is several controls doing one job.
+    // The global dimmer still dims everything at once — but it now multiplies
+    // into whatever each layer has been set to individually, rather than
+    // replacing it. A hillshade meant to sit at 60% stays proportionally
+    // lighter than a layer meant to sit at full, and a layer someone has faded
+    // by hand in the manager stays faded.
     watch(tileOpacity, (v) => {
-      for (const l of tileLayers) l.setOpacity(l._baseOpacity * v)
+      for (const l of tileLayers) {
+        const own = layerOpacity.value[l._spec?.ee ? l._spec.key : l._spec?.name] ?? 1
+        l.setOpacity(l._baseOpacity * own * v)
+      }
       heatmaps.persist()
     })
 
@@ -1681,6 +1770,7 @@ shortcuts.register([
   { scope: 'Map', keys: 'o', label: 'Next heatmap', run: () => cycleHeatmap(1) },
   { scope: 'Map', keys: 'shift+O', label: 'Previous heatmap', run: () => cycleHeatmap(-1) },
   { scope: 'Map', keys: 'l', label: 'My location', run: () => locateMe() },
+  { scope: 'Map', keys: 'shift+L', label: 'Manage layers', run: () => { showLayers.value = !showLayers.value } },
   { scope: 'Map', keys: 'e', label: 'Save the map as an image', run: () => saveMap() },
   { scope: 'Map', keys: '[', label: 'Heatmap date back a week', run: () => nudgeDay(-7) },
   { scope: 'Map', keys: ']', label: 'Heatmap date forward a week', run: () => nudgeDay(7) },
@@ -1739,6 +1829,7 @@ onBeforeUnmount(() => {
    else it is used. */
 .controls :deep(.pop-btn),
 .controls .icon-btn,
+.controls .tool-btn,
 .controls :deep(.sh-btn),
 .controls :deep(.ap-btn),
 .controls :deep(.set-btn) {
@@ -1761,6 +1852,7 @@ onBeforeUnmount(() => {
 @media (pointer: coarse) {
   .controls :deep(.pop-btn),
   .controls .icon-btn,
+  .controls .tool-btn,
     .controls :deep(.sh-btn),
   .controls :deep(.ap-btn),
   .controls :deep(.set-btn) {
@@ -1770,6 +1862,7 @@ onBeforeUnmount(() => {
 
 .controls :deep(.pop-btn):hover,
 .controls .icon-btn:hover:not(:disabled),
+.controls .tool-btn:hover,
 .controls :deep(.sh-btn):hover,
 .controls :deep(.ap-btn):hover,
 .controls :deep(.set-btn):hover { border-color: var(--muted, #999); }
@@ -1777,6 +1870,7 @@ onBeforeUnmount(() => {
 /* One "this is doing something" state, rather than three. */
 .controls :deep(.pop-btn.on),
 .controls .icon-btn.on,
+.controls .tool-btn.on,
 .controls :deep(.sh-btn.on),
 .controls :deep(.ap-btn.on),
 .controls :deep(.set-btn.on) {
@@ -2050,6 +2144,23 @@ onBeforeUnmount(() => {
 .pop-field select { width: 100%; }
 
 /* Layer rows. A whole row is the hit target, not just the box. */
+/* The layer manager's opener. Sized and stated by the shared block above with
+   the rest of the bar; these are only the parts inside it, which mirror
+   PopoverMenu's so the two read as the same kind of control. */
+.tool-icon { font-size: 0.95rem; line-height: 1; }
+.tool-badge {
+  background: var(--surface-2, #eee); border-radius: 999px;
+  padding: 1px 6px; font-size: 0.7rem; color: var(--muted, #666);
+}
+@media (max-width: 720px) {
+  /* As with the popovers: on a phone the icon carries it and the outline says
+     something is on. */
+  .tool-label, .tool-badge { display: none; }
+  .controls .tool-btn { padding: 0 8px; gap: 0; }
+}
+
+/* The basemap radios. The overlay rows that also used this, and the tier badge
+   that went with them, live in LayerManager.vue now. */
 .lay-row {
   display: flex; align-items: center; gap: 8px;
   padding: 4px 2px; font-size: 0.82rem; cursor: pointer; line-height: 1.3;
@@ -2057,11 +2168,6 @@ onBeforeUnmount(() => {
 .lay-row:hover { color: var(--text); }
 .lay-row input { flex: 0 0 auto; margin: 0; }
 .lay-row span { flex: 1 1 auto; }
-.lay-tier {
-  font-style: normal; font-size: 0.62rem; text-transform: uppercase;
-  letter-spacing: 0.04em; color: var(--muted);
-  background: var(--surface-2); border-radius: 999px; padding: 1px 6px;
-}
 .pop-field input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); }
 
 @media (max-width: 640px) {

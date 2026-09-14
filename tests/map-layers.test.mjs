@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 
 import {
   TILE_LAYERS, TIME_LAYERS, WORLDCOVER_CLASSES,
-  arcgisExportUrl, gibsUrl, layerDate, layerGroups, tileBounds,
+  arcgisExportUrl, filterLayerGroups, gibsUrl, layerDate, layerGroups, tileBounds,
 } from '../composables/mapLayers.js'
 
 test('tile bounds cover the whole world at zoom 0 and quarter it at zoom 1', () => {
@@ -147,4 +147,56 @@ test('opacity defaults keep context layers under the data', () => {
   }
   const ownership = TILE_LAYERS.find((l) => l.name === 'Land ownership (US)')
   assert.ok(ownership.opacity < 0.6)
+})
+
+// ── Searching the layer manager ──────────────────────────────────────────────
+
+/** The catalogue in the shape the layer manager receives it. */
+const managerGroups = () => layerGroups().map((g) => ({ label: g.name, items: g.layers }))
+
+test('a layer is found by any part of its name', () => {
+  const hits = filterLayerGroups(managerGroups(), 'ndvi').flatMap((g) => g.items.map((i) => i.name))
+  assert.deepEqual(hits, ['NDVI (greenness)'])
+})
+
+test('searching for a group by its start returns the whole group', () => {
+  // Someone typing a heading means the section, not a layer that happens to
+  // contain the word.
+  const weather = layerGroups().find((g) => g.name === 'Weather')
+  const got = filterLayerGroups(managerGroups(), 'weath')
+  assert.equal(got.length, 1)
+  assert.equal(got[0].items.length, weather.layers.length)
+})
+
+test('a query inside a group name does not drag the whole group in', () => {
+  // The bug this function exists for: "Terrain" contains "rain", so matching
+  // group names by substring returned Hillshade, USGS topo, USGS imagery and
+  // OpenTopoMap relief for a search whose only real answers are the two
+  // rainfall layers.
+  const names = filterLayerGroups(managerGroups(), 'rain').flatMap((g) => g.items.map((i) => i.name))
+  assert.ok(names.every((n) => n.toLowerCase().includes('rain')), `got ${JSON.stringify(names)}`)
+  assert.ok(names.includes('Rain past 24h (US)'))
+  assert.ok(names.includes('Rainfall (global)'))
+  assert.ok(!names.includes('Hillshade'))
+})
+
+test('an empty query changes nothing, and a hopeless one returns nothing', () => {
+  const groups = managerGroups()
+  assert.equal(filterLayerGroups(groups, ''), groups)
+  assert.equal(filterLayerGroups(groups, '   '), groups)
+  assert.deepEqual(filterLayerGroups(groups, 'zzzz'), [])
+})
+
+test('searching ignores case and surrounding space', () => {
+  const a = filterLayerGroups(managerGroups(), '  HILLSHADE ').flatMap((g) => g.items.map((i) => i.name))
+  assert.deepEqual(a, ['Hillshade'])
+})
+
+test('a custom group searches like any other', () => {
+  // The registered Earth Engine layers arrive as their own group, and must be
+  // reachable the same way rather than being a special case.
+  const groups = [{ label: 'Custom', items: [{ key: 'custom:tree-cover', name: 'Tree cover 2026' }] }]
+  assert.equal(filterLayerGroups(groups, 'tree')[0].items.length, 1)
+  assert.equal(filterLayerGroups(groups, 'cust')[0].items.length, 1)
+  assert.deepEqual(filterLayerGroups(groups, 'fire'), [])
 })

@@ -10,7 +10,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
-  CUSTOM_PREFIX, CustomLayerError, buildCustomLayer, describeCustomLayer,
+  CUSTOM_PREFIX, CustomLayerError, LAYER_PRESETS, applyPreset,
+  buildCustomLayer, describeCustomLayer,
   isCustomKey, normaliseCustomLayer, slugFromKey,
   validateAssetId, validateBand, validatePalette, validateSlug,
 } from '../netlify/lib/ee-custom-layers.mjs'
@@ -250,4 +251,75 @@ test('a description carries the tier, so the picker can mark it', () => {
 test('a layer with no palette has no key rather than an empty one', () => {
   const d = describeCustomLayer(normaliseCustomLayer({ ...base, palette: '' }))
   assert.equal(d.legend, null)
+})
+
+// ── Presets ──────────────────────────────────────────────────────────────────
+
+test('every preset produces a layer the validator accepts', () => {
+  // A preset that cannot be saved is worse than no preset: it fills the form
+  // with something that looks right and is refused on submit.
+  for (const preset of LAYER_PRESETS) {
+    const draft = applyPreset({ name: 'Test', asset_id: 'projects/p/assets/x' }, preset.id)
+    const layer = normaliseCustomLayer(draft)
+    assert.ok(layer.name, `${preset.id}: no name survived`)
+    assert.ok(layer.asset_id, `${preset.id}: no asset id survived`)
+  }
+})
+
+test('a preset never overwrites what identifies the layer', () => {
+  // Applying a palette must not rewrite a half-typed name or clear the asset.
+  const draft = {
+    name: 'My tree cover', slug: 'my-tree-cover',
+    asset_id: 'projects/p/assets/mine', tier: 'admin',
+  }
+  const out = applyPreset(draft, 'cover-percent')
+  assert.equal(out.name, 'My tree cover')
+  assert.equal(out.slug, 'my-tree-cover')
+  assert.equal(out.asset_id, 'projects/p/assets/mine')
+  assert.equal(out.tier, 'admin')
+  // But it does bring the rendering.
+  assert.equal(out.vis_max, 100)
+  assert.ok(out.palette.includes('#'))
+})
+
+test('an unknown preset changes nothing rather than blanking the form', () => {
+  const draft = { name: 'x', vis_max: 7 }
+  assert.deepEqual(applyPreset(draft, 'nope'), draft)
+  assert.deepEqual(applyPreset(draft, ''), draft)
+})
+
+test('presets have distinct ids and carry no asset ids of their own', () => {
+  const ids = LAYER_PRESETS.map((p) => p.id)
+  assert.equal(new Set(ids).size, ids.length)
+  for (const p of LAYER_PRESETS) {
+    assert.ok(p.label && p.hint, `${p.id} is unexplained`)
+    // Guessing somebody else's asset path is worse than an empty field: it
+    // renders as a broken layer blamed on the app.
+    assert.equal(p.layer.asset_id, undefined, `${p.id} ships an asset id`)
+  }
+})
+
+test('the classified preset paints classes, not a ramp', () => {
+  // Ten classes across a five-colour ramp reads as a quantity that is not
+  // there. This is the preset for the "remap to N classes then export" case,
+  // and its palette has to have one colour per class.
+  const preset = LAYER_PRESETS.find((p) => p.id === 'cover-classes')
+  const layer = normaliseCustomLayer(applyPreset(
+    { name: 'Cover', asset_id: 'projects/p/assets/x' }, preset.id))
+  assert.equal(layer.palette.length, layer.vis_max - layer.vis_min + 1)
+  assert.equal(new Set(layer.palette).size, layer.palette.length, 'two classes share a colour')
+})
+
+test('presets that count from zero mask it, and signed ones do not', () => {
+  // On percent cover, zero is "no trees" everywhere there are no trees, and
+  // painting it the bottom of the ramp covers the map. On an index, zero is a
+  // real reading.
+  const percent = normaliseCustomLayer(applyPreset(
+    { name: 'Percent cover', asset_id: 'projects/p/assets/x' }, 'cover-percent'))
+  assert.equal(percent.mask_below, 0)
+
+  const index = normaliseCustomLayer(applyPreset(
+    { name: 'Greenness', asset_id: 'projects/p/assets/x' }, 'index'))
+  assert.equal(index.mask_below, null)
+  assert.ok(index.vis_min < 0)
 })

@@ -258,3 +258,140 @@ export function describeCustomLayer(layer) {
 export const CUSTOM_PREFIX = 'custom:'
 export const isCustomKey = (key) => String(key || '').startsWith(CUSTOM_PREFIX)
 export const slugFromKey = (key) => String(key || '').slice(CUSTOM_PREFIX.length)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Presets
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// The registration form asks for eleven things, and ten of them are the same
+// every time for a given KIND of raster. A percent-cover layer always wants 0
+// to 100, a green ramp and zero masked out; a classified grid always wants
+// discrete colours and no ramp at all. Getting those wrong is not an error
+// anybody sees — the layer renders, it just renders badly, as a uniform wash or
+// an all-black square, and the asset gets blamed.
+//
+// Deliberately no asset IDs. A preset describes how to PAINT a raster, which is
+// knowledge worth shipping; which asset you have is yours, and a guessed ID
+// that does not exist is worse than an empty field.
+
+export const LAYER_PRESETS = [
+  {
+    id: 'cover-percent',
+    label: 'Cover, percent (0–100)',
+    hint: 'Tree or canopy cover as a percentage. Exported from a classification '
+      + 'or taken from a global product.',
+    assetHint: 'projects/your-project/assets/tree-cover-2026',
+    layer: {
+      group: 'Cover',
+      asset_type: 'image',
+      band: 'cover',
+      vis_min: 0,
+      vis_max: 100,
+      // Zero is "no trees" and would otherwise paint every field, road and lake
+      // the bottom of the ramp, which reads as data rather than as absence.
+      mask_below: 0,
+      palette: '#f7fcb9, #addd8e, #41ab5d, #238443, #005a32',
+      opacity: 0.75,
+      note: 'Percent canopy cover. Ground with no cover is left unpainted rather '
+        + 'than drawn as the low end, so blank means none rather than unknown.',
+    },
+  },
+  {
+    id: 'cover-classes',
+    label: 'Classified cover (discrete classes)',
+    hint: 'A remapped grid where each value is a class rather than a quantity — '
+      + 'the usual output of an Export.image.toAsset() over a classification.',
+    assetHint: 'projects/your-project/assets/cover-classes',
+    layer: {
+      group: 'Cover',
+      asset_type: 'image',
+      band: 'classification',
+      // Classes are counted from 1, and 0 is left as the nodata value. A ramp
+      // across ten classes is meaningless, so the palette is ten distinct
+      // colours and Earth Engine assigns them in order.
+      vis_min: 1,
+      vis_max: 10,
+      mask_below: 0,
+      palette: '#1b7837, #5aae61, #a6dba0, #d9f0d3, #e7d4e8, '
+        + '#c2a5cf, #9970ab, #762a83, #b35806, #542788',
+      opacity: 0.8,
+      note: 'Each colour is a class, not a level: the order carries no magnitude. '
+        + 'Set the maximum to however many classes the asset actually has.',
+    },
+  },
+  {
+    id: 'canopy-height',
+    label: 'Canopy height, metres (0–40)',
+    hint: 'A height raster, from lidar or a global canopy height model.',
+    assetHint: 'projects/your-project/assets/canopy-height',
+    layer: {
+      group: 'Cover',
+      asset_type: 'image',
+      band: 'height',
+      vis_min: 0,
+      vis_max: 40,
+      mask_below: 0,
+      palette: '#ffffcc, #c2e699, #78c679, #31a354, #006837',
+      opacity: 0.75,
+      note: 'Modelled canopy height in metres. Tall closed canopy saturates near '
+        + 'the top of the range, so it separates open from forested far better '
+        + 'than it separates old growth from mature.',
+    },
+  },
+  {
+    id: 'index',
+    label: 'Index, −1 to 1 (NDVI and similar)',
+    hint: 'A normalised difference index, where the sign means something.',
+    assetHint: 'projects/your-project/assets/ndvi-summer',
+    layer: {
+      group: 'Vegetation',
+      asset_type: 'image_collection',
+      band: 'NDVI',
+      reducer: 'median',
+      vis_min: -0.2,
+      vis_max: 1,
+      // No mask: on a signed index, zero and below are real readings — bare
+      // ground, water — not absence.
+      palette: '#bfa06a, #dfd39a, #c3d17a, #7fb04a, #3d8228, #14520f',
+      opacity: 0.7,
+      note: 'Dense conifer and dense broadleaf both saturate near the top, so this '
+        + 'separates bare from green far better than it separates forest types.',
+    },
+  },
+  {
+    id: 'probability',
+    label: 'Probability or suitability (0–1)',
+    hint: 'A model output where every pixel is a likelihood.',
+    assetHint: 'projects/your-project/assets/habitat-suitability',
+    layer: {
+      group: 'Custom',
+      asset_type: 'image',
+      band: 'probability',
+      vis_min: 0,
+      vis_max: 1,
+      // Low probability is a result, but painting the whole world pale is not
+      // informative; a floor keeps the layer readable over the observations.
+      mask_below: 0.1,
+      palette: '#fee5d9, #fcae91, #fb6a4a, #de2d26, #a50f15',
+      opacity: 0.7,
+      note: 'A model output, not an observation. Values below 0.1 are hidden so the '
+        + 'layer does not wash out the map; that is a display choice, not a threshold '
+        + 'the model endorses.',
+    },
+  },
+]
+
+/** Apply a preset over a draft, leaving anything the admin has already typed. */
+export function applyPreset(draft, presetId) {
+  const preset = LAYER_PRESETS.find((p) => p.id === presetId)
+  if (!preset) return draft
+  const out = { ...draft }
+  for (const [key, value] of Object.entries(preset.layer)) {
+    // The asset ID, the name and the slug identify a particular layer and are
+    // never a preset's business — overwriting a half-typed name to apply a
+    // palette is the kind of help nobody asked for.
+    if (['asset_id', 'name', 'slug', 'id', 'tier'].includes(key)) continue
+    out[key] = value
+  }
+  return out
+}

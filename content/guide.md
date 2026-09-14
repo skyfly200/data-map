@@ -104,9 +104,30 @@ way, and color shows wind exposure.
 
 ### Basemaps and layers
 
-The layers control offers a light gray basemap by default, so the observations
-are the only saturated thing on screen. Street, terrain and satellite are one
-click away. Reference layers stack on top, grouped by subject:
+There are two controls, because these are two different questions. **Basemap**
+is a single choice from five, made once and rarely revisited. **Layers** opens a
+window for the overlays, which is where the list has grown: the built-in
+catalogue, the Earth Engine layers, and whatever assets your society has
+registered of its own.
+
+The layer window stays open while you work the map, rather than closing on the
+first click. Whether a layer was worth switching on is something you judge by
+looking at the map, so the map stays visible and usable underneath it.
+
+Inside it, everything currently drawn is listed first, topmost first:
+
+- **Order** — arrows move a layer up or down the stack. Overlays hide each
+  other, and land ownership under a hillshade is a different map from the same
+  two the other way up. A layer you switch on goes to the top, which is where
+  someone who just asked for it expects to find it.
+- **Opacity** — each drawn layer has its own. This multiplies into the global
+  tile opacity in Appearance rather than replacing it, so dimming the pile to
+  read through it no longer dims the one layer you were trying to read.
+- **Search** — by layer name anywhere, or by the start of a group name.
+
+The basemap is a light gray canvas by default, so the observations are the only
+saturated thing on screen. Street, terrain and satellite are one click away.
+Reference layers stack on top, grouped by subject:
 
 - **Terrain** — hillshade, USGS topo, USGS imagery, OpenTopoMap relief. Gray base
   plus hillshade gives relief without color.
@@ -172,18 +193,43 @@ amounts:
   offline too, not just the page you happened to be on.
 - **Observations** — the dataset the map, table and charts all read. This is the
   large one.
-- **Map tiles for this view** — basemap imagery for the area on screen, plus
-  however many zoom levels closer you ask for.
+- **An area** — imagery for the place on screen, plus however many zoom levels
+  closer you ask for, across every layer currently drawn.
 
-Pan to where you are going before saving tiles. The count and a rough size are
+Pan to where you are going before saving an area. The count and a rough size are
 shown before anything downloads, because the count roughly quadruples per extra
-zoom level.
+zoom level. A save past twenty thousand tiles is refused outright rather than
+trimmed to fit: an area quietly missing its edges is worse than one that was
+never saved, because you find out where there is no signal to fix it.
+
+#### Managing saved areas
+
+An area is named when you save it, and the collection lives on the **Offline**
+page, reachable from the account menu. Each one can be renamed, re-saved to pick
+up anything that failed, deleted, or opened — which puts the map back over it.
+
+Name them. A list of saved places is read weeks later, and by then a set of
+coordinates is a puzzle where "north ridge" is an answer.
+
+Deleting an area frees only the tiles no other saved area still needs. Two areas
+over the same valley share tiles, and removing one must not punch a hole in the
+other.
+
+The **Offline** page also shows what the browser says this site is occupying in
+total. That figure is the accurate one. The per-area sizes are estimates, and
+are labelled as such: tiles are fetched from hosts that do not all report a
+length, and once stored they cannot be measured at all.
 
 Nothing beyond the app shell is saved on its own: pulling a dataset and a few
 hundred tiles onto someone's mobile data unasked is not a feature. Saved data
 lives in this browser on this device, is not uploaded, does not follow your
 account, and goes when you clear the browser's site data. The app is installable
 to a home screen.
+
+> **Note** Earth Engine layers can be saved into an area like any other. Their
+> tile URLs carry a token that expires within hours, so they are filed under the
+> layer rather than under the URL — otherwise every tile you saved would be
+> unreachable by the time you were standing in the woods reading it.
 
 > **Caution** Tile services set their own terms on bulk downloading. Save the
 > area you are going to, not a region.
@@ -377,8 +423,75 @@ built-in ones.
 4. Register it on **Administration → Map layers**: the asset ID, which band to
    draw, a palette, and who can see it.
 
-It then appears in the map's layer picker under whatever group you name, with
+It then appears in the map's layer window under whatever group you name, with
 its own key, and renders through the same path as every built-in layer.
+
+### How the asset and the token fit together
+
+The asset is permanent; the tile URL is not, and the app is built around that
+difference.
+
+`Export.image.toAsset()` writes your processed grid into a managed record inside
+your own Earth Engine project. It stays there indefinitely and never expires.
+But Earth Engine does not serve raw tiles publicly: calling `getMapId()` on the
+asset mints a URL carrying a token that expires within hours.
+
+So a function on the server is the bridge. The browser asks it for a tile URL;
+it authenticates with the service account, loads the already-computed asset —
+skipping every `remap()` and `visualize()` the export already did — calls
+`getMapId()`, and hands the fresh URL back for Leaflet to draw. Nothing is
+pre-sliced into thousands of stored `z/x/y.png` files: one asset in Earth
+Engine, and a small function minting tokens on demand.
+
+The app re-mints roughly hourly, because an expired template does not error — it
+serves blank tiles, and blank ground reads as ground with nothing on it rather
+than as a layer that failed.
+
+> **Note** This is also why saving an Earth Engine layer for offline use files
+> its tiles under the layer rather than under the URL. Keyed by URL, everything
+> saved would be unreachable the moment the token rotated.
+
+### A tree cover layer, end to end
+
+Classify or threshold in the Code Editor, export once, register the asset. The
+export is what makes it cheap to draw: the work happens once, not per tile.
+
+```js
+// Ten cover classes over an area of interest, exported once as an asset.
+var aoi = ee.Geometry.Rectangle([-105.4, 39.5, -104.6, 40.2]);
+
+var s2 = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
+  .filterBounds(aoi)
+  .filterDate('2025-06-01', '2025-09-15')
+  .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
+  .median();
+
+var ndvi = s2.normalizedDifference(['B8', 'B4']).rename('ndvi');
+
+// Ten classes, 1..10. Zero is left free to mean nodata, which is what the
+// layer's "Hide values below" setting masks out.
+var classes = ndvi.multiply(10).ceil().clamp(1, 10).toByte().rename('classification');
+
+Export.image.toAsset({
+  image: classes.clip(aoi),
+  description: 'cover_classes_2025',
+  assetId: 'projects/your-project/assets/cover-classes-2025',
+  region: aoi,
+  scale: 20,
+  maxPixels: 1e10
+});
+```
+
+When the export finishes, grant the app's service account read access to the
+asset, then register it on **Administration → Map layers**. Choose the
+**Classified cover** preset: it fills the band, the 1–10 range, ten distinct
+colours and the zero mask, which are the settings that are easy to get wrong and
+produce a layer that renders badly rather than one that errors.
+
+The presets cover the shapes these rasters usually take — percent cover, a
+classified grid, canopy height in metres, a signed index, a probability. None of
+them carries an asset ID: they describe how to paint a raster, and which asset
+you have is yours.
 
 Each layer carries its own access level — **everyone**, **members** or
 **administrators** — so a finished layer can be public while a draft stays
