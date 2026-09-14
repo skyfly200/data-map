@@ -87,6 +87,18 @@
             own Earth Engine project.
           </p>
 
+          <!-- The rendering is the part that is easy to get wrong and hard to
+               notice: a percent layer with no mask paints the whole world the
+               bottom of its ramp, and ten classes across a five-colour ramp
+               read as a quantity that is not there. Neither is an error — the
+               layer draws, badly, and the asset gets blamed. -->
+          <label class="stack wide"><span>Start from a preset</span>
+            <select :value="presetId" @change="usePreset($event.target.value)">
+              <option value="">Fill the rendering by hand</option>
+              <option v-for="p in LAYER_PRESETS" :key="p.id" :value="p.id">{{ p.label }}</option>
+            </select></label>
+          <p v-if="presetHint" class="hint">{{ presetHint }}</p>
+
           <div class="grid">
             <label class="stack"><span>Name</span>
               <input v-model="draftLayer.name" placeholder="Chanterelle habitat index" /></label>
@@ -210,9 +222,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { computed, ref, reactive, onMounted } from 'vue'
 import { TIERS } from '~/netlify/lib/tiers.mjs'
 import { DEFAULT_LIMITS } from '~/netlify/lib/quotas.mjs'
+import { LAYER_PRESETS, applyPreset } from '~/netlify/lib/ee-custom-layers.mjs'
 
 const membership = useMembership()
 const { accessToken } = useAuth()
@@ -234,7 +247,24 @@ const BLANK_LAYER = {
 }
 const draftLayer = reactive({ ...BLANK_LAYER })
 
-function resetLayer() { Object.assign(draftLayer, BLANK_LAYER) }
+// Which preset the rendering came from. Only a starting point — everything it
+// fills stays editable, and changing a field afterwards does not un-choose it.
+const presetId = ref('')
+const presetHint = computed(() => {
+  const p = LAYER_PRESETS.find((x) => x.id === presetId.value)
+  return p ? `${p.hint} Example asset: ${p.assetHint}` : ''
+})
+
+function usePreset(id) {
+  presetId.value = id
+  if (!id) return
+  Object.assign(draftLayer, applyPreset({ ...draftLayer }, id))
+}
+
+function resetLayer() {
+  Object.assign(draftLayer, BLANK_LAYER)
+  presetId.value = ''
+}
 
 function editLayer(l) {
   Object.assign(draftLayer, {

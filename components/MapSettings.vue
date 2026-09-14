@@ -47,7 +47,7 @@
       <div class="set-group">
         <span class="set-label">Offline <HelpLink option="map-offline" /></span>
         <ClientOnly>
-          <OfflineControls :bounds="bounds" :templates="templates" :dataset-label="datasetLabel" />
+          <OfflineControls :bounds="bounds" :sources="sources" :dataset-label="datasetLabel" />
         </ClientOnly>
       </div>
 
@@ -69,7 +69,8 @@ defineProps({
   // What is on screen, so "save this view" can mean the view. The map owns the
   // viewport and the active tile templates; this panel only passes them on.
   bounds: { type: Object, default: null },
-  templates: { type: Array, default: () => [] },
+  // The drawn layers as { template, id }; see MushroomMap's syncActiveTemplates.
+  sources: { type: Array, default: () => [] },
   datasetLabel: { type: String, default: '' },
 })
 defineEmits(['update:modelValue'])

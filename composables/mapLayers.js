@@ -246,6 +246,30 @@ export const TILE_LAYERS = [
 /** Layers whose date the viewer can move. */
 export const TIME_LAYERS = TILE_LAYERS.filter((l) => l.time).map((l) => l.name)
 
+/**
+ * Filter grouped layers for the manager's search box.
+ *
+ * A layer matches on its name anywhere. A GROUP matches only as a prefix, and
+ * that asymmetry is the whole point of this being a function worth testing:
+ * matching a group by substring meant typing "rain" returned Hillshade, USGS
+ * topo, USGS imagery and OpenTopoMap relief — the entire Terrain group, because
+ * "Terrain" contains "rain" — while burying the two rainfall layers among them.
+ *
+ * Prefix is what someone reaching for a heading actually types: "terr", "veg",
+ * "weath". Nobody arrives at "Terrain" by typing "rain".
+ */
+export function filterLayerGroups(groups, query) {
+  const q = (query || '').trim().toLowerCase()
+  if (!q) return groups
+  return groups
+    .map((g) => {
+      const label = (g.label || '').toLowerCase()
+      if (label.startsWith(q)) return g
+      return { ...g, items: g.items.filter((o) => (o.name || '').toLowerCase().includes(q)) }
+    })
+    .filter((g) => g.items.length)
+}
+
 /** Catalogue entries grouped for the layers control, in declaration order. */
 export function layerGroups() {
   const groups = []
