@@ -136,43 +136,55 @@
       <h2>Where the data comes from</h2>
       <p class="pl-lede">
         iNaturalist supplies the observations: a name, a date and a coordinate. Everything
-        else on this site is sampled afterwards by a Python pipeline, which reads terrain
-        from a digital elevation model, canopy and moisture from satellite imagery, and the
-        weather for the week before each find, then clusters the results by environmental
-        similarity. It is open, and you can run it yourself.
+        else on this site is sampled afterwards from <strong>Google Earth Engine</strong>,
+        which is where the terrain model, the satellite imagery and the weather
+        reanalysis all live. Six stages run against it — terrain, land cover, soil
+        moisture, precipitation, temperature and greenness — and the results are then
+        clustered by environmental similarity.
       </p>
 
       <div class="pl-grid">
-        <a class="pl-card" :href="KAGGLE_URL" target="_blank" rel="noopener noreferrer">
-          <h3>Run it on Kaggle</h3>
+        <div class="pl-card static">
+          <h3>The published dataset</h3>
           <p>
-            The whole pipeline in a hosted notebook, no local setup. Add your Earth Engine
-            project, authenticate, and run. The notebook is one
-            <code>run_pipeline.run_all()</code> call, so it cannot drift out of step with
-            the command line version.
+            Built in batch by the Python pipeline and committed to the repository, so the
+            map opens on the same data for everybody and does not spend Earth Engine
+            quota to draw. A scheduled function merges genuinely new sightings on top
+            between full runs.
+          </p>
+          <span class="pl-fact">{{ totalCount ? `${totalCount.toLocaleString()} observations today` : 'Rebuilt as the pipeline runs' }}</span>
+        </div>
+
+        <NuxtLink class="pl-card" to="/jobs">
+          <h3>Enrichment on demand</h3>
+          <p>
+            Members run the same six stages over their own area and dates, as a queued
+            job on the society's Earth Engine account. Progress is reported as it runs and
+            the output is saved as a dataset you can map, chart and download.
+          </p>
+          <span class="pl-go">A membership benefit</span>
+        </NuxtLink>
+
+        <a class="pl-card" :href="KAGGLE_URL" target="_blank" rel="noopener noreferrer">
+          <h3>Run the pipeline yourself</h3>
+          <p>
+            The whole thing in a hosted Kaggle notebook, or locally with
+            <code>pip install -r requirements.txt</code> and
+            <code>python run_pipeline.py</code>. Both are one
+            <code>run_pipeline.run_all()</code> call, so neither can drift out of step
+            with the other.
           </p>
           <span class="pl-go">Open the Kaggle notebook</span>
-        </a>
-
-        <a class="pl-card" :href="`${repoUrl}#python-script-pipeline`"
-           target="_blank" rel="noopener noreferrer">
-          <h3>Run it locally</h3>
-          <p>
-            <code>pip install -r requirements.txt</code>, put an Earth Engine project in
-            <code>.env</code>, then <code>python run_pipeline.py</code>. Individual stages
-            are importable too, which is the gentler option against Earth Engine's quota.
-          </p>
-          <span class="pl-go">Setup and credentials in the README</span>
         </a>
       </div>
 
       <p class="pl-note">
-        Earth Engine supplies the environmental layers and is the only credential the
-        pipeline needs. Both routes run the same code:
-        <code>run_pipeline.run_all()</code> is the entry point behind
-        <code>python run_pipeline.py</code>, so the notebook never restates the stage order
-        or repeats a skip rule. The notebook file is in the repository at
-        <code>notebooks/kaggle_pipeline.ipynb</code>.
+        Earth Engine is the only credential any of this needs. Beyond sampling points, it
+        also renders <strong>map layers</strong>: the fire history and severity overlays
+        are computed there on request, and an administrator can register the society's own
+        exported assets — a tree cover classification, a habitat index — as overlays that
+        draw through the same path as the built-in ones, each with its own access tier.
+        The notebook is in the repository at <code>notebooks/kaggle_pipeline.ipynb</code>.
       </p>
     </section>
 
@@ -288,8 +300,9 @@ const GOALS = [
     title: 'Work where it is used',
     body: 'A map of where things grow is most often read standing in the place it '
       + 'describes, which is where there is least likely to be a signal. The app, the '
-      + 'observations and an area of map tiles can all be saved into the browser, and it '
-      + 'installs to a home screen.',
+      + 'observations and named areas of map tiles can all be saved into the browser and '
+      + 'managed there, and it installs to a home screen. A saved area holds every layer '
+      + 'that was drawn when you saved it, including the ones Earth Engine renders.',
   },
 ]
 
@@ -305,8 +318,10 @@ const FEATURES = [
     to: '/map',
     title: 'Reference layers',
     body: 'Rainfall and radar, land surface temperature, ESA land cover at 10 m, soil '
-      + 'moisture, greenness, hillshade, hiking trails and US land ownership. Each has a '
-      + 'key, and each says what it gets wrong.',
+      + 'moisture, greenness, hillshade, hiking trails, US land ownership, and fire '
+      + 'history rendered live from Earth Engine. Manage them in a window that stays '
+      + 'open while you work the map: order the stack, dim one without dimming the rest. '
+      + 'Each has a key, and each says what it gets wrong.',
   },
   {
     to: '/data',
@@ -332,9 +347,16 @@ const FEATURES = [
   {
     to: '/coverage',
     title: 'Coverage',
-    body: 'What fraction of records actually carry each enrichment field, because a mean '
-      + 'over the 23% of rows that have soil moisture is a different claim from a mean '
-      + 'over all of them.',
+    body: 'Which environmental layers are cached, for what dates and over what ground, '
+      + 'as a calendar of every day the pipeline has data for. What is missing is as '
+      + 'much of the answer as what is there.',
+  },
+  {
+    to: '/offline',
+    title: 'Offline areas',
+    body: 'Save the place you are going — the tiles, the observations and the app '
+      + 'itself — and manage the collection by name: rename, refresh, delete, or put the '
+      + 'map back over one. Deleting frees only what no other saved area still needs.',
   },
 ]
 
@@ -481,12 +503,15 @@ useHead({
 
 /* ── Pipeline ─────────────────────────────────────────────────────────── */
 .pl-lede { margin: 0 0 16px; color: var(--muted); font-size: 0.92rem; line-height: 1.65; }
-.pl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.pl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
 .pl-card {
   display: block; text-decoration: none;
   border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; background: var(--surface);
 }
-.pl-card:hover { background: var(--surface-2); border-color: var(--accent); }
+.pl-card:not(.static):hover { background: var(--surface-2); border-color: var(--accent); }
+/* The published dataset is a statement, not a destination — no hover, and its
+   closing line takes no arrow. */
+.pl-fact { font-size: 0.82rem; font-weight: 600; color: var(--text); }
 .pl-card h3 { margin: 0 0 6px; font-size: 0.98rem; color: var(--text); }
 .pl-card p { margin: 0 0 10px; font-size: 0.84rem; color: var(--muted); line-height: 1.55; }
 .pl-go { font-size: 0.82rem; font-weight: 600; color: var(--accent); }

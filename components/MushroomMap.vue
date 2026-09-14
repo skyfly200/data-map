@@ -1828,7 +1828,6 @@ onBeforeUnmount(() => {
    place they sit together; each component keeps its own styling everywhere
    else it is used. */
 .controls :deep(.pop-btn),
-.controls .icon-btn,
 .controls .tool-btn,
 .controls :deep(.sh-btn),
 .controls :deep(.ap-btn),
@@ -1851,7 +1850,6 @@ onBeforeUnmount(() => {
    one a thumb wants. */
 @media (pointer: coarse) {
   .controls :deep(.pop-btn),
-  .controls .icon-btn,
   .controls .tool-btn,
     .controls :deep(.sh-btn),
   .controls :deep(.ap-btn),
@@ -1861,7 +1859,6 @@ onBeforeUnmount(() => {
 }
 
 .controls :deep(.pop-btn):hover,
-.controls .icon-btn:hover:not(:disabled),
 .controls .tool-btn:hover,
 .controls :deep(.sh-btn):hover,
 .controls :deep(.ap-btn):hover,
@@ -1869,7 +1866,6 @@ onBeforeUnmount(() => {
 
 /* One "this is doing something" state, rather than three. */
 .controls :deep(.pop-btn.on),
-.controls .icon-btn.on,
 .controls .tool-btn.on,
 .controls :deep(.sh-btn.on),
 .controls :deep(.ap-btn.on),
@@ -1993,7 +1989,6 @@ onBeforeUnmount(() => {
    pointer they get real hit areas — 40px of reach without 40px of bulk where
    the bulk would crowd the map. */
 @media (pointer: coarse) {
-  .map-shell .icon-btn,
   .map-shell :deep(.ap-btn.icon-only),
   .map-shell :deep(.sh-btn.icon-only),
   .map-shell :deep(.set-btn) { width: 40px; height: 40px; }
@@ -2116,22 +2111,6 @@ onBeforeUnmount(() => {
 /* Collapsed, it is one chip the width of its own summary. Expanded, it floats
    over a solid panel rather than pushing the bar taller — which also keeps the
    bar's measured height, and so Leaflet's offset, stable. */
-/* Square icon buttons, matching the other on-map controls' chrome. */
-.icon-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; flex: 0 0 auto;
-  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
-  color: #333; cursor: pointer; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); padding: 0;
-}
-.icon-btn:hover:not(:disabled) { background: #fff; }
-/* A mode that is on has to look on, or the crosshair cursor is the only clue. */
-.icon-btn.on { background: #2a78d6; border-color: #2a78d6; box-shadow: 0 0 0 2px rgba(42, 120, 214, 0.25); }
-.icon-btn:disabled { opacity: 0.6; cursor: progress; }
-.icon-btn.busy { opacity: 0.7; cursor: progress; }
-.icon-btn .dot-icon {
-  width: 11px; height: 11px; border-radius: 50%; background: #2a78d6;
-  border: 2px solid #fff; box-shadow: 0 0 0 1px #2a78d6;
-}
 
 .season { position: relative; }
 /* Fields inside a popover: label above control, full width. On the bar these
@@ -2170,9 +2149,6 @@ onBeforeUnmount(() => {
 .lay-row span { flex: 1 1 auto; }
 .pop-field input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); }
 
-@media (max-width: 640px) {
-  .season-panel { width: min(260px, calc(100vw - 40px)); }
-}
 
 /* A control that is currently off reads as off, not just unstyled. */
 .legend-row span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2245,25 +2221,8 @@ onBeforeUnmount(() => {
 
 
 .photos { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
-.obs-photo { max-width: 100%; height: auto; border-radius: 4px; }
 
 
-/* Carousel styles */
 /* No fixed square: let the photo keep its own aspect ratio up to a height cap,
    so landscape shots aren't letterboxed into a small square. */
-.indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.indicator:hover {
-  background: rgba(255, 255, 255, 0.8);
-}
-.indicator.active {
-  background: #fff;
-  transform: scale(1.2);
-}
 </style>

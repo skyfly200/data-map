@@ -547,8 +547,6 @@ function barStyle(rho) {
 .nlab { fill: var(--muted); font-size: 9px; text-anchor: end; }
 .iqr { stroke: var(--accent); stroke-width: 6; stroke-linecap: round; opacity: 0.35; }
 .med { fill: var(--accent); }
-.b-sp { fill: var(--accent); }
-.b-bg { fill: var(--muted); opacity: 0.45; }
 
 .ph-legend { display: flex; align-items: center; gap: 6px; font-size: 0.74rem; color: var(--muted); margin: 6px 0 0; flex-wrap: wrap; }
 .sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }

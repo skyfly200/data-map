@@ -1,6 +1,7 @@
-// Server-side Supabase Auth gate for the API-calling Netlify functions
-// (fetch-species, run-data-pipeline). These make outbound iNaturalist / Earth
-// Engine / pipeline calls on demand, so they must not be callable anonymously.
+// Server-side Supabase Auth gate for the Netlify functions that spend
+// something: fetch-species calls iNaturalist, ee-tiles and ee-jobs call Earth
+// Engine, admin-members and ee-worker act for the society. None of them may be
+// callable anonymously.
 //
 // A request proves identity with a Supabase access token (JWT) in the
 // Authorization header: `Authorization: Bearer <access_token>`. We validate it

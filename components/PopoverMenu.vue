@@ -17,7 +17,7 @@
       <span v-if="badge" class="pop-badge">{{ badge }}</span>
     </button>
 
-    <div v-if="open" ref="panel" class="pop-panel" :class="align"
+    <div v-if="open" ref="panel" class="pop-panel"
          :style="shift ? { transform: `translateX(${shift}px)` } : null"
          role="dialog" :aria-label="title || label">
       <div v-if="label" class="pop-head">{{ label }}</div>
@@ -47,7 +47,6 @@ const props = defineProps({
   active: { type: Boolean, default: false },
   // A short current value, so the common case does not need opening at all.
   badge: { type: String, default: '' },
-  align: { type: String, default: 'left' },
   btnClass: { type: String, default: '' },
 })
 
@@ -135,8 +134,10 @@ defineExpose({ close, toggle, show: () => { open.value = true } })
      scroll rather than running off the bottom of a phone. */
   max-height: min(70vh, 520px); overflow-y: auto; overscroll-behavior: contain;
 }
-.pop-panel.left { left: 0; }
-.pop-panel.right { right: 0; }
+/* Always left-aligned under its button. There was an `align` prop offering
+   right, which nothing ever passed; usePanelFit is what actually keeps a panel
+   on screen near the right edge. */
+.pop-panel { left: 0; }
 
 .pop-head {
   font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em;

@@ -331,10 +331,11 @@ bucket.
 
 ### Sign-in to protect the live-fetch endpoints (Supabase Auth)
 
-Browsing (map, table, charts, explore) is fully open. The endpoints that make
-**on-demand outbound API calls**: `fetch-species` (Data tab) and
-`run-data-pipeline`: are gated behind **Supabase Auth** so they can't be
-hammered anonymously.
+Browsing (map, table, charts, explore) is fully open. The endpoints that spend
+something on the society's behalf are gated behind **Supabase Auth** so they
+can't be hammered anonymously: `fetch-species` (Data tab) calls iNaturalist,
+`ee-tiles` and `ee-jobs` call Earth Engine, and `admin-members` and `ee-worker`
+require the admin tier.
 
 - **Server side:** `netlify/lib/auth.mjs` validates the caller's Supabase
   access token (`Authorization: Bearer <jwt>`) via `auth.getUser`. Enforcement

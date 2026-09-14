@@ -154,7 +154,6 @@ defineExpose({ close: () => { open.value = false } })
 .set-text { flex: 1 1 auto; min-width: 0; }
 .set-note { margin: 5px 0 0 22px; color: var(--muted); font-size: 0.74rem; line-height: 1.45; }
 
-.set-err { margin: 0 0 8px; color: var(--danger); font-size: 0.74rem; line-height: 1.4; }
 
 @media (max-width: 640px) {
   .set-panel { width: min(280px, calc(100vw - 40px)); }
