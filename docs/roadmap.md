@@ -11,31 +11,33 @@ section with the commit that closed it.
 
 ## Blocking
 
-### Storage access rules for job results
-
-`ee-worker` writes every finished job to `jobs/<user_id>/<job_id>.geojson` in the
-Supabase `datasets` bucket, and `useEeJobs.fetchResult` downloads it **from the
-browser, with the member's own session**. No `storage.objects` policy exists in
-any migration.
-
-So today: a private bucket means a member cannot read their own result; a public
-bucket means anyone with a path can read anyone's. Neither is right, and a member
-running a job is the main thing membership buys.
-
-The decision is whether the bucket is private with a policy scoping
-`jobs/<uid>/` to its owner plus admins — recommended — or public with results
-treated as shareable. Either way it is one migration.
-
-### Bucket name is declared twice
-
-`composables/useEeJobs.js` hardcodes `'datasets'`; the server reads
-`SUPABASE_DATASETS_BUCKET`. Setting that variable to anything else sends the
-client looking in a bucket the server is not writing to, with no error that
-names the cause. One source of truth before anything else is built on it.
+Nothing open.
 
 ---
 
 ## Wanted
+
+### Member-defined enrichment stages
+
+`STAGES` is six hardcoded entries and `normaliseSpec` refuses any `kind` but
+`enrich`, so adding a seventh source is a code change and a deploy. That
+allowlist is deliberate — Earth Engine bills the project rather than the caller,
+so a member sending EE expressions would be spending FRMS's money on code
+nobody read — and any answer here has to keep that property.
+
+It is closer than it looks. `runDated` is already a generic sampler taking
+`{scale, reducer, bands, imageFor}`, and soil moisture, rainfall and temperature
+are thin wrappers over it. `ee_custom_layers` already validates and stores
+exactly the spec such a stage needs: asset id, asset type, band, reducer, date
+window. A member-defined stage is that spec pointed at points instead of tiles,
+with no EE code execution and the same allowlist posture.
+
+The bespoke runners stay bespoke and should: terrain derives TPI at three radii,
+solar and wind exposure and upstream area; NDVI and land cover do cloud and
+water masking. Those are not "sample a band".
+
+Worth doing after there is evidence somebody has hit the wall of six stages.
+Composing jobs came first because it needed no new Earth Engine surface at all.
 
 ### Data export
 
@@ -104,5 +106,37 @@ for rendering each one once and looking at it.
 
 ## Closed
 
-Nothing yet. Entries move here with the commit that closed them, so the reason
-an item existed survives the fix.
+Entries move here with the commit that closed them, so the reason an item
+existed survives the fix.
+
+### Storage access rules for job results
+
+`ee-worker` wrote every finished job to `jobs/<user_id>/<job_id>.geojson` in the
+Supabase `datasets` bucket, and `useEeJobs.fetchResult` downloaded it from the
+browser with the member's own session — with no `storage.objects` policy in any
+migration. A private bucket meant a member could not read their own result; a
+public one meant anyone with a path could read anyone's.
+
+Closed by `005_dataset_storage_access.sql`: the bucket is private, a member
+reads their own `jobs/<uid>/` prefix, admins read everything, and there is no
+write policy at all so results stay the pipeline's to write. A dataset shared
+with other members is read through the server instead, because sharing lives in
+the row and a path-prefix policy cannot see it.
+
+The same work found something worse next door. `loadSource` built a storage
+path straight from the slug in a job spec and read it, with no check that the
+caller was allowed to — harmless while only admins could create datasets, and a
+way to read anyone's private work the moment members could. The rule now lives
+in `netlify/lib/dataset-access.mjs` and is applied at submission and again in
+the worker.
+
+### Bucket name is declared twice
+
+`useEeJobs` hardcoded `'datasets'` while the server read
+`SUPABASE_DATASETS_BUCKET`, so renaming the bucket sent the client looking
+somewhere the server was not writing, with nothing naming the cause.
+
+Closed with the storage policies, which made it three declarations rather than
+two — a policy has to name the bucket as a SQL literal. The client now reads
+`runtimeConfig.public.datasetsBucket`, and both the config and the migration say
+that renaming it means changing all three together.
