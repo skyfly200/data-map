@@ -122,8 +122,11 @@ export function summariseUsage(jobs = [], now = new Date()) {
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
   const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
   let unitsThisMonth = 0
+  let jobsThisMonth = 0
   let jobsToday = 0
   let running = 0
+  let failed = 0
+  let lastJobAt = null
 
   for (const job of jobs) {
     const at = new Date(job.created_at)
@@ -132,10 +135,81 @@ export function summariseUsage(jobs = [], now = new Date()) {
     // daily count: a member should not be locked out for the day by a pipeline
     // that broke on them.
     const counted = job.status === 'running' || job.status === 'succeeded'
-    if (counted && at >= monthStart) unitsThisMonth += job.cost_units || job.estimated_units || 0
+    if (counted && at >= monthStart) {
+      unitsThisMonth += job.cost_units || job.estimated_units || 0
+      jobsThisMonth += 1
+    }
     if (counted && at >= dayStart) jobsToday += 1
     if (job.status === 'running' || job.status === 'queued') running += 1
+    // Shown so an admin can tell a member who has stopped using their quota
+    // from one who never started.
+    if (job.status === 'failed' && at >= monthStart) failed += 1
+    if (!lastJobAt || at > lastJobAt) lastJobAt = at
   }
 
-  return { unitsThisMonth, jobsToday, running }
+  return {
+    unitsThisMonth,
+    jobsThisMonth,
+    jobsToday,
+    running,
+    failed,
+    lastJobAt: lastJobAt ? lastJobAt.toISOString() : null,
+  }
+}
+
+/** How close to the monthly quota someone is, as a fraction, capped for display. */
+export function quotaFraction(used = 0, quota = 0) {
+  if (!quota || quota <= 0) return 0
+  return Math.max(0, used / quota)
+}
+
+/**
+ * The whole membership at a glance.
+ *
+ * An admin opening this screen is asking one question — is the Earth Engine
+ * budget being spent, and by whom — and nineteen per-member rows do not answer
+ * it. Pure so the arithmetic can be tested without a database.
+ */
+export function rollUpUsage(members = [], now = new Date()) {
+  let unitsThisMonth = 0
+  let quotaTotal = 0
+  let jobsToday = 0
+  let running = 0
+  let active = 0
+  let nearQuota = 0
+  let overQuota = 0
+  let idle = 0
+
+  for (const m of members) {
+    const usage = m.usage || {}
+    const quota = m.ee_quota_monthly || 0
+    const used = usage.unitsThisMonth || 0
+    unitsThisMonth += used
+    quotaTotal += quota
+    jobsToday += usage.jobsToday || 0
+    running += usage.running || 0
+
+    const tier = effectiveTier(m, now)
+    if (tier === 'member' || tier === 'admin') active += 1
+
+    const share = quotaFraction(used, quota)
+    if (share >= 1) overQuota += 1
+    else if (share >= 0.8) nearQuota += 1
+    // Members who have never run anything: the other half of "is this being
+    // used", and the ones worth asking about before buying more quota.
+    if ((usage.jobsThisMonth || 0) === 0 && (tier === 'member' || tier === 'admin')) idle += 1
+  }
+
+  return {
+    members: members.length,
+    active,
+    unitsThisMonth,
+    quotaTotal,
+    share: quotaFraction(unitsThisMonth, quotaTotal),
+    jobsToday,
+    running,
+    nearQuota,
+    overQuota,
+    idle,
+  }
 }

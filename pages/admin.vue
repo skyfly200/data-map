@@ -28,21 +28,76 @@
         <section v-if="tab === 'members' && !loading" class="panel">
           <p v-if="!members.length" class="msg">No accounts yet.</p>
 
-          <ul v-else class="rows">
-            <li v-for="m in members" :key="m.user_id" class="row-item">
+          <template v-else>
+            <!-- The question an admin opens this screen with is whether the
+                 Earth Engine budget is being spent and by whom, and a list of
+                 per-member rows does not answer it. -->
+            <div class="totals">
+              <div class="total">
+                <span class="n">{{ totals.unitsThisMonth.toLocaleString() }}</span>
+                <span class="l">units this month</span>
+                <div class="bar" :class="barClass(totals.share)">
+                  <span class="fill" :style="{ width: barWidth(totals.share) }"></span>
+                </div>
+                <span class="sub">of {{ totals.quotaTotal.toLocaleString() }} allocated</span>
+              </div>
+              <div class="total">
+                <span class="n">{{ totals.active }}</span>
+                <span class="l">active members</span>
+                <span class="sub">{{ totals.members }} accounts in total</span>
+              </div>
+              <div class="total">
+                <span class="n">{{ totals.jobsToday }}</span>
+                <span class="l">jobs today</span>
+                <span class="sub">{{ totals.running }} running now</span>
+              </div>
+              <div class="total">
+                <span class="n" :class="{ warn: totals.overQuota || totals.nearQuota }">
+                  {{ totals.overQuota + totals.nearQuota }}
+                </span>
+                <span class="l">at or near quota</span>
+                <span class="sub">{{ totals.idle }} used none of theirs</span>
+              </div>
+            </div>
+
+            <div class="sorter">
+              <label for="member-sort">Sort by</label>
+              <select id="member-sort" v-model="sortBy">
+                <option value="usage">Quota used</option>
+                <option value="tier">Tier</option>
+                <option value="name">Name</option>
+                <option value="recent">Last active</option>
+              </select>
+            </div>
+
+          <ul class="rows">
+            <li v-for="m in sortedMembers" :key="m.user_id" class="row-item">
               <div class="row-top">
                 <strong>{{ m.display_name || m.user_id.slice(0, 8) }}</strong>
                 <span class="tier-badge" :class="m.tier">{{ m.tier }}</span>
                 <span v-if="lapsedFor(m)" class="tier-badge lapsed">lapsed</span>
-                <!-- The reading that makes a quota actionable: a limit with no
-                     usage next to it is a number nobody can judge. -->
-                <span class="usage">
-                  {{ m.usage.unitsThisMonth }} / {{ m.ee_quota_monthly }} units this month
-                  · {{ m.usage.jobsToday }} jobs today
-                </span>
                 <button class="linkish" @click="edit(m)">
                   {{ editing === m.user_id ? 'Close' : 'Edit' }}
                 </button>
+              </div>
+
+              <!-- A limit with no usage beside it is a number nobody can judge,
+                   and a number with no bar is one nobody reads at a glance. -->
+              <div class="meter">
+                <div class="bar" :class="barClass(shareFor(m))">
+                  <span class="fill" :style="{ width: barWidth(shareFor(m)) }"></span>
+                </div>
+                <span class="meter-text">
+                  <strong>{{ m.usage.unitsThisMonth.toLocaleString() }}</strong>
+                  / {{ m.ee_quota_monthly.toLocaleString() }} units
+                  <span class="pct" :class="barClass(shareFor(m))">{{ pctFor(m) }}</span>
+                </span>
+                <span class="meter-more">
+                  {{ m.usage.jobsToday }}/{{ m.ee_jobs_per_day }} jobs today
+                  <template v-if="m.usage.running"> · <strong>{{ m.usage.running }} running</strong></template>
+                  <template v-if="m.usage.failed"> · {{ m.usage.failed }} failed</template>
+                  · {{ lastActive(m) }}
+                </span>
               </div>
 
               <div v-if="editing === m.user_id" class="editor">
@@ -75,6 +130,7 @@
               </div>
             </li>
           </ul>
+          </template>
         </section>
 
         <!-- ── Custom Earth Engine layers ─────────────────────────────── -->
@@ -224,7 +280,7 @@
 <script setup>
 import { computed, ref, reactive, onMounted } from 'vue'
 import { TIERS } from '~/netlify/lib/tiers.mjs'
-import { DEFAULT_LIMITS } from '~/netlify/lib/quotas.mjs'
+import { DEFAULT_LIMITS, quotaFraction, rollUpUsage } from '~/netlify/lib/quotas.mjs'
 import { LAYER_PRESETS, applyPreset } from '~/netlify/lib/ee-custom-layers.mjs'
 
 const membership = useMembership()
@@ -233,6 +289,45 @@ const { accessToken } = useAuth()
 const LIMIT_FIELDS = Object.keys(DEFAULT_LIMITS)
 
 const tab = ref('members')
+const sortBy = ref('usage')
+
+// ── Reading the quota ────────────────────────────────────────────────────────
+
+const totals = computed(() => rollUpUsage(members.value))
+
+const shareFor = (m) => quotaFraction(m.usage?.unitsThisMonth || 0, m.ee_quota_monthly || 0)
+const pctFor = (m) => `${Math.round(shareFor(m) * 100)}%`
+
+// The bar is capped at full width; the percentage beside it is not, so someone
+// at 240% of their quota reads as over rather than as exactly full.
+const barWidth = (share) => `${Math.min(100, Math.max(0, share * 100))}%`
+const barClass = (share) => (share >= 1 ? 'over' : share >= 0.8 ? 'near' : '')
+
+function lastActive(m) {
+  const at = m.usage?.lastJobAt
+  if (!at) return 'never run a job'
+  const days = Math.floor((Date.now() - new Date(at).getTime()) / 86400000)
+  if (days <= 0) return 'active today'
+  if (days === 1) return 'active yesterday'
+  if (days < 30) return `active ${days} days ago`
+  return `last active ${new Date(at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}`
+}
+
+// Heaviest users first by default: that is the list an admin is scanning for.
+const sortedMembers = computed(() => {
+  const list = [...members.value]
+  const byName = (a, b) => (a.display_name || a.user_id).localeCompare(b.display_name || b.user_id)
+  if (sortBy.value === 'name') return list.sort(byName)
+  if (sortBy.value === 'tier') {
+    const rank = { admin: 0, member: 1, free: 2 }
+    return list.sort((a, b) => (rank[a.tier] ?? 3) - (rank[b.tier] ?? 3) || byName(a, b))
+  }
+  if (sortBy.value === 'recent') {
+    return list.sort((a, b) =>
+      new Date(b.usage?.lastJobAt || 0) - new Date(a.usage?.lastJobAt || 0) || byName(a, b))
+  }
+  return list.sort((a, b) => shareFor(b) - shareFor(a) || byName(a, b))
+})
 const members = ref([])
 const datasets = ref([])
 const layers = ref([])
@@ -456,6 +551,40 @@ onMounted(async () => {
 .row-item { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
 .row-top { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
 .usage { margin-left: auto; color: var(--muted); font-size: 0.75rem; }
+
+/* ── Quota at a glance ──────────────────────────────────────────────────── */
+.totals {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;
+  margin-bottom: 16px;
+}
+.total {
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+  background: var(--surface-2); display: flex; flex-direction: column; gap: 2px;
+}
+.total .n { font-size: 1.5rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.total .n.warn { color: #c9772f; }
+.total .l { font-size: 0.78rem; color: var(--muted); }
+.total .sub { font-size: 0.72rem; color: var(--muted); opacity: 0.85; margin-top: 2px; }
+
+.bar { height: 6px; background: var(--surface-3); border-radius: 3px; overflow: hidden; margin: 6px 0 2px; }
+.bar .fill { display: block; height: 100%; background: var(--accent); }
+.bar.near .fill { background: #c9772f; }
+.bar.over .fill { background: #b3492f; }
+
+.sorter { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 0.8rem; color: var(--muted); }
+.sorter select {
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 8px; font: inherit; font-size: 0.8rem;
+}
+
+.meter { margin: 6px 0 2px; }
+.meter .bar { margin: 0 0 4px; }
+.meter-text { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.meter-text strong { color: var(--text); }
+.meter .pct { margin-left: 6px; font-weight: 700; color: var(--muted); }
+.meter .pct.near { color: #c9772f; }
+.meter .pct.over { color: #b3492f; }
+.meter-more { display: block; font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
 
 .tier-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px;
   border: 1px solid var(--border); color: var(--muted); }
