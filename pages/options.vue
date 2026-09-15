@@ -114,9 +114,18 @@
         area are saved from the map's settings, where the app knows what is on screen.
       </p>
       <ClientOnly>
-        <OfflineControls />
+        <!-- The last place the map was left, so the area estimate is available
+             here too. Without bounds this component hides the whole "save this
+             area" block, which is where the tile count and the size live —
+             so this page offered offline saving and said nothing about what it
+             would cost. -->
+        <OfflineControls :bounds="lastView" :sources="lastSources" />
         <template #fallback><p class="opt-note">Loading…</p></template>
       </ClientOnly>
+      <p v-if="lastView" class="opt-note">
+        Measured against where you last left the map. Open the map to choose a
+        different area.
+      </p>
     </section>
 
     <section class="opt-group">
@@ -185,10 +194,31 @@
 </template>
 
 <script setup>
+import { onMounted, ref } from 'vue'
 import { useUnits } from '~/composables/useUnits'
 import { useAppearance } from '~/composables/useAppearance'
 
 useHead({ title: 'Options · Nexstrata' })
+
+/**
+ * Where the map was last left, for the offline area estimate.
+ *
+ * Read once on mount rather than watched: this is a starting point for a save,
+ * not a live view, and the note under the control says so. Anything unreadable
+ * — private mode, a stale shape from an older version — leaves it null, which
+ * is the same state this page was always in.
+ */
+const lastView = ref(null)
+const lastSources = ref([])
+
+onMounted(() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('map-last-view') || 'null')
+    if (!saved?.bounds || !Number.isFinite(saved.bounds.north)) return
+    lastView.value = { ...saved.bounds, zoom: saved.zoom ?? saved.bounds.zoom ?? 10 }
+    lastSources.value = Array.isArray(saved.sources) ? saved.sources : []
+  } catch { /* nothing saved, or unreadable */ }
+})
 
 const { unit, tempUnit } = useUnits()
 const appearance = useAppearance()

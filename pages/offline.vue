@@ -59,6 +59,11 @@
             <div class="what">
               <strong>The app itself</strong>
               <small>Every page and the code behind it, so Charts and Analysis open offline too.</small>
+              <!-- Measured, and only once there is something to measure. The
+                   shell is eight pages plus whatever code they pull in, which
+                   is not knowable before it is fetched. -->
+              <small v-if="hasShell" class="size">{{ formatBytes(shellBytes) }} saved</small>
+              <small v-else class="size">8 pages</small>
             </div>
             <button class="btn" :disabled="!!busy" @click="doSaveShell">
               {{ busy === 'shell' ? 'Saving…' : hasShell ? 'Re-save' : 'Save' }}
@@ -71,6 +76,13 @@
                 The dataset the map, table and charts all read from.
                 <template v-if="datasetLabel"> Currently {{ datasetLabel }}.</template>
               </small>
+              <!-- The one button on this page that can spend tens of megabytes
+                   of somebody's mobile data, so it says so before they press
+                   it rather than after. -->
+              <small v-if="datasetBytes" class="size">
+                {{ formatBytes(datasetBytes) }} to download<template v-if="hasData"> · saved</template>
+              </small>
+              <small v-else-if="hasData" class="size">Saved</small>
             </div>
             <button class="btn" :disabled="!!busy" @click="doSaveData">
               {{ busy === 'data' ? 'Saving…' : hasData ? 'Re-save' : 'Save' }}
@@ -166,7 +178,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { AVG_TILE_BYTES, describeArea, formatBytes } from '~/composables/offlineTiles'
 
 // The offline portal: one place to see what this device is holding and to
@@ -180,6 +192,7 @@ const offline = useOffline()
 const {
   supported, registered, online, busy, progress, error, areas,
   savedBytes, savedTiles, hasData, hasShell, bytesAreMeasured, quotaBytes,
+  shellBytes, measured,
 } = offline
 const isDev = import.meta.dev
 
@@ -191,7 +204,15 @@ onMounted(async () => {
   await offline.register()
   await offline.refreshUsage()
   await offline.loadAreas()
+  offline.measure(selectedDataset.value)
 })
+
+// Re-measured when the viewer switches dataset: the species files are a few
+// hundred KB and the full set is tens of megabytes, so one figure standing in
+// for the other is the kind of wrong that costs somebody their data allowance.
+watch(selectedDataset, (url) => offline.measure(url))
+
+const datasetBytes = computed(() => measured.value[selectedDataset.value] || 0)
 
 const datasetLabel = computed(() => {
   const n = data.value?.features?.length || 0
@@ -350,6 +371,9 @@ async function doClear(which, said) {
 .what { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .what strong { font-size: 0.85rem; }
 .what small { color: var(--muted); font-size: 0.76rem; line-height: 1.45; }
+/* The size sits under the description and reads as a fact about the button
+   next to it, so it is set apart from the prose above it. */
+.what .size { font-variant-numeric: tabular-nums; color: var(--text); opacity: 0.75; }
 
 .empty { margin: 0; color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
 

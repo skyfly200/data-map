@@ -54,6 +54,25 @@ export function gibsUrl(layer, { level = 6, format = 'png', date = '{date}' } = 
 }
 
 /**
+ * A GIBS layer's URL and its tile ceiling, from one number.
+ *
+ * The matrix set in the URL *is* the ceiling: `GoogleMapsCompatible_Level7`
+ * contains zooms 0–7 and nothing above, and GIBS answers a request past the top
+ * with a 400 rather than a blank tile. The catalogue used to carry the level and
+ * the ceiling as two independent numbers, and they had drifted — every GIBS
+ * layer here declared a ceiling two levels above its own matrix, so panning past
+ * it produced a screenful of 400s and a layer that silently stopped drawing.
+ *
+ * Derived rather than written twice, so the two cannot disagree again. The
+ * ceiling is where GIBS stops having tiles; MushroomMap passes it as
+ * maxNativeZoom and lets Leaflet upscale beyond it, so the layer stays on screen
+ * rather than vanishing when you zoom in.
+ */
+export function gibs(layer, level, { format = 'png' } = {}) {
+  return { url: gibsUrl(layer, { level, format }), maxZoom: level }
+}
+
+/**
  * The date to ask a satellite product for.
  *
  * Every one of these has latency — an 8-day NDVI composite for today does not
@@ -144,8 +163,8 @@ export const TILE_LAYERS = [
   },
   {
     name: 'Rainfall (global)', group: 'Weather',
-    url: gibsUrl('IMERG_Precipitation_Rate', { level: 6 }),
-    attribution: 'NASA GIBS / GPM IMERG', maxZoom: 8, opacity: 0.7, time: true, lag: 1,
+    ...gibs('IMERG_Precipitation_Rate', 6),
+    attribution: 'NASA GIBS / GPM IMERG', opacity: 0.7, time: true, lag: 1,
     note: 'Satellite precipitation rate at ~10 km. Global, but coarse: a cell is bigger than most of the places on this map, so read it as weather, not as a shower.',
     legend: {
       type: 'ramp', unit: 'mm/hr', min: '0.1', max: '30',
@@ -154,8 +173,8 @@ export const TILE_LAYERS = [
   },
   {
     name: 'Land surface temp', group: 'Weather',
-    url: gibsUrl('MODIS_Terra_Land_Surface_Temp_Day', { level: 7 }),
-    attribution: 'NASA GIBS / MODIS Terra', maxZoom: 9, opacity: 0.6, time: true, lag: 3,
+    ...gibs('MODIS_Terra_Land_Surface_Temp_Day', 7),
+    attribution: 'NASA GIBS / MODIS Terra', opacity: 0.6, time: true, lag: 3,
     note: 'Daytime skin temperature of the ground itself, not air temperature: bare rock in sun reads far hotter than the air above it. Cloudy days are gaps.',
     legend: {
       type: 'ramp', unit: '°C', min: '−25', max: '45',
@@ -166,8 +185,8 @@ export const TILE_LAYERS = [
   // ── Ground ────────────────────────────────────────────────────────────────
   {
     name: 'Soil moisture', group: 'Ground',
-    url: gibsUrl('SMAP_L4_Analyzed_Surface_Soil_Moisture', { level: 6 }),
-    attribution: 'NASA GIBS / SMAP L4', maxZoom: 8, opacity: 0.65, time: true, lag: 4,
+    ...gibs('SMAP_L4_Analyzed_Surface_Soil_Moisture', 6),
+    attribution: 'NASA GIBS / SMAP L4', opacity: 0.65, time: true, lag: 4,
     note: 'Modelled water in the top 5 cm of soil, at ~9 km. A model output assimilating satellite retrievals, not a measurement of your patch.',
     legend: {
       type: 'ramp', unit: 'm³/m³', min: '0.0', max: '0.6',
@@ -187,8 +206,8 @@ export const TILE_LAYERS = [
   // ── Vegetation ────────────────────────────────────────────────────────────
   {
     name: 'NDVI (greenness)', group: 'Vegetation',
-    url: gibsUrl('MODIS_Terra_NDVI_8Day', { level: 9 }),
-    attribution: 'NASA GIBS / MODIS Terra', maxZoom: 11, opacity: 0.6, time: true, lag: 10,
+    ...gibs('MODIS_Terra_NDVI_8Day', 9),
+    attribution: 'NASA GIBS / MODIS Terra', opacity: 0.6, time: true, lag: 10,
     note: 'An 8-day composite ending on the chosen date, at 250 m. Dense conifer and dense broadleaf both saturate near the top, so it separates bare from green far better than it separates forest types.',
     legend: {
       type: 'ramp', unit: 'NDVI', min: '−0.2', max: '1.0',

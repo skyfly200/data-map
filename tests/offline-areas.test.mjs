@@ -93,9 +93,45 @@ test('an expiring tile is filed under the layer, not the token', () => {
 test('a source is accepted as a bare string or as an identified pair', () => {
   assert.deepEqual(normaliseSource(OSM), { template: OSM, id: OSM, volatile: false })
   assert.deepEqual(normaliseSource({ template: EE, id: 'ee:fire' }),
-    { template: EE, id: 'ee:fire', volatile: true })
+    { template: EE, id: 'ee:fire', volatile: true, name: '', maxZoom: null })
   // An explicit flag wins, so a future volatile host needs no regex change.
   assert.equal(normaliseSource({ template: OSM, id: 'x', volatile: true }).volatile, true)
+})
+
+test('a source carries its name and its tile ceiling when it has them', () => {
+  const s = normaliseSource({ template: OSM, id: 'topo', name: 'USGS topo', maxZoom: 7 })
+  assert.equal(s.name, 'USGS topo')
+  assert.equal(s.maxZoom, 7)
+  // No ceiling means "as deep as asked", not zero — the difference between a
+  // layer that saves and one that saves nothing at all.
+  assert.equal(normaliseSource({ template: OSM, id: 'x' }).maxZoom, null)
+  assert.equal(normaliseSource({ template: OSM, id: 'x', maxZoom: 'seven' }).maxZoom, null)
+  assert.equal(normaliseSource({ template: OSM, id: 'x', maxZoom: 0 }).maxZoom, 0)
+})
+
+test('a save skips the zooms a coarse layer does not publish', () => {
+  // GIBS serves its 1 km products only to about zoom 7. Asking for zoom 11
+  // anyway is a run of 400s that count as failures and tell the viewer their
+  // area did not save — when what happened is that a layer had nothing there.
+  const area = makeArea({
+    bounds: boxAt(39.74, -104.99),
+    minZoom: 6,
+    maxZoom: 9,
+    sources: [
+      { template: OSM, id: 'deep' },
+      { template: 'https://gibs.test/{z}/{y}/{x}.png', id: 'coarse', maxZoom: 7 },
+    ],
+  })
+  const targets = saveTargets(area)
+  const coarse = targets.filter((t) => t.url.startsWith('https://gibs.test/'))
+  const deep = targets.filter((t) => t.url.startsWith('https://tile.example/'))
+
+  assert.ok(coarse.length > 0, 'the coarse layer still saves the zooms it has')
+  assert.ok(deep.length > coarse.length, 'and fewer of them than the layer with no ceiling')
+  for (const t of coarse) {
+    const z = Number(t.url.split('/')[3])
+    assert.ok(z <= 7, `asked ${t.url} for zoom ${z}, past the layer's ceiling`)
+  }
 })
 
 test('a volatile source keeps its identity across a re-save, and its url does not matter', () => {

@@ -84,6 +84,50 @@ export function estimateSave(tileCount, layerCount = 1) {
   return { tiles, bytes: tiles * AVG_TILE_BYTES }
 }
 
+/**
+ * A readable name for a tile source that did not bring one.
+ *
+ * The host is the honest fallback: a template is a URL, and "basemap.national
+ * map.gov" at least tells somebody which service is costing them the download.
+ * Better than "Layer 3", which tells them nothing they can act on.
+ */
+export function sourceLabel(source = {}) {
+  if (source.name) return source.name
+  const template = source.template || source.id || ''
+  try {
+    return new URL(template).host.replace(/^www\./, '')
+  } catch {
+    return 'Map tiles'
+  }
+}
+
+/**
+ * The same save, broken down by layer.
+ *
+ * Every drawn layer fetches the same tiles over the same area, so the split is
+ * even — which is exactly the point worth showing. A total of 4,000 tiles reads
+ * as a lot until you see it is 500 tiles across eight layers, and the way to
+ * make it smaller is to turn a layer off rather than to zoom out.
+ */
+export function estimatePerSource(tilesPerLayer, sources = [], { bounds = null, minZoom = 0, maxZoom = 0 } = {}) {
+  const list = sources.length ? sources : [{ id: 'map', name: 'Map tiles' }]
+  return list.map((s, i) => {
+    // A source with a ceiling below the save's range contributes only the zooms
+    // it actually has. Counting it at the full range would put a number beside
+    // a coarse overlay that it will never download.
+    const capped = bounds && Number.isFinite(s.maxZoom) && s.maxZoom < maxZoom
+      ? countTilesInBounds(bounds, minZoom, Math.max(minZoom - 1, s.maxZoom))
+      : tilesPerLayer
+    return {
+      id: s.id || `source-${i}`,
+      name: sourceLabel(s),
+      tiles: capped,
+      bytes: capped * AVG_TILE_BYTES,
+      capped: capped !== tilesPerLayer,
+    }
+  })
+}
+
 /** Human-readable byte count, for a control that has to fit on a phone. */
 export function formatBytes(bytes) {
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 MB'
@@ -150,6 +194,10 @@ export function normaliseSource(source) {
     template,
     id: source?.id || template,
     volatile: source?.volatile ?? isVolatileTemplate(template),
+    name: source?.name || '',
+    // Where this source runs out of tiles. Null means no ceiling known, which
+    // is treated as "goes as deep as asked" rather than as zero.
+    maxZoom: Number.isFinite(source?.maxZoom) ? source.maxZoom : null,
   }
 }
 
@@ -172,6 +220,12 @@ export function saveTargets(area, origin = '') {
   const out = []
   for (const tile of tiles) {
     for (const source of sources) {
+      // A source is skipped past its own ceiling rather than requested and
+      // failed. A coarse overlay — GIBS publishes its 1 km products only to
+      // about zoom 7 — has no tiles at the zoom a saved area usually wants, and
+      // asking anyway turns a save into a run of 400s that count as failures
+      // and tell the viewer their area did not save.
+      if (Number.isFinite(source.maxZoom) && tile.z > source.maxZoom) continue
       out.push({ url: tileUrl(source.template, tile), key: cacheKeyFor(source, tile, origin) })
     }
   }
