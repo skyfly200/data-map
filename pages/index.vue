@@ -3,11 +3,13 @@
     <section class="hero">
       <AppLogo class="hero-logo" :size="168" />
       <h1>Nexstrata</h1>
-      <h3>Earth Engine, pointed at the ground you care about</h3>
+      <h3>Point sampling, raster overlays and analysis on Google Earth Engine</h3>
       <p class="lead">
-        Sample environmental layers at any point, render them as map overlays, and
-        build on what comes back. It started with mushroom observations, and the
-        observations are still here — but the platform is the part that generalises.
+        Nexstrata samples Earth Engine raster layers at point coordinates, renders
+        computed layers as map tiles, and exposes the results for filtering, charting
+        and statistical analysis. The reference dataset is iNaturalist fungal
+        observations, each enriched with environmental variables sampled at its own
+        coordinate and date.
       </p>
 
       <div class="cta">
@@ -23,11 +25,11 @@
       </p>
     </section>
 
-    <!-- ── What it does ─────────────────────────────────────────────────────
-         One line each. Anyone who wants more follows the card; anyone
-         skimming gets the shape of the thing in about fifteen seconds. -->
+    <!-- ── Capabilities ─────────────────────────────────────────────────────
+         One line each. Anything needing more than a line belongs behind the
+         link rather than in front of it. -->
     <section class="features">
-      <h2>What it does</h2>
+      <h2>Capabilities</h2>
       <div class="feature-grid">
         <NuxtLink v-for="f in FEATURES" :key="f.title" :to="f.to" class="feature">
           <h3>{{ f.title }}</h3>
@@ -40,23 +42,25 @@
          The figure carries this section; the words only have to say what it
          is a picture of. The full source table lives in the guide. -->
     <section class="name">
-      <h2>A stack, sampled at a point</h2>
+      <h2>The sampling model</h2>
       <div class="name-grid">
         <div class="name-text">
           <p>
-            <strong class="etym">strata</strong>: layers.
-            <strong class="etym">nex</strong>: a binding together. Where something
-            grows is not one fact but a stack of them, and an observation is the one
-            place all of them meet — somebody stood at a point, and every layer had a
-            value there at that moment.
+            Each record resolves to a single coordinate and acquisition date. Every
+            layer is sampled at that coordinate on that date — not interpolated from a
+            regional mean, and not taken from the current state of the ground — so a
+            find from 2019 carries the 2019 conditions that preceded it.
           </p>
           <p>
-            Each layer comes from Earth Engine, sampled at the record's own coordinate
-            and date rather than averaged over a region.
+            Native resolutions span 10 m to roughly 10 km depending on the source.
+            Records whose coordinates are obscured or coarse are flagged, since terrain
+            sampled at an obscured point describes somewhere the observation was not.
+            <strong class="etym">nex</strong> + <strong class="etym">strata</strong>:
+            the binding of the layers at a point.
           </p>
           <p class="more-links">
-            <NuxtLink to="/guide#where-the-data-comes-from">Every source, by column</NuxtLink>
-            <NuxtLink to="/coverage">What is actually covered</NuxtLink>
+            <NuxtLink to="/guide#where-the-data-comes-from">Source table, by column</NuxtLink>
+            <NuxtLink to="/coverage">Cache coverage and dates</NuxtLink>
           </p>
         </div>
 
@@ -75,17 +79,33 @@
 
     <!-- ── Earth Engine ─────────────────────────────────────────────────── -->
     <section class="ee">
-      <h2>Built on Earth Engine</h2>
+      <h2>Earth Engine integration</h2>
       <p class="ee-lede">
-        Everything environmental on this site is sampled or rendered from Earth Engine —
-        the terrain model, the satellite imagery, the weather reanalysis and the soil
-        surveys all live there, so nothing has to be downloaded to be used.
+        No raster tiles are stored. A server function authenticates with a service
+        account, calls <code>getMapId()</code> on the target asset and returns a
+        short-lived tile template to the client; templates are cached per parameter set
+        and re-minted before they expire.
       </p>
       <ul class="ee-list">
-        <li><strong>Enrich</strong> — sample every layer at your own points, over your own area and dates.</li>
-        <li><strong>Render</strong> — fire history, forest type and soil drawn on demand, no tiles stored.</li>
-        <li><strong>Publish</strong> — compute a layer, export it as an asset, register it, and it draws like any built-in.</li>
-        <li><strong>Analyse</strong> — take the enriched result into the charts, the statistics, or out as data.</li>
+        <li>
+          <strong>Enrich</strong> — submit a bounding box and date range. Six stages
+          sample terrain, land cover, soil moisture, precipitation, temperature and NDVI
+          at each point; output is written to object storage as GeoJSON.
+        </li>
+        <li>
+          <strong>Render</strong> — {{ eeLayerCount }} built-in layers computed
+          server-side: MODIS and MTBS fire history, GAP forest type at 30 m, SOLUS100
+          soil at 100 m, and a Sentinel-2 dNBR composite calculated per request.
+        </li>
+        <li>
+          <strong>Publish</strong> — register an exported asset by ID, band and palette.
+          Inputs are validated against a strict grammar before they reach Earth Engine,
+          and each layer carries its own access tier.
+        </li>
+        <li>
+          <strong>Analyse</strong> — load a job result as a dataset. It feeds the same
+          map, charts, heatmaps and statistics as the reference data.
+        </li>
       </ul>
       <div class="cta left">
         <NuxtLink to="/jobs" class="btn primary">Run a job</NuxtLink>
@@ -94,22 +114,24 @@
       </div>
     </section>
 
-    <!-- ── The caveat ───────────────────────────────────────────────────────
-         Kept, and kept short. It is the thing that most changes how the rest
-         should be read, so it stays on the page rather than moving to the
-         guide with everything else. -->
+    <!-- ── Limitations ──────────────────────────────────────────────────────
+         On the page rather than in the guide: it governs how every number
+         above should be read, and a caveat nobody reaches is not a caveat. -->
     <section class="caveat">
-      <h2>What it cannot tell you</h2>
+      <h2>Known limitations</h2>
       <p>
-        These are <strong>opportunistic observations, not surveys</strong>. Somewhere with
-        many records may have many mushrooms, or may simply be near a trailhead — and no
-        amount of environmental data attached to those finds fixes that.
+        The reference dataset is <strong>presence-only, opportunistically collected</strong>.
+        Record density tracks observer effort and site access as much as it tracks
+        occurrence, and absence of records is not evidence of absence. Enrichment adds
+        environmental context to each record; it does not correct the sampling bias in
+        which records exist.
       </p>
       <p>
-        So every view says what distorts it, in the view itself rather than in
-        documentation nobody opens.
-        <NuxtLink to="/guide#reference">Every control has an entry</NuxtLink>
-        covering what it does <em>and</em> where it will mislead you.
+        Each view therefore states its own confounds at the point of use rather than in
+        documentation. The seasonal heatmaps normalise within each cell, which cancels
+        most of the effort bias; the density heatmaps cannot, and say so.
+        <NuxtLink to="/guide#reference">Every control has a reference entry</NuxtLink>
+        covering its behaviour and its failure modes.
       </p>
     </section>
 
@@ -121,7 +143,7 @@
             <button class="btn small ghost" @click="signOut">Sign out</button>
           </template>
           <template v-else>
-            <span class="hint">Browsing is open to everyone. Sign in to save your work and run jobs:</span>
+            <span class="hint">Read access is unauthenticated. Sign in to persist saved views and submit jobs:</span>
             <NuxtLink to="/login" class="btn small">Sign in</NuxtLink>
             <NuxtLink to="/login?mode=signup" class="btn small ghost">Sign up</NuxtLink>
           </template>
@@ -183,42 +205,51 @@ const STRATA = [
 const FEATURES = [
   {
     to: '/map',
-    title: 'Map and read',
-    body: 'Observations, hex-grid heatmaps, and reference layers from fire history to forest type.',
+    title: 'Map and aggregate',
+    body: 'Point rendering with hex or square binning from ~100 m to ~28 km, over reference '
+      + 'overlays for fire, forest type, soil, weather and land ownership.',
   },
   {
     to: '/jobs',
-    title: 'Enrich with Earth Engine',
-    body: 'Sample terrain, weather, canopy and soil at your own points, over your own area and dates.',
+    title: 'Point enrichment',
+    body: 'Queue an Earth Engine job over a bounding box and date range. Progress reports '
+      + 'per stage; results are stored and loadable as a dataset.',
   },
   {
     to: '/guide#your-own-earth-engine-layers',
-    title: 'Publish your own layers',
-    body: 'Export a computed asset, register it, and it renders through the same path as the built-ins.',
+    title: 'Custom raster layers',
+    body: 'Register an exported Earth Engine asset by ID, band and palette. Tile URLs are '
+      + 'minted server-side and gated per access tier.',
   },
   {
     to: '/analysis',
-    title: 'Analyse',
-    body: 'Rank correlations, species fingerprints, and the confounds named rather than left for you to find.',
+    title: 'Statistics',
+    body: 'Spearman rank correlations across populated fields, per-species deviation from '
+      + 'the dataset mean, with season and effort confounds reported alongside.',
   },
   {
     to: '/charts?tab=build',
-    title: 'Chart and share',
-    body: 'Compose a chart from any two fields, save it, and share a link that reopens what you were looking at.',
+    title: 'Charts',
+    body: 'Ten chart types over any field pair, saved per account, with shareable URLs '
+      + 'that restore the active filters, colouring and map view.',
   },
   {
     to: '/offline',
-    title: 'Work with no signal',
-    body: 'Save the ground you are going to, by name, with every layer that was drawn when you saved it.',
+    title: 'Maps while offline',
+    body: 'Named tile areas cached by a service worker, covering every layer drawn when '
+      + 'the area was saved. Deletion is reference-counted, so overlapping areas do not '
+      + 'remove each other\'s tiles.',
   },
 ]
 
+
 useHead({
-  title: 'Nexstrata · Environmental layers, sampled where they matter',
+  title: 'Nexstrata · Point sampling and raster analysis on Google Earth Engine',
   meta: [{
     name: 'description',
-    content: 'An Earth Engine workbench for environmental data: sample layers at any point, '
-      + 'render them as map overlays, publish your own, and analyse what comes back.',
+    content: 'Sample Earth Engine raster layers at point coordinates, render computed '
+      + 'layers as map tiles, and analyse the results. Reference dataset: iNaturalist '
+      + 'fungal observations enriched with environmental variables at each coordinate.',
   }],
 })
 </script>
@@ -315,6 +346,10 @@ useHead({
 .more-links a:hover { text-decoration: underline; }
 
 /* ── Earth Engine ─────────────────────────────────────────────────────── */
+.ee code {
+  background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 4px;
+  padding: 1px 5px; font-size: 0.92em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 .ee-lede { margin: 0 0 14px; color: var(--muted); font-size: 0.94rem; line-height: 1.65; max-width: 660px; }
 .ee-list { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 8px; max-width: 660px; }
 .ee-list li {
