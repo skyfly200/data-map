@@ -90,5 +90,20 @@ export function useSavedCharts() {
     pushCloud()
   }
 
-  return { charts, loadFromStorage, persist, pushCloud, add, update, byId, remove, move }
+  /** Reorder to an explicit list of ids, for a drag that has settled. */
+  function setOrder(ids) {
+    const by = new Map(charts.value.map((c) => [c.id, c]))
+    const next = ids.map((id) => by.get(id)).filter(Boolean)
+    // Anything the caller did not mention keeps its place at the end, so a
+    // chart added in another tab mid-drag is not deleted by the drop.
+    for (const c of charts.value) if (!ids.includes(c.id)) next.push(c)
+    if (next.length !== charts.value.length) return
+    charts.value = next
+    persist()
+    pushCloud()
+  }
+
+  return {
+    charts, loadFromStorage, persist, pushCloud, add, update, byId, remove, move, setOrder,
+  }
 }

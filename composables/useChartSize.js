@@ -6,13 +6,23 @@
 // The chart-area must get its height from layout (flex-fill on the Explore
 // page, or a min-height elsewhere) with the SVG absolutely positioned inside,
 // so measuring the container never feeds back into its own size.
+
+import { renderPaused } from '~/composables/useRenderPause'
+
 export function useChartSize(defaultW = 640, defaultH = 360, minW = 240, minH = 200) {
   const container = ref(null)
   const width = ref(defaultW)
   const height = ref(defaultH)
   let ro
+  // Set when a resize arrived during a pause. Dropping those observations
+  // outright would leave a chart drawn at a stale size after a drag that
+  // reflowed the grid, so the last one is taken once the pause lifts.
+  let missed = false
 
   function measure() {
+    // Writing width/height re-renders the chart, and during a drag every card
+    // in a reflowing grid fires this at once. See composables/useRenderPause.js.
+    if (renderPaused.value) { missed = true; return }
     const el = container.value
     if (!el) return
     const w = el.clientWidth
@@ -29,6 +39,10 @@ export function useChartSize(defaultW = 640, defaultH = 360, minW = 240, minH = 
     }
   })
   onBeforeUnmount(() => ro && ro.disconnect())
+
+  watch(renderPaused, (paused) => {
+    if (!paused && missed) { missed = false; measure() }
+  })
 
   return { container, width, height }
 }

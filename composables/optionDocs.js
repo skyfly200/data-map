@@ -735,7 +735,12 @@ export const OPTION_DOCS = [
     group: 'Charts',
     title: 'Arrange charts',
     summary: 'Reorder or hide the preset gallery charts.',
-    detail: ['Hidden charts are listed so they can be brought back, and the layout persists.'],
+    detail: [
+      'Drag a card onto another to move it there. The cards are positioned with CSS order rather than by moving them in the page, so a drag re-lays out the grid without redrawing a single chart — and the arrangement is only written once, when you let go. A drag you abandon with Escape costs nothing.',
+      'Redrawing is suspended while you drag. Moving a card reflows the grid, which changes every chart\'s container size and would otherwise make all of them recompute their geometry on every pointer move.',
+      'The ‹ › arrows do the same thing one step at a time, and are the way to reorder on a touchscreen or from the keyboard: browsers do not fire drag events for either.',
+      'Hidden charts are listed so they can be brought back, and the layout persists.',
+    ],
   },
 
   // ── Analysis ──────────────────────────────────────────────────────────────
