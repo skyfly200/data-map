@@ -152,20 +152,156 @@ row literally says if you need the difference.
 
 FRMS memberships renew annually, so the payment side is a PayPal
 **subscription** rather than a one-off order. The webhook does not call this
-directly — PayPal sends its own payload shape. Put an automation between them
-(Zapier, Make, n8n, or a small function) that:
+directly — PayPal sends its own payload shape. Something has to sit between
+them: on the FRMS site that is the serverless function already handling the
+webhook and sending the welcome email. It should:
 
-1. Verifies the webhook signature before reading the body. Anyone can POST to a
+1. Verify the webhook signature before reading the body. Anyone can POST to a
    public URL, and this one mints memberships.
-2. Filters to the subscription's **payment completed** event, for the
-   membership plan only, and ignores every other event type.
-3. Maps the payer's address to `email` and the payment's own transaction id to
+2. Filter to the subscription's **payment completed** event, for the membership
+   plan only, and ignore every other event type.
+3. Map the payer's address to `email` and the payment's own transaction id to
    `ref`.
-4. POSTs the JSON above with `months: 12`.
-5. Treats `applied` and `pending` alike as success.
+4. POST the JSON above with `months: 12`.
+5. Treat `applied` and `pending` alike as success.
 
 Send the transaction id as `ref` and retries stop being something you have to
 think about.
+
+### Grant first, then send the email
+
+Order matters, and it is the one thing in this integration that is easy to get
+backwards.
+
+The grant is idempotent — the same `ref` twice changes nothing. The welcome
+email is not; there is no way to un-send one. So the handler should do the
+un-repeatable thing last:
+
+```
+verify signature → grant membership → if that failed retryably, return 500
+                 → send welcome email → return 200
+```
+
+Returning 500 has PayPal redeliver the whole webhook. With the grant first, a
+redelivery that happens because the grant failed has not yet sent an email, so
+nobody gets two. A redelivery that happens because the *email* failed re-runs
+the grant, which recognises the `ref` and does nothing. Either way the member
+ends up with one membership and one email.
+
+Put the email first and a transient failure anywhere after it emails them
+again on every retry.
+
+### A function to call it
+
+Drop this beside the existing handler. It never throws: a membership fault
+should not take down the welcome email, and an exception inside a webhook
+handler usually becomes a 502 that tells PayPal nothing useful.
+
+```js
+const NEXSTRATA_URL = process.env.NEXSTRATA_URL
+const MEMBERSHIP_API_KEY = process.env.MEMBERSHIP_API_KEY
+
+export async function grantMembership({ email, ref, name = null, months = 12 }) {
+  if (!NEXSTRATA_URL || !MEMBERSHIP_API_KEY) {
+    // Misconfiguration, not a transient fault. Retrying will not fix it, and a
+    // webhook retried forever is worse than one that reports the problem.
+    return { ok: false, retryable: false, error: 'NEXSTRATA_URL or MEMBERSHIP_API_KEY is unset' }
+  }
+
+  let res
+  let data = {}
+  try {
+    res = await fetch(`${NEXSTRATA_URL}/.netlify/functions/membership`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${MEMBERSHIP_API_KEY}`,
+      },
+      body: JSON.stringify({ action: 'grant', email, months, ref, source: 'paypal', name }),
+      signal: AbortSignal.timeout(10_000),
+    })
+    data = await res.json().catch(() => ({}))
+  } catch (err) {
+    // Network fault or timeout. The grant may or may not have landed, which is
+    // exactly the case `ref` exists to make harmless.
+    return { ok: false, retryable: true, error: String(err?.message || err) }
+  }
+
+  if (res.ok && data.ok) {
+    return {
+      ok: true,
+      status: data.status,          // 'applied' or 'pending' — both are success
+      duplicate: !!data.duplicate,
+      memberUntil: data.member_until,
+      retryable: false,
+    }
+  }
+
+  // 400, 401 and 409 will fail identically forever: a malformed address, a
+  // wrong key, a deliberate refusal. Anything else is worth another delivery.
+  return {
+    ok: false,
+    retryable: ![400, 401, 409].includes(res.status),
+    error: data.error || `membership api returned ${res.status}`,
+  }
+}
+```
+
+Plain `fetch` and `AbortSignal.timeout`, so it runs unchanged on Netlify
+Functions, Vercel, Cloudflare Workers and Node 18+ Lambda.
+
+In the handler:
+
+```js
+const membership = await grantMembership({
+  email: payerEmail,
+  ref: transactionId,
+  name: payerName,
+})
+
+if (!membership.ok) {
+  console.error('membership grant failed', membership.error)
+  // Let PayPal redeliver. No email has gone out yet, so the retry is clean.
+  if (membership.retryable) return { statusCode: 500, body: 'retry' }
+  // Not retryable: log loudly and carry on, or this address never gets its
+  // welcome email either.
+}
+
+await sendWelcomeEmail({
+  email: payerEmail,
+  name: payerName,
+  // 'pending' means they have not made a Nexstrata account yet, which changes
+  // what the email should ask them to do.
+  needsAccount: membership.status === 'pending',
+})
+
+return { statusCode: 200, body: 'ok' }
+```
+
+### The email can say different things
+
+`applied` and `pending` are both success, but they describe people in different
+situations, and the welcome email is the one chance to tell them what to do:
+
+| | |
+| --- | --- |
+| `applied` | They already have a Nexstrata account and it is now a membership. Point them at signing in. Their tier arrives at the next token refresh, within about an hour, or immediately if they sign out and back in. |
+| `pending` | They have paid but have no account. Tell them to sign up **with this same address** and their membership applies itself the moment they do. |
+
+Getting this wrong is not fatal — a `pending` member who is told to sign in
+will work it out — but it is the difference between a welcome email that reads
+as written for them and one that does not.
+
+### Environment, on the FRMS site
+
+| | |
+| --- | --- |
+| `NEXSTRATA_URL` | `https://<the Nexstrata site>`, no trailing slash. |
+| `MEMBERSHIP_API_KEY` | The same value set on Nexstrata. Server-side environment only. |
+
+The key grants membership to any address, so it goes in the function's
+environment configuration and nowhere else — never in browser code, never in a
+client-side step, never committed.
 
 ### Act on one event per year, not two
 
