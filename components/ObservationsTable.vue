@@ -3,6 +3,10 @@
     <div class="toolbar">
       <input v-model="query" type="search" class="search" placeholder="Filter by species or location…" />
       <span class="count">{{ filtered.length }} / {{ rows.length }} observations</span>
+      <!-- Exports what the table is showing, filters and search included —
+           which is the set somebody has just finished deciding they wanted. -->
+      <ExportMenu :source="filteredFeatures" :name="exportName" :shown="exportColumns"
+                  :subtitle="filtered.length < rows.length ? 'matching the current filters' : ''" />
     </div>
 
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
@@ -55,7 +59,8 @@
 import { colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
 import { useUnits } from '~/composables/useUnits'
 
-const { rows, error, pending, load } = useObservations()
+const { rows, filteredData, error, pending, load, selectedDataset, availableDatasets }
+  = useObservations()
 const { unit, elevValue } = useUnits()
 onMounted(load)
 
@@ -78,6 +83,21 @@ const query = ref('')
 const sortKey = ref('date')
 const sortDir = ref(-1) // -1 desc, 1 asc
 
+// What the export offers as its default column set: the table's own columns.
+// `species` and `location` are properties; `elevation` and the rest are too,
+// so the keys map straight across apart from the two the table synthesises.
+const exportColumns = computed(() => columns.value
+  .map((c) => c.key)
+  .filter((k) => k !== 'cluster'))
+
+const exportName = computed(() => {
+  const label = availableDatasets.value.find((d) => d.path === selectedDataset.value)?.label
+  // Dataset labels carry their record count — "All genuss (48233)" — which is
+  // useful in a picker and noise in a filename, especially once the export has
+  // been filtered down to some other number.
+  return (label || 'observations').replace(/\s*\(\d[\d,]*\)\s*$/, '') || 'observations'
+})
+
 function sortBy(key) {
   if (sortKey.value === key) sortDir.value *= -1
   else { sortKey.value = key; sortDir.value = 1 }
@@ -89,18 +109,28 @@ function display(col, v) {
   return v
 }
 
-const filtered = computed(() => {
+/**
+ * The search and sort, over features rather than rows.
+ *
+ * Features first and rows derived from them, so that exporting what the table
+ * is showing is the same set the table is showing rather than a second
+ * pipeline that has to be kept in step. A row is a flattened feature; going the
+ * other way would mean rebuilding a geometry from two columns.
+ */
+const filteredFeatures = computed(() => {
   const q = query.value.trim().toLowerCase()
-  let list = rows.value
+  let list = filteredData.value?.features || []
   if (q) {
-    list = list.filter((r) =>
-      (r.species || '').toLowerCase().includes(q) ||
-      (r.location || '').toLowerCase().includes(q))
+    list = list.filter((f) => {
+      const p = f.properties || {}
+      return (p.species || '').toLowerCase().includes(q)
+        || (p.location || '').toLowerCase().includes(q)
+    })
   }
   const key = sortKey.value
   const dir = sortDir.value
-  return [...list].sort((a, b) => {
-    const av = a[key], bv = b[key]
+  return [...list].sort((fa, fb) => {
+    const av = fa.properties?.[key], bv = fb.properties?.[key]
     const aNull = !hasValue(av), bNull = !hasValue(bv)
     if (aNull && bNull) return 0
     if (aNull) return 1              // nulls always sort last
@@ -109,6 +139,12 @@ const filtered = computed(() => {
     return String(av).localeCompare(String(bv)) * dir
   })
 })
+
+const filtered = computed(() => filteredFeatures.value.map((f) => ({
+  ...f.properties,
+  lon: f.geometry?.coordinates?.[0],
+  lat: f.geometry?.coordinates?.[1],
+})))
 
 // ─── Windowed rendering ───────────────────────────────────────────────────────
 // The full set is ~48k rows. Putting all of them in the DOM took ~30s to become

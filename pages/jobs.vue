@@ -192,6 +192,13 @@
                         @click="startSave(job)">
                   Save as dataset
                 </button>
+                <!-- Fetched on demand, so opening the menu on a page of
+                     finished jobs does not download every one of them. -->
+                <ExportMenu v-if="job.status === 'succeeded'"
+                            :source="() => jobsApi.fetchResult(job)"
+                            :total="job.result_meta?.features || job.params?.points || 0"
+                            :name="job.title || 'job result'"
+                            subtitle="enriched by this job" />
                 <span v-else-if="job.status === 'succeeded'" class="saved-as">
                   Saved as <strong>{{ savedFrom(job).title }}</strong>
                 </span>
@@ -260,6 +267,11 @@
                   </option>
                 </select>
                 <button class="btn small" @click="useAsSource(d)">Run a job on it</button>
+                <!-- Read through the datasets function rather than from
+                     storage, so a dataset shared with this member exports the
+                     same way one of their own does. -->
+                <ExportMenu :source="() => datasetsApi.fetchGeojson(d.slug)"
+                            :total="d.feature_count || 0" :name="d.title" />
                 <button class="btn small danger" @click="removeDataset(d)">Delete</button>
               </div>
             </li>

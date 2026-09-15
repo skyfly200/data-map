@@ -39,21 +39,6 @@ water masking. Those are not "sample a band".
 Worth doing after there is evidence somebody has hit the wall of six stages.
 Composing jobs came first because it needed no new Earth Engine surface at all.
 
-### Data export
-
-There is no way to get data out of the app. The only downloads that exist are
-chart SVG/PNG and map PNG — no GeoJSON, no CSV, for either the reference dataset
-or a job result.
-
-This is the most-cited gap and the least excusable one: the app computes a
-filtered, enriched set of records and then will not hand it over. Wanted:
-
-- the current filtered selection, as GeoJSON and CSV
-- a job result, from the jobs page, without going through the storage bucket
-- column selection, since the full enriched row is wide
-
-Worth deciding at the same time whether export is open or a membership benefit.
-
 ### Coverage page, reframed
 
 `/coverage` inventories the **local raster cache** — 25.9 GB of CHIRPS, ERA5 and
@@ -108,6 +93,29 @@ for rendering each one once and looking at it.
 
 Entries move here with the commit that closed them, so the reason an item
 existed survives the fix.
+
+### Data export
+
+The app computed a filtered, enriched set of records and then would not hand it
+over: the only downloads that existed were chart SVG/PNG and map PNG.
+
+Closed with `composables/dataExport.js` and an `ExportMenu` on the data table,
+each finished job and each saved dataset. GeoJSON and CSV, with column
+selection defaulting to what the table is showing — the enriched row runs to
+about fifty columns, so which ones is a real question.
+
+It is open rather than a membership benefit, and that was the decision the entry
+asked for. The reference dataset is already a public file the app fetches by URL,
+so asking somebody to sign in to download what they could already fetch directly
+would be theatre; a job result is the member's own work and they had to be a
+member to produce it.
+
+Two things the encoders are careful about, both silent when wrong. A CSV field
+containing a comma, a quote or a newline shifts every column after it unless it
+is quoted and its quotes doubled — one species note is enough. And a cell
+beginning `=`, `+`, `-` or `@` is a formula in every spreadsheet, while the text
+in these fields comes from iNaturalist, which is to say from the public; those
+are prefixed with an apostrophe rather than stripped, so the value survives.
 
 ### Storage access rules for job results
 
