@@ -46,7 +46,7 @@ Content-Type: application/json
 | `email` | required | The payer's address. Matched case-insensitively. |
 | `months` | default 12 | Months to add. 1–120. |
 | `until` | | An explicit end date instead of a duration. Not with `months`. |
-| `tier` | default `member` | `member` or `admin`. `free` is refused — use revoke. |
+| `tier` | default `member` | `member`, `perpetual` or `admin`. `free` is refused — use revoke. |
 | `ref` | strongly advised | The processor's transaction id. See idempotency. |
 | `source` | default `api` | Where it came from, for the record. |
 | `name` | | Fills the display name if they have not set one. |
@@ -86,9 +86,25 @@ A term extends from whichever is later: today, or the expiry already held. A
 member renewing with two months left gets those two months plus the new term.
 A lapsed member starts from today rather than from the date they lapsed.
 
-An administrator is never demoted to member by a grant, so an admin renewing
-their dues through the same PayPal button as everybody else keeps the admin
-screen.
+### Tiers that do not expire
+
+Two tiers ignore `member_until` entirely:
+
+| | |
+| --- | --- |
+| `perpetual` | A member whose standing does not run out — honorary and life members, founders, anyone FRMS does not want to invoice. Same powers as `member`. |
+| `admin` | Also exempt, and for a structural reason: the admin screen is the only place a membership date can be corrected, so an admin demoted by their own dues date would lock FRMS out of fixing it. |
+
+A grant never converts either one into a membership that expires. Somebody with
+a perpetual account who pays anyway — out of habit, or because nobody told the
+website — keeps the perpetual account, and an admin renewing through the same
+PayPal button as everybody else keeps the admin screen. The date is still
+recorded in both cases; it just stops deciding anything.
+
+A `lookup` on such an account reports `"expires": false`, `"lapsed": false` and
+`"days_left": 0`. **An automation chasing renewals should filter on `expires`,
+not on `days_left`** — a perpetual member reads as zero days left because there
+is no countdown, not because they are about to run out.
 
 ## Revoke
 
@@ -111,7 +127,7 @@ or `GET /.netlify/functions/membership?email=member@example.org`
 ```json
 {
   "ok": true, "email": "…", "has_account": true, "known": true,
-  "tier": "member", "active": true, "lapsed": false,
+  "tier": "member", "active": true, "lapsed": false, "expires": true,
   "member_until": "2027-06-15T00:00:00.000Z", "days_left": 365,
   "pending_grants": []
 }

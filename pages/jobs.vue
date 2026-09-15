@@ -304,6 +304,7 @@ onMounted(() => {
 .tier-badge { font-size: 0.72rem; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
   border: 1px solid var(--border); color: var(--muted); }
 .tier-badge.member { border-color: #3d8b5f; color: #3d8b5f; }
+.tier-badge.perpetual { border-color: #3d7b8b; color: #3d7b8b; }
 .tier-badge.admin { border-color: #8b5f3d; color: #8b5f3d; }
 
 .gate { border: 1px solid var(--border); border-radius: 10px; padding: 20px; background: var(--surface);

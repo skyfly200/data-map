@@ -111,6 +111,14 @@
                   <label class="stack">
                     <span>Member until</span>
                     <input v-model="draft.member_until" type="date" />
+                    <!-- Left editable rather than disabled: the date is still
+                         a record of dues paid, it just stops governing access.
+                         Saying so beats an admin wondering why it had no
+                         effect. -->
+                    <small v-if="neverExpires(draft.tier)" class="field-note">
+                      Not used: this tier does not expire. The date is kept as a
+                      record of dues paid.
+                    </small>
                   </label>
                   <label v-for="f in LIMIT_FIELDS" :key="f" class="stack">
                     <span>{{ limitLabel(f) }}</span>
@@ -279,7 +287,7 @@
 
 <script setup>
 import { computed, ref, reactive, onMounted } from 'vue'
-import { TIERS } from '~/netlify/lib/tiers.mjs'
+import { TIERS, neverExpires } from '~/netlify/lib/tiers.mjs'
 import { DEFAULT_LIMITS, quotaFraction, rollUpUsage } from '~/netlify/lib/quotas.mjs'
 import { LAYER_PRESETS, applyPreset } from '~/netlify/lib/ee-custom-layers.mjs'
 
@@ -319,8 +327,8 @@ const sortedMembers = computed(() => {
   const byName = (a, b) => (a.display_name || a.user_id).localeCompare(b.display_name || b.user_id)
   if (sortBy.value === 'name') return list.sort(byName)
   if (sortBy.value === 'tier') {
-    const rank = { admin: 0, member: 1, free: 2 }
-    return list.sort((a, b) => (rank[a.tier] ?? 3) - (rank[b.tier] ?? 3) || byName(a, b))
+    const rank = { admin: 0, perpetual: 1, member: 2, free: 3 }
+    return list.sort((a, b) => (rank[a.tier] ?? 4) - (rank[b.tier] ?? 4) || byName(a, b))
   }
   if (sortBy.value === 'recent') {
     return list.sort((a, b) =>
@@ -427,7 +435,10 @@ const fmtWhen = (iso) => {
   return Number.isFinite(d.getTime()) ? d.toLocaleDateString() : ''
 }
 
-const lapsedFor = (m) => m.member_until && new Date(m.member_until) < new Date()
+// A date in the past on a tier that ignores dates is not a lapse. Badging one
+// would send an admin chasing a renewal from somebody who does not owe one.
+const lapsedFor = (m) => !neverExpires(m.tier)
+  && m.member_until && new Date(m.member_until) < new Date()
 
 async function call(path, options = {}) {
   const token = await accessToken()
@@ -589,8 +600,13 @@ onMounted(async () => {
 .tier-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px;
   border: 1px solid var(--border); color: var(--muted); }
 .tier-badge.member, .tier-badge.members { border-color: #3d8b5f; color: #3d8b5f; }
+/* Deliberately close to member rather than to admin: a perpetual account has a
+   member's powers, and a colour borrowed from admin would read as authority. */
+.tier-badge.perpetual { border-color: #3d7b8b; color: #3d7b8b; }
 .tier-badge.admin { border-color: #8b5f3d; color: #8b5f3d; }
 .tier-badge.lapsed { border-color: #b3492f; color: #b3492f; }
+
+.field-note { font-size: 0.72rem; color: var(--muted); margin-top: 3px; }
 
 .editor { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }

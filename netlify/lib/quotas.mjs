@@ -189,15 +189,19 @@ export function rollUpUsage(members = [], now = new Date()) {
     jobsToday += usage.jobsToday || 0
     running += usage.running || 0
 
+    // Anything that is not 'free' has standing: member, perpetual or admin.
+    // Naming the tiers one by one here is how a new tier gets quietly left out
+    // of the counts an admin uses to decide whether to buy more quota.
     const tier = effectiveTier(m, now)
-    if (tier === 'member' || tier === 'admin') active += 1
+    const standing = tier !== 'free'
+    if (standing) active += 1
 
     const share = quotaFraction(used, quota)
     if (share >= 1) overQuota += 1
     else if (share >= 0.8) nearQuota += 1
     // Members who have never run anything: the other half of "is this being
     // used", and the ones worth asking about before buying more quota.
-    if ((usage.jobsThisMonth || 0) === 0 && (tier === 'member' || tier === 'admin')) idle += 1
+    if ((usage.jobsThisMonth || 0) === 0 && standing) idle += 1
   }
 
   return {

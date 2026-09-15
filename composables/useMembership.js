@@ -15,7 +15,7 @@
 // of "what counts as a member" would eventually disagree, and the direction
 // they would disagree in is the expensive one.
 
-import { atLeast, TIER_LABELS, tierFromToken } from '../netlify/lib/tiers.mjs'
+import { atLeast, neverExpires, TIER_LABELS, tierFromToken } from '../netlify/lib/tiers.mjs'
 
 export function useMembership() {
   const { $supabase } = useNuxtApp()
@@ -92,13 +92,26 @@ export function useMembership() {
     return refresh()
   }
 
-  const lapsesAt = computed(() => (profile.value?.member_until
+  /** Does this account's standing run out at all? */
+  const expires = computed(() => !neverExpires(profile.value?.tier || tier.value))
+
+  /**
+   * When membership lapses, or null when it does not.
+   *
+   * Null for a perpetual member or an admin even though the column may hold a
+   * date: it is a record of dues paid, and anything showing it as an expiry
+   * would be telling somebody to renew a membership that cannot lapse. The
+   * stored tier is preferred over the claim because the claim can be an hour
+   * stale, and this reads as a fact about the account rather than about the
+   * session.
+   */
+  const lapsesAt = computed(() => (expires.value && profile.value?.member_until
     ? new Date(profile.value.member_until)
     : null))
 
   return {
     tier, label, isMember, isAdmin, isAuthed, ready, configured,
-    profile, profileError, lapsesAt,
+    profile, profileError, lapsesAt, expires,
     refresh, refreshSession, loadProfile,
   }
 }
