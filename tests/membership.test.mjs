@@ -12,7 +12,7 @@ import {
   TIERS, atLeast, decodeJwtPayload, effectiveTier, tierFromClaims, tierFromToken,
 } from '../netlify/lib/tiers.mjs'
 import {
-  CHUNK_SIZE, DEFAULT_LIMITS, checkQuota, estimateUnits, summariseUsage,
+  CHUNK_SIZE, DEFAULT_LIMITS, checkQuota, estimateUnits, quotaFraction, rollUpUsage, summariseUsage,
 } from '../netlify/lib/quotas.mjs'
 
 /** A JWT-shaped string. Unsigned: these functions decode, they do not verify. */
@@ -222,4 +222,83 @@ test('a job that broke does not cost the member their day', () => {
 test('a job with an unreadable timestamp is skipped, not counted as now', () => {
   const got = summariseUsage([{ status: 'succeeded', created_at: 'nonsense', cost_units: 500 }])
   assert.equal(got.unitsThisMonth, 0)
+})
+
+// ── The admin's view of quota ────────────────────────────────────────────────
+
+test('the rollup adds up what the whole membership has spent', () => {
+  const members = [
+    { tier: 'member', ee_quota_monthly: 500, usage: { unitsThisMonth: 100, jobsToday: 2, running: 1, jobsThisMonth: 3 } },
+    { tier: 'member', ee_quota_monthly: 500, usage: { unitsThisMonth: 450, jobsToday: 1, running: 0, jobsThisMonth: 5 } },
+    { tier: 'free', ee_quota_monthly: 500, usage: { unitsThisMonth: 0, jobsToday: 0, running: 0, jobsThisMonth: 0 } },
+  ]
+  const r = rollUpUsage(members)
+  assert.equal(r.members, 3)
+  assert.equal(r.active, 2, 'a free account is not an active member')
+  assert.equal(r.unitsThisMonth, 550)
+  assert.equal(r.quotaTotal, 1500)
+  assert.equal(r.jobsToday, 3)
+  assert.equal(r.running, 1)
+})
+
+test('members at or near their quota are counted separately', () => {
+  const at = (used) => ({ tier: 'member', ee_quota_monthly: 100, usage: { unitsThisMonth: used, jobsThisMonth: 1 } })
+  const r = rollUpUsage([at(10), at(80), at(99), at(100), at(240)])
+  assert.equal(r.nearQuota, 2, '80% and 99% are near')
+  assert.equal(r.overQuota, 2, '100% and 240% are over')
+})
+
+test('a member who has run nothing is counted as idle', () => {
+  // The other half of "is this being used": the ones worth asking about before
+  // buying more quota.
+  const r = rollUpUsage([
+    { tier: 'member', ee_quota_monthly: 500, usage: { unitsThisMonth: 0, jobsThisMonth: 0 } },
+    { tier: 'member', ee_quota_monthly: 500, usage: { unitsThisMonth: 50, jobsThisMonth: 2 } },
+    { tier: 'free', ee_quota_monthly: 500, usage: { unitsThisMonth: 0, jobsThisMonth: 0 } },
+  ])
+  assert.equal(r.idle, 1, 'only members count as idle, not free accounts')
+})
+
+test('a lapsed member does not count as active', () => {
+  const past = new Date('2020-01-01T00:00:00Z').toISOString()
+  const r = rollUpUsage([{ tier: 'member', member_until: past, ee_quota_monthly: 500, usage: {} }])
+  assert.equal(r.active, 0)
+})
+
+test('an empty membership rolls up to zeroes rather than NaN', () => {
+  const r = rollUpUsage([])
+  assert.equal(r.members, 0)
+  assert.equal(r.unitsThisMonth, 0)
+  assert.equal(r.share, 0)
+  for (const v of Object.values(r)) assert.ok(Number.isFinite(v), 'every total should be a number')
+})
+
+test('a zero quota does not divide by zero', () => {
+  assert.equal(quotaFraction(10, 0), 0)
+  assert.equal(quotaFraction(0, 0), 0)
+  assert.equal(quotaFraction(50, 100), 0.5)
+  const r = rollUpUsage([{ tier: 'member', ee_quota_monthly: 0, usage: { unitsThisMonth: 10 } }])
+  assert.ok(Number.isFinite(r.share))
+})
+
+test('usage carries what the admin screen needs to judge activity', () => {
+  const now = new Date('2026-06-15T12:00:00Z')
+  const jobs = [
+    { status: 'succeeded', created_at: '2026-06-15T09:00:00Z', cost_units: 40 },
+    { status: 'succeeded', created_at: '2026-06-02T09:00:00Z', cost_units: 60 },
+    { status: 'failed', created_at: '2026-06-10T09:00:00Z', cost_units: 10 },
+    { status: 'running', created_at: '2026-06-15T11:00:00Z', estimated_units: 5 },
+    { status: 'succeeded', created_at: '2026-05-01T09:00:00Z', cost_units: 900 },
+  ]
+  const u = summariseUsage(jobs, now)
+  assert.equal(u.unitsThisMonth, 105, 'last month is not counted')
+  assert.equal(u.jobsThisMonth, 3)
+  assert.equal(u.jobsToday, 2)
+  assert.equal(u.running, 1)
+  assert.equal(u.failed, 1, 'a failed job is reported but not charged to the daily count')
+  assert.equal(u.lastJobAt, '2026-06-15T11:00:00.000Z')
+})
+
+test('someone who has never run a job has no last-active date', () => {
+  assert.equal(summariseUsage([]).lastJobAt, null)
 })

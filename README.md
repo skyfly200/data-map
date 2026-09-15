@@ -329,6 +329,18 @@ Storage → frontend + `observations` function read from Supabase; the scheduled
 `refresh-observations` function writes `new-observations.geojson` to the same
 bucket.
 
+### Membership from an automation
+
+`netlify/functions/membership.mjs` turns a payment into a member without anyone
+signing in: the PayPal webhook on the FRMS site calls it with an email and a
+term. It is authenticated with a shared key (`MEMBERSHIP_API_KEY`) rather than a
+session, is idempotent when given the processor's transaction id, and records a
+grant for an address that has no account yet so it applies itself at signup.
+
+Full reference, including the PayPal wiring: [docs/membership-api.md](docs/membership-api.md).
+
+Needs `supabase_migrations/004_membership_api.sql`.
+
 ### Sign-in to protect the live-fetch endpoints (Supabase Auth)
 
 Browsing (map, table, charts, explore) is fully open. The endpoints that spend
