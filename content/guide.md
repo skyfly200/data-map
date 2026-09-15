@@ -1,8 +1,15 @@
 # Guide
 
-Nexstrata maps mushroom observations from iNaturalist, enriched with the terrain
-and weather at each find. This guide covers what each part of the app does and
-what each number means.
+Nexstrata is a workbench for environmental data, built on Google Earth Engine.
+It samples layers at a point, renders them as map overlays, and gives you the
+result as something to map, chart, analyse or take away.
+
+Its founding dataset is mushroom observations from iNaturalist, enriched with
+the ground each find sat on, and that is still what the map opens on. But the
+observations are an example of the shape rather than the limit of it: anything
+with a coordinate and a date can go through the same path.
+
+This guide covers what each part of the app does and what each number means.
 
 > **Note** iNaturalist records are opportunistic observations, not surveys. An
 > area with many records may have many mushrooms, or may simply be near a
@@ -15,9 +22,19 @@ what each number means.
    clusters by default.
 2. Use **Points** to color or size by something else, and **Heatmap** to draw a
    grid summary underneath.
-3. Narrow what you are looking at on **Data → Filters**. Filters apply to every
+3. Open **Layers** for the overlays — fire history, forest type, soil — and
+   **Basemap** for the map underneath them.
+4. Narrow what you are looking at on **Data → Filters**. Filters apply to every
    view at once.
-4. Click any point to open its record in the side panel.
+5. Click any point to open its record in the side panel.
+
+Beyond reading what is already here, the two things the platform is for:
+
+- **[Run an enrichment job](/jobs)** — sample every environmental layer at your
+  own points, over your own area and dates. A membership benefit.
+- **[Publish your own layer](#your-own-earth-engine-layers)** — compute
+  something in Earth Engine, export it as an asset, and register it so it draws
+  on the map like any built-in.
 
 Every control has a small **?** beside it that links to its entry in the
 [Option reference](#reference) at the bottom of this page.
@@ -134,7 +151,17 @@ Reference layers stack on top, grouped by subject:
 - **Weather** — live US radar, US rainfall over the past 24 hours, global
   satellite rainfall, land surface temperature.
 - **Ground** — ESA WorldCover land cover at 10 m, SMAP soil moisture.
-- **Vegetation** — MODIS NDVI greenness.
+- **Vegetation** — MODIS NDVI greenness, and **forest and land cover type**:
+  USGS GAP ecological systems at 30 m, grouped into the types a forager
+  separates. WorldCover says *tree cover*; this says *which trees*, which for
+  most host-specific species is the difference between two different lists of
+  what you might find.
+- **Soil** — texture class, depth to bedrock, sand content as a drainage proxy,
+  and a sand/silt/clay composite. Texture decides how long the ground stays wet
+  after rain, which is the half of fruiting weather the rain layers cannot tell
+  you. The composite has no scale to read a value off; its point is the
+  boundaries, which often run with the ground rather than with anything visible
+  on the surface.
 - **Fire** — years since fire, burn severity, this year's burn scars, active
   fires, and a computed dNBR severity. Years since fire and burn severity are
   open to everyone; the rest are a membership benefit.

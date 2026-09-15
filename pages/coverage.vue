@@ -45,19 +45,63 @@
         </div>
         <p class="sub">Each square is a day, shaded by how many layers have data for it.</p>
 
-        <div class="cal-wrap">
-          <div v-for="cal in calendars" :key="cal.year" class="cal-year">
+        <!-- One readout for the whole calendar, in a fixed place.
+             A tooltip that follows the cursor across an 11px grid is unreadable
+             — it covers the squares either side of the one you are pointing at,
+             and the answer moves while you are reading it. This holds still and
+             keeps the last day you touched, which is also what makes it usable
+             with a keyboard. -->
+        <!-- Both rows are always present, even when empty. The readout sits
+             directly above the grid, so letting it grow when a day is picked
+             pushed the calendar down under the cursor — which moved the square
+             out from under the pointer that had just selected it. -->
+        <div class="cal-readout" :class="{ empty: !hovered }" aria-live="polite">
+          <div class="ro-line">
+            <template v-if="hovered">
+              <strong class="ro-date">{{ longDate(hovered.date) }}</strong>
+              <span v-if="hovered.intensity" class="ro-count">
+                {{ hovered.intensity }} of {{ cov.layers.length }} layers
+              </span>
+              <span v-else class="ro-none">no layer has data for this day</span>
+            </template>
+            <span v-else class="ro-hint">Point at a day to see which layers cover it.</span>
+          </div>
+          <div class="ro-layers">
+            <span v-for="key in (hovered?.layers || [])" :key="key" class="ro-chip">
+              <span class="dot" :style="{ background: colorOf(key) }"></span>{{ labelOf(key) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="cal-wrap" @mouseleave="hovered = null">
+          <div v-for="cal in shownCalendars" :key="cal.year" class="cal-year">
             <div class="cal-title">{{ cal.year }} <span class="cal-total">{{ cal.total }} days</span></div>
             <div class="cal-grid" :style="{ gridTemplateColumns: `repeat(${cal.weeks.length}, 11px)` }">
               <div v-for="(mo, mi) in cal.monthLabels" :key="mi" class="cal-month"
                    :style="{ gridColumn: mo.col + 1 }">{{ mo.label }}</div>
               <template v-for="(week, wi) in cal.weeks">
                 <div v-for="(day, di) in week" :key="`${wi}-${di}`" class="cal-cell"
+                     :class="{ on: day && day.intensity, here: day && hovered && hovered.date === day.date }"
                      :style="{ gridColumn: wi + 1, gridRow: di + 2, background: day ? cellColor(day.intensity) : 'transparent' }"
-                     :title="day ? `${day.date}: ${day.intensity ? day.layers.join(', ') : 'no data'}` : ''"></div>
+                     :tabindex="day ? 0 : -1"
+                     @mouseenter="hovered = day" @focus="hovered = day"></div>
               </template>
             </div>
           </div>
+        </div>
+
+        <!-- The archive goes back to 1988 and is mostly a wall of empty years.
+             The two that answer "is this current" come first; the rest are one
+             click away rather than a scroll. -->
+        <div v-if="hiddenYearCount" class="cal-more">
+          <button class="btn" @click="showAllYears = !showAllYears">
+            {{ showAllYears
+              ? 'Show recent years only'
+              : `Show ${hiddenYearCount} earlier year${hiddenYearCount === 1 ? '' : 's'}` }}
+          </button>
+          <span v-if="!showAllYears" class="cal-more-note">
+            back to {{ calendars.at(-1).year }}
+          </span>
         </div>
       </template>
     </template>
@@ -143,6 +187,36 @@ const calendars = computed(() => {
   })
 })
 
+// ── The calendar's own state ─────────────────────────────────────────────────
+
+/** The day under the cursor or the keyboard focus, or null. */
+const hovered = ref(null)
+
+/** Whether the years before the recent two are shown. */
+const showAllYears = ref(false)
+
+// Two: the current year and the one before it. That pair answers the question
+// the page is usually open for — is this up to date, and what did a full year
+// look like — without unrolling four decades of archive underneath it.
+const RECENT_YEARS = 2
+
+const shownCalendars = computed(() =>
+  (showAllYears.value ? calendars.value : calendars.value.slice(0, RECENT_YEARS)))
+
+const hiddenYearCount = computed(() => Math.max(0, calendars.value.length - RECENT_YEARS))
+
+/** A layer's own label, for the readout, falling back to its key. */
+const labelOf = (key) => (cov.value?.layers || []).find((l) => l.key === key)?.label || key
+
+const longDate = (iso) => {
+  const d = new Date(`${iso}T00:00:00Z`)
+  return Number.isFinite(d.getTime())
+    ? d.toLocaleDateString(undefined, {
+      weekday: 'short', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+    })
+    : iso
+}
+
 function cellColor(intensity) {
   if (!intensity) return 'var(--surface-2)'
   // Discrete green ramp by fraction of the max layer count on any day.
@@ -199,6 +273,43 @@ dd { margin: 0; color: var(--text); font-variant-numeric: tabular-nums; text-ali
 .cal-grid { display: grid; grid-auto-rows: 11px; gap: 2px; grid-template-rows: 14px repeat(7, 11px); width: max-content; }
 .cal-month { font-size: 0.66rem; color: var(--muted); grid-row: 1; align-self: end; white-space: nowrap; }
 .cal-cell { width: 11px; height: 11px; border-radius: 2px; }
+/* Only the days that carry data are worth pointing at, so only those take a
+   cursor. An empty square still focuses, because a keyboard user moving along
+   a row needs to know it is empty rather than skipped. */
+.cal-cell.on { cursor: pointer; }
+.cal-cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* The square being read, marked on the grid as well as in the readout — with a
+   ring rather than a colour change, since the colour IS the value. */
+.cal-cell.here { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--text); }
+
+.cal-readout {
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface-2); padding: 8px 12px; margin-top: 12px;
+  font-size: 0.8rem;
+}
+.cal-readout.empty { color: var(--muted); }
+/* Fixed rows, so the grid below never moves. The chip row holds its height
+   whether or not there are chips in it. */
+.ro-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-height: 1.3em; }
+.ro-layers {
+  display: flex; flex-wrap: wrap; gap: 4px 10px;
+  min-height: 1.25em; margin-top: 4px; overflow: hidden;
+}
+.ro-date { font-size: 0.85rem; }
+.ro-count { color: var(--muted); }
+.ro-none { color: var(--muted); font-style: italic; }
+.ro-hint { color: var(--muted); }
+.ro-chip { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 0.76rem; }
+.ro-chip .dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+
+.cal-more { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.cal-more .btn {
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  border-radius: 6px; padding: 6px 12px; font: inherit; font-size: 0.8rem; font-weight: 600;
+  cursor: pointer;
+}
+.cal-more .btn:hover { background: var(--surface-3); }
+.cal-more-note { color: var(--muted); font-size: 0.76rem; }
 .msg { padding: 16px; color: var(--muted); }
 .msg code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
 </style>

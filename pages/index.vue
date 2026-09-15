@@ -3,52 +3,63 @@
     <section class="hero">
       <AppLogo class="hero-logo" :size="168" />
       <h1>Nexstrata</h1>
-      <h3>Data abundance distilled into actionable insights</h3>
+      <h3>Earth Engine, pointed at the ground you care about</h3>
       <p class="lead">
-        Mushroom observations from iNaturalist, each one carrying the ground it was
-        found on: terrain, weather, canopy, soil and exposure. So you can ask what the
-        places have in common, instead of only where the dots are.
+        Sample environmental layers at any point, render them as map overlays, and
+        build on what comes back. It started with mushroom observations, and the
+        observations are still here — but the platform is the part that generalises.
       </p>
 
       <div class="cta">
         <NuxtLink to="/map" class="btn primary">Open the map</NuxtLink>
-        <NuxtLink to="/charts?tab=build" class="btn">Build a chart</NuxtLink>
+        <NuxtLink to="/jobs" class="btn">Run an enrichment job</NuxtLink>
         <NuxtLink to="/guide" class="btn">Read the guide</NuxtLink>
       </div>
 
       <p v-if="totalCount" class="stat">
         <strong>{{ totalCount.toLocaleString() }}</strong> observations ·
         <strong>{{ ENRICHMENT_COUNT }}</strong> environmental fields on each ·
-        <strong>7</strong> taxonomic ranks
+        <strong>{{ eeLayerCount }}</strong> Earth Engine layers
       </p>
     </section>
 
-    <!-- ── The name ─────────────────────────────────────────────────────────
-         Worth explaining rather than leaving as a word: it says what the app
-         does, and the logo says the same thing in a picture. -->
+    <!-- ── What it does ─────────────────────────────────────────────────────
+         One line each. Anyone who wants more follows the card; anyone
+         skimming gets the shape of the thing in about fifteen seconds. -->
+    <section class="features">
+      <h2>What it does</h2>
+      <div class="feature-grid">
+        <NuxtLink v-for="f in FEATURES" :key="f.title" :to="f.to" class="feature">
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.body }}</p>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <!-- ── The layers ───────────────────────────────────────────────────────
+         The figure carries this section; the words only have to say what it
+         is a picture of. The full source table lives in the guide. -->
     <section class="name">
-      <h2>Why “Nexstrata”</h2>
+      <h2>A stack, sampled at a point</h2>
       <div class="name-grid">
         <div class="name-text">
           <p>
-            <strong class="etym">strata</strong>: layers. Where a mushroom grows is not
-            one fact but a stack of them: the weather of the week before, the canopy over
-            it, the moisture in the soil, the shape and aspect of the ground, how much sun
-            and wind that shape lets through.
+            <strong class="etym">strata</strong>: layers.
+            <strong class="etym">nex</strong>: a binding together. Where something
+            grows is not one fact but a stack of them, and an observation is the one
+            place all of them meet — somebody stood at a point, and every layer had a
+            value there at that moment.
           </p>
           <p>
-            <strong class="etym">nex</strong>: from <em>nexus</em>, a binding together.
-            An observation is the one place all those layers meet. Somebody stood at a
-            point, found something, and every layer had a value there at that moment.
+            Each layer comes from Earth Engine, sampled at the record's own coordinate
+            and date rather than averaged over a region.
           </p>
-          <p class="name-close">
-            So: the binding of the layers at a point. That is what the mark shows: a beam
-            passing down through every stratum and landing on a geotag on the ground. This
-            app is the beam.
+          <p class="more-links">
+            <NuxtLink to="/guide#where-the-data-comes-from">Every source, by column</NuxtLink>
+            <NuxtLink to="/coverage">What is actually covered</NuxtLink>
           </p>
         </div>
 
-        <!-- The same idea as the logo, with the layers actually named. -->
         <figure class="strata" aria-label="The layers sampled at each observation">
           <div v-for="(layer, i) in STRATA" :key="layer.name" class="stratum"
                :style="{ '--i': i, '--inset': `${i * 7}px` }">
@@ -62,143 +73,55 @@
       </div>
     </section>
 
-    <!-- ── The data layers ──────────────────────────────────────────────────
-         The strata figure above names the layers; this grounds each one in
-         the dataset it is actually sampled from. Same five, same order, and
-         the sources match the guide's data table. -->
-    <section class="layers">
-      <h2>The data layers</h2>
-      <p class="layers-sub">
-        Every observation carries the value of each layer at its own coordinate
-        and date. Column by column, what each one is and where it comes from:
-        <NuxtLink to="/guide#where-the-data-comes-from">the source table</NuxtLink>;
-        how much of each the records actually carry:
-        <NuxtLink to="/coverage">coverage</NuxtLink>.
+    <!-- ── Earth Engine ─────────────────────────────────────────────────── -->
+    <section class="ee">
+      <h2>Built on Earth Engine</h2>
+      <p class="ee-lede">
+        Everything environmental on this site is sampled or rendered from Earth Engine —
+        the terrain model, the satellite imagery, the weather reanalysis and the soil
+        surveys all live there, so nothing has to be downloaded to be used.
       </p>
-      <div class="layer-grid">
-        <div v-for="l in LAYERS" :key="l.name" class="layer">
-          <h3>{{ l.name }}</h3>
-          <p>{{ l.body }}</p>
-          <p class="src">{{ l.source }}</p>
-        </div>
+      <ul class="ee-list">
+        <li><strong>Enrich</strong> — sample every layer at your own points, over your own area and dates.</li>
+        <li><strong>Render</strong> — fire history, forest type and soil drawn on demand, no tiles stored.</li>
+        <li><strong>Publish</strong> — compute a layer, export it as an asset, register it, and it draws like any built-in.</li>
+        <li><strong>Analyse</strong> — take the enriched result into the charts, the statistics, or out as data.</li>
+      </ul>
+      <div class="cta left">
+        <NuxtLink to="/jobs" class="btn primary">Run a job</NuxtLink>
+        <NuxtLink to="/guide#your-own-earth-engine-layers" class="btn">Publish a layer</NuxtLink>
+        <a class="btn" :href="KAGGLE_URL" target="_blank" rel="noopener noreferrer">Run the pipeline yourself</a>
       </div>
     </section>
 
-    <!-- ── Goals ───────────────────────────────────────────────────────────── -->
-    <section class="goals">
-      <h2>What it is trying to do</h2>
-      <ol class="goal-list">
-        <li v-for="goal in GOALS" :key="goal.title">
-          <h3>{{ goal.title }}</h3>
-          <p>{{ goal.body }}</p>
-        </li>
-      </ol>
-    </section>
-
-    <!-- ── What's in it ────────────────────────────────────────────────────── -->
-    <section class="features">
-      <h2>What is in it</h2>
-      <div class="feature-grid">
-        <NuxtLink v-for="f in FEATURES" :key="f.title" :to="f.to" class="feature">
-          <h3>{{ f.title }}</h3>
-          <p>{{ f.body }}</p>
-        </NuxtLink>
-      </div>
-    </section>
-
-    <!-- ── The caveat ──────────────────────────────────────────────────────
-         Not a footnote. It is the thing that most changes how you should read
-         everything above, so it gets a section rather than small print. -->
+    <!-- ── The caveat ───────────────────────────────────────────────────────
+         Kept, and kept short. It is the thing that most changes how the rest
+         should be read, so it stays on the page rather than moving to the
+         guide with everything else. -->
     <section class="caveat">
       <h2>What it cannot tell you</h2>
       <p>
         These are <strong>opportunistic observations, not surveys</strong>. Somewhere with
-        many records may have many mushrooms, or may simply be near a trailhead. A map of
-        finds is partly a map of where people walk, and no amount of environmental data
-        attached to those finds fixes that.
+        many records may have many mushrooms, or may simply be near a trailhead — and no
+        amount of environmental data attached to those finds fixes that.
       </p>
       <p>
-        So the app says where it stands. Views that correct for recording effort say so;
-        views that cannot say that too. Every control has an entry in the
-        <NuxtLink to="/guide#reference">option reference</NuxtLink> covering what it does
-        <em>and</em> where it will mislead you: the seasonal heatmaps divide by each
-        cell's own total so effort cancels out, obscured coordinates are flagged because
-        their terrain describes somewhere the mushroom probably was not, and a blank cell
-        means nobody looked there rather than nothing grows there.
-      </p>
-    </section>
-
-    <!-- ── The pipeline ────────────────────────────────────────────────────
-         The environmental fields are not in iNaturalist's data; something has
-         to go and sample them. That step is the substance of the project, and
-         it is reproducible, so it is worth a section rather than a footnote. -->
-    <section class="pipeline">
-      <h2>Where the data comes from</h2>
-      <p class="pl-lede">
-        iNaturalist supplies the observations: a name, a date and a coordinate. Everything
-        else on this site is sampled afterwards from <strong>Google Earth Engine</strong>,
-        which is where the terrain model, the satellite imagery and the weather
-        reanalysis all live. Six stages run against it — terrain, land cover, soil
-        moisture, precipitation, temperature and greenness — and the results are then
-        clustered by environmental similarity.
-      </p>
-
-      <div class="pl-grid">
-        <div class="pl-card static">
-          <h3>The published dataset</h3>
-          <p>
-            Built in batch by the Python pipeline and committed to the repository, so the
-            map opens on the same data for everybody and does not spend Earth Engine
-            quota to draw. A scheduled function merges genuinely new sightings on top
-            between full runs.
-          </p>
-          <span class="pl-fact">{{ totalCount ? `${totalCount.toLocaleString()} observations today` : 'Rebuilt as the pipeline runs' }}</span>
-        </div>
-
-        <NuxtLink class="pl-card" to="/jobs">
-          <h3>Enrichment on demand</h3>
-          <p>
-            Members run the same six stages over their own area and dates, as a queued
-            job on the society's Earth Engine account. Progress is reported as it runs and
-            the output is saved as a dataset you can map, chart and download.
-          </p>
-          <span class="pl-go">A membership benefit</span>
-        </NuxtLink>
-
-        <a class="pl-card" :href="KAGGLE_URL" target="_blank" rel="noopener noreferrer">
-          <h3>Run the pipeline yourself</h3>
-          <p>
-            The whole thing in a hosted Kaggle notebook, or locally with
-            <code>pip install -r requirements.txt</code> and
-            <code>python run_pipeline.py</code>. Both are one
-            <code>run_pipeline.run_all()</code> call, so neither can drift out of step
-            with the other.
-          </p>
-          <span class="pl-go">Open the Kaggle notebook</span>
-        </a>
-      </div>
-
-      <p class="pl-note">
-        Earth Engine is the only credential any of this needs. Beyond sampling points, it
-        also renders <strong>map layers</strong>: the fire history and severity overlays
-        are computed there on request, and an administrator can register the society's own
-        exported assets — a tree cover classification, a habitat index — as overlays that
-        draw through the same path as the built-in ones, each with its own access tier.
-        The notebook is in the repository at <code>notebooks/kaggle_pipeline.ipynb</code>.
+        So every view says what distorts it, in the view itself rather than in
+        documentation nobody opens.
+        <NuxtLink to="/guide#reference">Every control has an entry</NuxtLink>
+        covering what it does <em>and</em> where it will mislead you.
       </p>
     </section>
 
     <section class="foot">
       <ClientOnly>
-        <div class="auth-cta" v-if="configured">
+        <div v-if="configured" class="auth-cta">
           <template v-if="isAuthed">
             <span class="signed">Signed in as <strong>{{ user?.email || 'your account' }}</strong>.</span>
-            <!-- The fetch link is hidden with the tab it points at, while
-                 that backend is replaced. -->
             <button class="btn small ghost" @click="signOut">Sign out</button>
           </template>
           <template v-else>
-            <span class="hint">Browsing is open to everyone. Sign in to save your settings across devices:</span>
+            <span class="hint">Browsing is open to everyone. Sign in to save your work and run jobs:</span>
             <NuxtLink to="/login" class="btn small">Sign in</NuxtLink>
             <NuxtLink to="/login?mode=signup" class="btn small ghost">Sign up</NuxtLink>
           </template>
@@ -216,156 +139,86 @@
 
 <script setup>
 import { computed } from 'vue'
+import { EE_LAYER_KEYS } from '~/netlify/lib/ee-tile-layers.mjs'
 
 const { user, isAuthed, configured, signOut } = useAuth()
 const repoUrl = 'https://github.com/skyfly200/data-map'
 const KAGGLE_URL = 'https://www.kaggle.com/code/skylerflywilson/nexstrata-data-enrichment-pipeline'
 
-// The manifest is a couple of kilobytes and app.vue already loads it, so the
-// headline number is the real one rather than a figure baked into the copy that
-// goes stale the next time the pipeline runs.
+// Every headline number is counted from the thing it describes rather than
+// written into the copy, so none of them can go stale behind the app's back.
 const { availableDatasets } = useObservations()
 const totalCount = computed(() =>
   availableDatasets.value?.find((d) => d.id === 'all')?.count || 0)
 
-// Counted from the field registry rather than written out, for the same reason.
 // The temporal fields are excluded: year, month and day-of-year come off the
 // record's own date and are not something the pipeline went and sampled, so
 // counting them would inflate the claim this line is making.
 const TEMPORAL = new Set(['year', 'month', 'day_of_year'])
 const ENRICHMENT_COUNT = ALL_NUMERIC.filter((f) => !TEMPORAL.has(f.key)).length
 
+// The built-in catalogue only. Layers a society has registered of its own are
+// per-deployment and behind a tier, so counting them here would promise a
+// visitor something they may not be able to see.
+const eeLayerCount = EE_LAYER_KEYS.length
+
 // The layers named, coarse to fine — the same grouping the pipeline samples in
-// and the observation drawer reports in.
+// and the observation drawer reports in. The figure is the only thing that
+// reads these; the full source table lives in the guide.
 const STRATA = [
   { name: 'Weather', fields: 'the seven days before the find' },
   { name: 'Canopy', fields: 'NDVI, NDMI' },
-  { name: 'Ground', fields: 'soil moisture, land cover' },
+  { name: 'Ground', fields: 'soil moisture, texture, land cover' },
   { name: 'Terrain', fields: 'elevation, slope, aspect, wetness' },
   { name: 'Exposure', fields: 'sun, wind' },
 ]
 
-// The same five strata with the datasets they are actually sampled from — the
-// guide's source table, in the same coarse-to-fine order as STRATA above.
-const LAYERS = [
-  {
-    name: 'Weather',
-    body: 'Seven days of rain and daily high/low temperatures before the find, plus the wind that day.',
-    source: 'CHIRPS · ERA5-Land',
-  },
-  {
-    name: 'Canopy',
-    body: 'Greenness (NDVI) and vegetation water content (NDMI) around the point.',
-    source: 'Sentinel-2, 10 m',
-  },
-  {
-    name: 'Ground',
-    body: 'Soil moisture, and the land cover class the point falls on.',
-    source: 'ERA5-Land · ESA WorldCover, 10 m',
-  },
-  {
-    name: 'Terrain',
-    body: 'Elevation, slope, and the direction the ground faces.',
-    source: 'SRTM digital elevation model',
-  },
-  {
-    name: 'Exposure',
-    body: 'How much sun and wind the shape of the ground lets through, and how wet it stays.',
-    source: 'Derived from SRTM + MERIT Hydro',
-  },
-]
-
-const GOALS = [
-  {
-    title: 'Attach the place to the find',
-    body: 'A record from iNaturalist is a name, a date and a coordinate. The pipeline '
-      + 'samples what the ground was like there: terrain from a digital elevation model, '
-      + 'canopy and moisture from satellite imagery, the weather in the week before. So '
-      + 'the observation carries its own context instead of just its position.',
-  },
-  {
-    title: 'Make the layers legible',
-    body: 'Forty-eight thousand overlapping dots show where the data is dense and nothing '
-      + 'else. Binned into a hex grid they show what is actually in an area: how many '
-      + 'species, when it fruits, how steep and wet and shaded the ground is. Charts and '
-      + 'statistics take it further, over whatever the filters currently select.',
-  },
-  {
-    title: 'Be honest about the limits',
-    body: 'Every view says what it is distorted by, in the view itself rather than in '
-      + 'documentation nobody opens. A number that cannot be trusted is worse than no '
-      + 'number, so where the data will mislead you, the app says so at the point of use.',
-  },
-  {
-    title: 'Work where it is used',
-    body: 'A map of where things grow is most often read standing in the place it '
-      + 'describes, which is where there is least likely to be a signal. The app, the '
-      + 'observations and named areas of map tiles can all be saved into the browser and '
-      + 'managed there, and it installs to a home screen. A saved area holds every layer '
-      + 'that was drawn when you saved it, including the ones Earth Engine renders.',
-  },
-]
-
+/**
+ * What the platform does, one line each.
+ *
+ * The page used to carry four goals and seven features at a paragraph apiece,
+ * which is a page nobody finishes. Anything that needs more than a line belongs
+ * behind the link rather than in front of it.
+ */
 const FEATURES = [
   {
     to: '/map',
-    title: 'Map and heatmaps',
-    body: 'Every observation as a point, colored by any dimension. Under them, a hex grid '
-      + 'summarising density, species richness, seasonal activity, in-season hotspots, or '
-      + 'the cell mean of any environmental field.',
+    title: 'Map and read',
+    body: 'Observations, hex-grid heatmaps, and reference layers from fire history to forest type.',
   },
   {
-    to: '/map',
-    title: 'Reference layers',
-    body: 'Rainfall and radar, land surface temperature, ESA land cover at 10 m, soil '
-      + 'moisture, greenness, hillshade, hiking trails, US land ownership, and fire '
-      + 'history rendered live from Earth Engine. Manage them in a window that stays '
-      + 'open while you work the map: order the stack, dim one without dimming the rest. '
-      + 'Each has a key, and each says what it gets wrong.',
+    to: '/jobs',
+    title: 'Enrich with Earth Engine',
+    body: 'Sample terrain, weather, canopy and soil at your own points, over your own area and dates.',
   },
   {
-    to: '/data',
-    title: 'Taxonomy at every rank',
-    body: 'Kingdom through species, resolved from each record’s real ancestry. Filter, '
-      + 'group, color and analyse at whichever rank answers your question, and import a '
-      + 'species, a family or a whole kingdom.',
-  },
-  {
-    to: '/charts?tab=build',
-    title: 'Charts you build',
-    body: 'Scatter, line, area, bar, stacked bar, box, histogram, heatmap, radar and '
-      + 'donut. Compose your own, save the ones worth keeping, and share a link that '
-      + 'reopens exactly what you were looking at.',
+    to: '/guide#your-own-earth-engine-layers',
+    title: 'Publish your own layers',
+    body: 'Export a computed asset, register it, and it renders through the same path as the built-ins.',
   },
   {
     to: '/analysis',
-    title: 'Statistics',
-    body: 'Rank correlations across every populated field, species fingerprints in '
-      + 'standard deviations from the dataset mean, and the confounds (season and '
-      + 'recording effort) named rather than left for you to find.',
+    title: 'Analyse',
+    body: 'Rank correlations, species fingerprints, and the confounds named rather than left for you to find.',
   },
   {
-    to: '/coverage',
-    title: 'Coverage',
-    body: 'Which environmental layers are cached, for what dates and over what ground, '
-      + 'as a calendar of every day the pipeline has data for. What is missing is as '
-      + 'much of the answer as what is there.',
+    to: '/charts?tab=build',
+    title: 'Chart and share',
+    body: 'Compose a chart from any two fields, save it, and share a link that reopens what you were looking at.',
   },
   {
     to: '/offline',
-    title: 'Offline areas',
-    body: 'Save the place you are going — the tiles, the observations and the app '
-      + 'itself — and manage the collection by name: rename, refresh, delete, or put the '
-      + 'map back over one. Deleting frees only what no other saved area still needs.',
+    title: 'Work with no signal',
+    body: 'Save the ground you are going to, by name, with every layer that was drawn when you saved it.',
   },
 ]
 
 useHead({
-  title: 'Nexstrata · Mushroom observations, read through the layers',
+  title: 'Nexstrata · Environmental layers, sampled where they matter',
   meta: [{
     name: 'description',
-    content: 'Mushroom observations from iNaturalist, each carrying the terrain, weather, '
-      + 'canopy and soil it was found in, mapped, charted and honest about its limits.',
+    content: 'An Earth Engine workbench for environmental data: sample layers at any point, '
+      + 'render them as map overlays, publish your own, and analyse what comes back.',
   }],
 })
 </script>
@@ -420,25 +273,6 @@ useHead({
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   color: #38bdf8; font-weight: 700; letter-spacing: 0.02em;
 }
-.name-close { color: var(--muted) !important; border-top: 1px solid var(--border-soft); padding-top: 12px; }
-
-/* ── Data layers ──────────────────────────────────────────────────────── */
-.layers-sub { max-width: 640px; margin: 0 0 16px; color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
-.layers-sub a { color: var(--accent); }
-.layer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
-.layer {
-  border: 1px solid var(--border); border-radius: 10px; padding: 15px 17px; background: var(--surface);
-}
-.layer:hover { border-color: var(--accent); }
-.layer h3 { margin: 0 0 6px; font-size: 0.96rem; color: var(--text); }
-.layer p { margin: 0 0 8px; font-size: 0.84rem; color: var(--muted); line-height: 1.55; }
-.layer p:last-child { margin-bottom: 0; }
-/* The source line reads as a caption, in the same mono voice as the etymology
-   above — the dataset names are the citation, not part of the prose. */
-.layer .src {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.72rem; color: #38bdf8; letter-spacing: 0.01em;
-}
 
 /* The layer stack: the logo's idea with the layers named. Each plate is inset a
    little more than the one above so the stack reads as receding, and the beam
@@ -475,21 +309,25 @@ useHead({
   text-align: center; font-size: 0.72rem; color: var(--muted);
 }
 
-/* ── Goals ────────────────────────────────────────────────────────────── */
-.goal-list {
-  list-style: none; counter-reset: goal; margin: 0; padding: 0;
-  display: grid; gap: 18px;
+/* ── Links out of a section, where the depth used to be inline ────────── */
+.more-links { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 14px 0 0 !important; }
+.more-links a { color: var(--accent); font-size: 0.86rem; font-weight: 600; text-decoration: none; }
+.more-links a:hover { text-decoration: underline; }
+
+/* ── Earth Engine ─────────────────────────────────────────────────────── */
+.ee-lede { margin: 0 0 14px; color: var(--muted); font-size: 0.94rem; line-height: 1.65; max-width: 660px; }
+.ee-list { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 8px; max-width: 660px; }
+.ee-list li {
+  color: var(--muted); font-size: 0.89rem; line-height: 1.55;
+  padding-left: 16px; position: relative;
 }
-.goal-list li { counter-increment: goal; padding-left: 42px; position: relative; }
-.goal-list li::before {
-  content: counter(goal); position: absolute; left: 0; top: -1px;
-  width: 28px; height: 28px; border-radius: 50%;
-  display: grid; place-items: center;
-  background: var(--surface-2); border: 1px solid var(--border);
-  color: var(--muted); font-size: 0.82rem; font-weight: 700;
+.ee-list li::before {
+  content: ''; position: absolute; left: 0; top: 0.55em;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
 }
-.goal-list h3 { margin: 0 0 4px; font-size: 0.98rem; color: var(--text); }
-.goal-list p { margin: 0; color: var(--muted); font-size: 0.89rem; line-height: 1.6; }
+.ee-list strong { color: var(--text); }
+/* The hero centres its buttons; a section in the flow does not. */
+.cta.left { justify-content: flex-start; margin-bottom: 0; }
 
 /* ── Features ─────────────────────────────────────────────────────────── */
 .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
@@ -500,27 +338,6 @@ useHead({
 .feature:hover { background: var(--surface-2); border-color: var(--accent); }
 .feature h3 { margin: 0 0 6px; font-size: 0.96rem; color: var(--text); }
 .feature p { margin: 0; font-size: 0.84rem; color: var(--muted); line-height: 1.55; }
-
-/* ── Pipeline ─────────────────────────────────────────────────────────── */
-.pl-lede { margin: 0 0 16px; color: var(--muted); font-size: 0.92rem; line-height: 1.65; }
-.pl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
-.pl-card {
-  display: block; text-decoration: none;
-  border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; background: var(--surface);
-}
-.pl-card:not(.static):hover { background: var(--surface-2); border-color: var(--accent); }
-/* The published dataset is a statement, not a destination — no hover, and its
-   closing line takes no arrow. */
-.pl-fact { font-size: 0.82rem; font-weight: 600; color: var(--text); }
-.pl-card h3 { margin: 0 0 6px; font-size: 0.98rem; color: var(--text); }
-.pl-card p { margin: 0 0 10px; font-size: 0.84rem; color: var(--muted); line-height: 1.55; }
-.pl-go { font-size: 0.82rem; font-weight: 600; color: var(--accent); }
-.pl-go::after { content: ' \2192'; }
-.pl-note { margin: 14px 0 0; color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
-.pipeline code {
-  background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 4px;
-  padding: 1px 5px; font-size: 0.92em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
 
 /* ── Caveat ───────────────────────────────────────────────────────────── */
 .caveat {
@@ -558,7 +375,6 @@ useHead({
   /* The stack sits under the prose rather than beside it, and stops insetting —
      on a narrow screen the receding effect just eats the labels. */
   .name-grid { grid-template-columns: 1fr; gap: 22px; }
-  .pl-grid { grid-template-columns: 1fr; }
   .strata { max-width: 320px; margin: 0 auto; }
   .stratum { margin-left: calc(var(--inset) / 2); margin-right: calc(var(--inset) / 2); }
 }
