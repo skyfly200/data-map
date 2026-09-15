@@ -31,6 +31,7 @@
           <small>
             The dataset the map, table and charts all read from.
             <template v-if="datasetLabel"> Currently {{ datasetLabel }}.</template>
+            <template v-if="datasetBytes"> <strong>{{ formatBytes(datasetBytes) }}</strong> to download.</template>
           </small>
         </div>
         <button :disabled="!!busy" @click="save">
@@ -48,6 +49,30 @@
             <span class="off-num">{{ extraZoom }}</span> zoom level{{ extraZoom === 1 ? '' : 's' }} closer,
             for the {{ sources.length }} layer{{ sources.length === 1 ? '' : 's' }} currently drawn.
           </small>
+
+          <!-- Which layer is costing it. Every drawn layer fetches the same
+               tiles over the same area, so a total that reads as too large
+               shrinks by turning one off rather than by zooming out — and that
+               is not obvious from one number. -->
+          <details v-if="perSource.length > 1" class="off-breakdown">
+            <summary>By layer</summary>
+            <ul>
+              <li v-for="p in perSource" :key="p.id">
+                <span class="off-bd-name">{{ p.name }}</span>
+                <!-- A coarse layer contributes only the zooms it publishes. At
+                     a close zoom that is none at all, and "0 MB" reads as a
+                     bug where the truth — this layer will be blank offline
+                     here — is worth knowing before you walk away with it. -->
+                <span v-if="!p.tiles" class="off-bd-size none"
+                      title="This layer publishes no tiles this close in, so there is nothing to save">
+                  none this close
+                </span>
+                <span v-else class="off-bd-size">
+                  {{ formatBytes(p.bytes) }}<template v-if="p.capped"> · partial</template>
+                </span>
+              </li>
+            </ul>
+          </details>
         </div>
 
         <!-- Named at the point of saving, not afterwards. A list of saved areas
@@ -104,9 +129,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
-  MAX_AREA_TILES, MAX_EXTRA_ZOOM, countTilesInBounds, estimateSave, formatBytes, suggestAreaName,
+  MAX_AREA_TILES, MAX_EXTRA_ZOOM, countTilesInBounds, estimatePerSource, estimateSave,
+  formatBytes, suggestAreaName,
 } from '~/composables/offlineTiles'
 
 const props = defineProps({
@@ -134,7 +160,10 @@ const areaName = ref('')
 onMounted(async () => {
   await offline.register()
   await offline.loadAreas()
+  offline.measure(selectedDataset.value)
 })
+
+watch(selectedDataset, (url) => offline.measure(url))
 
 const zoomRange = computed(() => {
   const z = Math.round(props.bounds?.zoom ?? 0)
@@ -149,8 +178,19 @@ const tileCount = computed(() => {
   return countTilesInBounds(props.bounds, zoomRange.value.min, zoomRange.value.max)
 })
 const estimate = computed(() => estimateSave(tileCount.value, Math.max(1, props.sources.length)))
+const perSource = computed(() => (tileCount.value
+  ? estimatePerSource(tileCount.value, props.sources, {
+    bounds: props.bounds,
+    minZoom: zoomRange.value.min,
+    maxZoom: zoomRange.value.max,
+  })
+  : []))
 const tooBig = computed(() => estimate.value.tiles > MAX_AREA_TILES)
 const suggestedName = computed(() => suggestAreaName(props.bounds))
+
+// The dataset's download size, asked for once. The button beside it is the one
+// here that can cost tens of megabytes on a phone.
+const datasetBytes = computed(() => offline.measured.value[selectedDataset.value] || 0)
 
 const pct = computed(() => {
   const { done, total } = progress.value
@@ -208,6 +248,16 @@ async function clearAll() {
 .off-what strong { font-weight: 600; }
 .off-what small { color: var(--muted); font-size: 0.74rem; line-height: 1.45; }
 .off-num { color: var(--text); font-weight: 600; }
+
+/* Folded away by default: the total answers the question most of the time, and
+   the split only matters when the total is too big. */
+.off-breakdown { margin-top: 5px; font-size: 0.74rem; }
+.off-breakdown summary { cursor: pointer; color: var(--accent, #3d8b5f); }
+.off-breakdown ul { list-style: none; margin: 5px 0 0; padding: 0; display: grid; gap: 3px; }
+.off-breakdown li { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); }
+.off-bd-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.off-bd-size.none { opacity: 0.6; font-style: italic; }
+.off-bd-size { font-variant-numeric: tabular-nums; flex: 0 0 auto; }
 .off-row button {
   flex: 0 0 auto; border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
   border-radius: 6px; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; cursor: pointer;

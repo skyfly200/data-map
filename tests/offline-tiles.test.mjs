@@ -2,7 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
-  AVG_TILE_BYTES, MAX_EXTRA_ZOOM, estimateSave, formatBytes, tileFor, tileUrl, tilesInBounds,
+  AVG_TILE_BYTES, MAX_EXTRA_ZOOM, estimatePerSource, estimateSave, formatBytes, sourceLabel,
+  tileFor, tileUrl, tilesInBounds,
 } from '../composables/offlineTiles.js'
 
 test('zoom 0 is one tile and the origin is the north-west corner', () => {
@@ -81,6 +82,39 @@ test('the estimate scales with layers as well as tiles', () => {
   assert.deepEqual(estimateSave(100, 1), { tiles: 100, bytes: 100 * AVG_TILE_BYTES })
   assert.deepEqual(estimateSave(100, 3), { tiles: 300, bytes: 300 * AVG_TILE_BYTES })
   assert.deepEqual(estimateSave(0, 4), { tiles: 0, bytes: 0 })
+})
+
+test('a per-layer breakdown accounts for exactly the total', () => {
+  // The number that matters is not the total but which layer is costing it:
+  // 4,000 tiles reads as too many until it is eight layers of 500, and the way
+  // to shrink it is to turn one off rather than to zoom out.
+  const sources = [
+    { id: 'a', name: 'USGS topo', template: 'https://basemap.nationalmap.gov/{z}/{y}/{x}' },
+    { id: 'b', name: 'Hillshade', template: 'https://example.test/{z}/{x}/{y}' },
+  ]
+  const parts = estimatePerSource(500, sources)
+  assert.equal(parts.length, 2)
+  assert.deepEqual(parts.map((p) => p.name), ['USGS topo', 'Hillshade'])
+  assert.equal(parts.reduce((n, p) => n + p.tiles, 0), estimateSave(500, 2).tiles)
+  assert.equal(parts.reduce((n, p) => n + p.bytes, 0), estimateSave(500, 2).bytes)
+})
+
+test('a layer with no name is labelled by its host rather than by a number', () => {
+  assert.equal(sourceLabel({ name: 'USGS topo' }), 'USGS topo')
+  assert.equal(sourceLabel({ template: 'https://basemap.nationalmap.gov/a/{z}/{y}/{x}.png' }),
+    'basemap.nationalmap.gov')
+  assert.equal(sourceLabel({ template: 'https://www.example.test/{z}/{x}/{y}' }), 'example.test')
+  // An Earth Engine source is keyed rather than templated, and a bare key is
+  // not a URL — it must not throw on the way to a label.
+  assert.equal(sourceLabel({ id: 'soil-texture' }), 'Map tiles')
+  assert.equal(sourceLabel({}), 'Map tiles')
+})
+
+test('a breakdown with no layers still describes the one save that happens', () => {
+  const parts = estimatePerSource(120, [])
+  assert.equal(parts.length, 1)
+  assert.equal(parts[0].tiles, 120)
+  assert.equal(parts[0].name, 'Map tiles')
 })
 
 test('byte counts read as sizes a person can judge', () => {

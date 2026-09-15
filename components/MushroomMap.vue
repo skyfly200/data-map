@@ -881,7 +881,13 @@ function syncMapView() {
   // one screen and type them into another is not a feature.
   try {
     localStorage.setItem('map-last-view', JSON.stringify({
-      bounds: viewBounds.value, zoom: map.getZoom(), at: Date.now(),
+      bounds: viewBounds.value,
+      zoom: map.getZoom(),
+      // The drawn layers ride along so the Options page can price an offline
+      // save without a map: the cost is the area times the number of layers,
+      // and one without the other is not an estimate of anything.
+      sources: activeTileTemplates.value,
+      at: Date.now(),
     }))
   } catch { /* private mode or quota */ }
 }
@@ -929,7 +935,18 @@ function syncActiveTemplates() {
     // ArcGIS export layers build their URLs per tile rather than from a
     // template, so they cannot be enumerated ahead of time and are skipped.
     if (!l._url || typeof l._url !== 'string' || !l._url.includes('{z}')) return
-    out.push({ template: l._url, id: l._spec?.ee ? l._spec.key : l._url })
+    // The name rides along so the offline estimate can say which layer is
+    // costing the download, rather than listing anonymous URLs at somebody
+    // deciding what to turn off.
+    out.push({
+      template: l._url,
+      id: l._spec?.ee ? l._spec.key : l._url,
+      name: l._spec?.name || '',
+      // Where this layer runs out of tiles, so a save does not request zooms it
+      // does not publish. maxNativeZoom is the real ceiling; maxZoom on these
+      // layers is the map's own limit, which every layer shares.
+      maxZoom: Number.isFinite(l.options?.maxNativeZoom) ? l.options.maxNativeZoom : null,
+    })
   })
   activeTileTemplates.value = out
 }

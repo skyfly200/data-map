@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 
 import {
   TILE_LAYERS, TIME_LAYERS, WORLDCOVER_CLASSES,
-  arcgisExportUrl, filterLayerGroups, gibsUrl, layerDate, layerGroups, tileBounds,
+  arcgisExportUrl, filterLayerGroups, gibs, gibsUrl, layerDate, layerGroups, tileBounds,
 } from '../composables/mapLayers.js'
 
 test('tile bounds cover the whole world at zoom 0 and quarter it at zoom 1', () => {
@@ -45,6 +45,32 @@ test('a GIBS url carries the layer, matrix level and a date placeholder', () => 
   // GIBS is y-before-x, which is the opposite of the OSM-style templates
   // alongside it — getting it backwards silently draws the wrong hemisphere.
   assert.ok(url.indexOf('{y}') < url.indexOf('{x}'))
+})
+
+test('a GIBS layer takes its tile ceiling from its matrix set', () => {
+  const layer = gibs('MODIS_Terra_NDVI_8Day', 9)
+  assert.ok(layer.url.includes('GoogleMapsCompatible_Level9'))
+  assert.equal(layer.maxZoom, 9)
+})
+
+test('no GIBS layer asks for tiles above its own matrix set', () => {
+  // The regression. These were two independent numbers and every GIBS layer
+  // had drifted two levels apart: the catalogue's maxZoom becomes Leaflet's
+  // maxNativeZoom, so the map requested tiles the matrix does not contain and
+  // GIBS answered each one with a 400 — a screenful of console errors and a
+  // layer that stopped drawing once you zoomed past its ceiling.
+  const gibsLayers = TILE_LAYERS.filter((l) => /gibs\.earthdata/.test(l.url || ''))
+  assert.ok(gibsLayers.length >= 4, 'expected the GIBS layers to still be here')
+
+  for (const layer of gibsLayers) {
+    const level = Number((layer.url.match(/GoogleMapsCompatible_Level(\d+)/) || [])[1])
+    assert.ok(Number.isFinite(level), `${layer.name} has no matrix level in its url`)
+    assert.equal(
+      layer.maxZoom, level,
+      `${layer.name} serves Level${level} but declares a ceiling of ${layer.maxZoom}. `
+      + 'Build it with gibs() so the two come from one number.',
+    )
+  }
 })
 
 test('layer dates back off by the product lag and never reach tomorrow', () => {

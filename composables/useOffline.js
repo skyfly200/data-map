@@ -87,6 +87,34 @@ export function useOffline() {
     }
   }
 
+  /**
+   * What a URL costs to download, from its Content-Length.
+   *
+   * Asked before anything is saved, because "Save" on the observations is the
+   * one button here that can spend tens of megabytes of somebody's mobile data
+   * and nothing on the page said so. A transfer size rather than an occupied
+   * size: the dataset is served precompressed, so this is what it costs to
+   * fetch, which is the number a person on a phone is actually deciding about.
+   *
+   * Null when it cannot be known — a HEAD the server refuses, a chunked
+   * response with no length. Null is rendered as nothing rather than as zero,
+   * since "0 MB" next to a 48 MB download is worse than no number at all.
+   */
+  const measured = useState('offline-measured', () => ({}))
+
+  async function measure(url) {
+    if (!url || url.startsWith('mem:')) return null
+    if (url in measured.value) return measured.value[url]
+    let bytes = null
+    try {
+      const res = await fetch(url, { method: 'HEAD' })
+      const len = Number(res.headers.get('content-length'))
+      if (res.ok && Number.isFinite(len) && len > 0) bytes = len
+    } catch { /* an unmeasurable URL is reported as unmeasured */ }
+    measured.value = { ...measured.value, [url]: bytes }
+    return bytes
+  }
+
   async function refreshUsage() {
     if (!navigator.serviceWorker?.controller) return
     try {
@@ -264,5 +292,11 @@ export function useOffline() {
     register, refreshUsage, saveData, saveTiles, saveShell, clear,
     loadAreas, saveArea, resaveArea, deleteArea, renameArea, registerEeTemplate,
     savedBytes, savedTiles, hasData, hasShell, bytesAreMeasured, quotaBytes,
+    measure, measured,
+    // What the app shell and the dataset occupy once they are saved, from the
+    // worker's own accounting. Zero before either has been saved, which is why
+    // `measure` exists for the one that is worth knowing beforehand.
+    shellBytes: computed(() => usage.value?.shell?.bytes || 0),
+    dataBytes: computed(() => usage.value?.data?.bytes || 0),
   }
 }
