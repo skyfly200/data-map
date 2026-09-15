@@ -88,6 +88,20 @@ export function useChartLayout() {
     persist()
   }
 
+  /**
+   * Replace the order outright, for a drag that has settled.
+   *
+   * Only the visible cards take part in a drag, so the hidden ones are folded
+   * back in at the end rather than being dropped — a chart you hid and then
+   * rearranged around should still be there when you unhide it.
+   */
+  function setOrder(ids) {
+    const known = new Set(order.value)
+    const kept = ids.filter((id) => known.has(id))
+    order.value = [...kept, ...order.value.filter((id) => !kept.includes(id))]
+    persist()
+  }
+
   function hide(id) {
     if (!hidden.value.includes(id)) { hidden.value = [...hidden.value, id]; persist() }
   }
@@ -103,7 +117,7 @@ export function useChartLayout() {
 
   return {
     order, hidden, editing, hiddenCharts, visibleCount,
-    loadFromStorage, isVisible, orderOf, move, hide, show, showAll, reset,
+    loadFromStorage, isVisible, orderOf, move, setOrder, hide, show, showAll, reset,
     register, unregister,
   }
 }

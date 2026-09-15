@@ -22,7 +22,7 @@
           {{ layout.editing.value ? '✓ Done arranging' : '⇅ Arrange charts' }}
         </button>
         <HelpLink option="chart-arrange" keys="r" />
-        <span v-if="layout.editing.value" class="lb-hint">Use ‹ › to reorder and ✕ to hide.</span>
+        <span v-if="layout.editing.value" class="lb-hint">Drag a card to move it, or use ‹ › and ✕.</span>
         <!-- Cards register themselves as they render, which happens after this
              bar is serialised on the server. Render the tally on the client
              only, so SSR's "0 shown" never mismatches the real count. -->
@@ -50,12 +50,33 @@
         </button>
       </div>
 
-      <!-- Saved custom charts (from the Build tab), reorderable -->
+      <!-- Saved custom charts (from the Build tab), reorderable by dragging.
+           Positioned with CSS `order` rather than by reordering the array, so a
+           drag reflows the grid without re-mounting a chart — the array is
+           written once, on drop. -->
       <section v-if="saved.charts.value.length" class="saved">
-        <h2 class="saved-title">My charts <HelpLink option="chart-edit" /></h2>
+        <h2 class="saved-title">
+          My charts <HelpLink option="chart-edit" />
+          <span class="saved-hint">Drag a card to rearrange</span>
+        </h2>
         <div class="grid">
-          <ChartCard v-for="(chart, i) in saved.charts.value" :key="chart.id">
+          <ChartCard
+            v-for="(chart, i) in saved.charts.value"
+            :key="chart.id"
+            class="saved-card"
+            :class="{ dragging: savedDrag.dragging.value === chart.id,
+                      'drop-target': savedDrag.over.value === chart.id
+                        && savedDrag.dragging.value && savedDrag.over.value !== savedDrag.dragging.value }"
+            :style="{ order: savedDrag.orderOf(chart.id) }"
+            draggable="true"
+            @dragstart="savedDrag.start(chart.id, $event)"
+            @dragenter.prevent="savedDrag.enter(chart.id)"
+            @dragover.prevent
+            @drop.prevent="savedDrag.end()"
+            @dragend="savedDrag.end()"
+          >
             <div class="saved-tools">
+              <span class="grip" title="Drag to rearrange" aria-hidden="true">⠿</span>
               <button title="Move left" :disabled="i === 0" @click="saved.move(chart.id, -1)">‹</button>
               <button title="Move right" :disabled="i === saved.charts.value.length - 1" @click="saved.move(chart.id, 1)">›</button>
               <button :title="`Open “${chartName(chart)}” in the chart builder`"
@@ -209,6 +230,24 @@ const tab = computed({
 
 const saved = useSavedCharts()
 const layout = useChartLayout()
+
+// Dragging one saved card onto another. Redraws are suspended for the duration:
+// changing CSS order reflows the grid, which resizes every chart container and
+// fires every ResizeObserver, so a pointer move would otherwise recompute every
+// chart on the page. See composables/useRenderPause.js.
+const { pauseRendering, resumeRendering } = useRenderPause()
+const savedDrag = useDragReorder({
+  key: 'saved-charts',
+  ids: () => saved.charts.value.map((c) => c.id),
+  onCommit: (next) => saved.setOrder(next),
+  onPause: pauseRendering,
+  onResume: resumeRendering,
+})
+// Escape abandons the drag; without this the pause would outlive it and leave
+// the charts frozen at the size they had when it started.
+function onDragKey(e) { if (e.key === 'Escape' && savedDrag.dragging.value) savedDrag.cancel() }
+onMounted(() => window.addEventListener('keydown', onDragKey))
+onBeforeUnmount(() => window.removeEventListener('keydown', onDragKey))
 const { rows, error, pending, load } = useObservations()
 const { unit, elevValue, tempUnit, tempValue } = useUnits()
 const appearance = useAppearance()
@@ -556,6 +595,18 @@ const speciesData = computed(() => {
 </script>
 
 <style scoped>
+/* ── Dragging saved cards ─────────────────────────────────────────────────
+   The grip advertises the gesture; the ‹ › buttons stay because HTML
+   drag-and-drop never fires on touch and a keyboard has no drag at all. */
+.saved-hint { font-size: 0.74rem; font-weight: 400; color: var(--muted); margin-left: 8px; }
+.saved-card { cursor: grab; }
+.saved-card.dragging { opacity: 0.4; cursor: grabbing; }
+.saved-card.drop-target { outline: 2px solid var(--accent); outline-offset: 2px; }
+.saved-tools .grip {
+  color: var(--muted); font-size: 0.9rem; line-height: 1; padding: 0 4px;
+  cursor: grab; user-select: none;
+}
+
 .charts-page { padding: 16px 18px; }
 .tabs { display: flex; gap: 4px; margin: -4px 0 14px; border-bottom: 1px solid var(--border); }
 .tabs button {
