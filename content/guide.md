@@ -1,8 +1,8 @@
 # Guide
 
 Nexstrata is a workbench for environmental data, built on Google Earth Engine.
-It samples layers at a point, renders them as map overlays, and gives you the
-result as something to map, chart, analyse or take away.
+It samples raster layers at point coordinates, renders computed layers as map
+tiles, and feeds the results into the map, the charts and the statistics.
 
 Its founding dataset is mushroom observations from iNaturalist, enriched with
 the ground each find sat on, and that is still what the map opens on. But the
@@ -93,7 +93,7 @@ and 1° are neighbours.
 
 #### Cell size and shape
 
-Cell size runs from about 500 m to about 28 km. Smaller cells are more precise
+Cell size runs from about 100 m to about 28 km. Smaller cells are more precise
 and noisier; below roughly a kilometre the grid stops summarising and starts
 drawing about one cell per observation.
 
