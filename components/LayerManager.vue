@@ -64,7 +64,7 @@
           <input type="checkbox" :checked="active.has(o.key)" @change="$emit('toggle', o.key)" />
           <span class="lm-row-main">
             <span class="lm-row-name">{{ o.name }}</span>
-            <!-- Listed but marked, rather than hidden: knowing the society
+            <!-- Listed but marked, rather than hidden: knowing FRMS
                  computes it is part of what membership is for. -->
             <em v-if="o.tier && o.tier !== 'free'" class="lm-tier">{{ o.tier }}</em>
             <small v-if="o.note" class="lm-note">{{ o.note }}</small>
@@ -83,7 +83,7 @@ import { filterLayerGroups } from '~/composables/mapLayers'
 // them.
 //
 // The list had grown past what a dropdown can carry — the built-in catalogue,
-// the Earth Engine layers, and now however many assets a society registers of
+// the Earth Engine layers, and now however many assets FRMS registers of
 // its own. Beyond about a dozen entries a flat list of checkboxes stops being a
 // control and becomes an inventory: you cannot see what is on without reading
 // all of it, cannot say which draws over which, and cannot dim one without

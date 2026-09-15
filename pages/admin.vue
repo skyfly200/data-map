@@ -3,13 +3,13 @@
     <div class="head">
       <div>
         <h2>Administration</h2>
-        <p class="sub">Membership tiers, Earth Engine quotas and the society's saved datasets.</p>
+        <p class="sub">Membership tiers, Earth Engine quotas and FRMS saved datasets.</p>
       </div>
     </div>
 
     <ClientOnly>
       <div v-if="!membership.isAdmin.value" class="gate">
-        <p>This screen is for society administrators.</p>
+        <p>This screen is for FRMS administrators.</p>
         <NuxtLink v-if="!membership.isAuthed.value" to="/login" class="btn primary">Sign in</NuxtLink>
       </div>
 
@@ -158,7 +158,7 @@
             <input v-model="draftLayer.palette" spellcheck="false"
                    placeholder="#f7fcb9, #addd8e, #31a354" /></label>
           <label class="stack wide"><span>Attribution</span>
-            <input v-model="draftLayer.attribution" placeholder="Your society, from Sentinel-2" /></label>
+            <input v-model="draftLayer.attribution" placeholder="FRMS, from Sentinel-2" /></label>
           <label class="stack wide"><span>Caveat shown with the key</span>
             <textarea v-model="draftLayer.note" rows="2"
                       placeholder="What it shows, and where it should not be trusted."></textarea></label>

@@ -33,7 +33,7 @@
         <p v-if="lapsed">
           Your membership lapsed on {{ fmtDate(membership.lapsesAt.value) }}. Renew it to run jobs.
         </p>
-        <p v-else>Running pipeline jobs is a membership benefit of the society.</p>
+        <p v-else>Running pipeline jobs is a benefit of Front Range Mycological Society membership.</p>
         <!-- A tier change only reaches the browser at the next token refresh,
              so someone who has just paid would otherwise see this and think it
              had not worked. -->

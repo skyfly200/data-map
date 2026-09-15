@@ -124,7 +124,7 @@ way, and color shows wind exposure.
 There are two controls, because these are two different questions. **Basemap**
 is a single choice from five, made once and rarely revisited. **Layers** opens a
 window for the overlays, which is where the list has grown: the built-in
-catalogue, the Earth Engine layers, and whatever assets your society has
+catalogue, the Earth Engine layers, and whatever assets FRMS has
 registered of its own.
 
 The layer window stays open while you work the map, rather than closing on the
@@ -419,7 +419,7 @@ click. The chip describes itself from whatever is actually set.
 
 ## Pipeline jobs
 
-Society members can run the enrichment pipeline from the app, without a Python
+FRMS members can run the enrichment pipeline from the app, without a Python
 environment or Earth Engine credentials of their own.
 
 1. Go to **Pipeline jobs** in the account menu.
@@ -527,7 +527,7 @@ hiding it; switching it on explains why.
 
 > **Note** What is stored is an asset ID, never a script. An asset ID names
 > something already computed under your own project, where a script would be
-> arbitrary compute on the society's Earth Engine budget. Exporting first also
+> arbitrary compute on the FRMS Earth Engine budget. Exporting first also
 > makes the layer cheap to draw, because the work happened once.
 
 > **Caution** If the asset has more than one band, name the band. Earth Engine

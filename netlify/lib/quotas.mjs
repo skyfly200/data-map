@@ -2,7 +2,7 @@
 //
 // Earth Engine bills the project, not the caller. Every member's query runs
 // under one service account against one pool of quota, so without a limit here
-// a single large job degrades the platform for the whole society. These are the
+// a single large job degrades the platform for every other FRMS member. These are the
 // limits an admin sets per member on the profiles row.
 //
 // All pure, so the arithmetic that decides whether someone is over budget can

@@ -17,6 +17,12 @@ export default defineNuxtConfig({
       // committed file; set NUXT_PUBLIC_DATASETS_MANIFEST_URL to a Supabase
       // Storage public URL to serve datasets from Supabase instead.
       datasetsManifestUrl: '/data/datasets.json',
+      // Only used to make og:image absolute for social-card scrapers, which do
+      // not resolve relative URLs. Everything else in the app is root-relative,
+      // so leaving this empty is fine and keeps the build domain-agnostic. Set
+      // NUXT_PUBLIC_SITE_URL to the public origin (no trailing slash) if link
+      // previews matter.
+      siteUrl: '',
       // Supabase Auth (browser). Safe to expose — the anon key is public by
       // design; the service role key stays server-only. Set via
       // NUXT_PUBLIC_SUPABASE_URL / NUXT_PUBLIC_SUPABASE_ANON_KEY. When empty,

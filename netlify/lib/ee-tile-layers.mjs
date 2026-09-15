@@ -15,7 +15,7 @@
 //
 // THE RULE, same as the job pipeline: nobody sends Earth Engine code. A request
 // names a layer in this catalogue and supplies values that are checked against
-// a schema. Accepting an expression would be arbitrary compute on the society's
+// a schema. Accepting an expression would be arbitrary compute on the FRMS
 // billing and a code-injection surface in one move.
 //
 // A caveat on the asset ids below. They were written without a live Earth
@@ -36,7 +36,7 @@ export class LayerError extends Error {}
  * Sentinel-2 scenes as you look at it is not.
  *
  * The two that answer "where should I look for morels next spring" are open to
- * everyone. That is the question the society exists to help people answer, and
+ * everyone. That is the question FRMS exists to help people answer, and
  * gating it would be gating the reason someone would visit at all. What
  * membership buys is the expensive end: running the pipeline, and the computed
  * layers that spend real time per tile.

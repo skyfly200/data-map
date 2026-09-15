@@ -8,7 +8,7 @@
 // The single most important rule here is that members never send Earth Engine
 // code. A spec is values — an area, some dates, a list of stage names checked
 // against the catalogue below — and this module turns those into EE calls.
-// Accepting an expression instead would be arbitrary compute on the society's
+// Accepting an expression instead would be arbitrary compute on the FRMS
 // billing account and a code-injection surface in the same stroke.
 //
 // The sampling pattern is the one the Python pipeline proved: group the points

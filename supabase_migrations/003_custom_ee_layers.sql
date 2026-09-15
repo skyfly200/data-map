@@ -12,7 +12,7 @@
 --
 -- What is stored is an asset ID and how to paint it — never Earth Engine code.
 -- An asset ID names something already computed under an account we control; a
--- script would be arbitrary compute on the society's billing.
+-- script would be arbitrary compute on the FRMS billing account.
 
 -- Checked up front so a half-applied 002 says so, rather than failing forty
 -- lines down with "function public.is_member() does not exist" — an error that
@@ -42,7 +42,7 @@ create table if not exists public.ee_custom_layers (
   -- never collide with a built-in layer key.
   slug text not null unique,
   name text not null,
-  -- Which heading it appears under in the layer picker. Free text, so a society
+  -- Which heading it appears under in the layer picker. Free text, so FRMS
   -- can group its own layers however it thinks about them.
   "group" text not null default 'Custom',
 
