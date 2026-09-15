@@ -12,6 +12,7 @@
 
 import { adminClient } from './auth.mjs'
 import { estimateUnits, summariseUsage, checkQuota } from './quotas.mjs'
+import { effectiveTier } from './tiers.mjs'
 import { STAGES, normaliseSpec, progressPlan } from './ee-pipeline.mjs'
 
 /** A job left running longer than this is assumed dead and may be reclaimed. */
@@ -189,6 +190,24 @@ export async function isCancelled(jobId) {
   if (!client) return false
   const { data } = await client.from('ee_jobs').select('status').eq('id', jobId).maybeSingle()
   return data?.status === 'cancelled'
+}
+
+/**
+ * The viewer a job should be resolved as: the member who submitted it.
+ *
+ * The worker holds the service role and no session, so without this it would
+ * resolve a dataset source as nobody in particular — which, against a service
+ * client that row-level security does not apply to, means as everybody. The
+ * tier is read fresh rather than taken from the job, because a job can sit in
+ * the queue longer than a membership lasts, and a dataset shared with members
+ * should stop being readable when the membership does.
+ */
+export async function ownerViewer(job) {
+  const client = adminClient()
+  if (!client || !job?.user_id) return { userId: job?.user_id || null, tier: 'free' }
+  const { data } = await client
+    .from('profiles').select('tier, member_until').eq('user_id', job.user_id).maybeSingle()
+  return { userId: job.user_id, tier: effectiveTier(data) }
 }
 
 /** A member's jobs, newest first. */

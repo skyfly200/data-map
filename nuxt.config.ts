@@ -30,6 +30,14 @@ export default defineNuxtConfig({
       // unauthenticated (which the functions allow only when unconfigured).
       supabaseUrl: '',
       supabaseAnonKey: '',
+      // The storage bucket holding job results and saved datasets. One source
+      // of truth: the browser downloads its own results from here, the server
+      // writes them through SUPABASE_DATASETS_BUCKET, and the row-level
+      // security policy in migration 005 names it as a literal. Renaming it
+      // means setting NUXT_PUBLIC_DATASETS_BUCKET and SUPABASE_DATASETS_BUCKET
+      // together AND editing that policy — which is why the default is the
+      // recommended arrangement.
+      datasetsBucket: 'datasets',
     },
   },
 })
