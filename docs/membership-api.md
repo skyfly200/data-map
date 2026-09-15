@@ -134,16 +134,39 @@ row literally says if you need the difference.
 
 ## Wiring it to PayPal
 
-The webhook does not call this directly — PayPal sends its own payload shape.
-Put an automation between them (Zapier, Make, n8n, or a small function) that:
+FRMS memberships renew annually, so the payment side is a PayPal
+**subscription** rather than a one-off order. The webhook does not call this
+directly — PayPal sends its own payload shape. Put an automation between them
+(Zapier, Make, n8n, or a small function) that:
 
-1. Filters to completed payment events for the membership product.
-2. Maps the payer's email to `email` and the transaction id to `ref`.
-3. POSTs the JSON above.
-4. Treats `applied` and `pending` alike as success.
+1. Verifies the webhook signature before reading the body. Anyone can POST to a
+   public URL, and this one mints memberships.
+2. Filters to the subscription's **payment completed** event, for the
+   membership plan only, and ignores every other event type.
+3. Maps the payer's address to `email` and the payment's own transaction id to
+   `ref`.
+4. POSTs the JSON above with `months: 12`.
+5. Treats `applied` and `pending` alike as success.
 
 Send the transaction id as `ref` and retries stop being something you have to
 think about.
+
+### Act on one event per year, not two
+
+A subscription emits an activation event *and* a payment event when it starts,
+and each annual renewal emits another payment event. Those carry genuinely
+different ids, so `ref` cannot tell that activation and the first payment are
+the same purchase — two grants, both idempotent, two years sold for one year
+paid.
+
+Pick the event that fires once per payment, on the first year and on every
+renewal alike, and act on that one alone. Payment completed satisfies this;
+activation does not, since it never fires again.
+
+Cancellation is a separate decision. A cancelled subscription has usually paid
+through the end of its term, so `revoke` on cancellation cuts short time the
+member already bought. Let it lapse on its own instead — the expiry is already
+set — unless the cancellation is a refund.
 
 ## What it cannot do
 
