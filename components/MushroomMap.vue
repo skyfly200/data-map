@@ -1170,6 +1170,7 @@ async function addEeLayers() {
     // is for. Ticking it explains itself through the error card.
     overlayLayers.value = [...overlayLayers.value, {
       key: spec.key, name: spec.name, group: spec.group, layer, tier: spec.tier, note: spec.note,
+      source: layerSource(spec.attribution), type: layerDataType(spec.legend),
     }]
   }
 }
@@ -1628,7 +1629,10 @@ onMounted(async () => {
         loaded = 0
         failed = 0
       })
-      tileOverlayList.push({ key: o.name, name: o.name, group: o.group, layer, note: o.note })
+      tileOverlayList.push({
+        key: o.name, name: o.name, group: o.group, layer, note: o.note,
+        source: layerSource(o.attribution), type: layerDataType(o.legend),
+      })
     }
     // The global dimmer still dims everything at once — but it now multiplies
     // into whatever each layer has been set to individually, rather than

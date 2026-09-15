@@ -53,6 +53,20 @@
              aria-label="Search layers" />
     </div>
 
+    <!-- How the browse below is sectioned. Subject is the catalogue's own
+         grouping; source and type re-cut the same layers for when you are
+         after a provider or a kind of raster rather than a topic. -->
+    <div class="lm-groupby" role="group" aria-label="Group layers by">
+      <span class="lm-groupby-label">Group by</span>
+      <div class="lm-seg">
+        <button v-for="m in GROUP_MODES" :key="m.key" type="button"
+                class="lm-seg-btn" :class="{ on: groupMode === m.key }"
+                :aria-pressed="groupMode === m.key" @click="setGroupMode(m.key)">
+          {{ m.label }}
+        </button>
+      </div>
+    </div>
+
     <div class="lm-body">
       <p v-if="!filtered.length" class="lm-empty">
         Nothing matches “{{ query }}”.
@@ -128,6 +142,47 @@ const win = ref(null)
 
 const opacityOf = (key) => props.opacity[key] ?? 1
 
+// How the browse list is carved into sections. Subject is the catalogue's own
+// grouping (Fire, Soil, …); the other two re-cut the same layers by where the
+// data comes from and what kind of raster it is, which is how you look when you
+// are after "everything from Sentinel-2" or "every categorical layer" rather
+// than a subject.
+const GROUP_MODES = [
+  { key: 'group', label: 'Subject' },
+  { key: 'source', label: 'Source' },
+  { key: 'type', label: 'Type' },
+]
+const groupMode = ref('group')
+
+// Subject grouping arrives pre-built and in catalogue order, so it is used as
+// given. The other two are rebuilt from the same items, keyed by the chosen
+// field, each section in first-seen order and the sections sorted by name — but
+// with the imagery/other catch-alls kept last so a real source is never buried
+// under them.
+const displayGroups = computed(() => {
+  if (groupMode.value === 'group') return props.groups
+  const field = groupMode.value
+  const order = []
+  const map = new Map()
+  for (const g of props.groups) {
+    for (const o of g.items) {
+      const label = o[field] || 'Other'
+      if (!map.has(label)) { map.set(label, []); order.push(label) }
+      map.get(label).push(o)
+    }
+  }
+  const trailing = (label) => /^(Basemap|Other)\b/.test(label)
+  return order
+    .sort((a, b) => (trailing(a) - trailing(b)) || a.localeCompare(b))
+    .map((label) => ({ label, items: map.get(label) }))
+})
+
+function setGroupMode(mode) {
+  if (mode === groupMode.value) return
+  groupMode.value = mode
+  seedPanels()
+}
+
 // Which expansion panels are open, keyed by group label. A search opens every
 // matching panel regardless (see isOpen), so this only governs the browse.
 const openPanels = ref(new Set())
@@ -148,10 +203,11 @@ function togglePanel(label) {
 // prioritise, so open everything rather than present a wall of collapsed
 // headers with no hint of what is inside.
 function seedPanels() {
-  const withActive = props.groups
+  const shown = displayGroups.value
+  const withActive = shown
     .filter((g) => g.items.some((o) => props.active.has(o.key)))
     .map((g) => g.label)
-  openPanels.value = new Set(withActive.length ? withActive : props.groups.map((g) => g.label))
+  openPanels.value = new Set(withActive.length ? withActive : shown.map((g) => g.label))
 }
 
 /** Every layer by key, so the active stack can be named without a second list. */
@@ -166,7 +222,7 @@ const activeList = computed(() =>
 
 // A group matches as a prefix, a layer anywhere. See filterLayerGroups: the
 // obvious version of this returned the whole Terrain group for "rain".
-const filtered = computed(() => filterLayerGroups(props.groups, query.value))
+const filtered = computed(() => filterLayerGroups(displayGroups.value, query.value))
 
 // A search left over from last time hides most of the catalogue on reopening,
 // which reads as layers having gone missing.
@@ -267,6 +323,27 @@ onMounted(() => { if (props.open) seedPanels() })
   padding: 5px 8px; font: inherit; font-size: 0.78rem;
 }
 .lm-search input:focus { border-color: var(--accent, #2b7a3d); outline: none; }
+
+.lm-groupby {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px 0;
+}
+.lm-groupby-label {
+  flex: 0 0 auto; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted, #777); font-weight: 700;
+}
+.lm-seg {
+  flex: 1 1 auto; display: flex; border: 1px solid var(--border, #ddd);
+  border-radius: 6px; overflow: hidden;
+}
+.lm-seg-btn {
+  flex: 1 1 0; border: 0; border-left: 1px solid var(--border, #ddd);
+  background: var(--surface, #fff); color: var(--muted, #666);
+  font: inherit; font-size: 0.72rem; cursor: pointer; padding: 4px 6px;
+}
+.lm-seg-btn:first-child { border-left: 0; }
+.lm-seg-btn:hover { background: var(--surface-2, #f4f4f4); color: var(--text); }
+.lm-seg-btn.on { background: var(--accent, #2b7a3d); color: #fff; font-weight: 600; }
 
 .lm-body { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: 10px 12px 12px; }
 .lm-empty { margin: 4px 0; color: var(--muted, #777); font-size: 0.78rem; }

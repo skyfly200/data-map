@@ -289,6 +289,57 @@ export function filterLayerGroups(groups, query) {
     .filter((g) => g.items.length)
 }
 
+/**
+ * The provider a layer's data comes from, as a short label to group by.
+ *
+ * Derived from the attribution string rather than stored separately, so a new
+ * layer is grouped correctly the moment it is attributed and nothing has to be
+ * kept in step. Matched by keyword, most specific first: MTBS and GAP are
+ * checked before the bare "USGS" they both contain, and the sensor (MODIS,
+ * SMAP) is preferred over the platform that serves it (GIBS) because the sensor
+ * is what a reader recognises. The fallback keeps the first token of whatever
+ * was credited rather than inventing a name.
+ */
+export function layerSource(attribution = '') {
+  const a = String(attribution)
+  const rules = [
+    [/Sentinel/i, 'Copernicus Sentinel-2'],
+    [/TreeMap/i, 'USFS TreeMap'],
+    [/MTBS/i, 'USFS MTBS'],
+    [/FIRMS/i, 'NASA FIRMS'],
+    [/MODIS/i, 'NASA MODIS'],
+    [/SMAP/i, 'NASA SMAP'],
+    [/SRTM/i, 'NASA SRTM'],
+    [/MERIT/i, 'MERIT Hydro'],
+    [/Hansen/i, 'Hansen GFC'],
+    [/SOLUS/i, 'USDA SOLUS100'],
+    [/OpenLandMap/i, 'OpenLandMap'],
+    [/\bGAP\b|LANDFIRE/i, 'USGS GAP'],
+    [/WorldCover/i, 'ESA WorldCover'],
+    [/GIBS|GPM|IMERG/i, 'NASA GIBS'],
+    [/NOAA|NWS/i, 'NOAA / NWS'],
+    [/National Map|\bUSGS\b/i, 'USGS'],
+    [/OpenTopoMap/i, 'OpenTopoMap'],
+    [/waymarked|OpenStreetMap/i, 'OpenStreetMap'],
+    [/\bBLM\b/i, 'BLM'],
+    [/Esri/i, 'Esri'],
+  ]
+  for (const [re, label] of rules) if (re.test(a)) return label
+  return a.split(/[/(]/)[0].trim() || 'Other'
+}
+
+/**
+ * What kind of raster a layer is, as a label to group by. Three kinds, from the
+ * legend: a continuous ramp, a set of named classes, or an imagery/reference
+ * layer that is a picture rather than a measurement and so carries no key.
+ */
+export function layerDataType(legend) {
+  if (!legend) return 'Basemap & imagery'
+  if (legend.type === 'ramp') return 'Continuous raster'
+  if (legend.type === 'classes') return 'Categorical raster'
+  return 'Other raster'
+}
+
 /** Catalogue entries grouped for the layers control, in declaration order. */
 export function layerGroups() {
   const groups = []
