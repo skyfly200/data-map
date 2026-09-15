@@ -99,10 +99,18 @@ export function useEeJobs() {
     await refresh()
   }
 
-  /** The finished output, as GeoJSON, ready to drop onto the map. */
+  /**
+   * The finished output, as GeoJSON, ready to drop onto the map.
+   *
+   * Downloaded straight from storage with the member's own session, which the
+   * policy in migration 005 scopes to their own jobs/<uid>/ prefix. That covers
+   * their own results and nothing else — a dataset somebody shared with them is
+   * read through /.netlify/functions/datasets instead, because sharing lives in
+   * the row and a path-prefix policy cannot see it.
+   */
   async function fetchResult(job) {
     if (!job?.result_path || !$supabase) return null
-    const bucket = 'datasets'
+    const bucket = useRuntimeConfig().public.datasetsBucket || 'datasets'
     const { data, error: err } = await $supabase.storage.from(bucket).download(job.result_path)
     if (err || !data) throw new Error('That result could not be read. It may have been cleaned up.')
     return JSON.parse(await data.text())

@@ -12,9 +12,9 @@
 // awaited. A job that would exceed this is refused at submission by the point
 // limit rather than being started and killed halfway.
 
-import { requireAdmin } from '../lib/auth.mjs'
+import { adminClient, requireAdmin } from '../lib/auth.mjs'
 import {
-  claimNextJob, failJob, finishJob, isCancelled, planFor, reportProgress,
+  claimNextJob, failJob, finishJob, isCancelled, ownerViewer, planFor, reportProgress,
 } from '../lib/job-queue.mjs'
 import { loadSource } from '../lib/job-source.mjs'
 import { runPipeline } from '../lib/ee-runner.mjs'
@@ -58,7 +58,15 @@ export default async function handler(request) {
   let spent = 0
 
   try {
-    const features = await loadSource(spec.source)
+    // Resolved as the member who submitted it, not as the worker. The worker's
+    // client is the service role, which row-level security does not apply to,
+    // so a dataset source has to be checked here or not at all — and the check
+    // is re-run rather than trusted from submission time, because a job can
+    // outlive the access that queued it.
+    const features = await loadSource(spec.source, {
+      client: adminClient(),
+      viewer: await ownerViewer(job),
+    })
     if (!features.length) throw new Error('That source no longer has any observations.')
 
     // Cancelling is a member writing to their own row; the worker notices here

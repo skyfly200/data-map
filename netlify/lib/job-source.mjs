@@ -11,6 +11,7 @@
 
 import { loadBaseline } from './baseline.mjs'
 import { readJson } from './datasets-store.mjs'
+import { DatasetAccessError, resolveDataset } from './dataset-access.mjs'
 
 /** Is a feature inside the box? Handles a box that wraps the antimeridian. */
 export function withinBounds(feature, bounds) {
@@ -60,11 +61,31 @@ export function countDates(features) {
   return dates.size || 1
 }
 
-/** Resolve a normalised spec's source to features. */
-export async function loadSource(source) {
+/**
+ * Resolve a normalised spec's source to features.
+ *
+ * A dataset source is resolved through `resolveDataset`, which answers for the
+ * viewer rather than for the server. That matters because this runs with the
+ * service role, which row-level security does not apply to: without the check
+ * here, a spec naming any slug at all would read that dataset, and slugs are
+ * short and guessable. The path comes off the resolved row rather than being
+ * built from the slug, so a row is the only way to name a stored file.
+ *
+ * `viewer` is required for a dataset source and ignored for a bbox, which
+ * reads the public baseline.
+ */
+export async function loadSource(source, { client = null, viewer = null, read = readJson } = {}) {
   if (source.type === 'dataset') {
-    const data = await readJson(`${source.slug}.geojson`)
-    if (!data) throw new Error(`Dataset “${source.slug}” could not be read.`)
+    const row = await resolveDataset({ client, slug: source.slug, viewer })
+    const data = await read(row.path)
+    if (!data) {
+      // The row exists and they may read it, but the file behind it is gone.
+      // Distinct from "no such dataset" because the fix is different and this
+      // one is ours, not theirs.
+      throw new DatasetAccessError(
+        `Dataset “${row.slug}” is registered but its file could not be read.`,
+        { status: 500, code: 'no_file' })
+    }
     return data.features || []
   }
   const baseline = await loadBaseline()
@@ -72,7 +93,7 @@ export async function loadSource(source) {
 }
 
 /** Points and dates a spec covers, for pricing it before it runs. */
-export async function measureSource(spec) {
-  const features = await loadSource(spec.source)
+export async function measureSource(spec, access = {}) {
+  const features = await loadSource(spec.source, access)
   return { points: features.length, dates: countDates(features) }
 }

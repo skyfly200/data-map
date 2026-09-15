@@ -8,9 +8,10 @@
 // from the token, because this is the path that spends Earth Engine quota and
 // a token's tier claim can be an hour behind a cancelled membership.
 
-import { requireMemberFresh, requireUser } from '../lib/auth.mjs'
+import { adminClient, requireMemberFresh, requireUser } from '../lib/auth.mjs'
 import { QueueError, listJobs, submitJob } from '../lib/job-queue.mjs'
 import { SpecError } from '../lib/ee-pipeline.mjs'
+import { DatasetAccessError, viewerFrom } from '../lib/dataset-access.mjs'
 import { measureSource } from '../lib/job-source.mjs'
 import { earthEngineConfigured } from '../lib/ee-runner.mjs'
 import { atLeast } from '../lib/tiers.mjs'
@@ -62,13 +63,24 @@ export default async function handler(request) {
       user: auth.user,
       profile: auth.profile,
       spec: body,
-      counter: measureSource,
+      // Priced as the submitter, not as the server. A spec naming a dataset
+      // they may not read is refused here, before it costs anything and before
+      // it becomes a queued job that would read it later.
+      counter: (spec) => measureSource(spec, {
+        client: adminClient(),
+        viewer: viewerFrom(auth),
+      }),
     })
     return json({ ok: true, ...result })
   } catch (err) {
     // A SpecError is the member's spec being wrong and its message is written
     // for them; a QueueError carries its own status; anything else is ours.
     if (err instanceof SpecError) return json({ ok: false, error: err.message }, 400)
+    // Naming a dataset they may not read. Reported as written — the message is
+    // deliberately the same one an absent dataset gets.
+    if (err instanceof DatasetAccessError) {
+      return json({ ok: false, error: err.message, code: err.code }, err.status)
+    }
     if (err instanceof QueueError) return json({ ok: false, error: err.message, code: err.code }, err.status)
     return json({ ok: false, error: 'Could not queue that job.' }, 500)
   }
