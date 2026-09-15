@@ -23,6 +23,8 @@
 // The arithmetic lives here, pure, because that is the part that silently
 // takes money for time it does not grant.
 
+import { TIERS, neverExpires } from './tiers.mjs'
+
 export class MembershipError extends Error {
   constructor(message, code = 'invalid') {
     super(message)
@@ -30,7 +32,10 @@ export class MembershipError extends Error {
   }
 }
 
-export const TIERS = ['free', 'member', 'admin']
+// Re-exported rather than restated. A second list here would be a second
+// answer to "what tiers exist", and the two would drift the first time one
+// was added.
+export { TIERS }
 
 /** The longest term one call may grant. A typo in an automation is otherwise
  *  a lifetime membership nobody meant to sell. */
@@ -148,16 +153,21 @@ export function normaliseGrant(input = {}) {
 /**
  * The profile patch a grant implies.
  *
- * Deliberately does NOT demote an administrator to member. An admin who
+ * Deliberately does NOT demote a tier that outranks the grant. An admin who
  * renews their own dues through the same PayPal button as everybody else
- * should not lose the admin screen for doing it.
+ * should not lose the admin screen for doing it, and a perpetual member who
+ * pays anyway — out of habit, or because nobody told the website — must not
+ * have their standing quietly converted into one that runs out next year.
+ *
+ * The date is still recorded in both cases. It is what they paid for; it just
+ * does not decide anything for a tier that never expires.
  */
 export function applyGrant({ grant, profile = null, now = new Date() } = {}) {
   const memberUntil = grant.until
     ? new Date(grant.until)
     : extendUntil({ current: profile?.member_until, months: grant.months, now })
 
-  const tier = profile?.tier === 'admin' ? 'admin' : grant.tier
+  const tier = neverExpires(profile?.tier) ? profile.tier : grant.tier
 
   const patch = { tier, member_until: memberUntil.toISOString() }
   if (grant.display_name && !profile?.display_name) patch.display_name = grant.display_name
@@ -166,18 +176,24 @@ export function applyGrant({ grant, profile = null, now = new Date() } = {}) {
 
 /** What a member's standing is right now, for a lookup. */
 export function describeMembership(profile, now = new Date()) {
-  if (!profile) return { known: false, tier: 'free', active: false, member_until: null }
+  if (!profile) {
+    return { known: false, tier: 'free', active: false, member_until: null, expires: true }
+  }
   const until = profile.member_until ? new Date(profile.member_until) : null
-  const lapsed = !!until && Number.isFinite(until.getTime()) && until <= now
-  const tier = lapsed && profile.tier !== 'admin' ? 'free' : profile.tier
+  const permanent = neverExpires(profile.tier)
+  // A date in the past on a perpetual account is not a lapse. Reporting one
+  // would have an automation renew somebody whose standing does not run out.
+  const lapsed = !permanent && !!until && Number.isFinite(until.getTime()) && until <= now
+  const tier = lapsed ? 'free' : profile.tier
   return {
     known: true,
     tier,
     stored_tier: profile.tier,
-    active: tier === 'member' || tier === 'admin',
+    active: tier !== 'free',
     lapsed,
+    expires: !permanent,
     member_until: profile.member_until ?? null,
-    days_left: until && !lapsed
+    days_left: until && !lapsed && !permanent
       ? Math.ceil((until.getTime() - now.getTime()) / 86400000)
       : 0,
   }

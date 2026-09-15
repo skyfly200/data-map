@@ -9,7 +9,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
-  TIERS, atLeast, decodeJwtPayload, effectiveTier, tierFromClaims, tierFromToken,
+  TIERS, atLeast, decodeJwtPayload, effectiveTier, neverExpires, tierFromClaims, tierFromToken,
 } from '../netlify/lib/tiers.mjs'
 import {
   CHUNK_SIZE, DEFAULT_LIMITS, checkQuota, estimateUnits, quotaFraction, rollUpUsage, summariseUsage,
@@ -61,7 +61,7 @@ test('base64url decodes where plain base64 would not', () => {
 // ── Tier ordering ────────────────────────────────────────────────────────────
 
 test('tiers are ordered and admin reaches everything', () => {
-  assert.deepEqual(TIERS, ['free', 'member', 'admin'])
+  assert.deepEqual(TIERS, ['free', 'member', 'perpetual', 'admin'])
   assert.ok(atLeast('admin', 'member'))
   assert.ok(atLeast('admin', 'admin'))
   assert.ok(atLeast('member', 'member'))
@@ -72,18 +72,50 @@ test('tiers are ordered and admin reaches everything', () => {
   assert.ok(!atLeast('admin', 'nonsense'))
 })
 
+test('a perpetual member reaches everything a member does, and no further', () => {
+  // The thing that would break quietly if the tier were inserted at the wrong
+  // end of the ladder: a layer gated on 'member' has to be visible to them,
+  // and one gated on 'admin' must not be.
+  assert.ok(atLeast('perpetual', 'member'))
+  assert.ok(atLeast('perpetual', 'free'))
+  assert.ok(!atLeast('perpetual', 'admin'))
+})
+
+test('the tiers that ignore an expiry date are named, not inferred', () => {
+  assert.ok(neverExpires('perpetual'))
+  assert.ok(neverExpires('admin'))
+  assert.ok(!neverExpires('member'))
+  assert.ok(!neverExpires('free'))
+  assert.ok(!neverExpires(undefined))
+})
+
 // ── Expiry ───────────────────────────────────────────────────────────────────
 
 test('a lapsed membership is a free account', () => {
   const now = new Date('2026-09-09T00:00:00Z')
   assert.equal(effectiveTier({ tier: 'member', member_until: '2026-09-08T00:00:00Z' }, now), 'free')
   assert.equal(effectiveTier({ tier: 'member', member_until: '2026-09-10T00:00:00Z' }, now), 'member')
-  // No expiry set means it does not expire: a life member, or dues tracked
-  // somewhere other than this column.
+  // No expiry set means it does not expire: dues tracked somewhere other than
+  // this column.
   assert.equal(effectiveTier({ tier: 'member', member_until: null }, now), 'member')
-  // An admin whose membership lapsed loses the admin tier too. Administration
-  // of the society is not separable from being in it.
-  assert.equal(effectiveTier({ tier: 'admin', member_until: '2026-01-01T00:00:00Z' }, now), 'free')
+})
+
+test('an administrator does not lapse', () => {
+  // This is the whole reason admin is exempt. The admin screen is the only
+  // place a membership date can be corrected, and the token hook is the only
+  // thing that mints the admin claim — so an admin demoted by their own dues
+  // date would lock FRMS out of fixing it, their own included.
+  const now = new Date('2026-09-09T00:00:00Z')
+  assert.equal(effectiveTier({ tier: 'admin', member_until: '2026-01-01T00:00:00Z' }, now), 'admin')
+})
+
+test('a perpetual member does not lapse, whatever the date says', () => {
+  const now = new Date('2026-09-09T00:00:00Z')
+  // The date is allowed to be there and allowed to be in the past: it records
+  // dues that were paid, and stops deciding anything once the tier is set.
+  assert.equal(effectiveTier({ tier: 'perpetual', member_until: '2026-01-01T00:00:00Z' }, now),
+    'perpetual')
+  assert.equal(effectiveTier({ tier: 'perpetual', member_until: null }, now), 'perpetual')
 })
 
 test('a missing or unparseable profile is a free account', () => {

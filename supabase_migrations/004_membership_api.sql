@@ -39,7 +39,9 @@ create table if not exists public.membership_grants (
   -- a payment and an account, so it is the one field that must match exactly.
   email text not null,
 
-  tier text not null default 'member' check (tier in ('member', 'admin')),
+  -- 'free' is absent on purpose: removing a membership is a revocation, which
+  -- has its own path and leaves no grant behind.
+  tier text not null default 'member' check (tier in ('member', 'perpetual', 'admin')),
   -- One of these, never both: a duration to add, or an end date decided
   -- elsewhere. The API refuses a grant carrying both.
   months integer check (months is null or (months >= 1 and months <= 120)),
@@ -60,6 +62,12 @@ create table if not exists public.membership_grants (
 
   created_at timestamptz not null default now()
 );
+
+-- Re-applied for a database where this file already ran: "create table if not
+-- exists" leaves an existing table, and its constraint, exactly as it was.
+alter table public.membership_grants drop constraint if exists membership_grants_tier_check;
+alter table public.membership_grants add constraint membership_grants_tier_check
+  check (tier in ('member', 'perpetual', 'admin'));
 
 create index if not exists membership_grants_email_idx
   on public.membership_grants (lower(email));
@@ -155,10 +163,13 @@ begin
 
     -- Defence in depth rather than a live guard: handle_new_user created this
     -- profile as 'free' a moment ago, so on the signup path this can never
-    -- see an admin. The case that matters — an admin renewing their own dues
-    -- through the same button as everybody else — is handled by applyGrant in
+    -- see a tier worth protecting. The case that matters — someone whose
+    -- standing does not expire paying anyway, and being converted to a
+    -- membership that runs out next year — is handled by applyGrant in
     -- netlify/lib/membership.mjs, which runs against an existing profile.
-    if new_tier is distinct from 'admin' then new_tier := g.tier; end if;
+    if new_tier is null or new_tier not in ('perpetual', 'admin') then
+      new_tier := g.tier;
+    end if;
 
     update public.profiles
       set tier = new_tier, member_until = new_until

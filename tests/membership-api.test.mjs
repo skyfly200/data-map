@@ -155,6 +155,24 @@ test('a grant never demotes an administrator', () => {
   assert.equal(patch.member_until, iso('2027-06-15T00:00:00Z'))
 })
 
+test('a grant never converts a perpetual member into one who expires', () => {
+  // A life member pays anyway — out of habit, or because nobody told the
+  // website. Taking the grant's tier here would hand them a membership that
+  // runs out next year, and nothing would report it as a change.
+  const grant = normaliseGrant({ email: 'a@b.org', months: 12 })
+  const patch = applyGrant({ grant, profile: { tier: 'perpetual', member_until: null }, now: NOW })
+  assert.equal(patch.tier, 'perpetual')
+  // The date is still recorded. It is what they paid for; it just no longer
+  // decides anything.
+  assert.equal(patch.member_until, iso('2027-06-15T00:00:00Z'))
+})
+
+test('perpetual can be granted outright', () => {
+  const grant = normaliseGrant({ email: 'a@b.org', tier: 'perpetual' })
+  assert.equal(grant.tier, 'perpetual')
+  assert.equal(applyGrant({ grant, profile: null, now: NOW }).tier, 'perpetual')
+})
+
 test('a grant extends an existing member rather than restarting them', () => {
   const grant = normaliseGrant({ email: 'a@b.org', months: 12 })
   const patch = applyGrant({
@@ -212,6 +230,25 @@ test('an admin stays an admin past the expiry date', () => {
   const d = describeMembership({ tier: 'admin', member_until: '2026-01-01T00:00:00Z' }, NOW)
   assert.equal(d.tier, 'admin')
   assert.equal(d.active, true)
+  // Not lapsed, and no countdown: an automation reading days_left must not
+  // decide this account needs chasing for a renewal.
+  assert.equal(d.lapsed, false)
+  assert.equal(d.expires, false)
+  assert.equal(d.days_left, 0)
+})
+
+test('a perpetual member past their date is not reported as lapsed', () => {
+  const d = describeMembership({ tier: 'perpetual', member_until: '2026-01-01T00:00:00Z' }, NOW)
+  assert.equal(d.tier, 'perpetual')
+  assert.equal(d.stored_tier, 'perpetual')
+  assert.equal(d.active, true)
+  assert.equal(d.lapsed, false)
+  assert.equal(d.expires, false)
+})
+
+test('an ordinary member is reported as expiring, which is what distinguishes them', () => {
+  assert.equal(describeMembership({ tier: 'member', member_until: null }, NOW).expires, true)
+  assert.equal(describeMembership(null, NOW).expires, true)
 })
 
 test('no expiry means it does not lapse', () => {

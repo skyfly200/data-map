@@ -185,6 +185,11 @@ export function normaliseCustomLayer(input = {}) {
     // zero paints the whole world the bottom of the ramp.
     mask_below: num(input.mask_below, 'Hide values below'),
     opacity: opacity === null ? 0.8 : Math.min(1, Math.max(0.05, opacity)),
+    // The gate a viewer has to clear, which is not the same vocabulary as the
+    // tiers an account can hold — deliberately not TIERS from tiers.mjs. A
+    // layer gated on 'member' is visible to perpetual members and admins
+    // through atLeast(); a layer gated on 'perpetual' would mean nothing, and
+    // the check constraint in migration 003 would reject it.
     tier: ['free', 'member', 'admin'].includes(input.tier) ? input.tier : 'member',
     attribution: String(input.attribution || '').trim().slice(0, 200),
     note: String(input.note || '').trim().slice(0, 600),

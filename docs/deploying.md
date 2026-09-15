@@ -66,6 +66,31 @@ Then:
    **sign out and back in** — the tier travels in the token, so it arrives with
    a new one.
 
+### The four tiers
+
+| | |
+|---|---|
+| `free` | Signed in. Reads the shipped data. |
+| `member` | Dues paid. May run pipeline jobs. Lapses on `member_until`. |
+| `perpetual` | A member whose standing does not run out: honorary and life members, founders. Same powers as `member`; `member_until` is ignored. |
+| `admin` | Manages other people's tiers, quotas and datasets. Also does not expire. |
+
+`perpetual` and `admin` ignore the expiry date rather than requiring it to be
+empty — the date may well be set, as a record of dues that were in fact paid,
+and it simply stops governing access.
+
+Admin is exempt for a structural reason rather than a generous one: this screen
+is the only place a membership date can be corrected, and the token hook is the
+only thing that mints the admin claim. An admin demoted by their own dues date
+would lose the one place where that date could be fixed, theirs included, and
+the recovery would be hand-written SQL.
+
+If you are upgrading a database where 002 ran before these tiers existed,
+**re-run 002 and 004**. Both are idempotent, and both re-apply their tier check
+constraints on the way through — `create table if not exists` leaves an existing
+constraint alone, so without the re-run `perpetual` is rejected as an invalid
+tier.
+
 ---
 
 ## 4. Earth Engine: the pipeline and the computed map layers

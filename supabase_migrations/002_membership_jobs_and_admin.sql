@@ -24,12 +24,18 @@
 
 create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
-  -- free: signed in, reads the shipped data. member: dues paid, may run jobs.
-  -- admin: may also manage other people's quotas and datasets.
-  tier text not null default 'free' check (tier in ('free', 'member', 'admin')),
+  -- free:      signed in, reads the shipped data.
+  -- member:    dues paid, may run jobs, lapses on member_until.
+  -- perpetual: a member whose standing does not run out — honorary and life
+  --            members, founders, anyone FRMS does not want to invoice.
+  -- admin:     may also manage other people's quotas and datasets. Also does
+  --            not expire; see the token hook below for why.
+  tier text not null default 'free' check (tier in ('free', 'member', 'perpetual', 'admin')),
   display_name text,
-  -- Null means "no expiry". A date in the past is treated as 'free' by the
+  -- When a 'member' lapses. A date in the past is treated as 'free' by the
   -- token hook below, so a lapsed membership needs no sweep job to enforce it.
+  -- Null means no expiry. Ignored entirely for perpetual and admin, where it
+  -- survives only as a record of dues that were in fact paid.
   member_until timestamptz,
 
   -- Quotas and rate limits, per member, set by an admin. Earth Engine bills the
@@ -44,6 +50,16 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- The tier list again, for a database where this file has already run:
+-- "create table if not exists" does nothing at all to an existing table, so a
+-- tier added above would be rejected by the constraint the first run left
+-- behind. Dropping and re-adding is idempotent and the failure it prevents is
+-- an unhelpful one — a check violation naming a constraint rather than the
+-- migration that was never re-applied.
+alter table public.profiles drop constraint if exists profiles_tier_check;
+alter table public.profiles add constraint profiles_tier_check
+  check (tier in ('free', 'member', 'perpetual', 'admin'));
 
 -- Every account gets a profile the moment it exists, so nothing downstream has
 -- to cope with a signed-in user who has no row.
@@ -105,9 +121,21 @@ begin
 
   -- No row yet (the trigger races a first sign-in), or a membership that has
   -- run out: both are a free account.
+  --
+  -- Two tiers are exempt from the expiry. A perpetual member's standing does
+  -- not run out by definition. An administrator's must not either: this hook
+  -- is the only thing that mints the admin claim, so an admin whose dues date
+  -- slipped past would be stamped 'free', lose the admin screen, and with it
+  -- the only place in the app where a membership date can be fixed — their own
+  -- included. The recovery would be a hand-written SQL statement, which is
+  -- exactly the situation the admin screen exists to avoid.
+  --
+  -- effectiveTier() in netlify/lib/tiers.mjs applies the same rule on the
+  -- spending paths, where the row is read fresh rather than out of a claim.
   if found_tier is null then
     found_tier := 'free';
-  elsif lapses is not null and lapses < now() then
+  elsif found_tier not in ('perpetual', 'admin')
+    and lapses is not null and lapses < now() then
     found_tier := 'free';
   end if;
 
@@ -159,12 +187,15 @@ as $$
   select public.current_tier() = 'admin';
 $$;
 
+-- Everything that is not 'free'. The claim this reads has already had the
+-- expiry applied by the hook above, so a lapsed member arrives here as 'free'
+-- and this needs no date arithmetic of its own.
 create or replace function public.is_member()
 returns boolean
 language sql
 stable
 as $$
-  select public.current_tier() in ('member', 'admin');
+  select public.current_tier() in ('member', 'perpetual', 'admin');
 $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -411,3 +442,10 @@ for each row execute function public.set_updated_at();
 --
 --   update public.profiles set tier = 'admin'
 --   where user_id = (select id from auth.users where email = 'you@example.org');
+--
+-- Every tier after that is set from the admin screen. A perpetual member — an
+-- honorary or life member, someone FRMS does not want to invoice — is the same
+-- statement with a different tier, and needs no date:
+--
+--   update public.profiles set tier = 'perpetual'
+--   where user_id = (select id from auth.users where email = 'them@example.org');
