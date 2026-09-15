@@ -332,7 +332,7 @@ bucket.
 ### Sign-in to protect the live-fetch endpoints (Supabase Auth)
 
 Browsing (map, table, charts, explore) is fully open. The endpoints that spend
-something on the society's behalf are gated behind **Supabase Auth** so they
+something on the FRMS account's behalf are gated behind **Supabase Auth** so they
 can't be hammered anonymously: `fetch-species` (Data tab) calls iNaturalist,
 `ee-tiles` and `ee-jobs` call Earth Engine, and `admin-members` and `ee-worker`
 require the admin tier.

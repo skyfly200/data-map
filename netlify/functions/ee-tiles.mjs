@@ -156,7 +156,7 @@ export default async function handler(request) {
   if (isCustomKey(key)) return renderCustom(request, key)
 
   // Gated per layer, not globally: years-since-fire and burn severity answer
-  // the question the society exists to help with and are open to everyone,
+  // the question FRMS exists to help with and are open to everyone,
   // while the layers that spend real compute per tile are what membership buys.
   // See DEFAULT_TIER in ../lib/ee-tile-layers.mjs.
   const auth = await requireTier(request, tierFor(key), {

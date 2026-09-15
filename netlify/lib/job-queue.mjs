@@ -8,7 +8,7 @@
 // requests, which is what makes it survive a function cold start.
 //
 // The claim is the part worth being careful about: two workers must never run
-// one job, or the society pays twice for the same result. See claimNextJob.
+// one job, or FRMS pays twice for the same result. See claimNextJob.
 
 import { adminClient } from './auth.mjs'
 import { estimateUnits, summariseUsage, checkQuota } from './quotas.mjs'

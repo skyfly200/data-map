@@ -21,7 +21,7 @@ export const TIERS = ['free', 'member', 'admin']
 
 export const TIER_LABELS = {
   free: 'Free account',
-  member: 'Society member',
+  member: 'FRMS member',
   admin: 'Administrator',
 }
 

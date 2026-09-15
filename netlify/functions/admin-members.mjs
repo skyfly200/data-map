@@ -9,7 +9,7 @@
 // Guarded by the admin tier read from the token. Unlike the job path this does
 // not need a fresh read: the worst a stale claim allows is an ex-admin editing
 // quotas for up to an hour, which is a governance problem rather than a way to
-// spend the society's Earth Engine budget, and it is bounded by the same
+// spend the FRMS Earth Engine budget, and it is bounded by the same
 // refresh either way.
 
 import { adminClient, requireAdmin } from '../lib/auth.mjs'
@@ -108,7 +108,7 @@ export default async function handler(request) {
 
       if (body.tier !== undefined) {
         if (!TIERS.includes(body.tier)) throw new Error(`Unknown tier “${body.tier}”.`)
-        // An admin removing their own admin tier locks the society out of this
+        // An admin removing their own admin tier locks FRMS out of this
         // screen entirely, and the only way back is the SQL editor.
         if (body.user_id === auth.user?.id && body.tier !== 'admin') {
           throw new Error('You cannot remove your own administrator tier from here.')

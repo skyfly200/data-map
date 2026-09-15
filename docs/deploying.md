@@ -114,7 +114,7 @@ variable, because it is a decision about the layer rather than the deployment:
 
 - **Years since fire** and **Burn severity (US)** — `tier: 'free'`. Together
   they answer "which burn scar is worth walking next spring", which is the
-  question the society exists to help with.
+  question FRMS exists to help with.
 - **Burn scars this year**, **Active fires**, **dNBR** — members. dNBR in
   particular is computed from raw Sentinel-2 scenes as you look at it, so it
   does not share one cached render the way a published asset does.

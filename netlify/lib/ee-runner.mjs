@@ -4,7 +4,7 @@
 // interface, so the rest of the pipeline — the spec allowlist, the cost model,
 // the derived indices, the queue — is pure and testable without credentials.
 //
-// Authentication is a Google service account, not a person: the society holds
+// Authentication is a Google service account, not a person: FRMS holds
 // one Earth Engine project and members reach it through the app. That is also
 // why quotas exist (see quotas.mjs) — Earth Engine bills the project, so every
 // member's job spends from one shared pool.

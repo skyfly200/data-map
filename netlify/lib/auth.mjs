@@ -1,6 +1,6 @@
 // Server-side Supabase Auth gate for the Netlify functions that spend
 // something: fetch-species calls iNaturalist, ee-tiles and ee-jobs call Earth
-// Engine, admin-members and ee-worker act for the society. None of them may be
+// Engine, admin-members and ee-worker act for FRMS. None of them may be
 // callable anonymously.
 //
 // A request proves identity with a Supabase access token (JWT) in the

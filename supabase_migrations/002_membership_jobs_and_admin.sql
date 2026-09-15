@@ -290,7 +290,7 @@ with (security_invoker = true) as
 
 create table if not exists public.saved_datasets (
   id uuid primary key default gen_random_uuid(),
-  -- Kept when the owner's account goes away: a society's shared dataset should
+  -- Kept when the owner's account goes away: a shared FRMS dataset should
   -- outlive the membership of whoever happened to generate it.
   owner_id uuid references auth.users(id) on delete set null,
   job_id uuid references public.ee_jobs(id) on delete set null,
@@ -301,7 +301,7 @@ create table if not exists public.saved_datasets (
   path text not null,                      -- storage path of the GeoJSON
 
   -- private: the owner and admins. members: anyone with dues paid. public: the
-  -- open web, for the society's published work.
+  -- open web, for FRMS's published work.
   visibility text not null default 'private'
     check (visibility in ('private', 'members', 'public')),
 

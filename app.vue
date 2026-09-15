@@ -51,7 +51,19 @@ import { useShareState } from '~/composables/useShareState'
 
 const { isEmbed } = useShareState()
 
-const DESCRIPTION = 'Mushroom observations enriched with terrain and environmental exposure.'
+const DESCRIPTION = 'Point sampling, raster overlays and analysis on Google Earth Engine, '
+  + 'for the Front Range Mycological Society.'
+
+// Every link in this app is root-relative so the deployment can move domains
+// without a rebuild. Social cards are the one exception: scrapers do not resolve
+// a relative og:image against the page they found it on, so an absolute URL is
+// the only thing that works there. Rather than hardcode one, it is built from
+// NUXT_PUBLIC_SITE_URL when that is set and left relative when it is not — a
+// missing preview image costs a nicer link, where a wrong domain costs a broken
+// one on every share.
+const siteUrl = String(useRuntimeConfig().public.siteUrl || '').replace(/\/+$/, '')
+const OG_IMAGE = siteUrl ? `${siteUrl}/logo.svg` : '/logo.svg'
+
 useHead({
   title: 'Nexstrata · Mushroom Observations',
   meta: [
@@ -59,7 +71,7 @@ useHead({
     { name: 'theme-color', content: '#12181f' },
     { property: 'og:title', content: 'Nexstrata' },
     { property: 'og:description', content: DESCRIPTION },
-    { property: 'og:image', content: '/logo.svg' },
+    { property: 'og:image', content: OG_IMAGE },
     { name: 'twitter:card', content: 'summary' },
   ],
   link: [

@@ -1142,7 +1142,7 @@ async function addEeLayers() {
     })
 
     // A layer the viewer's tier cannot render is still listed, marked, rather
-    // than hidden: knowing the society computes it is part of what membership
+    // than hidden: knowing FRMS computes it is part of what membership
     // is for. Ticking it explains itself through the error card.
     overlayLayers.value = [...overlayLayers.value, {
       key: spec.key, name: spec.name, group: spec.group, layer, tier: spec.tier, note: spec.note,

@@ -10,7 +10,7 @@
 // codebase is that Earth Engine code never arrives over the wire. An asset id is
 // a REFERENCE, not an expression: it names something already computed and stored
 // under an account we control. Accepting a script would be arbitrary compute on
-// the society's billing, and a code-injection surface, however trusted the
+// the FRMS billing account, and a code-injection surface, however trusted the
 // person pasting it is meant to be. Exporting to an asset first also makes the
 // layer cheap to draw, because the heavy computation happened once.
 //

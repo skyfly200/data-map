@@ -179,7 +179,7 @@ const totalCount = computed(() =>
 const TEMPORAL = new Set(['year', 'month', 'day_of_year'])
 const ENRICHMENT_COUNT = ALL_NUMERIC.filter((f) => !TEMPORAL.has(f.key)).length
 
-// The built-in catalogue only. Layers a society has registered of its own are
+// The built-in catalogue only. Layers FRMS has registered of its own are
 // per-deployment and behind a tier, so counting them here would promise a
 // visitor something they may not be able to see.
 const eeLayerCount = EE_LAYER_KEYS.length
