@@ -8,6 +8,28 @@ one more thing, and nothing depends on a block below it.
 
 ---
 
+## The migrations, in order
+
+The blocks below introduce these one at a time, alongside the variables each
+needs. This is the same list in one place, for checking what has already been
+run. Each file is safe to run again, and running one twice is the normal way to
+pick up changes to it.
+
+| | | |
+|---|---|---|
+| 1 | `001_user_settings_and_charts.sql` | Saved settings and saved charts. Needs block 2 below. |
+| 2 | `002_membership_jobs_and_admin.sql` | Profiles, tiers, the Earth Engine job queue, saved datasets, and the access token hook. Block 3. |
+| — | **Dashboard → Authentication → Hooks** | Point the Custom Access Token hook at `public.custom_access_token_hook`. **Until this is on, every account reads as `free`, including yours** — the tier travels in the token and nothing is stamping it. |
+| — | **Promote yourself** | The SQL at the bottom of 002. Then sign out and back in. |
+| 3 | `003_custom_ee_layers.sql` | Earth Engine assets registered as map layers from the admin screen. Block 4. |
+| 4 | `004_membership_api.sql` | The grants table and the signup trigger behind the membership API. See `membership-api.md`. |
+
+Run them in that order. 003 checks that 002 applied in full and says so by name
+if it did not — if you see *"Migration 002 has not been applied in full"*,
+re-run 002 and read its output rather than skipping ahead.
+
+---
+
 ## 1. Nothing at all
 
 The map, charts, analysis, phenology and offline saving all work from the
@@ -129,6 +151,25 @@ see `netlify/lib/quotas.mjs`.
 | `SUPABASE_DATASETS_BUCKET` | `datasets` | Storage bucket for job results and saved datasets. |
 | `AUTH_DISABLED` | unset | Forces the API open even with Supabase configured. For a private preview. |
 | `AUTH_REQUIRED` | unset | Fails closed until Supabase is configured. |
+
+---
+
+## 5. Granting membership from a payment
+
+| Variable | Where | What it is |
+|---|---|---|
+| `MEMBERSHIP_API_KEY` | functions | A shared key for the membership endpoint. Generate with `openssl rand -base64 32`. |
+
+Needs `004_membership_api.sql`. With no key set the endpoint refuses everything
+rather than falling open, so leaving it unset is a safe way to keep it off.
+
+The caller is the FRMS website's PayPal webhook handler, which grants a year of
+membership from the same function that sends the welcome email. The endpoint,
+the idempotency rules and a tested function to call it with are in
+[`membership-api.md`](membership-api.md).
+
+The key grants membership to any address, so it belongs with the service role
+key: server-side environment only, never in a browser, never committed.
 
 ---
 
