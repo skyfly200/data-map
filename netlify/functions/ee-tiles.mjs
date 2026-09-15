@@ -210,11 +210,21 @@ export default async function handler(request) {
       })
       if (!n) {
         const when = params.year ?? params.through
+        const period = when !== undefined ? String(when)
+          : params.days !== undefined ? `the last ${params.days} days`
+            : ''
         return json({
           ok: false,
-          error: `No ${layer.name} data has been published for `
-            + `${when !== undefined ? when : `the last ${params.days} days`} yet. `
-            + 'These products lag real time; try an earlier period.',
+          // A layer with no period cannot be empty because of publication lag,
+          // so telling its reader to try an earlier one sends them looking for
+          // a control that does not exist. For those the count is zero because
+          // the asset or the property name is wrong, which is ours to fix.
+          error: period
+            ? `No ${layer.name} data has been published for ${period} yet. `
+              + 'These products lag real time; try an earlier period.'
+            : `${layer.name} could not be found in its source dataset. `
+              + 'That is a fault in this layer rather than in what you asked for; '
+              + 'please report it.',
           layer: key,
           params,
           empty: true,

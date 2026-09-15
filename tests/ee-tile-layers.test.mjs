@@ -11,7 +11,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
-  EE_LAYER_CATALOGUE, EE_LAYER_KEYS, EE_TILE_LAYERS, LayerError,
+  EE_LAYER_CATALOGUE, EE_LAYER_KEYS, EE_TILE_LAYERS, GAP_REMAP, LayerError,
   DEFAULT_TIER, MODIS_FIRST_YEAR, MODIS_LAG_YEARS, MTBS_LAG_YEARS,
   cacheKey, describeLayer, resolveLayer, tierFor,
 } from '../netlify/lib/ee-tile-layers.mjs'
@@ -158,10 +158,12 @@ test('every build runs against a stubbed Earth Engine and paints something', () 
   const ee = new Proxy({}, {
     get: (t, prop) => {
       calls.push(String(prop))
-      if (prop === 'Filter') return { lt: () => chain }
+      if (prop === 'Filter') return { lt: () => chain, eq: () => chain }
       if (prop === 'Image') {
         const img = () => chain
         img.constant = () => chain
+        // cat() is how the multi-band soil composite is assembled.
+        img.cat = () => chain
         return img
       }
       return chain
@@ -174,12 +176,28 @@ test('every build runs against a stubbed Earth Engine and paints something', () 
     const out = layer.build(ee, params)
     assert.ok(out.image, `${key} built no image`)
     assert.ok(out.vis, `${key} has no visualisation`)
-    assert.ok(Array.isArray(out.vis.palette) && out.vis.palette.length,
-      `${key} has no palette`)
-    // Every one of these layers is about where something IS. Without a mask,
-    // the whole world is painted the bottom of the ramp, which on a fire map
-    // says everywhere burned.
-    assert.ok(calls.includes('updateMask'), `${key} never masks its no-data`)
+
+    // One band through a palette, or three bands as colour — never both, since
+    // Earth Engine refuses a palette on a multi-band image.
+    if (layer.rgb) {
+      assert.ok(!out.vis.palette, `${key} is rgb but also declares a palette`)
+      assert.ok(Number.isFinite(out.vis.min) && Number.isFinite(out.vis.max),
+        `${key} is rgb and needs a stretch`)
+    } else {
+      assert.ok(Array.isArray(out.vis.palette) && out.vis.palette.length,
+        `${key} has no palette`)
+    }
+
+    // A layer whose no-data would read as a real value has to mask it: unburned
+    // ground is zero, and painting zero says the whole world burned. A layer
+    // whose source is already masked must not, or it throws the data away.
+    // Every layer declares which, so a new one cannot quietly inherit either.
+    if (layer.sourceMasked) {
+      assert.ok(!calls.includes('updateMask'),
+        `${key} declares its source is masked but masks again anyway`)
+    } else {
+      assert.ok(calls.includes('updateMask'), `${key} never masks its no-data`)
+    }
   }
 })
 
@@ -299,4 +317,85 @@ test('a single-band image is what reaches the palette', () => {
   const { layer, params } = resolveLayer('burn-severity')
   layer.build(ee, params)
   assert.deepEqual(selected, ['Severity'])
+})
+
+// ── Soil and forest type ─────────────────────────────────────────────────────
+
+test('the GAP remap arrays stay paired', () => {
+  // remap() takes two positional lists. If they fall out of step nothing
+  // throws: the map simply paints the wrong forest type, in a plausible
+  // colour, over ground somebody is about to walk. This is the single
+  // most silent failure in the catalogue.
+  const { from, to } = GAP_REMAP
+  assert.equal(from.length, to.length,
+    `${from.length} source codes against ${to.length} classes`)
+  assert.ok(from.length > 0)
+})
+
+test('every remapped class has a colour and a label, and none is skipped', () => {
+  const { to, classes } = GAP_REMAP
+  const used = [...new Set(to)].sort((a, b) => a - b)
+  // Contiguous from 1: a gap would leave a palette entry painting nothing
+  // while every class after it drew in its neighbour's colour.
+  assert.deepEqual(used, classes.map((_, i) => i + 1))
+  for (const c of classes) {
+    assert.match(c.color, /^#[0-9a-f]{6}$/i, `${c.label} has no usable colour`)
+    assert.ok(c.label && c.label.length > 2, 'a class needs a readable label')
+  }
+  assert.equal(new Set(classes.map((c) => c.color)).size, classes.length,
+    'two classes share a colour, so they cannot be told apart on the map')
+})
+
+test('no GAP source code is listed twice', () => {
+  // A duplicate means one of the two mappings silently wins.
+  const { from } = GAP_REMAP
+  assert.equal(new Set(from).size, from.length)
+})
+
+test('the forest layer paints exactly the classes it defines', () => {
+  const { layer } = resolveLayer('forest-type')
+  assert.equal(layer.legend.type, 'classes')
+  assert.equal(layer.legend.items.length, GAP_REMAP.classes.length)
+})
+
+test('the soil layers are grouped apart from the fire ones', () => {
+  const soil = EE_LAYER_CATALOGUE.filter((l) => l.group === 'Soil')
+  assert.ok(soil.length >= 4, 'expected the four soil views')
+  for (const l of soil) {
+    assert.ok(l.note, `${l.key} has no caveat`)
+    assert.ok(l.attribution, `${l.key} is unattributed`)
+  }
+})
+
+test('every soil layer says it is US-only, because blank ground is ambiguous', () => {
+  // SOLUS100 covers the conterminous US. Outside it the layer draws nothing,
+  // which is indistinguishable from "no soil here" unless the note says so.
+  for (const key of ['soil-depth', 'soil-sand', 'soil-composition']) {
+    const note = EE_TILE_LAYERS[key].note
+    assert.match(note, /conterminous US|US only/i, `${key} does not state its extent`)
+  }
+})
+
+test('the layers with no time control still pre-flight their source', () => {
+  // These cannot be empty because of publication lag, so a zero count means
+  // the property name is wrong — worth catching before Earth Engine returns
+  // something opaque about a null image.
+  for (const key of ['soil-depth', 'soil-sand', 'soil-composition']) {
+    assert.equal(typeof EE_TILE_LAYERS[key].count, 'function', `${key} has no pre-flight`)
+    assert.deepEqual(EE_TILE_LAYERS[key].params ?? {}, {}, `${key} should take no parameters`)
+  }
+})
+
+test('the composite is the only rgb layer, and it declares no palette', () => {
+  const rgb = EE_LAYER_KEYS.filter((k) => EE_TILE_LAYERS[k].rgb)
+  assert.deepEqual(rgb, ['soil-composition'])
+  assert.equal(EE_TILE_LAYERS['soil-composition'].legend.type, 'classes',
+    'an rgb layer still needs a key saying what each channel is')
+  assert.equal(EE_TILE_LAYERS['soil-composition'].legend.items.length, 3)
+})
+
+test('the new layers are gated at the tier the society sells', () => {
+  for (const key of ['forest-type', 'soil-texture', 'soil-depth', 'soil-sand', 'soil-composition']) {
+    assert.equal(tierFor(key), DEFAULT_TIER, `${key} is not gated as expected`)
+  }
 })

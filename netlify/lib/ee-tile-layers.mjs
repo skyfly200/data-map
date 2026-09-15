@@ -43,12 +43,37 @@ export class LayerError extends Error {}
  */
 export const DEFAULT_TIER = 'member'
 
+/**
+ * Two declarations every layer has to make, because getting either wrong
+ * produces a map that is confidently misleading rather than one that errors.
+ *
+ * `sourceMasked` — whether the source already masks its own no-data. A fire
+ * layer must mask: unburned ground is zero, and painting zero says the whole
+ * world burned. A soil surface must NOT: SOLUS100 is masked outside the
+ * conterminous US by the publisher and every pixel it leaves is a real
+ * measurement, so masking would throw away the layer. Declaring which is true
+ * means a new layer has to decide rather than inherit whichever the test
+ * happened to assert.
+ *
+ * `rgb` — whether the layer is three bands rendered as colour rather than one
+ * band through a palette. Earth Engine refuses a palette on a multi-band image,
+ * so these two are mutually exclusive.
+ */
+
 /** Earth Engine asset ids, in one place so a correction is a one-line change. */
 export const ASSETS = {
   MODIS_BURN: 'MODIS/061/MCD64A1',
   MTBS_SEVERITY: 'USFS/GTAC/MTBS/annual_burn_severity_mosaics/v1',
   FIRMS: 'FIRMS',
   S2_SR: 'COPERNICUS/S2_SR_HARMONIZED',
+  // Soil. SOLUS100 is a collection where each IMAGE is one soil property,
+  // picked out by system:index rather than by band — which is why these cannot
+  // be registered through the custom-layer form, whose whole model is one asset
+  // id and one band.
+  SOLUS100: 'USDA/SOLUS100/V0',
+  OPENLANDMAP_TEXTURE: 'OpenLandMap/SOL/SOL_TEXTURE-CLASS_USDA-TT_M/v02',
+  // What is growing on the ground, by type rather than by greenness.
+  GAP_LANDCOVER: 'USGS/GAP/CONUS/2011',
 }
 
 const THIS_YEAR = () => new Date().getUTCFullYear()
@@ -86,6 +111,108 @@ const MTBS_CLASSES = [
   { color: '#7fff00', label: 'Increased greenness' },
   { color: '#ffffff', label: 'Non-processing mask' },
 ]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Soil and land cover
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The twelve USDA texture classes, in the order OpenLandMap numbers them. */
+const TEXTURE_CLASSES = [
+  { color: '#d5c36b', label: 'Clay' },
+  { color: '#b96947', label: 'Silty clay' },
+  { color: '#9d3706', label: 'Sandy clay' },
+  { color: '#ae868f', label: 'Clay loam' },
+  { color: '#f86714', label: 'Silty clay loam' },
+  { color: '#46d143', label: 'Sandy clay loam' },
+  { color: '#368f20', label: 'Loam' },
+  { color: '#3e5a14', label: 'Silt loam' },
+  { color: '#ffd557', label: 'Sandy loam' },
+  { color: '#fff72e', label: 'Silt' },
+  { color: '#ff5a9d', label: 'Loamy sand' },
+  { color: '#ff005b', label: 'Sand' },
+]
+
+const DEPTH_PALETTE = ['#feebe2', '#fcc5c0', '#fa9fb5', '#f768a1', '#dd3497', '#ae017e', '#7a0177']
+const SAND_PALETTE = ['#081d58', '#253494', '#225ea8', '#1d91c0', '#41b6c4', '#7fcdbb', '#c7e9b4', '#ffffcc']
+
+/**
+ * One SOLUS100 soil property.
+ *
+ * Each property is a separate image in the collection, identified by
+ * system:index; the band then carries the depth. `.first()` on a filter that
+ * matches nothing is null and `.select` on null throws, which is what the
+ * `count` pre-flight on each of these layers exists to catch — an index typo
+ * would otherwise surface as an opaque Earth Engine error.
+ */
+function solusProperty(ee, index, band) {
+  return ee.ImageCollection(ASSETS.SOLUS100)
+    .filter(ee.Filter.eq('system:index', index))
+    .first()
+    .select(band)
+}
+
+const solusCount = (ee, index) => ee.ImageCollection(ASSETS.SOLUS100)
+  .filter(ee.Filter.eq('system:index', index)).size()
+
+/**
+ * GAP land cover codes collapsed into the types a forager actually separates.
+ *
+ * The source has hundreds of ecological system codes, several of which are the
+ * same forest under different names — "Rocky Mountain Subalpine Dry-Mesic
+ * Spruce-Fir Forest" and its mesic twin are one thing when you are deciding
+ * where to walk. These are the Front Range types, grouped.
+ *
+ * The two arrays are positional: `GAP_FROM[i]` becomes `GAP_TO[i]`. A test
+ * asserts they stay the same length and that the classes stay contiguous,
+ * because a mismatch does not throw — it silently paints the wrong forest.
+ */
+const GAP_FROM = [
+  149,                          // Lodgepole pine
+  151, 155,                     // Subalpine spruce-fir
+  152, 156,                     // Montane spruce
+  148,                          // Mixed conifer
+  153, 158,                     // Ponderosa pine woodland
+  171, 172,                     // Aspen and deciduous
+  270, 272,                     // Shrubland and dwarf-shrub
+  315, 316, 438, 439, 491,      // Grassland and meadow
+  529,                          // Wetland and riparian
+  502, 503, 549, 574, 575, 581, // Alpine tundra and barren
+]
+
+const GAP_TO = [
+  1,
+  2, 2,
+  3, 3,
+  4,
+  5, 5,
+  6, 6,
+  7, 7,
+  8, 8, 8, 8, 8,
+  9,
+  10, 10, 10, 10, 10, 10,
+]
+
+/**
+ * What each class is, and why it is worth separating.
+ *
+ * Ordered to match GAP_TO: the nth entry is class n+1, which is what lets the
+ * palette and the key be generated from one list rather than kept in step by
+ * hand.
+ */
+const GAP_CLASSES = [
+  { color: '#238b45', label: 'Lodgepole pine' },
+  { color: '#08519c', label: 'Subalpine spruce-fir' },
+  { color: '#41ab5d', label: 'Montane spruce' },
+  { color: '#3182bd', label: 'Mixed conifer' },
+  { color: '#006d2c', label: 'Ponderosa pine woodland' },
+  { color: '#fec44f', label: 'Aspen and deciduous' },
+  { color: '#e6550d', label: 'Shrubland' },
+  { color: '#fdae6b', label: 'Grassland and meadow' },
+  { color: '#31a354', label: 'Wetland and riparian' },
+  { color: '#756bb1', label: 'Alpine tundra and barren' },
+]
+
+export const GAP_REMAP = { from: GAP_FROM, to: GAP_TO, classes: GAP_CLASSES }
 
 /**
  * Validate a parameter against its schema.
@@ -338,6 +465,155 @@ export const EE_TILE_LAYERS = {
         image: dnbr.updateMask(dnbr.gt(0.1)),
         vis: { min: 0.1, max: 1.3, palette: ['#1a9641', '#a6d96a', '#ffffbf', '#fdae61', '#d7191c'] },
       }
+    },
+  },
+
+  // ── What is growing ────────────────────────────────────────────────────────
+
+  'forest-type': {
+    name: 'Forest and land cover type',
+    group: 'Vegetation',
+    tier: DEFAULT_TIER,
+    attribution: 'USGS GAP/LANDFIRE National Terrestrial Ecosystems 2011 via Google Earth Engine',
+    opacity: 0.85,
+    // The single most useful layer on this map for most fungi, and the reason
+    // it is worth carrying a second land cover product alongside ESA
+    // WorldCover: WorldCover says "tree cover", this says WHICH trees. Most
+    // ectomycorrhizal species are host-specific, so the difference between
+    // lodgepole and ponderosa is the difference between two different lists of
+    // what you might find.
+    note: 'Ecological system classes from USGS GAP, 30 m, grouped into the forest types a forager '
+      + 'separates. Mapped once, from 2011 imagery, so a fire, a clear-cut or a beetle kill since '
+      + 'then is not in it — check the fire layers alongside. US only, and the boundaries are '
+      + 'modelled, so read a stand rather than a pixel.',
+    legend: { type: 'classes', items: GAP_CLASSES },
+    build(ee) {
+      const remapped = ee.Image(ASSETS.GAP_LANDCOVER).select('landcover').remap(GAP_FROM, GAP_TO)
+      // remap leaves everything unlisted masked, but an explicit range guard
+      // keeps a future code addition from painting past the end of the palette.
+      const known = remapped.gte(1).and(remapped.lte(GAP_CLASSES.length))
+      return {
+        image: remapped.updateMask(known),
+        vis: { min: 1, max: GAP_CLASSES.length, palette: GAP_CLASSES.map((c) => c.color) },
+      }
+    },
+  },
+
+  // ── The ground itself ──────────────────────────────────────────────────────
+  //
+  // Four views of the same soil, because they answer different questions. Depth
+  // says whether there is anything to grow in; texture and sand say how it
+  // holds water; the composite says all three proportions at once for reading
+  // gradients rather than values.
+
+  'soil-texture': {
+    name: 'Soil texture class',
+    group: 'Soil',
+    tier: DEFAULT_TIER,
+    attribution: 'OpenLandMap USDA texture class via Google Earth Engine',
+    opacity: 0.85,
+    note: 'The USDA texture triangle class of the topsoil, predicted globally at 250 m. '
+      + 'Texture is what decides how long the ground stays wet after rain, which is the half of '
+      + 'fruiting weather the rain layers cannot tell you. A model prediction, not a soil survey: '
+      + 'right about a hillside, unreliable about a square metre.',
+    legend: { type: 'classes', items: TEXTURE_CLASSES },
+    // Nothing to mask: the source already masks open water and everything it
+    // leaves is a real class. See the note on sourceMasked above.
+    sourceMasked: true,
+    build(ee) {
+      const image = ee.Image(ASSETS.OPENLANDMAP_TEXTURE).select('b0')
+      return {
+        image,
+        vis: { min: 1, max: TEXTURE_CLASSES.length, palette: TEXTURE_CLASSES.map((c) => c.color) },
+      }
+    },
+  },
+
+  'soil-depth': {
+    name: 'Soil depth to bedrock',
+    group: 'Soil',
+    tier: DEFAULT_TIER,
+    attribution: 'USDA SOLUS100 via Google Earth Engine',
+    opacity: 0.85,
+    note: 'Predicted depth to any lithic contact — bedrock — at 100 m, conterminous US only. '
+      + 'Shallow soil over rock dries fast and holds a different community from deep colluvium at '
+      + 'the bottom of the same slope. Unpainted is outside the mapped area, not zero depth.',
+    legend: {
+      type: 'ramp', unit: 'cm', min: '0', max: '150+',
+      stops: DEPTH_PALETTE,
+    },
+    sourceMasked: true,
+    count: (ee) => solusCount(ee, 'anylithicdpt'),
+    build(ee) {
+      return {
+        image: solusProperty(ee, 'anylithicdpt', 'r_cm_p'),
+        vis: { min: 0, max: 150, palette: DEPTH_PALETTE },
+      }
+    },
+  },
+
+  'soil-sand': {
+    name: 'Sand content (drainage proxy)',
+    group: 'Soil',
+    tier: DEFAULT_TIER,
+    attribution: 'USDA SOLUS100 via Google Earth Engine',
+    opacity: 0.85,
+    note: 'Percent sand in the surface horizon at 100 m, conterminous US only. Read as a proxy for '
+      + 'how fast water leaves: the pale end drains freely and dries within a day or two of rain, '
+      + 'the dark end holds it. It is a proxy and not a drainage measurement — a sandy flat with a '
+      + 'high water table stays wet whatever its texture says.',
+    legend: {
+      type: 'ramp', unit: '% sand', min: '0', max: '80+',
+      stops: SAND_PALETTE,
+    },
+    sourceMasked: true,
+    count: (ee) => solusCount(ee, 'sandtotal'),
+    build(ee) {
+      return {
+        image: solusProperty(ee, 'sandtotal', 'r_0_cm_p'),
+        vis: { min: 0, max: 80, palette: SAND_PALETTE },
+      }
+    },
+  },
+
+  'soil-composition': {
+    name: 'Soil composition (sand, silt, clay)',
+    group: 'Soil',
+    tier: DEFAULT_TIER,
+    attribution: 'USDA SOLUS100 via Google Earth Engine',
+    opacity: 0.85,
+    // Three properties at once, as colour rather than as a scale. Useless for
+    // reading a value off and very good for seeing where the ground changes,
+    // which is the thing a single-property ramp hides.
+    note: 'Sand, silt and clay as red, green and blue at 100 m, conterminous US only. There is no '
+      + 'scale to read a number off — the point is the boundaries. Where the colour changes, the '
+      + 'soil changes, and those edges often run with the ground rather than with anything visible '
+      + 'on the surface. Mixtures read as you would expect: yellow is sand and silt, cyan silt and '
+      + 'clay, magenta sand and clay, grey an even mix.',
+    legend: {
+      type: 'classes',
+      items: [
+        { color: '#ff0000', label: 'Sand (red)' },
+        { color: '#00ff00', label: 'Silt (green)' },
+        { color: '#0000ff', label: 'Clay (blue)' },
+      ],
+    },
+    sourceMasked: true,
+    // Three bands rendered as colour, so there is no palette to declare and
+    // nothing for a one-dimensional key to say.
+    rgb: true,
+    count: (ee) => solusCount(ee, 'claytotal'),
+    build(ee) {
+      const band = 'r_0_cm_p'
+      const image = ee.Image.cat([
+        solusProperty(ee, 'sandtotal', band),
+        solusProperty(ee, 'silttotal', band),
+        solusProperty(ee, 'claytotal', band),
+      ])
+      // Three bands and deliberately NO palette: Earth Engine renders a
+      // three-band image as RGB, and passing a palette alongside is what it
+      // refuses outright.
+      return { image, vis: { min: 0, max: 70 } }
     },
   },
 }
