@@ -23,6 +23,7 @@ pick up changes to it.
 | — | **Promote yourself** | The SQL at the bottom of 002. Then sign out and back in. |
 | 3 | `003_custom_ee_layers.sql` | Earth Engine assets registered as map layers from the admin screen. Block 4. |
 | 4 | `004_membership_api.sql` | The grants table and the signup trigger behind the membership API. See `membership-api.md`. |
+| 5 | `005_dataset_storage_access.sql` | Who can read the files behind a job result or a saved dataset. Needs the storage bucket below. |
 
 Run them in that order. 003 checks that 002 applied in full and says so by name
 if it did not — if you see *"Migration 002 has not been applied in full"*,
@@ -148,9 +149,32 @@ see `netlify/lib/quotas.mjs`.
 | Variable | Default | What it does |
 |---|---|---|
 | `EE_REQUEST_DEADLINE_MS` | `0` (off) | Per-request deadline. **Leave off.** A fixed deadline kills the slow-but-valid samplers (land cover, NDVI, soil moisture) and leaves those columns empty, which is worse than a hang. Retry and backoff is what recovers transient failures. |
-| `SUPABASE_DATASETS_BUCKET` | `datasets` | Storage bucket for job results and saved datasets. |
+| `SUPABASE_DATASETS_BUCKET` | `datasets` | Storage bucket for job results and saved datasets. Renaming it also means setting `NUXT_PUBLIC_DATASETS_BUCKET` and editing the policy in migration 005, which names it as a SQL literal. Leaving it alone is the recommended arrangement. |
 | `AUTH_DISABLED` | unset | Forces the API open even with Supabase configured. For a private preview. |
 | `AUTH_REQUIRED` | unset | Fails closed until Supabase is configured. |
+
+### The storage bucket
+
+Create a bucket called `datasets` in Dashboard → Storage, and leave it
+**private**. Then run `005_dataset_storage_access.sql`, which decides who reads
+what inside it.
+
+A public bucket serves every object to anyone holding the URL and never consults
+a policy at all, so a member's job results would be readable by anyone who could
+guess a path. Private plus the policy is the arrangement: a member reads their
+own `jobs/<uid>/` prefix, admins read everything, and nothing writes from a
+browser.
+
+Without the bucket, jobs run and fail at the point of writing their result.
+Without the migration, the bucket refuses every read and a member cannot open
+their own finished job.
+
+### Saved datasets
+
+A member can name a finished job, which turns it into a dataset another job can
+be run over. Those are **private by default**, and a member may share one with
+other FRMS members but not publish it to the open web — that stays an admin
+action, in the admin screen.
 
 ---
 
