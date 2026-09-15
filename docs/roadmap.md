@@ -53,12 +53,6 @@ the app currently says which you are looking at.
 Keep the URL, replace the contents, and let the raster inventory go when the
 cache does.
 
-### Saved filters do not sync
-
-Settings and saved charts sync to Supabase per account. Saved filters are
-`localStorage` only, so they do not follow a member between devices. One table,
-matching the shape of `saved_charts`.
-
 ---
 
 ## Data quality
@@ -93,6 +87,18 @@ for rendering each one once and looking at it.
 
 Entries move here with the commit that closed them, so the reason an item
 existed survives the fix.
+
+### Saved filters did not sync
+
+Recorded as `localStorage`-only, so not following a member between devices.
+That was already untrue when it was written: `useSavedFilters` writes to the
+`saved-filters` key and `SETTINGS_KEYS` in `useCloudSync` lists that key, so it
+is snapshotted to Supabase with the other preferences. Removed rather than
+fixed, since there was nothing to fix.
+
+Noticed while working out what survives a move to a new domain — browser
+storage is per-origin, so the question of which preferences live only in the
+browser is the same question.
 
 ### Data export
 

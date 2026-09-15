@@ -197,6 +197,67 @@ key: server-side environment only, never in a browser, never committed.
 
 ---
 
+## 6. Putting it on your own domain
+
+Most of the app does not care what it is served from: in-app links are relative,
+the service worker and the share/embed links build from `window.location.origin`,
+and `manifest.webmanifest` uses relative paths. Earth Engine, the storage bucket
+and every row-level security policy key on user ids and paths, not on an origin.
+
+Four things do care.
+
+**Supabase → Authentication → URL Configuration.** Set **Site URL** to the new
+origin, with no trailing slash. That is what confirmation and magic-link emails
+are built from, so getting it wrong sends every member a link to the old host.
+Then add the sign-in landing page to **Redirect URLs**:
+
+```
+https://your-domain/login
+```
+
+`useAuth` sends `${window.location.origin}/login` as the redirect for magic
+links, sign-up confirmations and OAuth, and Supabase refuses a redirect that is
+not on that list. The symptom is a bounce to an error page rather than a broken
+session, so it is visible immediately if you test one sign-in.
+
+Nothing else in Supabase changes. The GitHub and Google OAuth apps point at
+Supabase's own `https://<ref>.supabase.co/auth/v1/callback`, which does not move
+with your app.
+
+**Netlify.** Add the domain and make it the **primary** one, so the
+`*.netlify.app` address redirects instead of serving the same app from a second
+origin. Two live origins means two separate sessions, two separate offline
+caches and two sets of browser preferences, with no sign that they are the same
+app.
+
+**`NUXT_PUBLIC_SITE_URL`.** Only used to make `og:image` absolute for link
+previews, which do not resolve relative URLs. Unset, the app works and the logo
+is missing from previews in Slack, Discord and iMessage. Set it in the Netlify
+environment; it reaches the browser through the rendered payload, so it takes a
+deploy rather than a restart.
+
+**The FRMS website's PayPal function.** `NEXSTRATA_URL` is the origin it posts
+memberships to. See [`membership-api.md`](membership-api.md).
+
+### What members lose in the move
+
+Browser storage is per-origin, and there is no way to carry it across. Worth
+saying out loud before the switch rather than fielding it afterwards.
+
+- **Passkeys stop working.** A WebAuthn credential is bound to the domain that
+  created it. Anyone who signed in with a passkey has to use email or OAuth once
+  on the new domain and register a new one.
+- **Saved offline areas have to be downloaded again.** The tile cache is keyed
+  by origin and lives in the browser, so the new domain starts empty.
+- **Theme and the last map view reset.** Local-only, and small.
+
+Preferences that sync do come back on the first sign-in: appearance, chart
+layout and order, units, the map overlay settings, saved filters and saved
+charts. Everything on the account — membership, jobs, saved datasets — is
+untouched, because none of it is addressed by origin.
+
+---
+
 ## Which fire layers are public
 
 Set per layer in `netlify/lib/ee-tile-layers.mjs`, not by an environment
