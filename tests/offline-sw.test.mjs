@@ -412,3 +412,36 @@ test('two saves in a row both land', async () => {
   const { reply } = await w.send({ type: 'areas' })
   assert.equal(reply.areas.length, 2)
 })
+
+// ── A tile host that goes down ───────────────────────────────────────────────
+
+test('a failed cross-origin tile resolves rather than rejecting', async () => {
+  // Terrascope began answering ERR_HTTP2_PROTOCOL_ERROR and took ESA WorldCover
+  // with it. The worker had no catch on that path, so every tile on screen
+  // became an "Uncaught (in promise) TypeError: Failed to fetch" — the console
+  // filled with our noise while the actual outage scrolled past.
+  //
+  // The outcome is the same either way: Leaflet sees a failed tile. What must
+  // not happen is the promise inside respondWith rejecting.
+  const w = bootWorker({
+    fetchImpl: async () => { throw new TypeError('Failed to fetch') },
+  })
+
+  const answered = await w.doFetch('https://tiles.example/9/1/2.png')
+  assert.ok(answered, 'the worker should still answer the request')
+
+  // The assertion that matters: awaiting it does not throw.
+  const res = await answered
+  assert.ok(res, 'a failed fetch should resolve to a response, not reject')
+  assert.equal(res.type, 'error')
+})
+
+test('a dataset request with nothing cached and no network does not reject either', async () => {
+  const w = bootWorker({
+    fetchImpl: async () => { throw new TypeError('Failed to fetch') },
+  })
+  const answered = await w.doFetch(`${ORIGIN}/data/observations.geojson`)
+  assert.ok(answered)
+  const res = await answered
+  assert.ok(res, 'an offline dataset read should resolve to a response, not reject')
+})

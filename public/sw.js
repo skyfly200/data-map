@@ -148,7 +148,13 @@ self.addEventListener('fetch', (event) => {
       }
       const hit = await cache.match(request)
       if (hit) return hit
-      return fetch(request)
+      // Caught, not left to reject. A tile host that goes down — Terrascope
+      // started answering ERR_HTTP2_PROTOCOL_ERROR and took ESA WorldCover with
+      // it — makes this fetch throw, and a rejected promise inside respondWith
+      // becomes an unhandled rejection for every tile on screen. The outcome is
+      // identical either way (Leaflet sees a failed tile and fires tileerror);
+      // the difference is a console nobody can read afterwards.
+      return fetch(request).catch(() => Response.error())
     })())
     return
   }
@@ -159,7 +165,11 @@ self.addEventListener('fetch', (event) => {
   if (isDataset(url)) {
     event.respondWith(caches.open(DATA).then(async (cache) => {
       const hit = await cache.match(request, { ignoreSearch: true })
-      return hit || fetch(request)
+      if (hit) return hit
+      // Same reason as the tile branch above: offline with nothing saved, this
+      // rejects, and the page sees an unhandled rejection rather than a failed
+      // request it can report.
+      return fetch(request).catch(() => Response.error())
     }))
     return
   }

@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
-  TILE_LAYERS, TIME_LAYERS, WORLDCOVER_CLASSES,
+  TILE_LAYERS, TIME_LAYERS,
   arcgisExportUrl, filterLayerGroups, gibs, gibsUrl, layerDate, layerGroups, tileBounds,
 } from '../composables/mapLayers.js'
 
@@ -149,11 +149,13 @@ test('every layer that could read as empty ground carries its caveat', () => {
   }
 })
 
-test('WorldCover uses the product\'s own class colors', () => {
-  assert.equal(WORLDCOVER_CLASSES.length, 11)
-  assert.equal(WORLDCOVER_CLASSES[0].color, '#006400')  // tree cover
-  assert.equal(WORLDCOVER_CLASSES[7].color, '#0064c8')  // permanent water
-  assert.equal(new Set(WORLDCOVER_CLASSES.map((c) => c.color)).size, 11)
+test('no layer is served from the host that went down', () => {
+  // ESA WorldCover came from services.terrascope.be until that host started
+  // failing at the protocol level. It is rendered by Earth Engine now, and its
+  // class colours are asserted alongside the other EE layers.
+  for (const l of TILE_LAYERS) {
+    assert.ok(!/terrascope/.test(l.url || ''), `${l.name} still points at Terrascope`)
+  }
 })
 
 test('grouping lists every layer once, and names each group once', () => {
