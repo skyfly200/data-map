@@ -108,25 +108,35 @@ export const ASSETS = {
  * The order is the product's own, which is what makes the remap below readable:
  * the nth colour is the nth code in WORLDCOVER_FROM.
  */
+// `code` is the product's own class number, and it is what joins this table to
+// anything else that speaks WorldCover. `aliases` carries the spellings the
+// enrichment pipeline writes for the same class — scripts/enrich_with_rasters
+// .py names code 60 "Bare / sparse vegetation" and code 90 "Wetland" — so a
+// point can be coloured to match the layer under it without either side having
+// to be renamed.
 export const WORLDCOVER_CLASSES = [
-  { color: '#006400', label: 'Tree cover' },
-  { color: '#ffbb22', label: 'Shrubland' },
-  { color: '#ffff4c', label: 'Grassland' },
-  { color: '#f096ff', label: 'Cropland' },
-  { color: '#fa0000', label: 'Built-up' },
-  { color: '#b4b4b4', label: 'Bare / sparse' },
-  { color: '#f0f0f0', label: 'Snow and ice' },
-  { color: '#0064c8', label: 'Permanent water' },
-  { color: '#0096a0', label: 'Herbaceous wetland' },
-  { color: '#00cf75', label: 'Mangroves' },
-  { color: '#fae6a0', label: 'Moss and lichen' },
+  { code: 10, color: '#006400', label: 'Tree cover' },
+  { code: 20, color: '#ffbb22', label: 'Shrubland' },
+  { code: 30, color: '#ffff4c', label: 'Grassland' },
+  { code: 40, color: '#f096ff', label: 'Cropland' },
+  { code: 50, color: '#fa0000', label: 'Built-up' },
+  { code: 60, color: '#b4b4b4', label: 'Bare / sparse', aliases: ['Bare / sparse vegetation'] },
+  { code: 70, color: '#f0f0f0', label: 'Snow and ice' },
+  { code: 80, color: '#0064c8', label: 'Permanent water', aliases: ['Water'] },
+  { code: 90, color: '#0096a0', label: 'Herbaceous wetland', aliases: ['Wetland'] },
+  { code: 95, color: '#00cf75', label: 'Mangroves' },
+  { code: 100, color: '#fae6a0', label: 'Moss and lichen' },
 ]
 
 // WorldCover codes are decades with one odd one out at 95, so they cannot be
 // used as palette indices directly — a linear stretch from 10 to 100 would put
 // every class at the wrong colour. Remapped to 1..11 instead, the same way the
 // GAP layer is.
-export const WORLDCOVER_FROM = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100]
+//
+// Derived from the table above rather than written out again: as two parallel
+// lists they could fall out of order, and nothing would say so — the map would
+// simply paint the wrong class the wrong colour.
+export const WORLDCOVER_FROM = WORLDCOVER_CLASSES.map((c) => c.code)
 export const WORLDCOVER_TO = WORLDCOVER_FROM.map((_, i) => i + 1)
 
 const THIS_YEAR = () => new Date().getUTCFullYear()

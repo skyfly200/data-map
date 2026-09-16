@@ -208,7 +208,7 @@
          each other and the heatmap key into strips too short to read. They are
          one stack of layers; they get one panel. -->
     <div v-if="activeTileNotes.length" class="legend tile-note">
-      <div class="legend-title">Map layers</div>
+      <div class="legend-kind">Map layers</div>
       <div v-for="n in activeTileNotes" :key="n.name" class="tk">
         <div class="tk-name">{{ n.name }}</div>
         <template v-if="n.legend?.type === 'ramp'">
@@ -306,8 +306,12 @@
       </template>
     </div>
 
-    <!-- Legend (categorical swatches or a sequential gradient) -->
-    <div v-if="coloring" class="legend" @mouseleave="hoverValue = null">
+    <!-- The observation key. Titled "Observations" and drawn with round
+         swatches, because the layer key sits directly above it with square
+         ones: two keys of identical shape, one over the other, left it to the
+         viewer to work out which described the dots and which the ground. -->
+    <div v-if="coloring" class="legend points-legend" @mouseleave="hoverValue = null">
+      <div class="legend-kind">Observations</div>
       <div class="legend-title">{{ coloring.title }}</div>
       <template v-if="coloring.type === 'categorical'">
         <!-- Hovering a row picks out the marks it stands for. A legend of twenty
@@ -316,14 +320,17 @@
              :class="{ dim: hoverValue && hoverValue !== item.label }"
              @pointerenter="hoverEnter(item.label, $event)"
              @pointerup="pickValue(item.label, $event)">
-          <span class="swatch" :style="{ background: item.color }"></span>
+          <span class="swatch dot" :style="{ background: item.color }"></span>
           <span>{{ item.label }}</span>
         </div>
       </template>
       <template v-else>
-        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${RAMP[0]}, ${RAMP[1]})` }"></div>
+        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${coloring.stops.join(', ')})` }"></div>
         <div class="gradient-scale"><span>{{ fmtNum(coloring.min) }}</span><span>{{ fmtNum(coloring.max) }}</span></div>
       </template>
+      <!-- Says whether these shades mean the same numbers as the layer's or
+           only the same ranking. -->
+      <div v-if="coloring.match" class="legend-note match">{{ coloring.match }}</div>
     </div>
     </div>
 
@@ -339,6 +346,7 @@
 import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservations } from '~/composables/useObservations'
+import { classColorFor, fraction, matchNote, paletteFor, rampColor } from '~/composables/fieldPalettes'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { fieldValue } from '~/composables/statistics'
 import { useAppearance } from '~/composables/useAppearance'
@@ -600,7 +608,10 @@ const activeTileNotes = ref([])
 // The built tile layers, so the opacity slider can reach them after setup.
 const tileLayers = []
 
-const RAMP = ['#e8f1fb', '#0b3d91'] // sequential light → dark blue
+// The fallback ramp, for a numeric field no layer draws — elevation, day of
+// year, rainfall. Anything a layer DOES draw borrows that layer's palette
+// instead; see composables/fieldPalettes.js.
+const RAMP = ['#e8f1fb', '#0b3d91']
 
 // Field labels + which keys are categorical, drawn from the shared chart
 // registry so the map and the Explore builder stay in sync.
@@ -628,12 +639,6 @@ watch(colorOptions, (opts) => {
 
 function fmtNum(v) { return Math.abs(v) >= 100 ? Math.round(v).toLocaleString() : Number(v).toFixed(2) }
 
-function hexLerp(a, b, t) {
-  const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16))
-  const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16))
-  const c = pa.map((v, i) => Math.round(v + (pb[i] - v) * t))
-  return `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`
-}
 
 // Build the color function + legend for the current "color by" dimension.
 const coloring = computed(() => {
@@ -688,13 +693,20 @@ const coloring = computed(() => {
     }
     const cats = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
     const LEGEND_CAP = 12
-    // Stable per-value colors, so a species/year/class matches its color in
-    // the charts. Legend shows the most frequent values first.
-    const legend = cats.slice(0, LEGEND_CAP).map((v) => ({ label: String(v), color: categoryColor(key, v) }))
+    // Where a layer draws the same classes, take its colours: a land cover dot
+    // should be the colour of the land cover under it, not a hash of its name.
+    // Anything the layer has no class for still falls back to the stable
+    // palette, so an unexpected value is coloured rather than dropped.
+    const palette = paletteFor(key)
+    const classes = palette?.kind === 'classes' ? palette.items : null
+    const colorOf = (v) => (classes && classColorFor(classes, v)) || categoryColor(key, v)
+
+    const legend = cats.slice(0, LEGEND_CAP).map((v) => ({ label: String(v), color: colorOf(v) }))
     if (cats.length > LEGEND_CAP) legend.push({ label: `+${cats.length - LEGEND_CAP} more`, color: UNCLUSTERED })
     return {
       type: 'categorical', title, legend,
-      colorFn: (p) => (hasValue(p[key]) ? categoryColor(key, p[key]) : UNCLUSTERED),
+      match: palette ? matchNote(palette) : '',
+      colorFn: (p) => (hasValue(p[key]) ? colorOf(p[key]) : UNCLUSTERED),
       labelOf: (p) => (hasValue(p[key]) ? String(p[key]) : null),
     }
   }
@@ -705,14 +717,25 @@ const coloring = computed(() => {
   const conv = meta.unit === 'elev' ? elevValue : meta.unit === 'temp' ? tempValue : (v) => Number(v)
   const unitSuffix = meta.unit === 'elev' ? ` (${unit.value})` : meta.unit === 'temp' ? ` (°${tempUnit.value})` : ''
   const vals = feats.map((f) => f.properties[key]).filter(hasValue).map((v) => conv(Number(v)))
-  const min = vals.length ? Math.min(...vals) : 0
-  const max = vals.length ? Math.max(...vals) : 1
+  const dataMin = vals.length ? Math.min(...vals) : 0
+  const dataMax = vals.length ? Math.max(...vals) : 1
+
+  // Where a layer draws the same quantity, borrow its ramp — and its stretch
+  // too when the two sides measure in the same units, so a dot over a pixel is
+  // the same colour for the same value. Where the pipeline normalises and the
+  // layer does not, the palette still matches but the scale is the data's own;
+  // `match` says which of the two the viewer is looking at.
+  const palette = paletteFor(key)
+  const stops = palette?.kind === 'ramp' ? palette.stops : RAMP
+  const [min, max] = palette?.domain || [dataMin, dataMax]
+
   return {
-    type: 'sequential', title: title + unitSuffix, min, max,
+    type: 'sequential', title: title + unitSuffix, min, max, stops,
+    match: palette ? matchNote(palette) : '',
     colorFn: (p) => {
       const raw = p[key]
       if (!hasValue(raw)) return UNCLUSTERED
-      return hexLerp(RAMP[0], RAMP[1], (conv(Number(raw)) - min) / ((max - min) || 1))
+      return rampColor(stops, fraction(conv(Number(raw)), [min, max]))
     },
   }
 })
@@ -1996,6 +2019,21 @@ onBeforeUnmount(() => {
 }
 .legend-title { font-weight: 600; margin-bottom: 6px; position: sticky; top: 0; }
 .legend-row { display: flex; align-items: center; gap: 8px; }
+
+/* Which of the two keys this is. The layer key and the observation key sit in
+   one column, one above the other, and previously each was headed only by what
+   it described — "Land cover" over "Land cover" — leaving the viewer to work
+   out which explained the ground and which the dots. */
+.legend-kind {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 4px;
+}
+/* Reinforced by shape, for the same reason a legend has text at all: the marks
+   on the map are round and the layers are areas of flat colour, so the key
+   repeats that distinction rather than relying on the heading alone. */
+.points-legend .swatch.dot { border-radius: 50%; }
+.tile-note .swatch { border-radius: 2px; }
+.legend-note.match { font-style: italic; }
 
 /* One section per active layer inside the layers key: a ramp with its units in
    the middle of the scale, or a list of classes. Rules between them, because
