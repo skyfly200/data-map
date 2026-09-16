@@ -21,7 +21,7 @@ import { getStore } from '@netlify/blobs'
 
 import { requireTier } from '../lib/auth.mjs'
 import {
-  LayerError, EE_LAYER_CATALOGUE, cacheKey, describeLayer, resolveLayer, tierFor,
+  LayerError, EE_LAYER_CATALOGUE, cacheKey, describeLayer, resolveLayer, tierFor, visParams,
 } from '../lib/ee-tile-layers.mjs'
 import { earthEngineConfigured, initEarthEngine } from '../lib/ee-runner.mjs'
 import {
@@ -73,7 +73,9 @@ function store() {
  */
 function getMapTemplate(ee, image, vis) {
   return new Promise((resolve, reject) => {
-    ee.data.getMapId({ image, ...vis }, (result, error) => {
+    // visParams, not vis: the client wants min/max/gamma as strings and throws
+    // "csv.split is not a function" on the numbers every layer declares.
+    ee.data.getMapId({ image, ...visParams(vis) }, (result, error) => {
       if (error) return reject(new Error(String(error)))
       if (!result) return reject(new Error('Earth Engine returned no map id.'))
       const template = result.urlFormat
