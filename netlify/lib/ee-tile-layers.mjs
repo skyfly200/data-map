@@ -66,6 +66,11 @@ export const ASSETS = {
   MTBS_SEVERITY: 'USFS/GTAC/MTBS/annual_burn_severity_mosaics/v1',
   FIRMS: 'FIRMS',
   S2_SR: 'COPERNICUS/S2_SR_HARMONIZED',
+  // Hansen Global Forest Change: year of stand-replacing forest loss, 30 m,
+  // global. Loss is any removal of the canopy — harvest, clearing, blowdown or
+  // fire — so it is the closest global proxy for cutting there is. The version
+  // fixes the last year in the record, which is why HANSEN_LAST_YEAR tracks it.
+  HANSEN: 'UMD/hansen/global_forest_change_2023_v1_11',
   // Soil. SOLUS100 is a collection where each IMAGE is one soil property,
   // picked out by system:index rather than by band — which is why these cannot
   // be registered through the custom-layer form, whose whole model is one asset
@@ -74,6 +79,19 @@ export const ASSETS = {
   OPENLANDMAP_TEXTURE: 'OpenLandMap/SOL/SOL_TEXTURE-CLASS_USDA-TT_M/v02',
   // What is growing on the ground, by type rather than by greenness.
   GAP_LANDCOVER: 'USGS/GAP/CONUS/2011',
+  // Terrain. SRTM is one masked image covering 60°N–56°S at 30 m, which is why
+  // the slope/aspect/exposure layers can each be one ee.Image() rather than a
+  // mosaic — and why they declare sourceMasked: the sea is already masked and
+  // every land pixel it leaves is a real elevation.
+  SRTM: 'USGS/SRTMGL1_003',
+  // Upstream drainage area (band 'upa', km²), the contributing-area term the
+  // topographic wetness index needs and that a slope raster cannot supply on
+  // its own.
+  MERIT_HYDRO: 'MERIT/Hydro/v1_0_1',
+  // USFS TreeMap: modelled forest structure on the FIA plot grid, 30 m, US
+  // forests only. A collection whose 2016 image is the baseline, so it is
+  // filtered by date and .first() picked out like the burn products.
+  TREEMAP: 'projects/gtac-data-publish/assets/TreeMap/Product_Version/2026-1',
 }
 
 const THIS_YEAR = () => new Date().getUTCFullYear()
@@ -101,6 +119,14 @@ export const MTBS_FIRST_YEAR = 1984
 
 /** Years-since-fire ramp: the first year after a burn is the one that matters. */
 const SINCE_FIRE_PALETTE = ['#d7191c', '#f07c4a', '#fdae61', '#fee090', '#c7e9b4', '#7fcdbb', '#41b6c4']
+
+// Hansen Global Forest Change records loss year as 1–N, where N is the last
+// year in the version's record. v2023 covers 2001–2023.
+export const HANSEN_FIRST_YEAR = 2001
+export const HANSEN_LAST_YEAR = 2023
+
+/** Old loss (blue) through recent loss (red): a fresh cut is what to walk. */
+const FOREST_LOSS_PALETTE = ['#2c7bb6', '#abd9e9', '#ffffbf', '#fdae61', '#d7191c']
 
 const MTBS_CLASSES = [
   { color: '#000000', label: 'Background' },
@@ -130,6 +156,50 @@ const TEXTURE_CLASSES = [
   { color: '#fff72e', label: 'Silt' },
   { color: '#ff5a9d', label: 'Loamy sand' },
   { color: '#ff005b', label: 'Sand' },
+]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Terrain and vegetation index palettes
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Flat green through to steep red. */
+const SLOPE_PALETTE = ['#1a9850', '#91cf60', '#d9ef8b', '#fee08b', '#fc8d59', '#d73027']
+/** Cyclic, because aspect wraps: north reads the same colour at 0° and 360°. */
+const ASPECT_PALETTE = ['#e41a1c', '#ff7f00', '#ffff33', '#4daf4a', '#377eb8', '#984ea3', '#e41a1c']
+/** Dry (brown) to wet (teal): high TWI is where water collects. */
+const TWI_PALETTE = ['#8c510a', '#d8b365', '#f6e8c3', '#c7eae5', '#5ab4ac', '#01665e']
+/** Diverging: sheltered hollows blue, exposed ridges red. */
+const EXPOSURE_PALETTE = ['#2166ac', '#67a9cf', '#d1e5f0', '#f7f7f7', '#fddbc7', '#ef8a62', '#b2182b']
+/** Cool shaded slopes to hot sun-facing ones. */
+const SOLAR_PALETTE = ['#2166ac', '#67a9cf', '#d1e5f0', '#fee090', '#fc8d59', '#d73027']
+/** The classic NDVI ramp: bare ground brown through dense canopy green. */
+const NDVI_PALETTE = ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
+  '#a6d96a', '#66bd63', '#1a9850', '#006837']
+/** Dry canopy brown to moist canopy teal. */
+const NDMI_PALETTE = ['#8c510a', '#d8b365', '#f6e8c3', '#c7eae5', '#5ab4ac', '#01665e']
+
+/** Short (pale) to tall (deep magenta): a proxy for stand maturity. */
+const STAND_HEIGHT_PALETTE = ['#feebe2', '#fcc5c0', '#fa9fb5', '#f768a1', '#ae017e']
+
+/** Open (pale) to closed canopy (deep blue). */
+const CANOPY_PALETTE = ['#ffffd9', '#c7e9b4', '#41b6c4', '#225ea8', '#081d58']
+
+/** Moderate (yellow) through complete (dark red) canopy moisture loss. */
+const MOISTURE_LOSS_PALETTE = ['#ffeda0', '#feb24c', '#f03b20', '#bd0026']
+
+/**
+ * FIA stand-size classes (STDSZCD), by the diameter distribution of the stand.
+ * Positional, so class n is the nth entry — code 4 is included between small
+ * and nonstocked even though the reference script skipped it, because the
+ * source uses it and a gap would paint seedling stands in the nonstocked
+ * colour.
+ */
+const STAND_SIZE_CLASSES = [
+  { color: '#2b83ba', label: 'Large diameter' },
+  { color: '#abdda4', label: 'Medium diameter' },
+  { color: '#fdae61', label: 'Small diameter' },
+  { color: '#d7191c', label: 'Seedling / sapling' },
+  { color: '#bbbbbb', label: 'Nonstocked' },
 ]
 
 const DEPTH_PALETTE = ['#feebe2', '#fcc5c0', '#fa9fb5', '#f768a1', '#dd3497', '#ae017e', '#7a0177']
@@ -272,6 +342,145 @@ function lastBurnYear(ee, { from, to }) {
   return ee.ImageCollection(stack).max()
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Terrain analysis, all derived from one DEM
+// ─────────────────────────────────────────────────────────────────────────────
+
+const DEG = Math.PI / 180
+
+/** Slope in radians, with a floor so a flat pixel does not divide TWI by zero. */
+function slopeRadians(ee) {
+  return ee.Terrain.slope(ee.Image(ASSETS.SRTM)).multiply(DEG)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sentinel-2 vegetation indices
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The month window each season spans. Northern-hemisphere seasons, because the
+ * map's ground is: a "summer" composite over the Rockies wants June–August, and
+ * inverting that for the south is a refinement nobody looking at this map needs.
+ */
+const SEASONS = {
+  spring: { label: 'Spring', from: '03-01', to: '05-31' },
+  summer: { label: 'Summer', from: '06-01', to: '08-31' },
+  fall: { label: 'Autumn', from: '09-01', to: '11-30' },
+  winter: { label: 'Winter', from: '12-01', to: '12-31' },
+}
+
+/** A cloud-filtered Sentinel-2 collection over a date range. */
+const s2Between = (ee, from, to) => ee.ImageCollection(ASSETS.S2_SR)
+  .filterDate(from, to)
+  .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 40))
+
+/** The two bands a normalised index is built from, by index name. */
+const INDEX_BANDS = { ndvi: ['B8', 'B4'], ndmi: ['B8', 'B11'] }
+
+/** A recent rolling window: [startISO, endISO] for the last `days` days. */
+function recentWindow(days) {
+  const end = new Date()
+  const start = new Date(end.getTime() - days * 86400000)
+  return [start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)]
+}
+
+/**
+ * The recent (rolling) variant of a Sentinel-2 index, open to everyone: one
+ * cloud-filtered median over the last few weeks, so it always reflects now
+ * rather than a year you have to pick.
+ */
+function recentIndexLayer({ name, index, group, note, palette }) {
+  const [b1, b2] = INDEX_BANDS[index]
+  return {
+    name,
+    group,
+    tier: 'free',
+    attribution: 'Copernicus Sentinel-2 via Google Earth Engine',
+    opacity: 0.8,
+    note,
+    slow: true,
+    params: {
+      days: { type: 'int', label: 'Days back', default: 30, min: 5, max: 120 },
+    },
+    legend: { type: 'ramp', unit: index, min: '−1', max: '+1', stops: palette },
+    count: (ee, { days }) => {
+      const [from, to] = recentWindow(days)
+      return s2Between(ee, from, to).size()
+    },
+    build(ee, { days }) {
+      const [from, to] = recentWindow(days)
+      const image = s2Between(ee, from, to).median().normalizedDifference([b1, b2]).rename(index)
+      // A valid-range mask, which also drops the water and cloud-shadow pixels
+      // that fall outside [−1, 1] as compositing artefacts.
+      return {
+        image: image.updateMask(image.gte(-1).and(image.lte(1))),
+        vis: { min: -0.2, max: 0.9, palette },
+      }
+    },
+  }
+}
+
+/**
+ * The seasonal variant, for members: a median over one season of one year, so
+ * two years can be compared at the same phenological moment. This is real
+ * compute per tile, which is why it is gated where the recent one is not.
+ */
+function seasonalIndexLayer({ name, index, group, note, palette }) {
+  const [b1, b2] = INDEX_BANDS[index]
+  const seasonKeys = Object.keys(SEASONS)
+  const range = (ee, { year, season }) => {
+    const s = SEASONS[season]
+    return s2Between(ee, `${year}-${s.from}`, `${year}-${s.to}`)
+  }
+  return {
+    name,
+    group,
+    tier: DEFAULT_TIER,
+    attribution: 'Copernicus Sentinel-2 via Google Earth Engine',
+    opacity: 0.8,
+    note,
+    slow: true,
+    params: {
+      year: {
+        type: 'int', label: 'Year', default: () => THIS_YEAR() - 1,
+        // Sentinel-2 surface reflectance begins in 2017.
+        min: 2017, max: () => THIS_YEAR(),
+      },
+      season: { type: 'enum', label: 'Season', default: 'summer', values: seasonKeys },
+    },
+    legend: { type: 'ramp', unit: index, min: '−1', max: '+1', stops: palette },
+    count: (ee, params) => range(ee, params).size(),
+    build(ee, params) {
+      const image = range(ee, params).median().normalizedDifference([b1, b2]).rename(index)
+      return {
+        image: image.updateMask(image.gte(-1).and(image.lte(1))),
+        vis: { min: -0.2, max: 0.9, palette },
+      }
+    },
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USFS TreeMap forest structure
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The 2016 TreeMap baseline image, one band selected.
+ *
+ * TreeMap is a collection whose 2016 image is the modelled baseline; filtering
+ * by that year and taking .first() picks it out. .first() on a filter that
+ * matched nothing is null and .select on null throws, which is what the `count`
+ * pre-flight on each TreeMap layer catches before Earth Engine returns
+ * something opaque.
+ */
+const treeMap2016 = (ee, band) => ee.ImageCollection(ASSETS.TREEMAP)
+  .filterDate('2016-01-01', '2016-12-31')
+  .first()
+  .select(band)
+
+const treeMapCount = (ee) => ee.ImageCollection(ASSETS.TREEMAP)
+  .filterDate('2016-01-01', '2016-12-31').size()
+
 /**
  * The catalogue.
  *
@@ -282,7 +491,7 @@ function lastBurnYear(ee, { from, to }) {
 export const EE_TILE_LAYERS = {
   'years-since-fire': {
     name: 'Years since fire',
-    group: 'Fire',
+    group: 'Fire & disturbance',
     // Open to everyone: this is the layer that answers where to look next
     // spring, and it is one cached render shared by every viewer.
     tier: 'free',
@@ -319,7 +528,7 @@ export const EE_TILE_LAYERS = {
 
   'burn-severity': {
     name: 'Burn severity (US)',
-    group: 'Fire',
+    group: 'Fire & disturbance',
     // Also open. Severity is what decides whether a burn scar is worth walking,
     // so it is half of the same question, and MTBS is a published product that
     // costs one cached render per year rather than per viewer.
@@ -358,7 +567,7 @@ export const EE_TILE_LAYERS = {
 
   'burn-date': {
     name: 'Burn scars this year',
-    group: 'Fire',
+    group: 'Fire & disturbance',
     attribution: 'NASA MODIS MCD64A1 via Google Earth Engine',
     opacity: 0.75,
     note: 'What burned during the chosen year, colored by when in the year it burned. '
@@ -389,7 +598,7 @@ export const EE_TILE_LAYERS = {
 
   'active-fire': {
     name: 'Active fires (recent)',
-    group: 'Fire',
+    group: 'Fire & disturbance',
     attribution: 'NASA FIRMS via Google Earth Engine',
     opacity: 0.85,
     note: 'Thermal anomalies detected in the last few days. Near-real-time and coarse: '
@@ -423,7 +632,7 @@ export const EE_TILE_LAYERS = {
 
   'dnbr': {
     name: 'Burn severity, computed (dNBR)',
-    group: 'Fire',
+    group: 'Fire & disturbance',
     attribution: 'Copernicus Sentinel-2 via Google Earth Engine',
     opacity: 0.7,
     // The layer that justifies computing tiles rather than fetching them: this
@@ -468,6 +677,197 @@ export const EE_TILE_LAYERS = {
     },
   },
 
+  'forest-loss': {
+    name: 'Forest loss / cutting',
+    group: 'Fire & disturbance',
+    // Free, like the burn layers: a published asset, one cached render shared by
+    // everyone, and it answers the same "where was the canopy opened recently"
+    // question — a fresh cut or blowdown flushes some of the same species a burn
+    // does.
+    tier: 'free',
+    attribution: 'Hansen / UMD / Google / USGS / NASA via Google Earth Engine',
+    opacity: 0.8,
+    note: 'Year of stand-replacing forest loss from Hansen Global Forest Change, 30 m, global. '
+      + 'Loss is any canopy removal — harvest, clearing, blowdown or fire — so it does not tell cut '
+      + 'from burn on its own; read it alongside the burn layers, and what is left is largely '
+      + 'cutting. Recent losses are red. Unpainted is ground with no detected loss since '
+      + `${HANSEN_FIRST_YEAR}.`,
+    params: {
+      window: { type: 'int', label: 'Years to look back', default: 12, min: 2, max: 23 },
+    },
+    legend: {
+      type: 'ramp', unit: 'year of loss', min: 'older', max: 'recent', stops: FOREST_LOSS_PALETTE,
+    },
+    build(ee, { window }) {
+      const lossyear = ee.Image(ASSETS.HANSEN).select('lossyear')
+      // lossyear is 1–23 for 2001–2023 and 0 where nothing was lost. Keep only
+      // losses inside the window, then paint by their actual calendar year.
+      const firstIndex = Math.max(1, (HANSEN_LAST_YEAR - 2000) - window + 1)
+      const recent = lossyear.gte(firstIndex)
+      const year = lossyear.add(2000).updateMask(lossyear.gt(0)).updateMask(recent)
+      return {
+        image: year,
+        vis: { min: HANSEN_FIRST_YEAR, max: HANSEN_LAST_YEAR, palette: FOREST_LOSS_PALETTE },
+      }
+    },
+  },
+
+  'canopy-moisture-loss': {
+    name: 'Canopy moisture crash (beetle proxy)',
+    group: 'Fire & disturbance',
+    // Computed from raw Sentinel-2 across two summers as you look, so it is a
+    // members' layer like dNBR rather than a shared cached render.
+    tier: DEFAULT_TIER,
+    attribution: 'Copernicus Sentinel-2 via Google Earth Engine',
+    opacity: 0.85,
+    slow: true,
+    note: 'The drop in canopy moisture (NDMI) between a baseline summer and a recent one, computed '
+      + 'from Sentinel-2 over the late-summer window. A large drop is a canopy that dried out or died '
+      + '— often bark beetle, sometimes drought or disease — which opens the stand and changes what '
+      + 'fruits under it. Only losses over 0.15 NDMI are painted; both summers must be mostly '
+      + 'cloud-free to read.',
+    params: {
+      baseline: {
+        type: 'int', label: 'Baseline year', default: 2017,
+        min: 2017, max: () => THIS_YEAR(),
+      },
+      recent: {
+        type: 'int', label: 'Recent year', default: () => THIS_YEAR() - 1,
+        min: 2017, max: () => THIS_YEAR(),
+      },
+    },
+    legend: {
+      type: 'ramp', unit: 'NDMI drop', min: '0.15', max: '0.4+', stops: MOISTURE_LOSS_PALETTE,
+    },
+    count: (ee, { recent }) => s2Between(ee, `${recent}-07-15`, `${recent}-09-15`).size(),
+    build(ee, { baseline, recent }) {
+      // Late summer both years, to align the two composites at the same point in
+      // the season rather than comparing spring to autumn.
+      const ndmi = (year) => s2Between(ee, `${year}-07-15`, `${year}-09-15`)
+        .median().normalizedDifference(['B8', 'B11'])
+      const loss = ndmi(baseline).subtract(ndmi(recent))
+      // Below ~0.15 is seasonal wobble and cloud noise; painting it would turn
+      // every wet-year-to-dry-year difference into an apparent die-off.
+      return {
+        image: loss.updateMask(loss.gt(0.15)),
+        vis: { min: 0.15, max: 0.4, palette: MOISTURE_LOSS_PALETTE },
+      }
+    },
+  },
+
+  // ── Terrain analysis ───────────────────────────────────────────────────────
+  //
+  // Five reads of the same DEM, each answering a question about where fungi
+  // fruit that the flat map cannot. They are free: SRTM is a published asset and
+  // every one of these is one cached render shared by every viewer, so gating
+  // them would buy nothing. Each declares sourceMasked, because SRTM masks the
+  // sea and every land pixel it leaves is a real elevation — masking again would
+  // only throw away coastline.
+
+  'slope': {
+    name: 'Slope',
+    group: 'Terrain analysis',
+    tier: 'free',
+    attribution: 'NASA SRTM via Google Earth Engine',
+    opacity: 0.7,
+    note: 'Steepness in degrees from SRTM at 30 m. Slope sets how fast water runs off and how much '
+      + 'sun a face catches, so it underlies both the wetness and the solar layers. Gentle benches '
+      + 'and toe-slopes hold moisture that steep ground sheds.',
+    legend: { type: 'ramp', unit: 'degrees', min: '0', max: '45+', stops: SLOPE_PALETTE },
+    sourceMasked: true,
+    build(ee) {
+      const slope = ee.Terrain.slope(ee.Image(ASSETS.SRTM))
+      return { image: slope, vis: { min: 0, max: 45, palette: SLOPE_PALETTE } }
+    },
+  },
+
+  'aspect': {
+    name: 'Aspect (slope direction)',
+    group: 'Terrain analysis',
+    tier: 'free',
+    attribution: 'NASA SRTM via Google Earth Engine',
+    opacity: 0.7,
+    note: 'The compass direction each slope faces, 0–360° from SRTM. North-facing ground stays '
+      + 'cooler and damper and holds snow later; south-facing dries first. Which matters depends on '
+      + 'the species and the season, which is why this is offered raw rather than pre-judged. '
+      + 'The palette is cyclic, so north reads the same colour at both ends.',
+    legend: { type: 'ramp', unit: '° from north', min: 'N', max: 'N', stops: ASPECT_PALETTE },
+    sourceMasked: true,
+    build(ee) {
+      const aspect = ee.Terrain.aspect(ee.Image(ASSETS.SRTM))
+      return { image: aspect, vis: { min: 0, max: 360, palette: ASPECT_PALETTE } }
+    },
+  },
+
+  'twi': {
+    name: 'Topographic wetness (TWI)',
+    group: 'Terrain analysis',
+    tier: 'free',
+    attribution: 'NASA SRTM and MERIT Hydro via Google Earth Engine',
+    opacity: 0.75,
+    note: 'Where the terrain gathers water: high (teal) is convergent, low-lying ground that stays '
+      + 'wet between rains, low (brown) is fast-draining upland. Computed as ln(upslope area ÷ tan '
+      + 'slope) from SRTM slope and MERIT Hydro drainage area. A shape of the ground, not a '
+      + 'measurement of the soil — pair it with the soil texture layer.',
+    legend: { type: 'ramp', unit: 'TWI', min: 'dry', max: 'wet', stops: TWI_PALETTE },
+    sourceMasked: true,
+    build(ee) {
+      const tan = slopeRadians(ee).tan().max(0.001)
+      // upa is upstream drainage area in km²; to m² so the log spans a sensible
+      // range rather than sitting near zero.
+      const area = ee.Image(ASSETS.MERIT_HYDRO).select('upa').multiply(1e6)
+      const twi = area.divide(tan).log()
+      return { image: twi, vis: { min: 2, max: 20, palette: TWI_PALETTE } }
+    },
+  },
+
+  'wind-exposure': {
+    name: 'Wind exposure',
+    group: 'Terrain analysis',
+    tier: 'free',
+    attribution: 'NASA SRTM via Google Earth Engine',
+    opacity: 0.75,
+    note: 'How exposed or sheltered each spot is, as a topographic position index: elevation minus '
+      + 'the average of the ground within a kilometre. Ridges and summits (red) take the wind and '
+      + 'dry out; sheltered hollows and lee slopes (blue) stay still and humid. A proxy from shape '
+      + 'alone — it does not know the prevailing wind, only what stands above its surroundings.',
+    legend: { type: 'ramp', unit: 'sheltered → exposed', min: 'lee', max: 'ridge', stops: EXPOSURE_PALETTE },
+    sourceMasked: true,
+    build(ee) {
+      const dem = ee.Image(ASSETS.SRTM)
+      // Topographic position index: height above the local mean. focalMean over
+      // a 1 km circle sets the scale at which "exposed" is judged.
+      const tpi = dem.subtract(dem.focalMean(1000, 'circle', 'meters'))
+      return { image: tpi, vis: { min: -60, max: 60, palette: EXPOSURE_PALETTE } }
+    },
+  },
+
+  'solar-exposure': {
+    name: 'Solar exposure',
+    group: 'Terrain analysis',
+    tier: 'free',
+    attribution: 'NASA SRTM via Google Earth Engine',
+    opacity: 0.75,
+    note: 'A heat-load proxy: how much sun a slope catches, from its steepness and the way it faces. '
+      + 'Hot (red) is steep and south-west-facing, the last ground to hold moisture; cool (blue) is '
+      + 'shaded north-east-facing ground that stays damp. Derived from SRTM slope and aspect, not '
+      + 'from measured radiation, so read gradients rather than absolute values.',
+    legend: { type: 'ramp', unit: 'cool → hot', min: 'shaded', max: 'sun', stops: SOLAR_PALETTE },
+    sourceMasked: true,
+    build(ee) {
+      const dem = ee.Image(ASSETS.SRTM)
+      const aspect = ee.Terrain.aspect(dem)
+      const slope = ee.Terrain.slope(dem).multiply(DEG)
+      // Folded aspect (McCune & Keon): south-west = 1 is the hottest bearing in
+      // the northern hemisphere, north-east = 0 the coolest. Weighted by the
+      // sine of slope so flat ground reads as neutral rather than as either
+      // extreme.
+      const folded = aspect.subtract(225).multiply(DEG).cos().add(1).divide(2)
+      const heat = folded.multiply(slope.sin())
+      return { image: heat, vis: { min: 0, max: 0.7, palette: SOLAR_PALETTE } }
+    },
+  },
+
   // ── What is growing ────────────────────────────────────────────────────────
 
   'forest-type': {
@@ -495,6 +895,132 @@ export const EE_TILE_LAYERS = {
       return {
         image: remapped.updateMask(known),
         vis: { min: 1, max: GAP_CLASSES.length, palette: GAP_CLASSES.map((c) => c.color) },
+      }
+    },
+  },
+
+  // ── Greenness and canopy moisture ───────────────────────────────────────────
+  //
+  // Two Sentinel-2 indices, each offered twice: a recent rolling composite that
+  // is free and always current, and a season-of-a-year composite for members,
+  // for comparing the same phenological moment across years. NDVI is how much
+  // green is there; NDMI is how wet that green is — the second flags a canopy
+  // drawing on groundwater or a recent soaking, which is the half of fruiting
+  // weather greenness alone misses.
+
+  'ndvi-recent': recentIndexLayer({
+    name: 'Greenness, recent (NDVI)',
+    index: 'ndvi',
+    group: 'Vegetation',
+    palette: NDVI_PALETTE,
+    note: 'Normalised Difference Vegetation Index from a cloud-filtered Sentinel-2 median over the '
+      + 'chosen number of recent days, 10 m, global. Green is dense canopy, brown is bare or dormant '
+      + 'ground. A wide window fills cloud gaps but blurs a fast green-up; a narrow one is sharper '
+      + 'but gappier.',
+  }),
+
+  'ndmi-recent': recentIndexLayer({
+    name: 'Canopy moisture, recent (NDMI)',
+    index: 'ndmi',
+    group: 'Vegetation',
+    palette: NDMI_PALETTE,
+    note: 'Normalised Difference Moisture Index from a cloud-filtered Sentinel-2 median over the '
+      + 'chosen number of recent days, 10 m, global. Teal is moist vegetation, brown is dry or '
+      + 'stressed — a canopy that greens up after rain shows here before the ground does. Read '
+      + 'change over days, not the absolute value.',
+  }),
+
+  'ndvi-seasonal': seasonalIndexLayer({
+    name: 'Greenness, by season (NDVI)',
+    index: 'ndvi',
+    group: 'Vegetation',
+    palette: NDVI_PALETTE,
+    note: 'The same NDVI, but a median over one season of one year rather than the last few weeks, '
+      + 'so a dry summer can be set beside a wet one at the same point in the year. Computed from '
+      + 'raw Sentinel-2 as you look, which is why it is a members’ layer.',
+  }),
+
+  'ndmi-seasonal': seasonalIndexLayer({
+    name: 'Canopy moisture, by season (NDMI)',
+    index: 'ndmi',
+    group: 'Vegetation',
+    palette: NDMI_PALETTE,
+    note: 'The same NDMI over one season of one year, for comparing canopy moisture between years at '
+      + 'the same phenological moment — a stand that stays teal through a dry August is drawing on '
+      + 'water its neighbours have lost. Computed from raw Sentinel-2 as you look.',
+  }),
+
+  // ── Forest structure (USFS TreeMap) ─────────────────────────────────────────
+  //
+  // Three reads of the same modelled forest: how closed the canopy is, how tall
+  // the stand, and the diameter class it falls in — together a proxy for a
+  // stand's maturity, which is what decides whether a given host is old enough
+  // to fruit its associates. TreeMap is a published asset gated at the members'
+  // tier alongside the other structure and soil layers. US forests only, modelled
+  // on the FIA plot grid from 2016, so a fire or a cut since then is not in it.
+
+  'canopy-density': {
+    name: 'Canopy density',
+    group: 'Forest structure',
+    tier: DEFAULT_TIER,
+    attribution: 'USFS TreeMap via Google Earth Engine',
+    opacity: 0.85,
+    note: 'Percent live canopy cover from USFS TreeMap, 30 m, US forests only, modelled from 2016 '
+      + 'FIA data. Closed canopy (deep blue) shades the ground and holds humidity; open stands (pale) '
+      + 'dry faster. Unpainted is non-forest or outside the mapped area, not zero cover.',
+    legend: { type: 'ramp', unit: '% cover', min: '0', max: '100', stops: CANOPY_PALETTE },
+    sourceMasked: true,
+    count: treeMapCount,
+    build(ee) {
+      return {
+        image: treeMap2016(ee, 'CANOPYPCT'),
+        vis: { min: 0, max: 100, palette: CANOPY_PALETTE },
+      }
+    },
+  },
+
+  'stand-height': {
+    name: 'Stand height',
+    group: 'Forest structure',
+    tier: DEFAULT_TIER,
+    attribution: 'USFS TreeMap via Google Earth Engine',
+    opacity: 0.85,
+    note: 'Dominant tree height in feet from USFS TreeMap, 30 m, US forests only, modelled from 2016 '
+      + 'FIA data. A proxy for stand maturity: taller stands (deep magenta) are older forest, and an '
+      + 'old host is what many ectomycorrhizal fruitings need. Unpainted is non-forest or outside the '
+      + 'mapped area.',
+    legend: { type: 'ramp', unit: 'feet', min: '0', max: '100+', stops: STAND_HEIGHT_PALETTE },
+    sourceMasked: true,
+    count: treeMapCount,
+    build(ee) {
+      return {
+        image: treeMap2016(ee, 'STANDHT'),
+        vis: { min: 0, max: 100, palette: STAND_HEIGHT_PALETTE },
+      }
+    },
+  },
+
+  'stand-size': {
+    name: 'Stand-size class',
+    group: 'Forest structure',
+    tier: DEFAULT_TIER,
+    attribution: 'USFS TreeMap via Google Earth Engine',
+    opacity: 0.85,
+    note: 'The diameter class of the stand from USFS TreeMap (STDSZCD), 30 m, US forests only, '
+      + 'modelled from 2016 FIA data. Large-diameter stands are the mature forest an old-growth '
+      + 'associate wants; seedling and nonstocked ground is recently disturbed. A structural class, '
+      + 'not a species — pair it with the forest-type layer.',
+    legend: { type: 'classes', items: STAND_SIZE_CLASSES },
+    count: treeMapCount,
+    build(ee) {
+      const image = treeMap2016(ee, 'STDSZCD')
+      // Codes run 1–5; a range guard keeps a future code from painting past the
+      // end of the palette. Because this build masks, the layer does not declare
+      // sourceMasked — the same shape as forest-type.
+      const known = image.gte(1).and(image.lte(STAND_SIZE_CLASSES.length))
+      return {
+        image: image.updateMask(known),
+        vis: { min: 1, max: STAND_SIZE_CLASSES.length, palette: STAND_SIZE_CLASSES.map((c) => c.color) },
       }
     },
   },
