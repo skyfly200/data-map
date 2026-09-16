@@ -230,7 +230,14 @@
              to look: these change what is rendered, so they re-mint the tiles. -->
         <div v-for="(p, name) in (n.eeParams || {})" :key="name" class="layer-date">
           <label :for="`ee-${n.slug}-${name}`">{{ p.label }}</label>
-          <input :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
+          <!-- A fixed set of choices (a season, say) is a dropdown; anything
+               numeric is a stepper. Both re-mint the tiles on change. -->
+          <select v-if="p.type === 'enum'" :id="`ee-${n.slug}-${name}`"
+                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                  @change="setEeParam(n.ee, name, $event.target.value)">
+            <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
+          </select>
+          <input v-else :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
                  @change="setEeParam(n.ee, name, Number($event.target.value))" />
         </div>
@@ -1163,6 +1170,7 @@ async function addEeLayers() {
     // is for. Ticking it explains itself through the error card.
     overlayLayers.value = [...overlayLayers.value, {
       key: spec.key, name: spec.name, group: spec.group, layer, tier: spec.tier, note: spec.note,
+      source: layerSource(spec.attribution), type: layerDataType(spec.legend),
     }]
   }
 }
@@ -1180,10 +1188,17 @@ function setEeParam(key, name, value) {
   const spec = eeTiles.catalogue.value.find((l) => l.key === key)
   if (!spec) return
   const p = spec.params?.[name]
-  let next = Math.floor(Number(value))
-  if (!Number.isFinite(next)) next = p?.default ?? 0
-  if (p && Number.isFinite(p.min)) next = Math.max(p.min, next)
-  if (p && Number.isFinite(p.max)) next = Math.min(p.max, next)
+  let next
+  if (p?.type === 'enum') {
+    // A choice from a fixed list: keep it as the string it is, falling back to
+    // the default if somehow handed something off the list.
+    next = (p.values || []).includes(String(value)) ? String(value) : (p.default ?? (p.values || [])[0])
+  } else {
+    next = Math.floor(Number(value))
+    if (!Number.isFinite(next)) next = p?.default ?? 0
+    if (p && Number.isFinite(p.min)) next = Math.max(p.min, next)
+    if (p && Number.isFinite(p.max)) next = Math.min(p.max, next)
+  }
 
   eeParams.value = {
     ...eeParams.value,
@@ -1614,7 +1629,10 @@ onMounted(async () => {
         loaded = 0
         failed = 0
       })
-      tileOverlayList.push({ key: o.name, name: o.name, group: o.group, layer, note: o.note })
+      tileOverlayList.push({
+        key: o.name, name: o.name, group: o.group, layer, note: o.note,
+        source: layerSource(o.attribution), type: layerDataType(o.legend),
+      })
     }
     // The global dimmer still dims everything at once — but it now multiplies
     // into whatever each layer has been set to individually, rather than
