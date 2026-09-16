@@ -151,20 +151,31 @@ Reference layers stack on top, grouped by subject:
 - **Weather** — live US radar, US rainfall over the past 24 hours, global
   satellite rainfall, land surface temperature.
 - **Ground** — ESA WorldCover land cover at 10 m, SMAP soil moisture.
-- **Vegetation** — MODIS NDVI greenness, and **forest and land cover type**:
-  USGS GAP ecological systems at 30 m, grouped into the types a forager
-  separates. WorldCover says *tree cover*; this says *which trees*, which for
-  most host-specific species is the difference between two different lists of
-  what you might find.
+- **Vegetation** — MODIS NDVI greenness, **forest and land cover type** (USGS
+  GAP ecological systems at 30 m, grouped into the types a forager separates —
+  WorldCover says *tree cover*, this says *which trees*), and Sentinel-2
+  greenness and canopy moisture (**NDVI** and **NDMI**), each offered as a free
+  rolling composite of the last few weeks and, for members, a median over one
+  chosen season and year for comparing the same phenological moment across
+  years.
+- **Forest structure** — USFS TreeMap canopy density, stand height and
+  stand-size class at 30 m, together a proxy for stand maturity: an old host is
+  what many ectomycorrhizal fruitings need. US forests only, modelled from 2016.
+- **Terrain analysis** — slope, aspect, topographic wetness (TWI), wind exposure
+  and solar exposure, all computed from the SRTM elevation model. Wetness finds
+  the ground that gathers water; exposure and solar find what dries fast; aspect
+  and slope underlie both. Open to everyone.
 - **Soil** — texture class, depth to bedrock, sand content as a drainage proxy,
   and a sand/silt/clay composite. Texture decides how long the ground stays wet
   after rain, which is the half of fruiting weather the rain layers cannot tell
   you. The composite has no scale to read a value off; its point is the
   boundaries, which often run with the ground rather than with anything visible
   on the surface.
-- **Fire** — years since fire, burn severity, this year's burn scars, active
-  fires, and a computed dNBR severity. Years since fire and burn severity are
-  open to everyone; the rest are a membership benefit.
+- **Fire & disturbance** — years since fire, burn severity, this year's burn
+  scars, active fires, a computed dNBR severity, forest loss / cutting (Hansen
+  Global Forest Change), and a Sentinel-2 canopy-moisture crash that flags
+  beetle-kill and drought die-off. Years since fire, burn severity and forest
+  loss are open to everyone; the computed layers are a membership benefit.
 - **Context** — place labels, hiking trails, land ownership.
 
 Every measured layer carries a key, collected into one **Map layers** panel that

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict'
 
 import {
   TILE_LAYERS, TIME_LAYERS,
-  arcgisExportUrl, filterLayerGroups, gibs, gibsUrl, layerDate, layerGroups, tileBounds,
+  arcgisExportUrl, filterLayerGroups, gibs, gibsUrl, layerDataType, layerDate,
+  layerGroups, layerSource, tileBounds,
 } from '../composables/mapLayers.js'
 
 test('tile bounds cover the whole world at zoom 0 and quarter it at zoom 1', () => {
@@ -227,4 +228,39 @@ test('a custom group searches like any other', () => {
   assert.equal(filterLayerGroups(groups, 'tree')[0].items.length, 1)
   assert.equal(filterLayerGroups(groups, 'cust')[0].items.length, 1)
   assert.deepEqual(filterLayerGroups(groups, 'fire'), [])
+})
+
+// ── Grouping by source and by data type ──────────────────────────────────────
+
+test('a layer source is read from its attribution, most specific first', () => {
+  // The sensor is preferred over the platform that serves it, and MTBS/GAP are
+  // matched before the bare USGS they contain.
+  assert.equal(layerSource('NASA MODIS MCD64A1 via Google Earth Engine'), 'NASA MODIS')
+  assert.equal(layerSource('Copernicus Sentinel-2 via Google Earth Engine'), 'Copernicus Sentinel-2')
+  assert.equal(layerSource('USFS / MTBS via Google Earth Engine'), 'USFS MTBS')
+  assert.equal(layerSource('USFS TreeMap via Google Earth Engine'), 'USFS TreeMap')
+  assert.equal(layerSource('Hansen / UMD / Google / USGS / NASA via Google Earth Engine'), 'Hansen GFC')
+  assert.equal(layerSource('USGS GAP/LANDFIRE National Terrestrial Ecosystems 2011 via Google Earth Engine'), 'USGS GAP')
+  assert.equal(layerSource('USGS The National Map'), 'USGS')
+  assert.equal(layerSource('NASA GIBS / MODIS Terra'), 'NASA MODIS')
+})
+
+test('an unrecognised attribution keeps its first credited token', () => {
+  assert.equal(layerSource('Some New Provider / else'), 'Some New Provider')
+  assert.equal(layerSource(''), 'Other')
+})
+
+test('every catalogue layer resolves to a non-empty source', () => {
+  for (const l of TILE_LAYERS) {
+    const s = layerSource(l.attribution)
+    assert.ok(s && s !== 'Other', `${l.name} has no recognisable source (${l.attribution})`)
+  }
+})
+
+test('data type comes from the legend, and imagery has none', () => {
+  assert.equal(layerDataType({ type: 'ramp' }), 'Continuous raster')
+  assert.equal(layerDataType({ type: 'classes' }), 'Categorical raster')
+  assert.equal(layerDataType(undefined), 'Basemap & imagery')
+  // A layer with a legend of an unexpected shape is still a raster, not imagery.
+  assert.equal(layerDataType({ type: 'mystery' }), 'Other raster')
 })
