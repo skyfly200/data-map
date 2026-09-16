@@ -10,7 +10,12 @@
     </button>
 
     <div class="dn-list" :class="{ shown: open }">
-      <div class="dn-head">On this page</div>
+      <!-- Anything that belongs above the section list: on the guide, the list
+           of guide pages. It is inside the sticky box rather than beside it,
+           because two sticky columns that scroll separately is worse than one
+           list that holds together. -->
+      <slot name="top" />
+      <div v-if="headings.length" class="dn-head">On this page</div>
       <a v-for="h in headings" :key="h.id" :href="`#${h.id}`"
          class="dn-link" :class="[`lvl-${h.level}`, { active: h.id === activeId }]"
          @click="go(h.id, $event)">{{ h.text }}</a>

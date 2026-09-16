@@ -8,6 +8,8 @@
 
 import { computed, ref } from 'vue'
 
+import { guidePaths } from '~/composables/guidePages'
+
 import {
   eeMapId, keysToDrop, makeArea, saveTargets,
 } from '~/composables/offlineTiles'
@@ -252,7 +254,10 @@ export function useOffline() {
    */
   const saveShell = () => run('shell', {
     type: 'save-shell',
-    urls: ['/', '/map', '/charts', '/analysis', '/data', '/coverage', '/guide', '/options'],
+    // The guide is nine pages, listed from its own manifest rather than typed
+    // out here — a page added to the guide and forgotten here is a page that
+    // works until you need it, standing somewhere with no signal.
+    urls: ['/', '/map', '/charts', '/analysis', '/data', '/options', ...guidePaths()],
   })
 
   async function clear(which = 'all') {

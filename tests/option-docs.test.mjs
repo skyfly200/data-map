@@ -41,7 +41,7 @@ test('lookups answer for known ids and stay quiet for unknown ones', () => {
   const first = OPTION_DOCS[0]
   assert.equal(docFor(first.id).title, first.title)
   assert.equal(docSummary(first.id), first.summary)
-  assert.equal(docHref(first.id), `/guide#${docAnchor(first.id)}`)
+  assert.equal(docHref(first.id), `/guide/reference#${docAnchor(first.id)}`)
   assert.equal(docFor('nope'), null)
   assert.equal(docSummary('nope'), '')
 })
@@ -57,10 +57,10 @@ test('grouping keeps every entry, once, in declaration order', () => {
 })
 
 test('reference anchors are namespaced away from the prose headings', () => {
-  // The guide renders its prose and this reference on one page, and both anchor
-  // their headings. "Coverage" is a section of the prose AND an option here, so
-  // without a prefix the two claim the same #coverage — duplicate ids, and a
-  // tooltip that scrolls to the wrong thing.
+  // The reference and the guide's prose anchor their headings from the same
+  // slugger, and several options share a name with a section — "Filters",
+  // "Heatmap", "Share". Without a prefix the two claim the same id, which is a
+  // duplicate anchor and a tooltip that scrolls to the wrong thing.
   for (const doc of OPTION_DOCS) {
     assert.equal(docAnchor(doc.id), `opt-${doc.id}`)
     assert.notEqual(docAnchor(doc.id), doc.id)

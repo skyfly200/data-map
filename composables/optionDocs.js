@@ -799,7 +799,7 @@ export const OPTION_DOCS = [
     detail: [
       'Worth reading before any of the other views. A relationship computed over the 11,000 records that carry soil moisture is a different claim from one over all 48,000, and this is where you find out which you are looking at.',
     ],
-    also: ['coverage'],
+    also: ['analysis-scope'],
   },
   {
     id: 'analysis-scope',
@@ -913,7 +913,7 @@ export const OPTION_DOCS = [
     also: ['data-taxon-rank'],
   },
 
-  // ── Sharing and coverage ──────────────────────────────────────────────────
+  // ── Sharing ───────────────────────────────────────────────────────────────
   {
     id: 'share-link',
     group: 'Sharing',
@@ -932,16 +932,6 @@ export const OPTION_DOCS = [
     summary: 'An iframe snippet that renders the view without the site header.',
     detail: ['The same link with `embed=1`, which drops the app chrome so it sits cleanly inside another page.'],
     also: ['share-link'],
-  },
-  {
-    id: 'coverage',
-    group: 'Sharing',
-    title: 'Coverage',
-    summary: 'What the enrichment pipeline has and has not filled in.',
-    detail: [
-      'Field-by-field completeness, plus how coverage varies over space and time. Read it as the honest limit on everything else in the app.',
-    ],
-    also: ['analysis-quality'],
   },
 ]
 
@@ -995,7 +985,7 @@ export function docAnchor(id) {
 
 /** Where the guide documents this option. */
 export function docHref(id) {
-  return `/guide#${docAnchor(id)}`
+  return `/guide/reference#${docAnchor(id)}`
 }
 
 /** Entries grouped in declaration order, for rendering the reference. */
