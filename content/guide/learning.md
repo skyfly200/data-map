@@ -113,9 +113,9 @@ Two habits keep the cost low:
   with its bands, its resolution and its terms.
 - [The Code Editor](https://code.earthengine.google.com/) — write and run
   scripts in the browser.
-- [Earth Engine, on video](https://www.youtube.com/watch?v=oAElakLgCdA) — a
-  recorded walkthrough, for when it is easier to watch somebody work than to
-  read a page of documentation.
+- [Google Earth Engine 101: An Introduction for Complete
+  Beginners](https://www.youtube.com/watch?v=oAElakLgCdA) — video. Start here if
+  it is easier to watch somebody work than to read a page of documentation.
 - [*Cloud-Based Remote Sensing with Google Earth
   Engine*](https://www.eefabook.org/) — a free book of tutorials, from first
   script to applied work.
@@ -271,9 +271,9 @@ useful on a map.
   — the official reference from the USDA NRCS.
 - [Web Soil Survey](https://websoilsurvey.nrcs.usda.gov/) — look up the mapped
   soil at one place in the United States.
-- [Soil taxonomy, on video](https://www.youtube.com/watch?v=h0NmxOERbhs) — a
-  recorded introduction to the classification. Six levels and twelve orders is
-  a lot of vocabulary to meet on a page.
+- [Soil Orders and the Hierarchy of Soil
+  Taxonomy](https://www.youtube.com/watch?v=h0NmxOERbhs) — video. Six levels and
+  twelve orders is a lot of vocabulary to meet on a page.
 
 ## Mycology
 
