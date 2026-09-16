@@ -17,7 +17,7 @@
       <span v-if="badge" class="pop-badge">{{ badge }}</span>
     </button>
 
-    <div v-if="open" ref="panel" class="pop-panel"
+    <div v-if="open" ref="panel" class="pop-panel" :class="{ 'align-right': align === 'right' }"
          :style="shift ? { transform: `translateX(${shift}px)` } : null"
          role="dialog" :aria-label="title || label">
       <div v-if="label" class="pop-head">{{ label }}</div>
