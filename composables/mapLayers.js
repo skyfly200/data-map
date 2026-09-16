@@ -85,21 +85,6 @@ export function layerDate(lagDays, now = new Date()) {
   return d.toISOString().slice(0, 10)
 }
 
-// ESA WorldCover's own class colors, so the map matches every other rendering
-// of this product rather than inventing a second palette for the same classes.
-export const WORLDCOVER_CLASSES = [
-  { color: '#006400', label: 'Tree cover' },
-  { color: '#ffbb22', label: 'Shrubland' },
-  { color: '#ffff4c', label: 'Grassland' },
-  { color: '#f096ff', label: 'Cropland' },
-  { color: '#fa0000', label: 'Built-up' },
-  { color: '#b4b4b4', label: 'Bare / sparse' },
-  { color: '#f0f0f0', label: 'Snow and ice' },
-  { color: '#0064c8', label: 'Permanent water' },
-  { color: '#0096a0', label: 'Herbaceous wetland' },
-  { color: '#00cf75', label: 'Mangroves' },
-  { color: '#fae6a0', label: 'Moss and lichen' },
-]
 
 /**
  * The catalogue.
@@ -193,15 +178,16 @@ export const TILE_LAYERS = [
       stops: ['#8c6d3f', '#c7a76c', '#e8dfc0', '#96c8c0', '#3d8fb0', '#16407a'],
     },
   },
-  {
-    name: 'Land cover (ESA)', group: 'Ground',
-    url: 'https://services.terrascope.be/wmts/v2?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0'
-      + '&LAYER=WORLDCOVER_2021_MAP&STYLE=&FORMAT=image%2Fpng'
-      + '&TILEMATRIXSET=EPSG:3857&TILEMATRIX=EPSG:3857:{z}&TILEROW={y}&TILECOL={x}',
-    attribution: 'ESA WorldCover 2021 (CC BY 4.0) via Terrascope', maxZoom: 14, opacity: 0.55,
-    note: 'ESA WorldCover at 10 m, from 2021. High resolution but not current: a burn, a clear-cut or a new development since then is not in it.',
-    legend: { type: 'classes', items: WORLDCOVER_CLASSES },
-  },
+  // ESA WorldCover used to be served here, from the publisher's own WMTS at
+  // services.terrascope.be. That host started failing at the protocol level —
+  // ERR_HTTP2_PROTOCOL_ERROR on a direct request, so not something this app
+  // could work around — and the layer went with it.
+  //
+  // It now comes from Earth Engine instead, as `land-cover` in
+  // netlify/lib/ee-tile-layers.mjs. Earth Engine already carried the asset for
+  // the land-cover enrichment stage, so the move removed a dependency rather
+  // than adding one, and the layer is rendered by the same path as the fire and
+  // soil layers.
 
   // ── Vegetation ────────────────────────────────────────────────────────────
   {

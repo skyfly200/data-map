@@ -13,6 +13,7 @@ import assert from 'node:assert/strict'
 import {
   EE_LAYER_CATALOGUE, EE_LAYER_KEYS, EE_TILE_LAYERS, GAP_REMAP, LayerError,
   DEFAULT_TIER, MODIS_FIRST_YEAR, MODIS_LAG_YEARS, MTBS_LAG_YEARS,
+  WORLDCOVER_CLASSES, WORLDCOVER_FROM, WORLDCOVER_TO,
   cacheKey, describeLayer, resolveLayer, tierFor,
 } from '../netlify/lib/ee-tile-layers.mjs'
 
@@ -398,4 +399,35 @@ test('the new layers are gated at the tier the society sells', () => {
   for (const key of ['forest-type', 'soil-texture', 'soil-depth', 'soil-sand', 'soil-composition']) {
     assert.equal(tierFor(key), DEFAULT_TIER, `${key} is not gated as expected`)
   }
+})
+
+// ── ESA WorldCover ───────────────────────────────────────────────────────────
+
+test('WorldCover uses the product\'s own class colours', () => {
+  assert.equal(WORLDCOVER_CLASSES.length, 11)
+  assert.equal(WORLDCOVER_CLASSES[0].color, '#006400')  // tree cover
+  assert.equal(WORLDCOVER_CLASSES[7].color, '#0064c8')  // permanent water
+  assert.equal(new Set(WORLDCOVER_CLASSES.map((c) => c.color)).size, 11)
+})
+
+test('the WorldCover remap covers every code and lines up with the palette', () => {
+  // The codes are decades with one odd one at 95, so a linear stretch from 10
+  // to 100 would put every class at the wrong colour. The remap is what makes
+  // the palette index meaningful, and it is only right if the two lists are
+  // the same length and in the same order.
+  assert.equal(WORLDCOVER_FROM.length, WORLDCOVER_CLASSES.length)
+  assert.deepEqual(WORLDCOVER_TO, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+  assert.ok(WORLDCOVER_FROM.includes(95), 'the odd code out must be carried')
+  assert.equal(new Set(WORLDCOVER_FROM).size, WORLDCOVER_FROM.length, 'no duplicate codes')
+
+  const layer = EE_TILE_LAYERS['land-cover']
+  assert.equal(layer.legend.items, WORLDCOVER_CLASSES)
+})
+
+test('land cover stayed open when it moved to Earth Engine', () => {
+  // It was served from the publisher's own tile host and available to everyone.
+  // Moving it because that host went down is a fix, and a fix should not
+  // quietly take a layer away from the people who had it.
+  assert.equal(EE_TILE_LAYERS['land-cover'].tier, 'free')
+  assert.equal(tierFor('land-cover'), 'free')
 })

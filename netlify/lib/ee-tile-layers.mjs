@@ -74,7 +74,42 @@ export const ASSETS = {
   OPENLANDMAP_TEXTURE: 'OpenLandMap/SOL/SOL_TEXTURE-CLASS_USDA-TT_M/v02',
   // What is growing on the ground, by type rather than by greenness.
   GAP_LANDCOVER: 'USGS/GAP/CONUS/2011',
+  // ESA WorldCover, global, 10 m. Served here rather than from the publisher's
+  // own WMTS: that host went down and took the layer with it, and a tile
+  // service nobody on this project can restart is a dependency rather than a
+  // feature. Earth Engine already carried this asset for the land-cover
+  // enrichment stage, so this costs a layer definition rather than a new
+  // relationship.
+  WORLDCOVER: 'ESA/WorldCover/v200',
 }
+
+/**
+ * ESA WorldCover's own class colours, so the map matches every other rendering
+ * of this product rather than inventing a second palette for the same classes.
+ *
+ * The order is the product's own, which is what makes the remap below readable:
+ * the nth colour is the nth code in WORLDCOVER_FROM.
+ */
+export const WORLDCOVER_CLASSES = [
+  { color: '#006400', label: 'Tree cover' },
+  { color: '#ffbb22', label: 'Shrubland' },
+  { color: '#ffff4c', label: 'Grassland' },
+  { color: '#f096ff', label: 'Cropland' },
+  { color: '#fa0000', label: 'Built-up' },
+  { color: '#b4b4b4', label: 'Bare / sparse' },
+  { color: '#f0f0f0', label: 'Snow and ice' },
+  { color: '#0064c8', label: 'Permanent water' },
+  { color: '#0096a0', label: 'Herbaceous wetland' },
+  { color: '#00cf75', label: 'Mangroves' },
+  { color: '#fae6a0', label: 'Moss and lichen' },
+]
+
+// WorldCover codes are decades with one odd one out at 95, so they cannot be
+// used as palette indices directly — a linear stretch from 10 to 100 would put
+// every class at the wrong colour. Remapped to 1..11 instead, the same way the
+// GAP layer is.
+export const WORLDCOVER_FROM = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100]
+export const WORLDCOVER_TO = WORLDCOVER_FROM.map((_, i) => i + 1)
 
 const THIS_YEAR = () => new Date().getUTCFullYear()
 
@@ -495,6 +530,49 @@ export const EE_TILE_LAYERS = {
       return {
         image: remapped.updateMask(known),
         vis: { min: 1, max: GAP_CLASSES.length, palette: GAP_CLASSES.map((c) => c.color) },
+      }
+    },
+  },
+
+  'land-cover': {
+    name: 'Land cover (ESA)',
+    group: 'Ground',
+    // Free, because it was free before. This layer was served from the
+    // publisher's own tile host and open to everyone; moving it to Earth Engine
+    // is a fix for that host going down, and a fix should not quietly take a
+    // layer away from people who had it. The render is cached and shared, so
+    // the marginal cost of the open tier is one render per six hours rather
+    // than one per viewer.
+    tier: 'free',
+    attribution: 'ESA WorldCover 2021 (CC BY 4.0) via Google Earth Engine',
+    opacity: 0.55,
+    note: 'ESA WorldCover at 10 m, from 2021. High resolution but not current: a burn, a '
+      + 'clear-cut or a new development since then is not in it. It says "tree cover" and not '
+      + 'which trees — the forest type layer answers that, for the US.',
+    legend: { type: 'classes', items: WORLDCOVER_CLASSES },
+    // Masks its own, like the forest type layer and for the same reason: after
+    // a remap the unlisted codes are gone, and the range guard below is the
+    // explicit mask. `sourceMasked` is for layers that leave their no-data to
+    // the publisher — declaring it here and then masking anyway would be two
+    // contradictory claims about the same image.
+    build(ee) {
+      // An ImageCollection of one annual mosaic per version. Mosaicking rather
+      // than taking first(), so a version published as tiles still resolves to
+      // one continuous image.
+      const remapped = ee.ImageCollection(ASSETS.WORLDCOVER)
+        .select('Map')
+        .mosaic()
+        .remap(WORLDCOVER_FROM, WORLDCOVER_TO)
+      // remap masks anything unlisted, and the range guard keeps a future code
+      // addition from painting past the end of the palette.
+      const known = remapped.gte(1).and(remapped.lte(WORLDCOVER_CLASSES.length))
+      return {
+        image: remapped.updateMask(known),
+        vis: {
+          min: 1,
+          max: WORLDCOVER_CLASSES.length,
+          palette: WORLDCOVER_CLASSES.map((c) => c.color),
+        },
       }
     },
   },
