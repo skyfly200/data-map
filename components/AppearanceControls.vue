@@ -101,6 +101,23 @@
                title="Dims every reference layer switched on in the layers control, hillshade, rainfall, land cover, together."
                @change="heatmaps.persist()" />
       </div>
+      <!-- What stacking should usually look like. Opacity answers the same
+           question badly: two layers at 50% is both washed out, where multiply
+           keeps both at full strength and combines them by value. Applied only
+           when several layers are drawn, and overridden per layer in the layer
+           manager. -->
+      <div class="ap-row">
+        <label for="ap-stack-blend">Blend when stacked <HelpLink option="appearance-stack-blend" /></label>
+        <select id="ap-stack-blend" v-model="stackBlend" @change="appearance.persist()">
+          <option v-for="m in BLEND_MODES" :key="m.key" :value="m.key" :title="m.note">
+            {{ m.label }}
+          </option>
+        </select>
+      </div>
+      <p v-if="stackBlend !== 'normal'" class="ap-hint">
+        Applied to each drawn layer when two or more are on. A layer set by hand
+        in the layer manager keeps what you set it to.
+      </p>
 
       <!-- Per-value overrides for whatever categories are on screen -->
       <template v-if="field && values.length">
@@ -137,6 +154,7 @@ import { computed, ref } from 'vue'
 import { categoryColor } from '~/composables/useObservations'
 import { overrideKey, useAppearance } from '~/composables/useAppearance'
 import { gradientCss } from '~/composables/ramps'
+import { BLEND_MODES } from '~/composables/blendModes'
 
 const props = defineProps({
   // The category dimension currently being colored, and the values present in
@@ -163,7 +181,7 @@ const {
 } = heatmaps
 // Previewed against the density ramp, which is the one a reader meets first.
 const rampPreview = computed(() => rampFor('density'))
-const { pointRampKey } = appearance
+const { pointRampKey, stackBlend } = appearance
 
 function onRampChange() {
   // Seed a custom pair from whatever was on screen, so the pickers do not open
