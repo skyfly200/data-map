@@ -271,6 +271,9 @@ useful on a map.
   — the official reference from the USDA NRCS.
 - [Web Soil Survey](https://websoilsurvey.nrcs.usda.gov/) — look up the mapped
   soil at one place in the United States.
+- [Soil taxonomy, on video](https://www.youtube.com/watch?v=h0NmxOERbhs) — a
+  recorded introduction to the classification. Six levels and twelve orders is
+  a lot of vocabulary to meet on a page.
 
 ## Mycology
 
