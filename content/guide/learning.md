@@ -113,6 +113,9 @@ Two habits keep the cost low:
   with its bands, its resolution and its terms.
 - [The Code Editor](https://code.earthengine.google.com/) — write and run
   scripts in the browser.
+- [Earth Engine, on video](https://www.youtube.com/watch?v=oAElakLgCdA) — a
+  recorded walkthrough, for when it is easier to watch somebody work than to
+  read a page of documentation.
 - [*Cloud-Based Remote Sensing with Google Earth
   Engine*](https://www.eefabook.org/) — a free book of tutorials, from first
   script to applied work.
