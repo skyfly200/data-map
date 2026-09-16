@@ -20,9 +20,9 @@
       <p class="eyebrow"><span class="tick" aria-hidden="true"></span>Ecosystem modeling platform · Beta</p>
       <h1>Model where life occurs.</h1>
       <h3>
-        Nexstrata turns scattered field observations into predictive maps of habitat —
-        by binding every environmental layer to each point, then modeling the whole
-        surface. Sample enrichment is one step of that pipeline, not the destination.
+        Nexstrata turns scattered field observations into predictive maps of habitat. It
+        binds every environmental layer to each point, then models the whole surface.
+        Sample enrichment is one step of that pipeline, not the destination.
       </h3>
 
       <div class="cta">
@@ -62,18 +62,14 @@
         <div class="stack-text">
           <div class="sec-tag">The stack</div>
           <h2>From orbit to a single point</h2>
-          <p>
-            Every record resolves to one coordinate and one acquisition date. Each layer
-            is sampled at that coordinate on that date — not interpolated from a regional
-            mean, not read from the current ground — so a find from 2019 carries the 2019
-            conditions that preceded it.
+          <p class="etym-callout">
+            <span class="etym-word"><strong class="etym">nex</strong> + <strong class="etym">strata</strong></span>
+            <span class="etym-def">the binding of the layers at a point.</span>
           </p>
           <p>
-            Native resolutions span 10&nbsp;m to roughly 10&nbsp;km. Records whose
-            coordinates are obscured are flagged, since terrain sampled at an obscured
-            point describes somewhere the observation was not.
-            <strong class="etym">nex</strong> + <strong class="etym">strata</strong>: the
-            binding of the layers at a point.
+            Every record is one coordinate and one date. Each layer is sampled right there,
+            right then, not from a regional mean or today's ground, so a 2019 find carries
+            the conditions that preceded it.
           </p>
           <p class="more-links">
             <NuxtLink to="/guide#where-the-data-comes-from">Source table, by column</NuxtLink>
@@ -83,9 +79,13 @@
 
         <figure class="scene" aria-label="A satellite sampling environmental layers down to one point on the ground">
           <div class="scene-3d">
-            <!-- Satellite in orbit at the top of the column. -->
+            <!-- Satellite in orbit at the top of the column. The dashed ellipse is
+                 the orbital path; the satellite rides it, its position along the
+                 path driven by how far the page is scrolled (--sat). -->
             <div class="orbit" aria-hidden="true">
-              <div class="orbit-ring"></div>
+              <svg class="orbit-svg" viewBox="0 0 220 92" preserveAspectRatio="none">
+                <ellipse cx="110" cy="46" rx="104" ry="34" />
+              </svg>
               <div class="sat">
                 <span class="sat-body"></span>
                 <span class="sat-panel left"></span>
@@ -125,38 +125,35 @@
       <div class="sec-tag">Modeling <em class="road">Roadmap</em></div>
       <h2>From points to surfaces</h2>
       <p class="model-lede">
-        Enrichment exists to feed a model. The stack above turns each observation into a
-        row of environmental predictors; the modeling stage turns those rows into a
-        continuous surface — a prediction of suitability everywhere, not only where
-        someone happened to look.
+        Enrichment exists to feed a model. The stack turns each observation into a row of
+        predictors; the model turns those rows into a continuous surface: suitability
+        predicted everywhere, not only where someone looked.
       </p>
       <div class="model-grid">
         <div class="model-card">
           <h3>Maximum entropy (MaxEnt)</h3>
           <p>
-            The reference data is presence-only: we know where a species was found, rarely
-            where it was truly absent. MaxEnt fits the distribution of maximum entropy —
-            the least-committal one — consistent with the environmental averages at the
-            presence points, scored against background across the region. The output is a
-            habitat-suitability surface from 0 to 1.
+            The data is presence-only: we know where a species was found, rarely where it
+            was absent. MaxEnt fits the least-committal distribution consistent with
+            conditions at the presence points, scored against background. The output is a
+            suitability surface from 0 to 1.
           </p>
         </div>
         <div class="model-card">
           <h3>Features from the stack</h3>
           <p>
-            Terrain, canopy, soil, weather and exposure become the model's predictors, each
-            already sampled at the record's own date. The same layers you can draw on the
-            map are the features the model reads, so a suitability map and the raster under
-            it are speaking the same language.
+            Terrain, canopy, soil, weather and exposure become the predictors, each sampled
+            at the record's own date. The layers you draw on the map are the features the
+            model reads, so a suitability map speaks the same language as the rasters
+            beneath it.
           </p>
         </div>
         <div class="model-card">
           <h3>Honest about bias</h3>
           <p>
-            Presence-only modeling inherits the sampling bias in where people look. Nexstrata
-            treats that as a first-class input — background sampling weighted by observer
-            effort, and every surface labelled with the confounds behind it — rather than a
-            footnote.
+            Presence-only modeling inherits the bias in where people look. Nexstrata treats
+            that as a first-class input: background weighted by observer effort, every
+            surface labelled with its confounds.
           </p>
         </div>
       </div>
@@ -192,22 +189,22 @@
       </p>
       <ul class="ee-list">
         <li>
-          <strong>Enrich</strong> — submit a bounding box and date range. Staged sampling of
+          <strong>Enrich</strong>: submit a bounding box and date range. Staged sampling of
           terrain, land cover, soil, precipitation, temperature and vegetation at each point;
           output is written to object storage as GeoJSON.
         </li>
         <li>
-          <strong>Render</strong> — {{ eeLayerCount }} built-in layers computed server-side:
+          <strong>Render</strong>: {{ eeLayerCount }} built-in layers computed server-side:
           MODIS and MTBS fire history, GAP forest type, SOLUS100 soil, SRTM terrain analysis,
           and Sentinel-2 indices calculated per request.
         </li>
         <li>
-          <strong>Publish</strong> — register an exported asset by ID, band and palette.
+          <strong>Publish</strong>: register an exported asset by ID, band and palette.
           Inputs are validated against a strict grammar before they reach Earth Engine, and
           each layer carries its own access tier.
         </li>
         <li>
-          <strong>Analyse</strong> — load a job result as a dataset. It feeds the same map,
+          <strong>Analyse</strong>: load a job result as a dataset. It feeds the same map,
           charts, heatmaps and statistics as the reference data.
         </li>
       </ul>
@@ -298,7 +295,7 @@ const PIPELINE = [
 ]
 
 // The layers named, coarse to fine, each with a CSS gradient that echoes how the
-// layer actually paints on the map — so the stack shows the data, not just its
+// layer actually paints on the map, so the stack shows the data, not just its
 // name. `viz` is dropped straight into a linear-gradient in the style below.
 const STRATA = [
   { name: 'Weather', fields: 'the seven days before the find', viz: '#2c7bb6, #abd9e9, #ffffbf, #fdae61, #d7191c' },
@@ -366,6 +363,11 @@ function apply() {
   el.style.setProperty('--mx', mx.toFixed(3))
   el.style.setProperty('--my', my.toFixed(3))
   el.style.setProperty('--sc', String(Math.round(sc)))
+  // 0 at the top of the page, 1 at the bottom: the satellite rides its orbit
+  // once as you scroll the whole page.
+  const max = scroller ? scroller.scrollHeight - scroller.clientHeight : 0
+  const progress = max > 0 ? Math.min(1, Math.max(0, sc / max)) : 0
+  el.style.setProperty('--sat', progress.toFixed(4))
 }
 function schedule() {
   if (!frame) frame = requestAnimationFrame(apply)
@@ -546,6 +548,19 @@ useHead({
 .stack-text p { margin: 0 0 12px; color: var(--text); font-size: 0.95rem; line-height: 1.65; }
 .etym { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #38bdf8; font-weight: 700; }
 
+/* The name explanation, given its own weight: it is the idea the whole product
+   is named for, so it reads as a definition rather than a clause buried in a
+   paragraph. */
+.etym-callout {
+  display: flex; flex-direction: column; gap: 4px;
+  margin: 0 0 16px !important; padding: 12px 16px;
+  border-left: 3px solid #38bdf8; border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, #38bdf8 10%, transparent);
+}
+.etym-word { font-size: 1.15rem; letter-spacing: 0.01em; }
+.etym-word .etym { font-size: 1.15rem; }
+.etym-def { color: var(--text); font-size: 0.95rem; }
+
 .scene { margin: 0; }
 .scene-3d {
   position: relative; height: 480px;
@@ -579,14 +594,21 @@ useHead({
 .s-fields { font-size: 0.72rem; color: var(--muted); line-height: 1.3; }
 
 /* The sensor and its orbit at the top. */
-.orbit { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 210px; height: 84px; }
-.orbit-ring {
-  position: absolute; inset: 0; border: 1px dashed rgba(56, 189, 248, 0.55); border-radius: 50%;
-  transform: rotateX(62deg); box-shadow: 0 0 24px rgba(56, 189, 248, 0.25) inset;
+.orbit { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 220px; height: 92px; }
+.orbit-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.orbit-svg ellipse {
+  fill: none; stroke: rgba(56, 189, 248, 0.55); stroke-width: 1; stroke-dasharray: 4 5;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.35));
 }
+/* The satellite rides the orbit: offset-path traces the same ellipse the SVG
+   draws, and offset-distance is how far the page has scrolled, so it travels
+   the ring as you read down. The path coordinates match the ellipse above
+   (centre 110,46, radii 104,34). */
 .sat {
-  position: absolute; top: 8px; left: 50%; width: 46px; height: 20px; transform: translateX(-50%);
-  animation: sat-bob 5s ease-in-out infinite;
+  position: absolute; top: 0; left: 0; width: 36px; height: 18px;
+  offset-path: path('M 6 46 A 104 34 0 1 1 214 46 A 104 34 0 1 1 6 46');
+  offset-distance: calc(var(--sat, 0) * 100%);
+  offset-rotate: 0deg;
 }
 .sat-body {
   position: absolute; left: 50%; top: 50%; width: 16px; height: 12px; transform: translate(-50%, -50%);
@@ -598,7 +620,6 @@ useHead({
   background: repeating-linear-gradient(90deg, #1e3a8a 0 2px, #3b82f6 2px 4px); border-radius: 2px;
 }
 .sat-panel.left { left: 0; } .sat-panel.right { right: 0; }
-@keyframes sat-bob { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-4px); } }
 
 /* The beam from the sensor down to the ground. */
 .beam {
