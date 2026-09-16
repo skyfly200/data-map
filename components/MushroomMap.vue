@@ -212,7 +212,7 @@
       <div v-for="n in activeTileNotes" :key="n.name" class="tk">
         <div class="tk-name">{{ n.name }}</div>
         <template v-if="n.legend?.type === 'ramp'">
-          <div class="gradient" :style="{ background: `linear-gradient(90deg, ${n.legend.stops.join(', ')})` }"></div>
+          <div class="gradient" :style="{ background: gradientCss(n.legend.stops) }"></div>
           <div class="gradient-scale">
             <span>{{ n.legend.min }}</span>
             <span class="unit">{{ n.legend.unit }}</span>
@@ -270,12 +270,12 @@
     <div v-if="heatmapLegend" class="legend overlay-legend">
       <div class="legend-title">{{ heatmapMeta.label }}</div>
       <template v-if="heatmapLegend.type === 'sequential'">
-        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${heatmapLegend.ramp[0]}, ${heatmapLegend.ramp[1]})` }"></div>
+        <div class="gradient" :style="{ background: gradientCss(heatmapLegend.ramp) }"></div>
         <div class="gradient-scale"><span>{{ heatmapLegend.min }}</span><span>{{ heatmapLegend.max }}</span></div>
         <div class="legend-note">{{ heatmapLegend.cells.toLocaleString() }} cells · {{ heatmapLegend.note }}</div>
       </template>
       <template v-else-if="heatmapLegend.type === 'vector'">
-        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${heatmapLegend.ramp[0]}, ${heatmapLegend.ramp[1]})` }"></div>
+        <div class="gradient" :style="{ background: gradientCss(heatmapLegend.ramp) }"></div>
         <div class="gradient-scale"><span>{{ heatmapLegend.min }}</span><span>{{ heatmapLegend.max }}</span></div>
         <div class="legend-note">
           Source: <strong>{{ heatmapLegend.source }}</strong> · color = {{ heatmapLegend.colorBy }}<br />
@@ -325,7 +325,7 @@
         </div>
       </template>
       <template v-else>
-        <div class="gradient" :style="{ background: `linear-gradient(90deg, ${coloring.stops.join(', ')})` }"></div>
+        <div class="gradient" :style="{ background: gradientCss(coloring.stops) }"></div>
         <div class="gradient-scale"><span>{{ fmtNum(coloring.min) }}</span><span>{{ fmtNum(coloring.max) }}</span></div>
       </template>
       <!-- Says whether these shades mean the same numbers as the layer's or
@@ -347,6 +347,8 @@ import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservations } from '~/composables/useObservations'
 import { classColorFor, fraction, matchNote, paletteFor, rampColor } from '~/composables/fieldPalettes'
+import { gradientCss, normaliseStops } from '~/composables/ramps'
+import { RAMP_PRESETS } from '~/composables/useMapHeatmaps'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { fieldValue } from '~/composables/statistics'
 import { useAppearance } from '~/composables/useAppearance'
@@ -359,6 +361,20 @@ const {
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const live = useLiveClusters()
 const appearance = useAppearance()
+
+/**
+ * The ramp the viewer has chosen for numeric point colouring, or null for
+ * "whatever suits the field".
+ *
+ * Null is the default and means the field decides: one a layer also draws
+ * borrows that layer's palette, anything else takes the app's own ramp.
+ */
+const chosenPointRamp = computed(() => {
+  const key = appearance.pointRampKey.value
+  if (key === 'auto') return null
+  if (key === 'custom') return normaliseStops(appearance.pointRampCustom.value)
+  return RAMP_PRESETS.find((p) => p.key === key)?.ramp || null
+})
 const share = useShareState()
 const { pointRadius, pointOpacity, pointOutline, colorSeed, activeColors, colorOverrides } = appearance
 
@@ -726,12 +742,17 @@ const coloring = computed(() => {
   // layer does not, the palette still matches but the scale is the data's own;
   // `match` says which of the two the viewer is looking at.
   const palette = paletteFor(key)
-  const stops = palette?.kind === 'ramp' ? palette.stops : RAMP
-  const [min, max] = palette?.domain || [dataMin, dataMax]
+  // A ramp the viewer chose outranks the layer match. Choosing a scale is a
+  // decision about every field at once, and having it silently not apply to the
+  // handful of fields a layer also draws would read as the control being broken.
+  const chosen = chosenPointRamp.value
+  const stops = chosen || (palette?.kind === 'ramp' ? palette.stops : RAMP)
+  // The layer's stretch only applies while its palette does.
+  const [min, max] = (!chosen && palette?.domain) || [dataMin, dataMax]
 
   return {
     type: 'sequential', title: title + unitSuffix, min, max, stops,
-    match: palette ? matchNote(palette) : '',
+    match: !chosen && palette ? matchNote(palette) : '',
     colorFn: (p) => {
       const raw = p[key]
       if (!hasValue(raw)) return UNCLUSTERED

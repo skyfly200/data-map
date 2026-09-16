@@ -13,6 +13,7 @@
 // colors are serialised and there is nothing to mismatch on hydration.
 
 import { computed, ref } from 'vue'
+import { normaliseStops } from './ramps.js'
 
 // Twelve colors each, not eight. The map's legend shows up to twelve
 // categories, so an eight-color palette guaranteed repeated swatches in a key
@@ -86,6 +87,18 @@ export const SHAPE_SETS = [
 ]
 
 export const UNCLUSTERED = '#9aa0a6'
+
+/**
+ * The ramp numeric point colouring uses.
+ *
+ * 'auto' means "whatever suits the field": a field a map layer also draws
+ * borrows that layer's palette, so a dot reads against the ground under it, and
+ * anything else falls back to the app's own sequential ramp. A named preset or
+ * a custom ramp overrides both — a viewer who has chosen a scale has chosen it
+ * for every field, which is the point of choosing.
+ */
+export const pointRampKey = ref('auto')
+export const pointRampCustom = ref(null)
 
 const DEFAULTS = {
   palette: 'default',
@@ -207,6 +220,8 @@ export function useAppearance() {
         pointOpacity: pointOpacity.value,
         pointOutline: pointOutline.value,
         colorSeed: colorSeed.value,
+        pointRampKey: pointRampKey.value,
+        pointRampCustom: pointRampCustom.value,
         colorOverrides: colorOverrides.value,
         shapeOverrides: shapeOverrides.value,
       }))
@@ -227,6 +242,9 @@ export function useAppearance() {
       if (Number.isFinite(saved.pointOpacity)) pointOpacity.value = saved.pointOpacity
       if (typeof saved.pointOutline === 'boolean') pointOutline.value = saved.pointOutline
       if (Number.isFinite(saved.colorSeed)) colorSeed.value = saved.colorSeed
+      if (typeof saved.pointRampKey === 'string') pointRampKey.value = saved.pointRampKey
+      // Rejected rather than repaired if it is not a ramp; see ramps.js.
+      pointRampCustom.value = normaliseStops(saved.pointRampCustom)
       if (saved.colorOverrides && typeof saved.colorOverrides === 'object') {
         colorOverrides.value = { ...saved.colorOverrides }
       }
@@ -284,6 +302,8 @@ export function useAppearance() {
     pointOpacity.value = DEFAULTS.pointOpacity
     pointOutline.value = DEFAULTS.pointOutline
     colorSeed.value = DEFAULTS.colorSeed
+    pointRampKey.value = 'auto'
+    pointRampCustom.value = null
     colorOverrides.value = {}
     shapeOverrides.value = {}
     persist()
@@ -295,6 +315,7 @@ export function useAppearance() {
   return {
     PALETTES, SHAPE_SETS, ALL_SHAPES,
     paletteKey, shapeSetKey, pointRadius, pointOpacity, pointOutline, colorSeed, shuffleColors,
+    pointRampKey, pointRampCustom,
     activeColors, activeShapes, colorOverrides, shapeOverrides, overrideCount,
     persist, loadFromStorage, reset,
     setColor, clearColor, setShape, clearShape, hasOverride,

@@ -23,7 +23,12 @@
 // `comparable` is that distinction, declared per field so the legend can say
 // which kind of match the viewer is looking at.
 
-import { EE_TILE_LAYERS, WORLDCOVER_CLASSES } from '../netlify/lib/ee-tile-layers.mjs'
+import { EE_TILE_LAYERS } from '../netlify/lib/ee-tile-layers.mjs'
+import { mix, rampColor } from './ramps.js'
+
+// Re-exported so a caller that colours by field does not have to know which
+// module the interpolation lives in.
+export { mix, rampColor }
 
 /**
  * Observation field → the layer that draws the same thing.
@@ -82,30 +87,6 @@ export function paletteFor(field) {
     layerName: layer.name,
     comparable: match.comparable,
   }
-}
-
-/** Clamped hex interpolation between two colours. */
-export function mix(a, b, t) {
-  const k = Math.max(0, Math.min(1, Number.isFinite(t) ? t : 0))
-  const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16))
-  const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16))
-  return `#${pa.map((v, i) => Math.round(v + (pb[i] - v) * k).toString(16).padStart(2, '0')).join('')}`
-}
-
-/**
- * A colour from anywhere along a multi-stop ramp.
- *
- * The layers declare ramps of six to ten stops, which is what gives them their
- * shape — a two-colour lerp between the ends would keep the extremes and throw
- * away everything that makes the middle readable.
- */
-export function rampColor(stops, t) {
-  if (!Array.isArray(stops) || !stops.length) return '#888888'
-  if (stops.length === 1) return stops[0]
-  const k = Math.max(0, Math.min(1, Number.isFinite(t) ? t : 0))
-  const scaled = k * (stops.length - 1)
-  const i = Math.min(stops.length - 2, Math.floor(scaled))
-  return mix(stops[i], stops[i + 1], scaled - i)
 }
 
 /** Where a value sits in a domain, 0..1. */
