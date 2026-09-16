@@ -10,6 +10,8 @@
     <LayerManager
       :open="showLayers" :groups="overlayGroups" :active="activeOverlays"
       :order="overlayOrder" :opacity="layerOpacity"
+      :blend="layerBlend" :stack-blend="stackBlend" :solo="soloKey"
+      @blend="setLayerBlend" @solo="setSolo"
       @toggle="toggleOverlayByKey" @opacity="setLayerOpacity" @move="moveOverlay"
       @clear="clearOverlays" @close="showLayers = false"
     />
@@ -348,6 +350,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservations } from '~/composables/useObservations'
 import { classColorFor, fraction, matchNote, paletteFor, rampColor } from '~/composables/fieldPalettes'
 import { gradientCss, normaliseStops } from '~/composables/ramps'
+import { drawnKeys, effectiveBlend, reorderStack } from '~/composables/blendModes'
 import { RAMP_PRESETS } from '~/composables/useMapHeatmaps'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { fieldValue } from '~/composables/statistics'
@@ -361,6 +364,9 @@ const {
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const live = useLiveClusters()
 const appearance = useAppearance()
+// How stacked layers combine when nobody has set a layer by hand. A preference,
+// so it is read from Appearance rather than kept here.
+const { stackBlend } = appearance
 
 /**
  * The ramp the viewer has chosen for numeric point colouring, or null for
@@ -1076,6 +1082,14 @@ function setBase(key) {
 const overlayOrder = ref([])
 const layerOpacity = ref({})
 
+// Per-layer blend overrides, and the one layer being looked at on its own.
+// Both are session state beside the order and the opacity, not preferences: a
+// solo is a thing you do for ten seconds, and a blend set on one layer means
+// nothing once that layer is off. The stack DEFAULT is a preference, and lives
+// with the rest of them in Appearance.
+const layerBlend = ref({})
+const soloKey = ref('')
+
 /** Push the current order down into Leaflet as z-indexes. */
 function applyOverlayOrder() {
   if (!map) return
@@ -1087,23 +1101,91 @@ function applyOverlayOrder() {
   })
 }
 
+/**
+ * Push the blend modes down onto each drawn layer's own container.
+ *
+ * Leaflet gives every tile layer a div of its own inside the tile pane, so a
+ * mix-blend-mode there composites that layer against the ones below it and
+ * nothing else. The browser does the work per frame; no tile is re-fetched and
+ * nothing is recomputed, which is why this is a dropdown rather than a job.
+ *
+ * Solo is applied here too, because the set of layers that are drawn is the set
+ * whose blending matters — a hidden layer with multiply still on it would come
+ * back blended when the solo ended, which is right, and blending a layer that
+ * is not on screen is work for nothing.
+ */
+function applyBlendModes() {
+  const drawn = drawnKeys([...activeOverlays.value], soloKey.value)
+  for (const entry of overlayLayers.value) {
+    const el = entry.layer?.getContainer?.()
+    if (!el) continue
+    el.style.mixBlendMode = drawn.includes(entry.key)
+      ? effectiveBlend(entry.key, {
+        overrides: layerBlend.value, fallback: stackBlend.value, drawn: drawn.length,
+      })
+      : 'normal'
+  }
+}
+
+/**
+ * Add or remove layers so that only the soloed one is drawn.
+ *
+ * The active set is not touched. Solo answers "what is this one contributing",
+ * and answering it must not cost the viewer the stack they built — so the rest
+ * stay ticked in the manager, dimmed, and come back untouched.
+ */
+function applySolo() {
+  if (!map) return
+  const drawn = new Set(drawnKeys([...activeOverlays.value], soloKey.value))
+  for (const key of activeOverlays.value) {
+    const entry = overlayLayers.value.find((o) => o.key === key)
+    if (!entry?.layer) continue
+    const on = map.hasLayer(entry.layer)
+    if (drawn.has(key) && !on) entry.layer.addTo(map)
+    else if (!drawn.has(key) && on) map.removeLayer(entry.layer)
+  }
+  applyOverlayOrder()
+  applyBlendModes()
+}
+
+function setSolo(key) {
+  soloKey.value = key === soloKey.value ? '' : key
+  applySolo()
+}
+
+function setLayerBlend(key, mode) {
+  // '' is "inherit the stack default", which is not the same as normal: change
+  // the default later and this layer should move with it.
+  const next = { ...layerBlend.value }
+  if (mode) next[key] = mode
+  else delete next[key]
+  layerBlend.value = next
+  applyBlendModes()
+}
+
 function toggleOverlay(entry) {
   if (!map) return
-  const on = map.hasLayer(entry.layer)
-  if (on) map.removeLayer(entry.layer)
-  else entry.layer.addTo(map)
+  const wasOn = activeOverlays.value.has(entry.key)
   const next = new Set(activeOverlays.value)
-  if (on) {
+  if (wasOn) {
     next.delete(entry.key)
     overlayOrder.value = overlayOrder.value.filter((k) => k !== entry.key)
+    // Switching off the layer that was soloed ends the solo rather than
+    // leaving an empty map with three layers still ticked.
+    if (soloKey.value === entry.key) soloKey.value = ''
   } else {
     next.add(entry.key)
     // A layer just switched on goes on top, which is where someone who just
-    // asked for it expects to see it.
+    // asked for it expects to see it — and ends any solo, since asking for a
+    // second layer is asking to see two.
     overlayOrder.value = [entry.key, ...overlayOrder.value]
+    soloKey.value = ''
   }
   activeOverlays.value = next
-  applyOverlayOrder()
+  // Read from the active set rather than from the map: with a solo running, a
+  // layer can be switched on and yet not be on the map, so hasLayer answers a
+  // different question from the one the checkbox asked.
+  applySolo()
   syncActiveTemplates()
 }
 
@@ -1113,13 +1195,12 @@ function toggleOverlayByKey(key) {
 }
 
 function moveOverlay(key, delta) {
-  const order = [...overlayOrder.value]
-  const i = order.indexOf(key)
-  const to = i + delta
-  if (i < 0 || to < 0 || to >= order.length) return
-  order.splice(to, 0, ...order.splice(i, 1))
-  overlayOrder.value = order
+  // `delta` is a number of places, or 'top' or 'bottom'.
+  overlayOrder.value = reorderStack(overlayOrder.value, key, delta)
   applyOverlayOrder()
+  // The stack default blends each layer against what is below it, so moving a
+  // layer changes what it is blended with.
+  applyBlendModes()
 }
 
 /** One layer's own opacity, multiplied into the global dimmer. */
@@ -1132,8 +1213,13 @@ function setLayerOpacity(key, value) {
 }
 
 function clearOverlays() {
+  soloKey.value = ''
   for (const key of [...activeOverlays.value]) toggleOverlayByKey(key)
 }
+
+// Changing the default moves every layer nobody has set by hand, which is what
+// makes it a default rather than a one-time stamp.
+watch(stackBlend, () => applyBlendModes())
 
 const activeBaseName = computed(() =>
   baseLayers.value.find((b) => b.key === activeBase.value)?.name || '')

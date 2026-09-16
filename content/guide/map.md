@@ -174,13 +174,62 @@ visible below the window.
 
 The window lists each layer that is drawn, topmost first. Each one has:
 
-- **Order** — the arrows move a layer up or down the stack. Overlays hide each
-  other. Land ownership below a hillshade is a different map from the same two
-  in the opposite order. A layer that you switch on goes to the top.
+- **Order** — the arrows move a layer up or down the stack. **⤒** and **⤓** send
+  it straight to the top or the bottom. Overlays hide each other. Land ownership
+  below a hillshade is a different map from the same two in the opposite order.
+  A layer that you switch on goes to the top.
+- **Solo** (**S**) — draws that layer on its own. The other layers stay switched
+  on, and the list shows them dimmed. Read [Solo](#solo-one-layer).
 - **Opacity** — each drawn layer has its own. This multiplies into the global
   tile opacity in **Style**. It does not replace it. You can therefore dim the
   whole stack without dimming the one layer you want to read.
-- **Search** — by a layer name anywhere, or by the start of a group name.
+- **Blend** — how the layer combines with the layers below it. Read [Blend
+  modes](#blend-modes).
+
+The window also has a **Search** box. Search by a layer name anywhere, or by the
+start of a group name.
+
+### Solo one layer
+
+Click **S** beside a drawn layer. The map then draws only that layer.
+
+The other layers stay switched on. The list shows them dimmed, and they come
+back exactly as they were. This lets you answer "what is this one layer adding"
+without a loss of the stack that you built.
+
+Click **S** again, or click **Un-solo** at the top of the window, to draw
+everything again. When you switch any layer on or off, the solo also ends.
+
+### Blend modes
+
+Opacity is not the correct control for two rasters. Two layers at 50% is two
+layers that are half washed out. The thing that you wanted — the shape of the
+hillshade over the color of the land cover — is what 50% of each destroys.
+
+A blend mode keeps both layers at full strength. It combines them by value.
+
+| Mode | What it does | When to use it |
+| --- | --- | --- |
+| Normal | Draws over. Nothing is combined. | The default. |
+| Multiply | Keeps what is dark in both layers. | Relief below color. |
+| Screen | Keeps what is light in both layers. | Burn scars or cloud over terrain. |
+| Overlay | Multiplies the dark parts, screens the light parts. | More contrast. |
+| Darken | The darker of the two, for each color channel. | A hard version of multiply. |
+| Lighten | The lighter of the two, for each color channel. | A hard version of screen. |
+| Difference | What the two layers disagree about. | The same product on two dates. |
+| Luminosity | The brightness of this layer, the color of the one below. | Shape from one layer, class from another. |
+
+The browser does this work for each frame. No tile is fetched again, and
+nothing is computed again. A blend mode therefore costs nothing to try.
+
+Each layer starts at **Default**. Default follows the **Blend when stacked**
+setting in **Style**, and applies only when two or more layers are drawn. When
+you select a mode for one layer, that layer keeps it.
+
+> **Caution** A blend mode combines a layer with everything below it, and that
+> includes the basemap. The same two layers over satellite imagery and over the
+> gray canvas do not look the same. Neither result is the layer on its own. Use
+> **Solo** for that.
 
 ### What the layer groups contain
 

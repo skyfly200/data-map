@@ -14,6 +14,7 @@
 
 import { computed, ref } from 'vue'
 import { normaliseStops } from './ramps.js'
+import { NORMAL, isBlendMode } from './blendModes.js'
 
 // Twelve colors each, not eight. The map's legend shows up to twelve
 // categories, so an eight-color palette guaranteed repeated swatches in a key
@@ -100,6 +101,15 @@ export const UNCLUSTERED = '#9aa0a6'
 export const pointRampKey = ref('auto')
 export const pointRampCustom = ref(null)
 
+/**
+ * How a drawn layer combines with the ones below it, when several are drawn.
+ *
+ * A preference rather than per-layer state: the per-layer setting lives with
+ * the map's stack, and this is the answer to "what should stacking usually look
+ * like" — which is a taste, and the same taste on every map you open.
+ */
+export const stackBlend = ref(NORMAL)
+
 const DEFAULTS = {
   palette: 'default',
   shapeSet: 'all',
@@ -114,6 +124,7 @@ const DEFAULTS = {
   colorSeed: 0,
   colorOverrides: {},   // "field:value" → hex
   shapeOverrides: {},   // "field:value" → shape name
+  stackBlend: NORMAL,
 }
 
 const STORAGE_KEY = 'appearance'
@@ -222,6 +233,7 @@ export function useAppearance() {
         colorSeed: colorSeed.value,
         pointRampKey: pointRampKey.value,
         pointRampCustom: pointRampCustom.value,
+        stackBlend: stackBlend.value,
         colorOverrides: colorOverrides.value,
         shapeOverrides: shapeOverrides.value,
       }))
@@ -245,6 +257,9 @@ export function useAppearance() {
       if (typeof saved.pointRampKey === 'string') pointRampKey.value = saved.pointRampKey
       // Rejected rather than repaired if it is not a ramp; see ramps.js.
       pointRampCustom.value = normaliseStops(saved.pointRampCustom)
+      // Checked rather than trusted: this reaches the browser as a style value,
+      // and a preference outlives the list it was chosen from.
+      if (isBlendMode(saved.stackBlend)) stackBlend.value = saved.stackBlend
       if (saved.colorOverrides && typeof saved.colorOverrides === 'object') {
         colorOverrides.value = { ...saved.colorOverrides }
       }
@@ -304,6 +319,7 @@ export function useAppearance() {
     colorSeed.value = DEFAULTS.colorSeed
     pointRampKey.value = 'auto'
     pointRampCustom.value = null
+    stackBlend.value = DEFAULTS.stackBlend
     colorOverrides.value = {}
     shapeOverrides.value = {}
     persist()
@@ -315,7 +331,7 @@ export function useAppearance() {
   return {
     PALETTES, SHAPE_SETS, ALL_SHAPES,
     paletteKey, shapeSetKey, pointRadius, pointOpacity, pointOutline, colorSeed, shuffleColors,
-    pointRampKey, pointRampCustom,
+    pointRampKey, pointRampCustom, stackBlend,
     activeColors, activeShapes, colorOverrides, shapeOverrides, overrideCount,
     persist, loadFromStorage, reset,
     setColor, clearColor, setShape, clearShape, hasOverride,
