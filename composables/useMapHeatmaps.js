@@ -18,6 +18,7 @@
 // depend on how many people visited it, only on when they found things.
 
 import { computed, ref } from 'vue'
+import { mix, normaliseStops, rampColor } from './ramps.js'
 import { categoryColor, hasValue } from '~/composables/useObservations'
 import { cellAt, cellKeyAt, CELL_SHAPES } from '~/composables/gridCells'
 import { ALL_NUMERIC } from '~/composables/useChartFields'
@@ -167,13 +168,15 @@ export const RAMP_PRESETS = [
 // Overridden per viewer, from the style panel. Module-level so the color
 // helpers below track it the same way the point palette does.
 export const heatmapRampKey = ref('default')
-export const heatmapRampCustom = ref(null)   // [from, to] hex, when set by hand
+// Any number of stops, two or more. Stored as a pair by every version before
+// this one, which normaliseStops accepts unchanged.
+export const heatmapRampCustom = ref(null)
 
 /** The ramp actually used for a mode, after any override. */
 export function rampFor(mode) {
-  const custom = heatmapRampCustom.value
-  if (heatmapRampKey.value === 'custom' && Array.isArray(custom) && custom.length === 2) {
-    return custom
+  if (heatmapRampKey.value === 'custom') {
+    const custom = normaliseStops(heatmapRampCustom.value)
+    if (custom) return custom
   }
   const preset = RAMP_PRESETS.find((p) => p.key === heatmapRampKey.value)
   if (preset?.ramp) return preset.ramp
@@ -186,13 +189,9 @@ const RAMPS = new Proxy({}, {
   has: (_t, mode) => String(mode) in DEFAULT_RAMPS,
 })
 
-export function hexLerp(a, b, t) {
-  const k = Math.max(0, Math.min(1, Number.isFinite(t) ? t : 0))
-  const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16))
-  const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16))
-  const mix = pa.map((v, i) => Math.round(v + (pb[i] - v) * k))
-  return `#${mix.map((v) => v.toString(16).padStart(2, '0')).join('')}`
-}
+/** Two-colour interpolation. Kept as a name callers already use; a ramp of any
+ *  length goes through rampColor instead. */
+export const hexLerp = mix
 
 // Circular distance between two days of the year, so a window around 1 Jan
 // reaches back into December rather than falling off the end.
@@ -284,7 +283,7 @@ export function useMapHeatmaps() {
       }
       if (Array.isArray(saved.rampCustom) && saved.rampCustom.length === 2
         && saved.rampCustom.every((c) => /^#[0-9a-f]{6}$/i.test(c))) {
-        heatmapRampCustom.value = saved.rampCustom
+        heatmapRampCustom.value = normaliseStops(saved.rampCustom)
       }
     } catch { /* keep defaults */ }
   }
@@ -405,7 +404,7 @@ export function useMapHeatmaps() {
       // Color by exposure when it is populated (that is the forager-relevant
       // signal); fall back to the vector's own magnitude.
       const shade = c.exposure ?? c.t
-      c.color = hexLerp(ramp[0], ramp[1], shade)
+      c.color = rampColor(ramp, shade)
     }
     const fmt = hasWind ? (v) => `${v.toFixed(1)} m/s` : (v) => `${Math.round(v * 100)}% aligned`
     return {
@@ -472,7 +471,7 @@ export function useMapHeatmaps() {
     const ramp = RAMPS[meta.key]
     for (const c of shown) {
       c.t = hi === lo ? 0.5 : (c.value - lo) / (hi - lo)
-      c.color = hexLerp(ramp[0], ramp[1], c.t)
+      c.color = rampColor(ramp, c.t)
     }
     const fmt = (v) => (Math.abs(v) >= 100 ? Math.round(v).toLocaleString() : Number(v).toFixed(2))
     return {
@@ -525,7 +524,7 @@ export function useMapHeatmaps() {
     for (const c of cells) {
       if (!Number.isFinite(c.raw)) continue
       c.t = hi === lo ? 0.5 : (c.raw - lo) / (hi - lo)
-      c.color = hexLerp(ramp[0], ramp[1], c.t)
+      c.color = rampColor(ramp, c.t)
       c.value = m === 'density' ? c.n
         : m === 'richness' ? c.species.size
           : c.n ? c.inWindow / c.n : 0

@@ -44,6 +44,26 @@
            opacity, and the key on the map reads from the same place. Kept apart
            from the map's reference tile layers below, which are a different
            stack at a different depth. -->
+      <!-- Numeric point colouring. Categorical values are recoloured one at a
+           time further down; a numeric field is a scale, so it takes a ramp.
+           Until now it took whatever the app chose and there was no way in. -->
+      <div class="ap-sub"><span>Point gradient</span></div>
+      <div class="ap-row">
+        <label for="ap-point-ramp">Colors</label>
+        <select id="ap-point-ramp" v-model="pointRampKey" @change="onPointRampChange">
+          <option value="auto">Match the layer (default)</option>
+          <option v-for="r in RAMP_PRESETS.filter((p) => p.ramp)" :key="r.key" :value="r.key">
+            {{ r.label }}
+          </option>
+          <option value="custom">Custom…</option>
+        </select>
+      </div>
+      <p v-if="pointRampKey === 'auto'" class="ap-hint">
+        A field a map layer also draws takes that layer's colours, so a dot reads
+        against the ground under it. Anything else uses the default scale.
+      </p>
+      <RampEditor v-if="pointRampKey === 'custom'" v-model="pointRamp" :fallback="rampPreview" />
+
       <div class="ap-sub"><span>Heatmap</span></div>
       <div class="ap-row">
         <label for="ap-ramp">Colors <HelpLink option="appearance-heatmap-ramp" /></label>
@@ -52,19 +72,9 @@
           <option value="custom">Custom…</option>
         </select>
       </div>
-      <div class="ap-ramp-preview" :style="{ background: `linear-gradient(90deg, ${rampPreview[0]}, ${rampPreview[1]})` }"></div>
-      <div v-if="heatmapRampKey === 'custom'" class="ap-ramp-pick">
-        <label>
-          Low
-          <input type="color" :value="rampPreview[0]" aria-label="Low end of the heatmap ramp"
-                 @input="setRampEnd(0, $event.target.value)" />
-        </label>
-        <label>
-          High
-          <input type="color" :value="rampPreview[1]" aria-label="High end of the heatmap ramp"
-                 @input="setRampEnd(1, $event.target.value)" />
-        </label>
-      </div>
+      <div v-if="heatmapRampKey !== 'custom'" class="ap-ramp-preview"
+           :style="{ background: gradientCss(rampPreview) }"></div>
+      <RampEditor v-else v-model="heatmapRamp" :fallback="rampPreview" />
       <div class="ap-row">
         <label for="ap-hm-op">
           Opacity <span class="val">{{ Math.round(heatmapOpacity * 100) }}%</span>
@@ -126,6 +136,7 @@
 import { computed, ref } from 'vue'
 import { categoryColor } from '~/composables/useObservations'
 import { overrideKey, useAppearance } from '~/composables/useAppearance'
+import { gradientCss } from '~/composables/ramps'
 
 const props = defineProps({
   // The category dimension currently being colored, and the values present in
@@ -142,6 +153,8 @@ const props = defineProps({
 // values most-common-first, so the cap keeps the ones worth recoloring.
 const VALUE_CAP = 24
 
+const appearance = useAppearance()
+
 // The grid heatmaps draw from their own ramp, chosen here and keyed on the map.
 const heatmaps = useMapHeatmaps()
 const {
@@ -150,6 +163,7 @@ const {
 } = heatmaps
 // Previewed against the density ramp, which is the one a reader meets first.
 const rampPreview = computed(() => rampFor('density'))
+const { pointRampKey } = appearance
 
 function onRampChange() {
   // Seed a custom pair from whatever was on screen, so the pickers do not open
@@ -160,11 +174,24 @@ function onRampChange() {
   heatmaps.persist()
 }
 
-function setRampEnd(i, hex) {
-  const next = [...(heatmapRampCustom.value || rampPreview.value)]
-  next[i] = hex
-  heatmapRampCustom.value = next
-  heatmaps.persist()
+// The editor emits whole ramps, so persisting is the only thing left to do.
+const heatmapRamp = computed({
+  get: () => heatmapRampCustom.value || rampPreview.value,
+  set: (stops) => { heatmapRampCustom.value = stops; heatmaps.persist() },
+})
+
+const pointRamp = computed({
+  get: () => appearance.pointRampCustom.value || rampPreview.value,
+  set: (stops) => { appearance.pointRampCustom.value = stops; appearance.persist() },
+})
+
+function onPointRampChange() {
+  // Seed a custom ramp from what is on screen rather than opening on black, for
+  // the same reason as the heatmap one above.
+  if (appearance.pointRampKey.value === 'custom' && !appearance.pointRampCustom.value) {
+    appearance.pointRampCustom.value = [...rampPreview.value]
+  }
+  appearance.persist()
 }
 
 const open = ref(false)
@@ -177,7 +204,7 @@ const {
   paletteKey, pointRadius, pointOpacity, pointOutline,
   activeColors, overrideCount,
   persist, reset, shuffleColors, setColor, clearColor, clearShape, hasOverride,
-} = useAppearance()
+} = appearance
 
 // <input type="color"> only accepts #rrggbb, so shorthand and named colors
 // have to be normalised or the swatch silently shows black.
