@@ -53,30 +53,61 @@
              aria-label="Search layers" />
     </div>
 
+    <!-- How the browse below is sectioned. Subject is the catalogue's own
+         grouping; source and type re-cut the same layers for when you are
+         after a provider or a kind of raster rather than a topic. -->
+    <div class="lm-groupby" role="group" aria-label="Group layers by">
+      <span class="lm-groupby-label">Group by</span>
+      <div class="lm-seg">
+        <button v-for="m in GROUP_MODES" :key="m.key" type="button"
+                class="lm-seg-btn" :class="{ on: groupMode === m.key }"
+                :aria-pressed="groupMode === m.key" @click="setGroupMode(m.key)">
+          {{ m.label }}
+        </button>
+      </div>
+    </div>
+
     <div class="lm-body">
       <p v-if="!filtered.length" class="lm-empty">
         Nothing matches “{{ query }}”.
       </p>
 
+      <!-- Each group is an expansion panel. The catalogue has grown past what a
+           single open list can carry without scrolling — nine reference layers,
+           the Earth Engine layers, and whatever assets are registered — so a
+           reader browses one section at a time rather than the whole inventory
+           at once. A search overrides the panels and opens everything that
+           matches, since when you are looking for a layer you do not want to
+           first guess which section hid it. -->
       <section v-for="g in filtered" :key="g.label" class="lm-group">
-        <div class="lm-sec-head">{{ g.label }}</div>
-        <label v-for="o in g.items" :key="o.key" class="lm-row" :class="{ on: active.has(o.key) }">
-          <input type="checkbox" :checked="active.has(o.key)" @change="$emit('toggle', o.key)" />
-          <span class="lm-row-main">
-            <span class="lm-row-name">{{ o.name }}</span>
-            <!-- Listed but marked, rather than hidden: knowing FRMS
-                 computes it is part of what membership is for. -->
-            <em v-if="o.tier && o.tier !== 'free'" class="lm-tier">{{ o.tier }}</em>
-            <small v-if="o.note" class="lm-note">{{ o.note }}</small>
+        <button type="button" class="lm-group-head" :aria-expanded="isOpen(g.label)"
+                @click="togglePanel(g.label)">
+          <span class="lm-caret" :class="{ open: isOpen(g.label) }" aria-hidden="true">▸</span>
+          <span class="lm-group-label">{{ g.label }}</span>
+          <span class="lm-group-meta">
+            <span v-if="activeCount(g)" class="lm-group-on">{{ activeCount(g) }} on</span>
+            <span class="lm-group-total">{{ g.items.length }}</span>
           </span>
-        </label>
+        </button>
+        <div v-show="isOpen(g.label)" class="lm-group-items">
+          <label v-for="o in g.items" :key="o.key" class="lm-row" :class="{ on: active.has(o.key) }">
+            <input type="checkbox" :checked="active.has(o.key)" @change="$emit('toggle', o.key)" />
+            <span class="lm-row-main">
+              <span class="lm-row-name">{{ o.name }}</span>
+              <!-- Listed but marked, rather than hidden: knowing FRMS
+                   computes it is part of what membership is for. -->
+              <em v-if="o.tier && o.tier !== 'free'" class="lm-tier">{{ o.tier }}</em>
+              <small v-if="o.note" class="lm-note">{{ o.note }}</small>
+            </span>
+          </label>
+        </div>
       </section>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { filterLayerGroups } from '~/composables/mapLayers'
 
 // A window for managing the overlays, rather than one dropdown holding all of
@@ -111,6 +142,74 @@ const win = ref(null)
 
 const opacityOf = (key) => props.opacity[key] ?? 1
 
+// How the browse list is carved into sections. Subject is the catalogue's own
+// grouping (Fire, Soil, …); the other two re-cut the same layers by where the
+// data comes from and what kind of raster it is, which is how you look when you
+// are after "everything from Sentinel-2" or "every categorical layer" rather
+// than a subject.
+const GROUP_MODES = [
+  { key: 'group', label: 'Subject' },
+  { key: 'source', label: 'Source' },
+  { key: 'type', label: 'Type' },
+]
+const groupMode = ref('group')
+
+// Subject grouping arrives pre-built and in catalogue order, so it is used as
+// given. The other two are rebuilt from the same items, keyed by the chosen
+// field, each section in first-seen order and the sections sorted by name — but
+// with the imagery/other catch-alls kept last so a real source is never buried
+// under them.
+const displayGroups = computed(() => {
+  if (groupMode.value === 'group') return props.groups
+  const field = groupMode.value
+  const order = []
+  const map = new Map()
+  for (const g of props.groups) {
+    for (const o of g.items) {
+      const label = o[field] || 'Other'
+      if (!map.has(label)) { map.set(label, []); order.push(label) }
+      map.get(label).push(o)
+    }
+  }
+  const trailing = (label) => /^(Basemap|Other)\b/.test(label)
+  return order
+    .sort((a, b) => (trailing(a) - trailing(b)) || a.localeCompare(b))
+    .map((label) => ({ label, items: map.get(label) }))
+})
+
+function setGroupMode(mode) {
+  if (mode === groupMode.value) return
+  groupMode.value = mode
+  seedPanels()
+}
+
+// Which expansion panels are open, keyed by group label. A search opens every
+// matching panel regardless (see isOpen), so this only governs the browse.
+const openPanels = ref(new Set())
+
+const activeCount = (g) => g.items.reduce((n, o) => n + (props.active.has(o.key) ? 1 : 0), 0)
+
+const isOpen = (label) => (query.value ? true : openPanels.value.has(label))
+
+function togglePanel(label) {
+  const next = new Set(openPanels.value)
+  if (next.has(label)) next.delete(label)
+  else next.add(label)
+  openPanels.value = next
+}
+
+// On opening the manager, expand the sections that already have a layer on, so
+// what you turned on is in front of you. If nothing is on there is nothing to
+// prioritise, so open everything rather than present a wall of collapsed
+// headers with no hint of what is inside.
+function seedPanels() {
+  const shown = displayGroups.value
+  const withActive = shown
+    .filter((g) => g.items.some((o) => props.active.has(o.key)))
+    .map((g) => g.label)
+  openPanels.value = new Set(withActive.length ? withActive : shown.map((g) => g.label))
+}
+
 /** Every layer by key, so the active stack can be named without a second list. */
 const byKey = computed(() => {
   const map = new Map()
@@ -123,11 +222,22 @@ const activeList = computed(() =>
 
 // A group matches as a prefix, a layer anywhere. See filterLayerGroups: the
 // obvious version of this returned the whole Terrain group for "rain".
-const filtered = computed(() => filterLayerGroups(props.groups, query.value))
+const filtered = computed(() => filterLayerGroups(displayGroups.value, query.value))
 
 // A search left over from last time hides most of the catalogue on reopening,
 // which reads as layers having gone missing.
-watch(() => props.open, (v) => { if (!v) query.value = '' })
+watch(() => props.open, (v) => {
+  if (v) seedPanels()
+  else query.value = ''
+})
+
+// The catalogue (Earth Engine layers especially) can arrive after the manager
+// is already open. Seed the panels once the groups it should reflect exist.
+watch(() => props.groups, () => {
+  if (props.open && !openPanels.value.size) seedPanels()
+})
+
+onMounted(() => { if (props.open) seedPanels() })
 </script>
 
 <style scoped>
@@ -214,10 +324,61 @@ watch(() => props.open, (v) => { if (!v) query.value = '' })
 }
 .lm-search input:focus { border-color: var(--accent, #2b7a3d); outline: none; }
 
+.lm-groupby {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px 0;
+}
+.lm-groupby-label {
+  flex: 0 0 auto; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted, #777); font-weight: 700;
+}
+.lm-seg {
+  flex: 1 1 auto; display: flex; border: 1px solid var(--border, #ddd);
+  border-radius: 6px; overflow: hidden;
+}
+.lm-seg-btn {
+  flex: 1 1 0; border: 0; border-left: 1px solid var(--border, #ddd);
+  background: var(--surface, #fff); color: var(--muted, #666);
+  font: inherit; font-size: 0.72rem; cursor: pointer; padding: 4px 6px;
+}
+.lm-seg-btn:first-child { border-left: 0; }
+.lm-seg-btn:hover { background: var(--surface-2, #f4f4f4); color: var(--text); }
+.lm-seg-btn.on { background: var(--accent, #2b7a3d); color: #fff; font-weight: 600; }
+
 .lm-body { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: 10px 12px 12px; }
 .lm-empty { margin: 4px 0; color: var(--muted, #777); font-size: 0.78rem; }
 
-.lm-group + .lm-group { margin-top: 12px; }
+.lm-group { border-bottom: 1px solid var(--border-soft, #eee); }
+.lm-group:last-child { border-bottom: 0; }
+
+.lm-group-head {
+  display: flex; align-items: center; gap: 7px; width: 100%;
+  border: 0; background: transparent; color: var(--text, #222);
+  font: inherit; text-align: left; cursor: pointer;
+  padding: 8px 6px; margin: 0 -6px;
+}
+.lm-group-head:hover { color: var(--text); }
+.lm-caret {
+  flex: 0 0 auto; color: var(--muted, #888); font-size: 0.7rem;
+  transition: transform 0.12s ease; transform: rotate(0deg);
+}
+.lm-caret.open { transform: rotate(90deg); }
+.lm-group-label {
+  flex: 1 1 auto; min-width: 0;
+  font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted, #777); font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lm-group-meta { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; }
+.lm-group-on {
+  background: var(--accent, #2b7a3d); color: #fff;
+  border-radius: 999px; padding: 1px 7px; font-size: 0.64rem; font-weight: 600;
+}
+.lm-group-total {
+  color: var(--muted, #999); font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+.lm-group-items { padding-bottom: 8px; }
 
 .lm-row {
   display: flex; align-items: flex-start; gap: 8px; cursor: pointer;
