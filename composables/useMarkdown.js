@@ -34,12 +34,17 @@ export function slugify(text) {
  */
 export function extractHeadings(source, { min = 2, max = 3 } = {}) {
   const out = []
+  const unique = uniqueIds()
   let fenced = false
   for (const line of String(source || '').split(/\r?\n/)) {
     if (/^```/.test(line.trim())) { fenced = !fenced; continue }
     if (fenced) continue
     const m = /^(#{1,4})\s+(.*)$/.exec(line)
     if (!m) continue
+    // Every heading is counted, including the ones outside [min, max], because
+    // the renderer counts them too. Skipping one here would number a later
+    // duplicate differently from its own anchor.
+    const id = unique(slugify(m[2]))
     const level = m[1].length
     if (level < min || level > max) continue
     const text = m[2]
@@ -47,10 +52,27 @@ export function extractHeadings(source, { min = 2, max = 3 } = {}) {
       .replace(/\*+/g, '')
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
       .trim()
-    const id = slugify(m[2])
     if (id && text) out.push({ level, text, id })
   }
   return out
+}
+
+/**
+ * A slug-to-id function that never repeats itself within one document.
+ *
+ * Two headings with the same words are ordinary in a long document — three
+ * sections of the learning page could each end "where to read more" — and two
+ * elements with one id means the second is unreachable and the contents list
+ * silently sends you to the first.
+ */
+function uniqueIds() {
+  const seen = new Map()
+  return (base) => {
+    if (!base) return ''
+    const n = (seen.get(base) || 0) + 1
+    seen.set(base, n)
+    return n === 1 ? base : `${base}-${n}`
+  }
 }
 
 function escapeHtml(s) {
@@ -86,16 +108,61 @@ function tableCells(line) {
   return line.slice(1, -1).split('|').map((c) => c.trim())
 }
 
-export function renderMarkdown(md) {
+// A figure on its own line: `![caption](figure:key)`. The key names a drawing in
+// composables/docFigures, rather than an image file, because these diagrams are
+// line art over the app's own colour tokens — an exported PNG would be wrong in
+// one of the two themes, and an SVG file could not read the tokens at all.
+const FIGURE_LINE = /^!\[([^\]]*)\]\(figure:([a-z0-9-]+)\)$/
+
+/**
+ * Markdown → HTML for the app's own documents.
+ *
+ * `figures` maps a figure key to an SVG string. A key with no drawing renders
+ * its caption as ordinary text rather than disappearing, so a typo is visible
+ * in the page instead of silently removing a paragraph.
+ */
+export function renderMarkdown(md, { figures = {} } = {}) {
   const lines = String(md || '').replace(/\r\n/g, '\n').split('\n')
   const out = []
+  const unique = uniqueIds()
   let para = []
   let list = []
+  // 'ul' or 'ol'. A guide is mostly procedures, and a procedure that renders as
+  // a paragraph beginning "1. Open the Map. 2. Open Points." is a procedure
+  // nobody can follow a step at a time.
+  let listTag = 'ul'
   const flushPara = () => { if (para.length) { out.push(`<p>${inline(para.join(' '))}</p>`); para = [] } }
-  const flushList = () => { if (list.length) { out.push(`<ul>${list.map((li) => `<li>${inline(li)}</li>`).join('')}</ul>`); list = [] } }
+  const flushList = () => {
+    if (!list.length) return
+    out.push(`<${listTag}>${list.map((li) => `<li>${inline(li)}</li>`).join('')}</${listTag}>`)
+    list = []
+  }
+  const pushItem = (tag, text) => {
+    // A bulleted list directly under a numbered one is two lists, not one with
+    // a confused tag.
+    if (list.length && listTag !== tag) flushList()
+    listTag = tag
+    list.push(text)
+  }
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim()
+
+    // A fenced code block, taken verbatim. Without this the guide's Earth
+    // Engine example rendered as a paragraph of run-together statements, which
+    // is exactly the content that has to be copied character for character.
+    if (line.startsWith('```')) {
+      flushPara(); flushList()
+      const code = []
+      i += 1
+      while (i < lines.length && !lines[i].trim().startsWith('```')) {
+        code.push(lines[i])
+        i += 1
+      }
+      out.push(`<pre class="doc-code"><code>${escapeHtml(code.join('\n'))}</code></pre>`)
+      continue
+    }
+
     if (!line) { flushPara(); flushList(); continue }
 
     // A pipe table: a header row, a |---| rule, then body rows until the block
@@ -148,19 +215,37 @@ export function renderMarkdown(md) {
     }
 
     let m
-    if ((m = /^(#{1,4})\s+(.*)$/.exec(line))) {
+    if ((m = FIGURE_LINE.exec(line))) {
+      flushPara(); flushList()
+      const svg = figures[m[2]]
+      out.push(svg
+        ? `<figure class="doc-figure"><div class="doc-figure-art">${svg}</div>`
+          + `<figcaption>${inline(m[1])}</figcaption></figure>`
+        : `<p>${inline(m[1])}</p>`)
+    } else if ((m = /^(#{1,4})\s+(.*)$/.exec(line))) {
       flushPara(); flushList()
       const level = m[1].length
-      const id = slugify(m[2])
+      const id = unique(slugify(m[2]))
       out.push(`<h${level}${id ? ` id="${id}"` : ''}>${inline(m[2])}</h${level}>`)
     } else if (/^---+$/.test(line)) {
       flushPara(); flushList()
       out.push('<hr>')
     } else if ((m = /^[-*]\s+(.*)$/.exec(line))) {
       flushPara()
-      list.push(m[1])
+      pushItem('ul', m[1])
+    // "1. " and "1) ". The space is what keeps a sentence starting "1.41 times
+    // further" from becoming a step.
+    } else if ((m = /^\d+[.)]\s+(.*)$/.exec(line))) {
+      flushPara()
+      pushItem('ol', m[1])
+    } else if (list.length) {
+      // A wrapped bullet. Markdown lets a list item run over several lines, and
+      // the guide's do: they are full sentences, and a source file with 120
+      // character lines is unreadable. Without this the second line escaped the
+      // list and became a paragraph below it — the item's own sentence, cut in
+      // half and set at a different indent.
+      list[list.length - 1] += ` ${line}`
     } else {
-      flushList()
       para.push(line)
     }
   }

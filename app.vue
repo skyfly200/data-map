@@ -17,9 +17,18 @@
              breakpoint this is a menu; above it, the links themselves. -->
         <nav class="app-nav">
           <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-link">{{ l.label }}</NuxtLink>
+          <!-- Members only, and client-side only. The tier comes out of the
+               access token, which the server render does not have, so a link
+               drawn from it on the server hydrates into a different DOM. -->
+          <ClientOnly>
+            <NuxtLink v-if="isMember" to="/jobs" class="nav-link">Jobs</NuxtLink>
+          </ClientOnly>
         </nav>
         <PopoverMenu class="nav-pop" icon="☰" title="Go to" align="right" btn-class="hdr-btn">
           <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-item">{{ l.label }}</NuxtLink>
+          <ClientOnly>
+            <NuxtLink v-if="isMember" to="/jobs" class="nav-item">Jobs</NuxtLink>
+          </ClientOnly>
         </PopoverMenu>
         <ClientOnly>
           <div class="auth-box">
@@ -104,9 +113,12 @@ const NAV = [
   { to: '/charts', label: 'Charts' },
   { to: '/analysis', label: 'Analysis' },
   { to: '/data', label: 'Data' },
-  { to: '/coverage', label: 'Coverage' },
   { to: '/guide', label: 'Guide' },
 ]
+
+// Shown beside NAV when the viewer is a member. Not part of NAV itself, because
+// NAV renders on the server where no tier is known.
+const { isMember } = useMembership()
 
 
 
@@ -167,7 +179,7 @@ shortcuts.register([
   { scope: 'Navigate', keys: 'c', label: 'Charts', run: go('/charts') },
   { scope: 'Navigate', keys: 'a', label: 'Analysis', run: go('/analysis') },
   { scope: 'Navigate', keys: 'd', label: 'Data', run: go('/data') },
-  { scope: 'Navigate', keys: 'v', label: 'Coverage', run: go('/coverage') },
+  { scope: 'Navigate', keys: 'j', label: 'Pipeline jobs', run: go('/jobs') },
   { scope: 'Navigate', keys: 'g', label: 'Guide', run: go('/guide') },
   { scope: 'General', keys: '?', label: 'Show this help', run: () => { shortcuts.helpOpen.value = !shortcuts.helpOpen.value } },
   { scope: 'General', keys: 'escape', label: 'Close dialogs and panels', run: () => { shortcuts.helpOpen.value = false } },

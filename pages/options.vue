@@ -188,7 +188,7 @@
 
     <p class="foot">
       Every option here is documented in the
-      <NuxtLink to="/guide#reference">option reference</NuxtLink>.
+      <NuxtLink to="/guide/reference">option reference</NuxtLink>.
     </p>
   </div>
 </template>
