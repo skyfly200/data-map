@@ -14,7 +14,7 @@ import {
   EE_LAYER_CATALOGUE, EE_LAYER_KEYS, EE_TILE_LAYERS, GAP_REMAP, LayerError,
   DEFAULT_TIER, MODIS_FIRST_YEAR, MODIS_LAG_YEARS, MTBS_LAG_YEARS,
   WORLDCOVER_CLASSES, WORLDCOVER_FROM, WORLDCOVER_TO,
-  cacheKey, describeLayer, resolveLayer, tierFor,
+  cacheKey, describeLayer, resolveLayer, tierFor, visParams,
 } from '../netlify/lib/ee-tile-layers.mjs'
 
 const YEAR = new Date().getUTCFullYear()
@@ -143,10 +143,14 @@ test('describing an unknown layer returns nothing rather than throwing', () => {
 
 // ── The recipes ──────────────────────────────────────────────────────────────
 
-test('every build runs against a stubbed Earth Engine and paints something', () => {
-  // A stub rather than a live session: what is being checked is that each
-  // recipe is wired up — masks its no-data, names a palette, and produces an
-  // image — not that Earth Engine agrees, which needs credentials.
+/**
+ * A stubbed Earth Engine, recording the methods a build() reaches for.
+ *
+ * A stub rather than a live session: what is being checked is that each recipe
+ * is wired up — masks its no-data, names a palette, produces an image — not
+ * that Earth Engine agrees, which needs credentials.
+ */
+function stubEe() {
   const calls = []
   const chain = new Proxy(function stub() {}, {
     get: (t, prop) => {
@@ -170,6 +174,14 @@ test('every build runs against a stubbed Earth Engine and paints something', () 
       return chain
     },
   })
+  return { ee, calls }
+}
+
+test('every build runs against a stubbed Earth Engine and paints something', () => {
+  // A stub rather than a live session: what is being checked is that each
+  // recipe is wired up — masks its no-data, names a palette, and produces an
+  // image — not that Earth Engine agrees, which needs credentials.
+  const { ee, calls } = stubEe()
 
   for (const key of EE_LAYER_KEYS) {
     calls.length = 0
@@ -430,4 +442,55 @@ test('land cover stayed open when it moved to Earth Engine', () => {
   // quietly take a layer away from the people who had it.
   assert.equal(EE_TILE_LAYERS['land-cover'].tier, 'free')
   assert.equal(tierFor('land-cover'), 'free')
+})
+
+// ── The shape the Earth Engine client will accept ────────────────────────────
+
+/* The Node client reads min/max/gamma with this, verbatim from
+ * @google/earthengine: `csv ? csv.split(',').map(Number) : []`. A number throws
+ * "csv.split is not a function", which is the error every layer returned and
+ * which names neither the parameter nor the cause. Reproduced here so the test
+ * fails the same way the deployment did. */
+const csvToNumbers = (csv) => (csv ? csv.split(',').map(Number) : [])
+
+test('every layer visualisation survives the client\'s own parser', () => {
+  // The regression, and it was total: not one Earth Engine layer could render,
+  // because every one of them declared its bounds as numbers — which is the
+  // natural way to write them and what the Code Editor accepts.
+  for (const key of EE_LAYER_KEYS) {
+    const { layer, params } = resolveLayer(key)
+    const vis = visParams(layer.build(stubEe().ee, params).vis)
+    for (const field of ['min', 'max', 'gamma']) {
+      if (!(field in vis)) continue
+      assert.doesNotThrow(() => csvToNumbers(vis[field]),
+        `${key}: ${field} is ${typeof vis[field]}, which the client cannot split`)
+      assert.ok(csvToNumbers(vis[field]).every(Number.isFinite),
+        `${key}: ${field} did not parse back to numbers`)
+    }
+  }
+})
+
+test('numbers become strings, arrays become the csv the client expects', () => {
+  assert.deepEqual(visParams({ min: 0, max: 11 }), { min: '0', max: '11' })
+  assert.deepEqual(visParams({ min: -0.2, max: 1 }), { min: '-0.2', max: '1' })
+  // A per-band stretch has to arrive as one comma-separated value, because that
+  // is what the client splits back apart.
+  assert.deepEqual(visParams({ min: [0, 0, 0], max: [70, 70, 70] }),
+    { min: '0,0,0', max: '70,70,70' })
+  assert.equal(csvToNumbers(visParams({ max: [70, 70, 70] }).max).length, 3)
+})
+
+test('a palette is left exactly as the layer declared it', () => {
+  // The client takes an array here and uses it as-is; stringifying would be a
+  // second conversion of something already in the right shape.
+  const palette = ['#000000', '#ffffff']
+  assert.equal(visParams({ palette }).palette, palette)
+})
+
+test('an absent bound stays absent rather than becoming "undefined"', () => {
+  // String(undefined) is "undefined", which parses to NaN and would reach the
+  // API as a stretch nobody asked for.
+  assert.deepEqual(visParams({ min: undefined, max: 5 }), { max: '5' })
+  assert.deepEqual(visParams({ min: null }), {})
+  assert.deepEqual(visParams({}), {})
 })

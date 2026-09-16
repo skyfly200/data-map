@@ -1250,6 +1250,39 @@ export function cacheKey(key, params) {
 }
 
 /** What the client needs to draw the layer, minus the tile URL itself. */
+/**
+ * A layer's visualisation, in the shape the Earth Engine client will accept.
+ *
+ * The Node client reads `min`, `max` and `gamma` with a helper that does
+ * `csv.split(',')` on whatever it is handed, so a NUMBER throws
+ * "csv.split is not a function" — and a numeric zero slips through only because
+ * zero is falsy and short-circuits before the split. Every layer in this
+ * catalogue declares numeric bounds, the natural way to write them, which is
+ * why not one of them could render.
+ *
+ * The Code Editor accepts numbers here, which is what makes this so easy to
+ * write and so hard to spot: the same visualisation object works in the browser
+ * and throws in the Node client, and the error names neither the parameter nor
+ * the layer.
+ *
+ * Arrays are joined rather than stringified, so a per-band stretch arrives as
+ * the CSV the client is about to parse back out. `palette` is deliberately left
+ * alone — that one is accepted as an array and used as-is.
+ */
+export function visParams(vis = {}) {
+  const out = { ...vis }
+  for (const key of ['min', 'max', 'gamma']) {
+    if (!(key in out)) continue
+    const value = out[key]
+    if (value === null || value === undefined || value === '') {
+      delete out[key]
+      continue
+    }
+    out[key] = Array.isArray(value) ? value.join(',') : String(value)
+  }
+  return out
+}
+
 export function describeLayer(key) {
   const layer = EE_TILE_LAYERS[key]
   if (!layer) return null
