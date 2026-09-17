@@ -61,7 +61,9 @@ test('no GIBS layer asks for tiles above its own matrix set', () => {
   // GIBS answered each one with a 400 — a screenful of console errors and a
   // layer that stopped drawing once you zoomed past its ceiling.
   const gibsLayers = TILE_LAYERS.filter((l) => /gibs\.earthdata/.test(l.url || ''))
-  assert.ok(gibsLayers.length >= 4, 'expected the GIBS layers to still be here')
+  // Rainfall, land surface temp and NDVI. SMAP soil moisture used to be a fourth
+  // but GIBS only serves it in EPSG:4326, so it moved to Earth Engine.
+  assert.ok(gibsLayers.length >= 3, 'expected the GIBS layers to still be here')
 
   for (const layer of gibsLayers) {
     const level = Number((layer.url.match(/GoogleMapsCompatible_Level(\d+)/) || [])[1])

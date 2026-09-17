@@ -17,6 +17,28 @@ Nothing open.
 
 ## Wanted
 
+### Species distribution modeling (the point of the enrichment)
+
+The home page now frames Nexstrata as an ecosystem-modeling platform with
+enrichment as one stage of four — observe, enrich, model, predict. The first
+two ship; the model and predict stages do not yet, and the page marks that
+section "Roadmap" rather than claiming otherwise.
+
+The intended method is a presence-only species distribution model, MaxEnt the
+obvious first: the enrichment already produces exactly the feature matrix such a
+model reads — every environmental layer sampled at each presence point, at its
+own date — so the missing pieces are background/pseudo-absence sampling, the fit
+itself, and projecting the fitted surface back across a region as a habitat
+suitability raster the map can draw beside the layers it was built from.
+
+The sampling-bias problem is not a footnote here: presence-only modeling
+inherits the observer-effort bias the caveats already name, so background
+sampling has to be weighted by effort and every surface labelled with the
+confounds behind it, the same way the density heatmaps already are.
+
+Worth doing once the enrichment output is being loaded as datasets often enough
+that "and then what" is a real question rather than a hypothetical.
+
 ### Member-defined enrichment stages
 
 `STAGES` is six hardcoded entries and `normaliseSpec` refuses any `kind` but
