@@ -111,11 +111,27 @@
               </label>
             </div>
 
+            <!-- Picked from what the dataset carries, rather than typed.
+                 Free text is how somebody asks for a genus a dataset has no
+                 column for and is told their area is empty. -->
             <div class="row">
               <label for="job-taxon">Taxon</label>
-              <input id="job-taxon" v-model="form.taxon" type="text"
-                     placeholder="Any — or a genus, family, order…" />
+              <div class="taxon-field">
+                <select id="job-taxon" v-model="taxonChoice">
+                  <option value="">Any — every observation in the area</option>
+                  <optgroup v-for="rank in datasetRanks" :key="rank.key" :label="rank.label">
+                    <option v-for="t in rank.taxa.slice(0, TAXON_CAP)" :key="`${rank.key}:${t.name}`"
+                            :value="t.name">
+                      {{ t.name }} ({{ t.count.toLocaleString() }})
+                    </option>
+                  </optgroup>
+                  <option value="__custom">Custom…</option>
+                </select>
+                <input v-if="taxonChoice === '__custom'" v-model="form.taxon" type="text"
+                       class="taxon-custom" placeholder="A genus, family or order" />
+              </div>
             </div>
+            <p v-if="taxonNote" class="hint" :class="{ warn: taxonUnknown }">{{ taxonNote }}</p>
           </template>
 
           <div class="row">
@@ -286,6 +302,7 @@
 import { computed, reactive, ref, onMounted } from 'vue'
 import { STAGES, DEFAULT_STAGES } from '~/netlify/lib/ee-pipeline.mjs'
 import { VISIBILITY_LABELS } from '~/composables/useDatasets'
+import { countForTaxon, datasetHasTaxon } from '~/netlify/lib/dataset-taxa.mjs'
 
 const membership = useMembership()
 const jobsApi = useEeJobs()
@@ -294,6 +311,80 @@ const { addInlineDataset } = useObservations()
 const router = useRouter()
 
 const stageList = Object.entries(STAGES).map(([key, s]) => ({ key, ...s }))
+
+// ─── The taxon field ─────────────────────────────────────────────────────────
+// Offered from the dataset in the browser, which is the dataset a bbox job is
+// matched against. That is what makes the list trustworthy: every name in it
+// selects records, because it was counted from the records it selects.
+
+/** Per rank, so one runaway rank cannot make the list unusable. */
+const TAXON_CAP = 150
+
+/**
+ * The taxa the baseline carries, from the server.
+ *
+ * Not computed from the dataset in the browser: this page does not load it, and
+ * loading fifty megabytes of GeoJSON to populate a dropdown is not a trade worth
+ * making. The server counts the same baseline a bbox job is matched against,
+ * which is what makes a name in this list one that selects records.
+ */
+const datasetRanks = ref([])
+const datasetTotal = ref(0)
+onMounted(async () => {
+  try {
+    const res = await fetch('/.netlify/functions/observations?summary=taxa')
+    const body = await res.json()
+    if (body?.ok) {
+      datasetRanks.value = body.ranks || []
+      datasetTotal.value = body.total || 0
+    }
+  } catch {
+    // The field falls back to being free text, which is what it was. Worse
+    // than the picker and better than a page that will not render.
+  }
+})
+
+/**
+ * What the dropdown is set to: '' for any, '__custom' for the free-text box, or
+ * a name from the dataset.
+ *
+ * Kept beside form.taxon rather than being it, because "custom" is a state of
+ * the control and not a taxon. Writing through to form.taxon is what the rest
+ * of the page and the request actually read.
+ */
+// "Custom" needs a state of its own. Derived only from form.taxon, choosing it
+// while a known name was in the box read straight back as that name, the select
+// snapped shut and the text field never appeared.
+const taxonCustom = ref(false)
+
+const taxonChoice = computed({
+  get: () => {
+    if (taxonCustom.value) return '__custom'
+    if (!form.taxon) return ''
+    // A name the dataset does not carry puts the control in custom mode on its
+    // own, so a taxon restored from a previous job is still editable.
+    return datasetHasTaxon(datasetRanks.value, form.taxon) ? form.taxon : '__custom'
+  },
+  set: (v) => {
+    if (v === '__custom') { taxonCustom.value = true; return }
+    taxonCustom.value = false
+    form.taxon = v
+  },
+})
+
+const taxonCount = computed(() => countForTaxon(datasetRanks.value, form.taxon))
+// A name the dataset does not carry is the failure this field exists to
+// prevent, so it is said before the job is queued rather than after.
+const taxonUnknown = computed(() => Boolean(form.taxon.trim()) && !taxonCount.value)
+const taxonNote = computed(() => {
+  if (!form.taxon.trim()) return ''
+  if (taxonUnknown.value) {
+    return `Nothing in the loaded dataset matches “${form.taxon.trim()}”, so this job would `
+      + 'select no observations. Pick a name from the list, or clear it to enrich the whole area.'
+  }
+  return `${taxonCount.value.toLocaleString()} observations in the dataset carry that name, `
+    + 'before the area and dates narrow it.'
+})
 
 const form = reactive({
   title: '',
@@ -535,6 +626,10 @@ input[type="text"], input[type="number"], input[type="date"] {
 .bbox { display: flex; gap: 8px; flex-wrap: wrap; }
 .mini { display: flex; align-items: center; gap: 4px; font-size: 0.78rem; color: var(--muted); }
 .mini input { width: 82px; }
+
+.taxon-field { display: grid; gap: 6px; flex: 1; min-width: 0; }
+.taxon-custom { width: 100%; box-sizing: border-box; }
+.hint.warn { color: #e0714f; }
 
 .stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; flex: 1; }
 .stage { display: flex; gap: 7px; align-items: flex-start; font-size: 0.8rem; }

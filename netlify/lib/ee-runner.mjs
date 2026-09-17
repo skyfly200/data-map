@@ -22,7 +22,14 @@
 import ee from '@google/earthengine'
 
 import { CHUNK_SIZE } from './quotas.mjs'
-import { CHIRPS_DAILY, ERA5_DAILY, S2_SR, SRTM, STAGES, WORLDCOVER } from './ee-pipeline.mjs'
+import {
+  CHIRPS_DAILY, ERA5_DAILY, GAP_LANDCOVER, MODIS_BURN, OPENLANDMAP_GRTGROUP,
+  OPENLANDMAP_TEXTURE, S2_SR, SOLUS100, SRTM, STAGES, TREEMAP, WORLDCOVER,
+} from './ee-pipeline.mjs'
+// The class tables the map's keys are drawn from, so a sampled column and the
+// tiles under it name a class the same way.
+import { GAP_REMAP, TEXTURE_CLASSES } from './ee-tile-layers.mjs'
+import { orderForGreatGroup } from './soil-taxonomy.mjs'
 import { derivedIndices } from './terrain-indices.mjs'
 
 const MERIT_HYDRO = 'MERIT/Hydro/v1_0_1'
@@ -331,6 +338,151 @@ async function runNdvi(points, columns, tick, skipped) {
   })
 }
 
+// ─── The static layers ───────────────────────────────────────────────────────
+// One pass each, whatever the date range: these describe the ground, not the
+// weather. Each mirrors a layer the map already draws, from the same asset, so
+// a point's column and the tiles under it cannot disagree about the source.
+
+/** The texture class name for a code, or null. 1-based, as the raster is. */
+function textureLabel(code) {
+  const n = Number(code)
+  if (!Number.isInteger(n) || n < 1 || n > TEXTURE_CLASSES.length) return null
+  return TEXTURE_CLASSES[n - 1].label
+}
+
+/** SOLUS100 is a collection whose images ARE the soil properties, by index. */
+const solus = (index, band) => ee.ImageCollection(SOLUS100)
+  .filter(ee.Filter.eq('system:index', index))
+  .first()
+  .select(band)
+
+/** USFS TreeMap, whose 2016 image is the baseline the map layers use too. */
+const treeMap = (band) => ee.ImageCollection(TREEMAP)
+  .filterDate('2016-01-01', '2016-12-31')
+  .first()
+  .select(band)
+
+/**
+ * A single image sampled at every point, writing one column per band.
+ *
+ * `write(props, index, point)` gets the sampled properties, where in the output
+ * they go, and the point itself — which carries its own date, so a stage can
+ * measure against the observation rather than against today.
+ */
+async function runStatic(points, columns, tick, skipped, { image, scale, reducer, write }) {
+  const groups = chunk(points)
+  for (let g = 0; g < groups.length; g += 1) {
+    const rows = await sampleChunk(image, groups[g], scale, reducer, skipped)
+    rows.forEach((props, i) => write(props || {}, groups[g][i].index, groups[g][i]))
+    tick((g + 1) / groups.length)
+  }
+}
+
+async function runSoil(points, columns, tick, skipped) {
+  const texture = ee.Image(OPENLANDMAP_TEXTURE).select('b0').rename('texture')
+  const sand = solus('sandtotal', 'r_0_cm_p').rename('sand')
+  const depth = solus('anylithicdpt', 'r_cm_p').rename('depth')
+  // Concatenated so three properties cost one round trip rather than three.
+  const image = ee.Image.cat([texture, sand, depth])
+
+  await runStatic(points, columns, tick, skipped, {
+    image, scale: STAGES.soil.scale, reducer: ee.Reducer.first(),
+    write(props, at) {
+      const code = props.texture ?? null
+      // A class name, because a texture code is not a value anybody can read.
+      // 1-based into the same table the map's key is drawn from.
+      columns.get('soil_texture')[at] = textureLabel(code)
+      columns.get('soil_sand_pct')[at] = props.sand ?? null
+      columns.get('soil_depth_cm')[at] = props.depth ?? null
+    },
+  })
+}
+
+async function runSoilTaxonomy(points, columns, tick, skipped) {
+  const src = ee.Image(OPENLANDMAP_GRTGROUP).select('grtgroup')
+  // The code → name table is a property of the asset. Read once for the job,
+  // rather than written down here where it would drift from the raster.
+  let byCode = new Map()
+  try {
+    const table = await withRetry(() => evaluate(ee.Dictionary({
+      values: src.get('grtgroup_class_values'),
+      names: src.get('grtgroup_class_names'),
+    })), { label: 'soil class table' })
+    byCode = new Map((table?.values || []).map((v, i) => [v, table.names[i]]))
+  } catch {
+    // Without the table the codes are still sampled, but a bare class number
+    // is not a column worth writing, so the stage records nothing rather than
+    // something unreadable. The skipped count says so.
+    skipped.n += points.length
+    tick(1)
+    return
+  }
+
+  await runStatic(points, columns, tick, skipped, {
+    image: src.rename('grtgroup'),
+    // mode, not first: a great group is categorical and the nearest cell
+    // centre is no better an answer than the commonest one over the pixel.
+    scale: STAGES.soil_taxonomy.scale, reducer: ee.Reducer.mode(),
+    write(props, at) {
+      const name = byCode.get(props.grtgroup) ?? null
+      columns.get('soil_great_group')[at] = name
+      columns.get('soil_order')[at] = orderForGreatGroup(name)?.name ?? null
+    },
+  })
+}
+
+async function runFire(points, columns, tick, skipped) {
+  // The most recent year each pixel burned, as a band per year reduced with
+  // max: a pixel that burned twice reports the later fire, which is what
+  // "years since fire" has to mean.
+  const thisYear = new Date().getUTCFullYear()
+  const last = thisYear - 1
+  const years = []
+  for (let y = 2001; y <= last; y += 1) years.push(y)
+  const stack = years.map((y) => ee.ImageCollection(MODIS_BURN)
+    .filterDate(`${y}-01-01`, `${y}-12-31`)
+    .select('BurnDate')
+    .max()
+    .gt(0)
+    .multiply(y)
+    .rename('year'))
+  const image = ee.ImageCollection(stack).max().selfMask().rename('burn_year')
+
+  await runStatic(points, columns, tick, skipped, {
+    image, scale: STAGES.fire.scale, reducer: ee.Reducer.max(),
+    write(props, at, point) {
+      const year = props.burn_year ?? null
+      columns.get('last_burn_year')[at] = year
+      // Against the observation's own year, not against today: a 2019 find on
+      // ground that burned in 2018 was one year post-fire whenever you read it,
+      // and measuring from now would age every record as the file sat there.
+      const obs = Number(String(point?.date || '').slice(0, 4))
+      columns.get('years_since_fire')[at] = year && Number.isFinite(obs)
+        ? Math.max(0, obs - year)
+        : null
+    },
+  })
+}
+
+async function runForest(points, columns, tick, skipped) {
+  const gap = ee.Image(GAP_LANDCOVER).select('landcover')
+    .remap(GAP_REMAP.from, GAP_REMAP.to, 0).rename('forest')
+  const canopy = treeMap('CANOPY_PCT').rename('canopy')
+  const height = treeMap('STANDHT').rename('height')
+  const image = ee.Image.cat([gap, canopy, height])
+
+  await runStatic(points, columns, tick, skipped, {
+    image, scale: STAGES.forest.scale, reducer: ee.Reducer.first(),
+    write(props, at) {
+      const code = props.forest ?? null
+      // Zero is "not one of the grouped types", which is not a type.
+      columns.get('forest_type')[at] = code ? (GAP_REMAP.classes[code - 1]?.label ?? null) : null
+      columns.get('canopy_pct')[at] = props.canopy ?? null
+      columns.get('stand_height_ft')[at] = props.height ?? null
+    },
+  })
+}
+
 const RUNNERS = {
   terrain: runTerrain,
   landcover: runLandcover,
@@ -338,6 +490,10 @@ const RUNNERS = {
   precip: runPrecip,
   temperature: runTemperature,
   ndvi: runNdvi,
+  soil: runSoil,
+  soil_taxonomy: runSoilTaxonomy,
+  fire: runFire,
+  forest: runForest,
 }
 
 /**
