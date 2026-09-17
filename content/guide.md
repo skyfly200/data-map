@@ -456,7 +456,7 @@ map, charts and analysis all read it.
 An administrator can add map layers computed in Earth Engine, alongside the
 built-in ones.
 
-1. Build the layer in the Earth Engine Code Editor.
+1. Build the layer in the [Earth Engine Code Editor](https://code.earthengine.google.com/).
 2. Export it with `Export.image.toAsset()` into your own Earth Engine project.
 3. Grant the app's service account read access to the asset.
 4. Register it on **Administration → Map layers**: the asset ID, which band to
@@ -464,6 +464,36 @@ built-in ones.
 
 It then appears in the map's layer window under whatever group you name, with
 its own key, and renders through the same path as every built-in layer.
+
+### First, an Earth Engine project of your own
+
+The asset you export lives in **your** Google Cloud project, not the app's, so
+before the Code Editor will run you need one, registered for Earth Engine. This
+is a one-time setup and it is free for non-commercial use.
+
+1. **Create a Google Cloud project.** In the
+   [Cloud console](https://console.cloud.google.com/projectcreate), make a new
+   project (or reuse one). Note its project ID — it becomes the `projects/…`
+   prefix on every asset you export.
+2. **Enable the Earth Engine API.** On
+   [the API page](https://console.cloud.google.com/apis/library/earthengine.googleapis.com),
+   with your project selected, click **Enable**. This is the "adding API access"
+   step: the Code Editor and every `getMapId()` call go through this API, and
+   nothing runs until it is on.
+3. **Register the project for Earth Engine.** At
+   [earthengine.google.com/register](https://code.earthengine.google.com/register),
+   choose your project and pick **non-commercial / research** if that is you.
+   Registration is what links the Cloud project to Earth Engine so the Code
+   Editor will open against it.
+4. **Open the [Code Editor](https://code.earthengine.google.com/)**, confirm the
+   project selector (top right) shows your project, and you are ready to build
+   and export.
+
+> **Note** Two projects are in play and they bill separately. **Yours** owns the
+> asset and pays for the one-off export that computes it. The **app's** project
+> owns the service account and pays for the cheap per-tile `getMapId()` calls
+> that draw it. Neither can touch the other's budget: the app can read your
+> asset but cannot run your scripts, and you never see the app's tile traffic.
 
 ### How the asset and the token fit together
 
@@ -521,11 +551,29 @@ Export.image.toAsset({
 });
 ```
 
-When the export finishes, grant the app's service account read access to the
-asset, then register it on **Administration → Map layers**. Choose the
-**Classified cover** preset: it fills the band, the 1–10 range, ten distinct
-colours and the zero mask, which are the settings that are easy to get wrong and
-produce a layer that renders badly rather than one that errors.
+When the export finishes, share the asset with the app. Because the asset sits
+in your project and the app runs as a different account, this is a cross-account
+grant, done exactly like sharing a file:
+
+1. In the Code Editor's **Assets** tab, find the asset, open its **Share**
+   dialog (the person-plus icon).
+2. Add the app's **service-account email** — the `…@….iam.gserviceaccount.com`
+   address shown on the **Administration → Map layers** screen — as a
+   **Reader**. Read is all it needs and all it should get: the app draws the
+   asset, it never writes to your project.
+3. Leave everything else private. You are sharing one asset, not your project.
+
+Then register it on **Administration → Map layers**. Choose the **Classified
+cover** preset: it fills the band, the 1–10 range, ten distinct colours and the
+zero mask, which are the settings that are easy to get wrong and produce a layer
+that renders badly rather than one that errors.
+
+> **Note** Sharing to share further: a layer registered this way is drawn for
+> everyone in whatever access tier you pick, but they see **tiles**, never your
+> asset or your project. If you later delete the asset or remove the service
+> account's read access, the layer stops rendering and the app reports it by
+> name rather than drawing blank ground — so revoking access is how you
+> unpublish, cleanly.
 
 The presets cover the shapes these rasters usually take — percent cover, a
 classified grid, canopy height in metres, a signed index, a probability. None of
