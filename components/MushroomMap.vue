@@ -1253,7 +1253,21 @@ function setEeParam(key, name, value) {
     ...eeParams.value,
     [key]: { ...(eeParams.value[key] || {}), [name]: next },
   }
-  refreshEeLayer(spec)
+  // Debounced: stepping a year field or dragging a "days back" spinner fires a
+  // change per stop, and each re-mint is an Earth Engine call and a serverless
+  // invocation. Coalescing the bursts into one request per key spends one call
+  // for a settled value rather than one for every value passed through.
+  debounceEeRefresh(spec)
+}
+
+// Per-layer timers, so changing one layer's parameters never delays another's.
+const eeRefreshTimers = new Map()
+function debounceEeRefresh(spec, wait = 400) {
+  clearTimeout(eeRefreshTimers.get(spec.key))
+  eeRefreshTimers.set(spec.key, setTimeout(() => {
+    eeRefreshTimers.delete(spec.key)
+    refreshEeLayer(spec)
+  }, wait))
 }
 
 // ─── Dropped point ───────────────────────────────────────────────────────────

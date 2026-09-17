@@ -45,12 +45,13 @@ async function customLayers() {
 /** How long a minted template is reused. Well inside Earth Engine's own expiry. */
 const TTL_MS = 6 * 60 * 60 * 1000
 
-const json = (body, status = 200) => new Response(JSON.stringify(body), {
+const json = (body, status = 200, extraHeaders = {}) => new Response(JSON.stringify(body), {
   status,
   headers: {
     'content-type': 'application/json',
     // The catalogue is static; a minted template is shared and short-lived.
     'cache-control': status === 200 ? 'private, max-age=300' : 'no-store',
+    ...extraHeaders,
   },
 })
 
@@ -149,7 +150,15 @@ export default async function handler(request) {
   // knowing a layer exists is not the same as being able to render it.
   if (!key) {
     const custom = (await customLayers()).map(describeCustomLayer)
-    return json({ ok: true, layers: [...EE_LAYER_CATALOGUE, ...custom] })
+    // The catalogue is the same for every viewer and only changes when an admin
+    // registers a layer, so it is cached at the CDN edge as well as in the
+    // browser: the function runs once an hour per edge node to build this list
+    // rather than once per page load. Only the catalogue is shared-cached — a
+    // minted tile template carries a token and stays private (see json above).
+    return json({ ok: true, layers: [...EE_LAYER_CATALOGUE, ...custom] }, 200, {
+      'cache-control': 'public, max-age=300',
+      'netlify-cdn-cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400, durable',
+    })
   }
 
   // A layer an administrator registered, pointing at their own Earth Engine
