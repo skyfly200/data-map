@@ -27,28 +27,70 @@ export function withinBounds(feature, bounds) {
   return bounds.east > 180 && lon + 360 >= bounds.west && lon + 360 <= bounds.east
 }
 
+const RANKS = ['kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']
+
+/** Is a feature inside the date range? An undated record is outside any range. */
+export function withinDates(feature, { dateFrom, dateTo } = {}) {
+  if (!dateFrom && !dateTo) return true
+  const date = (feature?.properties?.date || '').slice(0, 10)
+  if (!date) return false
+  if (dateFrom && date < dateFrom) return false
+  if (dateTo && date > dateTo) return false
+  return true
+}
+
 /**
- * The features a bbox source selects.
+ * Does a record belong to this taxon, named at any rank?
  *
- * `taxon` matches at any rank, so "Agaricales" selects an order and "Morchella"
- * a genus without the member having to say which they meant.
+ * The rank columns are the answer where they exist: "Agaricales" selects an
+ * order and "Morchella" a genus without the member having to say which.
+ *
+ * But they do not always exist. The committed baseline predates the taxonomy
+ * work and carries a `species` binomial and nothing else — no genus, no family,
+ * no kingdom. Against that dataset a rank-column match finds nothing for every
+ * genus anybody would type, and the job is refused for a reason that has
+ * nothing to do with what was asked.
+ *
+ * So the binomial is the fallback: its first word is the genus, which is what a
+ * binomial is. Only a fallback — a real genus column always wins — because
+ * splitting a name on its spaces is exactly the guesswork the taxonomy columns
+ * were added to replace.
  */
+export function matchesTaxon(props = {}, taxon = '') {
+  const needle = String(taxon || '').trim().toLowerCase()
+  if (!needle) return true
+  if (RANKS.some((r) => String(props[r] || '').toLowerCase() === needle)) return true
+
+  const species = String(props.species || '').trim().toLowerCase()
+  if (!species) return false
+  // Only when there is no genus column to disagree with.
+  if (!String(props.genus || '').trim() && species.split(/\s+/)[0] === needle) return true
+  return false
+}
+
+/**
+ * The features a bbox source selects, and what each filter removed.
+ *
+ * The counts are the point. "No observations to enrich" is true of an area with
+ * nothing in it, of a date range before the data starts, and of a taxon the
+ * dataset does not carry — and those are three different mistakes with three
+ * different fixes. Counting each stage is what lets the refusal say which.
+ */
+export function explainSelection(features, source) {
+  const inBounds = features.filter((f) => withinBounds(f, source.bounds))
+  const inDates = inBounds.filter((f) => withinDates(f, source))
+  const selected = inDates.filter((f) => matchesTaxon(f.properties, source.taxon))
+  return {
+    total: features.length,
+    inBounds: inBounds.length,
+    inDates: inDates.length,
+    selected,
+  }
+}
+
+/** The features a bbox source selects. */
 export function selectFeatures(features, source) {
-  const { bounds, dateFrom, dateTo, taxon } = source
-  const needle = (taxon || '').trim().toLowerCase()
-  return features.filter((f) => {
-    if (!withinBounds(f, bounds)) return false
-    const props = f.properties || {}
-    const date = (props.date || '').slice(0, 10)
-    if (dateFrom && (!date || date < dateFrom)) return false
-    if (dateTo && (!date || date > dateTo)) return false
-    if (needle) {
-      const ranks = ['kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']
-      const hit = ranks.some((r) => String(props[r] || '').toLowerCase() === needle)
-      if (!hit) return false
-    }
-    return true
-  })
+  return explainSelection(features, source).selected
 }
 
 /** Distinct observation dates, which is what the dated stages cost per. */
@@ -94,6 +136,48 @@ export async function loadSource(source, { client = null, viewer = null, read = 
 
 /** Points and dates a spec covers, for pricing it before it runs. */
 export async function measureSource(spec, access = {}) {
-  const features = await loadSource(spec.source, access)
-  return { points: features.length, dates: countDates(features) }
+  if (spec.source?.type === 'dataset') {
+    const features = await loadSource(spec.source, access)
+    return { points: features.length, dates: countDates(features) }
+  }
+  // A bbox, which is the case that can come back empty for three unrelated
+  // reasons. Carry the breakdown so the refusal can say which one.
+  const baseline = await loadBaseline()
+  const seen = explainSelection(baseline?.features || [], spec.source)
+  return {
+    points: seen.selected.length,
+    dates: countDates(seen.selected),
+    breakdown: { total: seen.total, inBounds: seen.inBounds, inDates: seen.inDates },
+  }
+}
+
+/**
+ * Why a bbox selected nothing, in words the member can act on.
+ *
+ * Each branch names the filter that emptied the set and the count that survived
+ * the one before it, because that number is the whole difference between "look
+ * somewhere else" and "ask for a different taxon".
+ */
+export function explainEmpty(source = {}, breakdown = null) {
+  const n = (v) => Number(v || 0).toLocaleString()
+  if (!breakdown) return 'That area and date range contain no observations to enrich.'
+  if (!breakdown.total) {
+    // Not the member's fault: the dataset the box is matched against is the one
+    // bundled with the deployment, and it did not load.
+    return 'The observation dataset could not be read, so there is nothing to match that area '
+      + 'against. That is a fault on our side rather than in what you asked for.'
+  }
+  if (!breakdown.inBounds) {
+    return 'No observations fall inside that area. Try “Use the current map view” with the map '
+      + 'over somewhere the points are.'
+  }
+  if (!breakdown.inDates) {
+    const from = source.dateFrom || 'the start'
+    const to = source.dateTo || 'now'
+    return `${n(breakdown.inBounds)} observations are in that area, but none of them are dated `
+      + `between ${from} and ${to}. Widen the date range.`
+  }
+  return `${n(breakdown.inDates)} observations are in that area and date range, but none of them `
+    + `match the taxon “${source.taxon}”. Clear the taxon to enrich all of them, or pick one the `
+    + 'dataset actually carries.'
 }

@@ -11,8 +11,10 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { DatasetAccessError } from '../netlify/lib/dataset-access.mjs'
-import { countDates, loadSource, measureSource, selectFeatures, withinBounds }
-  from '../netlify/lib/job-source.mjs'
+import {
+  countDates, explainEmpty, explainSelection, loadSource, matchesTaxon, measureSource,
+  selectFeatures, withinBounds, withinDates,
+} from '../netlify/lib/job-source.mjs'
 
 const point = (lon, lat, props = {}) => ({
   type: 'Feature',
@@ -173,4 +175,136 @@ test('measuring a dataset source is scoped the same way as loading it', async ()
     ] }),
   })
   assert.deepEqual(measured, { points: 2, dates: 2 })
+})
+
+// ── Matching a taxon against a dataset with no rank columns ──────────────────
+//
+// The committed baseline predates the taxonomy work: it carries a `species`
+// binomial and nothing else. Against that, a rank-column match found nothing
+// for every genus anybody would type — so a job for "Amanita" in an area with
+// ten thousand observations in it was refused, and refused with a message
+// blaming the area and the dates, which were both fine.
+
+test('a rank column is the answer where it exists', () => {
+  const props = { kingdom: 'Fungi', order: 'Agaricales', genus: 'Amanita', species: 'Amanita muscaria' }
+  for (const t of ['Fungi', 'Agaricales', 'Amanita', 'Amanita muscaria', 'AMANITA', ' amanita ']) {
+    assert.ok(matchesTaxon(props, t), `${t} did not match`)
+  }
+  assert.ok(!matchesTaxon(props, 'Boletus'))
+  assert.ok(!matchesTaxon(props, 'Morchella'))
+})
+
+test('a genus matches a binomial when the dataset has no genus column', () => {
+  // This is the whole bug: 48,000 records with species and no genus.
+  const legacy = { species: 'Caloboletus conifericola' }
+  assert.ok(matchesTaxon(legacy, 'Caloboletus'), 'a genus query found nothing in a legacy dataset')
+  assert.ok(matchesTaxon(legacy, 'Caloboletus conifericola'))
+  assert.ok(!matchesTaxon(legacy, 'conifericola'), 'the epithet is not the genus')
+  assert.ok(!matchesTaxon(legacy, 'Boletus'), 'a different genus matched')
+})
+
+test('a real genus column wins over the binomial guess', () => {
+  // Splitting a name on its spaces is the guesswork the rank columns replaced,
+  // so it only applies where there is no column to disagree with. A record
+  // whose genus says one thing and whose species string says another is
+  // answered by the column.
+  const props = { genus: 'Amanita', species: 'Lepiota naucina' }
+  assert.ok(matchesTaxon(props, 'Amanita'))
+  assert.ok(!matchesTaxon(props, 'Lepiota'), 'the binomial overrode the genus column')
+})
+
+test('an empty taxon matches everything, and an empty record matches nothing', () => {
+  assert.ok(matchesTaxon({ species: 'Amanita muscaria' }, ''))
+  assert.ok(matchesTaxon({}, '   '))
+  assert.ok(matchesTaxon({}, null))
+  assert.ok(!matchesTaxon({}, 'Amanita'))
+  assert.ok(!matchesTaxon({ species: '' }, 'Amanita'))
+})
+
+test('a bbox selection still filters by taxon through the legacy path', () => {
+  const features = [
+    { geometry: { coordinates: [-105, 40] }, properties: { date: '2026-08-01', species: 'Amanita muscaria' } },
+    { geometry: { coordinates: [-105, 40] }, properties: { date: '2026-08-01', species: 'Boletus edulis' } },
+  ]
+  const source = { bounds: { north: 41, south: 39, west: -106, east: -104 }, taxon: 'Amanita' }
+  assert.equal(selectFeatures(features, source).length, 1)
+  assert.equal(selectFeatures(features, { ...source, taxon: '' }).length, 2)
+})
+
+// ── Saying which filter emptied the selection ────────────────────────────────
+
+test('each filter is counted separately, so the empty one can be named', () => {
+  const features = [
+    { geometry: { coordinates: [-105, 40] }, properties: { date: '2026-08-01', species: 'Amanita muscaria' } },
+    { geometry: { coordinates: [-105, 40] }, properties: { date: '2020-08-01', species: 'Boletus edulis' } },
+    { geometry: { coordinates: [0, 0] }, properties: { date: '2026-08-01', species: 'Amanita muscaria' } },
+  ]
+  const seen = explainSelection(features, {
+    bounds: { north: 41, south: 39, west: -106, east: -104 },
+    dateFrom: '2026-01-01', dateTo: '2026-12-31', taxon: 'Amanita',
+  })
+  assert.equal(seen.total, 3)
+  assert.equal(seen.inBounds, 2)
+  assert.equal(seen.inDates, 1)
+  assert.equal(seen.selected.length, 1)
+})
+
+test('the refusal names the area when nothing is in it', () => {
+  const msg = explainEmpty({ taxon: '' }, { total: 48233, inBounds: 0, inDates: 0 })
+  assert.match(msg, /No observations fall inside that area/)
+  assert.match(msg, /current map view/, 'it does not say what to do instead')
+})
+
+test('the refusal names the dates, with how many were in the area', () => {
+  const msg = explainEmpty({ dateFrom: '2030-01-01', dateTo: '2030-12-31' },
+    { total: 48233, inBounds: 10084, inDates: 0 })
+  assert.match(msg, /10,084 observations are in that area/)
+  assert.match(msg, /2030-01-01/)
+  assert.match(msg, /2030-12-31/)
+  assert.match(msg, /Widen the date range/)
+})
+
+test('the refusal names the taxon, with how many survived the dates', () => {
+  // The case that actually happened, and the one the old message described
+  // least accurately of the three.
+  const msg = explainEmpty({ taxon: 'Amanita', dateFrom: '2026-07-01', dateTo: '2026-09-17' },
+    { total: 48233, inBounds: 10084, inDates: 296 })
+  assert.match(msg, /296 observations are in that area and date range/)
+  assert.match(msg, /“Amanita”/)
+  assert.match(msg, /Clear the taxon/, 'it does not say what to do instead')
+  assert.ok(!/date range\./.test(msg.replace(/in that area and date range/, '')),
+    'it still blames the dates')
+})
+
+test('a dataset that could not be read is reported as our fault, not theirs', () => {
+  const msg = explainEmpty({}, { total: 0, inBounds: 0, inDates: 0 })
+  assert.match(msg, /could not be read/)
+  assert.match(msg, /our side/)
+})
+
+test('with no breakdown it falls back to the old wording rather than throwing', () => {
+  // A dataset source has no breakdown to give, and neither does an older
+  // counter, so the message has to survive its absence.
+  assert.match(explainEmpty({}, null), /no observations to enrich/)
+  assert.match(explainEmpty(), /no observations to enrich/)
+})
+
+// ── Dates ────────────────────────────────────────────────────────────────────
+
+test('an undated record is outside any date range, and inside no range at all', () => {
+  const undated = { properties: {} }
+  assert.ok(withinDates(undated, {}), 'no range means every record is in it')
+  assert.ok(!withinDates(undated, { dateFrom: '2020-01-01' }))
+  assert.ok(!withinDates(undated, { dateTo: '2020-01-01' }))
+})
+
+test('a date range includes both of its ends', () => {
+  const on = (d) => ({ properties: { date: d } })
+  const range = { dateFrom: '2026-07-01', dateTo: '2026-09-17' }
+  assert.ok(withinDates(on('2026-07-01'), range))
+  assert.ok(withinDates(on('2026-09-17'), range))
+  assert.ok(!withinDates(on('2026-06-30'), range))
+  assert.ok(!withinDates(on('2026-09-18'), range))
+  // A full timestamp is cut to its date, which is what the pipeline writes.
+  assert.ok(withinDates(on('2026-08-01T14:22:00Z'), range))
 })

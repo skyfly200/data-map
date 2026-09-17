@@ -14,6 +14,7 @@ import { adminClient } from './auth.mjs'
 import { estimateUnits, summariseUsage, checkQuota } from './quotas.mjs'
 import { effectiveTier } from './tiers.mjs'
 import { STAGES, normaliseSpec, progressPlan } from './ee-pipeline.mjs'
+import { explainEmpty } from './job-source.mjs'
 
 /** A job left running longer than this is assumed dead and may be reclaimed. */
 export const STALE_LOCK_MS = 15 * 60 * 1000
@@ -44,6 +45,10 @@ export async function measureSpec(spec, counter) {
   return {
     points: Math.max(0, Number(measured?.points) || 0),
     dates: Math.max(1, Number(measured?.dates) || 1),
+    // What each filter removed, when the counter knows. Carried through so an
+    // empty selection can be refused with the reason it was empty rather than
+    // with a guess at it.
+    breakdown: measured?.breakdown || null,
   }
 }
 
@@ -59,8 +64,12 @@ export async function submitJob({ user, profile, spec: rawSpec, counter }) {
   const spec = normaliseSpec(rawSpec)
   const client = db()
 
-  const { points, dates } = await measureSpec(spec, counter)
-  if (!points) throw new QueueError('That area and date range contain no observations to enrich.')
+  const { points, dates, breakdown } = await measureSpec(spec, counter)
+  // Named, not guessed. An area with nothing in it, a date range before the
+  // data starts and a taxon the dataset does not carry are three different
+  // mistakes with three different fixes, and the old message described the
+  // first one whichever had actually happened.
+  if (!points) throw new QueueError(explainEmpty(spec.source, breakdown))
 
   const estimate = estimateUnits({ points, dates, stages: spec.stages }, STAGES)
 
