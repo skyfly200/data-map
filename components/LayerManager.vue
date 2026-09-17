@@ -330,10 +330,24 @@ onMounted(() => { if (props.open) seedPanels() })
   color: var(--muted, #777); font-weight: 700; margin-bottom: 5px;
 }
 
+/* The drawn stack: its own scroll at the top, never the whole window.
+ *
+ * Two things had to be true for that and neither was. It was flex: 0 0 auto, so
+ * it could not shrink and simply took whatever it needed. And its cap was a
+ * percentage, which resolves against the parent's height — but .lm has only a
+ * max-height, so its height is indefinite, the percentage was ignored, and the
+ * cap did nothing at all. With four or five layers on, the stack filled the
+ * panel and pushed the browse list out of it entirely: nothing left to scroll
+ * to, and no way to reach another layer without switching one off.
+ *
+ * So: shrinkable, and capped in units that always resolve. */
 .lm-active {
-  flex: 0 0 auto; padding: 9px 12px; border-bottom: 1px solid var(--border-soft, #eee);
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 260px;
+  overflow-y: auto; overscroll-behavior: contain;
+  padding: 9px 12px; border-bottom: 1px solid var(--border-soft, #eee);
   background: var(--surface-2, #f7f7f7);
-  max-height: 40%; overflow-y: auto;
 }
 .lm-stack { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
 .lm-on-top { display: flex; align-items: center; gap: 7px; }
@@ -421,7 +435,13 @@ onMounted(() => { if (props.open) seedPanels() })
 .lm-seg-btn:hover { background: var(--surface-2, #f4f4f4); color: var(--text); }
 .lm-seg-btn.on { background: var(--accent, #2b7a3d); color: #fff; font-weight: 600; }
 
-.lm-body { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: 10px 12px 12px; }
+/* min-height: 0, because a flex item's default min-height is auto — it refuses
+   to shrink below its content, so overflow-y: auto never gets anything to
+   scroll and the item pushes the panel open instead. */
+.lm-body {
+  flex: 1 1 auto; min-height: 0;
+  overflow-y: auto; overscroll-behavior: contain; padding: 10px 12px 12px;
+}
 .lm-empty { margin: 4px 0; color: var(--muted, #777); font-size: 0.78rem; }
 
 .lm-group { border-bottom: 1px solid var(--border-soft, #eee); }
@@ -483,8 +503,31 @@ onMounted(() => { if (props.open) seedPanels() })
 @media (max-width: 720px) {
   .lm {
     top: auto; right: 6px; left: 6px; bottom: 6px; width: auto;
-    max-height: 62%;
+    /* A little taller than it was, but not much: this window is meant to be
+       judged against the map behind it, so taking the whole screen would cost
+       the thing it is for. */
+    max-height: 70%;
   }
-  .lm-active { max-height: 35%; }
+  /* The split between the two lists, as a contract rather than as whatever
+     flexbox happened to do. The stack takes what it needs up to a third of the
+     screen; the browse list is never squeezed below a usable height, because
+     reaching it is the reason the window is open. */
+  .lm-active { flex: 1 1 auto; max-height: 32vh; }
+  .lm-body { min-height: 116px; }
+
+  /* A drawn layer was three stacked rows — name, opacity, blend — so four
+     layers filled the sheet and you scrolled a list one item at a time.
+     Opacity and blend share a row here; both are still full-width targets. */
+  .lm-on {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 4px 10px; align-items: center;
+  }
+  .lm-on-top { grid-column: 1 / -1; }
+  .lm-op, .lm-blend { padding-left: 0; margin-top: 0; }
+  .lm-stack { gap: 12px; }
+
+  /* Touch targets, which the desktop sizes are slightly under. */
+  .lm-order button, .lm-solo { width: 28px; height: 28px; font-size: 0.72rem; }
+  .lm-blend select { padding: 4px 4px; }
 }
 </style>
