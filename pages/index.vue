@@ -79,25 +79,8 @@
 
         <figure class="scene" aria-label="A satellite sampling environmental layers down to one point on the ground">
           <div class="scene-3d">
-            <!-- Satellite in orbit at the top of the column. The dashed ellipse is
-                 the orbital path; the satellite rides it, its position along the
-                 path driven by how far the page is scrolled (--sat). -->
-            <div class="orbit" aria-hidden="true">
-              <svg class="orbit-svg" viewBox="0 0 220 92" preserveAspectRatio="none">
-                <ellipse cx="110" cy="46" rx="104" ry="34" />
-              </svg>
-              <div class="sat">
-                <span class="sat-body"></span>
-                <span class="sat-panel left"></span>
-                <span class="sat-panel right"></span>
-              </div>
-            </div>
-
-            <!-- The beam the sensor casts straight down through the layers. -->
-            <div class="beam" aria-hidden="true"></div>
-
             <!-- The named layers, each with a swatch of what it looks like on the
-                 map, stacked in 3D. -->
+                 map, stacked in 3D above the Earth. -->
             <div class="plates">
               <div v-for="(layer, i) in STRATA" :key="layer.name" class="plate"
                    :style="{ '--i': i, '--viz': layer.viz }">
@@ -109,13 +92,72 @@
               </div>
             </div>
 
-            <!-- The ground, curved like a horizon, with the observation landing. -->
-            <div class="earth" aria-hidden="true">
-              <div class="earth-glow"></div>
-              <div class="pin"></div>
+            <!-- The sensor beam, straight down through the layers to the surface. -->
+            <div class="beam" aria-hidden="true"></div>
+
+            <!-- The Earth, with the satellite orbiting around it. The orbit is one
+                 ellipse drawn in two halves: the back arc sits behind the globe and
+                 the front arc over it, so the ring reads as wrapping around. The
+                 satellite rides the full ellipse, its position along it driven by how
+                 far the page is scrolled (--sat). -->
+            <div class="globe-wrap" aria-hidden="true">
+              <svg class="orbit-ring back" viewBox="0 0 300 190" preserveAspectRatio="none">
+                <ellipse cx="150" cy="95" rx="136" ry="46" />
+              </svg>
+
+              <div class="globe">
+                <svg class="globe-svg" viewBox="0 0 100 100">
+                  <defs>
+                    <clipPath id="globeClip"><circle cx="50" cy="50" r="48" /></clipPath>
+                    <radialGradient id="ocean" cx="38%" cy="32%" r="75%">
+                      <stop offset="0%" stop-color="#12557d" />
+                      <stop offset="60%" stop-color="#0b3f63" />
+                      <stop offset="100%" stop-color="#06263d" />
+                    </radialGradient>
+                  </defs>
+                  <g clip-path="url(#globeClip)">
+                    <circle cx="50" cy="50" r="48" fill="url(#ocean)" />
+                    <!-- Graticule: the wireframe that reads as a globe. -->
+                    <g class="grat">
+                      <ellipse cx="50" cy="50" rx="48" ry="16" />
+                      <ellipse cx="50" cy="50" rx="48" ry="33" />
+                      <line x1="2" y1="50" x2="98" y2="50" />
+                      <ellipse cx="50" cy="50" rx="16" ry="48" />
+                      <ellipse cx="50" cy="50" rx="33" ry="48" />
+                      <line x1="50" y1="2" x2="50" y2="98" />
+                    </g>
+                    <!-- Stylised continent outlines, so it reads as Earth and not
+                         just a wireframe sphere. Rough on purpose: line art at this
+                         size, not a survey. -->
+                    <g class="land">
+                      <path d="M32 20 C27 25 29 31 33 34 C30 40 32 49 36 54 C33 60 34 69 39 75
+                               C37 80 41 83 43 79 C44 72 40 66 43 60 C48 56 46 47 42 44
+                               C47 38 44 29 38 28 C41 23 36 17 32 20 Z" />
+                      <path d="M55 26 C50 28 51 34 55 37 C52 45 55 55 60 61 C58 67 62 73 65 68
+                               C69 61 65 53 67 47 C72 43 70 33 63 32 C66 27 60 23 55 26 Z" />
+                      <path d="M63 24 C70 21 80 24 87 29 C91 33 88 39 82 39 C75 41 71 36 65 35
+                               C62 31 59 26 63 24 Z" />
+                      <path d="M74 66 C79 64 85 67 83 72 C80 76 74 74 72 70 C71 67 72 66 74 66 Z" />
+                    </g>
+                  </g>
+                  <circle cx="50" cy="50" r="48" class="rim" />
+                </svg>
+                <!-- The observation, on the surface, where the beam lands. -->
+                <span class="pin"></span>
+              </div>
+
+              <svg class="orbit-ring front" viewBox="0 0 300 190" preserveAspectRatio="none">
+                <ellipse cx="150" cy="95" rx="136" ry="46" />
+              </svg>
+
+              <div class="sat">
+                <span class="sat-body"></span>
+                <span class="sat-panel left"></span>
+                <span class="sat-panel right"></span>
+              </div>
             </div>
           </div>
-          <figcaption>One observation, at the bottom of the stack.</figcaption>
+          <figcaption>One observation on Earth, and the layers sampled above it.</figcaption>
         </figure>
       </div>
     </section>
@@ -563,12 +605,12 @@ useHead({
 
 .scene { margin: 0; }
 .scene-3d {
-  position: relative; height: 480px;
+  position: relative; height: 560px;
   transform-style: preserve-3d; perspective: 1100px;
 }
 /* The whole column tilts back and turns gently with scroll and pointer. */
 .plates {
-  position: absolute; left: 0; right: 0; top: 96px;
+  position: absolute; left: 0; right: 0; top: 28px;
   transform-style: preserve-3d;
   transform:
     rotateX(calc(18deg + var(--sc) * 0.004deg))
@@ -593,37 +635,10 @@ useHead({
 .s-name { font-size: 0.86rem; font-weight: 700; color: var(--text-strong); }
 .s-fields { font-size: 0.72rem; color: var(--muted); line-height: 1.3; }
 
-/* The sensor and its orbit at the top. */
-.orbit { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 220px; height: 92px; }
-.orbit-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.orbit-svg ellipse {
-  fill: none; stroke: rgba(56, 189, 248, 0.55); stroke-width: 1; stroke-dasharray: 4 5;
-  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.35));
-}
-/* The satellite rides the orbit: offset-path traces the same ellipse the SVG
-   draws, and offset-distance is how far the page has scrolled, so it travels
-   the ring as you read down. The path coordinates match the ellipse above
-   (centre 110,46, radii 104,34). */
-.sat {
-  position: absolute; top: 0; left: 0; width: 36px; height: 18px;
-  offset-path: path('M 6 46 A 104 34 0 1 1 214 46 A 104 34 0 1 1 6 46');
-  offset-distance: calc(var(--sat, 0) * 100%);
-  offset-rotate: 0deg;
-}
-.sat-body {
-  position: absolute; left: 50%; top: 50%; width: 16px; height: 12px; transform: translate(-50%, -50%);
-  background: linear-gradient(180deg, #e2e8f0, #94a3b8); border-radius: 3px;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
-}
-.sat-panel {
-  position: absolute; top: 50%; width: 13px; height: 16px; transform: translateY(-50%);
-  background: repeating-linear-gradient(90deg, #1e3a8a 0 2px, #3b82f6 2px 4px); border-radius: 2px;
-}
-.sat-panel.left { left: 0; } .sat-panel.right { right: 0; }
-
-/* The beam from the sensor down to the ground. */
+/* The beam from the sensor down to the surface. Ends at the globe's north pole,
+   where the pin sits. */
 .beam {
-  position: absolute; left: 50%; top: 40px; height: 388px; width: 2px; transform: translateX(-50%);
+  position: absolute; left: 50%; top: 30px; height: 330px; width: 2px; transform: translateX(-50%);
   background: linear-gradient(180deg, rgba(56, 189, 248, 0), #38bdf8 30%, #34d399);
   box-shadow: 0 0 16px rgba(56, 189, 248, 0.7); z-index: 0;
 }
@@ -633,23 +648,64 @@ useHead({
   clip-path: polygon(48% 0, 52% 0, 100% 100%, 0 100%);
 }
 
-/* The ground: a wide, faintly glowing arc with the observation landing on it. */
-.earth { position: absolute; left: 50%; bottom: 6px; width: 460px; height: 200px; transform: translateX(-50%); }
-.earth::before {
-  content: ''; position: absolute; left: 50%; top: 0; width: 460px; height: 460px; transform: translateX(-50%);
+/* ── The Earth and its orbiting satellite ─────────────────────────────────────
+   The wrap is the whole point: one ellipse, drawn twice. The back copy sits
+   behind the globe (z below it) so the globe hides its far side; the front copy
+   is clipped to its lower half and drawn over the globe, so the ring reads as
+   passing behind the planet at the top and in front at the bottom. */
+.globe-wrap {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+  width: 300px; height: 190px;
+}
+.orbit-ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.orbit-ring ellipse {
+  fill: none; stroke: rgba(56, 189, 248, 0.6); stroke-width: 1; stroke-dasharray: 4 5;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.4));
+}
+.orbit-ring.back { z-index: 1; }
+/* Only the lower half, laid over the globe. */
+.orbit-ring.front { z-index: 3; clip-path: inset(50% 0 0 0); }
+
+.globe {
+  position: absolute; left: 50%; top: 50%; width: 150px; height: 150px;
+  transform: translate(-50%, -50%); z-index: 2;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 0, #0b3d5c 0, #0a2540 40%, transparent 62%);
-  border-top: 2px solid rgba(56, 189, 248, 0.6);
-  box-shadow: 0 -8px 40px rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.25), 0 0 48px rgba(56, 189, 248, 0.3),
+    inset -10px -14px 40px rgba(0, 0, 0, 0.55);
 }
-.earth-glow {
-  position: absolute; left: 50%; top: -6px; width: 460px; height: 40px; transform: translateX(-50%);
-  background: radial-gradient(ellipse at 50% 0, rgba(52, 211, 153, 0.5), transparent 70%);
+.globe-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.globe-svg .grat { fill: none; stroke: rgba(125, 211, 252, 0.32); stroke-width: 0.6; }
+.globe-svg .land {
+  fill: rgba(52, 211, 153, 0.16); stroke: rgba(110, 231, 183, 0.85); stroke-width: 0.9;
+  stroke-linejoin: round;
 }
+.globe-svg .rim { fill: none; stroke: rgba(56, 189, 248, 0.5); stroke-width: 1.2; }
+
+/* The satellite rides the full ellipse; the path matches the SVG above (centre
+   150,95, radii 136,46). offset-distance is how far the page has scrolled, so it
+   travels the ring around the Earth as you read down. */
+.sat {
+  position: absolute; top: 0; left: 0; width: 34px; height: 17px; z-index: 4;
+  offset-path: path('M 14 95 A 136 46 0 1 1 286 95 A 136 46 0 1 1 14 95');
+  offset-distance: calc(var(--sat, 0) * 100%);
+  offset-rotate: 0deg;
+}
+.sat-body {
+  position: absolute; left: 50%; top: 50%; width: 15px; height: 11px; transform: translate(-50%, -50%);
+  background: linear-gradient(180deg, #e2e8f0, #94a3b8); border-radius: 3px;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.75);
+}
+.sat-panel {
+  position: absolute; top: 50%; width: 12px; height: 15px; transform: translateY(-50%);
+  background: repeating-linear-gradient(90deg, #1e3a8a 0 2px, #3b82f6 2px 4px); border-radius: 2px;
+}
+.sat-panel.left { left: 0; } .sat-panel.right { right: 0; }
+
+/* The observation, on the surface. */
 .pin {
-  position: absolute; left: 50%; top: -6px; width: 14px; height: 14px; transform: translateX(-50%);
+  position: absolute; left: 50%; top: 6px; width: 13px; height: 13px; transform: translateX(-50%);
   border: 2.5px solid #34d399; border-radius: 50%; background: #04140b;
-  box-shadow: 0 0 14px rgba(52, 211, 153, 0.9); z-index: 3;
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.95); z-index: 3;
 }
 .pin::after {
   content: ''; position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; transform: translate(-50%, -50%);
@@ -763,12 +819,12 @@ useHead({
   .flow { grid-template-columns: 1fr; }
   /* Flatten the scene: no perspective tilt, plates as plain full-width cards so
      nothing overlaps, but keep the sensor above and the ground below. */
-  .scene-3d { height: auto; perspective: none; padding: 70px 0 96px; }
+  .scene-3d { height: auto; perspective: none; padding: 14px 0 210px; }
   .plates { position: static; transform: none; margin-top: 8px; }
   .plate { width: 100%; transform: none; box-shadow: 0 2px 8px var(--shadow); }
-  .beam { top: 46px; height: calc(100% - 120px); }
-  .orbit { top: 0; }
-  .earth { width: 100%; }
-  .earth::before, .earth-glow { width: 320px; }
+  /* The beam runs from the plates down to the globe sitting below them. */
+  .beam { top: 40px; height: calc(100% - 210px); }
+  /* The globe and its orbit anchor to the bottom of the flattened scene. */
+  .globe-wrap { width: 260px; height: 165px; }
 }
 </style>
