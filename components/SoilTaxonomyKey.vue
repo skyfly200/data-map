@@ -49,8 +49,12 @@
       <p v-if="selectable && !selected.length" class="stk-msg">
         Nothing is chosen, so the layer draws nothing. Tick a class below.
       </p>
+      <!-- Only reachable on a raster with thousands of classes, which this one
+           is not. Kept because a selection silently missing its last few
+           hundred draws a map that is wrong in a way nobody can see. -->
       <p v-if="limitHit" class="stk-msg error">
-        At most {{ CODE_LIMIT }} classes at a time. The rest were not added.
+        At most {{ CODE_LIMIT.toLocaleString() }} classes at a time. None of the
+        extra ones were added.
       </p>
 
       <ul class="stk-list">

@@ -1,7 +1,16 @@
 // Mint a tile URL for an Earth Engine layer.
 //
-//   GET /.netlify/functions/ee-tiles                     the catalogue
-//   GET /.netlify/functions/ee-tiles?layer=…&through=…    a tile template
+//   GET  /.netlify/functions/ee-tiles                     the catalogue
+//   GET  /.netlify/functions/ee-tiles?layer=…&through=…    a tile template
+//   POST /.netlify/functions/ee-tiles  {layer, …}          the same, for big
+//                                                          parameters
+//
+// The POST form exists for one parameter: the soil taxonomy layer's list of
+// class codes. Every class in that raster at once is a few thousand characters,
+// which is past what a query string can be relied on to carry, and a selection
+// that fails at a size nobody can predict is worse than one that cannot be made
+// at all. Same handler, same validation, same cache — only where the parameters
+// were read from differs.
 //
 // Earth Engine renders tiles on demand behind a map id. Asking for one is a
 // single API call, and the answer is a plain XYZ template the browser fetches
@@ -16,6 +25,8 @@
 // own expiry, because a stale template does not error — it serves blank tiles,
 // which on a fire map reads as "nothing burned here". Expiring early costs one
 // API call; expiring late tells a lie.
+
+import { createHash } from 'node:crypto'
 
 import { getStore } from '@netlify/blobs'
 
@@ -57,6 +68,41 @@ const TTL_MS = 6 * 60 * 60 * 1000
  * version — which is a new asset id, and therefore a new cache key anyway.
  */
 const CLASS_TTL_MS = 30 * 24 * 60 * 60 * 1000
+
+/**
+ * A blob key for a cache key that may be arbitrarily long.
+ *
+ * A selection of every soil class is a cache key of a few thousand characters,
+ * which is past what a blob store will accept as a name. Hashing keeps it one
+ * key per distinct selection — the property the cache depends on — and the
+ * readable prefix is kept so a key in the store still says which layer it
+ * belongs to.
+ */
+export function blobId(key) {
+  if (key.length <= 120) return key
+  const digest = createHash('sha256').update(key).digest('hex').slice(0, 32)
+  return `${key.slice(0, 48)}|${digest}`
+}
+
+/**
+ * The parameters of a request, from the query string and, for a POST, the body.
+ *
+ * The body wins where both name the same thing. Nothing here trusts either:
+ * every value still goes through resolveLayer, which is the only thing that
+ * decides what reaches Earth Engine.
+ */
+export async function readInput(request, url) {
+  const query = Object.fromEntries(url.searchParams)
+  if (request.method !== 'POST') return query
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    throw new LayerError('The request body could not be read as JSON.')
+  }
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return query
+  return { ...query, ...body }
+}
 
 /** Resolve an Earth Engine value. `evaluate` is callback-shaped in the client. */
 function evaluate(obj) {
@@ -253,10 +299,19 @@ async function classTable(request, key) {
 
 export default async function handler(request) {
   const url = new URL(request.url)
-  const key = url.searchParams.get('layer')
 
-  const wantsClasses = url.searchParams.get('classes')
-  if (wantsClasses) return classTable(request, wantsClasses)
+  let input
+  try {
+    input = await readInput(request, url)
+  } catch (err) {
+    if (err instanceof LayerError) return json({ ok: false, error: err.message }, 400)
+    throw err
+  }
+
+  const key = input.layer || null
+
+  const wantsClasses = input.classes
+  if (wantsClasses) return classTable(request, String(wantsClasses))
 
   // The catalogue is not gated: the map needs it to know what to offer, and
   // knowing a layer exists is not the same as being able to render it.
@@ -290,14 +345,16 @@ export default async function handler(request) {
 
   let resolved
   try {
-    resolved = resolveLayer(key, Object.fromEntries(url.searchParams))
+    resolved = resolveLayer(key, input)
   } catch (err) {
     if (err instanceof LayerError) return json({ ok: false, error: err.message }, 400)
     throw err
   }
 
   const { layer, params } = resolved
-  const id = cacheKey(key, params)
+  // Hashed when long: a selection of every soil class is a cache key of a few
+  // thousand characters, which is more than a blob store will take as a name.
+  const id = blobId(cacheKey(key, params))
   const blobs = store()
 
   if (blobs) {

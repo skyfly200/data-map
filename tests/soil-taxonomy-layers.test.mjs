@@ -209,15 +209,33 @@ test('a selection that is not numbers is refused rather than silently dropped', 
   assert.throws(() => normaliseCodes('DROP TABLE'), LayerError)
 })
 
-test('a selection past the limit is refused rather than trimmed', () => {
+test('every class in the raster can be chosen at once', () => {
+  // The limit used to be the URL's, which put a ceiling on a selection at a few
+  // hundred classes. The selection travels in a request body now, so "all of
+  // them" is a selection like any other.
+  const all = Array.from({ length: 500 }, (_, i) => i + 1)
+  assert.equal(codeList(normaliseCodes(all)).length, 500)
+})
+
+test('an absurd selection is still refused rather than trimmed', () => {
+  // What is left of the limit is a bound on how much work one request may ask
+  // for, not a bound on how many soils there are.
   const many = Array.from({ length: CODE_LIMIT + 1 }, (_, i) => i + 1)
   assert.throws(() => normaliseCodes(many), (err) => {
     assert.ok(err instanceof LayerError)
     assert.match(err.message, new RegExp(String(CODE_LIMIT)))
     return true
   })
-  // Exactly at the limit is fine.
   assert.equal(codeList(normaliseCodes(many.slice(0, CODE_LIMIT))).length, CODE_LIMIT)
+})
+
+test('a selection of every class is bigger than a URL, which is why it is a body', () => {
+  // The number this test is really pinning: if a four-hundred-class selection
+  // fitted comfortably in a query string, the POST path would be dead weight.
+  const all = Array.from({ length: 430 }, (_, i) => i + 1)
+  const query = new URLSearchParams({ layer: 'soil-taxonomy-select', codes: normaliseCodes(all) })
+  assert.ok(query.toString().length > 1800,
+    `a full selection is only ${query.toString().length} characters, so it would fit`)
 })
 
 test('the layer reads its selection through the same checks', () => {
