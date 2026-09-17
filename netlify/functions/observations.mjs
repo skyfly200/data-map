@@ -11,8 +11,45 @@ import { overlay } from '../lib/observations.mjs'
 import { loadBaseline } from '../lib/baseline.mjs'
 import { supabaseConfigured } from '../lib/supabase-storage.mjs'
 import { readJson } from '../lib/datasets-store.mjs'
+import { taxaInFeatures } from '../lib/dataset-taxa.mjs'
 
-export default async () => {
+// The taxon summary, computed once per warm process. The baseline is a file
+// bundled with the deployment, so it cannot change under us — and parsing fifty
+// megabytes of GeoJSON to count names is not something to do per request.
+let taxaCache = null
+
+/**
+ * Which taxa the baseline carries, by rank, with counts.
+ *
+ *   GET /.netlify/functions/observations?summary=taxa
+ *
+ * This exists so the job runner's taxon field can offer what is there rather
+ * than accept anything typed. The page cannot compute it for itself: it would
+ * have to download the whole dataset to count it, which is fifty megabytes to
+ * populate a dropdown.
+ *
+ * Read from the same baseline a bbox job is matched against, which is the point
+ * — a name offered here is a name that selects records there.
+ */
+async function taxaSummary() {
+  if (!taxaCache) {
+    const baseline = await loadBaseline()
+    const features = baseline?.features || []
+    taxaCache = { ranks: taxaInFeatures(features), total: features.length }
+  }
+  return new Response(JSON.stringify({ ok: true, ...taxaCache }), {
+    headers: {
+      'content-type': 'application/json',
+      // Static per deployment, so it is worth caching hard at the edge too.
+      'cache-control': 'public, max-age=3600, stale-while-revalidate=86400',
+    },
+  })
+}
+
+export default async (request) => {
+  const url = new URL(request.url)
+  if (url.searchParams.get('summary') === 'taxa') return taxaSummary()
+
   // Baseline: Supabase Storage when configured, else the committed file.
   let baseline = null
   if (supabaseConfigured()) baseline = await readJson('observations.geojson')

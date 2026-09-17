@@ -200,7 +200,7 @@ const MTBS_CLASSES = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** The twelve USDA texture classes, in the order OpenLandMap numbers them. */
-const TEXTURE_CLASSES = [
+export const TEXTURE_CLASSES = [
   { color: '#d5c36b', label: 'Clay' },
   { color: '#b96947', label: 'Silty clay' },
   { color: '#9d3706', label: 'Sandy clay' },

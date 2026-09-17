@@ -17,6 +17,7 @@
 // one round trip per observation date, not seven per observation.
 
 import { CHUNK_SIZE } from './quotas.mjs'
+import { ASSETS } from './ee-tile-layers.mjs'
 
 // ─── Dataset ids, kept in step with scripts/ee_enrich.py ─────────────────────
 export const SRTM = 'USGS/SRTMGL1_003'
@@ -24,6 +25,11 @@ export const WORLDCOVER = 'ESA/WorldCover/v200'
 export const ERA5_DAILY = 'ECMWF/ERA5_LAND/DAILY_AGGR'
 export const CHIRPS_DAILY = 'UCSB-CHG/CHIRPS/DAILY'
 export const S2_SR = 'COPERNICUS/S2_SR_HARMONIZED'
+// The static layers, named from the same place the map layers name them so an
+// asset correction is still a one-line change rather than two.
+export const {
+  OPENLANDMAP_TEXTURE, OPENLANDMAP_GRTGROUP, SOLUS100, MODIS_BURN, GAP_LANDCOVER, TREEMAP,
+} = ASSETS
 
 /**
  * The allowlist. A stage not named here cannot be run, cannot be billed, and
@@ -91,6 +97,53 @@ export const STAGES = {
     perDate: true,
     bands: ['ndvi', 'ndmi'],
     description: 'Sentinel-2 vegetation and moisture indices, cloud-screened.',
+  },
+
+  // ── The static layers ────────────────────────────────────────────────────
+  // Everything below describes the ground rather than the weather, so none of
+  // it is sampled per date: one pass, whatever the date range. That makes them
+  // the cheapest stages here and the ones worth switching on by habit — and it
+  // is why they were the obvious gap between what the map draws and what the
+  // pipeline samples.
+  soil: {
+    label: 'Soil',
+    asset: OPENLANDMAP_TEXTURE,
+    scale: 100,
+    passes: 1,
+    perDate: false,
+    bands: ['soil_texture', 'soil_sand_pct', 'soil_depth_cm'],
+    description: 'USDA texture class, percent sand, and depth to bedrock. '
+      + 'Texture decides how long the ground holds water after rain.',
+  },
+  soil_taxonomy: {
+    label: 'Soil taxonomy',
+    asset: OPENLANDMAP_GRTGROUP,
+    scale: 250,
+    passes: 1,
+    perDate: false,
+    bands: ['soil_great_group', 'soil_order'],
+    description: 'The USDA great group at each point, and the order above it. '
+      + 'Names rather than codes, so the column reads on its own.',
+  },
+  fire: {
+    label: 'Fire history',
+    asset: MODIS_BURN,
+    scale: 500,
+    passes: 1,
+    perDate: false,
+    bands: ['last_burn_year', 'years_since_fire'],
+    description: 'The most recent year each point burned since 2001, from MODIS, '
+      + 'and how long before the observation that was.',
+  },
+  forest: {
+    label: 'Forest type and structure',
+    asset: GAP_LANDCOVER,
+    scale: 30,
+    passes: 1,
+    perDate: false,
+    bands: ['forest_type', 'canopy_pct', 'stand_height_ft'],
+    description: 'GAP ecological system grouped into forest types, with USFS TreeMap '
+      + 'canopy cover and stand height. Conterminous US only.',
   },
 }
 
