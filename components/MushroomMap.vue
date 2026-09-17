@@ -229,12 +229,20 @@
         <!-- A layer with more classes than a key can hold gets a browser for
              them instead: search, what each one means, and where to read more.
              Four hundred swatches is not a key, it is a lookup table. -->
-        <SoilTaxonomyKey v-if="n.classes === 'great-groups'" :layer="n.ee" />
+        <SoilTaxonomyKey v-if="n.classes === 'great-groups'" :layer="n.ee"
+                         :selectable="!!n.eeParams?.codes"
+                         :codes="(eeParams[n.ee] || {}).codes ?? (n.eeParams?.codes?.default || '')"
+                         @update:codes="setEeParam(n.ee, 'codes', $event)" />
         <!-- The date the layer is showing, movable for the ones that vary. Each
              product has its own latency, so "today" is usually blank tiles. -->
         <!-- The knobs an Earth Engine layer exposes. Which year, how far back
              to look: these change what is rendered, so they re-mint the tiles. -->
-        <div v-for="(p, name) in (n.eeParams || {})" :key="name" class="layer-date">
+        <!-- Every parameter except the ones a dedicated control already owns.
+             A list of class codes is not a number and not a dropdown; the class
+             browser above is its editor, and a second one here would be a text
+             field asking somebody to type four hundred numbers. -->
+        <div v-for="(p, name) in (n.eeParams || {})" :key="name" class="layer-date"
+             v-show="p.type !== 'codes'">
           <label :for="`ee-${n.slug}-${name}`">{{ p.label }}</label>
           <!-- A fixed set of choices (a season, say) is a dropdown; anything
                numeric is a stepper. Both re-mint the tiles on change. -->
@@ -355,6 +363,7 @@ import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservation
 import { classColorFor, fraction, matchNote, paletteFor, rampColor } from '~/composables/fieldPalettes'
 import { gradientCss, normaliseStops } from '~/composables/ramps'
 import { drawnKeys, effectiveBlend, reorderStack } from '~/composables/blendModes'
+import { normaliseCodes } from '~/netlify/lib/ee-tile-layers.mjs'
 import { RAMP_PRESETS } from '~/composables/useMapHeatmaps'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
 import { fieldValue } from '~/composables/statistics'
@@ -1331,6 +1340,15 @@ function setEeParam(key, name, value) {
     // A choice from a fixed list: keep it as the string it is, falling back to
     // the default if somehow handed something off the list.
     next = (p.values || []).includes(String(value)) ? String(value) : (p.default ?? (p.values || [])[0])
+  } else if (p?.type === 'codes') {
+    // A set of class codes. Normalised here with the same function the server
+    // normalises with, so the cache key the browser produces is the one the
+    // server produces and a selection is minted once rather than twice.
+    try {
+      next = normaliseCodes(value, p.max)
+    } catch {
+      return
+    }
   } else {
     next = Math.floor(Number(value))
     if (!Number.isFinite(next)) next = p?.default ?? 0

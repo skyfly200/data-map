@@ -13,7 +13,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { EE_TILE_LAYERS, describeLayer, tierFor } from '../netlify/lib/ee-tile-layers.mjs'
+import {
+  CODE_LIMIT, EE_TILE_LAYERS, LayerError, cacheKey, codeList, describeLayer, normaliseCodes,
+  resolveLayer, tierFor,
+} from '../netlify/lib/ee-tile-layers.mjs'
 import { MATSUTAKE_GREAT_GROUPS, SOIL_ORDERS, orderForGreatGroup } from '../netlify/lib/soil-taxonomy.mjs'
 
 /** Just enough Earth Engine to record what a build asked for. */
@@ -39,12 +42,12 @@ const TABLE = {
 }
 
 const taxonomy = EE_TILE_LAYERS['soil-taxonomy']
-const matsutake = EE_TILE_LAYERS['soil-taxonomy-matsutake']
+const chosen = EE_TILE_LAYERS['soil-taxonomy-select']
 
 // ── Shape ────────────────────────────────────────────────────────────────────
 
 test('both layers are in the catalogue, in the Soil group, gated like the rest of it', () => {
-  for (const [key, layer] of [['soil-taxonomy', taxonomy], ['soil-taxonomy-matsutake', matsutake]]) {
+  for (const [key, layer] of [['soil-taxonomy', taxonomy], ['soil-taxonomy-select', chosen]]) {
     assert.ok(layer, `${key} is missing`)
     assert.equal(layer.group, 'Soil')
     assert.equal(tierFor(key), 'member')
@@ -55,14 +58,13 @@ test('both layers are in the catalogue, in the Soil group, gated like the rest o
   }
 })
 
-test('only the layer whose key IS the orders hands its key to the browser', () => {
+test('a layer whose key IS the order chips hands its key to the browser', () => {
   // The browser draws the twelve orders as chips you can filter by. For the
   // orders layer those chips are the key, so drawing the flat swatch list too
   // is the same twelve entries twice, one set of them not clickable. The
-  // matsutake layer's key is one swatch the browser does not show, so it keeps
-  // its own.
+  // Both layers paint by order, so both hand their key to the browser.
   assert.equal(describeLayer('soil-taxonomy').legendInBrowser, true)
-  assert.equal(describeLayer('soil-taxonomy-matsutake').legendInBrowser, undefined)
+  assert.equal(describeLayer('soil-taxonomy-select').legendInBrowser, true)
 })
 
 test('the catalogue entry does not carry four hundred classes to every viewer', () => {
@@ -130,40 +132,104 @@ test('the palette index and the legend agree for every order', () => {
   })
 })
 
-// ── The matsutake layer ──────────────────────────────────────────────────────
+// ── The chosen-classes layer ─────────────────────────────────────────────────
 
-test('only the flagged great groups are painted', () => {
+test('only the chosen classes are painted, each in its own order colour', () => {
   const { ee, calls } = stubEe()
-  const { vis } = matsutake.build(ee, {}, TABLE)
+  const { vis } = chosen.build(ee, { codes: '18,213,999' }, TABLE)
 
-  // Argiudolls and Water are not on the list; the other five are.
-  assert.deepEqual(calls.remap.from, [18, 61, 120, 213, 357])
-  assert.deepEqual(calls.remap.to, [1, 1, 1, 1, 1])
+  // Hapludalfs (Alfisols, 1) and Dystrocryepts (Inceptisols, 7) are chosen and
+  // placeable; 999 is Water, which has no order and so is masked.
+  assert.deepEqual(calls.remap.from, [18, 213, 999])
+  assert.deepEqual(calls.remap.to, [1, 7, 0])
   assert.equal(calls.remap.dflt, 0)
-  assert.equal(calls.selfMask, 1, 'unflagged ground is painted "no" rather than left blank')
-  assert.equal(vis.palette.length, 1)
+  assert.equal(calls.selfMask, 1, 'unchosen ground is painted rather than left blank')
+  assert.equal(vis.palette.length, 12, 'a selection across orders cannot be told apart')
 })
 
-test('the match is on the name and ignores case and padding', () => {
+test('choosing nothing paints nothing, rather than everything', () => {
+  // The opposite default is the dangerous one: switch the layer on, see the
+  // whole world painted, and read it as "all of this matches".
+  for (const codes of ['', undefined, null]) {
+    const { ee, calls } = stubEe()
+    chosen.build(ee, { codes }, TABLE)
+    assert.deepEqual(calls.remap.from, [], `codes=${codes} painted something`)
+    assert.deepEqual(calls.remap.to, [])
+  }
   const { ee, calls } = stubEe()
-  matsutake.build(ee, {}, {
-    values: [1, 2, 3],
-    names: ['  hapludalfs ', 'HAPLORTHODS', 'Argiudolls'],
+  chosen.build(ee, {}, TABLE)
+  assert.deepEqual(calls.remap.from, [])
+})
+
+test('a code the raster does not have is dropped rather than shifting the list', () => {
+  // from and to are built together from the table, so an unknown code cannot
+  // pair a real class with the wrong colour.
+  const { ee, calls } = stubEe()
+  chosen.build(ee, { codes: '18,77777' }, TABLE)
+  assert.deepEqual(calls.remap.from, [18])
+  assert.deepEqual(calls.remap.to, [1])
+})
+
+test('the chosen list is always as long as the colours it is paired with', () => {
+  const { ee, calls } = stubEe()
+  chosen.build(ee, { codes: TABLE.values.join(',') }, TABLE)
+  assert.equal(calls.remap.from.length, calls.remap.to.length)
+  assert.equal(calls.remap.from.length, TABLE.values.length)
+})
+
+test('the note says it is a filter and not a prediction', () => {
+  // The layer says the soil is the kind you asked for. It knows nothing about
+  // hosts, and a habitat layer read as a prediction is how somebody ends up
+  // walking a long way to a place with no trees on it.
+  assert.match(chosen.note, /not a prediction|soil filter/i)
+})
+
+// ── The selection parameter ──────────────────────────────────────────────────
+
+test('a selection is deduplicated and sorted, so one selection is one cache entry', () => {
+  assert.equal(normaliseCodes('213,18,18,213'), '18,213')
+  assert.equal(normaliseCodes([213, 18, 18]), '18,213')
+  assert.equal(normaliseCodes(' 18 , 213 '), '18,213')
+  assert.equal(normaliseCodes('18,,213'), '18,213')
+})
+
+test('an empty selection is an empty string, not a list with nothing in it', () => {
+  for (const empty of ['', ' ', ',', [], null, undefined]) {
+    assert.equal(normaliseCodes(empty), '', `${JSON.stringify(empty)} did not come back empty`)
+  }
+  assert.deepEqual(codeList(''), [])
+  assert.deepEqual(codeList(null), [])
+  assert.deepEqual(codeList('18,213'), [18, 213])
+})
+
+test('a selection that is not numbers is refused rather than silently dropped', () => {
+  // It reaches Earth Engine as a remap list, and a selection quietly missing
+  // what could not be parsed draws a map that is wrong invisibly.
+  assert.throws(() => normaliseCodes('18,nonsense'), LayerError)
+  assert.throws(() => normaliseCodes('DROP TABLE'), LayerError)
+})
+
+test('a selection past the limit is refused rather than trimmed', () => {
+  const many = Array.from({ length: CODE_LIMIT + 1 }, (_, i) => i + 1)
+  assert.throws(() => normaliseCodes(many), (err) => {
+    assert.ok(err instanceof LayerError)
+    assert.match(err.message, new RegExp(String(CODE_LIMIT)))
+    return true
   })
-  assert.deepEqual(calls.remap.from, [1, 2])
+  // Exactly at the limit is fine.
+  assert.equal(codeList(normaliseCodes(many.slice(0, CODE_LIMIT))).length, CODE_LIMIT)
 })
 
-test('its legend says what the one colour means', () => {
-  assert.equal(matsutake.legend.items.length, 1)
-  assert.ok(matsutake.legend.items[0].label)
-  assert.equal(matsutake.legend.items[0].color, '#2ca25f')
+test('the layer reads its selection through the same checks', () => {
+  assert.equal(resolveLayer('soil-taxonomy-select', { codes: '213,18' }).params.codes, '18,213')
+  assert.equal(resolveLayer('soil-taxonomy-select').params.codes, '')
+  assert.throws(() => resolveLayer('soil-taxonomy-select', { codes: 'x' }), LayerError)
 })
 
-test('the note does not promise mushrooms', () => {
-  // The layer says the soil is the right kind. It knows nothing about hosts,
-  // and a habitat layer read as a prediction is how somebody ends up walking
-  // a long way to a place with no trees on it.
-  assert.match(matsutake.note, /not a prediction|soil filter/i)
+test('the same selection in a different order is one tile, not two', () => {
+  const a = resolveLayer('soil-taxonomy-select', { codes: '18,213' })
+  const b = resolveLayer('soil-taxonomy-select', { codes: '213,18,18' })
+  assert.equal(cacheKey('soil-taxonomy-select', a.params), cacheKey('soil-taxonomy-select', b.params))
 })
 
 // ── The class table ──────────────────────────────────────────────────────────
@@ -180,7 +246,7 @@ test('both layers read the same table, so they cannot disagree about a code', ()
   const a = stubEe()
   const b = stubEe()
   taxonomy.prepare(a.ee)
-  matsutake.prepare(b.ee)
+  chosen.prepare(b.ee)
   assert.equal(a.calls.asset, b.calls.asset)
   assert.match(a.calls.asset, /SOL_GRTGROUP_USDA-SOILTAX_C/)
 })
@@ -189,9 +255,9 @@ test('an empty table yields an empty remap rather than a painted map', () => {
   // The tile function refuses to render on an empty table; this is the second
   // line, so that if it ever got through, the layer is blank rather than
   // uniformly one colour.
-  for (const layer of [taxonomy, matsutake]) {
+  for (const layer of [taxonomy, chosen]) {
     const { ee, calls } = stubEe()
-    layer.build(ee, {}, { values: [], names: [] })
+    layer.build(ee, { codes: '18' }, { values: [], names: [] })
     assert.deepEqual(calls.remap.from, [])
     assert.deepEqual(calls.remap.to, [])
     assert.equal(calls.selfMask, 1)
@@ -199,20 +265,25 @@ test('an empty table yields an empty remap rather than a painted map', () => {
 })
 
 test('a missing table does not throw before the error can be reported', () => {
-  for (const layer of [taxonomy, matsutake]) {
+  for (const layer of [taxonomy, chosen]) {
     const { ee } = stubEe()
-    assert.doesNotThrow(() => layer.build(ee, {}, null))
-    assert.doesNotThrow(() => layer.build(ee, {}, undefined))
+    assert.doesNotThrow(() => layer.build(ee, { codes: '18' }, null))
+    assert.doesNotThrow(() => layer.build(ee, { codes: '18' }, undefined))
   }
 })
 
-test('every flagged great group would be found in a full table', () => {
-  // The list is by name, and a typo in it is invisible: the layer just paints
-  // seventeen soils instead of eighteen.
-  const { ee, calls } = stubEe()
-  matsutake.build(ee, {}, {
+test('the FRMS starting selection is still every one of its great groups', () => {
+  // The list is offered in the picker as one button, and a typo in it is
+  // invisible: the button just picks seventeen soils instead of eighteen.
+  const table = {
     values: MATSUTAKE_GREAT_GROUPS.map((_, i) => i + 1),
     names: [...MATSUTAKE_GREAT_GROUPS],
-  })
+  }
+  const byName = new Map(table.names.map((n, i) => [n, table.values[i]]))
+  const picked = MATSUTAKE_GREAT_GROUPS.map((n) => byName.get(n)).filter((c) => c !== undefined)
+  assert.equal(picked.length, MATSUTAKE_GREAT_GROUPS.length)
+
+  const { ee, calls } = stubEe()
+  chosen.build(ee, { codes: normaliseCodes(picked) }, table)
   assert.equal(calls.remap.from.length, MATSUTAKE_GREAT_GROUPS.length)
 })

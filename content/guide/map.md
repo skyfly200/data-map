@@ -277,15 +277,15 @@ twelve orders, and they are the top of the hierarchy. Orders separate soils by
 how they formed, so the boundaries often follow the geology and the climate, and
 not anything that you can see on the surface.
 
-**Soil taxonomy: matsutake ground** paints only the eighteen great groups that
-FRMS members have flagged as matsutake ground on the Front Range. These are the
-cool, acid, sandy and volcanic soils, across five orders. All other ground stays
-blank.
+**Soil taxonomy: chosen classes** paints only the great groups that you choose,
+and leaves all other ground blank. Choose them in the class browser below the
+key. Each chosen class keeps the color of its order, so a selection across
+several orders can still be told apart.
 
-> **Caution** The matsutake layer is a soil filter and not a prediction. It says
-> that the ground is the correct kind. It does not say that anything fruits
-> there, and it knows nothing about the host trees that decide whether anything
-> can.
+> **Caution** The chosen-classes layer is a soil filter and not a prediction. It
+> says that the ground is the kind that you asked for. It does not say that
+> anything grows there, and it knows nothing about the trees that decide whether
+> anything can.
 
 #### The class browser
 
@@ -301,11 +301,31 @@ layers** panel gives you:
   cannot: no podzol is named "podzol".
 - **A search box**. It matches the name of a great group and also the name of
   its order.
-- **The list**. Each row shows the color of its order, its name, and a 🍄 if it
-  is one of the eighteen flagged great groups.
+- **The list**. Each row shows the color of its order and its name.
 
 Hover on a row to read a one-line description. Click it to open the whole
 description, and a link to the Wikipedia article for that order.
+
+#### How to choose classes
+
+The chosen-classes layer adds a checkbox to each row. Tick the classes that you
+want, and the map redraws.
+
+Above the list there are three more controls:
+
+- **Pick these *n*** takes every class that the search and the order chip leave.
+  This is what makes the search into a selection tool: filter to Spodosols,
+  click **Pick these**, and you have chosen the podzols. Click it again to
+  remove them.
+- **None** clears the selection.
+- **FRMS set** is a starting selection of eighteen great groups that FRMS
+  members flagged as matsutake ground on the Front Range. These are the cool,
+  acid, sandy and volcanic soils, across five orders. Use it as a start and then
+  add or remove classes.
+
+You can choose up to 250 classes at one time. The selection travels in the tile
+request, so it has a limit. The app tells you if you go past it, and adds none of
+the extra classes — it does not quietly use the first 250.
 
 #### How to read a great group name
 

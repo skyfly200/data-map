@@ -342,6 +342,49 @@ export const GAP_REMAP = { from: GAP_FROM, to: GAP_TO, classes: GAP_CLASSES }
  * Small and strict on purpose: these values are interpolated into Earth Engine
  * calls, so "roughly a year" is not good enough.
  */
+/**
+ * The most classes one selection may carry.
+ *
+ * Not a rendering limit — Earth Engine would remap the whole four hundred
+ * without noticing. It is the URL: the selection travels in the query string
+ * and is part of the cache key, and a few hundred codes at four characters each
+ * gets close enough to what proxies will carry that a selection would start
+ * failing at a size nobody could predict. This is well past any real selection
+ * and comfortably inside any URL.
+ */
+export const CODE_LIMIT = 250
+
+/**
+ * A list of class codes, as a canonical comma-separated string.
+ *
+ * Deduplicated and sorted, so the same selection made in a different order is
+ * one entry in the tile cache rather than two. Accepts an array or a string,
+ * because it is called from the browser with what a checkbox list produces and
+ * from the server with what a query string produces.
+ */
+export function normaliseCodes(raw, max = CODE_LIMIT) {
+  const parts = Array.isArray(raw) ? raw : String(raw ?? '').split(',')
+  const seen = new Set()
+  for (const part of parts) {
+    const text = String(part).trim()
+    if (!text) continue
+    const n = Math.floor(Number(text))
+    if (!Number.isFinite(n)) throw new LayerError('Classes must be a list of whole numbers.')
+    seen.add(n)
+  }
+  const cap = Number.isFinite(max) ? max : CODE_LIMIT
+  if (seen.size > cap) {
+    throw new LayerError(`At most ${cap} classes at a time; ${seen.size} were chosen.`)
+  }
+  return [...seen].sort((a, b) => a - b).join(',')
+}
+
+/** The codes in a normalised selection, as numbers. */
+export function codeList(value) {
+  if (!value) return []
+  return String(value).split(',').filter(Boolean).map(Number)
+}
+
 function readParams(schema, input = {}) {
   const out = {}
   for (const [key, spec] of Object.entries(schema)) {
@@ -362,6 +405,8 @@ function readParams(schema, input = {}) {
         throw new LayerError(`${spec.label} must be one of: ${spec.values.join(', ')}.`)
       }
       out[key] = String(raw)
+    } else if (spec.type === 'codes') {
+      out[key] = normaliseCodes(raw, spec.max)
     } else {
       throw new LayerError(`Unsupported parameter type for ${key}.`)
     }
@@ -556,23 +601,8 @@ const grtgroupTable = (ee) => ee.Dictionary({
   names: grtgroup(ee).get('grtgroup_class_names'),
 })
 
-/** Codes whose class name is in `names`, matched case-insensitively. */
-function codesNamed(table, names) {
-  const want = new Set(names.map((n) => String(n).trim().toLowerCase()))
-  const out = []
-  const values = table?.values || []
-  const labels = table?.names || []
-  for (let i = 0; i < values.length; i += 1) {
-    if (want.has(String(labels[i] ?? '').trim().toLowerCase())) out.push(values[i])
-  }
-  return out
-}
-
 const SOIL_ORDER_PALETTE = SOIL_ORDERS.map((o) => o.color)
 const SOIL_ORDER_CLASSES = SOIL_ORDERS.map((o) => ({ color: o.color, label: o.name }))
-
-/** The one colour the matsutake-ground layer paints with. */
-const SOIL_MATCH_COLOR = '#2ca25f'
 
 /**
  * The catalogue.
@@ -1281,31 +1311,44 @@ export const EE_TILE_LAYERS = {
     },
   },
 
-  'soil-taxonomy-matsutake': {
-    name: 'Soil taxonomy: matsutake ground',
+  'soil-taxonomy-select': {
+    name: 'Soil taxonomy: chosen classes',
     group: 'Soil',
     tier: DEFAULT_TIER,
     attribution: 'OpenLandMap USDA soil taxonomy great groups via Google Earth Engine',
-    opacity: 0.75,
-    note: 'The eighteen great groups FRMS members have flagged as matsutake ground on the Front '
-      + 'Range: the cool, acid, sandy and volcanic soils, across five orders. Everything else is '
-      + 'left blank. This is a soil filter and not a prediction — it says the ground is the right '
-      + 'kind, not that anything fruits there, and it knows nothing about the host trees that '
-      + 'decide whether anything can.',
-    legend: {
-      type: 'classes',
-      items: [{ color: SOIL_MATCH_COLOR, label: 'A flagged great group' }],
+    opacity: 0.8,
+    note: 'Paints only the great groups you choose, and leaves every other pixel blank. Choose '
+      + 'them in the class list below: search by name or by order, tick as many as you want, and '
+      + 'the map redraws. Each chosen class keeps the colour of its order, so a selection that '
+      + 'spans several orders can still be told apart. This is a soil filter and not a '
+      + 'prediction — it says the ground is the kind you asked for, not that anything grows '
+      + 'there, and it knows nothing about the trees that decide whether anything can.',
+    params: {
+      codes: { type: 'codes', label: 'Classes', default: '', max: CODE_LIMIT },
     },
+    // The browser's order chips are the key: each chosen class draws in its own
+    // order's colour, and the chips are that list, clickable.
+    legend: { type: 'classes', items: SOIL_ORDER_CLASSES },
+    legendInBrowser: true,
     sourceMasked: true,
     prepare: grtgroupTable,
     build(ee, params, table) {
-      const codes = codesNamed(table, MATSUTAKE_GREAT_GROUPS)
+      const chosen = new Set(codeList(params?.codes))
+      const values = table?.values || []
+      const names = table?.names || []
+      const from = []
+      const to = []
+      for (let i = 0; i < values.length; i += 1) {
+        if (!chosen.has(values[i])) continue
+        from.push(values[i])
+        to.push(orderIndex(names[i]))
+      }
       return {
-        // remap with a default of 0 and then selfMask: everything not on the
-        // list is unpainted rather than painted as "no". A blank pixel here
-        // means "not one of these eighteen", which is what it should mean.
-        image: grtgroup(ee).remap(codes, codes.map(() => 1), 0).selfMask(),
-        vis: { min: 1, max: 1, palette: [SOIL_MATCH_COLOR] },
+        // remap with a default of 0 and then selfMask: a class nobody chose is
+        // unpainted rather than painted as "no". Blank here means "not one of
+        // the ones you asked for", which is what it should mean.
+        image: grtgroup(ee).remap(from, to, 0).selfMask(),
+        vis: { min: 1, max: SOIL_ORDERS.length, palette: SOIL_ORDER_PALETTE },
       }
     },
   },

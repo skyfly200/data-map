@@ -30,19 +30,46 @@
         <button v-if="query || orderKey" type="button" class="linkish" @click="clear">Clear</button>
       </p>
 
+      <!-- Selecting: what is chosen, and the bulk actions on what is shown.
+           "All" acts on the filtered list rather than on four hundred classes,
+           which is what makes search and the order chips into a selection tool
+           — filter to Spodosols, press All, and you have chosen the podzols. -->
+      <div v-if="selectable" class="stk-sel">
+        <span class="stk-sel-n" :class="{ none: !selected.length }">
+          {{ selected.length ? `${selected.length} chosen` : 'None chosen' }}
+        </span>
+        <button type="button" class="linkish" :disabled="!shown.length" @click="pickShown">
+          {{ shownAllChosen ? 'Unpick these' : `Pick these ${shown.length}` }}
+        </button>
+        <button v-if="selected.length" type="button" class="linkish" @click="emitCodes([])">None</button>
+        <button v-if="flagged.length" type="button" class="linkish"
+                :title="`A starting selection: ${flagged.length} great groups FRMS members flagged as matsutake ground`"
+                @click="pickFlagged">FRMS set</button>
+      </div>
+      <p v-if="selectable && !selected.length" class="stk-msg">
+        Nothing is chosen, so the layer draws nothing. Tick a class below.
+      </p>
+      <p v-if="limitHit" class="stk-msg error">
+        At most {{ CODE_LIMIT }} classes at a time. The rest were not added.
+      </p>
+
       <ul class="stk-list">
         <li v-for="c in shown.slice(0, CAP)" :key="c.code" class="stk-item"
-            :class="{ open: openName === c.name, flagged: flaggedSet.has(c.name) }">
-          <button type="button" class="stk-row" :aria-expanded="String(openName === c.name)"
-                  :title="tipFor(c)"
-                  @click="openName = openName === c.name ? '' : c.name">
-            <span class="swatch" :style="{ background: c.color }"></span>
-            <span class="stk-name">{{ c.name }}</span>
-            <!-- The one mark worth carrying in the row: it is why somebody is
-                 looking at this list at all. -->
-            <span v-if="flaggedSet.has(c.name)" class="stk-flag" title="Flagged as matsutake ground">🍄</span>
-            <span class="stk-order-name">{{ c.order || 'unplaced' }}</span>
-          </button>
+            :class="{ open: openName === c.name, chosen: chosenSet.has(c.code) }">
+          <div class="stk-row-wrap">
+            <input v-if="selectable" type="checkbox" class="stk-tick"
+                   :checked="chosenSet.has(c.code)" :aria-label="`Draw ${c.name}`"
+                   @change="toggleCode(c.code)" />
+            <button type="button" class="stk-row" :aria-expanded="String(openName === c.name)"
+                    :title="tipFor(c)"
+                    @click="openName = openName === c.name ? '' : c.name">
+              <span class="swatch" :style="{ background: c.color }"></span>
+              <span class="stk-name">{{ c.name }}</span>
+              <span v-if="flaggedSet.has(c.name)" class="stk-flag"
+                    title="In the FRMS matsutake set">🍄</span>
+              <span class="stk-order-name">{{ c.order || 'unplaced' }}</span>
+            </button>
+          </div>
 
           <!-- Hover gives the one-line version through the title; this is the
                whole of it, for a touch screen and for anyone who wants the
@@ -89,12 +116,20 @@
 // and a second copy of them in the browser is a second copy to disagree.
 
 import { computed, ref, watch } from 'vue'
+import { CODE_LIMIT, codeList, normaliseCodes } from '~/netlify/lib/ee-tile-layers.mjs'
 
 const props = defineProps({
   // The layer key, e.g. 'soil-taxonomy'. Also the cache key: two layers over
   // the same asset share one fetch.
   layer: { type: String, required: true },
+  // Whether this layer draws a chosen subset rather than everything. When it
+  // does, the list gains a checkbox per class and the bulk actions above it.
+  selectable: { type: Boolean, default: false },
+  // The current selection, as the canonical comma-separated string the layer's
+  // `codes` parameter carries.
+  codes: { type: String, default: '' },
 })
+const emit = defineEmits(['update:codes'])
 
 /**
  * How many rows are rendered at once.
@@ -161,6 +196,52 @@ const shown = computed(() => {
   })
 })
 
+// ── Selecting ────────────────────────────────────────────────────────────────
+
+const limitHit = ref(false)
+
+const selected = computed(() => codeList(props.codes))
+const chosenSet = computed(() => new Set(selected.value))
+const shownAllChosen = computed(() => shown.value.length > 0
+  && shown.value.every((c) => chosenSet.value.has(c.code)))
+
+/**
+ * Hand a new selection up, normalised the same way the server will normalise it.
+ *
+ * Over the limit is reported rather than silently trimmed: a selection quietly
+ * missing its last forty classes draws a map that is wrong in a way nobody can
+ * see, which is the failure this app works hardest to avoid.
+ */
+function emitCodes(codes) {
+  try {
+    limitHit.value = false
+    emit('update:codes', normaliseCodes(codes))
+  } catch {
+    limitHit.value = true
+  }
+}
+
+function toggleCode(code) {
+  const next = new Set(selected.value)
+  if (next.has(code)) next.delete(code)
+  else next.add(code)
+  emitCodes([...next])
+}
+
+/** Every class the current search and order filter leaves, added or removed. */
+function pickShown() {
+  const next = new Set(selected.value)
+  const visible = shown.value.map((c) => c.code)
+  if (shownAllChosen.value) visible.forEach((c) => next.delete(c))
+  else visible.forEach((c) => next.add(c))
+  emitCodes([...next])
+}
+
+function pickFlagged() {
+  const byName = new Map(classes.value.map((c) => [c.name, c.code]))
+  emitCodes(flagged.value.map((n) => byName.get(n)).filter((c) => c !== undefined))
+}
+
 function tipFor(c) {
   const parts = [c.order && `${c.order}.`, c.summary]
   if (c.elements?.length) parts.push(c.elements.map((e) => `${e.element}- ${e.meaning}`).join('; '))
@@ -220,7 +301,24 @@ function clear() {
   max-height: 148px; overflow-y: auto;
   display: flex; flex-direction: column; gap: 1px;
 }
-.stk-item.flagged .stk-name { color: var(--text-strong); font-weight: 600; }
+.stk-item.chosen .stk-name { color: var(--text-strong); font-weight: 600; }
+
+.stk-sel {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px;
+  padding: 4px 0 1px; border-top: 1px solid var(--border-soft, var(--border));
+}
+/* Its own line. The panel is about 260px wide and the three actions beside it
+   are most of that, so on one row the count and the buttons overlap rather than
+   wrapping — flex only wraps whole items, and "18 chosen" is one item. */
+.stk-sel-n {
+  flex: 1 1 100%; font-size: 0.68rem; color: var(--text-strong); font-weight: 700;
+}
+.stk-sel .linkish { flex: 0 0 auto; }
+.stk-sel-n.none { color: var(--muted); font-weight: 400; }
+.linkish:disabled { opacity: 0.4; cursor: default; text-decoration: none; }
+
+.stk-row-wrap { display: flex; align-items: center; gap: 5px; }
+.stk-tick { flex: 0 0 auto; margin: 0; accent-color: var(--accent, #2b7a3d); cursor: pointer; }
 
 .stk-row {
   display: flex; align-items: center; gap: 6px; width: 100%; text-align: left;
