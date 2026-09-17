@@ -5,6 +5,11 @@
     <div v-if="loadError" class="overlay error">{{ loadError }}</div>
     <div v-else-if="!loaded" class="overlay">Loading observations…</div>
 
+    <!-- A first-run tour of the map, shown once the observations are in so it
+         introduces a working map rather than a loading one. Self-gates on
+         localStorage; dispatch 'map-tour-open' to replay it. -->
+    <MapTour v-if="loaded" />
+
     <!-- Over the map rather than modal, because whether a layer is worth having
          on is a question you answer by looking at the map. -->
     <LayerManager
@@ -28,6 +33,17 @@
         <span class="pin-copy">{{ copied ? 'copied' : 'copy' }}</span>
       </button>
       <dl class="pin-facts">
+        <div>
+          <dt>Plus code</dt>
+          <dd>
+            <button class="pin-mini" :title="copied ? 'Copied' : 'Copy plus code'"
+                    @click="copyText(pinPlusCode)">{{ pinPlusCode }}</button>
+          </dd>
+        </div>
+        <div>
+          <dt>Elevation</dt>
+          <dd>{{ pinElevationText }}</dd>
+        </div>
         <div v-if="pinCell">
           <dt>{{ heatmapMeta.label }}</dt>
           <dd>{{ pinCellValue }}</dd>
@@ -1317,6 +1333,55 @@ async function copyPin() {
   }
 }
 
+// A plus code for the point, at 11 digits (~3 m) since a dropped pin is a
+// specific spot rather than a neighbourhood. encodePlusCode is auto-imported
+// from composables/plusCode.js.
+const pinPlusCode = computed(() => (pin.value ? encodePlusCode(pin.value.lat, pin.value.lon, 11) : ''))
+
+// Ground elevation at the point. undefined while loading, null when it could
+// not be fetched, a number in metres otherwise — three states so the panel can
+// say "…" versus "—" rather than conflating them. From Open-Meteo's free,
+// key-less elevation API (Copernicus DEM at 90 m), so it adds no cost and no
+// Earth Engine quota; a dropped pin fetches once, debounced, and a drag replaces
+// the in-flight request rather than stacking them.
+const pinElevation = ref(undefined)
+let elevTimer = null
+let elevSeq = 0
+watch(pin, (p) => {
+  pinElevation.value = p ? undefined : null
+  if (!p) return
+  clearTimeout(elevTimer)
+  const seq = (elevSeq += 1)
+  elevTimer = setTimeout(async () => {
+    try {
+      const url = `https://api.open-meteo.com/v1/elevation?latitude=${p.lat.toFixed(5)}&longitude=${p.lon.toFixed(5)}`
+      const res = await fetch(url)
+      const data = await res.json()
+      const v = Array.isArray(data?.elevation) ? Number(data.elevation[0]) : NaN
+      if (seq === elevSeq) pinElevation.value = Number.isFinite(v) ? v : null
+    } catch {
+      if (seq === elevSeq) pinElevation.value = null
+    }
+  }, 350)
+}, { deep: true })
+
+/** Elevation formatted in both units, or the loading/unavailable marker. */
+const pinElevationText = computed(() => {
+  const v = pinElevation.value
+  if (v === undefined) return '…'
+  if (v === null) return '—'
+  return `${Math.round(v)} m · ${Math.round(v * 3.28084).toLocaleString()} ft`
+})
+
+/** Copy any short string, reusing the pin's copied flag for the tick. */
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 1600)
+  } catch { /* clipboard refused; the text is still selectable */ }
+}
+
 /** The heatmap cell under the pin, if a heatmap is on and it has one there. */
 const pinCell = computed(() => (pin.value ? heatmapCellAt(pin.value.lat, pin.value.lon) : null))
 
@@ -1873,6 +1938,7 @@ shortcuts.register([
   { scope: 'Map', keys: '[', label: 'Heatmap date back a week', run: () => nudgeDay(-7) },
   { scope: 'Map', keys: ']', label: 'Heatmap date forward a week', run: () => nudgeDay(7) },
   { scope: 'Map', keys: 's', label: 'Heatmap and season window', run: () => heatmapPop.value?.toggle() },
+  { scope: 'Map', keys: 'shift+T', label: 'Replay the feature tour', run: () => window.dispatchEvent(new CustomEvent('map-tour-open')) },
   { scope: 'Map', keys: 'escape', label: 'Close the observation drawer', run: () => { selected.value = null } },
 ])
 
@@ -2196,6 +2262,12 @@ onBeforeUnmount(() => {
 .pin-facts > div { display: flex; justify-content: space-between; gap: 10px; }
 .pin-facts dt { color: #777; }
 .pin-facts dd { margin: 0; font-weight: 600; text-align: right; }
+.pin-mini {
+  border: 0; background: transparent; padding: 0; cursor: pointer;
+  font: inherit; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: inherit; text-decoration: underline dotted; text-underline-offset: 2px;
+}
+.pin-mini:hover { color: var(--accent, #2b7a3d); }
 .pin-note { margin: 6px 0 0; font-size: 11px; line-height: 1.35; color: #777; }
 
 @media (prefers-color-scheme: dark) {
