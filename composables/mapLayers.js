@@ -138,11 +138,33 @@ export const TILE_LAYERS = [
   {
     name: 'Rain past 24h (US)', group: 'Weather',
     arcgis: 'https://mapservices.weather.noaa.gov/raster/rest/services/obs/rfc_qpe/MapServer',
-    layers: 'show:3',
+    layers: 'show:25',
     attribution: 'NOAA / NWS River Forecast Centers', maxZoom: 12, opacity: 0.65,
     note: 'Quantitative precipitation estimate from gauge-corrected radar, so it is an estimate of what fell, not a gauge reading. US only.',
     legend: {
       type: 'ramp', unit: 'in', min: '0.01', max: '8+',
+      stops: ['#c9e8c0', '#7fc97f', '#2b8cbe', '#253494', '#7a0177', '#c51b8a', '#fd8d3c', '#bd0026'],
+    },
+  },
+  {
+    name: 'Rain past 7d (US)', group: 'Weather',
+    arcgis: 'https://mapservices.weather.noaa.gov/raster/rest/services/obs/rfc_qpe/MapServer',
+    layers: 'show:53',
+    attribution: 'NOAA / NWS River Forecast Centers', maxZoom: 12, opacity: 0.65,
+    note: 'Seven-day gauge-corrected QPE accumulation. Useful for reading how wet the ground has been through a fruiting window rather than a single storm. US only.',
+    legend: {
+      type: 'ramp', unit: 'in', min: '0.01', max: '16+',
+      stops: ['#c9e8c0', '#7fc97f', '#2b8cbe', '#253494', '#7a0177', '#c51b8a', '#fd8d3c', '#bd0026'],
+    },
+  },
+  {
+    name: 'Rain past 30d (US)', group: 'Weather',
+    arcgis: 'https://mapservices.weather.noaa.gov/raster/rest/services/obs/rfc_qpe/MapServer',
+    layers: 'show:65',
+    attribution: 'NOAA / NWS River Forecast Centers', maxZoom: 12, opacity: 0.65,
+    note: 'Thirty-day QPE accumulation, a proxy for seasonal soil wetting ahead of a flush. US only.',
+    legend: {
+      type: 'ramp', unit: 'in', min: '0.01', max: '30+',
       stops: ['#c9e8c0', '#7fc97f', '#2b8cbe', '#253494', '#7a0177', '#c51b8a', '#fd8d3c', '#bd0026'],
     },
   },
