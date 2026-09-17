@@ -106,6 +106,11 @@ export const ASSETS = {
   // forests only. A collection whose 2016 image is the baseline, so it is
   // filtered by date and .first() picked out like the burn products.
   TREEMAP: 'projects/gtac-data-publish/assets/TreeMap/Product_Version/2026-1',
+  // SMAP L4 surface soil moisture, ~9 km, global, roughly three-hourly. Served
+  // here rather than from GIBS: GIBS only publishes SMAP in EPSG:4326, and this
+  // map is EPSG:3857, so the GIBS tiles 404'd. The `sm_surface` band is
+  // volumetric water in the top 5 cm.
+  SMAP: 'NASA/SMAP/SPL4SMGP/007',
 }
 
 /**
@@ -256,6 +261,8 @@ const STAND_SIZE_CLASSES = [
 
 const DEPTH_PALETTE = ['#feebe2', '#fcc5c0', '#fa9fb5', '#f768a1', '#dd3497', '#ae017e', '#7a0177']
 const SAND_PALETTE = ['#081d58', '#253494', '#225ea8', '#1d91c0', '#41b6c4', '#7fcdbb', '#c7e9b4', '#ffffcc']
+/** Dry ground (brown) to wet ground (deep blue). */
+const SOIL_MOISTURE_PALETTE = ['#8c6d3f', '#c7a76c', '#e8dfc0', '#96c8c0', '#3d8fb0', '#16407a']
 
 /**
  * One SOLUS100 soil property.
@@ -920,7 +927,10 @@ export const EE_TILE_LAYERS = {
       + 'cooler and damper and holds snow later; south-facing dries first. Which matters depends on '
       + 'the species and the season, which is why this is offered raw rather than pre-judged. '
       + 'The palette is cyclic, so north reads the same colour at both ends.',
-    legend: { type: 'ramp', unit: '° from north', min: 'N', max: 'N', stops: ASPECT_PALETTE },
+    // Cyclic, so the key is marked all the way round rather than just at its
+    // ends: the ticks sit evenly under the gradient at N, E, S, W and back to N,
+    // which is what tells east from west at a glance.
+    legend: { type: 'ramp', unit: '° from north', ticks: ['N', 'E', 'S', 'W', 'N'], stops: ASPECT_PALETTE },
     sourceMasked: true,
     build(ee) {
       const aspect = ee.Terrain.aspect(ee.Image(ASSETS.SRTM))
@@ -1391,6 +1401,44 @@ export const EE_TILE_LAYERS = {
       // three-band image as RGB, and passing a palette alongside is what it
       // refuses outright.
       return { image, vis: { min: 0, max: 70 } }
+    },
+  },
+
+  'soil-moisture': {
+    name: 'Soil moisture',
+    group: 'Soil',
+    // Free: it answers the question a forager actually asks after rain, and it
+    // is a cheap mean of a coarse published product. Global, unlike the SOLUS
+    // soil layers, so it is the one soil layer that works outside the US.
+    tier: 'free',
+    attribution: 'NASA SMAP L4 via Google Earth Engine',
+    opacity: 0.7,
+    note: 'Modelled water in the top 5 cm of soil from NASA SMAP, ~9 km, global, averaged over the '
+      + 'chosen number of recent days. A model assimilating satellite retrievals, not a measurement '
+      + 'of your patch, and coarse: a cell is larger than most places on this map. Blue is wet, brown '
+      + 'is dry. It lags real time by a couple of days.',
+    params: {
+      days: { type: 'int', label: 'Days to average', default: 5, min: 1, max: 30 },
+    },
+    legend: { type: 'ramp', unit: 'm³/m³', min: '0.0', max: '0.6', stops: SOIL_MOISTURE_PALETTE },
+    // SMAP masks open water and permanently frozen ground itself, and every
+    // pixel it leaves is a real retrieval, so masking again would only discard
+    // coastline. See the note on sourceMasked above.
+    sourceMasked: true,
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.SMAP)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+    },
+    build(ee, { days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      const image = ee.ImageCollection(ASSETS.SMAP)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .select('sm_surface')
+        .mean()
+      return { image, vis: { min: 0, max: 0.6, palette: SOIL_MOISTURE_PALETTE } }
     },
   },
 }
