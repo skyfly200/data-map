@@ -345,14 +345,14 @@ export const GAP_REMAP = { from: GAP_FROM, to: GAP_TO, classes: GAP_CLASSES }
 /**
  * The most classes one selection may carry.
  *
- * Not a rendering limit — Earth Engine would remap the whole four hundred
- * without noticing. It is the URL: the selection travels in the query string
- * and is part of the cache key, and a few hundred codes at four characters each
- * gets close enough to what proxies will carry that a selection would start
- * failing at a size nobody could predict. This is well past any real selection
- * and comfortably inside any URL.
+ * Not a rendering limit and no longer a URL limit: a selection this size goes
+ * in a request body rather than a query string, so every class in the raster
+ * can be chosen at once. What is left is a bound on how much work one request
+ * may ask for, well above the four hundred classes the raster actually has and
+ * low enough that a malformed or hostile request cannot ask for a remap of a
+ * million values.
  */
-export const CODE_LIMIT = 250
+export const CODE_LIMIT = 2000
 
 /**
  * A list of class codes, as a canonical comma-separated string.
@@ -360,7 +360,7 @@ export const CODE_LIMIT = 250
  * Deduplicated and sorted, so the same selection made in a different order is
  * one entry in the tile cache rather than two. Accepts an array or a string,
  * because it is called from the browser with what a checkbox list produces and
- * from the server with what a query string produces.
+ * from the server with what a query string or a JSON body produces.
  */
 export function normaliseCodes(raw, max = CODE_LIMIT) {
   const parts = Array.isArray(raw) ? raw : String(raw ?? '').split(',')

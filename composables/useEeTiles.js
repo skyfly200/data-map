@@ -15,6 +15,15 @@ const CATALOGUE_URL = '/.netlify/functions/ee-tiles'
 /** Re-mint after this long regardless. Shorter than the server's own cache. */
 const REFRESH_MS = 60 * 60 * 1000
 
+/**
+ * How long a tile request may be before it goes in a body instead.
+ *
+ * Well under the point where any browser, proxy or CDN starts truncating or
+ * refusing. Almost every layer is far below it; the one that is not is the soil
+ * taxonomy selection, which can name several hundred classes at once.
+ */
+const MAX_URL = 1800
+
 export function useEeTiles() {
   const { accessToken } = useAuth()
 
@@ -61,10 +70,22 @@ export function useEeTiles() {
     if (held && Date.now() - held.at < REFRESH_MS) return held
 
     const token = await accessToken()
+    const auth = token ? { authorization: `Bearer ${token}` } : {}
     const query = new URLSearchParams({ layer, ...params })
-    const res = await fetch(`${CATALOGUE_URL}?${query}`, {
-      headers: token ? { authorization: `Bearer ${token}` } : {},
-    })
+    const asGet = `${CATALOGUE_URL}?${query}`
+
+    // A GET while it fits, a POST when it does not. Selecting every class of
+    // the soil taxonomy raster is a few thousand characters of parameters,
+    // which is past what a URL can be relied on to carry — and a selection that
+    // fails somewhere above two hundred classes, at a size nobody can predict,
+    // is worse than one that cannot be made. The server reads both the same way.
+    const res = asGet.length <= MAX_URL
+      ? await fetch(asGet, { headers: auth })
+      : await fetch(CATALOGUE_URL, {
+        method: 'POST',
+        headers: { ...auth, 'content-type': 'application/json' },
+        body: JSON.stringify({ layer, ...params }),
+      })
     const data = await res.json().catch(() => ({}))
     if (!res.ok || !data.ok) throw new Error(messageFrom(data, res.status))
 

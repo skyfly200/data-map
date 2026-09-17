@@ -316,16 +316,16 @@ Above the list there are three more controls:
 - **Pick these *n*** takes every class that the search and the order chip leave.
   This is what makes the search into a selection tool: filter to Spodosols,
   click **Pick these**, and you have chosen the podzols. Click it again to
-  remove them.
+  remove them. With no search and no order chip, it takes all of them.
 - **None** clears the selection.
 - **FRMS set** is a starting selection of eighteen great groups that FRMS
   members flagged as matsutake ground on the Front Range. These are the cool,
   acid, sandy and volcanic soils, across five orders. Use it as a start and then
   add or remove classes.
 
-You can choose up to 250 classes at one time. The selection travels in the tile
-request, so it has a limit. The app tells you if you go past it, and adds none of
-the extra classes — it does not quietly use the first 250.
+There is no practical limit on how many classes you choose. A selection of every
+class is too long for a web address, so the app sends a large selection in the
+body of the request instead.
 
 #### How to read a great group name
 
