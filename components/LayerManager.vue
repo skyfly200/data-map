@@ -6,6 +6,8 @@
         <span v-if="activeList.length" class="lm-count">{{ activeList.length }} on</span>
       </div>
       <div class="lm-head-acts">
+        <button v-if="solo" class="lm-text-btn solo-off" title="Draw every layer again"
+                @click="$emit('solo', '')">Un-solo</button>
         <button v-if="activeList.length" class="lm-text-btn" title="Switch every overlay off"
                 @click="$emit('clear')">Clear</button>
         <button class="lm-close" aria-label="Close the layer manager" @click="$emit('close')">×</button>
@@ -23,19 +25,31 @@
         <HelpLink option="map-layer-order" />
       </div>
       <ul class="lm-stack">
-        <li v-for="(item, i) in activeList" :key="item.key" class="lm-on">
+        <li v-for="(item, i) in activeList" :key="item.key" class="lm-on"
+            :class="{ muted: solo && solo !== item.key }">
           <div class="lm-on-top">
             <button class="lm-swatch" :title="`Hide ${item.name}`" @click="$emit('toggle', item.key)">
               <span class="lm-tick" aria-hidden="true">✓</span>
             </button>
             <span class="lm-on-name" :title="item.name">{{ item.name }}</span>
+            <!-- Solo answers "what is this one contributing", which otherwise
+                 costs you the stack you built and a minute rebuilding it. The
+                 others stay ticked; they are only not drawn. -->
+            <button class="lm-solo" :class="{ on: solo === item.key }"
+                    :aria-pressed="String(solo === item.key)"
+                    :title="solo === item.key ? 'Draw every layer again' : `Draw only ${item.name}`"
+                    @click="$emit('solo', solo === item.key ? '' : item.key)">S</button>
             <!-- Stacking, because overlays hide each other: land ownership under
                  a hillshade is a different map from the same two the other way
                  up, and there is no other way to say which you meant. -->
             <span class="lm-order">
+              <button :disabled="i === 0" title="Send to the top"
+                      @click="$emit('move', item.key, 'top')">⤒</button>
               <button :disabled="i === 0" title="Move up" @click="$emit('move', item.key, -1)">▲</button>
               <button :disabled="i === activeList.length - 1" title="Move down"
                       @click="$emit('move', item.key, 1)">▼</button>
+              <button :disabled="i === activeList.length - 1" title="Send to the bottom"
+                      @click="$emit('move', item.key, 'bottom')">⤓</button>
             </span>
           </div>
           <label class="lm-op">
@@ -43,6 +57,22 @@
             <input type="range" min="0.05" max="1" step="0.05" :value="opacityOf(item.key)"
                    :aria-label="`Opacity of ${item.name}`"
                    @input="$emit('opacity', item.key, Number($event.target.value))" />
+          </label>
+          <!-- Opacity and blending answer different questions, and opacity
+               answers one of them badly: two layers at 50% is both washed out,
+               where multiply keeps both at full strength and combines them by
+               value. Shown per layer because one layer in a stack is usually
+               the one that should combine. -->
+          <label class="lm-blend">
+            <span class="lm-blend-label">Blend</span>
+            <select :value="blendOf(item.key)" :aria-label="`Blend mode of ${item.name}`"
+                    :title="blendNote(blendOf(item.key))"
+                    @change="$emit('blend', item.key, $event.target.value)">
+              <option value="">{{ inheritLabel }}</option>
+              <option v-for="m in BLEND_MODES" :key="m.key" :value="m.key" :title="m.note">
+                {{ m.label }}
+              </option>
+            </select>
           </label>
         </li>
       </ul>
@@ -109,6 +139,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { filterLayerGroups } from '~/composables/mapLayers'
+import { BLEND_MODES, blendLabel } from '~/composables/blendModes'
 
 // A window for managing the overlays, rather than one dropdown holding all of
 // them.
@@ -131,16 +162,33 @@ const props = defineProps({
   // Active keys, topmost first. The map owns the stacking; this only shows it.
   order: { type: Array, default: () => [] },
   opacity: { type: Object, default: () => ({}) },
+  // Per-layer blend overrides, key → mode. An absent key inherits the stack
+  // default rather than meaning "normal", so changing the default still moves
+  // every layer nobody has set by hand.
+  blend: { type: Object, default: () => ({}) },
+  // The stack default, for naming the inherit option — a dropdown whose first
+  // entry says "Default" and nothing else makes you go and look it up.
+  stackBlend: { type: String, default: 'normal' },
+  // The one layer drawn on its own, or '' for all of them.
+  solo: { type: String, default: '' },
   // Docked against the controls on a wide screen; a bottom sheet on a phone.
   docked: { type: Boolean, default: true },
 })
 
-defineEmits(['toggle', 'opacity', 'move', 'clear', 'close'])
+defineEmits(['toggle', 'opacity', 'move', 'blend', 'solo', 'clear', 'close'])
 
 const query = ref('')
 const win = ref(null)
 
 const opacityOf = (key) => props.opacity[key] ?? 1
+const blendOf = (key) => props.blend[key] || ''
+const blendNote = (mode) => BLEND_MODES.find((m) => m.key === mode)?.note || ''
+
+// The default is only the default when there is a stack, so the label says so
+// rather than promising a mode a single layer will not draw with.
+const inheritLabel = computed(() => (props.stackBlend === 'normal'
+  ? 'Default (normal)'
+  : `Default (${blendLabel(props.stackBlend).toLowerCase()} when stacked)`))
 
 // How the browse list is carved into sections. Subject is the catalogue's own
 // grouping (Fire, Soil, …); the other two re-cut the same layers by where the
@@ -314,6 +362,34 @@ onMounted(() => { if (props.open) seedPanels() })
   font-variant-numeric: tabular-nums;
 }
 .lm-op input { flex: 1 1 auto; min-width: 0; accent-color: var(--accent, #2b7a3d); }
+
+.lm-blend { display: flex; align-items: center; gap: 7px; padding-left: 24px; margin-top: 4px; }
+.lm-blend-label { flex: 0 0 auto; width: 4ch; color: var(--muted, #777); font-size: 0.7rem; }
+.lm-blend select {
+  flex: 1 1 auto; min-width: 0;
+  background: var(--surface, #fff); color: var(--text, #222);
+  border: 1px solid var(--border, #ddd); border-radius: 4px;
+  padding: 2px 4px; font: inherit; font-size: 0.72rem;
+}
+
+/* One letter, because it sits between the name and four order buttons and a
+   word would push them off a phone. It is the standard mark for this in every
+   mixer and every editor that has the idea at all. */
+.lm-solo {
+  flex: 0 0 auto; width: 20px; height: 20px; padding: 0; cursor: pointer;
+  border: 1px solid var(--border, #ddd); background: var(--surface, #fff);
+  color: var(--muted, #666); border-radius: 4px;
+  font-size: 0.66rem; font-weight: 700; line-height: 1;
+}
+.lm-solo:hover { color: var(--text); border-color: var(--muted); }
+.lm-solo.on {
+  background: #b3822f; border-color: #b3822f; color: #fff;
+}
+
+/* Still listed, still ticked, just not drawn. Dimmed rather than hidden, so
+   the stack you built is still the stack you can see. */
+.lm-on.muted { opacity: 0.45; }
+.lm-text-btn.solo-off { color: #b3822f; }
 
 .lm-search { flex: 0 0 auto; padding: 9px 12px 0; }
 .lm-search input {

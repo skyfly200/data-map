@@ -59,8 +59,8 @@
            than disabled for people whose tier does not reach them, since a menu
            of things you cannot do is not useful. The server gates both anyway;
            this is only about what is worth showing. -->
-      <NuxtLink v-if="isMember" to="/jobs" class="acct-item" @click="open = false">Pipeline jobs</NuxtLink>
-      <NuxtLink v-if="isAdmin" to="/admin" class="acct-item" @click="open = false">Administration</NuxtLink>
+      <NuxtLink v-if="isMember" to="/jobs" class="acct-item" @click="open = false">▶ Pipeline jobs</NuxtLink>
+      <NuxtLink v-if="isAdmin" to="/admin" class="acct-item" @click="open = false">🛡 Admin portal</NuxtLink>
       <NuxtLink to="/offline" class="acct-item" @click="open = false">⬇ Offline</NuxtLink>
       <NuxtLink to="/options" class="acct-item" @click="open = false">⚙ Options</NuxtLink>
       <button v-if="signedIn" class="acct-item danger" @click="onSignOut">Sign out</button>

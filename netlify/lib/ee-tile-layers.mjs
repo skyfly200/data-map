@@ -25,6 +25,8 @@
 // exactly like ground that never burned, which is the most misleading thing
 // this particular map could say.
 
+import { MATSUTAKE_GREAT_GROUPS, SOIL_ORDERS, orderIndex } from './soil-taxonomy.mjs'
+
 export class LayerError extends Error {}
 
 /**
@@ -77,6 +79,11 @@ export const ASSETS = {
   // id and one band.
   SOLUS100: 'USDA/SOLUS100/V0',
   OPENLANDMAP_TEXTURE: 'OpenLandMap/SOL/SOL_TEXTURE-CLASS_USDA-TT_M/v02',
+  // USDA soil taxonomy great groups, 250 m, global. About four hundred classes,
+  // and the code → name table is carried on the image itself as the properties
+  // grtgroup_class_values and grtgroup_class_names — which is why the two
+  // layers built on it read that table rather than hardcoding one.
+  OPENLANDMAP_GRTGROUP: 'OpenLandMap/SOL/SOL_GRTGROUP_USDA-SOILTAX_C/v01',
   // What is growing on the ground, by type rather than by greenness.
   GAP_LANDCOVER: 'USGS/GAP/CONUS/2011',
   // ESA WorldCover, global, 10 m. Served here rather than from the publisher's
@@ -342,6 +349,49 @@ export const GAP_REMAP = { from: GAP_FROM, to: GAP_TO, classes: GAP_CLASSES }
  * Small and strict on purpose: these values are interpolated into Earth Engine
  * calls, so "roughly a year" is not good enough.
  */
+/**
+ * The most classes one selection may carry.
+ *
+ * Not a rendering limit and no longer a URL limit: a selection this size goes
+ * in a request body rather than a query string, so every class in the raster
+ * can be chosen at once. What is left is a bound on how much work one request
+ * may ask for, well above the four hundred classes the raster actually has and
+ * low enough that a malformed or hostile request cannot ask for a remap of a
+ * million values.
+ */
+export const CODE_LIMIT = 2000
+
+/**
+ * A list of class codes, as a canonical comma-separated string.
+ *
+ * Deduplicated and sorted, so the same selection made in a different order is
+ * one entry in the tile cache rather than two. Accepts an array or a string,
+ * because it is called from the browser with what a checkbox list produces and
+ * from the server with what a query string or a JSON body produces.
+ */
+export function normaliseCodes(raw, max = CODE_LIMIT) {
+  const parts = Array.isArray(raw) ? raw : String(raw ?? '').split(',')
+  const seen = new Set()
+  for (const part of parts) {
+    const text = String(part).trim()
+    if (!text) continue
+    const n = Math.floor(Number(text))
+    if (!Number.isFinite(n)) throw new LayerError('Classes must be a list of whole numbers.')
+    seen.add(n)
+  }
+  const cap = Number.isFinite(max) ? max : CODE_LIMIT
+  if (seen.size > cap) {
+    throw new LayerError(`At most ${cap} classes at a time; ${seen.size} were chosen.`)
+  }
+  return [...seen].sort((a, b) => a - b).join(',')
+}
+
+/** The codes in a normalised selection, as numbers. */
+export function codeList(value) {
+  if (!value) return []
+  return String(value).split(',').filter(Boolean).map(Number)
+}
+
 function readParams(schema, input = {}) {
   const out = {}
   for (const [key, spec] of Object.entries(schema)) {
@@ -362,6 +412,8 @@ function readParams(schema, input = {}) {
         throw new LayerError(`${spec.label} must be one of: ${spec.values.join(', ')}.`)
       }
       out[key] = String(raw)
+    } else if (spec.type === 'codes') {
+      out[key] = normaliseCodes(raw, spec.max)
     } else {
       throw new LayerError(`Unsupported parameter type for ${key}.`)
     }
@@ -533,12 +585,44 @@ const treeMap2016 = (ee, band) => ee.ImageCollection(ASSETS.TREEMAP)
 const treeMapCount = (ee) => ee.ImageCollection(ASSETS.TREEMAP)
   .filterDate('2016-01-01', '2016-12-31').size()
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Soil taxonomy
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The great-group raster, which every soil taxonomy layer starts from. */
+const grtgroup = (ee) => ee.Image(ASSETS.OPENLANDMAP_GRTGROUP).select('grtgroup')
+
+/**
+ * The raster's own code → name table.
+ *
+ * Read off the image rather than written down here. Four hundred classes is a
+ * table nobody will maintain, and a table that drifts from the raster paints
+ * one soil and names another — which is worse than having no names at all.
+ *
+ * This is a `prepare`, so the tile function evaluates it once and hands the
+ * plain arrays to build(). Everything after that is ordinary JavaScript and can
+ * be tested without Earth Engine.
+ */
+const grtgroupTable = (ee) => ee.Dictionary({
+  values: grtgroup(ee).get('grtgroup_class_values'),
+  names: grtgroup(ee).get('grtgroup_class_names'),
+})
+
+const SOIL_ORDER_PALETTE = SOIL_ORDERS.map((o) => o.color)
+const SOIL_ORDER_CLASSES = SOIL_ORDERS.map((o) => ({ color: o.color, label: o.name }))
+
 /**
  * The catalogue.
  *
- * `build(ee, params)` returns the image and how to paint it. `legend` is the
- * key drawn on the map, in the same shape the existing tile layers use, so the
- * map's legend code does not have to know an Earth Engine layer from any other.
+ * `build(ee, params, prepared)` returns the image and how to paint it. `legend`
+ * is the key drawn on the map, in the same shape the existing tile layers use,
+ * so the map's legend code does not have to know an Earth Engine layer from any
+ * other.
+ *
+ * `prepare(ee)` is optional: an Earth Engine value the tile function evaluates
+ * before build and passes in as `prepared`. It exists for the one thing a
+ * synchronous build cannot do — read a table off the asset itself — and its
+ * result is memoised, because what it reads does not change.
  */
 export const EE_TILE_LAYERS = {
   'years-since-fire': {
@@ -1200,6 +1284,85 @@ export const EE_TILE_LAYERS = {
     },
   },
 
+  'soil-taxonomy': {
+    name: 'Soil taxonomy (USDA orders)',
+    group: 'Soil',
+    tier: DEFAULT_TIER,
+    attribution: 'OpenLandMap USDA soil taxonomy great groups via Google Earth Engine',
+    opacity: 0.8,
+    note: 'The USDA soil order at each pixel, predicted globally at 250 m. The source is the '
+      + 'great-group level — about four hundred classes — which is far too many to read as a '
+      + 'key, so the map paints the twelve orders above them and the soil panel names the great '
+      + 'group under your cursor. Orders separate soils by how they formed, so the boundaries '
+      + 'often follow geology and climate rather than anything visible on the surface. A model '
+      + 'prediction, not a soil survey: right about a hillside, unreliable about a square metre.',
+    legend: { type: 'classes', items: SOIL_ORDER_CLASSES },
+    // The class browser draws these twelve as chips you can filter by, so the
+    // flat swatch list would be the same twelve entries again, directly above
+    // them, and not clickable.
+    legendInBrowser: true,
+    // The source masks open water and leaves a real class everywhere else. What
+    // this layer masks is its own doing: see selfMask below.
+    sourceMasked: true,
+    prepare: grtgroupTable,
+    build(ee, params, table) {
+      const values = table?.values || []
+      // The order is the end of the great group's own name. That is what the
+      // taxonomy's naming is for, so there is no lookup table to keep in step
+      // with the raster — see netlify/lib/soil-taxonomy.mjs.
+      const orders = (table?.names || []).map(orderIndex)
+      return {
+        // selfMask, because orderIndex gives 0 to a class that is not a great
+        // group at all. Painted, zero would be a twelfth of the legend claiming
+        // ground it knows nothing about; masked, it is honestly blank.
+        image: grtgroup(ee).remap(values, orders, 0).selfMask(),
+        vis: { min: 1, max: SOIL_ORDERS.length, palette: SOIL_ORDER_PALETTE },
+      }
+    },
+  },
+
+  'soil-taxonomy-select': {
+    name: 'Soil taxonomy: chosen classes',
+    group: 'Soil',
+    tier: DEFAULT_TIER,
+    attribution: 'OpenLandMap USDA soil taxonomy great groups via Google Earth Engine',
+    opacity: 0.8,
+    note: 'Paints only the great groups you choose, and leaves every other pixel blank. Choose '
+      + 'them in the class list below: search by name or by order, tick as many as you want, and '
+      + 'the map redraws. Each chosen class keeps the colour of its order, so a selection that '
+      + 'spans several orders can still be told apart. This is a soil filter and not a '
+      + 'prediction — it says the ground is the kind you asked for, not that anything grows '
+      + 'there, and it knows nothing about the trees that decide whether anything can.',
+    params: {
+      codes: { type: 'codes', label: 'Classes', default: '', max: CODE_LIMIT },
+    },
+    // The browser's order chips are the key: each chosen class draws in its own
+    // order's colour, and the chips are that list, clickable.
+    legend: { type: 'classes', items: SOIL_ORDER_CLASSES },
+    legendInBrowser: true,
+    sourceMasked: true,
+    prepare: grtgroupTable,
+    build(ee, params, table) {
+      const chosen = new Set(codeList(params?.codes))
+      const values = table?.values || []
+      const names = table?.names || []
+      const from = []
+      const to = []
+      for (let i = 0; i < values.length; i += 1) {
+        if (!chosen.has(values[i])) continue
+        from.push(values[i])
+        to.push(orderIndex(names[i]))
+      }
+      return {
+        // remap with a default of 0 and then selfMask: a class nobody chose is
+        // unpainted rather than painted as "no". Blank here means "not one of
+        // the ones you asked for", which is what it should mean.
+        image: grtgroup(ee).remap(from, to, 0).selfMask(),
+        vis: { min: 1, max: SOIL_ORDERS.length, palette: SOIL_ORDER_PALETTE },
+      }
+    },
+  },
+
   'soil-composition': {
     name: 'Soil composition (sand, silt, clay)',
     group: 'Soil',
@@ -1354,6 +1517,11 @@ export function describeLayer(key) {
     legend: layer.legend,
     slow: !!layer.slow,
     tier: layer.tier || DEFAULT_TIER,
+    // Says the layer has a class table worth asking for, without sending four
+    // hundred classes to every viewer of the catalogue. The map fetches it when
+    // the layer is switched on.
+    classes: layer.prepare ? 'great-groups' : undefined,
+    legendInBrowser: layer.legendInBrowser || undefined,
     params: Object.fromEntries(Object.entries(layer.params || {}).map(([k, spec]) => [k, {
       label: spec.label,
       type: spec.type,

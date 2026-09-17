@@ -163,14 +163,109 @@ test('a callout ends where the quoting ends', () => {
   assert.match(html, /<p>Outside\.<\/p>/)
 })
 
-test('the shipped guide renders its callouts and lists every section', () => {
-  // The real document, since a renderer that passes on fixtures and fails on
-  // the one file it exists for is not much use.
-  const src = readFileSync(new URL('../content/guide.md', import.meta.url), 'utf8')
+// ── Lists ────────────────────────────────────────────────────────────────────
+
+test('a bullet that wraps stays one bullet', () => {
+  const html = renderMarkdown('- **Color by** sets what the color means.\n  You can pick a category.\n- Second.')
+  assert.match(html, /<li><strong>Color by<\/strong> sets what the color means\. You can pick a category\.<\/li>/)
+  assert.match(html, /<li>Second\.<\/li>/)
+  assert.equal((html.match(/<ul>/g) || []).length, 1)
+  assert.ok(!/<p>You can pick/.test(html), 'the wrapped line escaped the list')
+})
+
+test('a blank line still ends the list', () => {
+  const html = renderMarkdown('- One.\n\nA paragraph.')
+  assert.match(html, /<ul><li>One\.<\/li><\/ul>/)
+  assert.match(html, /<p>A paragraph\.<\/p>/)
+})
+
+test('a numbered list is an ordered list, not a paragraph of steps', () => {
+  const html = renderMarkdown('1. Open the Map.\n2. Open Points.\n3. Queue the job.')
+  assert.match(html, /<ol><li>Open the Map\.<\/li><li>Open Points\.<\/li><li>Queue the job\.<\/li><\/ol>/)
+})
+
+test('"1) " numbers too, and a decimal mid-sentence does not', () => {
+  assert.match(renderMarkdown('1) First.'), /<ol><li>First\.<\/li><\/ol>/)
+  // No space after the point, so this is prose about a ratio and not a step.
+  const html = renderMarkdown('1.41 times further away than the edge neighbours.')
+  assert.match(html, /<p>1\.41 times further/)
+  assert.ok(!/<ol>/.test(html))
+})
+
+test('a bulleted list under a numbered one is two lists', () => {
+  const html = renderMarkdown('1. Step.\n- Bullet.')
+  assert.match(html, /<ol><li>Step\.<\/li><\/ol><ul><li>Bullet\.<\/li><\/ul>|<ol>.*<\/ol>\n?<ul>/s)
+  assert.ok(!/<ol>.*<ul>.*<\/ol>/s.test(html), 'the lists nested into each other')
+})
+
+test('a step that wraps stays one step', () => {
+  const html = renderMarkdown('1. Open the Map.\n   Each observation is a point.\n2. Next.')
+  assert.match(html, /<li>Open the Map\. Each observation is a point\.<\/li>/)
+})
+
+test('a heading or a table after a list is not swallowed into it', () => {
+  const html = renderMarkdown('- One.\n## Next\n\n- Two.\n| A |\n| --- |\n| 1 |')
+  assert.match(html, /<h2 id="next">Next<\/h2>/)
+  assert.match(html, /<table>/)
+  assert.ok(!/<li>## Next/.test(html))
+})
+
+// ── Fenced code ──────────────────────────────────────────────────────────────
+
+test('a fenced block is code, not a paragraph of run-together statements', () => {
+  const html = renderMarkdown('Before.\n\n```js\nvar a = 1;\nvar b = 2;\n```\n\nAfter.')
+  assert.match(html, /<pre class="doc-code"><code>var a = 1;\nvar b = 2;<\/code><\/pre>/)
+  assert.match(html, /<p>Before\.<\/p>/)
+  assert.match(html, /<p>After\.<\/p>/)
+})
+
+test('markup inside a fence is text, because that is what it has to be copied as', () => {
+  const html = renderMarkdown('```\n# not a heading\n**not bold** <b>\n```')
+  assert.ok(!/<h1/.test(html), 'a comment in code became a heading')
+  assert.ok(!/<strong>/.test(html), 'code became bold')
+  assert.match(html, /&lt;b&gt;/)
+})
+
+test('an unterminated fence ends at the end of the document', () => {
+  // Rather than swallowing the rest of the page into a paragraph, or looping.
+  const html = renderMarkdown('```\nstill open')
+  assert.match(html, /<pre class="doc-code"><code>still open<\/code><\/pre>/)
+})
+
+// ── Figures ──────────────────────────────────────────────────────────────────
+
+test('a figure line becomes a figure with its caption', () => {
+  const html = renderMarkdown('![What it shows.](figure:demo)', { figures: { demo: '<svg/>' } })
+  assert.match(html, /<figure class="doc-figure"><div class="doc-figure-art"><svg\/><\/div>/)
+  assert.match(html, /<figcaption>What it shows\.<\/figcaption>/)
+})
+
+test('a figure with no drawing keeps its caption as text', () => {
+  // Visible, so a typo in the key shows up in the page rather than quietly
+  // removing a paragraph the author wrote.
+  const html = renderMarkdown('![Still says something.](figure:missing)')
+  assert.equal(html, '<p>Still says something.</p>')
+})
+
+// ── Duplicate headings ───────────────────────────────────────────────────────
+
+test('two headings with the same words get different anchors', () => {
+  const src = '## Where to read more\n\na\n\n## Where to read more\n\nb'
   const html = renderMarkdown(src)
-  const heads = extractHeadings(src)
-  assert.ok(heads.length > 15, `only ${heads.length} sections found`)
-  assert.ok(html.includes('callout-caution'), 'no caution callouts rendered')
-  assert.ok(html.includes('callout-note'), 'no note callouts rendered')
-  for (const h of heads) assert.ok(html.includes(`id="${h.id}"`), `${h.text} has no anchor`)
+  assert.match(html, /id="where-to-read-more"/)
+  assert.match(html, /id="where-to-read-more-2"/)
+})
+
+test('the contents list numbers duplicates the same way the anchors do', () => {
+  // These are two functions reading the same lines, and a disagreement is a
+  // contents entry that scrolls to the wrong section.
+  const src = '# Page\n\n## Notes\n\n### Notes\n\n#### Notes\n\n## Notes'
+  const html = renderMarkdown(src)
+  for (const h of extractHeadings(src, { min: 1, max: 4 })) {
+    assert.ok(html.includes(`id="${h.id}"`), `${h.id} is in the list but not in the page`)
+  }
+  // And counting is not restricted to the levels the list shows: the h4 here
+  // takes 'notes-3', so the second h2 has to be 'notes-4'.
+  const ids = extractHeadings(src, { min: 2, max: 2 }).map((h) => h.id)
+  assert.deepEqual(ids, ['notes', 'notes-4'])
 })

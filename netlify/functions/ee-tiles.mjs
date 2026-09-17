@@ -1,7 +1,16 @@
 // Mint a tile URL for an Earth Engine layer.
 //
-//   GET /.netlify/functions/ee-tiles                     the catalogue
-//   GET /.netlify/functions/ee-tiles?layer=…&through=…    a tile template
+//   GET  /.netlify/functions/ee-tiles                     the catalogue
+//   GET  /.netlify/functions/ee-tiles?layer=…&through=…    a tile template
+//   POST /.netlify/functions/ee-tiles  {layer, …}          the same, for big
+//                                                          parameters
+//
+// The POST form exists for one parameter: the soil taxonomy layer's list of
+// class codes. Every class in that raster at once is a few thousand characters,
+// which is past what a query string can be relied on to carry, and a selection
+// that fails at a size nobody can predict is worse than one that cannot be made
+// at all. Same handler, same validation, same cache — only where the parameters
+// were read from differs.
 //
 // Earth Engine renders tiles on demand behind a map id. Asking for one is a
 // single API call, and the answer is a plain XYZ template the browser fetches
@@ -17,12 +26,18 @@
 // which on a fire map reads as "nothing burned here". Expiring early costs one
 // API call; expiring late tells a lie.
 
+import { createHash } from 'node:crypto'
+
 import { getStore } from '@netlify/blobs'
 
 import { requireTier } from '../lib/auth.mjs'
 import {
-  LayerError, EE_LAYER_CATALOGUE, cacheKey, describeLayer, resolveLayer, tierFor, visParams,
+  LayerError, EE_LAYER_CATALOGUE, EE_TILE_LAYERS,
+  cacheKey, describeLayer, resolveLayer, tierFor, visParams,
 } from '../lib/ee-tile-layers.mjs'
+import {
+  MATSUTAKE_GREAT_GROUPS, SOIL_ORDERS, SOIL_TAXONOMY_WIKI, describeGreatGroup,
+} from '../lib/soil-taxonomy.mjs'
 import { earthEngineConfigured, initEarthEngine } from '../lib/ee-runner.mjs'
 import {
   buildCustomLayer, describeCustomLayer, isCustomKey, slugFromKey,
@@ -44,6 +59,97 @@ async function customLayers() {
 
 /** How long a minted template is reused. Well inside Earth Engine's own expiry. */
 const TTL_MS = 6 * 60 * 60 * 1000
+
+/**
+ * How long a layer's class table is reused.
+ *
+ * Much longer than a map id, because it is not one: it is the code → name table
+ * carried on a published asset, and it changes when the publisher issues a new
+ * version — which is a new asset id, and therefore a new cache key anyway.
+ */
+const CLASS_TTL_MS = 30 * 24 * 60 * 60 * 1000
+
+/**
+ * A blob key for a cache key that may be arbitrarily long.
+ *
+ * A selection of every soil class is a cache key of a few thousand characters,
+ * which is past what a blob store will accept as a name. Hashing keeps it one
+ * key per distinct selection — the property the cache depends on — and the
+ * readable prefix is kept so a key in the store still says which layer it
+ * belongs to.
+ */
+export function blobId(key) {
+  if (key.length <= 120) return key
+  const digest = createHash('sha256').update(key).digest('hex').slice(0, 32)
+  return `${key.slice(0, 48)}|${digest}`
+}
+
+/**
+ * The parameters of a request, from the query string and, for a POST, the body.
+ *
+ * The body wins where both name the same thing. Nothing here trusts either:
+ * every value still goes through resolveLayer, which is the only thing that
+ * decides what reaches Earth Engine.
+ */
+export async function readInput(request, url) {
+  const query = Object.fromEntries(url.searchParams)
+  if (request.method !== 'POST') return query
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    throw new LayerError('The request body could not be read as JSON.')
+  }
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return query
+  return { ...query, ...body }
+}
+
+/** Resolve an Earth Engine value. `evaluate` is callback-shaped in the client. */
+function evaluate(obj) {
+  return new Promise((resolve, reject) => {
+    obj.evaluate((value, err) => (err ? reject(new Error(String(err))) : resolve(value)))
+  })
+}
+
+// Within one warm process, a layer's class table is read once. The blob cache
+// below survives a cold start; this saves the read on every request after the
+// first in the same process.
+const preparedHere = new Map()
+
+/**
+ * The table a layer's `prepare` reads off its asset.
+ *
+ * Cached hard, and cached by layer key: an unrelated layer's table must not be
+ * served for this one, and a table that fails to load has to fail the render
+ * rather than let build() paint from an empty list — which for a remap means
+ * every pixel takes the default and the layer comes back uniformly blank.
+ */
+async function prepareLayer(ee, key, layer) {
+  if (!layer.prepare) return null
+  if (preparedHere.has(key)) return preparedHere.get(key)
+
+  const id = `classes|${key}`
+  const blobs = store()
+  if (blobs) {
+    try {
+      const hit = await blobs.get(id, { type: 'json' })
+      if (hit && hit.expires > Date.now() && hit.table) {
+        preparedHere.set(key, hit.table)
+        return hit.table
+      }
+    } catch { /* a cache that cannot be read is a cache miss */ }
+  }
+
+  const table = await evaluate(layer.prepare(ee))
+  if (!table || !Array.isArray(table.values) || !table.values.length) {
+    throw new Error(`${layer.name} could not read its class table from the asset.`)
+  }
+  preparedHere.set(key, table)
+  if (blobs) {
+    try { await blobs.setJSON(id, { table, expires: Date.now() + CLASS_TTL_MS }) } catch { /* not fatal */ }
+  }
+  return table
+}
 
 const json = (body, status = 200, extraHeaders = {}) => new Response(JSON.stringify(body), {
   status,
@@ -142,9 +248,71 @@ async function renderCustom(request, key) {
   }
 }
 
+/**
+ * A layer's class table, described.
+ *
+ *   GET /.netlify/functions/ee-tiles?classes=soil-taxonomy
+ *
+ * Four hundred great groups is too much to put in the catalogue every viewer
+ * loads, and too much to ask Earth Engine for again each time somebody types in
+ * a search box. So it is its own request, made once when the layer is switched
+ * on, and each class arrives with the description already assembled — the
+ * decoding rules live on the server next to the palette that uses them, and a
+ * second copy in the browser is a second copy to disagree.
+ */
+async function classTable(request, key) {
+  const layer = EE_TILE_LAYERS[key]
+  if (!layer?.prepare) {
+    return json({ ok: false, error: `“${key}” has no class table.` }, 404)
+  }
+
+  // Same gate as rendering it. The names are not a secret, but asking for them
+  // spends an Earth Engine call on a cold cache.
+  const auth = await requireTier(request, tierFor(key), {
+    message: `“${layer.name}” is a members' layer.`,
+  })
+  if (!auth.ok) return auth.response
+
+  if (!earthEngineConfigured()) {
+    return json({ ok: false, error: 'Earth Engine is not configured on this deployment.' }, 503)
+  }
+
+  try {
+    const ee = await initEarthEngine()
+    const table = await prepareLayer(ee, key, layer)
+    const classes = (table.names || []).map((name, i) => ({
+      code: table.values[i],
+      ...describeGreatGroup(name),
+    }))
+    return json({
+      ok: true,
+      layer: key,
+      orders: SOIL_ORDERS,
+      wiki: SOIL_TAXONOMY_WIKI,
+      flagged: MATSUTAKE_GREAT_GROUPS,
+      classes,
+    })
+  } catch (err) {
+    const detail = String(err?.message || err).slice(0, 300)
+    return json({ ok: false, error: `Could not read the classes of “${layer.name}”: ${detail}` }, 502)
+  }
+}
+
 export default async function handler(request) {
   const url = new URL(request.url)
-  const key = url.searchParams.get('layer')
+
+  let input
+  try {
+    input = await readInput(request, url)
+  } catch (err) {
+    if (err instanceof LayerError) return json({ ok: false, error: err.message }, 400)
+    throw err
+  }
+
+  const key = input.layer || null
+
+  const wantsClasses = input.classes
+  if (wantsClasses) return classTable(request, String(wantsClasses))
 
   // The catalogue is not gated: the map needs it to know what to offer, and
   // knowing a layer exists is not the same as being able to render it.
@@ -186,14 +354,16 @@ export default async function handler(request) {
 
   let resolved
   try {
-    resolved = resolveLayer(key, Object.fromEntries(url.searchParams))
+    resolved = resolveLayer(key, input)
   } catch (err) {
     if (err instanceof LayerError) return json({ ok: false, error: err.message }, 400)
     throw err
   }
 
   const { layer, params } = resolved
-  const id = cacheKey(key, params)
+  // Hashed when long: a selection of every soil class is a cache key of a few
+  // thousand characters, which is more than a blob store will take as a name.
+  const id = blobId(cacheKey(key, params))
   const blobs = store()
 
   if (blobs) {
@@ -216,9 +386,7 @@ export default async function handler(request) {
     // about the actual problem. One extra call on a cache miss buys an answer
     // they can act on.
     if (layer.count) {
-      const n = await new Promise((resolve, reject) => {
-        layer.count(ee, params).evaluate((v, err) => (err ? reject(new Error(String(err))) : resolve(v)))
-      })
+      const n = await evaluate(layer.count(ee, params))
       if (!n) {
         const when = params.year ?? params.through
         const period = when !== undefined ? String(when)
@@ -243,7 +411,8 @@ export default async function handler(request) {
       }
     }
 
-    const { image, vis } = layer.build(ee, params)
+    const prepared = await prepareLayer(ee, key, layer)
+    const { image, vis } = layer.build(ee, params, prepared)
     const template = await getMapTemplate(ee, image, vis)
 
     if (blobs) {
