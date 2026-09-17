@@ -4,9 +4,12 @@
     <!-- Embedded in someone else's page: drop the site chrome so the iframe
          shows only the view that was shared. -->
     <header v-if="!isEmbed" class="app-header">
-      <NuxtLink to="/" class="brand">
+      <NuxtLink to="/" class="brand" title="Home" aria-label="Nexstrata home">
         <AppLogo :size="30" />
         <h1>Nexstrata</h1>
+        <!-- The app is still in beta; say so where the name is, so it travels
+             with every page rather than living only on the home screen. -->
+        <span class="beta-tag" title="Nexstrata is in beta — expect rough edges and changes">Beta</span>
       </NuxtLink>
       <div class="app-controls">
         <NuxtLink v-if="filterCount" to="/data" class="filter-flag" title="Active filters — manage on the Data tab">
@@ -107,8 +110,10 @@ const { activeCount: filterCount } = useFilters()
 
 // One list, rendered twice: as a row on a wide screen and as a menu on a narrow
 // one. Two copies would drift the moment a page was added.
+// Home is not listed: the logo is the way back to it (see the brand link in the
+// header), so a separate "Home" tab would be a second control for the same
+// destination.
 const NAV = [
-  { to: '/', label: 'Home' },
   { to: '/map', label: 'Map' },
   { to: '/charts', label: 'Charts' },
   { to: '/analysis', label: 'Analysis' },
@@ -272,6 +277,12 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 .brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; }
 .brand h1 { margin: 0; font-size: 1.15rem; }
 .brand:hover { opacity: 0.85; }
+.beta-tag {
+  align-self: flex-start; margin-top: 1px;
+  background: #b45309; color: #fff; border-radius: 999px;
+  padding: 1px 7px; font-size: 0.6rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.5;
+}
 
 .app-controls { display: flex; align-items: center; gap: 14px; }
 

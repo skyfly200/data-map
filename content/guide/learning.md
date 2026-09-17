@@ -274,6 +274,8 @@ useful on a map.
 - [Soil Orders and the Hierarchy of Soil
   Taxonomy](https://www.youtube.com/watch?v=h0NmxOERbhs) — video. Six levels and
   twelve orders is a lot of vocabulary to meet on a page.
+- [Soil Classification](https://youtu.be/Kk7yarqfDoU) — video. How soils are
+  grouped and why the class tells you how the ground behaves.
 
 ## Mycology
 
