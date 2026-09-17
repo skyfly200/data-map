@@ -15,12 +15,24 @@ const CATALOGUE_URL = '/.netlify/functions/ee-tiles'
 /** Re-mint after this long regardless. Shorter than the server's own cache. */
 const REFRESH_MS = 60 * 60 * 1000
 
+/**
+ * How long a tile request may be before it goes in a body instead.
+ *
+ * Well under the point where any browser, proxy or CDN starts truncating or
+ * refusing. Almost every layer is far below it; the one that is not is the soil
+ * taxonomy selection, which can name several hundred classes at once.
+ */
+const MAX_URL = 1800
+
 export function useEeTiles() {
   const { accessToken } = useAuth()
 
   const catalogue = useState('ee-tiles-catalogue', () => [])
   const error = useState('ee-tiles-error', () => '')
   const loading = useState('ee-tiles-loading', () => false)
+  // layer key → its class table. Shared, because two layers over the same asset
+  // would otherwise each read the same four hundred names.
+  const classTables = useState('ee-tiles-classes', () => ({}))
 
   // Keyed by layer key + params, matching the server's cache key, so switching
   // a layer off and on does not re-mint.
@@ -58,10 +70,22 @@ export function useEeTiles() {
     if (held && Date.now() - held.at < REFRESH_MS) return held
 
     const token = await accessToken()
+    const auth = token ? { authorization: `Bearer ${token}` } : {}
     const query = new URLSearchParams({ layer, ...params })
-    const res = await fetch(`${CATALOGUE_URL}?${query}`, {
-      headers: token ? { authorization: `Bearer ${token}` } : {},
-    })
+    const asGet = `${CATALOGUE_URL}?${query}`
+
+    // A GET while it fits, a POST when it does not. Selecting every class of
+    // the soil taxonomy raster is a few thousand characters of parameters,
+    // which is past what a URL can be relied on to carry — and a selection that
+    // fails somewhere above two hundred classes, at a size nobody can predict,
+    // is worse than one that cannot be made. The server reads both the same way.
+    const res = asGet.length <= MAX_URL
+      ? await fetch(asGet, { headers: auth })
+      : await fetch(CATALOGUE_URL, {
+        method: 'POST',
+        headers: { ...auth, 'content-type': 'application/json' },
+        body: JSON.stringify({ layer, ...params }),
+      })
     const data = await res.json().catch(() => ({}))
     if (!res.ok || !data.ok) throw new Error(messageFrom(data, res.status))
 
@@ -70,5 +94,26 @@ export function useEeTiles() {
     return entry
   }
 
-  return { catalogue, error, loading, loadCatalogue, template, keyFor }
+  /**
+   * A layer's class table, for the layers whose classes are too many for a key.
+   *
+   * Static — it is a property of a published asset — so it is cached for the
+   * life of the page and shared between every component that asks. The four
+   * hundred great groups of the soil taxonomy raster are the only user so far,
+   * and they are exactly why this is a separate request rather than part of the
+   * catalogue that every viewer loads.
+   */
+  async function classes(layer) {
+    if (classTables.value[layer]) return classTables.value[layer]
+    const token = await accessToken()
+    const res = await fetch(`${CATALOGUE_URL}?classes=${encodeURIComponent(layer)}`, {
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok || !data.ok) throw new Error(messageFrom(data, res.status))
+    classTables.value = { ...classTables.value, [layer]: data }
+    return data
+  }
+
+  return { catalogue, error, loading, loadCatalogue, template, keyFor, classes }
 }

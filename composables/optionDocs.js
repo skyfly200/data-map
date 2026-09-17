@@ -219,8 +219,50 @@ export const OPTION_DOCS = [
       'Overlays stack, and they hide each other. Land ownership under a hillshade is a different map from the same two the other way up, and until there was an order there was no way to say which you meant — a layer switched on landed wherever the catalogue happened to put it.',
       'In the layer manager, everything currently drawn is listed at the top, topmost first, with arrows to move it. A layer you switch on goes to the top, which is where someone who just asked for it expects to find it.',
       'Each drawn layer also has its own opacity. This multiplies into the global **Tile opacity** in Appearance rather than replacing it, so a hillshade meant to sit lightly stays proportionally lighter, and dimming the whole pile to read through it no longer dims the one layer you were trying to read.',
+      '**⤒** and **⤓** send a layer straight to the top or the bottom. With eight layers on, reaching the top by pressing "up" eight times is a counting exercise rather than an ordering control.',
     ],
-    also: ['map-basemaps', 'appearance-tile-opacity'],
+    also: ['map-layer-solo', 'map-layer-blend', 'map-basemaps', 'appearance-tile-opacity'],
+  },
+  {
+    id: 'map-soil-taxonomy',
+    group: 'Map',
+    title: 'Soil taxonomy layers',
+    summary: 'The USDA soil classification, with a browser for its four hundred classes.',
+    detail: [
+      '**Soil taxonomy (USDA orders)** paints the soil order at each pixel, at 250 m worldwide. Twelve orders, which is the top of the hierarchy: they separate soils by how they formed, so the boundaries follow geology and climate rather than anything visible on the surface.',
+      '**Soil taxonomy: chosen classes** paints only the great groups you tick, and leaves everything else blank. Each one keeps its order’s colour, so a selection spanning several orders can still be told apart.',
+      'The source is the great-group level, which has around four hundred classes. Four hundred swatches is not a key, so these layers get a browser instead: the twelve orders as clickable chips, a search box that matches a great group or its order, and a row per class that opens into what the name means and a link to the article for its order.',
+      'On the chosen-classes layer each row also gains a checkbox, and **Pick these** takes everything the search and the order chip leave — filter to Spodosols, press it, and you have selected the podzols. **FRMS set** fills in eighteen great groups members flagged as matsutake ground on the Front Range, as a starting point to add to or cut down.',
+      'Soil names are compositional and the browser decodes them. *Dystrocryepts* is dystro- (acid, low in bases) plus cry- (cold) plus -epts (Inceptisols), so it is a cold acid soil with weak horizons. The ending is always the order.',
+    ],
+    caveat: 'The chosen-classes layer is a soil filter, not a prediction. It says the ground is the kind you asked for — not that anything grows there, and nothing at all about the trees that decide whether anything can. Both layers are a model prediction rather than a soil survey: right about a hillside, unreliable about a square metre.',
+    also: ['map-basemaps', 'map-layer-order'],
+  },
+  {
+    id: 'map-layer-solo',
+    group: 'Map',
+    title: 'Solo a layer',
+    summary: 'Draw one layer on its own, without switching the rest off.',
+    detail: [
+      'The **S** beside a drawn layer hides every other overlay while leaving them switched on. They stay in the list, dimmed, and come back exactly as they were.',
+      'The question this answers is "what is this one actually contributing", which comes up constantly in a stack of five and which you otherwise pay for by dismantling the stack and rebuilding it.',
+      'Switching any layer on or off ends the solo, because asking for a second layer is asking to see two.',
+    ],
+    also: ['map-layer-order', 'map-layer-blend'],
+  },
+  {
+    id: 'map-layer-blend',
+    group: 'Map',
+    title: 'Blend mode',
+    summary: 'How a layer combines with the layers below it, rather than simply covering them.',
+    detail: [
+      'Opacity answers "how much of this do I want" and answers it badly for two rasters: two layers at 50% is each of them half washed out, and the thing you wanted — the shape of the hillshade over the colour of the land cover — is exactly what that destroys.',
+      'A blend mode keeps both at full strength and combines them by value instead. **Multiply** keeps what is dark in both, which is the one to reach for when relief should read through colour. **Screen** keeps what is light in both, which suits burn scars or cloud over terrain. **Difference** shows what two layers disagree about, which is how you compare the same product on two dates.',
+      'The browser composites this per frame. No tile is re-fetched and nothing is recomputed, so it costs nothing to try one and change your mind.',
+      'The default for each layer is **Default**, which follows the **Blend when stacked** setting in Appearance. Choosing a mode here pins that layer, and it then keeps what you set whatever the default does later.',
+    ],
+    caveat: 'A blend mode combines a layer with whatever is below it, which includes the basemap. The same pair of layers over satellite imagery and over the gray canvas will not look the same, and neither result is the layer on its own — use Solo for that.',
+    also: ['appearance-stack-blend', 'map-layer-solo', 'map-layer-order'],
   },
   {
     id: 'map-basemaps',
@@ -427,7 +469,19 @@ export const OPTION_DOCS = [
       'The reference layers stack, hillshade under rainfall under land ownership, and dimming them one at a time to see the data through the pile would be several controls doing one job.',
       'Each layer keeps its own built-in weighting: hillshade ships at 60% and land ownership at 45% so they read as context rather than as the map. This multiplies into that rather than replacing it, so their relative strengths hold as you dim them.',
     ],
-    also: ['map-basemaps', 'appearance-heatmap-opacity'],
+    also: ['map-basemaps', 'appearance-heatmap-opacity', 'appearance-stack-blend'],
+  },
+  {
+    id: 'appearance-stack-blend',
+    group: 'Style',
+    title: 'Blend when stacked',
+    summary: 'What layers drawn together should do by default, instead of simply covering each other.',
+    detail: [
+      'Sets the blend mode every drawn layer uses unless it was set by hand in the layer manager. **Multiply** is the usual choice: it keeps what is dark in both layers, so relief reads through colour instead of under it.',
+      'Applied only when two or more layers are drawn. One layer over the basemap is not what "stacked" means, and a default that fired there would quietly change every layer anyone switched on.',
+    ],
+    caveat: 'This is a preference, so it follows you to every map you open and to every device you sign in on. A per-layer mode set in the layer manager is not: it belongs to the stack you are building now, and it goes when that layer does.',
+    also: ['map-layer-blend', 'appearance-tile-opacity'],
   },
   {
     id: 'appearance-overrides',
@@ -799,7 +853,7 @@ export const OPTION_DOCS = [
     detail: [
       'Worth reading before any of the other views. A relationship computed over the 11,000 records that carry soil moisture is a different claim from one over all 48,000, and this is where you find out which you are looking at.',
     ],
-    also: ['coverage'],
+    also: ['analysis-scope'],
   },
   {
     id: 'analysis-scope',
@@ -913,7 +967,7 @@ export const OPTION_DOCS = [
     also: ['data-taxon-rank'],
   },
 
-  // ── Sharing and coverage ──────────────────────────────────────────────────
+  // ── Sharing ───────────────────────────────────────────────────────────────
   {
     id: 'share-link',
     group: 'Sharing',
@@ -932,16 +986,6 @@ export const OPTION_DOCS = [
     summary: 'An iframe snippet that renders the view without the site header.',
     detail: ['The same link with `embed=1`, which drops the app chrome so it sits cleanly inside another page.'],
     also: ['share-link'],
-  },
-  {
-    id: 'coverage',
-    group: 'Sharing',
-    title: 'Coverage',
-    summary: 'What the enrichment pipeline has and has not filled in.',
-    detail: [
-      'Field-by-field completeness, plus how coverage varies over space and time. Read it as the honest limit on everything else in the app.',
-    ],
-    also: ['analysis-quality'],
   },
 ]
 
@@ -995,7 +1039,7 @@ export function docAnchor(id) {
 
 /** Where the guide documents this option. */
 export function docHref(id) {
-  return `/guide#${docAnchor(id)}`
+  return `/guide/reference#${docAnchor(id)}`
 }
 
 /** Entries grouped in declaration order, for rendering the reference. */

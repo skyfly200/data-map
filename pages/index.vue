@@ -72,8 +72,8 @@
             the conditions that preceded it.
           </p>
           <p class="more-links">
-            <NuxtLink to="/guide#where-the-data-comes-from">Source table, by column</NuxtLink>
-            <NuxtLink to="/coverage">Cache coverage and dates</NuxtLink>
+            <NuxtLink to="/guide/sources">Source table, by column</NuxtLink>
+            <NuxtLink to="/analysis">How complete each column is</NuxtLink>
           </p>
         </div>
 
@@ -252,7 +252,7 @@
       </ul>
       <div class="cta left">
         <NuxtLink to="/jobs" class="btn primary">Run a job</NuxtLink>
-        <NuxtLink to="/guide#your-own-earth-engine-layers" class="btn">Publish a layer</NuxtLink>
+        <NuxtLink to="/guide/layers" class="btn">Publish a layer</NuxtLink>
         <a class="btn" :href="KAGGLE_URL" target="_blank" rel="noopener noreferrer">Run the pipeline yourself</a>
       </div>
     </section>
@@ -273,7 +273,7 @@
         Each view therefore states its own confounds at the point of use rather than in
         documentation. The seasonal heatmaps normalise within each cell, which cancels most of
         the effort bias; the density heatmaps cannot, and say so.
-        <NuxtLink to="/guide#reference">Every control has a reference entry</NuxtLink>
+        <NuxtLink to="/guide/reference">Every control has a reference entry</NuxtLink>
         covering its behaviour and its failure modes.
       </p>
     </section>
@@ -361,7 +361,7 @@ const FEATURES = [
       + 'stage; results are stored and loadable as a dataset.',
   },
   {
-    to: '/guide#your-own-earth-engine-layers',
+    to: '/guide/layers',
     title: 'Custom raster layers',
     body: 'Register an exported Earth Engine asset by ID, band and palette. Tile URLs are minted '
       + 'server-side and gated per access tier.',
