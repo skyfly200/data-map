@@ -256,16 +256,73 @@ saturated thing on the screen. Street, terrain and satellite are one click away.
   Wetness finds the ground that collects water. Exposure and solar find the
   ground that dries quickly. Aspect and slope are below both. Open to everyone.
 - **Soil** — texture class, depth to bedrock, sand content as a proxy for
-  drainage, and a sand/silt/clay composite. Texture decides how long the ground
-  stays wet after rain. That is the half of fruiting weather that the rain layers
-  cannot tell you. The composite has no scale to read a value from. Its purpose
-  is the boundaries, which often follow the ground and not the surface.
+  drainage, a sand/silt/clay composite, and the two soil taxonomy layers below.
+  Texture decides how long the ground stays wet after rain. That is the half of
+  fruiting weather that the rain layers cannot tell you. The composite has no
+  scale to read a value from. Its purpose is the boundaries, which often follow
+  the ground and not the surface.
 - **Fire and disturbance** — years since fire, burn severity, this year's burn
   scars, active fires, a computed dNBR severity, forest loss and cutting (Hansen
   Global Forest Change), and a Sentinel-2 canopy-moisture crash. The last one
   flags beetle-kill and drought die-off. Years since fire, burn severity and
   forest loss are open to everyone. The computed layers are a membership benefit.
 - **Context** — place labels, hiking trails, land ownership.
+
+### Soil taxonomy
+
+Two layers draw the USDA soil classification, at 250 m, worldwide.
+
+**Soil taxonomy (USDA orders)** paints the soil order at each pixel. There are
+twelve orders, and they are the top of the hierarchy. Orders separate soils by
+how they formed, so the boundaries often follow the geology and the climate, and
+not anything that you can see on the surface.
+
+**Soil taxonomy: matsutake ground** paints only the eighteen great groups that
+FRMS members have flagged as matsutake ground on the Front Range. These are the
+cool, acid, sandy and volcanic soils, across five orders. All other ground stays
+blank.
+
+> **Caution** The matsutake layer is a soil filter and not a prediction. It says
+> that the ground is the correct kind. It does not say that anything fruits
+> there, and it knows nothing about the host trees that decide whether anything
+> can.
+
+#### The class browser
+
+The source data is at the **great group** level, which is the third of the six
+levels of the hierarchy. It has approximately four hundred classes. Four hundred
+swatches is not a key. It is a lookup table that you must read line by line.
+
+So the key for these layers is a browser. Switch either layer on, and the **Map
+layers** panel gives you:
+
+- **The twelve orders**, as the key. Click one to show only its own great
+  groups. This answers "what are all the podzols here", which a search box
+  cannot: no podzol is named "podzol".
+- **A search box**. It matches the name of a great group and also the name of
+  its order.
+- **The list**. Each row shows the color of its order, its name, and a 🍄 if it
+  is one of the eighteen flagged great groups.
+
+Hover on a row to read a one-line description. Click it to open the whole
+description, and a link to the Wikipedia article for that order.
+
+#### How to read a great group name
+
+You do not need the list to read a soil name. The names are built from a fixed
+vocabulary, and they are built to be read:
+
+| Part | Where | What it says |
+| --- | --- | --- |
+| `Dystro` | front | Low base saturation: acid, and short of calcium |
+| `cry` | middle | Cold: a mean soil temperature below about 8 °C |
+| `epts` | end | Inceptisols, the order |
+
+**Dystrocryepts** is therefore a cold, acid soil with weak horizons. The app
+decodes the name for you in the class browser, part by part.
+
+The ending is always the order. Read [Soils](/guide/learning#soils) for the
+twelve orders and where to read more about them.
 
 ### Layer keys and dates
 

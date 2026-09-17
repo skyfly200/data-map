@@ -21,8 +21,12 @@ import { getStore } from '@netlify/blobs'
 
 import { requireTier } from '../lib/auth.mjs'
 import {
-  LayerError, EE_LAYER_CATALOGUE, cacheKey, describeLayer, resolveLayer, tierFor, visParams,
+  LayerError, EE_LAYER_CATALOGUE, EE_TILE_LAYERS,
+  cacheKey, describeLayer, resolveLayer, tierFor, visParams,
 } from '../lib/ee-tile-layers.mjs'
+import {
+  MATSUTAKE_GREAT_GROUPS, SOIL_ORDERS, SOIL_TAXONOMY_WIKI, describeGreatGroup,
+} from '../lib/soil-taxonomy.mjs'
 import { earthEngineConfigured, initEarthEngine } from '../lib/ee-runner.mjs'
 import {
   buildCustomLayer, describeCustomLayer, isCustomKey, slugFromKey,
@@ -44,6 +48,62 @@ async function customLayers() {
 
 /** How long a minted template is reused. Well inside Earth Engine's own expiry. */
 const TTL_MS = 6 * 60 * 60 * 1000
+
+/**
+ * How long a layer's class table is reused.
+ *
+ * Much longer than a map id, because it is not one: it is the code → name table
+ * carried on a published asset, and it changes when the publisher issues a new
+ * version — which is a new asset id, and therefore a new cache key anyway.
+ */
+const CLASS_TTL_MS = 30 * 24 * 60 * 60 * 1000
+
+/** Resolve an Earth Engine value. `evaluate` is callback-shaped in the client. */
+function evaluate(obj) {
+  return new Promise((resolve, reject) => {
+    obj.evaluate((value, err) => (err ? reject(new Error(String(err))) : resolve(value)))
+  })
+}
+
+// Within one warm process, a layer's class table is read once. The blob cache
+// below survives a cold start; this saves the read on every request after the
+// first in the same process.
+const preparedHere = new Map()
+
+/**
+ * The table a layer's `prepare` reads off its asset.
+ *
+ * Cached hard, and cached by layer key: an unrelated layer's table must not be
+ * served for this one, and a table that fails to load has to fail the render
+ * rather than let build() paint from an empty list — which for a remap means
+ * every pixel takes the default and the layer comes back uniformly blank.
+ */
+async function prepareLayer(ee, key, layer) {
+  if (!layer.prepare) return null
+  if (preparedHere.has(key)) return preparedHere.get(key)
+
+  const id = `classes|${key}`
+  const blobs = store()
+  if (blobs) {
+    try {
+      const hit = await blobs.get(id, { type: 'json' })
+      if (hit && hit.expires > Date.now() && hit.table) {
+        preparedHere.set(key, hit.table)
+        return hit.table
+      }
+    } catch { /* a cache that cannot be read is a cache miss */ }
+  }
+
+  const table = await evaluate(layer.prepare(ee))
+  if (!table || !Array.isArray(table.values) || !table.values.length) {
+    throw new Error(`${layer.name} could not read its class table from the asset.`)
+  }
+  preparedHere.set(key, table)
+  if (blobs) {
+    try { await blobs.setJSON(id, { table, expires: Date.now() + CLASS_TTL_MS }) } catch { /* not fatal */ }
+  }
+  return table
+}
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -141,9 +201,62 @@ async function renderCustom(request, key) {
   }
 }
 
+/**
+ * A layer's class table, described.
+ *
+ *   GET /.netlify/functions/ee-tiles?classes=soil-taxonomy
+ *
+ * Four hundred great groups is too much to put in the catalogue every viewer
+ * loads, and too much to ask Earth Engine for again each time somebody types in
+ * a search box. So it is its own request, made once when the layer is switched
+ * on, and each class arrives with the description already assembled — the
+ * decoding rules live on the server next to the palette that uses them, and a
+ * second copy in the browser is a second copy to disagree.
+ */
+async function classTable(request, key) {
+  const layer = EE_TILE_LAYERS[key]
+  if (!layer?.prepare) {
+    return json({ ok: false, error: `“${key}” has no class table.` }, 404)
+  }
+
+  // Same gate as rendering it. The names are not a secret, but asking for them
+  // spends an Earth Engine call on a cold cache.
+  const auth = await requireTier(request, tierFor(key), {
+    message: `“${layer.name}” is a members' layer.`,
+  })
+  if (!auth.ok) return auth.response
+
+  if (!earthEngineConfigured()) {
+    return json({ ok: false, error: 'Earth Engine is not configured on this deployment.' }, 503)
+  }
+
+  try {
+    const ee = await initEarthEngine()
+    const table = await prepareLayer(ee, key, layer)
+    const classes = (table.names || []).map((name, i) => ({
+      code: table.values[i],
+      ...describeGreatGroup(name),
+    }))
+    return json({
+      ok: true,
+      layer: key,
+      orders: SOIL_ORDERS,
+      wiki: SOIL_TAXONOMY_WIKI,
+      flagged: MATSUTAKE_GREAT_GROUPS,
+      classes,
+    })
+  } catch (err) {
+    const detail = String(err?.message || err).slice(0, 300)
+    return json({ ok: false, error: `Could not read the classes of “${layer.name}”: ${detail}` }, 502)
+  }
+}
+
 export default async function handler(request) {
   const url = new URL(request.url)
   const key = url.searchParams.get('layer')
+
+  const wantsClasses = url.searchParams.get('classes')
+  if (wantsClasses) return classTable(request, wantsClasses)
 
   // The catalogue is not gated: the map needs it to know what to offer, and
   // knowing a layer exists is not the same as being able to render it.
@@ -207,9 +320,7 @@ export default async function handler(request) {
     // about the actual problem. One extra call on a cache miss buys an answer
     // they can act on.
     if (layer.count) {
-      const n = await new Promise((resolve, reject) => {
-        layer.count(ee, params).evaluate((v, err) => (err ? reject(new Error(String(err))) : resolve(v)))
-      })
+      const n = await evaluate(layer.count(ee, params))
       if (!n) {
         const when = params.year ?? params.through
         const period = when !== undefined ? String(when)
@@ -234,7 +345,8 @@ export default async function handler(request) {
       }
     }
 
-    const { image, vis } = layer.build(ee, params)
+    const prepared = await prepareLayer(ee, key, layer)
+    const { image, vis } = layer.build(ee, params, prepared)
     const template = await getMapTemplate(ee, image, vis)
 
     if (blobs) {

@@ -224,6 +224,20 @@ export const OPTION_DOCS = [
     also: ['map-layer-solo', 'map-layer-blend', 'map-basemaps', 'appearance-tile-opacity'],
   },
   {
+    id: 'map-soil-taxonomy',
+    group: 'Map',
+    title: 'Soil taxonomy layers',
+    summary: 'The USDA soil classification, with a browser for its four hundred classes.',
+    detail: [
+      '**Soil taxonomy (USDA orders)** paints the soil order at each pixel, at 250 m worldwide. Twelve orders, which is the top of the hierarchy: they separate soils by how they formed, so the boundaries follow geology and climate rather than anything visible on the surface.',
+      '**Soil taxonomy: matsutake ground** paints only the eighteen great groups FRMS members have flagged as matsutake ground on the Front Range — the cool, acid, sandy and volcanic soils, across five orders. Everything else is left blank.',
+      'The source is the great-group level, which has around four hundred classes. Four hundred swatches is not a key, so these layers get a browser instead: the twelve orders as clickable chips, a search box that matches a great group or its order, and a row per class that opens into what the name means and a link to the article for its order.',
+      'Soil names are compositional and the browser decodes them. *Dystrocryepts* is dystro- (acid, low in bases) plus cry- (cold) plus -epts (Inceptisols), so it is a cold acid soil with weak horizons. The ending is always the order.',
+    ],
+    caveat: 'The matsutake layer is a soil filter, not a prediction. It says the ground is the right kind — not that anything fruits there, and nothing at all about the host trees that decide whether anything can. Both layers are a model prediction rather than a soil survey: right about a hillside, unreliable about a square metre.',
+    also: ['map-basemaps', 'map-layer-order'],
+  },
+  {
     id: 'map-layer-solo',
     group: 'Map',
     title: 'Solo a layer',
