@@ -168,16 +168,13 @@ export const TILE_LAYERS = [
   },
 
   // ── Ground ────────────────────────────────────────────────────────────────
-  {
-    name: 'Soil moisture', group: 'Ground',
-    ...gibs('SMAP_L4_Analyzed_Surface_Soil_Moisture', 6),
-    attribution: 'NASA GIBS / SMAP L4', opacity: 0.65, time: true, lag: 4,
-    note: 'Modelled water in the top 5 cm of soil, at ~9 km. A model output assimilating satellite retrievals, not a measurement of your patch.',
-    legend: {
-      type: 'ramp', unit: 'm³/m³', min: '0.0', max: '0.6',
-      stops: ['#8c6d3f', '#c7a76c', '#e8dfc0', '#96c8c0', '#3d8fb0', '#16407a'],
-    },
-  },
+  // SMAP soil moisture used to be served here from NASA GIBS. GIBS only
+  // publishes the SMAP layers in the geographic (EPSG:4326) projection, not the
+  // Web-Mercator (EPSG:3857) tiles this map is built on, so every request 404'd
+  // — a layer that could never have drawn here. It now comes from Earth Engine
+  // instead, as `soil-moisture` in netlify/lib/ee-tile-layers.mjs, the same move
+  // that fixed WorldCover below.
+  //
   // ESA WorldCover used to be served here, from the publisher's own WMTS at
   // services.terrascope.be. That host started failing at the protocol level —
   // ERR_HTTP2_PROTOCOL_ERROR on a direct request, so not something this app
