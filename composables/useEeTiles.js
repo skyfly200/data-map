@@ -21,6 +21,9 @@ export function useEeTiles() {
   const catalogue = useState('ee-tiles-catalogue', () => [])
   const error = useState('ee-tiles-error', () => '')
   const loading = useState('ee-tiles-loading', () => false)
+  // layer key → its class table. Shared, because two layers over the same asset
+  // would otherwise each read the same four hundred names.
+  const classTables = useState('ee-tiles-classes', () => ({}))
 
   // Keyed by layer key + params, matching the server's cache key, so switching
   // a layer off and on does not re-mint.
@@ -70,5 +73,26 @@ export function useEeTiles() {
     return entry
   }
 
-  return { catalogue, error, loading, loadCatalogue, template, keyFor }
+  /**
+   * A layer's class table, for the layers whose classes are too many for a key.
+   *
+   * Static — it is a property of a published asset — so it is cached for the
+   * life of the page and shared between every component that asks. The four
+   * hundred great groups of the soil taxonomy raster are the only user so far,
+   * and they are exactly why this is a separate request rather than part of the
+   * catalogue that every viewer loads.
+   */
+  async function classes(layer) {
+    if (classTables.value[layer]) return classTables.value[layer]
+    const token = await accessToken()
+    const res = await fetch(`${CATALOGUE_URL}?classes=${encodeURIComponent(layer)}`, {
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok || !data.ok) throw new Error(messageFrom(data, res.status))
+    classTables.value = { ...classTables.value, [layer]: data }
+    return data
+  }
+
+  return { catalogue, error, loading, loadCatalogue, template, keyFor, classes }
 }

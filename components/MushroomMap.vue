@@ -221,11 +221,15 @@
             <span>{{ n.legend.max }}</span>
           </div>
         </template>
-        <div v-else-if="n.legend?.type === 'classes'" class="class-key">
+        <div v-else-if="n.legend?.type === 'classes' && !n.legendInBrowser" class="class-key">
           <span v-for="c in n.legend.items" :key="c.label" class="ck">
             <span class="swatch" :style="{ background: c.color }"></span>{{ c.label }}
           </span>
         </div>
+        <!-- A layer with more classes than a key can hold gets a browser for
+             them instead: search, what each one means, and where to read more.
+             Four hundred swatches is not a key, it is a lookup table. -->
+        <SoilTaxonomyKey v-if="n.classes === 'great-groups'" :layer="n.ee" />
         <!-- The date the layer is showing, movable for the ones that vary. Each
              product has its own latency, so "today" is usually blank tiles. -->
         <!-- The knobs an Earth Engine layer exposes. Which year, how far back
@@ -1285,6 +1289,10 @@ async function addEeLayers() {
           ee: spec.key,
           eeParams: spec.params,
           slow: spec.slow,
+          // A layer whose classes are too many to list in a key. The key shows
+          // a browser for them instead; see SoilTaxonomyKey.
+          classes: spec.classes,
+          legendInBrowser: spec.legendInBrowser,
           slug: spec.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         }]
       }
