@@ -949,6 +949,20 @@ export const OPTION_DOCS = [
     also: ['data-species', 'map-color-by', 'filter-min-obs'],
   },
   {
+    id: 'data-taxon-list',
+    group: 'Data',
+    title: 'iNaturalist taxa',
+    summary: 'Which taxa this app asks iNaturalist for, at any rank up to a whole kingdom.',
+    detail: [
+      'A name at any rank. iNaturalist returns everything below whatever you name, so *Amanita* is a genus, *Amanitaceae* is a family and **Fungi** is every fungus — which is why the whole-kingdom presets are one entry each rather than a list.',
+      'The ready-made lists are the forty-two genera this project has been collecting, all fungi, all plants, all animals, and fungi and plants together. Each one says roughly what it costs to collect, because the difference between the first and the last is four orders of magnitude of records.',
+      'The list is a preference, so it syncs with your account and follows you between devices. It is also where the browser’s own fetch gets its suggestions and its "fetch my list" button.',
+      'The Python pipeline is the thing that can actually collect a list this size, and it reads an environment variable. **For the pipeline** writes that line out with your list already in it, lower-cased the way the pipeline’s own parser expects, ready to paste into a `.env`.',
+    ],
+    caveat: 'A browser fetch handles one taxon at a time and each one can take a minute. Choosing a whole kingdom here is fine as a setting, but collecting it is a job for the pipeline, not for a tab you have to leave open.',
+    also: ['data-taxon-rank', 'data-species'],
+  },
+  {
     id: 'data-table',
     group: 'Data',
     title: 'Table',

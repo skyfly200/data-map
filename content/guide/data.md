@@ -9,6 +9,46 @@ narrows at the same time.
 The **Rank** selector sets the level of the list and the level of the filter
 together. Read [Taxonomy](/guide/map#taxonomy) for what each rank contains.
 
+## Which taxa the app collects
+
+**Options → iNaturalist taxa** sets which taxa this app asks iNaturalist for.
+
+Give a name at any rank. iNaturalist returns everything below the name that you
+give:
+
+| You enter | You get |
+| --- | --- |
+| `Amanita` | One genus |
+| `Amanitaceae` | One family, and each genus in it |
+| `Fungi` | Every fungus |
+
+A whole kingdom is therefore one entry, and not a list.
+
+### The ready-made lists
+
+| List | What it collects | Approximate size |
+| --- | --- | --- |
+| FRMS genera | The 42 genera that this project collects | Tens of thousands of records |
+| All fungi | Every fungus, with the lichens, moulds and rusts | Hundreds of thousands |
+| All plants | Every plant. Useful as host context | Millions |
+| All animals | Every animal | Millions |
+| Fungi and plants | Both, in one dataset | Millions |
+
+Select a list, or build your own. Type a name and click **Add** to add one.
+Click the **×** on a name to remove it.
+
+The list is a setting, so it follows your account to your other devices.
+
+> **Caution** A fetch from the browser collects one taxon at a time, and each
+> one can take a minute. A whole kingdom is correct as a setting, but the
+> pipeline is what collects it.
+
+### How to give the list to the pipeline
+
+The Python pipeline reads an environment variable. Open **For the pipeline** to
+see the line for your list, with the names already in it. Copy the line into the
+pipeline's `.env` file, then run the pipeline.
+
 ## Table
 
 The table shows all the observations with their enriched columns. You can sort

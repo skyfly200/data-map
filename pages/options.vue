@@ -156,6 +156,20 @@
       </div>
     </section>
 
+    <section class="opt-group">
+      <!-- Anchored, because the fetch box on the Data page links straight here
+           rather than telling somebody to scroll for it. -->
+      <h2 id="inaturalist-taxa">iNaturalist taxa</h2>
+      <p class="opt-lede">
+        Which taxa this app asks iNaturalist for. A name at any rank: a genus, a
+        family, or a whole kingdom — iNaturalist returns everything below it, so
+        <em>Fungi</em> is one entry and means every fungus.
+      </p>
+      <ClientOnly>
+        <TaxonListSettings />
+      </ClientOnly>
+    </section>
+
     <ClientOnly>
       <section v-if="configured" class="opt-group">
         <h2>Account</h2>
@@ -221,6 +235,11 @@ onMounted(() => {
 })
 
 const { unit, tempUnit } = useUnits()
+
+// The taxon list is read from storage here rather than in its own component, so
+// the page holds the load in one place with the rest of the settings it shows.
+const taxonList = useTaxonList()
+onMounted(() => taxonList.loadFromStorage())
 const appearance = useAppearance()
 const { PALETTES, paletteKey, activeColors, pointOutline } = appearance
 const heatmaps = useMapHeatmaps()
