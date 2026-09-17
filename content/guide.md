@@ -170,7 +170,8 @@ Reference layers stack on top, grouped by subject:
   after rain, which is the half of fruiting weather the rain layers cannot tell
   you. The composite has no scale to read a value off; its point is the
   boundaries, which often run with the ground rather than with anything visible
-  on the surface.
+  on the surface. New to reading soil? [Soil Classification](https://youtu.be/Kk7yarqfDoU)
+  is a short primer on the texture classes these layers use.
 - **Fire & disturbance** — years since fire, burn severity, this year's burn
   scars, active fires, a computed dNBR severity, forest loss / cutting (Hansen
   Global Forest Change), and a Sentinel-2 canopy-moisture crash that flags

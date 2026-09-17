@@ -213,7 +213,12 @@
         <div class="tk-name">{{ n.name }}</div>
         <template v-if="n.legend?.type === 'ramp'">
           <div class="gradient" :style="{ background: gradientCss(n.legend.stops) }"></div>
-          <div class="gradient-scale">
+          <!-- A cyclic ramp (aspect) labels evenly all the way round rather than
+               just at its ends, so east and west are marked, not just north. -->
+          <div v-if="n.legend.ticks" class="gradient-ticks">
+            <span v-for="(t, ti) in n.legend.ticks" :key="ti">{{ t }}</span>
+          </div>
+          <div v-else class="gradient-scale">
             <span>{{ n.legend.min }}</span>
             <span class="unit">{{ n.legend.unit }}</span>
             <span>{{ n.legend.max }}</span>
@@ -2252,6 +2257,10 @@ onBeforeUnmount(() => {
 .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #222; flex: 0 0 auto; }
 .gradient { height: 12px; border-radius: 3px; border: 1px solid #ccc; }
 .gradient-scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 3px; }
+.gradient-ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.gradient-ticks span { flex: 1 1 0; text-align: center; }
+.gradient-ticks span:first-child { text-align: left; }
+.gradient-ticks span:last-child { text-align: right; }
 
 /* Mobile: tighten the on-map controls and legend so they don't swallow the map. */
 @media (max-width: 640px) {

@@ -836,7 +836,10 @@ export const EE_TILE_LAYERS = {
       + 'cooler and damper and holds snow later; south-facing dries first. Which matters depends on '
       + 'the species and the season, which is why this is offered raw rather than pre-judged. '
       + 'The palette is cyclic, so north reads the same colour at both ends.',
-    legend: { type: 'ramp', unit: '° from north', min: 'N', max: 'N', stops: ASPECT_PALETTE },
+    // Cyclic, so the key is marked all the way round rather than just at its
+    // ends: the ticks sit evenly under the gradient at N, E, S, W and back to N,
+    // which is what tells east from west at a glance.
+    legend: { type: 'ramp', unit: '° from north', ticks: ['N', 'E', 'S', 'W', 'N'], stops: ASPECT_PALETTE },
     sourceMasked: true,
     build(ee) {
       const aspect = ee.Terrain.aspect(ee.Image(ASSETS.SRTM))

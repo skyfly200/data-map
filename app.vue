@@ -4,7 +4,7 @@
     <!-- Embedded in someone else's page: drop the site chrome so the iframe
          shows only the view that was shared. -->
     <header v-if="!isEmbed" class="app-header">
-      <NuxtLink to="/" class="brand">
+      <NuxtLink to="/" class="brand" title="Home" aria-label="Nexstrata home">
         <AppLogo :size="30" />
         <h1>Nexstrata</h1>
         <!-- The app is still in beta; say so where the name is, so it travels
@@ -101,8 +101,10 @@ const { activeCount: filterCount } = useFilters()
 
 // One list, rendered twice: as a row on a wide screen and as a menu on a narrow
 // one. Two copies would drift the moment a page was added.
+// Home is not listed: the logo is the way back to it (see the brand link in the
+// header), so a separate "Home" tab would be a second control for the same
+// destination.
 const NAV = [
-  { to: '/', label: 'Home' },
   { to: '/map', label: 'Map' },
   { to: '/charts', label: 'Charts' },
   { to: '/analysis', label: 'Analysis' },
