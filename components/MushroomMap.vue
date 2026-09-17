@@ -62,6 +62,23 @@
         has recorded from is blank rather than zero.
       </p>
       <p v-if="!pinNearest" class="pin-note">No loaded observations nearby.</p>
+
+      <!-- What the active Earth Engine layers say at this exact spot, read on
+           demand because each layer is one Earth Engine call. -->
+      <div v-if="activeEeLayers.length" class="pin-sample">
+        <button class="pin-sample-btn" :disabled="pinSampling" @click="samplePinLayers">
+          {{ pinSampling ? 'Sampling…' : (pinSamples ? 'Sample again' : 'Sample layers here') }}
+        </button>
+        <dl v-if="pinSamples && pinSamples.length" class="pin-facts sampled">
+          <div v-for="s in pinSamples" :key="s.key">
+            <dt>{{ s.name }}</dt>
+            <dd>
+              <span v-if="s.color" class="pin-sw" :style="{ background: s.color }"></span>{{ sampleText(s) }}
+            </dd>
+          </div>
+        </dl>
+        <p v-if="pinSampleError" class="pin-note">{{ pinSampleError }}</p>
+      </div>
     </div>
 
     <!-- Thematic layer selector -->
@@ -1053,6 +1070,9 @@ const heatmapCellIndex = computed(() => {
 // created empty, and the template is fetched the first time it is switched on —
 // minting one for a layer nobody looks at would spend quota for nothing.
 const eeTiles = useEeTiles()
+// For authorising a point-sample of members' layers, the same token the tile
+// path uses.
+const { accessToken } = useAuth()
 // Only for registering minted templates against their layer, so saved Earth
 // Engine tiles survive a token rotation. The saving itself lives in the panel.
 const offline = useOffline()
@@ -1205,6 +1225,8 @@ async function addEeLayers() {
       // Earth Engine renders any zoom it is asked for, so there is no native
       // ceiling to upsample from.
       crossOrigin: 'anonymous',
+      // Track the zoom continuously on touch too; see the reference layers.
+      updateWhenIdle: false, updateWhenZooming: true,
     })
     layer._baseOpacity = spec.opacity ?? 1
     layer._spec = { ...spec, ee: true }
@@ -1380,6 +1402,66 @@ async function copyText(text) {
     copied.value = true
     setTimeout(() => { copied.value = false }, 1600)
   } catch { /* clipboard refused; the text is still selectable */ }
+}
+
+// The active Earth Engine layers, with their current parameters, that the
+// "Sample layers here" button will read at the pin. Reference layers (GIBS,
+// ArcGIS) are external tiles with no server-side image to sample, so only the
+// Earth Engine layers are offered.
+const activeEeLayers = computed(() => {
+  const cat = eeTiles.catalogue.value || []
+  const out = []
+  for (const key of activeOverlays.value) {
+    const spec = cat.find((l) => l.key === key)
+    if (spec) out.push({ key, params: paramsFor(spec) })
+  }
+  return out
+})
+
+const pinSamples = ref(null)
+const pinSampling = ref(false)
+const pinSampleError = ref('')
+
+// A new point invalidates the old readings: sampling is per-coordinate, so the
+// values from the last spot must not linger under a pin that has since moved.
+watch(pin, () => { pinSamples.value = null; pinSampleError.value = '' }, { deep: true })
+
+/**
+ * Read the active Earth Engine layers at the pin, on demand.
+ *
+ * On demand, not automatically, because each layer sampled is one Earth Engine
+ * read: a button press spends that deliberately, where sampling on every pin
+ * drop would spend it on every misclick.
+ */
+async function samplePinLayers() {
+  if (!pin.value || !activeEeLayers.value.length || pinSampling.value) return
+  pinSampling.value = true
+  pinSampleError.value = ''
+  try {
+    const token = await accessToken()
+    const res = await fetch('/.netlify/functions/ee-sample', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...(token ? { authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ lat: pin.value.lat, lon: pin.value.lon, layers: activeEeLayers.value }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok || !data.ok) throw new Error(data.error || `Could not sample (${res.status}).`)
+    pinSamples.value = data.results || []
+  } catch (e) {
+    pinSampleError.value = e.message
+  } finally {
+    pinSampling.value = false
+  }
+}
+
+/** One sampled layer's value, formatted for the panel. */
+function sampleText(s) {
+  if (s.error) return 'unavailable'
+  if (s.empty) return 'no data here'
+  if (s.label) return s.label
+  if (s.channels) return s.channels.map((c) => Math.round(c.value)).join(' / ')
+  if (s.value === null || s.value === undefined) return '—'
+  return `${typeof s.value === 'number' ? fmtNum(s.value) : s.value}${s.unit ? ` ${s.unit}` : ''}`
 }
 
 /** The heatmap cell under the pin, if a heatmap is on and it has one there. */
@@ -1709,6 +1791,12 @@ onMounted(async () => {
         attribution: o.attribution, maxZoom: MAP_MAX_ZOOM, maxNativeZoom: o.maxZoom,
         opacity: (o.opacity ?? 1) * tileOpacity.value,
         crossOrigin: 'anonymous',
+        // Leaflet defaults updateWhenIdle to true on touch devices, which leaves
+        // an overlay's tiles pinned in place through a pinch-zoom and only
+        // repositioned once the gesture ends — the layer reads as "stuck" while
+        // the basemap moves under it. Update continuously instead so the overlay
+        // tracks the zoom the way the basemap does.
+        updateWhenIdle: false, updateWhenZooming: true,
       }
       const layer = o.arcgis
         ? new ArcGISLayer('', { ...opts, service: o.arcgis, serviceLayers: o.layers || '' })
@@ -2268,6 +2356,19 @@ onBeforeUnmount(() => {
   color: inherit; text-decoration: underline dotted; text-underline-offset: 2px;
 }
 .pin-mini:hover { color: var(--accent, #2b7a3d); }
+.pin-sample { margin-top: 8px; border-top: 1px solid var(--border-soft, #eee); padding-top: 8px; }
+.pin-sample-btn {
+  width: 100%; border: 1px solid var(--accent, #2b7a3d); background: transparent;
+  color: var(--accent, #2b7a3d); border-radius: 6px; padding: 5px 8px;
+  font: inherit; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+}
+.pin-sample-btn:hover:not(:disabled) { background: var(--accent, #2b7a3d); color: #fff; }
+.pin-sample-btn:disabled { opacity: 0.6; cursor: default; }
+.pin-facts.sampled { margin-top: 7px; }
+.pin-sw {
+  display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+  margin-right: 5px; vertical-align: -1px; border: 1px solid rgba(0, 0, 0, 0.2);
+}
 .pin-note { margin: 6px 0 0; font-size: 11px; line-height: 1.35; color: #777; }
 
 @media (prefers-color-scheme: dark) {
