@@ -38,7 +38,14 @@ export default async () => {
   return new Response(JSON.stringify(collection), {
     headers: {
       'content-type': 'application/geo+json',
+      // Two caches, on purpose. The browser holds it five minutes so a reload
+      // does not re-fetch. The CDN holds it at the edge for an hour and serves a
+      // stale copy for a day while it refreshes in the background, so the
+      // function itself runs at most once an hour per edge node rather than once
+      // per visitor — the observations only change when the scheduled refresh
+      // writes a new blob, so an hour-stale copy is never wrong enough to matter.
       'cache-control': 'public, max-age=300',
+      'netlify-cdn-cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400, durable',
     },
   })
 }
