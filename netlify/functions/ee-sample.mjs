@@ -25,6 +25,28 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), {
   headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
 })
 
+/** Evaluate an Earth Engine value. `evaluate` is callback-shaped in the client. */
+function evaluate(obj) {
+  return new Promise((resolve, reject) => {
+    obj.evaluate((value, err) => (err ? reject(new Error(String(err))) : resolve(value)))
+  })
+}
+
+/**
+ * The table a layer's `prepare` reads off its asset, or null for a layer without
+ * one. The soil taxonomy layers carry their class table this way and their
+ * build() needs it as a third argument; sampling one without it built a broken
+ * image and reported the layer unavailable.
+ */
+async function prepareLayer(ee, layer) {
+  if (!layer.prepare) return null
+  const table = await evaluate(layer.prepare(ee))
+  if (!table || !Array.isArray(table.values) || !table.values.length) {
+    throw new Error(`${layer.name} could not read its class table from the asset.`)
+  }
+  return table
+}
+
 /** Read one pixel of an image at a point, as a plain object of band→value. */
 function sampleImage(ee, image, lon, lat) {
   const point = ee.Geometry.Point([lon, lat])
@@ -122,7 +144,8 @@ export default async function handler(request) {
       if (!key || isCustomKey(key)) continue
       try {
         const { layer, params } = resolveLayer(key, r?.params || {})
-        const { image } = layer.build(ee, params)
+        const prepared = await prepareLayer(ee, layer)
+        const { image } = layer.build(ee, params, prepared)
         const values = await sampleImage(ee, image, lon, lat)
         results.push(formatSample(key, values))
       } catch (err) {

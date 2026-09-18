@@ -18,6 +18,8 @@ const SETTINGS_KEYS = [
   'units',                         // ft/m, °F/°C
   'map-color-by',
   'map-size-by',
+  'map-basemap',                   // the chosen basemap
+
   'observations-show-filtered',
   'saved-filters',              // named filter subsets
   'explore-config',             // the chart builder's last configuration

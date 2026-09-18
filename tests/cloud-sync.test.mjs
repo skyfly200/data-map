@@ -105,7 +105,7 @@ test('empty and malformed inputs do not throw', () => {
 test('the synced key list covers every preference the app persists', () => {
   // A preference missing here silently fails to follow the account, which is
   // the kind of gap nobody notices until they switch devices.
-  for (const key of ['appearance', 'chart-layout', 'map-overlay', 'units']) {
+  for (const key of ['appearance', 'chart-layout', 'map-overlay', 'units', 'map-basemap']) {
     assert.ok(SETTINGS_KEYS.includes(key), `${key} is not synced`)
   }
   // Saved charts have their own table and must not also ride in the blob.

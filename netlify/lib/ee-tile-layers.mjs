@@ -84,6 +84,11 @@ export const ASSETS = {
   // grtgroup_class_values and grtgroup_class_names — which is why the two
   // layers built on it read that table rather than hardcoding one.
   OPENLANDMAP_GRTGROUP: 'OpenLandMap/SOL/SOL_GRTGROUP_USDA-SOILTAX_C/v01',
+  // OpenLandMap volumetric water content at field capacity (33 kPa), 250 m,
+  // global. One image whose bands b0…b200 are the depths in cm — how much water
+  // the soil can hold, which is the standing property of the ground rather than
+  // how wet it is on a given day.
+  OPENLANDMAP_WATER_33KPA: 'OpenLandMap/SOL/SOL_WATERCONTENT-33KPA_USDA-4B1C_M/v01',
   // What is growing on the ground, by type rather than by greenness.
   GAP_LANDCOVER: 'USGS/GAP/CONUS/2011',
   // ESA WorldCover, global, 10 m. Served here rather than from the publisher's
@@ -111,6 +116,22 @@ export const ASSETS = {
   // map is EPSG:3857, so the GIBS tiles 404'd. The `sm_surface` band is
   // volumetric water in the top 5 cm.
   SMAP: 'NASA/SMAP/SPL4SMGP/007',
+  // Copernicus Sentinel-1 C-band SAR, ~10 m, global. VV backscatter over land
+  // rises with surface wetness (and roughness), so a recent mean is a radar
+  // proxy for how wet the ground is — and unlike optical NDMI it sees through
+  // cloud, which is most of what makes soil moisture hard to read in fall.
+  S1_GRD: 'COPERNICUS/S1_GRD',
+  // ECMWF ERA5-Land daily aggregates, ~11 km, global. A reanalysis, not a
+  // sensor: it models the whole soil column, so it carries the two things SMAP
+  // and the optical indices cannot — water below the top 5 cm, and soil
+  // temperature — as `volumetric_soil_water_layer_1` and
+  // `soil_temperature_level_1`.
+  ERA5_LAND_DAILY: 'ECMWF/ERA5_LAND/DAILY_AGGR',
+  // NOAA CPC Global Unified gauge-based daily precipitation, ~0.5° (~55 km),
+  // land only, from 1979. Coarse and gauge-derived rather than radar or
+  // satellite, so it is the long, consistent record of how much rain actually
+  // fell — the `precipitation` band is the daily total in mm.
+  NOAA_CPC_PRECIP: 'NOAA/CPC/Precipitation',
 }
 
 /**
@@ -263,6 +284,9 @@ const DEPTH_PALETTE = ['#feebe2', '#fcc5c0', '#fa9fb5', '#f768a1', '#dd3497', '#
 const SAND_PALETTE = ['#081d58', '#253494', '#225ea8', '#1d91c0', '#41b6c4', '#7fcdbb', '#c7e9b4', '#ffffcc']
 /** Dry ground (brown) to wet ground (deep blue). */
 const SOIL_MOISTURE_PALETTE = ['#8c6d3f', '#c7a76c', '#e8dfc0', '#96c8c0', '#3d8fb0', '#16407a']
+// Range richness: pale to deep violet, so more overlapping species ranges read
+// as a denser colour without colliding with the moisture blues or the fire reds.
+const INAT_RANGE_PALETTE = ['#f2e6f7', '#dcc2ec', '#c39bdd', '#a86fcb', '#8c3fb5', '#5c1f86']
 
 /**
  * One SOLUS100 soil property.
@@ -414,6 +438,19 @@ function readParams(schema, input = {}) {
       out[key] = String(raw)
     } else if (spec.type === 'codes') {
       out[key] = normaliseCodes(raw, spec.max)
+    } else if (spec.type === 'text') {
+      // A free typed value — a taxon name to search for. Constrained to the
+      // characters a scientific name uses (letters, spaces, hyphen, period,
+      // parentheses, ×) and a short length, so it cannot carry anything that
+      // is not a name into the Earth Engine string filter.
+      const text = String(raw).trim()
+      const max = spec.maxLength || 60
+      if (!text) throw new LayerError(`${spec.label} cannot be empty.`)
+      if (text.length > max) throw new LayerError(`${spec.label} must be ${max} characters or fewer.`)
+      if (!/^[A-Za-z][A-Za-z .()×-]*$/.test(text)) {
+        throw new LayerError(`${spec.label} may only contain letters, spaces, hyphens and periods.`)
+      }
+      out[key] = text
     } else {
       throw new LayerError(`Unsupported parameter type for ${key}.`)
     }
@@ -1439,6 +1476,241 @@ export const EE_TILE_LAYERS = {
         .select('sm_surface')
         .mean()
       return { image, vis: { min: 0, max: 0.6, palette: SOIL_MOISTURE_PALETTE } }
+    },
+  },
+
+  'cpc-precip': {
+    name: 'Rain accumulation, gauge (CPC)',
+    group: 'Weather',
+    // Free: a cheap sum of a coarse published product, global (land), and the
+    // one rainfall layer with a decades-long consistent record behind it.
+    tier: 'free',
+    attribution: 'NOAA CPC Global Unified gauge-based precipitation via Google Earth Engine',
+    opacity: 0.7,
+    // Gauge-based land product: ocean is masked in the source and every land
+    // pixel is a real total, so summing zero rain is a true zero, not no-data.
+    sourceMasked: true,
+    note: 'Total gauge-analysed rainfall over the chosen recent days, from NOAA CPC, ~55 km, land only. '
+      + 'Gauge-derived and coarse — a cell is far larger than a foraging patch — but it is the long, '
+      + 'consistent rain record, good for how wet a region has been rather than where a shower fell. '
+      + 'It lags real time by a day or two, so a one-day window near today can come back empty.',
+    params: {
+      days: { type: 'int', label: 'Days to total', default: 7, min: 1, max: 60 },
+    },
+    legend: {
+      type: 'ramp', unit: 'mm', min: '0', max: '100+',
+      stops: ['#f7fbff', '#d0e1f2', '#94c4df', '#4a97c9', '#1764ab', '#08306b'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.NOAA_CPC_PRECIP)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+    },
+    build(ee, { days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      const image = ee.ImageCollection(ASSETS.NOAA_CPC_PRECIP)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .select('precipitation')
+        .sum()
+      return { image, vis: { min: 0, max: 100, palette: ['#f7fbff', '#d0e1f2', '#94c4df', '#4a97c9', '#1764ab', '#08306b'] } }
+    },
+  },
+
+  'field-capacity': {
+    name: 'Soil water capacity (field capacity)',
+    group: 'Soil',
+    // Free and static: one published image, one cached render per depth shared
+    // by everyone. It is a property of the soil itself, not a recent condition,
+    // so it has no date window — just which depth you read.
+    tier: 'free',
+    attribution: 'OpenLandMap volumetric water content at 33 kPa via Google Earth Engine',
+    opacity: 0.8,
+    // Ocean is masked in the source and every land pixel is a real estimate.
+    sourceMasked: true,
+    note: 'Volumetric water the soil holds at field capacity (33 kPa suction), 250 m, global, at the '
+      + 'chosen depth. This is capacity, not today’s moisture: how much water the ground can retain '
+      + 'after it drains, which is what keeps a site damp between rains. Deeper blue holds more. A '
+      + 'modelled property of the soil, so it does not change with the weather.',
+    params: {
+      depth: { type: 'enum', label: 'Depth (cm)', default: '0', values: ['0', '10', '30', '60', '100', '200'] },
+    },
+    legend: {
+      type: 'ramp', unit: '% vol', min: '5', max: '45',
+      stops: ['#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84'],
+    },
+    build(ee, { depth }) {
+      const image = ee.Image(ASSETS.OPENLANDMAP_WATER_33KPA).select(`b${depth}`)
+      return {
+        image,
+        vis: {
+          min: 5,
+          max: 45,
+          palette: ['#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84'],
+        },
+      }
+    },
+  },
+
+  'radar-moisture': {
+    name: 'Radar moisture proxy (Sentinel-1)',
+    group: 'Soil',
+    // Computed from raw SAR as you look — a mean of every pass in the window —
+    // so it is a members' layer like dNBR rather than a cheap published product.
+    tier: DEFAULT_TIER,
+    attribution: 'Copernicus Sentinel-1 GRD via Google Earth Engine',
+    opacity: 0.75,
+    sourceMasked: true,
+    note: 'Mean VV backscatter from Sentinel-1 C-band radar over the chosen recent days, 10 m. '
+      + 'Radar sees the ground through cloud, and brighter VV usually means wetter soil — but roughness '
+      + 'and vegetation raise it too, so read it as a proxy, not a moisture measurement. Blue is the '
+      + 'wetter (brighter) end. Coverage is per-orbit, so a short window can leave gaps.',
+    slow: true,
+    params: {
+      days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 60 },
+    },
+    legend: {
+      type: 'ramp', unit: 'dB (VV)', min: 'dry', max: 'wet',
+      stops: ['#ffffcc', '#a1dab4', '#41b6c4', '#2c7fb8', '#253494'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.S1_GRD)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+        .filter(ee.Filter.eq('instrumentMode', 'IW')).size()
+    },
+    build(ee, { days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      const image = ee.ImageCollection(ASSETS.S1_GRD)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+        .filter(ee.Filter.eq('instrumentMode', 'IW'))
+        .select('VV')
+        .mean()
+      return { image, vis: { min: -20, max: -5, palette: ['#ffffcc', '#a1dab4', '#41b6c4', '#2c7fb8', '#253494'] } }
+    },
+  },
+
+  'soil-moisture-column': {
+    name: 'Soil moisture, root zone (ERA5-Land)',
+    group: 'Soil',
+    // Free, like SMAP: a cheap mean of a coarse published reanalysis, global,
+    // and the same question a forager asks after rain — but of the 0–7 cm layer
+    // a reanalysis models rather than the top 5 cm a satellite retrieves.
+    tier: 'free',
+    attribution: 'Copernicus ECMWF ERA5-Land via Google Earth Engine',
+    opacity: 0.7,
+    sourceMasked: true,
+    note: 'Modelled volumetric water in the top 0–7 cm of soil from ERA5-Land, ~11 km, global, averaged '
+      + 'over the chosen recent days. A reanalysis, not a measurement, and coarse: a cell is larger than '
+      + 'most places on this map. Blue is wet. It lags real time by about five days, so a short window '
+      + 'near today can come back empty.',
+    params: {
+      days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 60 },
+    },
+    legend: {
+      type: 'ramp', unit: 'm³/m³', min: '0.1', max: '0.4',
+      stops: ['#ffffd9', '#c7e9b4', '#41b6c4', '#225ea8', '#081d58'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+    },
+    build(ee, { days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      const image = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .select('volumetric_soil_water_layer_1')
+        .mean()
+      return { image, vis: { min: 0.1, max: 0.4, palette: ['#ffffd9', '#c7e9b4', '#41b6c4', '#225ea8', '#081d58'] } }
+    },
+  },
+
+  'soil-temperature': {
+    name: 'Soil temperature (ERA5-Land)',
+    group: 'Weather',
+    // Free: the same cheap ERA5-Land mean, one band over. Soil temperature is
+    // the other half of whether the ground is ready to fruit, and no satellite
+    // layer here carries it.
+    tier: 'free',
+    attribution: 'Copernicus ECMWF ERA5-Land via Google Earth Engine',
+    opacity: 0.7,
+    sourceMasked: true,
+    note: 'Modelled temperature of the top 0–7 cm of soil from ERA5-Land, ~11 km, global, averaged over '
+      + 'the chosen recent days and shown in °C. A reanalysis, not a probe in your patch, and coarse. '
+      + 'Warm is red, cold is blue. It lags real time by about five days.',
+    params: {
+      days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 60 },
+    },
+    legend: {
+      type: 'ramp', unit: '°C', min: '0', max: '15',
+      stops: ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+    },
+    build(ee, { days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      // ERA5-Land carries soil temperature in kelvin; °C is what a reader can use.
+      const image = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .select('soil_temperature_level_1')
+        .mean()
+        .subtract(273.15)
+      return { image, vis: { min: 0, max: 15, palette: ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'] } }
+    },
+  },
+
+  'inat-range': {
+    name: 'Species range richness (iNaturalist)',
+    group: 'Species',
+    // Computed from a BigQuery-backed range map on every view, so it is a
+    // members' layer like dNBR rather than a shared cached render. It also needs
+    // the deployment's Earth Engine project to have BigQuery access; without it
+    // the render fails with Earth Engine's own message rather than silently.
+    tier: DEFAULT_TIER,
+    attribution: 'iNaturalist open range maps via Google Earth Engine',
+    opacity: 0.6,
+    slow: true,
+    note: 'Modelled iNaturalist ranges for every species whose name matches the taxon you type, '
+      + 'summed so the colour is how many of those species range over each place — a richness '
+      + 'heatmap, not observations. Type a genus (Morchella, Cantharellus) or a species. These are '
+      + 'coarse expert-and-model range maps, not where anyone found one, and not every taxon has a '
+      + 'published range. Deeper colour means more overlapping ranges.',
+    params: {
+      taxon: { type: 'text', label: 'Taxon name', default: 'Morchella', maxLength: 60 },
+    },
+    legend: {
+      type: 'ramp', unit: 'overlapping ranges', min: '1', max: '8+',
+      stops: INAT_RANGE_PALETTE,
+    },
+    build(ee, { taxon }) {
+      const ranges = ee.FeatureCollection
+        .loadBigQueryTable('earth-engine-public-data.inaturalist_open_range_map.multispecies_latest')
+        .filter(ee.Filter.stringContains('name', taxon))
+        // One flat weight per range, so the sum below is a count of how many
+        // species' ranges cover a pixel rather than an accident of some property.
+        .map((f) => f.set('present', 1))
+      // Summed to a raster: overlapping ranges add up, which is the richness the
+      // legend reads. Zero (no range here) is masked so it is honestly blank
+      // rather than the palette's lightest colour claiming ground it does not
+      // cover.
+      const image = ranges.reduceToImage(['present'], ee.Reducer.sum())
+      return {
+        image: image.updateMask(image.gt(0)),
+        vis: { min: 1, max: 8, palette: INAT_RANGE_PALETTE },
+      }
     },
   },
 }
