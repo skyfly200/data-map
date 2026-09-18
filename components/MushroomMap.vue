@@ -289,6 +289,10 @@
                   @change="setEeParam(n.ee, name, $event.target.value)">
             <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
           </select>
+          <input v-else-if="p.type === 'text'" :id="`ee-${n.slug}-${name}`" type="search"
+                 :maxlength="p.maxLength || 60" :placeholder="p.default"
+                 :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                 @change="setEeParam(n.ee, name, $event.target.value)" />
           <input v-else :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
                  @change="setEeParam(n.ee, name, Number($event.target.value))" />
@@ -1409,6 +1413,13 @@ function setEeParam(key, name, value) {
     } catch {
       return
     }
+  } else if (p?.type === 'text') {
+    // A typed value, e.g. a taxon name. Kept as a trimmed string; an empty one
+    // is ignored rather than sent, since the server rejects it and re-minting on
+    // every emptied field would only surface an error mid-type.
+    const text = String(value).trim()
+    if (!text) return
+    next = text
   } else {
     next = Math.floor(Number(value))
     if (!Number.isFinite(next)) next = p?.default ?? 0
