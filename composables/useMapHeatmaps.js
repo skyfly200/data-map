@@ -552,9 +552,54 @@ export function useMapHeatmaps() {
     return cellKeyAt(lon, lat, size, cellShape.value)
   }
 
+  // Which reference entry a mode gets. Named per mode rather than one entry
+  // for the concept: each is misleading in its own way, and that caveat is the
+  // part worth a click. The field heatmaps share one, because what they all get
+  // wrong is the same thing — a cell has a value only where somebody looked.
+  const HEATMAP_DOCS = {
+    density: 'map-heatmap-density',
+    richness: 'map-heatmap-richness',
+    season: 'map-heatmap-season',
+    hotspots: 'map-heatmap-hotspots',
+    common: 'map-heatmap-common',
+    land_cover: 'map-heatmap-land-cover',
+    wind: 'map-heatmap-wind',
+  }
+
+  // ─── Derived labels ────────────────────────────────────────────────────────
+  // Here rather than in the map, because the heatmap's controls now render in
+  // two places — the control bar on a wide screen, the layer window on a phone
+  // — and two copies of "what does this date window say" is two copies to
+  // disagree about the year wrapping.
+
+  const dayLabel = (day) => {
+    const d = new Date(Date.UTC(2001, 0, 1))
+    // Wrapped into the year: the window runs past both ends of it, and a date
+    // of "Dec -4" is not a date.
+    d.setUTCDate(((Math.round(day) - 1 + 365) % 365) + 1)
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
+  }
+
+  /** The centre of the date window, as a date. */
+  const seasonLabel = computed(() => dayLabel(seasonDay.value))
+
+  /** The window's actual dates, which removes the arithmetic from reading it. */
+  const windowSpan = computed(() =>
+    `Counting finds from ${dayLabel(seasonDay.value - seasonWindow.value)} `
+    + `to ${dayLabel(seasonDay.value + seasonWindow.value)}`)
+
+  /** Today, as a day of the year, for the "Today" button. */
+  const todayDay = computed(() => todayOfYear())
+
+  /** Which option-reference entry describes the mode that is on. */
+  const docId = computed(() => (activeMode.value?.kind === 'field'
+    ? 'map-heatmap-field'
+    : HEATMAP_DOCS[mode.value] || 'map-heatmap'))
+
   return {
     mode, cellSize, cellShape, seasonDay, seasonWindow, activeMode, groupedModes,
     heatmapOpacity, tileOpacity, todayOfYear, fieldOf,
+    seasonLabel, windowSpan, todayDay, docId,
     HEATMAP_MODES, CELL_SIZES, CELL_SHAPES,
     computeHeatmap, buildCells, keyAt, persist, loadFromStorage,
     RAMP_PRESETS, DEFAULT_RAMPS, heatmapRampKey, heatmapRampCustom, rampFor,

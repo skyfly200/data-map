@@ -1,5 +1,14 @@
 <template>
-  <div ref="root" class="pop" :class="{ open }">
+  <!-- Inline: the same panel with no button and nothing to open, for when this
+       control is nested inside another one. On a phone several of these move
+       inside the two windows that remain, and a dropdown inside a dropdown is
+       a thing you cannot close. -->
+  <div v-if="inline" class="pop-inline">
+    <div v-if="label" class="pop-head">{{ label }}</div>
+    <slot />
+  </div>
+
+  <div v-else ref="root" class="pop" :class="{ open }">
     <button
       type="button"
       class="pop-btn"
@@ -37,6 +46,8 @@ import { usePanelFit } from '~/composables/usePanelFit'
 // controls themselves were fine; showing all of them all of the time was not.
 
 const props = defineProps({
+  // Render the panel's contents with no button around them. See the template.
+  inline: { type: Boolean, default: false },
   icon: { type: String, required: true },
   label: { type: String, default: '' },
   // Hover text. Falls back to the label, since a bare icon with no title is
@@ -138,6 +149,9 @@ defineExpose({ close, toggle, show: () => { open.value = true } })
    right, which nothing ever passed; usePanelFit is what actually keeps a panel
    on screen near the right edge. */
 .pop-panel { left: 0; }
+
+.pop-inline { display: grid; gap: 8px; }
+.pop-inline > .pop-head { margin-bottom: 0; }
 
 .pop-head {
   font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em;

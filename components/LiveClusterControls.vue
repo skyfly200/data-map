@@ -3,7 +3,11 @@
        before a cog appeared beside it, which was then the thing that opened the
        options — two controls and two clicks to reach a panel whose first row
        could just as well be the switch. -->
-  <PopoverMenu icon="◈" label="Clusters" title="Cluster the loaded observations live with k-means"
+  <!-- `inline` renders the panel with no button around it, for the phone
+       layout where this lives inside the Points menu: clustering is another way
+       of colouring the same dots, so it belongs with them there. -->
+  <PopoverMenu :inline="inline" icon="◈" label="Clusters"
+               title="Cluster the loaded observations live with k-means"
                :active="enabled" :badge="enabled ? `k=${k}` : ''">
     <label class="lc-on">
       <input type="checkbox" v-model="enabled" />
@@ -59,6 +63,10 @@
 </template>
 
 <script setup>
+defineProps({
+  inline: { type: Boolean, default: false },
+})
+
 import { colorFor } from '~/composables/useObservations'
 
 const { enabled, k, mode, features, geoWeight, presentFeatures, sizes } = useLiveClusters()

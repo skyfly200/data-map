@@ -19,7 +19,21 @@
       @blend="setLayerBlend" @solo="setSolo"
       @toggle="toggleOverlayByKey" @opacity="setLayerOpacity" @move="moveOverlay"
       @clear="clearOverlays" @close="showLayers = false"
-    />
+    >
+      <!-- On a phone this window is the whole of "what the map is made of":
+           the ground underneath, the layers over it, and the grid over those.
+           On a wide screen each of those keeps its own button on the bar. -->
+      <template v-if="compact" #top>
+        <details class="lm-extra">
+          <summary>Basemap <em>{{ activeBaseName }}</em></summary>
+          <BasemapPicker :layers="baseLayers" :active="activeBase" @pick="setBase" />
+        </details>
+        <details class="lm-extra" :open="!!heatmapMode">
+          <summary>Heatmap <em>{{ heatmapMode ? heatmapMeta.label : 'None' }}</em></summary>
+          <HeatmapControls :tip-text="heatmapTip" />
+        </details>
+      </template>
+    </LayerManager>
 
     <!-- What the map says about one spot you picked, rather than about a
          record someone else made. The observations answer "what was found
@@ -85,6 +99,37 @@
 
     <!-- Thematic layer selector -->
     <div v-if="loaded" ref="controlsEl" class="controls">
+      <!-- What the map is made of comes first: the ground, what is drawn on it,
+           and the grid over that. Then how the observations are drawn. Then the
+           things you set once and leave — style, sharing, settings — which were
+           in the middle of the bar and are the least reached for. -->
+
+      <!-- Basemap and overlays are two different questions and were one
+           control. The basemap is a single choice from five, made rarely and
+           never revisited; the overlays are dozens, toggled constantly, and the
+           thing you actually manage. On a phone that distinction is not worth a
+           button, so both move inside the layer window. -->
+      <PopoverMenu v-if="!compact" icon="◱" label="Basemap" title="The map underneath everything"
+                   :badge="activeBaseName">
+        <BasemapPicker :layers="baseLayers" :active="activeBase" @pick="setBase" />
+      </PopoverMenu>
+
+      <!-- A window rather than a dropdown; see components/LayerManager.vue. -->
+      <button class="tool-btn" :class="{ on: showLayers || activeOverlays.size > 0 }"
+              :aria-expanded="String(showLayers)"
+              :title="tip(compact ? 'Basemap, layers and heatmap' : 'Manage the overlay layers', 'shift+L')"
+              @click="showLayers = !showLayers">
+        <span class="tool-icon" aria-hidden="true">≣</span>
+        <span class="tool-label">Layers</span>
+        <span v-if="activeOverlays.size" class="tool-badge">{{ activeOverlays.size }}</span>
+      </button>
+
+      <PopoverMenu v-if="!compact" ref="heatmapPop" icon="▦" label="Heatmap"
+                   title="Grid summary drawn under the points"
+                   :active="!!heatmapMode" :badge="heatmapMode ? heatmapMeta.label : ''">
+        <HeatmapControls :tip-text="heatmapTip" />
+      </PopoverMenu>
+
       <!-- How the points are drawn, behind one button. Two labelled selects
            side by side were the widest things on the bar and wrapped it to a
            second row on anything narrower than a laptop. The badge keeps the
@@ -109,8 +154,16 @@
             <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
           </select>
         </div>
+        <!-- Clustering is another way of colouring the same dots, so on a phone
+             it belongs with them rather than beside them. -->
+        <template v-if="compact">
+          <div class="pop-sep"></div>
+          <LiveClusterControls inline />
+        </template>
       </PopoverMenu>
-      <LiveClusterControls />
+
+      <LiveClusterControls v-if="!compact" />
+
       <AppearanceControls icon-only :field="colorBy" :field-label="coloring.title"
                           :values="legendValues" />
       <ShareMenu icon-only :map-view="mapView" :color-by="colorBy" :size-by="sizeBy"
@@ -123,90 +176,10 @@
         </template>
       </ShareMenu>
       <!-- Everything you do not reach for every minute — the points toggle, the
-           excluded-rows option and the two actions — lives behind one button.
+           excluded-rows option and the offline saves — lives behind one button.
            Spread across the bar they covered the map they were controlling. -->
-      <!-- Actions are one tap each rather than two: they were folded into
-           Settings to save bar space, but a button you press to DO something
-           does not belong behind a menu of things you set. As icons they cost
-           almost nothing. -->
       <MapSettings v-model="showPoints" :bounds="viewBounds" :sources="activeTileTemplates"
                    :dataset-label="datasetLabel" />
-
-      <!-- Heatmap: grid summaries computed from the observations and drawn
-           under the points. Named apart from the reference tile layers in the
-           layers control, which are somebody else's imagery, not our numbers. -->
-      <!-- The heatmap and everything that shapes it: the mode, the cell size,
-           and for the seasonal modes the date window. These belong together and
-           were spread across the bar, where the cell size and the season panel
-           appeared and disappeared as the mode changed and reflowed everything
-           around them. -->
-      <!-- Basemap and overlays are two different questions and were one
-           control. The basemap is a single choice from five, made rarely and
-           never revisited; the overlays are dozens, toggled constantly, and the
-           thing you actually manage. Putting them in one dropdown meant
-           scrolling past the ground you are standing on to reach the radios
-           for what it is drawn like. -->
-      <PopoverMenu icon="◱" label="Basemap" title="The map underneath everything"
-                   :badge="activeBaseName">
-        <label v-for="b in baseLayers" :key="b.key" class="lay-row">
-          <input type="radio" name="basemap" :value="b.key" :checked="activeBase === b.key"
-                 @change="setBase(b.key)" />
-          <span>{{ b.name }}</span>
-        </label>
-      </PopoverMenu>
-
-      <!-- A window rather than a dropdown; see components/LayerManager.vue. -->
-      <button class="tool-btn" :class="{ on: showLayers || activeOverlays.size > 0 }"
-              :aria-expanded="String(showLayers)"
-              :title="tip('Manage the overlay layers', 'shift+L')"
-              @click="showLayers = !showLayers">
-        <span class="tool-icon" aria-hidden="true">≣</span>
-        <span class="tool-label">Layers</span>
-        <span v-if="activeOverlays.size" class="tool-badge">{{ activeOverlays.size }}</span>
-      </button>
-
-      <PopoverMenu ref="heatmapPop" icon="▦" label="Heatmap" title="Grid summary drawn under the points"
-                   :active="!!heatmapMode" :badge="heatmapMode ? heatmapMeta.label : ''">
-        <div class="pop-field">
-          <label for="overlay-sel">Show <HelpLink :option="heatmapDocId" /></label>
-          <select id="overlay-sel" v-model="heatmapMode" :title="heatmapTip">
-            <option value="">None</option>
-            <optgroup v-for="g in groupedModes" :key="g.label" :label="g.label">
-              <option v-for="o in g.modes" :key="o.key" :value="o.key">{{ o.label }}</option>
-            </optgroup>
-          </select>
-        </div>
-        <div v-if="heatmapMode" class="pop-field">
-          <label for="overlay-cell">Cell size <HelpLink option="map-cell-size" /></label>
-          <select id="overlay-cell" v-model.number="heatmapCell"
-                  title="Ground size of each grid cell. Smaller is more precise and noisier.">
-            <option v-for="c in CELL_SIZES" :key="c.value" :value="c.value">{{ c.label }}</option>
-          </select>
-        </div>
-
-        <!-- Only the seasonal modes use a date window, so it appears with them
-             rather than being a permanent control that does nothing. -->
-        <template v-if="heatmapMode === 'season' || heatmapMode === 'hotspots'">
-          <div class="pop-field">
-            <label for="season-day">
-              Date <strong>{{ seasonLabel }}</strong> <HelpLink option="map-season-day" keys="[" />
-              <button class="today-btn" :disabled="seasonDay === todayDay"
-                      title="Centre the window on today"
-                      @click="seasonDay = todayDay">Today</button>
-            </label>
-            <input id="season-day" v-model.number="seasonDay" type="range" min="1" max="365" step="1"
-                   :title="tip(`Centre of the date window: currently ${seasonLabel}`, '[')" />
-          </div>
-          <div class="pop-field">
-            <label for="season-window">
-              Window <strong>±{{ seasonWindow }} days</strong> <HelpLink option="map-season-window" />
-            </label>
-            <input id="season-window" v-model.number="seasonWindow" type="range" min="3" max="60" step="1"
-                   title="How wide a window counts as 'in season'. Wider is smoother and less specific." />
-          </div>
-          <p class="slider-note">{{ windowSpan }}</p>
-        </template>
-      </PopoverMenu>
     </div>
 
     <!-- Both legends share one column, so they cannot overlap each other or the
@@ -414,6 +387,10 @@ const {
 } = useObservations()
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const live = useLiveClusters()
+// On a phone the basemap, the heatmap and the clustering controls move inside
+// the two windows that remain, rather than being three more buttons on a bar
+// that already filled the width of the screen.
+const { compact } = useCompactMap()
 const appearance = useAppearance()
 // How stacked layers combine when nobody has set a layer by hand. A preference,
 // so it is read from Appearance rather than kept here.
@@ -586,12 +563,6 @@ watch(heatmapResult, () => renderHeatmap())
 watch(heatmapOpacity, () => renderHeatmap())
 watch([heatmapMode, heatmapCell, cellShape, seasonDay, seasonWindow], () => heatmaps.persist())
 
-const seasonLabel = computed(() => {
-  const d = new Date(Date.UTC(2001, 0, 1))
-  d.setUTCDate(seasonDay.value)
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
-})
-
 // ─── Reference tile layers ────────────────────────────────────────────────────
 // Public raster services stacked over the basemap — relief, rainfall, land
 // cover, greenness, soil moisture, trails, ownership. The catalogue and its
@@ -653,7 +624,6 @@ onMounted(() => {
 // The heatmap popover, so the keyboard shortcut can still reach the season
 // controls now that they live inside it.
 const heatmapPop = ref(null)
-const todayDay = heatmaps.todayOfYear()
 
 // The legend value under the cursor. Everything not matching it is faded on the
 // map, so a row in the key and the marks it stands for can be seen together.
@@ -933,33 +903,11 @@ const heatmapTip = computed(() => {
 })
 
 // The ? beside the heatmap picker documents the heatmap you actually have
-// selected, not the concept in general — each mode is misleading in its own way,
-// and that caveat is the part worth one click. The field heatmaps share one
-// entry: what they all get wrong is the same thing (a cell has a value only
-// where somebody looked), and it is said once.
-const HEATMAP_DOCS = {
-  density: 'map-heatmap-density',
-  richness: 'map-heatmap-richness',
-  season: 'map-heatmap-season',
-  hotspots: 'map-heatmap-hotspots',
-  common: 'map-heatmap-common',
-  land_cover: 'map-heatmap-land-cover',
-  wind: 'map-heatmap-wind',
-}
-const heatmapDocId = computed(() => (
-  heatmapMeta.value?.kind === 'field'
-    ? 'map-heatmap-field'
-    : HEATMAP_DOCS[heatmapMode.value] || 'map-heatmap'))
+// The per-mode reference entry, the season labels and the window's dates all
+// live in useMapHeatmaps now: the heatmap's controls render both on the bar
+// and inside the layer window, and two copies of these would be two copies to
+// disagree.
 
-// Spelling out the window's actual dates removes the arithmetic from reading it.
-const windowSpan = computed(() => {
-  const fmt = (day) => {
-    const d = new Date(Date.UTC(2001, 0, 1))
-    d.setUTCDate(((day - 1 + 365) % 365) + 1)
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
-  }
-  return `Counting finds from ${fmt(seasonDay.value - seasonWindow.value)} to ${fmt(seasonDay.value + seasonWindow.value)}`
-})
 
 async function saveMap() {
   if (!mapEl.value || saving.value) return
