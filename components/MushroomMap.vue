@@ -1101,6 +1101,9 @@ const eeErrors = ref([])
 // the Vue side never has to know how Leaflet builds them.
 const baseLayers = ref([])
 const overlayLayers = ref([])
+// The basemap the viewer last chose, remembered per browser so the map opens on
+// the one they read best rather than resetting to the default every visit.
+const BASE_KEY = 'map-basemap'
 const activeBase = ref('grey')
 // A Set of the overlay keys currently on. Replaced rather than mutated so the
 // template re-renders.
@@ -1125,7 +1128,17 @@ function setBase(key) {
   // draws over the reference layers and the points.
   next.layer.bringToBack()
   activeBase.value = key
+  try { localStorage.setItem(BASE_KEY, key) } catch { /* private mode; just don't remember */ }
   syncActiveTemplates()
+}
+
+/** Restore the remembered basemap, if it is one that still exists. */
+function restoreBase() {
+  let saved = null
+  try { saved = localStorage.getItem(BASE_KEY) } catch { /* no storage; keep the default */ }
+  if (saved && saved !== activeBase.value && baseLayers.value.some((b) => b.key === saved)) {
+    setBase(saved)
+  }
 }
 
 // The stacking order of the overlays that are on, topmost first, and how see-
@@ -1995,6 +2008,9 @@ onMounted(async () => {
       { key: 'topo', name: 'Terrain (OpenTopoMap)', layer: topo },
       { key: 'sat', name: 'Satellite (Esri)', layer: sat },
     ]
+    // The map was created with the default basemap; swap in the remembered one
+    // now that the choices exist.
+    restoreBase()
     overlayLayers.value = tileOverlayList
 
     // Earth Engine layers arrive after their catalogue does, so they join the
