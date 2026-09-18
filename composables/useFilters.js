@@ -9,6 +9,8 @@
 // and populate the dropdowns from whatever parsing actually yields in the
 // loaded data — the options always match what the filter can match.
 
+import { matchesTaxon } from '../netlify/lib/dataset-taxa.mjs'
+
 const COUNTRY_ALIASES = { us: 'United States', usa: 'United States', 'united states': 'United States' }
 const ADMIN_HINT = /\b(County|Parish|Borough|Municipality|Census Area)\b/i
 
@@ -53,6 +55,17 @@ export function isoWeek(dateStr) {
 
 export const EMPTY_FILTERS = {
   center: null, radiusKm: null, // { lat, lng } + radius
+  // Free text over the name and the place string. The one filter you reach for
+  // without knowing what you are looking for yet.
+  search: '',
+  // A taxon at any rank, matched the same way a pipeline job matches one — see
+  // matchesTaxon. One definition, so "Amanita" selects the same records on the
+  // map as it does in a job.
+  taxon: '',
+  // Metres, always, whatever the viewer's units are set to. A filter stored in
+  // whichever unit happened to be on when it was set is a filter that changes
+  // meaning when somebody switches to feet.
+  elevMin: null, elevMax: null,
   country: '', state: '', county: '',
   year: '', month: '', week: '', dateFrom: '', dateTo: '',
   // Drop taxa with too few records to say anything about. Unlike every other
@@ -83,11 +96,40 @@ export function taxaAboveThreshold(features, field, min) {
   return keep
 }
 
+/** Everything a free-text search looks at, lower-cased. */
+export function searchHaystack(props = {}) {
+  return [props.species, props.common_name, props.genus, props.family, props.location]
+    .filter(Boolean).join(' ').toLowerCase()
+}
+
 // Pure predicate: does one feature pass the active filters?
 export function matchesFilters(feature, f) {
   const p = feature.properties || {}
   const coords = feature.geometry?.coordinates
   const lng = coords?.[0], lat = coords?.[1]
+
+  // Free text, over the name and the place. Substring rather than prefix: the
+  // useful query is often the second word, "muscaria" or "Boulder County".
+  if (f.search) {
+    const q = String(f.search).trim().toLowerCase()
+    if (q && !searchHaystack(p).includes(q)) return false
+  }
+  // A taxon at any rank.
+  if (f.taxon && !matchesTaxon(p, f.taxon)) return false
+  // Elevation, in metres.
+  if (f.elevMin != null || f.elevMax != null) {
+    // Checked before Number(), because Number(null) and Number('') are both 0 —
+    // a record with no elevation would pass as sea level and appear in every
+    // low band. A real zero still has to work, so this is a check for absence
+    // rather than for falsiness.
+    const raw = p.elevation
+    const e = (raw === null || raw === undefined || raw === '') ? NaN : Number(raw)
+    // A record with no elevation cannot be said to be inside a range, and
+    // keeping it would put unplaced points inside every band at once.
+    if (!Number.isFinite(e)) return false
+    if (f.elevMin != null && e < f.elevMin) return false
+    if (f.elevMax != null && e > f.elevMax) return false
+  }
 
   // Location — radius from a chosen center.
   if (f.center && f.radiusKm && lat != null && lng != null) {
@@ -128,7 +170,9 @@ export function useFilters() {
     const f = filters.value
     let n = 0
     if (f.center && f.radiusKm) n++
-    for (const k of ['country', 'state', 'county', 'year', 'month', 'week', 'dateFrom', 'dateTo']) if (f[k]) n++
+    for (const k of ['search', 'taxon', 'country', 'state', 'county',
+      'year', 'month', 'week', 'dateFrom', 'dateTo']) if (f[k]) n++
+    if (f.elevMin != null || f.elevMax != null) n++
     if (f.minObs > 1) n++
     if (f.preciseOnly) n++
     return n

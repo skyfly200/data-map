@@ -162,6 +162,11 @@
         </template>
       </PopoverMenu>
 
+      <!-- Which observations, beside how they are drawn. The full set of
+           filters stays on the Data tab; the three you reach for while looking
+           at the map are here, writing to the same state. -->
+      <MapFilters />
+
       <LiveClusterControls v-if="!compact" />
 
       <AppearanceControls icon-only :field="colorBy" :field-label="coloring.title"
