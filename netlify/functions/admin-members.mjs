@@ -37,6 +37,33 @@ function cleanLimits(input) {
   return out
 }
 
+/**
+ * Every account's email and metadata name, keyed by user id.
+ *
+ * Emails live in Supabase auth, not in the profiles table, so an admin looking
+ * at "3dbe7a05" cannot tell who it is. Read through the auth admin API, which
+ * the service-role client is allowed and paged through because it returns a
+ * bounded page at a time. Best-effort: if it is unavailable the member list
+ * still renders, just without the emails.
+ */
+async function authIdentities(client) {
+  const out = new Map()
+  if (!client.auth?.admin?.listUsers) return out
+  const perPage = 200
+  for (let page = 1; page <= 50; page += 1) {
+    const { data, error } = await client.auth.admin.listUsers({ page, perPage })
+    const users = data?.users || []
+    if (error || !users.length) break
+    for (const u of users) {
+      // A name the member set at sign-up, as a fallback below display_name.
+      const metaName = u.user_metadata?.full_name || u.user_metadata?.name || ''
+      out.set(u.id, { email: u.email || '', metaName })
+    }
+    if (users.length < perPage) break
+  }
+  return out
+}
+
 async function listMembers(client) {
   const { data: profiles, error } = await client
     .from('profiles')
@@ -44,6 +71,13 @@ async function listMembers(client) {
       + LIMIT_FIELDS.join(', '))
     .order('tier', { ascending: false })
   if (error) throw new Error(error.message)
+
+  // Emails and sign-up names, best-effort, so a nameless profile still shows who
+  // it is rather than eight characters of its UUID.
+  let identities = new Map()
+  try {
+    identities = await authIdentities(client)
+  } catch { /* the list still renders without emails */ }
 
   // Usage alongside each member: a quota with no reading against it is not
   // something an admin can act on.
@@ -58,10 +92,17 @@ async function listMembers(client) {
     byUser.get(job.user_id).push(job)
   }
 
-  return (profiles || []).map((p) => ({
-    ...p,
-    usage: summariseUsage(byUser.get(p.user_id) || []),
-  }))
+  return (profiles || []).map((p) => {
+    const who = identities.get(p.user_id) || {}
+    return {
+      ...p,
+      email: who.email || '',
+      // The name to show: what the member set on their profile, then their
+      // sign-up name, and only then the UUID stub the page fell back to before.
+      display_name: p.display_name || who.metaName || '',
+      usage: summariseUsage(byUser.get(p.user_id) || []),
+    }
+  })
 }
 
 export default async function handler(request) {
