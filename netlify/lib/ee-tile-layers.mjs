@@ -84,6 +84,11 @@ export const ASSETS = {
   // grtgroup_class_values and grtgroup_class_names — which is why the two
   // layers built on it read that table rather than hardcoding one.
   OPENLANDMAP_GRTGROUP: 'OpenLandMap/SOL/SOL_GRTGROUP_USDA-SOILTAX_C/v01',
+  // OpenLandMap volumetric water content at field capacity (33 kPa), 250 m,
+  // global. One image whose bands b0…b200 are the depths in cm — how much water
+  // the soil can hold, which is the standing property of the ground rather than
+  // how wet it is on a given day.
+  OPENLANDMAP_WATER_33KPA: 'OpenLandMap/SOL/SOL_WATERCONTENT-33KPA_USDA-4B1C_M/v01',
   // What is growing on the ground, by type rather than by greenness.
   GAP_LANDCOVER: 'USGS/GAP/CONUS/2011',
   // ESA WorldCover, global, 10 m. Served here rather than from the publisher's
@@ -1450,6 +1455,41 @@ export const EE_TILE_LAYERS = {
         .select('sm_surface')
         .mean()
       return { image, vis: { min: 0, max: 0.6, palette: SOIL_MOISTURE_PALETTE } }
+    },
+  },
+
+  'field-capacity': {
+    name: 'Soil water capacity (field capacity)',
+    group: 'Soil',
+    // Free and static: one published image, one cached render per depth shared
+    // by everyone. It is a property of the soil itself, not a recent condition,
+    // so it has no date window — just which depth you read.
+    tier: 'free',
+    attribution: 'OpenLandMap volumetric water content at 33 kPa via Google Earth Engine',
+    opacity: 0.8,
+    // Ocean is masked in the source and every land pixel is a real estimate.
+    sourceMasked: true,
+    note: 'Volumetric water the soil holds at field capacity (33 kPa suction), 250 m, global, at the '
+      + 'chosen depth. This is capacity, not today’s moisture: how much water the ground can retain '
+      + 'after it drains, which is what keeps a site damp between rains. Deeper blue holds more. A '
+      + 'modelled property of the soil, so it does not change with the weather.',
+    params: {
+      depth: { type: 'enum', label: 'Depth (cm)', default: '0', values: ['0', '10', '30', '60', '100', '200'] },
+    },
+    legend: {
+      type: 'ramp', unit: '% vol', min: '5', max: '45',
+      stops: ['#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84'],
+    },
+    build(ee, { depth }) {
+      const image = ee.Image(ASSETS.OPENLANDMAP_WATER_33KPA).select(`b${depth}`)
+      return {
+        image,
+        vis: {
+          min: 5,
+          max: 45,
+          palette: ['#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84'],
+        },
+      }
     },
   },
 
