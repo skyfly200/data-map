@@ -1445,6 +1445,20 @@ const pin = ref(null)
 const copied = ref(false)
 let pinMarker = null
 
+// A self-contained SVG marker for the dropped point. Leaflet's default marker
+// pulls its image from a PNG whose URL the bundler rewrites out from under it,
+// so it 404s and the pin shows up blank; an inline divIcon has no asset to lose.
+// Blue, to read apart from the red pin that marks a selected observation.
+function dropPinIcon() {
+  return L.divIcon({
+    className: 'drop-pin', iconSize: [28, 40], iconAnchor: [14, 38], tooltipAnchor: [0, -34],
+    html: `<svg viewBox="0 0 24 34" width="28" height="40" aria-hidden="true">
+      <path d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 34 12 34s12-13.4 12-22.1C24 5.3 18.6 0 12 0z"
+            fill="#2d7ff9" stroke="#fff" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>`,
+  })
+}
+
 function setPin(lat, lon) {
   pin.value = { lat, lon }
   copied.value = false
@@ -1452,6 +1466,7 @@ function setPin(lat, lon) {
   if (pinMarker) { pinMarker.setLatLng([lat, lon]); return }
   pinMarker = L.marker([lat, lon], {
     draggable: true,
+    icon: dropPinIcon(),
     // Above the canvas the observations draw into, so the pin is never lost
     // under a dense patch of dots.
     zIndexOffset: 1000,
@@ -2211,6 +2226,14 @@ onBeforeUnmount(() => {
    collided rather than one. The rules live here because this bar is the only
    place they sit together; each component keeps its own styling everywhere
    else it is used. */
+/* Leaflet's div-icon ships a white box with a grey border; our SVG pins supply
+   their own shape, so strip the box or it frames the teardrop. */
+.map :deep(.leaflet-div-icon.drop-pin),
+.map :deep(.leaflet-div-icon.obs-pin) {
+  background: none;
+  border: 0;
+}
+
 .controls :deep(.pop-btn),
 .controls .tool-btn,
 .controls :deep(.sh-btn),
