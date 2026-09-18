@@ -284,6 +284,9 @@ const DEPTH_PALETTE = ['#feebe2', '#fcc5c0', '#fa9fb5', '#f768a1', '#dd3497', '#
 const SAND_PALETTE = ['#081d58', '#253494', '#225ea8', '#1d91c0', '#41b6c4', '#7fcdbb', '#c7e9b4', '#ffffcc']
 /** Dry ground (brown) to wet ground (deep blue). */
 const SOIL_MOISTURE_PALETTE = ['#8c6d3f', '#c7a76c', '#e8dfc0', '#96c8c0', '#3d8fb0', '#16407a']
+// Range richness: pale to deep violet, so more overlapping species ranges read
+// as a denser colour without colliding with the moisture blues or the fire reds.
+const INAT_RANGE_PALETTE = ['#f2e6f7', '#dcc2ec', '#c39bdd', '#a86fcb', '#8c3fb5', '#5c1f86']
 
 /**
  * One SOLUS100 soil property.
@@ -435,6 +438,19 @@ function readParams(schema, input = {}) {
       out[key] = String(raw)
     } else if (spec.type === 'codes') {
       out[key] = normaliseCodes(raw, spec.max)
+    } else if (spec.type === 'text') {
+      // A free typed value — a taxon name to search for. Constrained to the
+      // characters a scientific name uses (letters, spaces, hyphen, period,
+      // parentheses, ×) and a short length, so it cannot carry anything that
+      // is not a name into the Earth Engine string filter.
+      const text = String(raw).trim()
+      const max = spec.maxLength || 60
+      if (!text) throw new LayerError(`${spec.label} cannot be empty.`)
+      if (text.length > max) throw new LayerError(`${spec.label} must be ${max} characters or fewer.`)
+      if (!/^[A-Za-z][A-Za-z .()×-]*$/.test(text)) {
+        throw new LayerError(`${spec.label} may only contain letters, spaces, hyphens and periods.`)
+      }
+      out[key] = text
     } else {
       throw new LayerError(`Unsupported parameter type for ${key}.`)
     }
@@ -1653,6 +1669,48 @@ export const EE_TILE_LAYERS = {
         .mean()
         .subtract(273.15)
       return { image, vis: { min: 0, max: 15, palette: ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'] } }
+    },
+  },
+
+  'inat-range': {
+    name: 'Species range richness (iNaturalist)',
+    group: 'Species',
+    // Computed from a BigQuery-backed range map on every view, so it is a
+    // members' layer like dNBR rather than a shared cached render. It also needs
+    // the deployment's Earth Engine project to have BigQuery access; without it
+    // the render fails with Earth Engine's own message rather than silently.
+    tier: DEFAULT_TIER,
+    attribution: 'iNaturalist open range maps via Google Earth Engine',
+    opacity: 0.6,
+    slow: true,
+    note: 'Modelled iNaturalist ranges for every species whose name matches the taxon you type, '
+      + 'summed so the colour is how many of those species range over each place — a richness '
+      + 'heatmap, not observations. Type a genus (Morchella, Cantharellus) or a species. These are '
+      + 'coarse expert-and-model range maps, not where anyone found one, and not every taxon has a '
+      + 'published range. Deeper colour means more overlapping ranges.',
+    params: {
+      taxon: { type: 'text', label: 'Taxon name', default: 'Morchella', maxLength: 60 },
+    },
+    legend: {
+      type: 'ramp', unit: 'overlapping ranges', min: '1', max: '8+',
+      stops: INAT_RANGE_PALETTE,
+    },
+    build(ee, { taxon }) {
+      const ranges = ee.FeatureCollection
+        .loadBigQueryTable('earth-engine-public-data.inaturalist_open_range_map.multispecies_latest')
+        .filter(ee.Filter.stringContains('name', taxon))
+        // One flat weight per range, so the sum below is a count of how many
+        // species' ranges cover a pixel rather than an accident of some property.
+        .map((f) => f.set('present', 1))
+      // Summed to a raster: overlapping ranges add up, which is the richness the
+      // legend reads. Zero (no range here) is masked so it is honestly blank
+      // rather than the palette's lightest colour claiming ground it does not
+      // cover.
+      const image = ranges.reduceToImage(['present'], ee.Reducer.sum())
+      return {
+        image: image.updateMask(image.gt(0)),
+        vis: { min: 1, max: 8, palette: INAT_RANGE_PALETTE },
+      }
     },
   },
 }
