@@ -21,6 +21,37 @@ export const TAXON_RANKS = [
   { key: 'species', label: 'Species' },
 ]
 
+const RANKS = TAXON_RANKS.map((r) => r.key)
+
+/**
+ * Does a record belong to this taxon, named at any rank?
+ *
+ * The rank columns are the answer where they exist: "Agaricales" selects an
+ * order and "Morchella" a genus without the member having to say which.
+ *
+ * But they do not always exist. The committed baseline predates the taxonomy
+ * work and carries a `species` binomial and nothing else — no genus, no family,
+ * no kingdom. Against that dataset a rank-column match finds nothing for every
+ * genus anybody would type, and the job is refused for a reason that has
+ * nothing to do with what was asked.
+ *
+ * So the binomial is the fallback: its first word is the genus, which is what a
+ * binomial is. Only a fallback — a real genus column always wins — because
+ * splitting a name on its spaces is exactly the guesswork the taxonomy columns
+ * were added to replace.
+ */
+export function matchesTaxon(props = {}, taxon = '') {
+  const needle = String(taxon || '').trim().toLowerCase()
+  if (!needle) return true
+  if (RANKS.some((r) => String(props[r] || '').toLowerCase() === needle)) return true
+
+  const species = String(props.species || '').trim().toLowerCase()
+  if (!species) return false
+  // Only when there is no genus column to disagree with.
+  if (!String(props.genus || '').trim() && species.split(/\s+/)[0] === needle) return true
+  return false
+}
+
 /**
  * The genus implied by a species binomial.
  *

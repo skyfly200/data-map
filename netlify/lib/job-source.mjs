@@ -9,6 +9,9 @@
 // the box, how a date range is applied — are what a member will argue with, and
 // those should be checkable without a Supabase project.
 
+// The taxon-name rules live in dataset-taxa, which is pure: the map imports
+// them too, and this module reaches node:fs and Supabase.
+import { matchesTaxon } from './dataset-taxa.mjs'
 import { loadBaseline } from './baseline.mjs'
 import { readJson } from './datasets-store.mjs'
 import { DatasetAccessError, resolveDataset } from './dataset-access.mjs'
@@ -27,8 +30,6 @@ export function withinBounds(feature, bounds) {
   return bounds.east > 180 && lon + 360 >= bounds.west && lon + 360 <= bounds.east
 }
 
-const RANKS = ['kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']
-
 /** Is a feature inside the date range? An undated record is outside any range. */
 export function withinDates(feature, { dateFrom, dateTo } = {}) {
   if (!dateFrom && !dateTo) return true
@@ -37,35 +38,6 @@ export function withinDates(feature, { dateFrom, dateTo } = {}) {
   if (dateFrom && date < dateFrom) return false
   if (dateTo && date > dateTo) return false
   return true
-}
-
-/**
- * Does a record belong to this taxon, named at any rank?
- *
- * The rank columns are the answer where they exist: "Agaricales" selects an
- * order and "Morchella" a genus without the member having to say which.
- *
- * But they do not always exist. The committed baseline predates the taxonomy
- * work and carries a `species` binomial and nothing else — no genus, no family,
- * no kingdom. Against that dataset a rank-column match finds nothing for every
- * genus anybody would type, and the job is refused for a reason that has
- * nothing to do with what was asked.
- *
- * So the binomial is the fallback: its first word is the genus, which is what a
- * binomial is. Only a fallback — a real genus column always wins — because
- * splitting a name on its spaces is exactly the guesswork the taxonomy columns
- * were added to replace.
- */
-export function matchesTaxon(props = {}, taxon = '') {
-  const needle = String(taxon || '').trim().toLowerCase()
-  if (!needle) return true
-  if (RANKS.some((r) => String(props[r] || '').toLowerCase() === needle)) return true
-
-  const species = String(props.species || '').trim().toLowerCase()
-  if (!species) return false
-  // Only when there is no genus column to disagree with.
-  if (!String(props.genus || '').trim() && species.split(/\s+/)[0] === needle) return true
-  return false
 }
 
 /**
@@ -92,6 +64,8 @@ export function explainSelection(features, source) {
 export function selectFeatures(features, source) {
   return explainSelection(features, source).selected
 }
+
+export { matchesTaxon }
 
 /** Distinct observation dates, which is what the dated stages cost per. */
 export function countDates(features) {
