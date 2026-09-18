@@ -1237,6 +1237,10 @@ function toggleOverlay(entry) {
   if (wasOn) {
     next.delete(entry.key)
     overlayOrder.value = overlayOrder.value.filter((k) => k !== entry.key)
+    // Take it off the map here. applySolo only walks the active set, so once the
+    // key is gone from there it can no longer remove this layer — leaving an
+    // unticked layer still drawn, which is the bug this fixes.
+    if (entry.layer && map.hasLayer(entry.layer)) map.removeLayer(entry.layer)
     // Switching off the layer that was soloed ends the solo rather than
     // leaving an empty map with three layers still ticked.
     if (soloKey.value === entry.key) soloKey.value = ''
