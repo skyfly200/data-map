@@ -102,6 +102,25 @@ test('an unknown parameter is ignored, not passed through', () => {
   assert.deepEqual(Object.keys(params), ['year'])
 })
 
+test('a taxon name is accepted, trimmed, and defaulted', () => {
+  assert.equal(resolveLayer('inat-range').params.taxon, 'Morchella')
+  assert.equal(resolveLayer('inat-range', { taxon: '  Cantharellus ' }).params.taxon, 'Cantharellus')
+  assert.equal(resolveLayer('inat-range', { taxon: 'Tricholoma murrillianum' }).params.taxon,
+    'Tricholoma murrillianum')
+})
+
+test('a taxon name that is not a name is refused', () => {
+  // The value goes into an Earth Engine string filter, so anything that is not a
+  // scientific name has no business reaching it.
+  // '' is not here: like every param, an empty value means "use the default".
+  // Plain letters-and-spaces (even "DROP TABLE") are a harmless literal to a
+  // string filter; what must be refused is anything carrying other characters.
+  for (const bad of ['   ', "x' OR '1", 'name=1', '../etc', '{$ne:1}', 'a'.repeat(61)]) {
+    assert.throws(() => resolveLayer('inat-range', { taxon: bad }), LayerError,
+      `accepted ${JSON.stringify(bad)}`)
+  }
+})
+
 // ── The cache key ────────────────────────────────────────────────────────────
 
 test('the cache key does not depend on parameter order', () => {
@@ -163,7 +182,11 @@ function stubEe() {
   const ee = new Proxy({}, {
     get: (t, prop) => {
       calls.push(String(prop))
-      if (prop === 'Filter') return { lt: () => chain, eq: () => chain }
+      if (prop === 'Filter') {
+        return {
+          lt: () => chain, eq: () => chain, listContains: () => chain, stringContains: () => chain,
+        }
+      }
       if (prop === 'Image') {
         const img = () => chain
         img.constant = () => chain

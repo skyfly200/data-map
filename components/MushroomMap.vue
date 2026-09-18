@@ -267,6 +267,10 @@
                   @change="setEeParam(n.ee, name, $event.target.value)">
             <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
           </select>
+          <input v-else-if="p.type === 'text'" :id="`ee-${n.slug}-${name}`" type="search"
+                 :maxlength="p.maxLength || 60" :placeholder="p.default"
+                 :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                 @change="setEeParam(n.ee, name, $event.target.value)" />
           <input v-else :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
                  @change="setEeParam(n.ee, name, Number($event.target.value))" />
@@ -1054,6 +1058,9 @@ const eeErrors = ref([])
 // the Vue side never has to know how Leaflet builds them.
 const baseLayers = ref([])
 const overlayLayers = ref([])
+// The basemap the viewer last chose, remembered per browser so the map opens on
+// the one they read best rather than resetting to the default every visit.
+const BASE_KEY = 'map-basemap'
 const activeBase = ref('grey')
 // A Set of the overlay keys currently on. Replaced rather than mutated so the
 // template re-renders.
@@ -1078,7 +1085,17 @@ function setBase(key) {
   // draws over the reference layers and the points.
   next.layer.bringToBack()
   activeBase.value = key
+  try { localStorage.setItem(BASE_KEY, key) } catch { /* private mode; just don't remember */ }
   syncActiveTemplates()
+}
+
+/** Restore the remembered basemap, if it is one that still exists. */
+function restoreBase() {
+  let saved = null
+  try { saved = localStorage.getItem(BASE_KEY) } catch { /* no storage; keep the default */ }
+  if (saved && saved !== activeBase.value && baseLayers.value.some((b) => b.key === saved)) {
+    setBase(saved)
+  }
 }
 
 // The stacking order of the overlays that are on, topmost first, and how see-
@@ -1177,6 +1194,10 @@ function toggleOverlay(entry) {
   if (wasOn) {
     next.delete(entry.key)
     overlayOrder.value = overlayOrder.value.filter((k) => k !== entry.key)
+    // Take it off the map here. applySolo only walks the active set, so once the
+    // key is gone from there it can no longer remove this layer — leaving an
+    // unticked layer still drawn, which is the bug this fixes.
+    if (entry.layer && map.hasLayer(entry.layer)) map.removeLayer(entry.layer)
     // Switching off the layer that was soloed ends the solo rather than
     // leaving an empty map with three layers still ticked.
     if (soloKey.value === entry.key) soloKey.value = ''
@@ -1345,6 +1366,13 @@ function setEeParam(key, name, value) {
     } catch {
       return
     }
+  } else if (p?.type === 'text') {
+    // A typed value, e.g. a taxon name. Kept as a trimmed string; an empty one
+    // is ignored rather than sent, since the server rejects it and re-minting on
+    // every emptied field would only surface an error mid-type.
+    const text = String(value).trim()
+    if (!text) return
+    next = text
   } else {
     next = Math.floor(Number(value))
     if (!Number.isFinite(next)) next = p?.default ?? 0
@@ -1381,6 +1409,20 @@ const pin = ref(null)
 const copied = ref(false)
 let pinMarker = null
 
+// A self-contained SVG marker for the dropped point. Leaflet's default marker
+// pulls its image from a PNG whose URL the bundler rewrites out from under it,
+// so it 404s and the pin shows up blank; an inline divIcon has no asset to lose.
+// Blue, to read apart from the red pin that marks a selected observation.
+function dropPinIcon() {
+  return L.divIcon({
+    className: 'drop-pin', iconSize: [28, 40], iconAnchor: [14, 38], tooltipAnchor: [0, -34],
+    html: `<svg viewBox="0 0 24 34" width="28" height="40" aria-hidden="true">
+      <path d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 34 12 34s12-13.4 12-22.1C24 5.3 18.6 0 12 0z"
+            fill="#2d7ff9" stroke="#fff" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>`,
+  })
+}
+
 function setPin(lat, lon) {
   pin.value = { lat, lon }
   copied.value = false
@@ -1388,6 +1430,7 @@ function setPin(lat, lon) {
   if (pinMarker) { pinMarker.setLatLng([lat, lon]); return }
   pinMarker = L.marker([lat, lon], {
     draggable: true,
+    icon: dropPinIcon(),
     // Above the canvas the observations draw into, so the pin is never lost
     // under a dense patch of dots.
     zIndexOffset: 1000,
@@ -1948,6 +1991,9 @@ onMounted(async () => {
       { key: 'topo', name: 'Terrain (OpenTopoMap)', layer: topo },
       { key: 'sat', name: 'Satellite (Esri)', layer: sat },
     ]
+    // The map was created with the default basemap; swap in the remembered one
+    // now that the choices exist.
+    restoreBase()
     overlayLayers.value = tileOverlayList
 
     // Earth Engine layers arrive after their catalogue does, so they join the
@@ -2144,6 +2190,14 @@ onBeforeUnmount(() => {
    collided rather than one. The rules live here because this bar is the only
    place they sit together; each component keeps its own styling everywhere
    else it is used. */
+/* Leaflet's div-icon ships a white box with a grey border; our SVG pins supply
+   their own shape, so strip the box or it frames the teardrop. */
+.map :deep(.leaflet-div-icon.drop-pin),
+.map :deep(.leaflet-div-icon.obs-pin) {
+  background: none;
+  border: 0;
+}
+
 .controls :deep(.pop-btn),
 .controls .tool-btn,
 .controls :deep(.sh-btn),
@@ -2265,8 +2319,13 @@ onBeforeUnmount(() => {
 
 .legend {
   position: static; z-index: 500;
-  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
-  padding: 10px 12px; font: 13px/1.4 system-ui, sans-serif; color: #222; min-width: 120px;
+  /* Theme tokens, not a hardcoded white card: the child keys (the soil taxonomy
+     browser especially) colour their text with --text, so on a fixed white
+     panel their dark-mode text came out white on white. */
+  background: var(--surface, rgba(255, 255, 255, 0.95));
+  border: 1px solid var(--border, #ddd); border-radius: 8px;
+  padding: 10px 12px; font: 13px/1.4 system-ui, sans-serif;
+  color: var(--text, #222); min-width: 120px;
   max-width: 100%; max-height: 44vh; overflow-y: auto; overscroll-behavior: contain;
   /* min-height: 0 — a flex item will not shrink below its content without it,
      so the panel grew past its max-height instead of scrolling.
