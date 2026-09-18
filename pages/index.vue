@@ -95,66 +95,101 @@
             <!-- The sensor beam, straight down through the layers to the surface. -->
             <div class="beam" aria-hidden="true"></div>
 
-            <!-- The Earth, with the satellite orbiting around it. The orbit is one
-                 ellipse drawn in two halves: the back arc sits behind the globe and
-                 the front arc over it, so the ring reads as wrapping around. The
-                 satellite rides the full ellipse, its position along it driven by how
-                 far the page is scrolled (--sat). -->
-            <div class="globe-wrap" aria-hidden="true">
-              <svg class="orbit-ring back" viewBox="0 0 300 190" preserveAspectRatio="none">
-                <ellipse cx="150" cy="95" rx="136" ry="46" />
-              </svg>
+            <!-- The Earth, seen close.
+                 Not a whole planet in a box: at that size the continents have to
+                 be drawn, and line art of a coastline at 150px is the one thing
+                 here that cannot look real. So the globe is enormous and mostly
+                 below the frame — what you see is a limb curving across the
+                 bottom, the way it looks from low orbit, where the horizon is a
+                 curve and not a circle.
 
-              <div class="globe">
-                <svg class="globe-svg" viewBox="0 0 100 100">
-                  <defs>
-                    <clipPath id="globeClip"><circle cx="50" cy="50" r="48" /></clipPath>
-                    <radialGradient id="ocean" cx="38%" cy="32%" r="75%">
-                      <stop offset="0%" stop-color="#12557d" />
-                      <stop offset="60%" stop-color="#0b3f63" />
-                      <stop offset="100%" stop-color="#06263d" />
-                    </radialGradient>
-                  </defs>
-                  <g clip-path="url(#globeClip)">
-                    <circle cx="50" cy="50" r="48" fill="url(#ocean)" />
-                    <!-- Graticule: the wireframe that reads as a globe. -->
-                    <g class="grat">
-                      <ellipse cx="50" cy="50" rx="48" ry="16" />
-                      <ellipse cx="50" cy="50" rx="48" ry="33" />
-                      <line x1="2" y1="50" x2="98" y2="50" />
-                      <ellipse cx="50" cy="50" rx="16" ry="48" />
-                      <ellipse cx="50" cy="50" rx="33" ry="48" />
-                      <line x1="50" y1="2" x2="50" y2="98" />
-                    </g>
-                    <!-- Stylised continent outlines, so it reads as Earth and not
-                         just a wireframe sphere. Rough on purpose: line art at this
-                         size, not a survey. -->
-                    <g class="land">
-                      <path d="M32 20 C27 25 29 31 33 34 C30 40 32 49 36 54 C33 60 34 69 39 75
-                               C37 80 41 83 43 79 C44 72 40 66 43 60 C48 56 46 47 42 44
-                               C47 38 44 29 38 28 C41 23 36 17 32 20 Z" />
-                      <path d="M55 26 C50 28 51 34 55 37 C52 45 55 55 60 61 C58 67 62 73 65 68
-                               C69 61 65 53 67 47 C72 43 70 33 63 32 C66 27 60 23 55 26 Z" />
-                      <path d="M63 24 C70 21 80 24 87 29 C91 33 88 39 82 39 C75 41 71 36 65 35
-                               C62 31 59 26 63 24 Z" />
-                      <path d="M74 66 C79 64 85 67 83 72 C80 76 74 74 72 70 C71 67 72 66 74 66 Z" />
-                    </g>
+                 The orbit is one ellipse wide enough to enclose the whole layer
+                 stack, so its top arc passes above the plates rather than around
+                 a ball beneath them. The satellite rides only that top arc, and
+                 sits at its apex — directly over the beam, above every layer —
+                 when the section is centred in the window. -->
+            <!-- The top half of the orbit only. The bottom would pass behind an
+                 Earth that is not in frame, so there is nothing for it to go
+                 behind and it would read as a ring lying flat on the page.
+
+                 The viewBox is 100x100 stretched to the element's own box
+                 (preserveAspectRatio="none"), so "50" means the middle of the
+                 box on either axis whatever size the box is. That is what lets
+                 the satellite — an HTML element, not an SVG one — be put on the
+                 same ellipse from CSS: both read the same --orbit-* numbers. -->
+            <svg class="orbit" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="orbitFade" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#38bdf8" stop-opacity="0" />
+                  <stop offset="0.24" stop-color="#38bdf8" stop-opacity="0.8" />
+                  <stop offset="0.76" stop-color="#38bdf8" stop-opacity="0.8" />
+                  <stop offset="1" stop-color="#38bdf8" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <path class="orbit-arc" d="M 0 50 A 50 50 0 0 1 100 50" />
+            </svg>
+
+            <!-- The satellite, on that same ellipse. Its angle comes straight
+                 from --sat, so 0.5 is the apex: dead centre, above every plate,
+                 on the line the beam comes down. -->
+            <div class="sat" aria-hidden="true">
+              <span class="sat-body"></span>
+              <span class="sat-panel left"></span>
+              <span class="sat-panel right"></span>
+            </div>
+
+            <!-- The limb. One circle far bigger than its box, so only the top of
+                 it is in frame. No coastlines: at this scale you are over one
+                 place, and the graticule plus the atmosphere is what says Earth
+                 without drawing a map badly. -->
+            <div class="limb" aria-hidden="true">
+              <svg class="limb-svg" viewBox="0 0 1200 1200" preserveAspectRatio="xMidYMin slice">
+                <defs>
+                  <clipPath id="limbClip"><circle cx="600" cy="620" r="600" /></clipPath>
+                  <!-- Lit from above and to the left, and dark: the rest of the
+                       page is close to black, and a daylight-bright planet in
+                       the corner of it would be the only thing anyone saw.
+
+                       Scaled to the band that is actually in frame, not to the
+                       sphere. Only the top seventh of the circle is ever on
+                       screen, so a gradient sized to the whole ball would put
+                       its entire falloff below the bottom edge and leave the
+                       visible part one flat colour. -->
+                  <radialGradient id="limbOcean" cx="41%" cy="2%" r="17%">
+                    <stop offset="0%" stop-color="#1a6e97" />
+                    <stop offset="45%" stop-color="#0b3f60" />
+                    <stop offset="100%" stop-color="#03151f" />
+                  </radialGradient>
+                  <!-- The atmosphere, brightest right at the edge. -->
+                  <radialGradient id="limbAir" cx="50%" cy="50%" r="50%">
+                    <stop offset="0.93" stop-color="#7dd3fc" stop-opacity="0" />
+                    <stop offset="0.985" stop-color="#7dd3fc" stop-opacity="0.55" />
+                    <stop offset="1" stop-color="#7dd3fc" stop-opacity="0" />
+                  </radialGradient>
+                </defs>
+
+                <g clip-path="url(#limbClip)">
+                  <circle cx="600" cy="620" r="600" fill="url(#limbOcean)" />
+
+                  <!-- A real graticule rather than six arbitrary ellipses:
+                       parallels are circles of latitude seen edge-on, so their
+                       height shrinks with the cosine of the latitude and they
+                       stack toward the pole. Meridians all meet there. Drawn to
+                       one rule, which is what makes a wireframe read as a
+                       sphere instead of as a net thrown over a disc. -->
+                  <g class="grat">
+                    <ellipse v-for="p in PARALLELS" :key="`p${p.lat}`"
+                             cx="600" :cy="p.cy" :rx="p.rx" :ry="p.ry" />
+                    <path v-for="m in MERIDIANS" :key="`m${m}`" :d="meridian(m)" />
                   </g>
-                  <circle cx="50" cy="50" r="48" class="rim" />
-                </svg>
-                <!-- The observation, on the surface, where the beam lands. -->
-                <span class="pin"></span>
-              </div>
+                </g>
 
-              <svg class="orbit-ring front" viewBox="0 0 300 190" preserveAspectRatio="none">
-                <ellipse cx="150" cy="95" rx="136" ry="46" />
+                <circle cx="600" cy="620" r="600" class="limb-air" fill="url(#limbAir)" />
+                <circle cx="600" cy="620" r="599" class="limb-edge" />
               </svg>
 
-              <div class="sat">
-                <span class="sat-body"></span>
-                <span class="sat-panel left"></span>
-                <span class="sat-panel right"></span>
-              </div>
+              <!-- The observation, where the beam meets the surface. -->
+              <span class="pin"></span>
             </div>
           </div>
           <figcaption>One observation on Earth, and the layers sampled above it.</figcaption>
@@ -339,6 +374,68 @@ const PIPELINE = [
 // The layers named, coarse to fine, each with a CSS gradient that echoes how the
 // layer actually paints on the map, so the stack shows the data, not just its
 // name. `viz` is dropped straight into a linear-gradient in the style below.
+
+// ─── The graticule ───────────────────────────────────────────────────────────
+// Drawn to one rule instead of by hand, which is the difference between a
+// wireframe that reads as a sphere and one that reads as a net thrown over a
+// disc. The globe is a circle of radius R centred below the frame; a parallel at
+// latitude φ is that circle's cross-section seen from slightly above, so it sits
+// R·sin φ up from the equator and is R·cos φ wide, squashed vertically by how
+// far the viewpoint is tilted.
+
+const GLOBE_R = 600
+const GLOBE_CX = 600
+const GLOBE_CY = 620
+
+// How far the pole is tilted away from the line of sight. Near a right angle,
+// so the pole sits almost at the top of the silhouette and the part of the
+// sphere in frame is the high-latitude cap — which is where the observation is.
+const BETA = (78 * Math.PI) / 180
+const SIN_B = Math.sin(BETA)
+const COS_B = Math.cos(BETA)
+
+// Where each projected pole lands. Every meridian ends at these two points, so
+// they are what makes the meridians converge instead of running parallel.
+const POLE_N = Math.round(GLOBE_CY - GLOBE_R * SIN_B)
+const POLE_S = Math.round(GLOBE_CY + GLOBE_R * SIN_B)
+
+/**
+ * A parallel, as the ellipse it projects to.
+ *
+ * Orthographic projection of a circle of latitude: it keeps its full width,
+ * R·cos φ, and is flattened vertically by the cosine of the tilt. It sits
+ * R·sin φ·sin β above the centre, which is what crowds the parallels together
+ * as they approach the pole.
+ */
+const PARALLELS = Array.from({ length: 8 }, (_, i) => {
+  const deg = (i + 1) * 10
+  const lat = (deg * Math.PI) / 180
+  return {
+    lat: deg,
+    cy: Math.round(GLOBE_CY - GLOBE_R * Math.sin(lat) * SIN_B),
+    rx: Math.round(GLOBE_R * Math.cos(lat)),
+    ry: Math.max(2, Math.round(GLOBE_R * Math.cos(lat) * COS_B)),
+  }
+})
+
+const MERIDIANS = [-80, -60, -40, -20, 0, 20, 40, 60, 80]
+
+/**
+ * One meridian, as the half-ellipse it projects to.
+ *
+ * Every meridian runs pole to pole, so they all start and end at the same two
+ * points and differ only in how far they bow out — by the sine of their
+ * longitude from the one facing you. One rule for all of them is what makes the
+ * wireframe read as a sphere rather than as a net thrown over a disc.
+ */
+function meridian(lonDeg) {
+  const rx = Math.abs(Math.round(GLOBE_R * Math.sin((lonDeg * Math.PI) / 180)))
+  const ry = Math.round(GLOBE_R * SIN_B)
+  if (rx < 2) return `M ${GLOBE_CX} ${POLE_N} L ${GLOBE_CX} ${POLE_S}`
+  const sweep = lonDeg > 0 ? 1 : 0
+  return `M ${GLOBE_CX} ${POLE_N} A ${rx} ${ry} 0 0 ${sweep} ${GLOBE_CX} ${POLE_S}`
+}
+
 const STRATA = [
   { name: 'Weather', fields: 'the seven days before the find', viz: '#2c7bb6, #abd9e9, #ffffbf, #fdae61, #d7191c' },
   { name: 'Canopy', fields: 'NDVI, NDMI', viz: '#a6611a, #dfc27d, #f5f5f5, #80cdc1, #018571' },
@@ -405,11 +502,22 @@ function apply() {
   el.style.setProperty('--mx', mx.toFixed(3))
   el.style.setProperty('--my', my.toFixed(3))
   el.style.setProperty('--sc', String(Math.round(sc)))
-  // 0 at the top of the page, 1 at the bottom: the satellite rides its orbit
-  // once as you scroll the whole page.
-  const max = scroller ? scroller.scrollHeight - scroller.clientHeight : 0
-  const progress = max > 0 ? Math.min(1, Math.max(0, sc / max)) : 0
-  el.style.setProperty('--sat', progress.toFixed(4))
+  // Where the satellite sits on its arc: 0 at the left horizon, 1 at the right,
+  // and 0.5 — the apex, directly over the beam and above every layer — when the
+  // stack section is centred in the window. Measured against that section
+  // rather than the whole page, because "above the layers" is a fact about
+  // where the layers are and not about how long the page happens to be.
+  const stack = el.querySelector('.stack-sec')
+  let along = 0.5
+  if (stack) {
+    const box = stack.getBoundingClientRect()
+    const view = window.innerHeight || 1
+    // 0 when the section's middle is a screen below the middle of the window,
+    // 1 when it is a screen above it.
+    const offset = (box.top + box.height / 2) - view / 2
+    along = 0.5 - offset / view / 2
+  }
+  el.style.setProperty('--sat', Math.min(1, Math.max(0, along)).toFixed(4))
 }
 function schedule() {
   if (!frame) frame = requestAnimationFrame(apply)
@@ -607,6 +715,24 @@ useHead({
 .scene-3d {
   position: relative; height: 560px;
   transform-style: preserve-3d; perspective: 1100px;
+
+  /* The orbit, in one place, because two elements have to agree on it: the SVG
+     that draws the ellipse and the satellite that rides it. Horizontal as a
+     percentage so the ellipse stays as wide as the column; vertical in pixels
+     so the apex keeps clearing the plates when the column narrows. */
+  --orbit-inset: 3%;
+  --orbit-cy: 248px;
+  --orbit-ry: 224px;
+
+  /* A window onto a scene rather than a diagram of one. You see a piece of the
+     planet and a piece of the orbit, and both run out of the frame instead of
+     ending — which is what makes it read as a view and not as an illustration
+     with a border. Everything fades before it reaches an edge, so nothing has a
+     cut end. */
+  -webkit-mask-image:
+    radial-gradient(76% 70% at 50% 54%, #000 42%, rgba(0, 0, 0, 0.62) 78%, transparent 100%);
+  mask-image:
+    radial-gradient(76% 70% at 50% 54%, #000 42%, rgba(0, 0, 0, 0.62) 78%, transparent 100%);
 }
 /* The whole column tilts back and turns gently with scroll and pointer. */
 .plates {
@@ -648,47 +774,67 @@ useHead({
   clip-path: polygon(48% 0, 52% 0, 100% 100%, 0 100%);
 }
 
-/* ── The Earth and its orbiting satellite ─────────────────────────────────────
-   The wrap is the whole point: one ellipse, drawn twice. The back copy sits
-   behind the globe (z below it) so the globe hides its far side; the front copy
-   is clipped to its lower half and drawn over the globe, so the ring reads as
-   passing behind the planet at the top and in front at the bottom. */
-.globe-wrap {
-  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
-  width: 300px; height: 190px;
+/* The limb. The SVG is square and far wider than this box, and the box shows
+   only its top — so the circle's curve crosses the frame as a horizon rather
+   than sitting inside it as a ball. */
+.limb {
+  position: absolute; left: 50%; bottom: -46px; transform: translateX(-50%);
+  width: 175%; height: 300px; z-index: 2;
+  overflow: hidden; pointer-events: none;
+  /* Its own fade downwards, on top of the scene's. Without it the planet ends
+     on a straight horizontal cut at the bottom of the figure, which is the one
+     edge the radial mask cannot reach — it is nearest the mask's centre. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0 26%, rgba(0, 0, 0, 0.35) 68%, transparent 96%);
+  mask-image: linear-gradient(to bottom, #000 0 26%, rgba(0, 0, 0, 0.35) 68%, transparent 96%);
 }
-.orbit-ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.orbit-ring ellipse {
-  fill: none; stroke: rgba(56, 189, 248, 0.6); stroke-width: 1; stroke-dasharray: 4 5;
-  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.4));
-}
-.orbit-ring.back { z-index: 1; }
-/* Only the lower half, laid over the globe. */
-.orbit-ring.front { z-index: 3; clip-path: inset(50% 0 0 0); }
+/* The taller this is, the bigger the sphere is against the frame and the
+   shallower the curve across it — which is the whole difference between a
+   horizon and a ball. */
+.limb-svg { position: absolute; left: 0; top: 0; width: 100%; height: 620%; }
 
-.globe {
-  position: absolute; left: 50%; top: 50%; width: 150px; height: 150px;
-  transform: translate(-50%, -50%); z-index: 2;
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.25), 0 0 48px rgba(56, 189, 248, 0.3),
-    inset -10px -14px 40px rgba(0, 0, 0, 0.55);
+.limb-svg .grat {
+  fill: none; stroke: rgba(125, 211, 252, 0.22); stroke-width: 1.3;
+  vector-effect: non-scaling-stroke;
 }
-.globe-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.globe-svg .grat { fill: none; stroke: rgba(125, 211, 252, 0.32); stroke-width: 0.6; }
-.globe-svg .land {
-  fill: rgba(52, 211, 153, 0.16); stroke: rgba(110, 231, 183, 0.85); stroke-width: 0.9;
-  stroke-linejoin: round;
+.limb-edge {
+  fill: none; stroke: rgba(125, 211, 252, 0.7); stroke-width: 2;
+  vector-effect: non-scaling-stroke;
 }
-.globe-svg .rim { fill: none; stroke: rgba(56, 189, 248, 0.5); stroke-width: 1.2; }
+.limb-air { pointer-events: none; }
 
-/* The satellite rides the full ellipse; the path matches the SVG above (centre
-   150,95, radii 136,46). offset-distance is how far the page has scrolled, so it
-   travels the ring around the Earth as you read down. */
+/* ── The orbit ────────────────────────────────────────────────────────────────
+   Wide enough to enclose the whole stack, so the arc passes ABOVE the plates.
+   Behind them in z, so a plate the arc crosses still reads as nearer. Both ends
+   fade out rather than stopping, because an orbit with two visible ends is a
+   croquet hoop. */
+.orbit {
+  /* Behind the plates in every layout: on a phone they are in normal flow, and
+     an in-flow box paints under any positioned one, so z-index 0 would put the
+     arc in front of the cards there and behind them on a desktop. */
+  position: absolute; pointer-events: none; z-index: -1;
+  left: var(--orbit-inset); right: var(--orbit-inset);
+  top: calc(var(--orbit-cy) - var(--orbit-ry));
+  height: calc(var(--orbit-ry) * 2);
+}
+.orbit-arc {
+  fill: none; stroke: url(#orbitFade); stroke-width: 1.4;
+  stroke-dasharray: 5 7; stroke-linecap: round;
+  filter: drop-shadow(0 0 7px rgba(56, 189, 248, 0.45));
+  vector-effect: non-scaling-stroke;
+}
+
+/* The satellite rides that same ellipse, by angle rather than by arc length: at
+   --sat 0 it is on the left horizon, at 1 on the right, and at 0.5 — the middle
+   of the section in the window — it is at the apex, dead centre, directly over
+   the beam and above every plate. Above everything in z: it is the thing doing
+   the looking. */
 .sat {
-  position: absolute; top: 0; left: 0; width: 34px; height: 17px; z-index: 4;
-  offset-path: path('M 14 95 A 136 46 0 1 1 286 95 A 136 46 0 1 1 14 95');
-  offset-distance: calc(var(--sat, 0) * 100%);
-  offset-rotate: 0deg;
+  position: absolute; width: 34px; height: 18px; z-index: 6; pointer-events: none;
+  --ang: calc((1 - var(--sat, 0.5)) * 180deg);
+  left: calc(50% + (50% - var(--orbit-inset)) * cos(var(--ang)));
+  top: calc(var(--orbit-cy) - var(--orbit-ry) * sin(var(--ang)));
+  transform: translate(-50%, -50%);
+  transition: left 0.12s linear, top 0.12s linear;
 }
 .sat-body {
   position: absolute; left: 50%; top: 50%; width: 15px; height: 11px; transform: translate(-50%, -50%);
@@ -703,7 +849,8 @@ useHead({
 
 /* The observation, on the surface. */
 .pin {
-  position: absolute; left: 50%; top: 6px; width: 13px; height: 13px; transform: translateX(-50%);
+  position: absolute; left: 50%; top: 24px; width: 13px; height: 13px; transform: translateX(-50%);
+  z-index: 5;
   border: 2.5px solid #34d399; border-radius: 50%; background: #04140b;
   box-shadow: 0 0 14px rgba(52, 211, 153, 0.95); z-index: 3;
 }
@@ -822,9 +969,13 @@ useHead({
   .scene-3d { height: auto; perspective: none; padding: 14px 0 210px; }
   .plates { position: static; transform: none; margin-top: 8px; }
   .plate { width: 100%; transform: none; box-shadow: 0 2px 8px var(--shadow); }
-  /* The beam runs from the plates down to the globe sitting below them. */
+  /* The beam runs from the plates down to the limb sitting below them. */
   .beam { top: 40px; height: calc(100% - 210px); }
-  /* The globe and its orbit anchor to the bottom of the flattened scene. */
-  .globe-wrap { width: 260px; height: 165px; }
+  /* A phone column is narrow, so the same ellipse would be a thin spike. Pull
+     the apex down and widen the ends past the frame, which keeps the arc
+     reading as a curve rather than as a pair of vertical lines. */
+  .scene-3d { --orbit-inset: -10%; --orbit-cy: 208px; --orbit-ry: 192px; }
+  .limb { height: 250px; bottom: -40px; width: 210%; }
+  .limb-svg { height: 760%; }
 }
 </style>
