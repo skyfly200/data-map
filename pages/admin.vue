@@ -73,12 +73,18 @@
           <ul class="rows">
             <li v-for="m in sortedMembers" :key="m.user_id" class="row-item">
               <div class="row-top">
-                <strong>{{ m.display_name || m.user_id.slice(0, 8) }}</strong>
+                <strong>{{ nameFor(m) }}</strong>
                 <span class="tier-badge" :class="m.tier">{{ m.tier }}</span>
                 <span v-if="lapsedFor(m)" class="tier-badge lapsed">lapsed</span>
                 <button class="linkish" @click="edit(m)">
                   {{ editing === m.user_id ? 'Close' : 'Edit' }}
                 </button>
+              </div>
+              <!-- The email under the name, so a nameless account is still
+                   identifiable and an admin can reach the person. Shown only
+                   when it adds something the name line does not already say. -->
+              <div v-if="m.email && m.email !== nameFor(m)" class="row-email">
+                <a :href="`mailto:${m.email}`">{{ m.email }}</a>
               </div>
 
               <!-- A limit with no usage beside it is a number nobody can judge,
@@ -321,10 +327,17 @@ function lastActive(m) {
   return `last active ${new Date(at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}`
 }
 
+// The label for an account: the profile name, then the email, then the UUID
+// stub. Email is the useful middle rung the page did not have before — most
+// nameless accounts have one, and it says who they are.
+function nameFor(m) {
+  return m.display_name || m.email || m.user_id.slice(0, 8)
+}
+
 // Heaviest users first by default: that is the list an admin is scanning for.
 const sortedMembers = computed(() => {
   const list = [...members.value]
-  const byName = (a, b) => (a.display_name || a.user_id).localeCompare(b.display_name || b.user_id)
+  const byName = (a, b) => nameFor(a).localeCompare(nameFor(b))
   if (sortBy.value === 'name') return list.sort(byName)
   if (sortBy.value === 'tier') {
     const rank = { admin: 0, perpetual: 1, member: 2, free: 3 }
@@ -561,6 +574,9 @@ onMounted(async () => {
 .rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .row-item { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
 .row-top { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+.row-email { margin: 1px 0 4px; font-size: 0.74rem; }
+.row-email a { color: var(--muted); text-decoration: none; }
+.row-email a:hover { color: var(--accent); text-decoration: underline; }
 .usage { margin-left: auto; color: var(--muted); font-size: 0.75rem; }
 
 /* ── Quota at a glance ──────────────────────────────────────────────────── */
