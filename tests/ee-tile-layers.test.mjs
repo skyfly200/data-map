@@ -163,7 +163,7 @@ function stubEe() {
   const ee = new Proxy({}, {
     get: (t, prop) => {
       calls.push(String(prop))
-      if (prop === 'Filter') return { lt: () => chain, eq: () => chain }
+      if (prop === 'Filter') return { lt: () => chain, eq: () => chain, listContains: () => chain }
       if (prop === 'Image') {
         const img = () => chain
         img.constant = () => chain

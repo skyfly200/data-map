@@ -111,6 +111,17 @@ export const ASSETS = {
   // map is EPSG:3857, so the GIBS tiles 404'd. The `sm_surface` band is
   // volumetric water in the top 5 cm.
   SMAP: 'NASA/SMAP/SPL4SMGP/007',
+  // Copernicus Sentinel-1 C-band SAR, ~10 m, global. VV backscatter over land
+  // rises with surface wetness (and roughness), so a recent mean is a radar
+  // proxy for how wet the ground is — and unlike optical NDMI it sees through
+  // cloud, which is most of what makes soil moisture hard to read in fall.
+  S1_GRD: 'COPERNICUS/S1_GRD',
+  // ECMWF ERA5-Land daily aggregates, ~11 km, global. A reanalysis, not a
+  // sensor: it models the whole soil column, so it carries the two things SMAP
+  // and the optical indices cannot — water below the top 5 cm, and soil
+  // temperature — as `volumetric_soil_water_layer_1` and
+  // `soil_temperature_level_1`.
+  ERA5_LAND_DAILY: 'ECMWF/ERA5_LAND/DAILY_AGGR',
 }
 
 /**
@@ -1439,6 +1450,125 @@ export const EE_TILE_LAYERS = {
         .select('sm_surface')
         .mean()
       return { image, vis: { min: 0, max: 0.6, palette: SOIL_MOISTURE_PALETTE } }
+    },
+  },
+
+  'radar-moisture': {
+    name: 'Radar moisture proxy (Sentinel-1)',
+    group: 'Soil',
+    // Computed from raw SAR as you look — a mean of every pass in the window —
+    // so it is a members' layer like dNBR rather than a cheap published product.
+    tier: DEFAULT_TIER,
+    attribution: 'Copernicus Sentinel-1 GRD via Google Earth Engine',
+    opacity: 0.75,
+    sourceMasked: true,
+    note: 'Mean VV backscatter from Sentinel-1 C-band radar over the chosen recent days, 10 m. '
+      + 'Radar sees the ground through cloud, and brighter VV usually means wetter soil — but roughness '
+      + 'and vegetation raise it too, so read it as a proxy, not a moisture measurement. Blue is the '
+      + 'wetter (brighter) end. Coverage is per-orbit, so a short window can leave gaps.',
+    slow: true,
+    params: {
+      days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 60 },
+    },
+    legend: {
+      type: 'ramp', unit: 'dB (VV)', min: 'dry', max: 'wet',
+      stops: ['#ffffcc', '#a1dab4', '#41b6c4', '#2c7fb8', '#253494'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.S1_GRD)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+        .filter(ee.Filter.eq('instrumentMode', 'IW')).size()
+    },
+    build(ee, { days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      const image = ee.ImageCollection(ASSETS.S1_GRD)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+        .filter(ee.Filter.eq('instrumentMode', 'IW'))
+        .select('VV')
+        .mean()
+      return { image, vis: { min: -20, max: -5, palette: ['#ffffcc', '#a1dab4', '#41b6c4', '#2c7fb8', '#253494'] } }
+    },
+  },
+
+  'soil-moisture-column': {
+    name: 'Soil moisture, root zone (ERA5-Land)',
+    group: 'Soil',
+    // Free, like SMAP: a cheap mean of a coarse published reanalysis, global,
+    // and the same question a forager asks after rain — but of the 0–7 cm layer
+    // a reanalysis models rather than the top 5 cm a satellite retrieves.
+    tier: 'free',
+    attribution: 'Copernicus ECMWF ERA5-Land via Google Earth Engine',
+    opacity: 0.7,
+    sourceMasked: true,
+    note: 'Modelled volumetric water in the top 0–7 cm of soil from ERA5-Land, ~11 km, global, averaged '
+      + 'over the chosen recent days. A reanalysis, not a measurement, and coarse: a cell is larger than '
+      + 'most places on this map. Blue is wet. It lags real time by about five days, so a short window '
+      + 'near today can come back empty.',
+    params: {
+      days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 60 },
+    },
+    legend: {
+      type: 'ramp', unit: 'm³/m³', min: '0.1', max: '0.4',
+      stops: ['#ffffd9', '#c7e9b4', '#41b6c4', '#225ea8', '#081d58'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+    },
+    build(ee, { days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      const image = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .select('volumetric_soil_water_layer_1')
+        .mean()
+      return { image, vis: { min: 0.1, max: 0.4, palette: ['#ffffd9', '#c7e9b4', '#41b6c4', '#225ea8', '#081d58'] } }
+    },
+  },
+
+  'soil-temperature': {
+    name: 'Soil temperature (ERA5-Land)',
+    group: 'Weather',
+    // Free: the same cheap ERA5-Land mean, one band over. Soil temperature is
+    // the other half of whether the ground is ready to fruit, and no satellite
+    // layer here carries it.
+    tier: 'free',
+    attribution: 'Copernicus ECMWF ERA5-Land via Google Earth Engine',
+    opacity: 0.7,
+    sourceMasked: true,
+    note: 'Modelled temperature of the top 0–7 cm of soil from ERA5-Land, ~11 km, global, averaged over '
+      + 'the chosen recent days and shown in °C. A reanalysis, not a probe in your patch, and coarse. '
+      + 'Warm is red, cold is blue. It lags real time by about five days.',
+    params: {
+      days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 60 },
+    },
+    legend: {
+      type: 'ramp', unit: '°C', min: '0', max: '15',
+      stops: ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+    },
+    build(ee, { days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      // ERA5-Land carries soil temperature in kelvin; °C is what a reader can use.
+      const image = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .select('soil_temperature_level_1')
+        .mean()
+        .subtract(273.15)
+      return { image, vis: { min: 0, max: 15, palette: ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'] } }
     },
   },
 }
