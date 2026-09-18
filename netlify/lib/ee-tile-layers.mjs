@@ -127,6 +127,11 @@ export const ASSETS = {
   // temperature — as `volumetric_soil_water_layer_1` and
   // `soil_temperature_level_1`.
   ERA5_LAND_DAILY: 'ECMWF/ERA5_LAND/DAILY_AGGR',
+  // NOAA CPC Global Unified gauge-based daily precipitation, ~0.5° (~55 km),
+  // land only, from 1979. Coarse and gauge-derived rather than radar or
+  // satellite, so it is the long, consistent record of how much rain actually
+  // fell — the `precipitation` band is the daily total in mm.
+  NOAA_CPC_PRECIP: 'NOAA/CPC/Precipitation',
 }
 
 /**
@@ -1455,6 +1460,45 @@ export const EE_TILE_LAYERS = {
         .select('sm_surface')
         .mean()
       return { image, vis: { min: 0, max: 0.6, palette: SOIL_MOISTURE_PALETTE } }
+    },
+  },
+
+  'cpc-precip': {
+    name: 'Rain accumulation, gauge (CPC)',
+    group: 'Weather',
+    // Free: a cheap sum of a coarse published product, global (land), and the
+    // one rainfall layer with a decades-long consistent record behind it.
+    tier: 'free',
+    attribution: 'NOAA CPC Global Unified gauge-based precipitation via Google Earth Engine',
+    opacity: 0.7,
+    // Gauge-based land product: ocean is masked in the source and every land
+    // pixel is a real total, so summing zero rain is a true zero, not no-data.
+    sourceMasked: true,
+    note: 'Total gauge-analysed rainfall over the chosen recent days, from NOAA CPC, ~55 km, land only. '
+      + 'Gauge-derived and coarse — a cell is far larger than a foraging patch — but it is the long, '
+      + 'consistent rain record, good for how wet a region has been rather than where a shower fell. '
+      + 'It lags real time by a day or two, so a one-day window near today can come back empty.',
+    params: {
+      days: { type: 'int', label: 'Days to total', default: 7, min: 1, max: 60 },
+    },
+    legend: {
+      type: 'ramp', unit: 'mm', min: '0', max: '100+',
+      stops: ['#f7fbff', '#d0e1f2', '#94c4df', '#4a97c9', '#1764ab', '#08306b'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.NOAA_CPC_PRECIP)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+    },
+    build(ee, { days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      const image = ee.ImageCollection(ASSETS.NOAA_CPC_PRECIP)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .select('precipitation')
+        .sum()
+      return { image, vis: { min: 0, max: 100, palette: ['#f7fbff', '#d0e1f2', '#94c4df', '#4a97c9', '#1764ab', '#08306b'] } }
     },
   },
 
