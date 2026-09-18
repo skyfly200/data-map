@@ -14,6 +14,11 @@
       </div>
     </header>
 
+    <!-- Anything the host wants above the stack. On a phone the map's basemap
+         and heatmap controls render here, because three more buttons did not
+         fit on the bar beside them. -->
+    <div v-if="$slots.top" class="lm-top"><slot name="top" /></div>
+
     <!-- The active stack, first and separately.
          An overlay list is read in two completely different ways: "what can I
          add" is a browse, "what is on and in what order" is a glance. The old
@@ -341,6 +346,22 @@ onMounted(() => { if (props.open) seedPanels() })
  * to, and no way to reach another layer without switching one off.
  *
  * So: shrinkable, and capped in units that always resolve. */
+.lm-top {
+  flex: 0 0 auto; padding: 8px 12px;
+  border-bottom: 1px solid var(--border-soft, #eee);
+}
+.lm-top :deep(.lm-extra) { font-size: 0.78rem; }
+.lm-top :deep(.lm-extra + .lm-extra) { margin-top: 6px; }
+.lm-top :deep(.lm-extra > summary) {
+  cursor: pointer; font-weight: 600; color: var(--text);
+  display: flex; align-items: baseline; gap: 6px; padding: 3px 0;
+}
+.lm-top :deep(.lm-extra > summary em) {
+  font-style: normal; color: var(--muted); font-weight: 400;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lm-top :deep(.lm-extra[open] > summary) { margin-bottom: 4px; }
+
 .lm-active {
   flex: 0 1 auto;
   min-height: 0;
