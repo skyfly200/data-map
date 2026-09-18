@@ -2355,8 +2355,13 @@ onBeforeUnmount(() => {
 
 .legend {
   position: static; z-index: 500;
-  background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 8px;
-  padding: 10px 12px; font: 13px/1.4 system-ui, sans-serif; color: #222; min-width: 120px;
+  /* Theme tokens, not a hardcoded white card: the child keys (the soil taxonomy
+     browser especially) colour their text with --text, so on a fixed white
+     panel their dark-mode text came out white on white. */
+  background: var(--surface, rgba(255, 255, 255, 0.95));
+  border: 1px solid var(--border, #ddd); border-radius: 8px;
+  padding: 10px 12px; font: 13px/1.4 system-ui, sans-serif;
+  color: var(--text, #222); min-width: 120px;
   max-width: 100%; max-height: 44vh; overflow-y: auto; overscroll-behavior: contain;
   /* min-height: 0 — a flex item will not shrink below its content without it,
      so the panel grew past its max-height instead of scrolling.
