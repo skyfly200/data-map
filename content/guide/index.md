@@ -1,61 +1,47 @@
 # Guide
 
-Nexstrata is a workbench for environmental data. It runs on Google Earth Engine.
-It does three things:
+Nexstrata helps you understand where species live. It uses Google Earth Engine to:
 
-- It samples raster layers at point coordinates.
-- It draws computed layers as map tiles.
-- It sends the result to the map, the charts and the statistics.
+- **Sample** environmental data at your observation locations
+- **Map** computed layers as interactive tiles
+- **Analyze** patterns through charts and statistics
 
-The first dataset is mushroom observations from iNaturalist. Each observation
-carries a description of the ground below it. The map opens on this dataset. But
-the dataset is an example of the shape, not a limit. Any record with a coordinate
-and a date can go through the same path.
+Start with mushroom observations from iNaturalist—each record shows environmental conditions where it was found. But Nexstrata works with any data that has location and date information.
 
 ![Source data goes through a job into a dataset. Every view reads the dataset.](figure:data-flow)
 
-> **Note** iNaturalist records are opportunistic observations. They are not
-> surveys. An area with many records can contain many mushrooms. It can also be
-> near a trailhead. Each view tells you if it corrects for this.
+> **Note** iNaturalist records are opportunistic sightings, not systematic surveys. Areas with many records might have more mushrooms—or just more observers. Each view tells you if it corrects for this bias.
 
-## Start here
+## Quick start
 
-1. Open the **Map**. Each observation is one point. The colors show
-   environmental clusters until you change them.
-2. Open **Points** to set what the color and the size of each point mean.
-3. Open **Heatmap** to draw a grid of summaries below the points.
-4. Open **Layers** to add overlays. Open **Basemap** to change the map below
-   them.
-5. Go to **Data → Filters** to narrow the data. A filter applies to all views at
-   the same time.
-6. Click a point to open its record in the side panel.
+1. Open the **Map**. Points show observations, colored by environmental similarity.
+2. Use **Points** to change what colors and sizes mean.
+3. Try **Heatmap** to see density patterns in a grid.
+4. Add **Layers** like terrain or weather. Change the **Basemap** underneath.
+5. Filter data in **Data → Filters**—applies everywhere at once.
+6. Click any point to see its full details.
 
-## The two things this platform is for
+## What you can do
 
-You can read the data that is already here. You can also add your own:
+Explore existing data or add your own:
 
-- **[Run an enrichment job](/jobs)** samples all the environmental layers at
-  your own points, in your own area, for your own dates. This is a membership
-  benefit. See [Pipeline jobs](/guide/jobs).
-- **[Publish your own layer](/guide/layers)** computes something in Earth
-  Engine and draws it on the map with the built-in layers.
+- **[Run an enrichment job](/jobs)** adds environmental data to your own points (membership feature). See [Pipeline jobs](/guide/jobs).
+- **[Publish your own layer](/guide/layers)** computes custom data in Earth Engine and displays it on the map.
 
-## The pages of this guide
+## Guide sections
 
 | Page | What it covers |
 | --- | --- |
-| [The map](/guide/map) | Points, heatmaps, layers, the record panel and offline use |
-| [Data and export](/guide/data) | The species list, the table, the filters, and how to export |
-| [Charts](/guide/charts) | The chart gallery, the chart builder and the style controls |
-| [Analysis](/guide/analysis) | Correlations, species statistics and fruiting timing |
-| [Pipeline jobs](/guide/jobs) | How to run a job, save the result and chain jobs |
-| [Your own layers](/guide/layers) | How to compute a layer in Earth Engine and register it |
-| [Learning](/guide/learning) | Where to start with GIS, Earth Engine and machine learning |
-| [Data sources](/guide/sources) | Which product each column comes from |
-| [Option reference](/guide/reference) | Every control, in one list |
+| [The map](/guide/map) | Points, heatmaps, layers, and offline use |
+| [Data and export](/guide/data) | Species list, table view, filters, and exporting |
+| [Charts](/guide/charts) | Chart gallery, builder, and styling |
+| [Analysis](/guide/analysis) | Correlations, species stats, and timing |
+| [Pipeline jobs](/guide/jobs) | Running jobs, saving results, and chaining |
+| [Your own layers](/guide/layers) | Computing layers in Earth Engine |
+| [Learning](/guide/learning) | GIS, Earth Engine, and machine learning basics |
+| [Data sources](/guide/sources) | Where each data column comes from |
+| [Option reference](/guide/reference) | All controls explained |
 
-## How to get help on one control
+## Help on any control
 
-Each control has a small **?** next to it. The **?** links to the entry for that
-control in the [Option reference](/guide/reference). Hover on the **?** to read
-one sentence. Click it to read the full entry.
+Every control has a small **?** button. Hover for a quick tip, click for the full explanation in the [Option reference](/guide/reference).

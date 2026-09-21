@@ -18,11 +18,10 @@
         <AppLogo class="hero-logo" :size="132" />
       </div>
       <p class="eyebrow"><span class="tick" aria-hidden="true"></span>Ecosystem modeling platform · Beta</p>
-      <h1>Model where life occurs.</h1>
+      <h1>Find where species thrive.</h1>
       <h3>
-        Nexstrata turns scattered field observations into predictive maps of habitat. It
-        binds every environmental layer to each point, then models the whole surface.
-        Sample enrichment is one step of that pipeline, not the destination.
+        Turn your observations into habitat maps. Nexstrata connects your data to environmental
+        factors like terrain, climate, and vegetation—then predicts where else species might live.
       </h3>
 
       <div class="cta">
@@ -202,35 +201,30 @@
       <div class="sec-tag">Modeling <em class="road">Roadmap</em></div>
       <h2>From points to surfaces</h2>
       <p class="model-lede">
-        Enrichment exists to feed a model. The stack turns each observation into a row of
-        predictors; the model turns those rows into a continuous surface: suitability
-        predicted everywhere, not only where someone looked.
+        Turn your observations into predictions. The model finds patterns in your data and
+        creates a complete map showing where species are likely to live—even where nobody has looked.
       </p>
       <div class="model-grid">
         <div class="model-card">
           <h3>Maximum entropy (MaxEnt)</h3>
           <p>
-            The data is presence-only: we know where a species was found, rarely where it
-            was absent. MaxEnt fits the least-committal distribution consistent with
-            conditions at the presence points, scored against background. The output is a
-            suitability surface from 0 to 1.
+            Works with presence-only data: where species were found, not where they weren't.
+            MaxEnt learns from environmental conditions at sighting locations to predict habitat
+            suitability everywhere, scored from 0 to 1.
           </p>
         </div>
         <div class="model-card">
           <h3>Features from the stack</h3>
           <p>
-            Terrain, canopy, soil, weather and exposure become the predictors, each sampled
-            at the record's own date. The layers you draw on the map are the features the
-            model reads, so a suitability map speaks the same language as the rasters
-            beneath it.
+            Uses terrain, canopy, soil, weather and exposure as predictors. The same layers
+            you see on the map become the model's input, so predictions match your data.
           </p>
         </div>
         <div class="model-card">
           <h3>Honest about bias</h3>
           <p>
-            Presence-only modeling inherits the bias in where people look. Nexstrata treats
-            that as a first-class input: background weighted by observer effort, every
-            surface labelled with its confounds.
+            Accounts for where people look. Nexstrata weights background data by observer
+            effort and clearly labels uncertainties in every prediction.
           </p>
         </div>
       </div>
@@ -321,9 +315,7 @@
             <button class="btn small ghost" @click="signOut">Sign out</button>
           </template>
           <template v-else>
-            <span class="hint">Read access is unauthenticated. Sign in to persist saved views and submit jobs:</span>
-            <NuxtLink to="/login" class="btn small">Sign in</NuxtLink>
-            <NuxtLink to="/login?mode=signup" class="btn small ghost">Sign up</NuxtLink>
+            <span class="hint">Read access is unauthenticated. Use the account menu above to sign in and persist saved views or submit jobs.</span>
           </template>
         </div>
       </ClientOnly>
@@ -365,10 +357,10 @@ const eeLayerCount = EE_LAYER_KEYS.length
 // real place in the app except the model stage, which the section below marks as
 // roadmap rather than claiming it ships today.
 const PIPELINE = [
-  { k: '01', title: 'Observe', body: 'Presence points from iNaturalist and your own uploads.' },
-  { k: '02', title: 'Enrich', body: 'Bind every environmental layer to each point, at its own date.' },
-  { k: '03', title: 'Model', body: 'Fit a presence-only distribution model over the enriched points.' },
-  { k: '04', title: 'Predict', body: 'Project habitat suitability across the whole landscape.' },
+  { k: '01', title: 'Observe', body: 'Your species sightings from iNaturalist or uploads.' },
+  { k: '02', title: 'Enrich', body: 'Add environmental data like terrain, weather, and soil to each point.' },
+  { k: '03', title: 'Model', body: 'Find patterns in where species occur based on their environment.' },
+  { k: '04', title: 'Predict', body: 'See likely habitat across the entire map.' },
 ]
 
 // The layers named, coarse to fine, each with a CSS gradient that echoes how the
