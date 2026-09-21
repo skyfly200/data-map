@@ -1,4 +1,4 @@
-import { defineEventHandler, readMultipartFormData } from 'h3'
+import { defineEventHandler, readMultipartFormData, createError } from 'h3'
 import { parse } from 'csv-parse/sync'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -16,6 +16,8 @@ export default defineEventHandler(async (event) => {
     }
 
     // Parse CSV content
+    // Note: readMultipartFormData loads the whole file into memory.
+    // For extremely large files (>50MB), we would need a streaming multipart parser.
     const csvContent = csvFile.data.toString('utf-8')
     const records = parse(csvContent, {
       columns: true,
@@ -76,21 +78,16 @@ export default defineEventHandler(async (event) => {
       throw new Error('No valid geographic records found in the CSV file')
     }
 
-    const geojson = {
-      type: 'FeatureCollection',
-      features: features
-    }
-
     // Generate unique dataset ID
     const datasetId = `gbif_${uuidv4()}`
 
-    // In a real implementation, this would:
-    // 1. Upload to Google Cloud Storage bucket linked to Earth Engine
-    // 2. Trigger Earth Engine asset ingestion
-    // 3. Return the asset path
-
-    // For now, we'll store the GeoJSON in Supabase and provide instructions
-    // for manual upload to EE, or simulate the asset path
+    // IMPORTANT: For large datasets, we MUST NOT return the full GeoJSON in the response.
+    // This causes timeouts and payload errors. We return a limited preview instead.
+    const previewFeatures = features.slice(0, 100)
+    const previewGeojson = {
+      type: 'FeatureCollection',
+      features: previewFeatures
+    }
 
     const mockAssetPath = `users/your-ee-project/gbif_imports/${datasetId}`
 
@@ -103,8 +100,10 @@ export default defineEventHandler(async (event) => {
         validRecords: validCount,
         skippedRecords: skippedCount
       },
-      message: `Successfully processed ${validCount} occurrence records. To complete the import, upload the generated GeoJSON to your Earth Engine assets folder.`,
-      preview: geojson
+      message: `Successfully processed ${validCount} occurrence records. ${
+        features.length > 100 ? 'A preview of the first 100 records is included.' : ''
+      } To complete the import, upload the generated GeoJSON to your Earth Engine assets folder.`,
+      preview: previewGeojson
     }
 
   } catch (error: any) {

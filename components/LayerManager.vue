@@ -211,17 +211,33 @@ const activePanelCollapsed = ref(false)
 const selectionPanelCollapsed = ref(false)
 onMounted(() => {
   if (import.meta.client) {
-    const savedActive = localStorage.getItem('layer-manager-active-collapsed')
-    if (savedActive) activePanelCollapsed.value = savedActive === 'true'
-    const savedSelection = localStorage.getItem('layer-manager-selection-collapsed')
-    if (savedSelection) selectionPanelCollapsed.value = savedSelection === 'true'
+    try {
+      const savedActive = localStorage.getItem('layer-manager-active-collapsed')
+      if (savedActive) activePanelCollapsed.value = savedActive === 'true'
+      const savedSelection = localStorage.getItem('layer-manager-selection-collapsed')
+      if (savedSelection) selectionPanelCollapsed.value = savedSelection === 'true'
+    } catch (e) {
+      console.warn('LayerManager: Failed to read from localStorage', e)
+    }
   }
 })
 watch(activePanelCollapsed, (val) => {
-  if (import.meta.client) localStorage.setItem('layer-manager-active-collapsed', String(val))
+  if (import.meta.client) {
+    try {
+      localStorage.setItem('layer-manager-active-collapsed', String(val))
+    } catch (e) {
+      console.warn('LayerManager: Failed to save activePanelCollapsed to localStorage', e)
+    }
+  }
 })
 watch(selectionPanelCollapsed, (val) => {
-  if (import.meta.client) localStorage.setItem('layer-manager-selection-collapsed', String(val))
+  if (import.meta.client) {
+    try {
+      localStorage.setItem('layer-manager-selection-collapsed', String(val))
+    } catch (e) {
+      console.warn('LayerManager: Failed to save selectionPanelCollapsed to localStorage', e)
+    }
+  }
 })
 
 // Per-layer blend controls expanded state
