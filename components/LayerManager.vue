@@ -8,6 +8,10 @@
       <div class="lm-head-acts">
         <button v-if="solo" class="lm-text-btn solo-off" title="Draw every layer again"
                 @click="$emit('solo', '')">Un-solo</button>
+        <button v-if="activeList.length" class="lm-text-btn" :title="allVisible ? 'Hide all layers' : 'Show all layers'"
+                @click="toggleAllVisibility">
+          <span class="lm-eye-icon" aria-hidden="true">{{ allVisible ? '👁' : '👁‍🗨' }}</span>
+        </button>
         <button v-if="activeList.length" class="lm-text-btn" title="Switch every overlay off"
                 @click="$emit('clear')">Clear</button>
         <button class="lm-close" aria-label="Close the layer manager" @click="$emit('close')">×</button>
@@ -24,9 +28,13 @@
          add" is a browse, "what is on and in what order" is a glance. The old
          single dropdown answered only the first, and the second had to be
          reconstructed by scanning forty checkboxes for ticks. -->
-    <section v-if="activeList.length" class="lm-active">
+    <section v-if="activeList.length" class="lm-active" :class="{ collapsed: activePanelCollapsed }">
       <div class="lm-sec-head">
-        <span>Drawn, top first</span>
+        <button class="lm-collapse-toggle" @click="activePanelCollapsed = !activePanelCollapsed"
+                :aria-expanded="String(!activePanelCollapsed)" title="Collapse active layers">
+          <span class="lm-caret" :class="{ open: !activePanelCollapsed }" aria-hidden="true">▸</span>
+          <span>Drawn, top first</span>
+        </button>
         <HelpLink option="map-layer-order" />
       </div>
       <ul class="lm-stack">
@@ -67,18 +75,27 @@
                answers one of them badly: two layers at 50% is both washed out,
                where multiply keeps both at full strength and combines them by
                value. Shown per layer because one layer in a stack is usually
-               the one that should combine. -->
-          <label class="lm-blend">
-            <span class="lm-blend-label">Blend</span>
-            <select :value="blendOf(item.key)" :aria-label="`Blend mode of ${item.name}`"
-                    :title="blendNote(blendOf(item.key))"
-                    @change="$emit('blend', item.key, $event.target.value)">
-              <option value="">{{ inheritLabel }}</option>
-              <option v-for="m in BLEND_MODES" :key="m.key" :value="m.key" :title="m.note">
-                {{ m.label }}
-              </option>
-            </select>
-          </label>
+               the one that should combine. Blend controls now hidden under Advanced. -->
+          <div class="lm-blend-wrapper">
+            <button class="lm-advanced-toggle" @click="toggleBlend(item.key)"
+                    :aria-expanded="String(expandedBlends.has(item.key))">
+              <span class="lm-caret" :class="{ open: expandedBlends.has(item.key) }" aria-hidden="true">▸</span>
+              Advanced
+            </button>
+            <div v-show="expandedBlends.has(item.key)" class="lm-blend-controls">
+              <label class="lm-blend">
+                <span class="lm-blend-label">Blend</span>
+                <select :value="blendOf(item.key)" :aria-label="`Blend mode of ${item.name}`"
+                        :title="blendNote(blendOf(item.key))"
+                        @change="$emit('blend', item.key, $event.target.value)">
+                  <option value="">{{ inheritLabel }}</option>
+                  <option v-for="m in BLEND_MODES" :key="m.key" :value="m.key" :title="m.note">
+                    {{ m.label }}
+                  </option>
+                </select>
+              </label>
+            </div>
+          </div>
         </li>
       </ul>
     </section>
@@ -370,6 +387,7 @@ onMounted(() => { if (props.open) seedPanels() })
   font: inherit; font-size: 0.74rem; cursor: pointer; padding: 3px 6px; border-radius: 5px;
 }
 .lm-text-btn:hover { color: var(--text); background: var(--surface-2); }
+.lm-eye-icon { font-size: 0.9rem; }
 .lm-close {
   border: 0; background: transparent; color: var(--muted, #777);
   font-size: 1.25rem; line-height: 1; cursor: pointer; padding: 0 4px;
