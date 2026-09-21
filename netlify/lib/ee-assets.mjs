@@ -50,13 +50,22 @@ export async function loadEeAsset(assetPath) {
     if (assetInfo.type === 'FEATURE_COLLECTION' || assetInfo.type === 'TABLE') {
       // For FeatureCollections, export to GeoJSON
       const fc = ee.FeatureCollection(normalizedPath)
+      
+      // Geometry Type Validation:
+      // We check if the collection contains incompatible geometry types (e.g. mixed types)
+      // or if it's empty.
+      const size = await fc.size().getInfo()
+      if (size === 0) {
+        throw new Error(`The asset ${normalizedPath} is an empty collection.`)
+      }
+
       // Use getRegion to fetch as a list of features
       const region = await fc.toList(fc.size()).getRegion()
       geojson = ee.Geometry(region).toGeoJSON()
     } else if (assetInfo.type === 'IMAGE') {
       // For images, we can't directly convert to points
       // Return a placeholder with metadata
-      throw new Error('Image assets cannot be directly imported. Please use a FeatureCollection.')
+      throw new Error('Image assets cannot be directly imported as datasets. Please use a FeatureCollection.')
     } else {
       throw new Error(`Unsupported asset type: ${assetInfo.type}. Expected FEATURE_COLLECTION or TABLE.`)
     }

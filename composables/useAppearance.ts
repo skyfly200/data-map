@@ -1,0 +1,335 @@
+// Per-viewer control over how marks look: which palette categories draw from,
+// which shapes they rotate through, per-value color and shape overrides, and
+// point size/opacity.
+//
+// The color functions live here rather than in useObservations because they
+// have to READ this state, and they are called from inside computeds all over
+// the app. Keeping the state in module-level refs means every one of those
+// computeds tracks it automatically — change the palette and the map, the
+// legend and every chart re-color themselves without a single explicit watch.
+//
+// Nothing here is SSR state: it is a display preference, loaded from
+// localStorage on the client. The charts have no data server-side, so no mark
+// colors are serialised and there is nothing to mismatch on hydration.
+
+import { computed, ref } from 'vue'
+import { normaliseStops } from './ramps'
+import { NORMAL, isBlendMode } from './blendModes'
+
+export interface Palette {
+  key: string
+  label: string
+  colors: string[]
+}
+
+export interface ShapeSet {
+  key: string
+  label: string
+  shapes: string[]
+}
+
+// Twelve colors each, not eight. The map's legend shows up to twelve
+// categories, so an eight-color palette guaranteed repeated swatches in a key
+// whose whole job is telling categories apart — no hashing scheme can fix a
+// palette smaller than the legend.
+export const PALETTES: Palette[] = [
+  {
+    key: 'default', label: 'Default',
+    colors: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100',
+             '#e87ba4', '#008300', '#4a3aa7', '#e34948',
+             '#00a3c4', '#b5651d', '#7d3c98', '#5d8a2f'],
+  },
+  {
+    // Okabe–Ito: designed to stay distinguishable with the common forms of
+    // color-vision deficiency. Worth having, given the app leans on color to
+    // carry species and cluster identity.
+    //
+    // Their published set ends in black, which belongs on a white page and not
+    // on this map: on the dark theme it is invisible, and on any basemap it
+    // reads as a hole rather than a category. It is replaced here, and the set
+    // extended with mixes of the originals that keep their separation.
+    key: 'okabe', label: 'Color-blind safe',
+    colors: ['#0072b2', '#e69f00', '#009e73', '#cc79a7',
+             '#56b4e9', '#d55e00', '#f0e442', '#8c5a9e',
+             '#3f7a6d', '#b8860b', '#7ba3d0', '#a34f2a'],
+  },
+  {
+    key: 'vivid', label: 'Vivid',
+    colors: ['#e6194b', '#3cb44b', '#4363d8', '#f58231',
+             '#911eb4', '#42d4f4', '#f032e6', '#bfef45',
+             '#fabed4', '#469990', '#dcbeff', '#9a6324'],
+  },
+  {
+    key: 'earth', label: 'Earth',
+    colors: ['#8c6d31', '#637939', '#8c564b', '#bd9e39',
+             '#7b4173', '#31696d', '#a55194', '#556b2f',
+             '#a67c52', '#6b8e6b', '#9c6644', '#4f6d7a'],
+  },
+  {
+    key: 'pastel', label: 'Pastel',
+    colors: ['#8ecae6', '#ffb703', '#90be6d', '#f4978e',
+             '#cdb4db', '#b5e2fa', '#ffc8dd', '#a2d2ff',
+             '#bde0fe', '#ffd6a5', '#caffbf', '#e4c1f9'],
+  },
+]
+
+// Shades of each base color, so the number of distinguishable categories is a
+// multiple of the palette rather than its length. A dataset has hundreds of
+// species and no palette has hundreds of colors; the alternative to shading is
+// repeating a color every eight species.
+//
+// Neither end reaches white or black: a category must never be invisible, which
+// is the failure the black in Okabe–Ito was causing.
+const SHADES = [0, 0.3, -0.28]
+
+/** Mix a hex color toward white (t > 0) or black (t < 0). */
+export function shade(hex: string, t: number): string {
+  if (!/^#[0-9a-f]{6}$/i.test(String(hex)) || !t) return hex
+  const target = t > 0 ? 255 : 0
+  const k = Math.min(1, Math.abs(t))
+  const parts = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
+  return `#${parts.map((v) => Math.round(v + (target - v) * k).toString(16).padStart(2, '0')).join('')}`
+}
+
+export const ALL_SHAPES = ['circle', 'square', 'triangle', 'diamond', 'cross', 'wye']
+
+export const SHAPE_SETS: ShapeSet[] = [
+  { key: 'all', label: 'All shapes', shapes: ALL_SHAPES },
+  { key: 'geometric', label: 'Geometric', shapes: ['circle', 'square', 'triangle', 'diamond'] },
+  { key: 'round', label: 'Circles only', shapes: ['circle'] },
+]
+
+export const UNCLUSTERED = '#9aa0a6'
+
+/**
+ * The ramp numeric point colouring uses.
+ *
+ * 'auto' means "whatever suits the field": a field a map layer also draws
+ * borrows that layer's palette, so a dot reads against the ground under it, and
+ * anything else falls back to the app's own sequential ramp. A named preset or
+ * a custom ramp overrides both — a viewer who has chosen a scale has chosen it
+ * for every field, which is the point of choosing.
+ */
+export const pointRampKey = ref('auto')
+export const pointRampCustom = ref<any>(null)
+
+/**
+ * How a drawn layer combines with the ones below it, when several are drawn.
+ *
+ * A preference rather than per-layer state: the per-layer setting lives with
+ * the map's stack, and this is the answer to "what should stacking usually
+ * look like" — which is a taste, and the same taste on every map you open.
+ */
+export const stackBlend = ref(NORMAL)
+
+interface AppearanceDefaults {
+  palette: string
+  shapeSet: string
+  pointRadius: number
+  pointOpacity: number
+  pointOutline: boolean
+  colorSeed: number
+  colorOverrides: Record<string, string>
+  shapeOverrides: Record<string, string>
+  stackBlend: string
+}
+
+const DEFAULTS: AppearanceDefaults = {
+  palette: 'default',
+  shapeSet: 'all',
+  pointRadius: 4,
+  pointOpacity: 0.85,
+  pointOutline: false,
+  colorSeed: 0,
+  colorOverrides: {},
+  shapeOverrides: {},
+  stackBlend: NORMAL,
+}
+
+const STORAGE_KEY = 'appearance'
+
+// Module-level refs: read by the color helpers below, so every computed that
+// calls one tracks them.
+const paletteKey = ref(DEFAULTS.palette)
+const shapeSetKey = ref(DEFAULTS.shapeSet)
+const pointRadius = ref(DEFAULTS.pointRadius)
+const pointOpacity = ref(DEFAULTS.pointOpacity)
+const pointOutline = ref(DEFAULTS.pointOutline)
+const colorSeed = ref(DEFAULTS.colorSeed)
+const colorOverrides = ref<Record<string, string>>({ ...DEFAULTS.colorOverrides })
+const shapeOverrides = ref<Record<string, string>>({ ...DEFAULTS.shapeOverrides })
+
+const activeColors = computed(() =>
+  (PALETTES.find((p) => p.key === paletteKey.value) || PALETTES[0]).colors)
+const activeShapes = computed(() =>
+  (SHAPE_SETS.find((s) => s.key === shapeSetKey.value) || SHAPE_SETS[0]).shapes)
+
+/** Backwards-compatible name: the palette currently in effect. */
+export const PALETTE = new Proxy([], {
+  get: (_t, prop) => Reflect.get(activeColors.value, prop),
+  has: (_t, prop) => Reflect.has(activeColors.value, prop),
+  ownKeys: () => Reflect.ownKeys(activeColors.value),
+  getOwnPropertyDescriptor: (_t, prop) =>
+    Reflect.getOwnPropertyDescriptor(activeColors.value, prop),
+})
+
+export const SERIES_1 = '#2a78d6'
+
+export const overrideKey = (field: string, value: any) => `${field}:${value}`
+
+/** Index-based color, used by pipeline clusters (0, 1, 2 …). */
+export function colorFor(cluster: number | null | undefined): string {
+  if (cluster === null || cluster === undefined || Number.isNaN(cluster)) return UNCLUSTERED
+  const colors = activeColors.value
+  return colors[(cluster + colorSeed.value) % colors.length]
+}
+
+// Deterministic color for a category value, so the same value (a species, a
+// year, a land-cover class) gets the SAME color on the map and in every chart.
+export function stableColor(value: any): string {
+  if (value === null || value === undefined || value === '') return UNCLUSTERED
+  const s = String(value)
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
+  const colors = activeColors.value
+  const span = colors.length * SHADES.length
+  const i = (h + colorSeed.value) % span
+  return shade(colors[i % colors.length], SHADES[Math.floor(i / colors.length)])
+}
+
+// Color for a (field, value) pair. An explicit override wins; clusters keep
+// their index-based palette; everything else uses the stable hash.
+export function categoryColor(field: string, value: any): string {
+  if (value === null || value === undefined || value === '') return UNCLUSTERED
+  const override = colorOverrides.value[overrideKey(field, value)]
+  if (override) return override
+  if (field === 'cluster' || field === 'live_cluster') {
+    const n = Number(String(value).replace(/^[CK]/, ''))
+    return Number.isFinite(n) ? colorFor(n) : UNCLUSTERED
+  }
+  return stableColor(value)
+}
+
+/**
+ * Shape for a (field, value) pair, given the value's position in the category
+ * list. An override wins; otherwise values rotate through the active shape set.
+ */
+export function categoryShape(field: string, value: any, index = 0): string {
+  const override = shapeOverrides.value[overrideKey(field, value)]
+  if (override) return override
+  const shapes = activeShapes.value
+  return shapes[index % shapes.length]
+}
+
+export function useAppearance() {
+  // Captured during setup: persist() runs from DOM event handlers, where
+  // useNuxtApp() (and therefore useCloudSync) is not reliably available.
+  const cloud = safeCloudSync()
+
+  function persist() {
+    if (!import.meta.client) return
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        palette: paletteKey.value,
+        shapeSet: shapeSetKey.value,
+        pointRadius: pointRadius.value,
+        pointOpacity: pointOpacity.value,
+        pointOutline: pointOutline.value,
+        colorSeed: colorSeed.value,
+        pointRampKey: pointRampKey.value,
+        pointRampCustom: pointRampCustom.value,
+        stackBlend: stackBlend.value,
+        colorOverrides: colorOverrides.value,
+        shapeOverrides: shapeOverrides.value,
+      }))
+      cloud?.schedulePush()
+    } catch { /* ignore */ }
+  }
+
+  function loadFromStorage() {
+    if (!import.meta.client) return
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
+      if (!saved) return
+      if (PALETTES.some((p) => p.key === saved.palette)) paletteKey.value = saved.palette
+      if (SHAPE_SETS.some((s) => s.key === saved.shapeSet)) shapeSetKey.value = saved.shapeSet
+      if (Number.isFinite(saved.pointRadius)) pointRadius.value = saved.pointRadius
+      if (Number.isFinite(saved.pointOpacity)) pointOpacity.value = saved.pointOpacity
+      if (typeof saved.pointOutline === 'boolean') pointOutline.value = saved.pointOutline
+      if (Number.isFinite(saved.colorSeed)) colorSeed.value = saved.colorSeed
+      if (typeof saved.pointRampKey === 'string') pointRampKey.value = saved.pointRampKey
+      pointRampCustom.value = normaliseStops(saved.pointRampCustom)
+      if (isBlendMode(saved.stackBlend)) stackBlend.value = saved.stackBlend
+      if (saved.colorOverrides && typeof saved.colorOverrides === 'object') {
+        colorOverrides.value = { ...saved.colorOverrides }
+      }
+      if (saved.shapeOverrides && typeof saved.shapeOverrides === 'object') {
+        shapeOverrides.value = { ...saved.shapeOverrides }
+      }
+    } catch { /* keep defaults */ }
+  }
+
+  function setColor(field: string, value: any, hex: string) {
+    colorOverrides.value = { ...colorOverrides.value, [overrideKey(field, value)]: hex }
+    persist()
+  }
+  function clearColor(field: string, value: any) {
+    const next = { ...colorOverrides.value }
+    delete next[overrideKey(field, value)]
+    colorOverrides.value = next
+    persist()
+  }
+  function setShape(field: string, value: any, shape: string) {
+    shapeOverrides.value = { ...shapeOverrides.value, [overrideKey(field, value)]: shape }
+    persist()
+  }
+  function clearShape(field: string, value: any) {
+    const next = { ...shapeOverrides.value }
+    delete next[overrideKey(field, value)]
+    shapeOverrides.value = next
+    persist()
+  }
+  function hasOverride(field: string, value: any) {
+    const k = overrideKey(field, value)
+    return Boolean(colorOverrides.value[k] || shapeOverrides.value[k])
+  }
+
+  function shuffleColors() {
+    const colors = activeColors.value.length || 1
+    let next = colorSeed.value
+    if (colors > 1) {
+      while (next % colors === colorSeed.value % colors) {
+        next = Math.floor(Math.random() * colors * 4)
+      }
+    }
+    colorSeed.value = next
+    persist()
+  }
+
+  function reset() {
+    paletteKey.value = DEFAULTS.palette
+    shapeSetKey.value = DEFAULTS.shapeSet
+    pointRadius.value = DEFAULTS.pointRadius
+    pointOpacity.value = DEFAULTS.pointOpacity
+    pointOutline.value = DEFAULTS.pointOutline
+    colorSeed.value = DEFAULTS.colorSeed
+    pointRampKey.value = 'auto'
+    pointRampCustom.value = null
+    stackBlend.value = DEFAULTS.stackBlend
+    colorOverrides.value = {}
+    shapeOverrides.value = {}
+    persist()
+  }
+
+  const overrideCount = computed(() =>
+    Object.keys(colorOverrides.value).length + Object.keys(shapeOverrides.value).length)
+
+  return {
+    PALETTES, SHAPE_SETS, ALL_SHAPES,
+    paletteKey, shapeSetKey, pointRadius, pointOpacity, pointOutline, colorSeed, shuffleColors,
+    pointRampKey, pointRampCustom, stackBlend,
+    activeColors, activeShapes, colorOverrides, shapeOverrides, overrideCount,
+    persist, loadFromStorage, reset,
+    setColor, clearColor, setShape, clearShape, hasOverride,
+  }
+}

@@ -1,0 +1,114 @@
+// Custom charts the user saves from the chart builder, shown (reorderable) at
+// the top of the Charts page.
+//
+// localStorage is the working copy so the feature works signed out; when an
+// account is connected, every change is mirrored to Supabase so the charts
+// follow the viewer to another device. A cloud write that fails is logged and
+// swallowed — losing the chart locally because the network blipped would be a
+// far worse outcome than being briefly out of sync.
+
+const KEY = 'saved-charts'
+
+export interface SavedChart {
+  id: string
+  [key: string]: any
+}
+
+export function useSavedCharts() {
+  const charts = useState<SavedChart[]>('saved-charts', () => [])
+  const cloud = useCloudSync()
+
+  async function pushCloud() {
+    if (!cloud.enabled.value) return
+    try {
+      const saved = await cloud.pushCharts(charts.value)
+      // Adopt the server-assigned ids so a later edit updates the same rows.
+      if (saved.length === charts.value.length) {
+        charts.value = saved
+        persist()
+      }
+    } catch (err: any) {
+      console.warn('Could not sync charts to your account:', err?.message || err)
+    }
+  }
+
+  function loadFromStorage() {
+    if (!import.meta.client) return
+    try {
+      const raw = localStorage.getItem(KEY)
+      if (raw) charts.value = JSON.parse(raw)
+    } catch {
+      charts.value = []
+    }
+  }
+
+  function persist() {
+    if (import.meta.client) {
+      try { localStorage.setItem(KEY, JSON.stringify(charts.value)) } catch { /* ignore */ }
+    }
+  }
+
+  function add(config: any): string {
+    const entry: SavedChart = { id: `c${Date.now()}${Math.floor(Math.random() * 1000)}`, ...config }
+    charts.value = [...charts.value, entry]
+    persist()
+    pushCloud()
+    return entry.id
+  }
+
+  /**
+   * Replace a saved chart's configuration in place, keeping its id and its
+   * position in the row — what "open in the editor, then save" should do, as
+   * opposed to leaving the original behind next to a near-identical copy.
+   * Returns false when the chart is gone (removed in another tab, say), so the
+   * caller can fall back to adding it.
+   */
+  function update(id: string, config: any): boolean {
+    const i = charts.value.findIndex((c) => c.id === id)
+    if (i < 0) return false
+    const next = [...charts.value]
+    next[i] = { ...config, id }
+    charts.value = next
+    persist()
+    pushCloud()
+    return true
+  }
+
+  function byId(id: string): SavedChart | null {
+    return charts.value.find((c) => c.id === id) || null
+  }
+
+  function remove(id: string) {
+    charts.value = charts.value.filter((c) => c.id !== id)
+    persist()
+    pushCloud()
+  }
+
+  function move(id: string, dir: number) {
+    const i = charts.value.findIndex((c) => c.id === id)
+    const j = i + dir
+    if (i < 0 || j < 0 || j >= charts.value.length) return
+    const next = [...charts.value]
+    ;[next[i], next[j]] = [next[j], next[i]]
+    charts.value = next
+    persist()
+    pushCloud()
+  }
+
+  /** Reorder to an explicit list of ids, for a drag that has settled. */
+  function setOrder(ids: string[]) {
+    const by = new Map(charts.value.map((c) => [c.id, c]))
+    const next = ids.map((id) => by.get(id)).filter(Boolean)
+    // Anything the caller did not mention keeps its place at the end, so a
+    // chart added in another tab mid-drag is not deleted by the drop.
+    for (const c of charts.value) if (!ids.includes(c.id)) next.push(c)
+    if (next.length !== charts.value.length) return
+    charts.value = next
+    persist()
+    pushCloud()
+  }
+
+  return {
+    charts, loadFromStorage, persist, pushCloud, add, update, byId, remove, move, setOrder,
+  }
+}
