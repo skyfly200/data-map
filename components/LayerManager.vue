@@ -83,10 +83,12 @@
       </ul>
     </section>
 
-    <div class="lm-search">
-      <input v-model="query" type="search" placeholder="Search layers"
-             aria-label="Search layers" />
-    </div>
+    <!-- Collapsible layer selection panel -->
+    <section class="lm-selection" :class="{ collapsed: selectionPanelCollapsed }">
+      <div class="lm-search">
+        <input v-model="query" type="search" placeholder="Search layers"
+               aria-label="Search layers" />
+      </div>
 
     <!-- How the browse below is sectioned. Subject is the catalogue's own
          grouping; source and type re-cut the same layers for when you are
@@ -138,6 +140,7 @@
         </div>
       </section>
     </div>
+  </section>
   </div>
 </template>
 
@@ -184,6 +187,50 @@ defineEmits(['toggle', 'opacity', 'move', 'blend', 'solo', 'clear', 'close'])
 
 const query = ref('')
 const win = ref(null)
+
+// Collapsible active layers panel - state persisted in localStorage
+const activePanelCollapsed = ref(false)
+// Collapsible layer selection panel - state persisted in localStorage
+const selectionPanelCollapsed = ref(false)
+onMounted(() => {
+  if (import.meta.client) {
+    const savedActive = localStorage.getItem('layer-manager-active-collapsed')
+    if (savedActive) activePanelCollapsed.value = savedActive === 'true'
+    const savedSelection = localStorage.getItem('layer-manager-selection-collapsed')
+    if (savedSelection) selectionPanelCollapsed.value = savedSelection === 'true'
+  }
+})
+watch(activePanelCollapsed, (val) => {
+  if (import.meta.client) localStorage.setItem('layer-manager-active-collapsed', String(val))
+})
+watch(selectionPanelCollapsed, (val) => {
+  if (import.meta.client) localStorage.setItem('layer-manager-selection-collapsed', String(val))
+})
+
+// Per-layer blend controls expanded state
+const expandedBlends = ref(new Set())
+function toggleBlend(key) {
+  const next = new Set(expandedBlends.value)
+  if (next.has(key)) next.delete(key)
+  else next.add(key)
+  expandedBlends.value = next
+}
+
+// Track which layers are visible for global toggle
+const allVisible = computed(() => props.order.length > 0 && props.order.every(key => props.active.has(key)))
+function toggleAllVisibility() {
+  if (allVisible.value) {
+    // Hide all - emit clear
+    emit('clear')
+  } else {
+    // Show all - emit toggle for each inactive layer
+    props.groups.forEach(g => {
+      g.items.forEach(item => {
+        if (!props.active.has(item.key)) emit('toggle', item.key)
+      })
+    })
+  }
+}
 
 const opacityOf = (key) => props.opacity[key] ?? 1
 const blendOf = (key) => props.blend[key] || ''
@@ -370,6 +417,11 @@ onMounted(() => { if (props.open) seedPanels() })
   padding: 9px 12px; border-bottom: 1px solid var(--border-soft, #eee);
   background: var(--surface-2, #f7f7f7);
 }
+.lm-active.collapsed {
+  max-height: none;
+  overflow-y: visible;
+  padding: 0 12px;
+}
 .lm-stack { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
 .lm-on-top { display: flex; align-items: center; gap: 7px; }
 .lm-swatch {
@@ -398,7 +450,41 @@ onMounted(() => { if (props.open) seedPanels() })
 }
 .lm-op input { flex: 1 1 auto; min-width: 0; accent-color: var(--accent, #2b7a3d); }
 
-.lm-blend { display: flex; align-items: center; gap: 7px; padding-left: 24px; margin-top: 4px; }
+/* Collapsible section header */
+.lm-collapse-toggle {
+  display: flex; align-items: center; gap: 6px;
+  border: 0; background: transparent; color: var(--text, #222);
+  font: inherit; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted, #777); font-weight: 700; cursor: pointer;
+  padding: 0; margin-right: 6px;
+}
+.lm-collapse-toggle:hover { color: var(--text); }
+.lm-caret {
+  flex: 0 0 auto; color: var(--muted, #888); font-size: 0.7rem;
+  transition: transform 0.12s ease; transform: rotate(0deg);
+}
+.lm-caret.open { transform: rotate(90deg); }
+
+/* Advanced blend controls wrapper */
+.lm-blend-wrapper {
+  padding-left: 24px; margin-top: 2px;
+}
+.lm-advanced-toggle {
+  display: inline-flex; align-items: center; gap: 4px;
+  border: 0; background: transparent; color: var(--muted, #777);
+  font-size: 0.7rem; cursor: pointer; padding: 2px 4px;
+  border-radius: 4px;
+}
+.lm-advanced-toggle:hover { background: var(--surface-2, #eee); color: var(--text); }
+.blend-caret {
+  font-size: 0.6rem; transition: transform 0.12s ease; transform: rotate(0deg);
+}
+.blend-caret.open { transform: rotate(180deg); }
+.lm-blend-controls {
+  margin-top: 4px; padding: 6px; background: var(--surface, #fff);
+  border: 1px solid var(--border-soft, #eee); border-radius: 6px;
+}
+.lm-blend { display: flex; align-items: center; gap: 7px; }
 .lm-blend-label { flex: 0 0 auto; width: 4ch; color: var(--muted, #777); font-size: 0.7rem; }
 .lm-blend select {
   flex: 1 1 auto; min-width: 0;
@@ -406,6 +492,15 @@ onMounted(() => { if (props.open) seedPanels() })
   border: 1px solid var(--border, #ddd); border-radius: 4px;
   padding: 2px 4px; font: inherit; font-size: 0.72rem;
 }
+
+/* Global visibility toggle button */
+.lm-icon-btn {
+  border: 0; background: transparent; color: var(--muted, #666);
+  font-size: 1rem; line-height: 1; cursor: pointer; padding: 0 4px;
+  border-radius: 4px;
+}
+.lm-icon-btn:hover { background: var(--surface-2, #eee); color: var(--text); }
+.visibility-icon { font-size: 1rem; }
 
 /* One letter, because it sits between the name and four order buttons and a
    word would push them off a phone. It is the standard mark for this in every
@@ -435,6 +530,17 @@ onMounted(() => { if (props.open) seedPanels() })
 }
 .lm-search input:focus { border-color: var(--accent, #2b7a3d); outline: none; }
 
+/* Collapsible selection panel */
+.lm-selection {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.lm-selection.collapsed {
+  flex: 0 0 auto;
+}
+
 .lm-groupby {
   flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
   padding: 8px 12px 0;
@@ -462,6 +568,9 @@ onMounted(() => { if (props.open) seedPanels() })
 .lm-body {
   flex: 1 1 auto; min-height: 0;
   overflow-y: auto; overscroll-behavior: contain; padding: 10px 12px 12px;
+}
+.lm-selection.collapsed .lm-body {
+  display: none;
 }
 .lm-empty { margin: 4px 0; color: var(--muted, #777); font-size: 0.78rem; }
 
