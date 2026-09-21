@@ -10,6 +10,10 @@
   <div v-else class="dashboard">
     <header class="dashboard-header">
       <h1>My Dashboard</h1>
+      <div class="header-titles">
+        <h1>My Dashboard</h1>
+        <p class="header-sub">Overview of your jobs, taxa, saved queries, and observations</p>
+      </div>
       <div class="dashboard-actions">
         <button 
           v-if="!isEditing" 
@@ -54,25 +58,48 @@
             <span class="widget-name">{{ widget.label }}</span>
           </button>
         </div>
+    <!-- Available widgets palette when editing -->
+    <div v-if="isEditing" class="widget-palette">
+      <h3>Add Widgets</h3>
+      <div class="widget-options">
+        <button 
+          v-for="widget in availableWidgets" 
+          :key="widget.type"
+          class="widget-option"
+          @click="addWidget(widget.type)"
+          :disabled="activeWidgets.some(w => w.type === widget.type)"
+        >
+          <span class="widget-icon">{{ widget.icon }}</span>
+          <span class="widget-name">{{ widget.label }}</span>
+        </button>
       </div>
+    </div>
 
       <!-- Active widgets grid -->
+    <!-- Active widgets grid -->
+    <div class="dashboard-grid" :class="{ 'editing-mode': isEditing }">
       <div 
         v-for="widget in activeWidgets" 
         :key="widget.id"
         class="dashboard-widget"
+        :data-id="widget.id"
         :style="{ order: widgetOrder.indexOf(widget.id) }"
+        :draggable="isEditing"
         @dragstart="onDragStart($event, widget.id)"
         @dragover="onDragOver"
         @drop="onDrop"
+        @dragover.prevent="onDragOver"
+        @drop.prevent="onDrop($event, widget.id)"
       >
         <div v-if="isEditing" class="widget-header">
           <span class="widget-drag-handle">⋮⋮</span>
+          <span class="widget-drag-handle" title="Drag to rearrange">⋮⋮ Drag</span>
           <button class="widget-remove" @click="removeWidget(widget.id)" title="Remove widget">×</button>
         </div>
         
         <component 
           :is="widget.component" 
+          :is="getComponent(widget.type)" 
           :widget="widget"
           :is-editing="isEditing"
         />
@@ -80,6 +107,7 @@
 
       <div v-if="activeWidgets.length === 0" class="no-widgets">
         <p>No widgets yet. Click "Edit Dashboard" to add widgets.</p>
+        <p>No widgets added yet. Click "Edit Dashboard" above to choose widgets.</p>
       </div>
     </div>
   </div>
@@ -90,14 +118,44 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useCloudSync } from '~/composables/useCloudSync'
 import { useDragReorder } from '~/composables/useDragReorder'
+import DashboardSavedCharts from '~/components/DashboardSavedCharts.vue'
+import DashboardRecentJobs from '~/components/DashboardRecentJobs.vue'
+import DashboardSpeciesList from '~/components/DashboardSpeciesList.vue'
+import DashboardQuickFilters from '~/components/DashboardQuickFilters.vue'
+import DashboardEnvStats from '~/components/DashboardEnvStats.vue'
 
 // Widget types available
+const COMPONENT_MAP = {
+  'saved-charts': DashboardSavedCharts,
+  'recent-jobs': DashboardRecentJobs,
+  'species-list': DashboardSpeciesList,
+  'quick-filters': DashboardQuickFilters,
+  'env-stats': DashboardEnvStats,
+}
+
+function getComponent(type) {
+  return COMPONENT_MAP[type] || DashboardSavedCharts
+}
+
 const WIDGET_TYPES = [
   { type: 'saved-charts', label: 'Saved Charts', icon: '📊', component: 'DashboardSavedCharts' },
   { type: 'recent-jobs', label: 'Recent Jobs', icon: '⚙️', component: 'DashboardRecentJobs' },
   { type: 'species-list', label: 'Species List', icon: '🍄', component: 'DashboardSpeciesList' },
   { type: 'quick-filters', label: 'Quick Filters', icon: '🔍', component: 'DashboardQuickFilters' },
   { type: 'env-stats', label: 'Environmental Stats', icon: '🌡️', component: 'DashboardEnvStats' },
+  { type: 'env-stats', label: 'Environmental Stats', icon: '🌡️' },
+  { type: 'recent-jobs', label: 'Recent Jobs', icon: '⚙️' },
+  { type: 'species-list', label: 'Species List', icon: '🍄' },
+  { type: 'quick-filters', label: 'Quick Filters', icon: '🔍' },
+  { type: 'saved-charts', label: 'Saved Charts', icon: '📊' },
+]
+
+const DEFAULT_WIDGETS = [
+  { id: 'env-stats-def', type: 'env-stats', label: 'Environmental Stats' },
+  { id: 'recent-jobs-def', type: 'recent-jobs', label: 'Recent Jobs' },
+  { id: 'species-list-def', type: 'species-list', label: 'Species List' },
+  { id: 'quick-filters-def', type: 'quick-filters', label: 'Quick Filters' },
+  { id: 'saved-charts-def', type: 'saved-charts', label: 'Saved Charts' },
 ]
 
 const { isAuthed } = useAuth()
@@ -117,6 +175,7 @@ const availableWidgets = computed(() => {
 const draggingId = ref('')
 
 function onDragStart(event, id) {
+  if (!isEditing.value) return
   draggingId.value = id
   event.dataTransfer.effectAllowed = 'move'
 }
@@ -129,6 +188,14 @@ function onDragOver(event) {
 function onDrop(event) {
   event.preventDefault()
   if (!draggingId.value) return
+function onDrop(event, targetId) {
+  if (!draggingId.value || !targetId || draggingId.value === targetId) {
+    draggingId.value = ''
+    return
+  }
+
+  const fromIndex = widgetOrder.value.indexOf(draggingId.value)
+  const toIndex = widgetOrder.value.indexOf(targetId)
   
   const targetWidget = event.target.closest('.dashboard-widget')
   if (!targetWidget) return
@@ -146,8 +213,14 @@ function onDrop(event) {
       newOrder.splice(toIndex, 0, draggingId.value)
       widgetOrder.value = newOrder
     }
+  if (fromIndex !== -1 && toIndex !== -1) {
+    const newOrder = [...widgetOrder.value]
+    newOrder.splice(fromIndex, 1)
+    newOrder.splice(toIndex, 0, draggingId.value)
+    widgetOrder.value = newOrder
   }
   
+
   draggingId.value = ''
 }
 
@@ -178,11 +251,13 @@ async function saveDashboard() {
   const config = {
     widgets: activeWidgets.value,
     order: widgetOrder.value
+    order: widgetOrder.value,
   }
   
   try {
     localStorage.setItem('dashboard-config', JSON.stringify(config))
     await cloudSync.schedulePush()
+    cloudSync.schedulePush()
     isEditing.value = false
   } catch (err) {
     console.error('Failed to save dashboard:', err)
@@ -203,16 +278,27 @@ function loadDashboard() {
       const config = JSON.parse(saved)
       activeWidgets.value = config.widgets || []
       widgetOrder.value = config.order || activeWidgets.value.map(w => w.id)
+      if (Array.isArray(config.widgets) && config.widgets.length > 0) {
+        activeWidgets.value = config.widgets
+        widgetOrder.value = config.order || config.widgets.map(w => w.id)
+        return
+      }
     }
   } catch (err) {
     console.error('Failed to load dashboard:', err)
+    console.warn('Could not parse saved dashboard config:', err)
   }
+
+  // Fall back to default widgets so dashboard is populated immediately
+  activeWidgets.value = [...DEFAULT_WIDGETS]
+  widgetOrder.value = DEFAULT_WIDGETS.map(w => w.id)
 }
 
 onMounted(() => {
   if (isAuthed.value) {
     loadDashboard()
   }
+  loadDashboard()
 })
 </script>
 
@@ -231,10 +317,12 @@ onMounted(() => {
   border: 1px solid var(--border, #ddd);
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .dag-message h2 {
   margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   color: var(--text, #222);
 }
 
@@ -242,6 +330,7 @@ onMounted(() => {
   display: inline-block;
   margin-top: 1rem;
   padding: 0.75rem 1.5rem;
+  padding: 0.65rem 1.4rem;
   background: var(--primary, #2a78d6);
   color: white;
   text-decoration: none;
@@ -252,16 +341,20 @@ onMounted(() => {
 
 .dag-login-btn:hover {
   background: var(--primary-dark, #1e5fb8);
+  background: var(--primary-dark, #1c60b2);
 }
 
 .dashboard {
   padding: 1.5rem;
   max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
 }
 
 .dashboard-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
@@ -270,8 +363,16 @@ onMounted(() => {
 }
 
 .dashboard-header h1 {
+.header-titles h1 {
   margin: 0;
+  font-size: 1.75rem;
   color: var(--text, #222);
+}
+
+.header-sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted, #666);
 }
 
 .dashboard-actions {
@@ -283,6 +384,8 @@ onMounted(() => {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
@@ -291,20 +394,28 @@ onMounted(() => {
 
 .edit-btn {
   background: var(--surface-2, #eee);
+  border: 1px solid var(--border, #ddd);
+  background: var(--surface, #fff);
   color: var(--text, #222);
+  transition: all 0.15s;
 }
 
 .edit-btn:hover {
   background: var(--surface-3, #ddd);
+.dash-btn:hover {
+  background: var(--surface-2, #f5f5f5);
 }
 
 .save-btn {
   background: var(--primary, #2a78d6);
   color: white;
+  color: #fff;
+  border-color: var(--primary, #2a78d6);
 }
 
 .save-btn:hover {
   background: var(--primary-dark, #1e5fb8);
+  background: var(--primary-dark, #1c60b2);
 }
 
 .cancel-btn {
@@ -328,8 +439,11 @@ onMounted(() => {
 
 .widget-palette {
   grid-column: 1 / -1;
+  margin-bottom: 1.5rem;
   padding: 1rem;
   background: var(--surface-2, #f5f5f5);
+  background: var(--surface-2, #f8f9fa);
+  border: 1px dashed var(--border, #ccc);
   border-radius: 8px;
   margin-bottom: 1rem;
 }
@@ -340,6 +454,9 @@ onMounted(() => {
   color: var(--muted, #666);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text, #222);
 }
 
 .widget-options {
@@ -350,14 +467,19 @@ onMounted(() => {
 
 .widget-option {
   display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   background: var(--surface, #fff);
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
   border: 1px solid var(--border, #ddd);
   border-radius: 6px;
+  background: var(--surface, #fff);
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 0.85rem;
 }
 
 .widget-option:hover:not(:disabled) {
@@ -367,11 +489,16 @@ onMounted(() => {
 
 .widget-option:disabled {
   opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
 .widget-icon {
   font-size: 1.2rem;
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1rem;
 }
 
 .widget-name {
@@ -384,13 +511,22 @@ onMounted(() => {
   background: var(--surface, #fff);
   border: 1px solid var(--border, #ddd);
   border-radius: 10px;
+  border-radius: 8px;
   padding: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 220px;
 }
 
 .dashboard-widget:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+.editing-mode .dashboard-widget {
+  border: 1px dashed var(--primary, #2a78d6);
+  cursor: grab;
 }
 
 .dashboard-grid.editing-mode .dashboard-widget {
@@ -409,12 +545,17 @@ onMounted(() => {
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border-soft, #eee);
+  margin-bottom: 0.5rem;
+  border-bottom: 1px dashed var(--border-soft, #eee);
 }
 
 .widget-drag-handle {
   cursor: move;
   color: var(--muted, #999);
   font-size: 1.2rem;
+  font-size: 0.75rem;
+  color: var(--primary, #2a78d6);
+  font-weight: 600;
   user-select: none;
 }
 
@@ -423,6 +564,10 @@ onMounted(() => {
   border: none;
   color: var(--muted, #999);
   font-size: 1.5rem;
+  border: 0;
+  color: var(--muted, #888);
+  font-size: 1.1rem;
+  cursor: pointer;
   line-height: 1;
   cursor: pointer;
   padding: 0 4px;
@@ -431,6 +576,7 @@ onMounted(() => {
 
 .widget-remove:hover {
   color: var(--danger, #dc3545);
+  color: #c00;
 }
 
 .no-widgets {
@@ -438,5 +584,8 @@ onMounted(() => {
   text-align: center;
   padding: 3rem;
   color: var(--muted, #999);
+  background: var(--surface-2, #f9f9f9);
+  border-radius: 8px;
+  color: var(--muted, #888);
 }
 </style>
