@@ -197,7 +197,14 @@ self.addEventListener('fetch', (event) => {
   // the background. Offline, the cached copy is the answer; online, the viewer
   // gets an instant page and the next load gets the update.
   event.respondWith((async () => {
-    const cache = await caches.open(SHELL)
+    let cache
+    try {
+      cache = await caches.open(SHELL)
+    } catch (e) {
+      // Cache API failed (e.g. UnknownError). Fall back to network.
+      return fetch(request).catch(() => new Response('Cache error and offline.', { status: 503 }))
+    }
+
     const hit = await cache.match(request)
     const network = fetch(request).then((res) => {
       if (res && res.ok && res.type === 'basic') cache.put(request, res.clone()).catch(() => {})
