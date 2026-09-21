@@ -25,7 +25,10 @@ import { SERIES_1, UNCLUSTERED, categoryColor, categoryShape, hasValue, useObser
 import { useUnits } from '~/composables/useUnits'
 import { ALL_NUMERIC, ALL_CATEGORY, sortEntries } from '~/composables/useChartFields'
 
-const props = defineProps({ config: { type: Object, required: true } })
+const props = defineProps({ 
+  config: { type: Object, required: true },
+  compact: { type: Boolean, default: false }
+})
 defineEmits(['select'])
 
 const { rows } = useObservations()
@@ -149,14 +152,23 @@ const sizing = computed(() => sizeScale(c.value.sizeField))
 // the same category is the same color here and on the map.
 function groupColor(label) { return categoryColor(c.value.groupField, label) }
 
-const scatterData = computed(() => rows.value.map((r) => {
-  const x = numVal(r, c.value.xField), y = numVal(r, c.value.yField)
-  if (x === null || y === null) return null
-  const p = { x, y, color: c.value.colorField ? coloring.value.colorOf(catVal(r, c.value.colorField)) : SERIES_1, label: r.species, obs: r }
-  if (shaping.value) p.shape = shaping.value.shapeOf(catVal(r, c.value.shapeField))
-  if (sizing.value) p.r = sizing.value.rOf(rawNum(r, c.value.sizeField))
-  return p
-}).filter(Boolean))
+const scatterData = computed(() => {
+  const all = rows.value.map((r) => {
+    const x = numVal(r, c.value.xField), y = numVal(r, c.value.yField)
+    if (x === null || y === null) return null
+    const p = { x, y, color: c.value.colorField ? coloring.value.colorOf(catVal(r, c.value.colorField)) : SERIES_1, label: r.species, obs: r }
+    if (shaping.value) p.shape = shaping.value.shapeOf(catVal(r, c.value.shapeField))
+    if (sizing.value) p.r = sizing.value.rOf(rawNum(r, c.value.sizeField))
+    return p
+  }).filter(Boolean)
+
+  if (props.compact && all.length > 100) {
+    // Simple systematic sampling to preserve distribution
+    const step = Math.ceil(all.length / 100)
+    return all.filter((_, i) => i % step === 0)
+  }
+  return all
+})
 
 function groupBy(field) {
   const m = new Map()
