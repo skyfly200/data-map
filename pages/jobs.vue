@@ -66,8 +66,37 @@
                        :disabled="!sourceChoices.length" />
                 <span>A saved dataset</span>
               </label>
+              <label class="pick">
+                <input v-model="form.sourceType" type="radio" value="ee_asset" />
+                <span>Earth Engine asset</span>
+              </label>
             </div>
           </div>
+
+          <template v-if="form.sourceType === 'ee_asset'">
+            <div class="row">
+              <label for="ee-asset-path">Asset path</label>
+              <input id="ee-asset-path" v-model="form.assetPath" type="text"
+                     placeholder="users/username/project/dataset" />
+            </div>
+            <p class="hint">
+              Enter your Earth Engine asset ID. The asset will be imported and used as the source for this job.
+            </p>
+            <div class="row two">
+              <label class="stack">
+                <span>Name (optional)</span>
+                <input v-model="form.assetTitle" type="text" placeholder="My EE Dataset" />
+              </label>
+              <label class="stack">
+                <span>Visibility</span>
+                <select v-model="form.assetVisibility">
+                  <option v-for="v in datasetsApi.visibilities" :key="v" :value="v">
+                    {{ VISIBILITY_LABELS[v] }}
+                  </option>
+                </select>
+              </label>
+            </div>
+          </template>
 
           <template v-if="form.sourceType === 'dataset'">
             <div class="row">
@@ -158,6 +187,9 @@
             <span v-if="!form.stages.length" class="hint">Pick at least one layer.</span>
             <span v-else-if="form.sourceType === 'dataset' && !form.datasetSlug" class="hint">
               Choose a dataset.
+            </span>
+            <span v-else-if="form.sourceType === 'ee_asset' && !form.assetPath" class="hint">
+              Enter an Earth Engine asset path.
             </span>
           </div>
         </section>
@@ -390,6 +422,9 @@ const form = reactive({
   title: '',
   sourceType: 'bbox',
   datasetSlug: '',
+  assetPath: '',
+  assetTitle: '',
+  assetVisibility: 'private',
   north: 40.5, south: 39.2, west: -106.2, east: -104.8,
   dateFrom: '', dateTo: '', taxon: '',
   stages: [...DEFAULT_STAGES],
@@ -401,6 +436,7 @@ const sourceChoices = computed(() => datasetsApi.available.value)
 const canSubmit = computed(() => {
   if (!form.stages.length) return false
   if (form.sourceType === 'dataset') return Boolean(form.datasetSlug)
+  if (form.sourceType === 'ee_asset') return Boolean(form.assetPath && form.assetPath.trim())
   return true
 })
 
@@ -475,15 +511,25 @@ async function onSubmit() {
     // A dataset already is a set of points with dates; the area, date and
     // taxon fields chose points in the first place and mean nothing applied to
     // one. Sending them anyway would look like a filter that did nothing.
-    const source = form.sourceType === 'dataset'
-      ? { type: 'dataset', slug: form.datasetSlug }
-      : {
+    let source
+    if (form.sourceType === 'dataset') {
+      source = { type: 'dataset', slug: form.datasetSlug }
+    } else if (form.sourceType === 'ee_asset') {
+      // Import the EE asset first, then use it as the source
+      const importedDataset = await datasetsApi.importAsset(form.assetPath, {
+        title: form.assetTitle || undefined,
+        visibility: form.assetVisibility,
+      })
+      source = { type: 'dataset', slug: importedDataset.slug }
+    } else {
+      source = {
         type: 'bbox',
         bounds: { north: form.north, south: form.south, east: form.east, west: form.west },
         dateFrom: form.dateFrom || null,
         dateTo: form.dateTo || null,
         taxon: form.taxon || '',
       }
+    }
 
     const result = await jobsApi.submit({
       kind: 'enrich',

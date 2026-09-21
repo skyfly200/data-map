@@ -109,9 +109,29 @@ export function useDatasets() {
     return (await call(`?slug=${encodeURIComponent(slug)}`)).geojson
   }
 
+  /** Import an Earth Engine asset by its asset path (e.g., "users/username/project/dataset") */
+  async function importAsset(assetPath, { title = '', description = '', visibility = 'private' } = {}) {
+    error.value = ''
+    if (!assetPath || !assetPath.trim()) {
+      throw new Error('Please provide an Earth Engine asset path')
+    }
+    const data = await call('', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'import_asset',
+        asset_path: assetPath.trim(),
+        title: title || assetPath.split('/').pop() || 'EE Asset',
+        description,
+        visibility,
+      }),
+    })
+    await refresh()
+    return data.dataset
+  }
+
   return {
     datasets, available, loading, error,
     visibilities: MEMBER_VISIBILITIES,
-    refresh, refreshAvailable, saveJob, update, remove, fetchGeojson,
+    refresh, refreshAvailable, saveJob, update, remove, fetchGeojson, importAsset,
   }
 }

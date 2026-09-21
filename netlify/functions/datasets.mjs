@@ -21,7 +21,8 @@ import {
   DEFAULT_VISIBILITY, DatasetAccessError,
   canWrite, checkVisibility, nextFreeSlug, resolveDataset, slugify, viewerFrom,
 } from '../lib/dataset-access.mjs'
-import { readJson } from '../lib/datasets-store.mjs'
+import { readJson, writeJson } from '../lib/datasets-store.mjs'
+import { loadEeAsset } from '../lib/ee-assets.mjs'
 
 export const config = { timeout: 30 }
 
@@ -201,6 +202,72 @@ async function remove(client, viewer, body) {
   return json({ ok: true, deleted: id })
 }
 
+/** Import an Earth Engine asset as a dataset. */
+async function importAsset(client, viewer, body) {
+  const assetPath = String(body.asset_path || '').trim()
+  if (!assetPath) {
+    throw new DatasetAccessError('Provide an asset_path.', { status: 400, code: 'no_asset' })
+  }
+
+  const { count, error: countErr } = await client.from('saved_datasets')
+    .select('id', { count: 'exact', head: true }).eq('owner_id', viewer.userId)
+  if (countErr) throw new Error(countErr.message)
+  if ((count || 0) >= MAX_DATASETS_PER_MEMBER) {
+    throw new DatasetAccessError(
+      `You have ${count} saved datasets, which is the limit. Delete one to save another.`,
+      { status: 409, code: 'too_many' })
+  }
+
+  // Load the asset from Earth Engine
+  let geojson
+  try {
+    geojson = await loadEeAsset(assetPath)
+  } catch (err) {
+    throw new DatasetAccessError(err.message, { status: 400, code: 'ee_error' })
+  }
+
+  // Validate we got features
+  if (!geojson || !geojson.features || geojson.features.length === 0) {
+    throw new DatasetAccessError(
+      'Asset contains no features or could not be converted to GeoJSON.',
+      { status: 400, code: 'no_features' })
+  }
+
+  const title = String(body.title || 'EE Asset Import').trim().slice(0, 200)
+  const visibility = checkVisibility(body.visibility, viewer)
+
+  // Generate slug
+  const base = slugify(title)
+  const { data: clashes } = await client.from('saved_datasets')
+    .select('slug').like('slug', `${base}%`)
+  const slug = nextFreeSlug(base, (clashes || []).map((r) => r.slug))
+
+  // Store the GeoJSON file
+  const timestamp = Date.now()
+  const path = `datasets/${viewer.userId}/${slug}-${timestamp}.geojson`
+  await writeJson(path, geojson)
+
+  // Calculate stats
+  const featureCount = geojson.features.length
+  const bytes = JSON.stringify(geojson).length
+
+  // Create the dataset record
+  const { data, error } = await client.from('saved_datasets').insert({
+    owner_id: viewer.userId,
+    job_id: null,  // Not from a job
+    slug,
+    title,
+    description: String(body.description || `Imported from Earth Engine asset: ${assetPath}`).slice(0, 2000),
+    path,
+    visibility,
+    feature_count: featureCount,
+    bytes,
+  }).select(FIELDS).single()
+  if (error) throw new Error(error.message)
+
+  return json({ ok: true, dataset: data, status: 'imported' })
+}
+
 export default async function handler(request) {
   const client = adminClient()
   if (!client) {
@@ -245,11 +312,12 @@ export default async function handler(request) {
       case 'save': return await save(client, viewer, body)
       case 'update': return await update(client, viewer, body)
       case 'delete': return await remove(client, viewer, body)
+      case 'import_asset': return await importAsset(client, viewer, body)
       default:
         return json({
           ok: false,
           error: `Unknown action “${body.action ?? ''}”.`,
-          actions: ['save', 'update', 'delete'],
+          actions: ['save', 'update', 'delete', 'import_asset'],
           note: `Datasets are ${DEFAULT_VISIBILITY} unless you say otherwise.`,
         }, 400)
     }
