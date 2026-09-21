@@ -21,7 +21,7 @@ import {
   DEFAULT_VISIBILITY, DatasetAccessError,
   canWrite, checkVisibility, nextFreeSlug, resolveDataset, slugify, viewerFrom,
 } from '../lib/dataset-access.mjs'
-import { readJson, writeJson } from '../lib/datasets-store.mjs'
+import { readJson, uploadJson } from '../lib/datasets-store.mjs'
 import { loadEeAsset } from '../lib/ee-assets.mjs'
 
 export const config = { timeout: 30 }
@@ -245,7 +245,7 @@ async function importAsset(client, viewer, body) {
   // Store the GeoJSON file
   const timestamp = Date.now()
   const path = `datasets/${viewer.userId}/${slug}-${timestamp}.geojson`
-  await writeJson(path, geojson)
+  await uploadJson(path, geojson)
 
   // Calculate stats
   const featureCount = geojson.features.length
