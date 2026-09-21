@@ -23,7 +23,7 @@ const FINAL_LAT_PRECISION = ENCODING_BASE ** 3 * GRID_ROWS ** GRID_CODE_LENGTH
 const FINAL_LNG_PRECISION = ENCODING_BASE ** 3 * GRID_COLUMNS ** GRID_CODE_LENGTH
 
 /** Location in degrees to the pair of positive integers the encoder works in. */
-function locationToIntegers(latitude, longitude) {
+function locationToIntegers(latitude: number, longitude: number): [number, number] {
   let latVal = Math.floor(latitude * FINAL_LAT_PRECISION) + LATITUDE_MAX * FINAL_LAT_PRECISION
   if (latVal < 0) latVal = 0
   else if (latVal >= 2 * LATITUDE_MAX * FINAL_LAT_PRECISION) latVal = 2 * LATITUDE_MAX * FINAL_LAT_PRECISION - 1
@@ -40,9 +40,9 @@ function locationToIntegers(latitude, longitude) {
  * A location as an Open Location Code.
  *
  * `codeLength` is significant digits, not counting the `+`; 10 is the common
- * "plus code" at roughly 14 m, 11 is about 3 m.
+// "plus code" at roughly 14 m, 11 is about 3 m.
  */
-export function encodePlusCode(latitude, longitude, codeLength = 10) {
+export function encodePlusCode(latitude: number, longitude: number, codeLength = 10): string {
   codeLength = Math.min(codeLength, MAX_DIGITS)
   let [latVal, lngVal] = locationToIntegers(latitude, longitude)
   let code = ''

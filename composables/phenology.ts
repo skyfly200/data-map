@@ -23,7 +23,7 @@
 //
 // Pure module, no framework imports, so all of this is testable without a page.
 
-import { median, spearman } from './statistics.js'
+import { median, spearman } from './statistics'
 
 /** Base temperature for growing degree days, in Celsius. */
 export const GDD_BASE = 5
@@ -34,13 +34,14 @@ export const WEATHER_CELL = 0.25
 /** How many days of lead-up each observation carries. */
 export const LEAD_DAYS = 7
 
-const num = (v) => {
+const num = (v: any): number | null => {
   const n = Number(v)
   return Number.isFinite(n) ? n : null
 }
 
 /** Day of year for an ISO date, 1-based, ignoring leap-day drift. */
-export function doyOf(dateStr) {
+export function doyOf(dateStr: string | null | undefined): number | null {
+  if (!dateStr) return null
   const t = Date.parse(`${String(dateStr).slice(0, 10)}T00:00:00Z`)
   if (!Number.isFinite(t)) return null
   const d = new Date(t)
@@ -48,20 +49,26 @@ export function doyOf(dateStr) {
   return Math.floor((t - start) / 86400000) + 1
 }
 
-const yearOf = (dateStr) => Number(String(dateStr).slice(0, 4)) || null
+const yearOf = (dateStr: string | null | undefined): number | null => Number(String(dateStr ?? '').slice(0, 4)) || null
 
-const cellKey = (lat, lon, size) => `${Math.floor(lat / size)}:${Math.floor(lon / size)}`
+const cellKey = (lat: number, lon: number, size: number) => `${Math.floor(lat / size)}:${Math.floor(lon / size)}`
+
+interface WeatherSeries {
+  rain: Map<number, number>
+  tmax: Map<number, number>
+  tmin: Map<number, number>
+}
 
 /**
  * A daily weather series per cell and year, stitched from the lead-up windows.
  *
  * Returns Map("cell|year" -> { rain: Map(doy -> mm), tmax: Map, tmin: Map }).
  * Each day is the median of everything that reported it, so one storm-struck
- * observation cannot define the day for a cell 20km wide.
+// observation cannot define the day for a cell 20km wide.
  */
-export function dailySeries(features, { cellSize = WEATHER_CELL } = {}) {
+export function dailySeries(features: any[], { cellSize = WEATHER_CELL } = {}): Map<string, WeatherSeries> {
   // Collect every report first, then reduce: the median needs all of them.
-  const reports = new Map()
+  const reports = new Map<string, { rain: Map<number, number[]>, tmax: Map<number, number[]>, tmin: Map<number, number[]> }>()
 
   for (const f of features) {
     const p = f?.properties || {}
@@ -84,17 +91,17 @@ export function dailySeries(features, { cellSize = WEATHER_CELL } = {}) {
       const key = `${cell}|${year}`
       let entry = reports.get(key)
       if (!entry) { entry = { rain: new Map(), tmax: new Map(), tmin: new Map() }; reports.set(key, entry) }
-      for (const [field, prefix] of [['rain', 'prcp_d'], ['tmax', 'tmax_d'], ['tmin', 'tmin_d']]) {
+      for (const [field, prefix] of [['rain', 'prcp_d'], ['tmax', 'tmax_d'], ['tmin', 'tmin_d']] as const) {
         const v = num(p[`${prefix}${d}`])
         if (v === null) continue
-        const bucket = entry[field]
+        const bucket = entry[field as keyof WeatherSeries] as Map<number, number[]>
         if (!bucket.has(day)) bucket.set(day, [])
-        bucket.get(day).push(v)
+        bucket.get(day)!.push(v)
       }
     }
   }
 
-  const out = new Map()
+  const out = new Map<string, WeatherSeries>()
   for (const [key, entry] of reports) {
     out.set(key, {
       rain: reduceDays(entry.rain),
@@ -105,10 +112,20 @@ export function dailySeries(features, { cellSize = WEATHER_CELL } = {}) {
   return out
 }
 
-function reduceDays(bucket) {
-  const out = new Map()
+function reduceDays(bucket: Map<number, number[]>): Map<number, number> {
+  const out = new Map<number, number>()
   for (const [day, values] of bucket) out.set(day, values.length === 1 ? values[0] : median(values))
   return out
+}
+
+interface AccumulatedValue {
+  total: number
+  covered: number
+}
+
+interface AccumulatedSeries {
+  rain: Map<number, AccumulatedValue>
+  gdd: Map<number, AccumulatedValue>
 }
 
 /**
@@ -116,11 +133,11 @@ function reduceDays(bucket) {
  *
  * `rain` accumulates millimetres from 1 January; `gdd` accumulates degree days
  * above GDD_BASE. Both carry a `covered` count, because a total over a series
- * with holes in it understates the real one and the caller has to be able to
- * say so rather than quietly comparing a well-sampled year against a sparse one.
+// with holes in it understates the real one and the caller has to be able to
+// say so rather than quietly comparing a well-sampled year against a sparse one.
  */
-export function accumulate(series, { base = GDD_BASE, maxDoy = 366 } = {}) {
-  const rain = new Map(); const gdd = new Map()
+export function accumulate(series: WeatherSeries, { base = GDD_BASE, maxDoy = 366 } = {}): AccumulatedSeries {
+  const rain = new Map<number, AccumulatedValue>(); const gdd = new Map<number, AccumulatedValue>()
   let rainSum = 0; let gddSum = 0; let rainDays = 0; let gddDays = 0
 
   for (let d = 1; d <= maxDoy; d += 1) {
@@ -137,16 +154,26 @@ export function accumulate(series, { base = GDD_BASE, maxDoy = 366 } = {}) {
   return { rain, gdd }
 }
 
+interface TimingRow {
+  year: number
+  n: number
+  median: number
+  q25: number
+  q75: number
+  first: number
+  last: number
+}
+
 /**
  * When a set of observations happened, per year.
  *
  * `median` is the timing statistic: robust to the long tail a fruiting season
- * has, and meaningful at sample sizes where a fitted peak is noise. `q25`/`q75`
- * carry the width of the season, which moves independently of its centre — a
- * season can start on time and run long.
+// has, and meaningful at sample sizes where a fitted peak is noise. `q25`/`q75`
+// carry the width of the season, which moves independently of its centre — a
+// season can start on time and run long.
  */
-export function timingByYear(features, { minObs = 20 } = {}) {
-  const byYear = new Map()
+export function timingByYear(features: any[], { minObs = 20 } = {}): TimingRow[] {
+  const byYear = new Map<number, number[]>()
   for (const f of features) {
     const p = f?.properties || {}
     if (!p.date) continue
@@ -154,19 +181,19 @@ export function timingByYear(features, { minObs = 20 } = {}) {
     const doy = num(p.day_of_year) ?? doyOf(p.date)
     if (!year || doy === null) continue
     if (!byYear.has(year)) byYear.set(year, [])
-    byYear.get(year).push(doy)
+    byYear.get(year)!.push(doy)
   }
 
-  const rows = []
+  const rows: TimingRow[] = []
   for (const [year, days] of byYear) {
     if (days.length < minObs) continue
     const sorted = [...days].sort((a, b) => a - b)
     rows.push({
       year,
       n: sorted.length,
-      median: median(sorted),
-      q25: quantile(sorted, 0.25),
-      q75: quantile(sorted, 0.75),
+      median: median(sorted)!,
+      q25: quantile(sorted, 0.25)!,
+      q75: quantile(sorted, 0.75)!,
       first: sorted[0],
       last: sorted[sorted.length - 1],
     })
@@ -174,25 +201,30 @@ export function timingByYear(features, { minObs = 20 } = {}) {
   return rows.sort((a, b) => a.year - b.year)
 }
 
-export function quantile(sorted, q) {
+export function quantile(sorted: number[], q: number): number | null {
   if (!sorted.length) return null
   const i = (sorted.length - 1) * q
   const lo = Math.floor(i); const hi = Math.ceil(i)
   return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo)
 }
 
+interface RelativeTimingRow extends TimingRow {
+  background: number | null
+  relative: number | null
+}
+
 /**
  * The same timing, with the year's general recording shifted out of it.
  *
  * A species' median moving ten days earlier means nothing if every species
- * moved ten days earlier, because that is a change in when people went out, not
- * in when anything fruited. Subtracting the median of ALL observations in the
- * same years leaves the part specific to this species.
+// moved ten days earlier, because that is a change in when people went out, not
+// in when anything fruited. Subtracting the median of ALL observations in the
+// same years leaves the part specific to this species.
  *
  * This is the single most important correction here, so it is the default and
- * the raw figure is kept beside it rather than replaced.
+// the raw figure is kept beside it rather than replaced.
  */
-export function relativeTiming(speciesRows, backgroundRows) {
+export function relativeTiming(speciesRows: TimingRow[], backgroundRows: TimingRow[]): RelativeTimingRow[] {
   const bg = new Map(backgroundRows.map((r) => [r.year, r.median]))
   return speciesRows.map((r) => {
     const base = bg.get(r.year)
@@ -204,16 +236,23 @@ export function relativeTiming(speciesRows, backgroundRows) {
   })
 }
 
+interface TimingTrendResult {
+  slope: number | null
+  rho: number | null
+  n: number
+  span: [number, number]
+}
+
 /**
  * Least-squares slope of a timing series, in days per year, with Spearman rho.
  *
  * The slope says how much and which way; rho says whether the ordering is
- * consistent enough to be worth reading. Both are reported because a slope
- * fitted through four scattered years will happily look dramatic.
+// consistent enough to be worth reading. Both are reported because a slope
+// fitted through four scattered years will happily look dramatic.
  */
-export function timingTrend(rows, key = 'median') {
-  const pts = rows.filter((r) => Number.isFinite(r[key])).map((r) => [r.year, r[key]])
-  if (pts.length < 3) return { slope: null, rho: null, n: pts.length }
+export function timingTrend(rows: any[], key = 'median'): TimingTrendResult {
+  const pts = rows.filter((r) => Number.isFinite(r[key])).map((r) => [r.year, r[key]] as [number, number])
+  if (pts.length < 3) return { slope: null, rho: null, n: pts.length, span: [0, 0] }
   const xs = pts.map((p) => p[0]); const ys = pts.map((p) => p[1])
   const mx = xs.reduce((a, b) => a + b, 0) / xs.length
   const my = ys.reduce((a, b) => a + b, 0) / ys.length
@@ -230,17 +269,29 @@ export function timingTrend(rows, key = 'median') {
   }
 }
 
+interface LagProfile {
+  lag: number
+  mean: number | null
+  n: number
+}
+
+interface LeadUpResult {
+  species: LagProfile[]
+  baseline: LagProfile[] | null
+  ratio: { lag: number; ratio: number | null }[] | null
+}
+
 /**
  * Mean rainfall on each of the seven days before a find, against a baseline.
  *
  * This is the short-term half of the question. A species that fruits after rain
- * shows a hump somewhere in its profile; the baseline is what the same days
- * looked like across every observation in the dataset, so the comparison is
- * against "a day somebody was out recording" rather than against zero.
+// shows a hump somewhere in its profile; the baseline is what the same days
+// looked like across every observation in the dataset, so the comparison is
+// against "a day somebody was out recording" rather than against zero.
  */
-export function leadUpProfile(features, baseline = null) {
-  const lag = (rows) => {
-    const out = []
+export function leadUpProfile(features: any[], baseline = null): LeadUpResult {
+  const lag = (rows: any[]) => {
+    const out: LagProfile[] = []
     for (let d = 0; d < LEAD_DAYS; d += 1) {
       let sum = 0; let n = 0
       for (const f of rows) {
@@ -253,13 +304,13 @@ export function leadUpProfile(features, baseline = null) {
     return out
   }
   const species = lag(features)
-  if (!baseline) return { species, baseline: null }
+  if (!baseline) return { species, baseline: null, ratio: null }
   const base = lag(baseline)
   return {
     species,
     baseline: base,
     // Ratio rather than difference: rainfall is not on a scale where "2mm more"
-    // means the same thing in a wet region and a dry one.
+// means the same thing in a wet region and a dry one.
     ratio: species.map((s, i) => ({
       lag: s.lag,
       ratio: base[i]?.mean ? s.mean / base[i].mean : null,
@@ -268,32 +319,39 @@ export function leadUpProfile(features, baseline = null) {
 }
 
 /** Spearman correlation of x and y with the influence of z removed. */
-export function partialCorrelation(xs, ys, zs) {
+export function partialCorrelation(xs: number[], ys: number[], zs: number[]): number | null {
   const rxy = spearman(xs, ys)
   const rxz = spearman(xs, zs)
   const ryz = spearman(ys, zs)
-  if (![rxy, rxz, ryz].every(Number.isFinite)) return null
-  const den = Math.sqrt((1 - rxz ** 2) * (1 - ryz ** 2))
+  if (![rxy, rxz, ryz].every((v) => v !== null && Number.isFinite(v as number))) return null
+  const den = Math.sqrt((1 - (rxz as number) ** 2) * (1 - (ryz as number) ** 2))
   if (!(den > 1e-9)) return null
-  return (rxy - rxz * ryz) / den
+  return ((rxy as number) - (rxz as number) * (ryz as number)) / den
+}
+
+interface ThresholdTestResult {
+  cvValue: number | null
+  cvDate: number | null
+  ratio: number | null
+  steadier: boolean | null
 }
 
 /**
  * Is the timing better explained by the calendar or by an accumulation?
  *
  * The phenological hypothesis is that fruiting waits for a threshold rather than
- * a date: enough rain in the ground, enough warmth banked. If that holds, then
- * across years the accumulated total at the moment of fruiting should vary LESS
- * than the calendar date does. Both are put on the same footing by their
- * coefficient of variation, which is unitless, so millimetres and days can be
- * compared at all.
+// a date: enough rain in the ground, enough warmth banked. If that holds, then
+// across years the accumulated total at the moment of fruiting should vary LESS
+// than the calendar date does. Both are put on the same footing by their
+// coefficient of variation, which is unitless, so millimetres and days can be
+// compared at all.
  *
  * A `cv` below the date's is evidence for the threshold; above it is evidence
- * against. It is evidence, not proof: with six years there is not much of it.
+// against. It is evidence, not proof: with six years there is not much of it.
  */
-export function thresholdTest(values, dates) {
-  const cv = (arr) => {
-    const xs = arr.filter(Number.isFinite)
+export function thresholdTest(values: any[], dates: any[]): ThresholdTestResult {
+  const cv = (arr: any[]) => {
+    const xs = arr.filter(v => Number.isFinite(v as number)) as number[]
     if (xs.length < 3) return null
     const m = xs.reduce((a, b) => a + b, 0) / xs.length
     if (Math.abs(m) < 1e-9) return null
@@ -315,15 +373,15 @@ export function thresholdTest(values, dates) {
  * Which years ran their full course.
  *
  * The current year is truncated: its observations stop at today, so its median
- * find lands wherever the season had got to rather than at the season's centre.
- * Including it makes every species look dramatically early. A year counts as
- * complete when the dataset as a whole recorded as late in it as it usually
- * does; the comparison is against the other years rather than against a fixed
- * date, so a dataset that simply stops in October is not judged against
- * December.
+// find lands wherever the season had got to rather than at the season's centre.
+// Including it makes every species look dramatically early. A year counts as
+// complete when the dataset as a whole recorded as late in it as it usually
+// does; the comparison is against the other years rather than against a fixed
+// date, so a dataset that simply stops in October is not judged against
+// December.
  */
-export function completeYears(allFeatures, { tolerance = 45 } = {}) {
-  const lastByYear = new Map()
+export function completeYears(allFeatures: any[], { tolerance = 45 } = {}): Set<number> {
+  const lastByYear = new Map<number, number>()
   for (const f of allFeatures) {
     const p = f?.properties || {}
     if (!p.date) continue
@@ -334,39 +392,47 @@ export function completeYears(allFeatures, { tolerance = 45 } = {}) {
   }
   const ends = [...lastByYear.values()].sort((a, b) => a - b)
   if (!ends.length) return new Set()
-  const typical = median(ends)
-  const out = new Set()
+  const typical = median(ends)!
+  const out = new Set<number>()
   for (const [year, last] of lastByYear) if (last >= typical - tolerance) out.add(year)
   return out
+}
+
+interface WindowResult {
+  rain: number
+  rainCovered: number
+  gdd: number
+  gddCovered: number
+  window: number
 }
 
 /**
  * What conditions each year's fruiting happened under, one row per year.
  *
  * Pairs the species' timing with the weather leading up to it: rain and heat
- * over the 30, 60 and 90 days before the median find.
+// over the 30, 60 and 90 days before the median find.
  *
  * **Trailing windows, not totals since January.** The reconstructed series only
- * covers days somebody was out recording, and in this dataset that is the
- * fruiting season: January has 2,024 reconstructed rain-days against August's
- * 13,159. A total "since 1 January" would therefore be a total since roughly
- * April, varying with how early people started that year, which is recording
- * effort wearing a hydrologist's coat. A trailing window sits inside the
- * covered period and is scaled by how much of itself was covered, so a gap
- * makes it noisier rather than smaller.
+// covers days somebody was out recording, and in this dataset that is the
+// fruiting season: January has 2,024 reconstructed rain-days against August's
+// 13,159. A total "since 1 January" would therefore be a total since roughly
+// April, varying with how early people started that year, which is recording
+// effort wearing a hydrologist's coat. A trailing window sits inside the
+// covered period and is scaled by how much of itself was covered, so a gap
+// makes it noisier rather than smaller.
  *
  * `allFeatures` is the whole dataset and is not optional: the series is stitched
- * from overlapping windows, and one species alone does not overlap itself
- * densely enough to reconstruct anything. Passing only the species produced
- * empty columns, which is how this was caught.
+// from overlapping windows, and one species alone does not overlap itself
+// densely enough to reconstruct anything. Passing only the species produced
+// empty columns, which is how this was caught.
  */
 export const WINDOWS = [30, 60, 90]
 
-export function conditionsByYear(features, timing, { allFeatures, cellSize = WEATHER_CELL } = {}) {
+export function conditionsByYear(features: any[], timing: any[], { allFeatures, cellSize = WEATHER_CELL } = {}) {
   const source = allFeatures || features
   const series = dailySeries(source, { cellSize })
 
-  const cellsByYear = new Map()
+  const cellsByYear = new Map<number, Set<string>>()
   for (const f of features) {
     const p = f?.properties || {}
     const co = f?.geometry?.coordinates
@@ -376,13 +442,13 @@ export function conditionsByYear(features, timing, { allFeatures, cellSize = WEA
     const year = yearOf(p.date)
     if (!year) continue
     if (!cellsByYear.has(year)) cellsByYear.set(year, new Set())
-    cellsByYear.get(year).add(cellKey(lat, lon, cellSize))
+    cellsByYear.get(year)!.add(cellKey(lat, lon, cellSize))
   }
 
   return timing.map((row) => {
     const cells = [...(cellsByYear.get(row.year) || [])]
     const doy = Math.round(row.median)
-    const acc = {}
+    const acc: Record<string, number[]> = {}
     for (const w of WINDOWS) acc[`rain${w}`] = []
     for (const w of WINDOWS) acc[`gdd${w}`] = []
 
@@ -392,13 +458,13 @@ export function conditionsByYear(features, timing, { allFeatures, cellSize = WEA
       for (const w of WINDOWS) {
         const r = trailingWindow(s, doy, w, GDD_BASE)
         // Under a third covered is not a window, it is a rumour. Scaling what
-        // remains up to the full width would invent most of the total.
+// remains up to the full width would invent most of the total.
         if (r.rainCovered >= w / 3) acc[`rain${w}`].push(r.rain * (w / r.rainCovered))
         if (r.gddCovered >= w / 3) acc[`gdd${w}`].push(r.gdd * (w / r.gddCovered))
       }
     }
 
-    const avg = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null)
+    const avg = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null)
     const out = { ...row, cells: cells.length }
     for (const key of Object.keys(acc)) out[key] = avg(acc[key])
     return out
@@ -406,7 +472,7 @@ export function conditionsByYear(features, timing, { allFeatures, cellSize = WEA
 }
 
 /** Rain and degree days over the `window` days ending at `doy`. */
-export function trailingWindow(series, doy, window, base = GDD_BASE) {
+export function trailingWindow(series: WeatherSeries, doy: number, window: number, base = GDD_BASE): WindowResult {
   let rain = 0; let rainCovered = 0; let gdd = 0; let gddCovered = 0
   for (let d = doy - window + 1; d <= doy; d += 1) {
     const r = series.rain.get(d)
@@ -420,16 +486,31 @@ export function trailingWindow(series, doy, window, base = GDD_BASE) {
   return { rain, rainCovered, gdd, gddCovered, window }
 }
 
+interface Driver {
+  key: string
+  label: string
+  family: 'water' | 'heat'
+  unit: string
+  note: string
+}
+
+interface DriverResult extends Driver {
+  n: number
+  rho: number | null
+  partial: number | null
+  controlledFor: string
+}
+
 /**
  * The candidate drivers, ranked, with the confound between them removed.
  *
  * Rain and warmth are not independent: a warm year is often a dry one, so a
- * correlation between timing and either is partly the other showing through.
- * Each driver therefore gets both its plain correlation and its correlation
- * with the rival family held constant. When those disagree, the plain one was
- * borrowing, and the partial is the one to read.
+// correlation between timing and either is partly the other showing through.
+// Each driver therefore gets both its plain correlation and its correlation
+// with the rival family held constant. When those disagree, the plain one was
+// borrowing, and the partial is the one to read.
  */
-export const DRIVERS = [
+export const DRIVERS: Driver[] = [
   ...WINDOWS.map((w) => ({
     key: `rain${w}`, label: `Rain in the previous ${w} days`, family: 'water', unit: 'mm',
     note: `Total rainfall over the ${w} days before the median find, scaled up for gaps in the series.`,
@@ -440,12 +521,12 @@ export const DRIVERS = [
   })),
 ]
 
-export function driverTable(rows, { timingKey = 'median' } = {}) {
+export function driverTable(rows: any[], { timingKey = 'median' } = {}): DriverResult[] {
   const usable = rows.filter((r) => Number.isFinite(r[timingKey]))
-  const timing = usable.map((r) => r[timingKey])
+  const timing = usable.map((r) => r[timingKey] as number)
 
   // The rival family, as one series, for the partial correlation to hold still.
-  const familyMean = (family) => {
+  const familyMean = (family: 'water' | 'heat') => {
     const keys = DRIVERS.filter((d) => d.family === family).map((d) => d.key)
     return usable.map((r) => {
       const vs = keys.map((k) => r[k]).filter(Number.isFinite)
@@ -458,17 +539,17 @@ export function driverTable(rows, { timingKey = 'median' } = {}) {
   return DRIVERS.map((d) => {
     const pairs = usable
       .map((r, i) => [r[d.key], timing[i], d.family === 'water' ? heat[i] : water[i]])
-      .filter(([v, t]) => Number.isFinite(v) && Number.isFinite(t))
-    const xs = pairs.map((p) => p[0]); const ys = pairs.map((p) => p[1])
-    const zs = pairs.map((p) => p[2])
-    const complete = pairs.filter((p) => Number.isFinite(p[2]))
+      .filter(([v, t]) => Number.isFinite(v as number) && Number.isFinite(t as number))
+    const xs = pairs.map((p) => p[0] as number); const ys = pairs.map((p) => p[1] as number)
+    const zs = pairs.map((p) => p[2] as number)
+    const complete = pairs.filter((p) => Number.isFinite(p[2] as number))
     return {
       ...d,
       n: pairs.length,
       rho: pairs.length >= 4 ? spearman(xs, ys) : null,
       // Held against the other family: heat for a water driver, water for heat.
       partial: complete.length >= 5
-        ? partialCorrelation(complete.map((p) => p[0]), complete.map((p) => p[1]), complete.map((p) => p[2]))
+        ? partialCorrelation(complete.map((p) => p[0] as number), complete.map((p) => p[1] as number), complete.map((p) => p[2] as number))
         : null,
       controlledFor: d.family === 'water' ? 'heat' : 'water',
     }
@@ -479,15 +560,15 @@ export function driverTable(rows, { timingKey = 'median' } = {}) {
  * Rain in the days before a find, read back as far as the series allows.
  *
  * The seven-day version reads the prcp_d0..d6 fields each observation carries.
- * This reads the reconstructed series instead, which is what lets the window
- * run to a month or more: the fields stop at seven days, the series does not.
- *
- * Coverage is reported per lag and falls off with distance, because a day
- * thirty back is only known if somebody was recording within a week of it. A
- * lag with few observations behind it is a thinner claim than one beside it,
- * and the chart has to be able to say so.
+// This reads the reconstructed series instead, which is what lets the window
+// run to a month or more: the fields stop at seven days, the series does not.
+//
+// Coverage is reported per lag and falls off with distance, because a day
+// thirty back is only known if somebody was recording within a week of it. A
+// lag with few observations behind it is a thinner claim than one beside it,
+// and the chart has to be able to say so.
  */
-export function leadUpFromSeries(features, series, { days = 30, cellSize = WEATHER_CELL } = {}) {
+export function leadUpFromSeries(features: any[], series: Map<string, WeatherSeries>, { days = 30, cellSize = WEATHER_CELL } = {}) {
   const sums = new Array(days).fill(0)
   const counts = new Array(days).fill(0)
 
@@ -517,28 +598,45 @@ export function leadUpFromSeries(features, series, { days = 30, cellSize = WEATH
   }))
 }
 
+interface RainfallCurvePoint {
+  doy: number
+  mm: number
+  cells: number
+}
+
+interface RainfallCurveYear {
+  year: number
+  points: RainfallCurvePoint[]
+}
+
+interface RainfallCurvesResult {
+  years: RainfallCurveYear[]
+  mean: { doy: number; mm: number; years: number }[]
+  window: number
+}
+
 /**
  * Rainfall through the year, one curve per year, against the multi-year mean.
  *
  * Each point is the rain over the `window` days ending there, which is the
- * shape that actually matters: a running total shows the wet spells and dry
- * spells a cumulative curve smooths away, and it is the same quantity the
- * driver table found signal in.
+// shape that actually matters: a running total shows the wet spells and dry
+// spells a cumulative curve smooths away, and it is the same quantity the
+// driver table found signal in.
  *
  * Pooled across `cells` — the places the species is found — so the curve is the
- * weather where it grows rather than an average over the whole dataset. A cell
- * only contributes where its window is adequately covered, and a point with no
- * adequately covered cell is a gap rather than a zero.
+// weather where it grows rather than an average over the whole dataset. A cell
+// only contributes where its window is adequately covered, and a point with no
+// adequately covered cell is a gap rather than a zero.
  */
-export function rainfallCurves(series, {
+export function rainfallCurves(series: Map<string, WeatherSeries>, {
   cells, years, window = 30, step = 4, minCover = 1 / 3, from = 1, to = 366,
   minPoints = 20,
-} = {}) {
-  const wanted = new Set(cells)
-  const out = []
+} = {}): RainfallCurvesResult {
+  const wanted = new Set(cells as string[])
+  const out: RainfallCurveYear[] = []
 
-  for (const year of years) {
-    const points = []
+  for (const year of years as number[]) {
+    const points: RainfallCurvePoint[] = []
     for (let doy = from; doy <= to; doy += step) {
       const totals = []
       for (const cell of wanted) {
@@ -552,20 +650,20 @@ export function rainfallCurves(series, {
       }
     }
     // A year known on a handful of days is not a curve, and averaging it in
-    // drags the normal toward whatever those few days happened to be. Three
-    // points in October read as a drought once the other nine months are
-    // scored as zero.
+// drags the normal toward whatever those few days happened to be. Three
+// points in October read as a drought once the other nine months are
+// scored as zero.
     if (points.length >= minPoints) out.push({ year, points })
   }
 
   // The mean across years at each day, over whichever years reached it. A day
-  // covered in two years and a day covered in eight are both reported, with the
-  // count, rather than one being silently dropped or the other silently trusted.
-  const byDoy = new Map()
+// covered in two years and a day covered in eight are both reported, with the
+// count, rather than one being silently dropped or the other silently trusted.
+  const byDoy = new Map<number, number[]>()
   for (const { points } of out) {
     for (const pt of points) {
       if (!byDoy.has(pt.doy)) byDoy.set(pt.doy, [])
-      byDoy.get(pt.doy).push(pt.mm)
+      byDoy.get(pt.doy)!.push(pt.mm)
     }
   }
   const mean = [...byDoy.entries()]
@@ -576,8 +674,8 @@ export function rainfallCurves(series, {
 }
 
 /** The cells a set of observations occupies, per year and overall. */
-export function cellsUsed(features, { cellSize = WEATHER_CELL } = {}) {
-  const all = new Set()
+export function cellsUsed(features: any[], { cellSize = WEATHER_CELL } = {}): Set<string> {
+  const all = new Set<string>()
   for (const f of features) {
     const co = f?.geometry?.coordinates
     if (!co) continue
@@ -588,21 +686,29 @@ export function cellsUsed(features, { cellSize = WEATHER_CELL } = {}) {
   return all
 }
 
+interface RainfallAnomalyResult {
+  year: number
+  ratio: number | null
+  n: number
+  mm?: number
+  normal?: number
+}
+
 /**
  * How a year's rainfall compared with the average, as a single number per year.
  *
  * The ratio of that year's mean running total to the mean across all years,
- * over the days both cover. Restricting to shared days is what makes the
- * comparison fair: a year whose series starts in June would otherwise be
- * compared against an average that includes April.
+// over the days both cover. Restricting to shared days is what makes the
+// comparison fair: a year whose series starts in June would otherwise be
+// compared against an average that includes April.
  */
-export function rainfallAnomaly(curves) {
+export function rainfallAnomaly(curves: RainfallCurvesResult): RainfallAnomalyResult[] {
   const meanByDoy = new Map(curves.mean.map((p) => [p.doy, p.mm]))
   return curves.years.map(({ year, points }) => {
     const pairs = points.filter((p) => meanByDoy.has(p.doy))
     if (!pairs.length) return { year, ratio: null, n: 0 }
     const mine = pairs.reduce((a, p) => a + p.mm, 0) / pairs.length
-    const norm = pairs.reduce((a, p) => a + meanByDoy.get(p.doy), 0) / pairs.length
+    const norm = pairs.reduce((a, p) => a + meanByDoy.get(p.doy)!, 0) / pairs.length
     return { year, ratio: norm > 0 ? mine / norm : null, mm: mine, normal: norm, n: pairs.length }
   })
 }
