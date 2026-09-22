@@ -1,9 +1,9 @@
 // State management and API communication for the MaxEnt Modeling Suite.
-// 
-// This composable coordinates the training process: 
+//
+// This composable coordinates the training process:
 // 1. Configuration -> 2. Job Submission -> 3. Polling for Results.
 
-import { markRaw } from 'vue'
+import { computed, markRaw } from 'vue'
 
 export interface MaxEntConfig {
   id: string
@@ -131,8 +131,23 @@ export function useMaxEnt() {
     }
   }
 
+  // Layer Manager entries for completed model runs (HEAT-5).
+  // Each succeeded model exposes its suitability asset as a toggleable layer.
+  const maxentLayerSpecs = computed(() =>
+    models.value.map((m) => ({
+      key: `maxent:${m.id}`,
+      name: m.title,
+      group: 'MaxEnt Models',
+      note: m.description || 'MaxEnt habitat suitability surface.',
+      // The GEE asset path is what the tile endpoint renders.
+      assetPath: (m as any).suitability_asset_path ?? null,
+      visibility: m.visibility,
+    }))
+  )
+
   return {
     models, activeJob, pending, error,
     fetchModels, trainModel, deleteModel,
+    maxentLayerSpecs,
   }
 }

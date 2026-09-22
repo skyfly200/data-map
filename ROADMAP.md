@@ -47,11 +47,11 @@
 - [x] `V11-UI-4` **Suitability Map Renderer**: Display MaxEnt output as interactive heatmap layer
 
 ### MaxEnt Heatmap Integration
-- [ ] `V11-HEAT-1` Extend `HeatmapControls.vue` with "MaxEnt Suitability" type
-- [ ] `V11-HEAT-2` Add probability/binary visualization toggle
-- [ ] `V11-HEAT-3` Implement threshold slider for binary classification
-- [ ] `V11-HEAT-4` Confidence interval overlay option
-- [ ] `V11-HEAT-5` Layer Manager integration for MaxEnt outputs
+- [x] `V11-HEAT-1` Extend `HeatmapControls.vue` with "MaxEnt Suitability" type
+- [x] `V11-HEAT-2` Add probability/binary visualization toggle
+- [x] `V11-HEAT-3` Implement threshold slider for binary classification
+- [x] `V11-HEAT-4` Confidence interval overlay option
+- [x] `V11-HEAT-5` Layer Manager integration for MaxEnt outputs
 
 ---
 

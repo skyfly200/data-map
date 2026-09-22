@@ -18,6 +18,39 @@
       </select>
     </div>
 
+    <!-- MaxEnt suitability controls: visualization mode, threshold, CI overlay -->
+    <template v-if="mode === 'maxent'">
+      <div class="pop-field">
+        <label :for="`${uid}-maxent-model`">Model run</label>
+        <select :id="`${uid}-maxent-model`" v-model="maxentModelId"
+                title="The trained MaxEnt model whose suitability surface is shown.">
+          <option value="">— none selected —</option>
+          <option v-for="m in maxentModels" :key="m.id" :value="m.id">{{ m.title }}</option>
+        </select>
+      </div>
+      <div class="pop-field">
+        <label :for="`${uid}-viz-mode`">Visualization</label>
+        <select :id="`${uid}-viz-mode`" v-model="maxentVizMode"
+                title="Show raw probability (0–1) or a binary presence/absence map.">
+          <option value="probability">Probability (0–1)</option>
+          <option value="binary">Binary (presence/absence)</option>
+        </select>
+      </div>
+      <div v-if="maxentVizMode === 'binary'" class="pop-field">
+        <label :for="`${uid}-threshold`">
+          Threshold <strong>{{ maxentThreshold.toFixed(2) }}</strong>
+        </label>
+        <input :id="`${uid}-threshold`" v-model.number="maxentThreshold"
+               type="range" min="0.05" max="0.95" step="0.05"
+               title="Cells above this probability are classified as present." />
+      </div>
+      <div class="pop-field pop-field--inline">
+        <label :for="`${uid}-ci`">Confidence interval overlay</label>
+        <input :id="`${uid}-ci`" v-model="maxentShowCI" type="checkbox"
+               title="Shade cells proportionally to model uncertainty across cross-validation folds." />
+      </div>
+    </template>
+
     <!-- Only the seasonal modes use a date window, so it appears with them
          rather than being a permanent control that does nothing. -->
     <template v-if="mode === 'season' || mode === 'hotspots'">
@@ -58,12 +91,16 @@
 import { computed, useId } from 'vue'
 
 import { useMapHeatmaps } from '~/composables/useMapHeatmaps'
+import { useMaxEnt } from '~/composables/useMaxEnt'
 import { docAnchor } from '~/composables/optionDocs'
 
 const heatmaps = useMapHeatmaps()
 const {
   mode, cellSize, seasonDay, seasonWindow, activeMode, groupedModes, CELL_SIZES, todayOfYear,
+  maxentVizMode, maxentThreshold, maxentShowCI, maxentModelId,
 } = heatmaps
+
+const { models: maxentModels } = useMaxEnt()
 
 // Ids have to differ between the two hosts, or a label points at the other
 // copy's control and tapping it does nothing.
@@ -106,4 +143,6 @@ const windowSpan = computed(() =>
 }
 .today-btn:disabled { opacity: 0.4; cursor: default; text-decoration: none; }
 .slider-note { margin: 0; font-size: 0.7rem; color: var(--muted); }
+.pop-field--inline { flex-direction: row; align-items: center; justify-content: space-between; }
+.pop-field--inline label { margin-bottom: 0; }
 </style>
