@@ -191,6 +191,18 @@ from where a job is launched), and add the pages that earn a top-level slot to
 it. The open question is which those are, and in what order — the nav is the
 app's table of contents, so what is in it is a claim about what the app is for.
 
+### `WANT-7` MaxEnt observation bias correction
+
+Citizen science platforms (iNaturalist, GBIF) produce severe sampling bias because observations cluster near human infrastructure — roads and trails. Uncorrected, MaxEnt learns human travel patterns instead of true ecological niches, producing suitability maps that mirror trail networks rather than habitat.
+
+**Critical rule:** Do not feed human footprint, population density, or trail distance layers as standard MaxEnt environmental covariates. The model treats them as positive habitat preferences (e.g. concluding a species "thrives" on compacted dirt paths). These layers belong only in background sample weighting.
+
+**Strategy A — Bias Grid (recommended):** Build a sampling effort surface by combining trail proximity rasters, human population density (WorldPop or LandScan), and general observation density into a single continuous raster. Pass it to MaxEnt via the `biasfile=sampling_effort.tif` argument. This instructs MaxEnt to draw more pseudo-absence background points near high-traffic areas where observers actually look, and fewer in inaccessible terrain, canceling out human travel bias.
+
+**Strategy B — Target Group Background (TGB) with conspicuousness filtering:** Restrict pseudo-absence background to ecologically and morphologically comparable taxa (e.g. large, charismatic macrofungi — visible boletes and amanitas — that attract the same observers) rather than all species. Programmatically drop records from casual or one-time users; strictly prioritise Research Grade observations to reduce misidentification noise.
+
+`WANT-1` already names this as an open item; this entry spells out the implementation path so it can be tracked and closed on its own. `V12-ETH-1` in Future Enhancements covers the automated thinning and bias file generation that the bias grid strategy requires.
+
 ### `WANT-6` A dashboard worth landing on
 
 The default view is thin: it opens on not much, and the interesting state — how
