@@ -63,13 +63,23 @@ form that offers the predictors and a "view suitability on map" action that draw
 `result_meta.template` as an overlay with its legend beside the layers it was
 built from. A minted map id expires, so that action has to notice a stale
 template and offer to re-run rather than draw blank tiles. The static-predictor
-first cut also owes a story for the per-date layers (weather, phenology) it
-leaves out, and a spatial-cross-validation score so a surface comes with a number
-for how much to trust it rather than only a picture.
+first cut still owes a story for the per-date layers (weather, phenology) it
+leaves out.
 
-None of it has run against the real Earth Engine API yet — `buildSuitabilityImage`
-and `runModel` are tested against a stub, the same verification debt the map
-layers carry below.
+A surface now comes with a number for how much to trust it. `runModel` runs a
+spatially blocked cross-validation — presences and background assigned to folds
+by the 0.25° square they sit in, not at random, so a test point is not judged
+beside a training neighbour it is correlated with — trains a fold out at a time,
+and reports the held-out AUC as its mean and spread across folds. The AUC itself
+is computed in JavaScript (`rocAuc`, `crossValidationSummary`) from the held-out
+predictions Earth Engine returns, so the arithmetic that judges the model is
+tested without one. The score rides in `result_meta.cv` and shows on the job and
+in the map legend, with a plain grade beside it and an honest "not scored" when
+there are too few presences (`MIN_CV_PRESENCES`) for it to mean anything.
+
+None of it has run against the real Earth Engine API yet — `buildSuitabilityImage`,
+`crossValidate` and `runModel` are tested against a stub, the same verification
+debt the map layers carry below.
 
 Worth finishing once the enrichment output is being loaded as datasets often
 enough that "and then what" is a real question rather than a hypothetical.

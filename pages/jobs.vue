@@ -252,6 +252,7 @@
                 {{ (job.result_meta?.presences || job.params?.points || 0).toLocaleString() }} presences ·
                 {{ (job.params?.predictors || []).length }} predictors ·
                 {{ job.cost_units || job.estimated_units || 0 }} units
+                <template v-if="job.status === 'succeeded'"> · <span class="cv" :class="cvGrade(job)">{{ cvNote(job) }}</span></template>
               </p>
               <p v-else class="job-meta">
                 {{ (job.params?.points || 0).toLocaleString() }} points ·
@@ -533,6 +534,18 @@ function describe(job) {
   return `${p.stages?.length || 0} layers over ${where}`
 }
 
+/** The cross-validation score of a finished model, read for the member. */
+function cvNote(job) {
+  const cv = job.result_meta?.cv
+  if (!cv) return 'not scored (too few presences)'
+  return `AUC ${cv.auc.toFixed(2)} (${cv.grade}, ${cv.folds}-fold spatial CV ±${cv.sd.toFixed(2)})`
+}
+
+/** A class for colouring the score by how trustworthy it is. */
+function cvGrade(job) {
+  return job.result_meta?.cv?.grade || 'none'
+}
+
 /** How long ago a model's surface was fitted, since its map id will not last. */
 function modelAge(job) {
   const at = job.result_meta?.mintedAt
@@ -679,6 +692,7 @@ function openModelOnMap(job) {
     legend: meta.legend || { type: 'ramp', min: '0', max: '1', stops: ['#2c2f6b', '#c6301f'] },
     region: meta.region || null,
     mintedAt: meta.mintedAt || null,
+    cv: meta.cv || null,
   })
   router.push('/map')
 }
@@ -818,6 +832,11 @@ input[type="text"], input[type="number"], input[type="date"] {
 .job-name { font-size: 0.88rem; }
 .when { margin-left: auto; color: var(--muted); font-size: 0.74rem; }
 .job-meta { margin: 4px 0 0; font-size: 0.76rem; color: var(--muted); }
+/* The cross-validation score, coloured by how much to trust the surface. */
+.cv { font-weight: 600; }
+.cv.excellent, .cv.good { color: #3d8b5f; }
+.cv.fair { color: #8a5a1f; }
+.cv.weak, .cv.none { color: #b3492f; }
 
 .status { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em;
   padding: 2px 7px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }

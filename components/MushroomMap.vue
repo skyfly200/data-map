@@ -310,6 +310,13 @@
         Modelled habitat suitability, not observations.
         <template v-if="modelOverlay.age"> Fitted {{ modelOverlay.age }}.</template>
       </div>
+      <div class="legend-note">
+        <template v-if="modelOverlay.cv">
+          <strong>AUC {{ modelOverlay.cv.auc.toFixed(2) }}</strong> ({{ modelOverlay.cv.grade }}) ·
+          {{ modelOverlay.cv.folds }}-fold spatial CV, ±{{ modelOverlay.cv.sd.toFixed(2) }}
+        </template>
+        <template v-else>Not cross-validated — too few observations to score.</template>
+      </div>
       <div v-if="modelOverlay.stale" class="legend-note warn">
         These tiles have stopped loading — the fitted surface expires. Re-run the
         model job to refresh it.
@@ -1171,6 +1178,7 @@ function applyModelOverlay() {
     label: pending.label || 'Model',
     legend: pending.legend || { stops: ['#2c2f6b', '#c6301f'], min: '0', max: '1' },
     age: overlayAge(pending.mintedAt),
+    cv: pending.cv || null,
     stale: false,
   }
 

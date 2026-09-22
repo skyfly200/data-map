@@ -159,7 +159,13 @@ export function estimateModelUnits({ points = 0, predictors = DEFAULT_PREDICTORS
   const stackDepth = Math.max(MIN_PREDICTORS, predictors.length || DEFAULT_PREDICTORS.length)
   // Sampling both point sets across the predictor stack, plus a fixed handful
   // for the fit and the region-wide classification.
-  return sampleChunks * stackDepth + 4
+  let total = sampleChunks * stackDepth + 4
+  // Cross-validation samples the points a second time and trains once per fold,
+  // so it roughly repeats the sampling cost. Only counted when there are enough
+  // presences to run it (see MIN_CV_PRESENCES), which is the same gate runModel
+  // applies before spending anything on it.
+  if (points >= MIN_CV_PRESENCES) total += sampleChunks * stackDepth + CV_FOLDS
+  return total
 }
 
 /**
@@ -174,6 +180,7 @@ export function modelPlan() {
     { key: 'presences', label: 'Sampling the observations', weight: 1 },
     { key: 'background', label: 'Sampling the background', weight: 2 },
     { key: 'fit', label: 'Fitting the model', weight: 1 },
+    { key: 'validate', label: 'Cross-validating', weight: 2 },
     { key: 'project', label: 'Projecting suitability', weight: 2 },
   ]
   const total = steps.reduce((a, s) => a + s.weight, 0)
@@ -183,6 +190,177 @@ export function modelPlan() {
     done += s.weight
     return { key: s.key, label: s.label, from, to: done / total, weight: s.weight }
   })
+}
+
+// ── Cross-validation ─────────────────────────────────────────────────────────
+//
+// A score for how much to trust the surface. The one trap here is spatial
+// autocorrelation: nearby points are alike, so a random train/test split leaves
+// a test point beside a training point and the model looks better than it is.
+// Blocking by location — hold out whole squares of ground, not scattered points
+// — is what makes the number honest, which is why the folds are assigned by
+// block below rather than at random.
+
+export const CV_FOLDS = 4
+export const CV_BLOCK_DEGREES = 0.25
+// Below this, the folds are too small for the AUC to mean anything, so the score
+// is skipped rather than reported with false precision.
+export const MIN_CV_PRESENCES = 40
+
+/** A small deterministic PRNG (mulberry32), so a seed reproduces a run. */
+function seeded(seed) {
+  let a = (seed >>> 0) || 1
+  return () => {
+    a |= 0
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+/**
+ * Background points drawn uniformly across the region, seeded.
+ *
+ * Generated here rather than by ee.FeatureCollection.randomPoints so their
+ * coordinates are known on this side — which is what lets a background point be
+ * assigned to a spatial fold alongside the presences. Uniform in lon/lat is not
+ * area-correct near the poles, but a job's region is a small box, so the
+ * distortion across it is negligible.
+ */
+export function randomBackground(region, n, seed = 1) {
+  const rand = seeded(seed)
+  const out = []
+  const lonSpan = region.east - region.west
+  const latSpan = region.north - region.south
+  for (let i = 0; i < n; i += 1) {
+    out.push([region.west + rand() * lonSpan, region.south + rand() * latSpan])
+  }
+  return out
+}
+
+/**
+ * The block a point falls in, and from it a fold.
+ *
+ * The block is the square of `blockDegrees` it sits in; the fold is a stable hash
+ * of that block's integer coordinates, so every point in one square lands in the
+ * same fold and whole squares are held out together. The seed shuffles which
+ * square goes to which fold without moving points between squares.
+ */
+export function assignFold(lon, lat, { blockDegrees = CV_BLOCK_DEGREES, folds = CV_FOLDS, seed = 1 } = {}) {
+  const bx = Math.floor(lon / blockDegrees)
+  const by = Math.floor(lat / blockDegrees)
+  // A cheap integer hash of (bx, by, seed), made positive, then folded.
+  let h = (bx * 73856093) ^ (by * 19349663) ^ (seed * 83492791)
+  h = (h ^ (h >>> 13)) >>> 0
+  return h % folds
+}
+
+/**
+ * Presence and background points combined and tagged with a spatial fold.
+ *
+ * `presences` and `background` are `[lon, lat]` arrays; the result is one list of
+ * `{ lon, lat, presence, fold }`, ready to become an Earth Engine FeatureCollection.
+ */
+export function foldPoints(presences, background, { folds = CV_FOLDS, blockDegrees = CV_BLOCK_DEGREES, seed = 1 } = {}) {
+  const tag = (presence) => ([lon, lat]) => ({
+    lon, lat, presence, fold: assignFold(lon, lat, { blockDegrees, folds, seed }),
+  })
+  return [...presences.map(tag(1)), ...background.map(tag(0))]
+}
+
+/**
+ * Area under the ROC curve, from predicted scores and 0/1 labels.
+ *
+ * The rank form of the Mann–Whitney U statistic: the probability that a random
+ * presence scores above a random background point. 0.5 is a coin toss, 1.0 is
+ * perfect separation. Ties share the average rank so a flat predictor scores 0.5
+ * rather than something spuriously off it. Pure, so it is tested against known
+ * cases without a model.
+ */
+export function rocAuc(scores, labels) {
+  const n = scores.length
+  const pos = labels.reduce((a, l) => a + (l ? 1 : 0), 0)
+  const neg = n - pos
+  if (!pos || !neg) return null
+
+  // Rank the scores, averaging ties.
+  const order = scores.map((s, i) => ({ s, l: labels[i] })).sort((a, b) => a.s - b.s)
+  const ranks = new Array(n)
+  let i = 0
+  while (i < n) {
+    let j = i
+    while (j + 1 < n && order[j + 1].s === order[i].s) j += 1
+    const avg = (i + j) / 2 + 1 // 1-based average rank across the tie group
+    for (let k = i; k <= j; k += 1) ranks[k] = avg
+    i = j + 1
+  }
+  let rankSumPos = 0
+  for (let k = 0; k < n; k += 1) if (order[k].l) rankSumPos += ranks[k]
+  return (rankSumPos - (pos * (pos + 1)) / 2) / (pos * neg)
+}
+
+/**
+ * Roll the per-fold held-out predictions up into one score.
+ *
+ * `rows` is `[{ fold, presence, prob }]` — the held-out predictions from every
+ * fold. Each fold's AUC is computed on its own held-out block, and the reported
+ * score is their mean with the spread beside it, because a good mean over folds
+ * that disagree wildly is not the same as a good mean over folds that agree.
+ */
+export function crossValidationSummary(rows, { folds = CV_FOLDS } = {}) {
+  const perFold = []
+  for (let f = 0; f < folds; f += 1) {
+    const inFold = rows.filter((r) => r.fold === f)
+    if (!inFold.length) continue
+    const auc = rocAuc(inFold.map((r) => r.prob), inFold.map((r) => r.presence))
+    if (auc !== null) perFold.push(auc)
+  }
+  if (!perFold.length) return null
+  const mean = perFold.reduce((a, b) => a + b, 0) / perFold.length
+  const variance = perFold.reduce((a, b) => a + (b - mean) ** 2, 0) / perFold.length
+  return {
+    auc: Number(mean.toFixed(3)),
+    sd: Number(Math.sqrt(variance).toFixed(3)),
+    folds: perFold.length,
+    blockDegrees: CV_BLOCK_DEGREES,
+    // A plain reading of the number, so a member does not have to know what AUC
+    // is to know whether to trust the map.
+    grade: mean >= 0.9 ? 'excellent' : mean >= 0.8 ? 'good' : mean >= 0.7 ? 'fair' : 'weak',
+  }
+}
+
+/**
+ * Train and score the model across spatial folds, in Earth Engine.
+ *
+ * `points` is the folded `{ lon, lat, presence, fold }` list. Each fold is held
+ * out in turn: the model is trained on the others and used to score the held-out
+ * block, and the scored held-out features are merged into one collection carrying
+ * `fold`, `presence` and `prob`. The AUC itself is computed in JavaScript from
+ * the evaluated result (see crossValidationSummary) — Earth Engine trains and
+ * predicts; the arithmetic that judges it stays testable here.
+ */
+export function crossValidate(ee, { stack, points, predictors, folds = CV_FOLDS }) {
+  const features = points.map((p) => ee.Feature(
+    ee.Geometry.Point([p.lon, p.lat]), { presence: p.presence, fold: p.fold },
+  ))
+  const withBands = stack.sampleRegions({
+    collection: ee.FeatureCollection(features), properties: ['presence', 'fold'], scale: 100, geometries: false,
+  })
+
+  let heldOut = null
+  for (let f = 0; f < folds; f += 1) {
+    const train = withBands.filter(ee.Filter.neq('fold', f))
+    const test = withBands.filter(ee.Filter.eq('fold', f))
+    const classifier = ee.Classifier.amnhMaxent().train({
+      features: train, classProperty: 'presence', inputProperties: predictors,
+    })
+    // classifyProbability-style output under the name 'prob'.
+    const scored = test.classify(classifier, 'prob')
+    heldOut = heldOut ? heldOut.merge(scored) : scored
+  }
+  // Only the three columns the summary reads, so the evaluated payload is small.
+  return heldOut.select(['fold', 'presence', 'prob'], null, false)
 }
 
 /**

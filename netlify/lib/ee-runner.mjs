@@ -32,7 +32,8 @@ import { GAP_REMAP, TEXTURE_CLASSES, visParams } from './ee-tile-layers.mjs'
 import { orderForGreatGroup } from './soil-taxonomy.mjs'
 import { derivedIndices } from './terrain-indices.mjs'
 import {
-  DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, backgroundPlan, buildSuitabilityImage, suitabilityLegend,
+  DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, MIN_CV_PRESENCES, backgroundPlan, buildSuitabilityImage,
+  crossValidate, crossValidationSummary, foldPoints, predictorStack, randomBackground, suitabilityLegend,
 } from './maxent.mjs'
 
 const MERIT_HYDRO = 'MERIT/Hydro/v1_0_1'
@@ -635,8 +636,31 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
     points.map(([lon, lat]) => ee.Feature(ee.Geometry.Point([lon, lat]))),
   )
 
-  onProgress({ fraction: 0.5, stage: 'fit', message: 'Fitting the model…' })
+  onProgress({ fraction: 0.4, stage: 'fit', message: 'Fitting the model…' })
   const { image, vis } = buildSuitabilityImage(ee, { presences, predictors, background, region, seed: 1 })
+
+  // A spatially blocked cross-validation score, when there are enough presences
+  // for it to mean anything. Held-out predictions come back from Earth Engine;
+  // the AUC is computed here (see crossValidationSummary). A failure here does
+  // not fail the surface — a model with no score is still a model.
+  let cv = null
+  const bgN = backgroundPlan({ presenceCount: points.length, background }).n
+  if (points.length >= MIN_CV_PRESENCES) {
+    onProgress({ fraction: 0.6, stage: 'validate', message: 'Cross-validating…' })
+    try {
+      const stack = predictorStack(ee, predictors)
+      const folded = foldPoints(points, randomBackground(region, bgN, 7), { seed: 1 })
+      const heldOut = crossValidate(ee, { stack, points: folded, predictors })
+      const rows = (await evaluate(heldOut))?.features?.map((f) => ({
+        fold: Number(f.properties.fold),
+        presence: Number(f.properties.presence),
+        prob: Number(f.properties.prob),
+      })) || []
+      cv = crossValidationSummary(rows)
+    } catch {
+      cv = null
+    }
+  }
 
   onProgress({ fraction: 0.85, stage: 'project', message: 'Projecting suitability…' })
   const template = await withRetry(() => mintTemplate(image, vis), { label: 'model tiles' })
@@ -648,10 +672,13 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
       kind: 'model',
       predictors,
       presences: points.length,
-      background: backgroundPlan({ presenceCount: points.length, background }).n,
+      background: bgN,
       region,
       vis,
       legend: suitabilityLegend(),
+      // Null when there were too few presences to score honestly, or the score
+      // failed; the UI reads its absence as "not scored", not "scored zero".
+      cv,
       // A minted template carries a map id, which expires; the member re-runs
       // the job to refresh it. Stamped so the UI can say how old the surface is.
       mintedAt: new Date().toISOString(),
