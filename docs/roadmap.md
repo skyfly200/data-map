@@ -27,17 +27,37 @@ section "Roadmap" rather than claiming otherwise.
 The intended method is a presence-only species distribution model, MaxEnt the
 obvious first: the enrichment already produces exactly the feature matrix such a
 model reads — every environmental layer sampled at each presence point, at its
-own date — so the missing pieces are background/pseudo-absence sampling, the fit
-itself, and projecting the fitted surface back across a region as a habitat
-suitability raster the map can draw beside the layers it was built from.
+own date. The pieces were background/pseudo-absence sampling, the fit itself, and
+projecting the fitted surface back across a region as a habitat suitability
+raster the map can draw beside the layers it was built from.
+
+The modelling core now ships as `netlify/lib/maxent.mjs`: a predictor registry
+(terrain, NDVI and standing soil moisture, all free and static), request
+validation (`normaliseModelSpec`), the effort-aware background plan
+(`backgroundPlan`, which never draws fewer background points than presences and
+weights toward them by default), and `buildSuitabilityImage`, which samples the
+predictors at the presences and at random background, trains
+`ee.Classifier.amnhMaxent`, and classifies the stack into a 0–1 suitability
+image. It is split so only that last function touches `ee`, and it is tested end
+to end against a stub.
 
 The sampling-bias problem is not a footnote here: presence-only modeling
 inherits the observer-effort bias the caveats already name, so background
 sampling has to be weighted by effort and every surface labelled with the
-confounds behind it, the same way the density heatmaps already are.
+confounds behind it, the same way the density heatmaps already are. The
+background plan holds the first half; the surface labelling is still owed.
 
-Worth doing once the enrichment output is being loaded as datasets often enough
-that "and then what" is a real question rather than a hypothetical.
+What remains is the wiring, not the model. A `model` job kind has to carry the
+presence points the worker already loads (`loadSource`) into Earth Engine as a
+FeatureCollection, hand them to `buildSuitabilityImage`, mint a tile template
+from the result rather than the GeoJSON an enrichment job writes, and store it so
+the map can draw it as a layer beside the predictors. The static-predictor first
+cut also owes a story for the per-date layers (weather, phenology) it leaves out,
+and a spatial-cross-validation score so a surface comes with a number for how
+much to trust it rather than only a picture.
+
+Worth finishing once the enrichment output is being loaded as datasets often
+enough that "and then what" is a real question rather than a hypothetical.
 
 ### Member-defined enrichment stages
 
