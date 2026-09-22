@@ -15,8 +15,13 @@
 // already does that) or store the result. It turns "these presences, these
 // predictors, this region" into an Earth Engine image and how to paint it.
 
-import { SRTM, S2_SR, ERA5_DAILY, CHIRPS_DAILY, SpecError, normaliseBounds } from './ee-pipeline.mjs'
+import { SRTM, S2_SR, ERA5_DAILY, CHIRPS_DAILY, SOLUS100, SpecError, normaliseBounds } from './ee-pipeline.mjs'
 import { CHUNK_SIZE } from './quotas.mjs'
+
+// Additional asset IDs used only by the extended model predictor set.
+const WORLDCLIM_BIO = 'WORLDCLIM/V1/BIO'
+const NLCD_TCC = 'USGS/NLCD_RELEASES/2021_REL/TCC/v2021-4'
+const HANSEN_GFC = 'UMD/hansen/global_forest_change_2023_v1_11'
 
 /**
  * The predictors a suitability model may use.
@@ -88,12 +93,127 @@ export const MAXENT_PREDICTORS = {
       .subtract(273.15)
       .rename('temp_normal'),
   },
+
+  // ── WorldClim bioclimatic variables ───────────────────────────────────────
+  // Static 1 km² climate normals — more commonly used in MaxEnt literature than
+  // ERA5 means, and much cheaper to sample (one image, not a collection mean).
+  annual_precip: {
+    label: 'Annual precipitation (WorldClim)',
+    image: (ee) => ee.Image(WORLDCLIM_BIO).select('bio12').rename('annual_precip'),
+  },
+  annual_temp: {
+    label: 'Mean annual temperature (WorldClim)',
+    // WorldClim bio01 is in °C × 10; divide to get the natural scale.
+    image: (ee) => ee.Image(WORLDCLIM_BIO).select('bio01').divide(10).rename('annual_temp'),
+  },
+
+  // ── Extended terrain derivatives ──────────────────────────────────────────
+  northness: {
+    label: 'Northness (cos aspect)',
+    // cos(aspect in radians): +1 is north-facing, −1 is south-facing. Wraps the
+    // circular aspect into a linear value MaxEnt can use directly.
+    image: (ee) => ee.Terrain.aspect(ee.Image(SRTM).select('elevation'))
+      .multiply(Math.PI / 180)
+      .cos()
+      .rename('northness'),
+  },
+  tpi: {
+    label: 'Topographic position index (300 m)',
+    // Deviation from a 300 m focal mean — positive is a ridge, negative is a
+    // valley. Reprojected before the kernel so it does not blow up memory.
+    image: (ee) => {
+      const dem = ee.Image(SRTM).select('elevation')
+      const smooth = dem.resample('bilinear').reproject({ crs: 'EPSG:3857', scale: 40 })
+      return dem.subtract(smooth.reduceNeighborhood({
+        reducer: ee.Reducer.mean(),
+        kernel: ee.Kernel.circle(300, 'meters'),
+      })).rename('tpi')
+    },
+  },
+  twi: {
+    label: 'Topographic wetness index',
+    // Simplified TWI = ln(1 / tan(slope + ε)). Cheap proxy for drainage
+    // accumulation at the pixel scale; the full upslope-area form needs a flow
+    // model that does not fit a serverless timeout.
+    image: (ee) => {
+      const slope = ee.Terrain.slope(ee.Image(SRTM).select('elevation'))
+      return ee.Image(1).divide(slope.add(0.001).tan()).log().rename('twi')
+    },
+  },
+
+  // ── Vegetation & forest structure ─────────────────────────────────────────
+  ndmi: {
+    label: 'Vegetation moisture (NDMI)',
+    image: (ee) => ee.ImageCollection(S2_SR)
+      .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 40))
+      .select(['B8', 'B11'])
+      .median()
+      .normalizedDifference(['B8', 'B11'])
+      .rename('ndmi'),
+  },
+  canopy: {
+    label: 'Tree canopy cover (NLCD)',
+    image: (ee) => ee.ImageCollection(NLCD_TCC)
+      .mosaic()
+      .select('Science_Percent_Tree_Canopy_Cover')
+      .rename('canopy'),
+  },
+  forest_loss: {
+    label: 'Historical forest loss (Hansen)',
+    // Binary: any Hansen-detected loss since 2000. A one-layer summary of
+    // disturbance history without the date axis.
+    image: (ee) => ee.Image(HANSEN_GFC).select('loss').rename('forest_loss'),
+  },
+
+  // ── Soil properties ───────────────────────────────────────────────────────
+  clay_percent: {
+    label: 'Clay content (SOLUS, 0 cm)',
+    image: (ee) => ee.ImageCollection(SOLUS100)
+      .filter(ee.Filter.eq('system:index', 'claytotal'))
+      .first()
+      .select('r_0_cm_p')
+      .rename('clay_percent'),
+  },
+  soil_depth_cm: {
+    label: 'Soil depth to bedrock (SOLUS)',
+    image: (ee) => ee.ImageCollection(SOLUS100)
+      .filter(ee.Filter.eq('system:index', 'anylithicdpt'))
+      .first()
+      .select('r_cm_p')
+      .rename('soil_depth_cm'),
+  },
+  sand_percent: {
+    label: 'Sand content (SOLUS, 0 cm)',
+    image: (ee) => ee.ImageCollection(SOLUS100)
+      .filter(ee.Filter.eq('system:index', 'sandtotal'))
+      .first()
+      .select('r_0_cm_p')
+      .rename('sand_percent'),
+  },
 }
 
 export const PREDICTOR_KEYS = Object.keys(MAXENT_PREDICTORS)
 
 /** The set switched on by default: terrain plus the two cheap standing indices. */
 export const DEFAULT_PREDICTORS = ['elevation', 'slope', 'aspect', 'ndvi', 'soil_moisture']
+
+/**
+ * All predictors offered for auto-optimization: the full covariate suite from
+ * which the scout model picks the most useful subset. Ordered so that cheaper,
+ * widely-available layers come first — if the scout is short on time, the early
+ * ones are more likely to stay in.
+ */
+export const ALL_PREDICTORS = [
+  'elevation', 'slope', 'northness', 'tpi', 'twi',
+  'ndvi', 'ndmi', 'canopy',
+  'annual_precip', 'annual_temp',
+  'precip_normal', 'temp_normal',
+  'sand_percent', 'clay_percent', 'soil_depth_cm',
+  'forest_loss', 'soil_moisture',
+]
+
+/** Minimum % contribution a predictor must contribute to survive the scout filter. */
+export const DEFAULT_CONTRIBUTION_THRESHOLD = 2.0
 
 // A model needs enough of both to mean anything: too few presences and it fits
 // noise, too few background points and it has nothing to contrast them with.
@@ -148,7 +268,16 @@ export function normaliseModelSpec(input = {}, { normaliseSource } = {}) {
 
   const title = String(input.title || '').trim().slice(0, 120)
 
-  return { kind: 'model', predictors, background, region, source, title }
+  // Two-pass auto-optimization: train a scout model over the full requested
+  // predictor set, evaluate variable contributions, then re-train a production
+  // model using only predictors above the contribution threshold.
+  const autoOptimize = Boolean(input.autoOptimize)
+  const rawThreshold = input.contributionThreshold === undefined
+    ? DEFAULT_CONTRIBUTION_THRESHOLD : Number(input.contributionThreshold)
+  const contributionThreshold = Number.isFinite(rawThreshold) && rawThreshold >= 0
+    ? rawThreshold : DEFAULT_CONTRIBUTION_THRESHOLD
+
+  return { kind: 'model', predictors, background, region, source, title, autoOptimize, contributionThreshold }
 }
 
 /**
