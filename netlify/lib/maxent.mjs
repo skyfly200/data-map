@@ -173,6 +173,31 @@ export function backgroundPlan({ presenceCount = 0, background = DEFAULT_BACKGRO
 }
 
 /**
+ * A stable cache key for a model's fitted output.
+ *
+ * Fitting a model — sampling, training, cross-validating, projecting — is the
+ * expensive part of a model job, and it is identical for everyone asking for the
+ * same predictors over the same region from the same source. So two members
+ * modelling the same thing should share one mint rather than spend it twice
+ * (V12-PERF-2). The key is everything the fit depends on, rounded and sorted so
+ * two equivalent requests produce one key; the presences themselves are pinned
+ * by the source, which is part of it.
+ */
+export function modelCacheKey(spec = {}, region = null) {
+  const predictors = [...(spec.predictors || DEFAULT_PREDICTORS)].sort().join(',')
+  const background = backgroundPlan({ background: spec.background || DEFAULT_BACKGROUND }).n
+  const src = spec.source || {}
+  const source = src.type === 'dataset'
+    ? `dataset:${src.slug}`
+    : `bbox:${src.taxon || ''}:${src.dateFrom || ''}:${src.dateTo || ''}`
+  const r = region || spec.region
+  const box = r
+    ? ['north', 'south', 'east', 'west'].map((k) => Number(r[k]).toFixed(4)).join(',')
+    : 'auto'
+  return `model|${predictors}|bg=${background}|${source}|region=${box}`
+}
+
+/**
  * Roughly what a model job costs, in the same "one Earth Engine request" units a
  * quota is measured in.
  *
