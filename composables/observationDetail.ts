@@ -7,18 +7,38 @@
 // No framework imports, deliberately: reaching for useObservations here would
 // drag Nuxt's auto-imports in and make this module unloadable outside the app,
 // which is exactly what makes the logic below testable in plain Node.
-const hasValue = (v) => v !== null && v !== undefined && v !== ''
+const hasValue = (v: any): v is (string | number | boolean) => v !== null && v !== undefined && v !== ''
 
 const COMPASS = [
   'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
   'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW',
 ]
 
+export interface DetailRow {
+  label: string
+  value: string
+  tip: string
+  warn?: boolean
+  hint?: string | null
+  bar?: number | null
+}
+
+export interface DetailSection {
+  title: string
+  rows: DetailRow[]
+}
+
+export interface DetailCtx {
+  elevLabel?: (v: any) => string
+  tempLabel?: (v: any) => string
+  precisionLabel?: (v: any) => string
+}
+
 /**
  * The 16-point compass name for a bearing. "213°" is a number; "SSW" is the
  * thing a forager actually wants to know about a slope.
  */
-export function compassPoint(deg) {
+export function compassPoint(deg: any): string {
   // Not just Number.isFinite: Number(null) and Number('') are both 0, so a
   // missing bearing would confidently report that the slope faces north.
   if (!hasValue(deg) || typeof deg === 'boolean') return ''
@@ -43,9 +63,9 @@ export const PRCP_OFFSETS = [0, 1, 2, 3, 4, 5, 6]
 /**
  * Total rain in the week before the find, and how many of the seven days
  * actually carried a reading — a total over two days is not a week's rain, and
- * saying so is the difference between a number and a misleading one.
+// saying so is the difference between a number and a misleading one.
  */
-export function rainLeadUp(props = {}) {
+export function rainLeadUp(props: Record<string, any> = {}) {
   let total = 0
   let days = 0
   for (const o of PRCP_OFFSETS) {
@@ -61,17 +81,8 @@ export function rainLeadUp(props = {}) {
 
 /**
  * What each row in the drawer means, for the hover explanation.
- *
- * Every row gets one. A drawer full of numbers with no units and no provenance
- * is a wall: "0.62" for wind exposure says nothing about whether that is a
- * ridge or a hollow, or whether it was measured or modelled. Where a value is
- * derived rather than observed, the tip says so — several of these are indices
- * computed from terrain, and reading them as measurements would be wrong.
- *
- * Kept beside the rows rather than in optionDocs.js, which documents CONTROLS.
- * These describe a record's own fields, and the two lists have no overlap.
  */
-export const STAT_TIPS = {
+export const STAT_TIPS: Record<string, string> = {
   Observed: 'The date the fungus was seen, and its day of the year. Day of year is what the seasonal charts bin on.',
   Place: 'The locality iNaturalist recorded. Often a place name rather than the exact spot.',
   Coordinates: 'Where the terrain and weather below were sampled. Check the precision row before trusting them.',
@@ -95,32 +106,29 @@ export const STAT_TIPS = {
 }
 
 /** A 0–1 index as a percentage of its scale, for the little bar in the drawer. */
-export function indexFraction(value, [lo, hi] = [0, 1]) {
+export function indexFraction(value: any, [lo, hi] = [0, 1] as [number, number]): number | null {
   const n = Number(value)
   if (!Number.isFinite(n) || hi === lo) return null
   return Math.min(1, Math.max(0, (n - lo) / (hi - lo)))
 }
 
-const num = (v, dp = 2) => Number(v).toFixed(dp)
+const num = (v: any, dp = 2) => Number(v).toFixed(dp)
 
 /**
  * The rows of the drawer, grouped, with empty groups dropped.
- *
- * `ctx` carries the unit-aware formatters, because elevation and temperature
- * follow the ft/m and °F/°C toggles and this module must not reach for global
- * state to find them.
  */
-export function detailSections(props, ctx = {}) {
+export function detailSections(props: Record<string, any> | null | undefined, ctx: DetailCtx = {}): DetailSection[] {
   if (!props) return []
   const { elevLabel = (v) => `${v} m`, tempLabel = (v) => `${v}°`, precisionLabel = null } = ctx
-  // The tip is attached here rather than at each call site, so a row added
-  // later carries its explanation automatically or shows up in the test that
-  // asserts every row has one.
-  const row = (label, value, extra = {}) => ({ label, value, tip: STAT_TIPS[label] || '', ...extra })
-  const sections = []
+  
+  const row = (label: string, value: string, extra: Partial<DetailRow> = {}): DetailRow => ({ 
+    label, value, tip: STAT_TIPS[label] || '', ...extra 
+  })
+  
+  const sections: DetailSection[] = []
 
   // ── Record ────────────────────────────────────────────────────────────────
-  const record = []
+  const record: DetailRow[] = []
   if (hasValue(props.date)) {
     const doy = hasValue(props.day_of_year) ? ` · day ${Math.round(Number(props.day_of_year))}` : ''
     record.push(row('Observed', `${props.date}${doy}`))
@@ -133,25 +141,18 @@ export function detailSections(props, ctx = {}) {
   }
   if (hasValue(props.location_precision) && precisionLabel) {
     record.push(row('Precision', precisionLabel(props.location_precision), {
-      // The one field that changes how everything below it should be read.
       warn: props.location_precision !== 'precise',
       hint: props.location_precision === 'precise'
         ? null
         : 'Terrain below was sampled at this point, which iNaturalist may have moved.',
     }))
   }
-  // The accuracy radius in metres, beside the precision word. "Coarse" says
-  // the point cannot be trusted for terrain; "±2,400 m" says how far off it
-  // could be, which is the difference between "ignore this" and "this is the
-  // right hillside but maybe the wrong gully".
   const accuracy = props.public_positional_accuracy ?? props.positional_accuracy
   if (hasValue(accuracy) && Number.isFinite(Number(accuracy))) {
     const m = Number(accuracy)
     record.push(row('Accuracy', m >= 1000
       ? `±${(m / 1000).toFixed(m >= 10000 ? 0 : 1)} km`
       : `±${Math.round(m)} m`, {
-      // A radius wider than the terrain sampling is worth flagging: at that
-      // point the elevation and slope below describe a different place.
       warn: m > COARSE_ACCURACY_M,
       hint: m > COARSE_ACCURACY_M
         ? 'Wider than the terrain below was sampled at, so treat those as the district, not the spot.'
@@ -167,7 +168,7 @@ export function detailSections(props, ctx = {}) {
   if (record.length) sections.push({ title: 'Record', rows: record })
 
   // ── Terrain ───────────────────────────────────────────────────────────────
-  const terrain = []
+  const terrain: DetailRow[] = []
   if (hasValue(props.elevation)) terrain.push(row('Elevation', elevLabel(props.elevation)))
   if (hasValue(props.slope)) terrain.push(row('Slope', `${num(props.slope, 1)}°`))
   if (hasValue(props.aspect)) {
@@ -175,25 +176,21 @@ export function detailSections(props, ctx = {}) {
     terrain.push(row('Faces', `${point} · ${num(props.aspect, 0)}°`))
   }
   if (hasValue(props.land_cover_label)) terrain.push(row('Land cover', props.land_cover_label))
-  // No per-field hint here any more: these were definitions, and definitions
-  // now live in STAT_TIPS where every row has one and they can be read on
-  // hover. The always-visible hint is reserved for a caveat about THIS record —
-  // a blurred position, an unconfirmed identification, a partial rain week —
-  // which is worth the space precisely because it is not always true.
+  
   for (const [key, label, bounds] of [
-    ['ndvi', 'NDVI', [-1, 1]],
-    ['soil_moisture', 'Soil moisture', [0, 1]],
-    ['water_retention', 'Wetness index', [0, 1]],
-    ['solar_exposure', 'Solar exposure', [0, 1]],
-    ['wind_exposure', 'Wind exposure', [0, 1]],
-  ]) {
+    ['ndvi', 'NDVI', [-1, 1] as [number, number]],
+    ['soil_moisture', 'Soil moisture', [0, 1] as [number, number]],
+    ['water_retention', 'Wetness index', [0, 1] as [number, number]],
+    ['solar_exposure', 'Solar exposure', [0, 1] as [number, number]],
+    ['wind_exposure', 'Wind exposure', [0, 1] as [number, number]],
+  ] as const) {
     if (!hasValue(props[key])) continue
     terrain.push(row(label, num(props[key], 2), { bar: indexFraction(props[key], bounds) }))
   }
   if (terrain.length) sections.push({ title: 'Terrain', rows: terrain })
 
   // ── Weather ───────────────────────────────────────────────────────────────
-  const weather = []
+  const weather: DetailRow[] = []
   if (hasValue(props.tmax)) weather.push(row('High that day', tempLabel(props.tmax)))
   if (hasValue(props.tmin)) weather.push(row('Low that day', tempLabel(props.tmin)))
   const rain = rainLeadUp(props)
@@ -210,12 +207,11 @@ export function detailSections(props, ctx = {}) {
 }
 
 /**
- * Which enrichment stages have not reached this record. Saying so beats leaving
- * a gap the reader has to notice for themselves.
+ * Which enrichment stages have not reached this record.
  */
-export function missingEnrichment(props) {
+export function missingEnrichment(props: Record<string, any> | null | undefined): string[] {
   if (!props) return []
-  const missing = []
+  const missing: string[] = []
   if (!hasValue(props.slope) && !hasValue(props.aspect)) missing.push('terrain')
   if (!hasValue(props.ndvi) && !hasValue(props.soil_moisture)) missing.push('satellite')
   if (!rainLeadUp(props)) missing.push('weather')

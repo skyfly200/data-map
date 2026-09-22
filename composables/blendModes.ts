@@ -11,22 +11,28 @@
 // tile pane. The browser does the compositing, so there is no cost per tile and
 // nothing to re-fetch when the mode changes.
 
+export interface BlendMode {
+  key: string
+  label: string
+  note: string
+}
+
 /**
  * The modes worth offering, in the order they are useful rather than
  * alphabetically.
  *
  * Not the full CSS list: hue, saturation and color operate on a colour wheel
  * and produce results nobody can predict from a raster, and the separable
- * modes below cover what a map stack actually needs.
+// modes below cover what a map stack actually needs.
  */
-export const BLEND_MODES = [
+export const BLEND_MODES: BlendMode[] = [
   { key: 'normal', label: 'Normal', note: 'Draw over, nothing combined.' },
   { key: 'multiply', label: 'Multiply', note: 'Keeps what is dark in both. Relief over colour.' },
   { key: 'screen', label: 'Screen', note: 'Keeps what is light in both. Burn scars over terrain.' },
   { key: 'overlay', label: 'Overlay', note: 'Multiply the darks, screen the lights. More contrast.' },
   { key: 'darken', label: 'Darken', note: 'The darker of the two, channel by channel.' },
   { key: 'lighten', label: 'Lighten', note: 'The lighter of the two, channel by channel.' },
-  { key: 'difference', label: 'Difference', note: 'What the two disagree about. For comparing.' },
+  { key: 'difference', label: 'Difference', note: 'What the two disagree and opposite.' },
   { key: 'luminosity', label: 'Luminosity', note: 'This layer’s brightness, the colour below.' },
 ]
 
@@ -36,12 +42,12 @@ const KEYS = BLEND_MODES.map((m) => m.key)
 export const NORMAL = 'normal'
 
 /** Whether a mode is one this app draws with. */
-export function isBlendMode(mode) {
-  return KEYS.includes(mode)
+export function isBlendMode(mode: string | undefined): boolean {
+  return KEYS.includes(mode || '')
 }
 
 /** The label for a mode, for a button that has to say what it is set to. */
-export function blendLabel(mode) {
+export function blendLabel(mode: string | undefined): string {
   return BLEND_MODES.find((m) => m.key === mode)?.label || 'Normal'
 }
 
@@ -60,7 +66,7 @@ export function blendLabel(mode) {
  * An unrecognised value behaves as if it were absent rather than reaching the
  * browser, because a stored preference outlives the list it was chosen from.
  */
-export function effectiveBlend(key, { overrides = {}, fallback = NORMAL, drawn = 0 } = {}) {
+export function effectiveBlend(key: string, { overrides = {}, fallback = NORMAL, drawn = 0 } = {}): string {
   const own = overrides?.[key]
   if (isBlendMode(own)) return own
   if (drawn > 1 && isBlendMode(fallback)) return fallback
@@ -72,10 +78,10 @@ export function effectiveBlend(key, { overrides = {}, fallback = NORMAL, drawn =
  *
  * Solo hides the rest without switching them off: the question it answers is
  * "what is this one contributing", and answering it must not cost you the stack
- * you built. A solo key that is not on is ignored rather than drawing nothing,
- * which is what happens if the soloed layer is switched off from elsewhere.
+// you built. A solo key that is not on is ignored rather than drawing nothing,
+// which is what happens if the soloed layer is switched off from elsewhere.
  */
-export function drawnKeys(active = [], solo = '') {
+export function drawnKeys(active: string[] = [], solo = ''): string[] {
   const keys = [...active]
   if (solo && keys.includes(solo)) return [solo]
   return keys
@@ -86,9 +92,9 @@ export function drawnKeys(active = [], solo = '') {
  *
  * Returns a new array. `delta` is a number of places, or 'top' or 'bottom' —
  * with eight layers on, "up" eight times to reach the top is not an ordering
- * control, it is a counting exercise.
+// control, but a counting exercise.
  */
-export function reorderStack(order = [], key, delta) {
+export function reorderStack(order: string[] = [], key: string, delta: string | number): string[] {
   const list = [...order]
   const i = list.indexOf(key)
   if (i < 0) return list

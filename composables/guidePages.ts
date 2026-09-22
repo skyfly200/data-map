@@ -13,8 +13,15 @@
 // No Nuxt, no ?raw imports, nothing bundler-specific: the tests read this and
 // then read the Markdown off disk to check the two agree.
 
+export interface GuidePage {
+  slug: string
+  file: string | null
+  title: string
+  blurb: string
+}
+
 /** The pages, in reading order. An empty slug is /guide itself. */
-export const GUIDE_PAGES = [
+export const GUIDE_PAGES: GuidePage[] = [
   {
     slug: '',
     file: 'index.md',
@@ -80,17 +87,17 @@ export const GUIDE_PAGES = [
 ]
 
 /** The URL of a guide page. */
-export function guidePath(slug) {
+export function guidePath(slug: string): string {
   return slug ? `/guide/${slug}` : '/guide'
 }
 
 /** Every guide URL, for the offline shell. */
-export function guidePaths() {
+export function guidePaths(): string[] {
   return GUIDE_PAGES.map((p) => guidePath(p.slug))
 }
 
 /** The page with this slug, or null. */
-export function guidePage(slug) {
+export function guidePage(slug: string | null | undefined): GuidePage | null {
   const want = String(slug || '')
   return GUIDE_PAGES.find((p) => p.slug === want) || null
 }
@@ -103,7 +110,7 @@ export function guidePage(slug) {
  * section about a page that no longer exists, and the nearest honest answer to
  * the question it was asking is the data-quality tab.
  */
-export const LEGACY_ANCHORS = {
+export const LEGACY_ANCHORS: Record<string, string> = {
   'start-here': '#quick-start',
   map: 'map#',
   'color-and-size': 'map#color-and-size',
@@ -143,7 +150,7 @@ export const LEGACY_ANCHORS = {
 }
 
 /** The slug and anchor a `slug#anchor` string names. */
-export function splitTarget(target) {
+export function splitTarget(target: string | null | undefined) {
   const [slug = '', anchor = ''] = String(target || '').split('#')
   return { slug, anchor }
 }

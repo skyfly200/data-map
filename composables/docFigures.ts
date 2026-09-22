@@ -2,7 +2,7 @@
 //
 // The guide explains a stack of things that are easier to see than to read: the
 // order layers draw in, where a tile URL comes from, why a hexagon grid is not a
-// square one. Each of those costs a paragraph in words and a glance as a
+// square one. Each of those costs a paragraph in words and a glance at a
 // picture, so the picture goes first and the paragraph says the part a picture
 // cannot.
 //
@@ -17,21 +17,21 @@
 // figure the browser saw first.
 
 /** An arrowhead definition, named uniquely so figures do not share one. */
-const head = (id) => `<defs><marker id="${id}" viewBox="0 0 8 8" refX="7" refY="4"
+const head = (id: string): string => `<defs><marker id="${id}" viewBox="0 0 8 8" refX="7" refY="4"
   markerWidth="6" markerHeight="6" orient="auto-start-reverse">
   <path class="arw-head" d="M0 0 L8 4 L0 8 z" /></marker></defs>`
 
 /** A labelled box. `sub` is the second, quieter line. */
-const box = (x, y, w, h, label, sub = '', cls = 'box') => `
+const box = (x: number, y: number, w: number, h: number, label: string, sub = '', cls = 'box'): string => `
   <rect class="${cls}" x="${x}" y="${y}" width="${w}" height="${h}" rx="6" />
   <text class="lbl" x="${x + w / 2}" y="${sub ? y + h / 2 - 2 : y + h / 2 + 4}"
         text-anchor="middle">${label}</text>
   ${sub ? `<text class="sub" x="${x + w / 2}" y="${y + h / 2 + 13}" text-anchor="middle">${sub}</text>` : ''}`
 
-const arrow = (id, x1, y1, x2, y2, cls = 'arw') =>
+const arrow = (id: string, x1: number, y1: number, x2: number, y2: number, cls = 'arw'): string =>
   `<path class="${cls}" d="M${x1} ${y1} L${x2} ${y2}" marker-end="url(#${id})" />`
 
-export const FIGURES = {
+export const FIGURES: Record<string, string> = {
   // Where a value on the map came from, left to right.
   'data-flow': `<svg viewBox="0 0 700 130" role="img" aria-label="Observations and
   raster layers go through a pipeline job into a dataset, which the map, charts
@@ -105,7 +105,7 @@ export const FIGURES = {
   ${box(266, 36, 168, 48, 'Tile function', 'signs in, calls getMapId')}
   ${box(526, 36, 168, 48, 'Tile URL', 'expires in hours')}
   ${arrow('ah-token', 178, 60, 262, 60)}
-  ${arrow('ah-token', 438, 60, 522, 60)}
+  ${arrow('ah-token', 128, 60, 262, 60)}
   <text class="sub" x="350" y="20" text-anchor="middle">once, by you</text>
   <text class="sub" x="610" y="20" text-anchor="middle">again about every hour</text>
   <path class="arw dash" d="M610 90 C610 116, 90 116, 90 92" marker-end="url(#ah-token)" />
@@ -118,7 +118,7 @@ export const FIGURES = {
   <text class="lbl" x="22" y="30">Points</text>
   <text class="sub" x="22" y="44">what the dots mean</text>
   <circle class="dot d1" cx="28" cy="66" r="6" /><text class="sub" x="44" y="70">Amanita muscaria</text>
-  <circle class="dot d2" cx="28" cy="90" r="6" /><text class="sub" x="44" y="94">Suillus brevipes</text>
+  <circle class="dot d2" cx="28" cy="90" r="6" /><text class="sub" x="44" y="94">Suillus laevis</text>
   <circle class="dot d3" cx="28" cy="114" r="6" /><text class="sub" x="44" y="118">Boletus edulis</text>
 
   <rect class="box" x="298" y="8" width="256" height="144" rx="6" />
@@ -135,12 +135,12 @@ export const FIGURES = {
 
   // A ramp is a list of stops.
   'ramp-stops': `<svg viewBox="0 0 520 100" role="img" aria-label="A colour ramp
-  with four evenly spaced stops, low value on the left and high on the right">
+  with four evenly spaced stops, low value on the left and high value on the right">
   <defs><linearGradient id="rs-ramp" x1="0" y1="0" x2="1" y2="0">
     <stop offset="0" class="rs0" /><stop offset="0.33" class="rs1" />
     <stop offset="0.67" class="rs2" /><stop offset="1" class="rs3" />
   </linearGradient></defs>
-  <rect class="ramp" x="20" y="20" width="480" height="26" rx="4" fill="url(#rs-ramp)" />
+  <rect class="ramp" x="20" y="20" width="480" height="26" rx="4" />
   <g class="stops">
     <rect class="stop" x="13" y="52" width="14" height="14" rx="3" />
     <rect class="stop" x="171" y="52" width="14" height="14" rx="3" />
@@ -161,7 +161,7 @@ export const FIGURES = {
   ${box(246, 20, 170, 46, 'Saved dataset', 'private to you', 'box accent')}
   ${box(506, 20, 188, 46, 'Job 2', 'samples 4 more layers')}
   ${arrow('ah-chain', 160, 43, 242, 43)}
-  ${arrow('ah-chain', 420, 43, 502, 43)}
+  ${arrow('ah-chain', 461, 43, 502, 43)}
   <text class="sub" x="203" y="14" text-anchor="middle">Save result</text>
   <text class="sub" x="461" y="14" text-anchor="middle">Use as source</text>
   <path class="arw dash" d="M600 70 C600 122, 331 128, 331 72" marker-end="url(#ah-chain)" />

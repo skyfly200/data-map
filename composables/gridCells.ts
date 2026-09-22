@@ -9,7 +9,23 @@
 // mean a cell renders slightly taller than wide on a Mercator map, by 1/cos(lat)
 // — unavoidable without giving each latitude band its own grid.
 
-export const CELL_SHAPES = [
+export interface CellShape {
+  value: string
+  label: string
+}
+
+export interface CellResult {
+  key: string
+  lon: number
+  lat: number
+  lat0: number
+  lon0: number
+  lat1: number
+  lon1: number
+  polygon: [number, number][]
+}
+
+export const CELL_SHAPES: CellShape[] = [
   { value: 'hex', label: 'Hexagons' },
   { value: 'square', label: 'Squares' },
 ]
@@ -22,7 +38,7 @@ const HEX_AREA = (3 * Math.sqrt(3)) / 2
 export const HEX_RADIUS_FACTOR = 1 / Math.sqrt(HEX_AREA)   // ≈ 0.6204
 
 /** Circumradius, in degrees, of the hex matching a square cell of `size`. */
-export function hexRadius(size) { return size * HEX_RADIUS_FACTOR }
+export function hexRadius(size: number): number { return size * HEX_RADIUS_FACTOR }
 
 /**
  * Which hex a point falls in, as integer axial-ish coordinates.
@@ -33,7 +49,7 @@ export function hexRadius(size) { return size * HEX_RADIUS_FACTOR }
  * candidate is compared against its diagonal neighbour and the closer centre
  * wins. (The naive rounding alone produces rectangles with zig-zag edges, not
  * hexagons.) Assigning each point to its nearest centre is exactly the hexagonal
- * partition — the Voronoi cells of a triangular lattice are hexagons.
+// partition — the Voronoi cells of a triangular lattice are hexagons.
  *
  * The comparison is in real distance, not in row/column units. d3-hexbin
  * compares px²+py² with px measured in columns and py in rows, but a column
@@ -43,7 +59,7 @@ export function hexRadius(size) { return size * HEX_RADIUS_FACTOR }
  */
 const ROW_TO_COL = 1.5 / Math.sqrt(3)
 
-export function hexIndex(lon, lat, size) {
+export function hexIndex(lon: number, lat: number, size: number): [number, number] {
   const r = hexRadius(size)
   const dx = r * Math.sqrt(3)
   const dy = r * 1.5
@@ -69,15 +85,15 @@ export function hexIndex(lon, lat, size) {
 }
 
 /** Centre of the hex with the given index, in [lon, lat]. */
-export function hexCentre(pi, pj, size) {
+export function hexCentre(pi: number, pj: number, size: number): [number, number] {
   const r = hexRadius(size)
   return [(pi + (pj & 1 ? 0.5 : 0)) * r * Math.sqrt(3), pj * r * 1.5]
 }
 
 /** The six corners of a hex, as Leaflet [lat, lon] pairs, starting at the top. */
-export function hexPolygon(lon, lat, size) {
+export function hexPolygon(lon: number, lat: number, size: number): [number, number][] {
   const r = hexRadius(size)
-  const pts = []
+  const pts: [number, number][] = []
   for (let k = 0; k < 6; k += 1) {
     const a = ((90 + k * 60) * Math.PI) / 180
     pts.push([lat + r * Math.sin(a), lon + r * Math.cos(a)])
@@ -93,7 +109,7 @@ export function hexPolygon(lon, lat, size) {
  * against) and the outline to draw. Both shapes return all of it, so nothing
  * downstream has to branch on which grid is in use.
  */
-export function cellAt(lon, lat, size, shape = 'hex') {
+export function cellAt(lon: number, lat: number, size: number, shape: string = 'hex'): CellResult {
   if (shape === 'hex') {
     const [pi, pj] = hexIndex(lon, lat, size)
     const [cx, cy] = hexCentre(pi, pj, size)
@@ -119,6 +135,6 @@ export function cellAt(lon, lat, size, shape = 'hex') {
 }
 
 /** Just the bin key, for looking a coordinate up in an already-built grid. */
-export function cellKeyAt(lon, lat, size, shape = 'hex') {
+export function cellKeyAt(lon: number, lat: number, size: number, shape: string = 'hex'): string {
   return cellAt(lon, lat, size, shape).key
 }

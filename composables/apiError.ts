@@ -11,7 +11,7 @@
 // word "true" on screen where an explanation belonged.
 
 /** The message in an error payload, or a plain description of the status. */
-export function messageFrom(data, status) {
+export function messageFrom(data: any, status: number): string {
   const said = data?.error
   // Only a non-empty string is a message. A boolean is Nitro's own flag, and an
   // object is a shape we did not send.

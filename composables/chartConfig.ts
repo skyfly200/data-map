@@ -18,12 +18,16 @@
 const PAIR_SEP = '*'
 const KV_SEP = '.'
 
+interface ChartField {
+  key: string
+  code: string
+  fallback: any
+  kind: 'str' | 'int' | 'bool'
+  range?: [number, number]
+}
+
 // [key, short code, default, kind, range?]
-//
-// The integer fields carry the same range their control offers. Without it a
-// truncated link decodes `b.` to Number('') === 0 — a histogram with no bins —
-// and a hand-edited one could ask for 50,000 of them.
-const FIELDS = [
+const FIELDS: ChartField[] = [
   ['type', 't', 'scatter', 'str'],
   ['xField', 'x', 'day_of_year', 'str'],
   ['yField', 'y', 'elevation', 'str'],
@@ -43,10 +47,10 @@ const FIELDS = [
   ['sortBy', 'so', 'value-desc', 'str'],
   ['stackField', 'st', '', 'str'],
   ['normalise', 'nm', false, 'bool'],
-]
+] as any
 
 /** A fresh configuration with every field at its default. */
-export function defaultChartConfig() {
+export function defaultChartConfig(): Record<string, any> {
   return Object.fromEntries(FIELDS.map(([key, , fallback]) => [key, fallback]))
 }
 
@@ -60,7 +64,7 @@ export const CHART_TYPES = [
  * A config as a compact string, carrying only what differs from the defaults.
  * A chart left at its defaults encodes to `''`, which the caller omits entirely.
  */
-export function encodeChartConfig(config = {}) {
+export function encodeChartConfig(config = {}): string {
   const parts = []
   for (const [key, code, fallback, kind] of FIELDS) {
     const value = config[key]
@@ -77,7 +81,7 @@ export function encodeChartConfig(config = {}) {
  * The inverse. Unknown codes and malformed values are dropped rather than
  * throwing, so a mangled link still opens a chart — just a more default one.
  */
-export function decodeChartConfig(encoded) {
+export function decodeChartConfig(encoded: string): Record<string, any> {
   const config = defaultChartConfig()
   if (typeof encoded !== 'string' || !encoded) return config
 
@@ -93,7 +97,6 @@ export function decodeChartConfig(encoded) {
     if (kind === 'bool') {
       config[key] = raw === '1'
     } else if (kind === 'int') {
-      // Not Number(raw): the empty string converts to 0, which is finite.
       const n = raw.trim() === '' ? NaN : Number(raw)
       if (Number.isFinite(n)) {
         const [lo, hi] = range
@@ -108,7 +111,7 @@ export function decodeChartConfig(encoded) {
 }
 
 /** Just the configuration fields of a saved chart, without its id or title. */
-export function chartConfigOf(chart = {}) {
+export function chartConfigOf(chart = {}): Record<string, any> {
   return Object.fromEntries(FIELDS.map(([key]) => [key, chart[key]])
     .filter(([, v]) => v !== undefined))
 }
@@ -118,7 +121,7 @@ export function chartConfigOf(chart = {}) {
  * Uses the saved title when there is one, and otherwise describes the chart
  * from its own configuration.
  */
-export function describeChart(config = {}, labelFor = (k) => k) {
+export function describeChart(config = {}, labelFor = (k: string) => k): string {
   if (config.title) return config.title
   const t = config.type || 'scatter'
   if (t === 'scatter' || t === 'line' || t === 'area') {

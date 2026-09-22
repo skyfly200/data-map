@@ -4,8 +4,8 @@
 // feature, so a plain Node test cannot load this file. The manifest stays
 // loadable, this does not, and the tests read the Markdown off disk instead.
 //
-// The index exists for one job. A link into the guide can be older than the
-// split, or can point at a section of a page the reader is not on, and either
+// The index exists for one job. A link into the guide can be older than
+// the split, or can point at a section of a page the reader is not on, and either
 // way it has to land on the right words rather than on a page that happens to
 // share the URL prefix.
 
@@ -23,7 +23,7 @@ import learningMd from '~/content/guide/learning.md?raw'
 import sourcesMd from '~/content/guide/sources.md?raw'
 
 /** slug → Markdown. The reference page has no entry; it is generated. */
-export const GUIDE_SOURCES = {
+export const GUIDE_SOURCES: Record<string, string> = {
   '': indexMd,
   map: mapMd,
   data: dataMd,
@@ -36,7 +36,7 @@ export const GUIDE_SOURCES = {
 }
 
 /** The Markdown of a page, or '' for the generated reference. */
-export function guideSource(slug) {
+export function guideSource(slug: string | null | undefined): string {
   return GUIDE_SOURCES[String(slug || '')] || ''
 }
 
@@ -47,12 +47,12 @@ export function guideSource(slug) {
  * an h4, and this decides where a link goes rather than what the sidebar lists.
  */
 const ANCHOR_INDEX = (() => {
-  const index = new Map()
+  const index = new Map<string, string>()
   for (const page of GUIDE_PAGES) {
     if (page.file === null) continue
     for (const h of extractHeadings(guideSource(page.slug), { min: 1, max: 4 })) {
-      // First page wins. Two pages can hold a "Species" heading, and sending a
-      // bare #species somewhere stable beats sending it somewhere alphabetical.
+      // First page wins. Two pages can hold a "Species" heading, and sending it
+      // somewhere stable beats sending it somewhere alphabetical.
       if (!index.has(h.id)) index.set(h.id, page.slug)
     }
   }
@@ -64,16 +64,16 @@ const ANCHOR_INDEX = (() => {
  *
  * Checked in order of confidence: the reference's own namespace, then a heading
  * that exists today, then the record of what the single-page guide used to call
- * things. A heading beats a legacy entry, so re-adding a section under its old
- * name silently retires the redirect instead of fighting it.
+// things. A heading beats a legacy entry, so re-adding a section under its old
+// name silently retires the redirect instead of fighting it.
  */
-export function findGuideAnchor(id) {
+export function findGuideAnchor(id: string | null | undefined): { slug: string, anchor: string } | null {
   const anchor = String(id || '').replace(/^#/, '')
   if (!anchor) return null
   if (anchor === 'reference' || anchor.startsWith('opt-')) {
     return { slug: 'reference', anchor }
   }
-  if (ANCHOR_INDEX.has(anchor)) return { slug: ANCHOR_INDEX.get(anchor), anchor }
+  if (ANCHOR_INDEX.has(anchor)) return { slug: ANCHOR_INDEX.get(anchor)!, anchor }
   if (LEGACY_ANCHORS[anchor]) return splitTarget(LEGACY_ANCHORS[anchor])
   return null
 }

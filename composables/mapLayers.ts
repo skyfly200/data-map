@@ -10,6 +10,42 @@
 // Pure module — no framework imports — so the catalogue and the URL builders can
 // be unit-tested without a map.
 
+export interface LayerLegendClass {
+  color: string
+  label: string
+  aliases?: string[]
+}
+
+export interface LayerLegendRamp {
+  type: 'ramp'
+  unit: string
+  min: string
+  max: string
+  stops: string[]
+}
+
+export interface LayerLegendClasses {
+  type: 'classes'
+  items: LayerLegendClass[]
+}
+
+export type LayerLegend = LayerLegendRamp | LayerLegendClasses
+
+export interface TileLayer {
+  name: string
+  group: string
+  url?: string
+  arcgis?: string
+  layers?: string
+  attribution: string
+  maxZoom: number
+  opacity?: number
+  note?: string
+  time?: boolean
+  lag?: number
+  legend?: LayerLegend
+}
+
 /** Web Mercator half-extent, in metres. */
 const MERC_R = 20037508.342789244
 
@@ -19,7 +55,7 @@ const MERC_R = 20037508.342789244
  * ArcGIS MapServer services render on demand from a bbox rather than serving a
  * pre-cut tile pyramid, so a tile has to be asked for by its extent.
  */
-export function tileBounds(x, y, z) {
+export function tileBounds(x: number, y: number, z: number): [number, number, number, number] {
   const span = (2 * MERC_R) / 2 ** z
   const xmin = -MERC_R + x * span
   const ymax = MERC_R - y * span
@@ -27,7 +63,7 @@ export function tileBounds(x, y, z) {
 }
 
 /** One tile's worth of an ArcGIS MapServer `export` request. */
-export function arcgisExportUrl(service, x, y, z, { size = 256, layers = '' } = {}) {
+export function arcgisExportUrl(service: string, x: number, y: number, z: number, { size = 256, layers = '' } = {}: { size?: number, layers?: string }): string {
   const [xmin, ymin, xmax, ymax] = tileBounds(x, y, z)
   const q = new URLSearchParams({
     bbox: `${xmin},${ymin},${xmax},${ymax}`,
@@ -48,7 +84,7 @@ export function arcgisExportUrl(service, x, y, z, { size = 256, layers = '' } = 
  * URL each. `date` is ISO yyyy-mm-dd; layers that do not vary in time still take
  * one and ignore it.
  */
-export function gibsUrl(layer, { level = 6, format = 'png', date = '{date}' } = {}) {
+export function gibsUrl(layer: string, { level = 6, format = 'png', date = '{date}' } = {}: { level?: number, format?: string, date?: string }): string {
   return 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best'
     + `/${layer}/default/${date}/GoogleMapsCompatible_Level${level}/{z}/{y}/{x}.${format}`
 }
@@ -68,7 +104,7 @@ export function gibsUrl(layer, { level = 6, format = 'png', date = '{date}' } = 
  * maxNativeZoom and lets Leaflet upscale beyond it, so the layer stays on screen
  * rather than vanishing when you zoom in.
  */
-export function gibs(layer, level, { format = 'png' } = {}) {
+export function gibs(layer: string, level: number, { format = 'png' } = {}: { format?: string }) {
   return { url: gibsUrl(layer, { level, format }), maxZoom: level }
 }
 
@@ -77,10 +113,10 @@ export function gibs(layer, level, { format = 'png' } = {}) {
  *
  * Every one of these has latency — an 8-day NDVI composite for today does not
  * exist yet, and asking for it returns blank tiles that read as "no vegetation"
- * rather than "not processed". Backing off by the product's own lag is what
- * keeps a layer from lying about the present.
+// rather than "not processed". Backing off by the product's own lag is what
+// keeps a layer from lying about the present.
  */
-export function layerDate(lagDays, now = new Date()) {
+export function layerDate(lagDays: number, now = new Date()): string {
   const d = new Date(now.getTime() - lagDays * 86400000)
   return d.toISOString().slice(0, 10)
 }
@@ -97,7 +133,7 @@ export function layerDate(lagDays, now = new Date()) {
  * `lag` is how many days back to ask for, `time: true` marks a layer whose date
  * the viewer can move.
  */
-export const TILE_LAYERS = [
+export const TILE_LAYERS: TileLayer[] = [
   // ── Terrain ───────────────────────────────────────────────────────────────
   {
     name: 'Hillshade', group: 'Terrain',
@@ -121,10 +157,6 @@ export const TILE_LAYERS = [
   },
 
   // ── Weather ───────────────────────────────────────────────────────────────
-  // What fell recently, which is the question a forager actually asks. Two
-  // scales, because they answer different halves of it: the radar mosaic says
-  // what is happening now over the US, the satellite estimate says what has been
-  // happening globally over the last few days.
   {
     name: 'Radar (US, now)', group: 'Weather',
     arcgis: 'https://mapservices.weather.noaa.gov/eventdriven/rest/services/radar/radar_base_reflectivity/MapServer',
@@ -189,25 +221,6 @@ export const TILE_LAYERS = [
     },
   },
 
-  // ── Ground ────────────────────────────────────────────────────────────────
-  // SMAP soil moisture used to be served here from NASA GIBS. GIBS only
-  // publishes the SMAP layers in the geographic (EPSG:4326) projection, not the
-  // Web-Mercator (EPSG:3857) tiles this map is built on, so every request 404'd
-  // — a layer that could never have drawn here. It now comes from Earth Engine
-  // instead, as `soil-moisture` in netlify/lib/ee-tile-layers.mjs, the same move
-  // that fixed WorldCover below.
-  //
-  // ESA WorldCover used to be served here, from the publisher's own WMTS at
-  // services.terrascope.be. That host started failing at the protocol level —
-  // ERR_HTTP2_PROTOCOL_ERROR on a direct request, so not something this app
-  // could work around — and the layer went with it.
-  //
-  // It now comes from Earth Engine instead, as `land-cover` in
-  // netlify/lib/ee-tile-layers.mjs. Earth Engine already carried the asset for
-  // the land-cover enrichment stage, so the move removed a dependency rather
-  // than adding one, and the layer is rendered by the same path as the fire and
-  // soil layers.
-
   // ── Vegetation ────────────────────────────────────────────────────────────
   {
     name: 'NDVI (greenness)', group: 'Vegetation',
@@ -221,32 +234,17 @@ export const TILE_LAYERS = [
   },
 
   // ── Context ───────────────────────────────────────────────────────────────
-  // The grey basemaps carry no place names, which is what keeps them quiet.
-  // Labels are a separate layer so you can have them or not.
   {
     name: 'Place labels', group: 'Context',
     url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Esri', maxZoom: 16,
   },
-
-  // Where you may legally walk, and where the paths are. Both matter for a
-  // foraging map in a way the terrain layers do not: a productive slope on
-  // private land is not somewhere you can go.
-  //
-  // Waymarked Trails renders OSM's hiking route relations — named, waymarked
-  // routes rather than every footpath — as transparent tiles meant to sit on
-  // another basemap.
   {
     name: 'Hiking trails', group: 'Context',
     url: 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png',
     attribution: 'waymarkedtrails.org · OpenStreetMap (CC-BY-SA)', maxZoom: 18,
     note: 'Waymarked hiking routes from OpenStreetMap. Not a complete trail map: an unmapped path is missing, not absent.',
   },
-
-  // BLM's Surface Management Agency layer: which federal agency, state, or
-  // private party manages each parcel. The "without_PriUnk" build leaves private
-  // and unknown parcels unpainted, which is what makes it readable — the color
-  // is public land, the gaps are everything else.
   {
     name: 'Land ownership (US)', group: 'Context',
     url: 'https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_Cached_without_PriUnk/MapServer/tile/{z}/{y}/{x}',
@@ -272,42 +270,25 @@ export const TIME_LAYERS = TILE_LAYERS.filter((l) => l.time).map((l) => l.name)
 
 /**
  * Filter grouped layers for the manager's search box.
- *
- * A layer matches on its name anywhere. A GROUP matches only as a prefix, and
- * that asymmetry is the whole point of this being a function worth testing:
- * matching a group by substring meant typing "rain" returned Hillshade, USGS
- * topo, USGS imagery and OpenTopoMap relief — the entire Terrain group, because
- * "Terrain" contains "rain" — while burying the two rainfall layers among them.
- *
- * Prefix is what someone reaching for a heading actually types: "terr", "veg",
- * "weath". Nobody arrives at "Terrain" by typing "rain".
  */
-export function filterLayerGroups(groups, query) {
+export function filterLayerGroups(groups: any[], query: string | null | undefined) {
   const q = (query || '').trim().toLowerCase()
   if (!q) return groups
   return groups
     .map((g) => {
       const label = (g.label || '').toLowerCase()
       if (label.startsWith(q)) return g
-      return { ...g, items: g.items.filter((o) => (o.name || '').toLowerCase().includes(q)) }
+      return { ...g, items: g.items.filter((o: any) => (o.name || '').toLowerCase().includes(q)) }
     })
-    .filter((g) => g.items.length)
+    .filter((g: any) => g.items.length)
 }
 
 /**
  * The provider a layer's data comes from, as a short label to group by.
- *
- * Derived from the attribution string rather than stored separately, so a new
- * layer is grouped correctly the moment it is attributed and nothing has to be
- * kept in step. Matched by keyword, most specific first: MTBS and GAP are
- * checked before the bare "USGS" they both contain, and the sensor (MODIS,
- * SMAP) is preferred over the platform that serves it (GIBS) because the sensor
- * is what a reader recognises. The fallback keeps the first token of whatever
- * was credited rather than inventing a name.
  */
-export function layerSource(attribution = '') {
+export function layerSource(attribution = ''): string {
   const a = String(attribution)
-  const rules = [
+  const rules: [RegExp, string][] = [
     [/Sentinel/i, 'Copernicus Sentinel-2'],
     [/TreeMap/i, 'USFS TreeMap'],
     [/MTBS/i, 'USFS MTBS'],
@@ -334,11 +315,9 @@ export function layerSource(attribution = '') {
 }
 
 /**
- * What kind of raster a layer is, as a label to group by. Three kinds, from the
- * legend: a continuous ramp, a set of named classes, or an imagery/reference
- * layer that is a picture rather than a measurement and so carries no key.
+ * What kind of raster a layer is, as a label to group by.
  */
-export function layerDataType(legend) {
+export function layerDataType(legend: LayerLegend | null | undefined): string {
   if (!legend) return 'Basemap & imagery'
   if (legend.type === 'ramp') return 'Continuous raster'
   if (legend.type === 'classes') return 'Categorical raster'
@@ -347,7 +326,7 @@ export function layerDataType(legend) {
 
 /** Catalogue entries grouped for the layers control, in declaration order. */
 export function layerGroups() {
-  const groups = []
+  const groups: { name: string, layers: TileLayer[] }[] = []
   for (const l of TILE_LAYERS) {
     let g = groups.find((x) => x.name === l.group)
     if (!g) { g = { name: l.group, layers: [] }; groups.push(g) }
