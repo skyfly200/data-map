@@ -86,7 +86,7 @@
 - [ ] `V12-PERF-1` **Job Queue System**: Manage long-running training jobs with email notifications
 - [x] `V12-PERF-2` **Result Caching**: Store frequently accessed model outputs — fitted suitability surfaces are cached in Netlify Blobs keyed by `modelCacheKey` (predictors, region, source), so an identical model reuses the mint instead of re-fitting
 - [x] `V12-PERF-3` **Lazy Loading**: Defer heavy chart components until needed — `LazyVisible` builds off-screen gallery/dashboard items as they scroll in, and the chart builder is loaded (`LazyChartBuilder`) only when its tab opens
-- [ ] `V12-PERF-4` **Mobile Optimization**: Responsive design for modeling interface on tablets
+- [x] `V12-PERF-4` **Mobile Optimization**: Responsive design for modeling interface on tablets — the MaxEnt page stacks its two-up rows, predictor grid and model headers at tablet/phone widths, enlarges tap targets on touch devices, and the model-comparison tables scroll horizontally instead of overflowing the overlay
 
 ### Documentation & Onboarding
 - [ ] `V12-DOC-1` **Interactive Tutorial**: Step-by-step walkthrough for first MaxEnt run
