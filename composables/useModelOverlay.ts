@@ -23,6 +23,13 @@ export interface ModelOverlay {
   mintedAt: string | null
   /** The cross-validation score, or null when the model was not scored. */
   cv: { auc: number; sd: number; folds: number; grade: string } | null
+  /**
+   * Whether the background was sampled with effort weighting (target-group
+   * background), which is the first mitigation for observer-effort bias. Even
+   * when true the surface still inherits the confound — just less so — so the
+   * legend always names it.
+   */
+  effortWeighted?: boolean
 }
 
 export function useModelOverlay() {

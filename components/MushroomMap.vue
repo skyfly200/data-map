@@ -318,6 +318,19 @@
         </template>
         <template v-else>Not cross-validated — too few observations to score.</template>
       </div>
+      <!-- Observer-effort bias is always present in presence-only models: the
+           surface reflects where recorders went as much as where the species
+           lives. Effort-weighted background (target-group background) reduces
+           this by sampling the contrast against where recording happened, rather
+           than against a uniform random background, but it does not remove it. -->
+      <div class="legend-note">
+        <template v-if="modelOverlay.effortWeighted">
+          Background effort-weighted · observer-effort bias reduced but not removed — people record where people go.
+        </template>
+        <template v-else>
+          Uniform background · observer-effort bias: where few records exist may look unsuitable regardless of habitat.
+        </template>
+      </div>
       <div v-if="modelOverlay.stale" class="legend-note warn">
         These tiles have stopped loading — the fitted surface expires.
         <button v-if="modelOverlay.jobId" class="linkish" :disabled="modelOverlay.refreshing"

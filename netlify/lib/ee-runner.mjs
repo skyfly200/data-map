@@ -713,6 +713,12 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
     // Null when there were too few presences to score honestly, or the score
     // failed; the UI reads its absence as "not scored", not "scored zero".
     cv,
+    // Background drawn with effort weighting toward the presences (target-group
+    // background), so the contrast is between "where the species was seen" and
+    // "where recording happened near it" rather than "where recording happened
+    // vs a random background". Carries through to the legend so the surface is
+    // always labelled with this confound.
+    effortWeighted: backgroundPlan({ presenceCount: points.length, background }).weighted,
     // A minted template carries a map id, which expires; the member re-runs
     // the job to refresh it. Stamped so the UI can say how old the surface is.
     mintedAt: new Date().toISOString(),
@@ -766,7 +772,8 @@ export async function remintSuitability({ spec, features }) {
   }
 
   await initEarthEngine()
-  const bgN = backgroundPlan({ presenceCount: points.length, background }).n
+  const plan = backgroundPlan({ presenceCount: points.length, background })
+  const bgN = plan.n
   const presences = ee.FeatureCollection(
     points.map(([lon, lat]) => ee.Feature(ee.Geometry.Point([lon, lat]))),
   )
@@ -781,6 +788,7 @@ export async function remintSuitability({ spec, features }) {
     region,
     vis,
     legend: suitabilityLegend(),
+    effortWeighted: plan.weighted,
     mintedAt: new Date().toISOString(),
   }
   if (blobs) {
