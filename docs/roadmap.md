@@ -203,6 +203,22 @@ Citizen science platforms (iNaturalist, GBIF) produce severe sampling bias becau
 
 `WANT-1` already names this as an open item; this entry spells out the implementation path so it can be tracked and closed on its own. `V12-ETH-1` in Future Enhancements covers the automated thinning and bias file generation that the bias grid strategy requires.
 
+### `WANT-8` Vercel and Netlify cross-compatibility
+
+The backend currently targets Netlify Functions exclusively (`netlify/functions/`, `netlify/lib/`). There is no path to deploying on Vercel without rewriting the serverless layer.
+
+The goal is for the same codebase to build and deploy on either platform without forking. The two surfaces are close but not identical: Netlify Functions use `handler(event, context)` with a `netlify.toml` routing config; Vercel uses `api/` file-based routing with a `vercel.json` config and its own `VercelRequest`/`VercelResponse` types. Environment variable naming conventions also differ by convention (Netlify exports `NETLIFY=true`; Vercel exports `VERCEL=1`).
+
+The practical approach is an adapter layer — a thin request/response normalisation shim that each platform's entry point calls — so the business logic in `netlify/lib/` is platform-agnostic and the adapters are the only platform-specific code. That means:
+
+1. Extract all handler logic into framework-free modules (most of `netlify/lib/` already qualifies).
+2. Write a Netlify adapter and a Vercel adapter, each no more than a request unwrap and response wrap.
+3. CI should build and lint both targets so neither rots.
+
+A secondary benefit: Vercel's edge runtime and image optimisation improve cold-start latency for the Nuxt SSR layer, which Netlify's edge functions approximate but don't match exactly.
+
+Worth doing when there is a concrete reason to deploy on Vercel — a cost comparison, a team preference, or a feature only one platform offers — rather than speculatively.
+
 ### `WANT-6` A dashboard worth landing on
 
 The default view is thin: it opens on not much, and the interesting state — how
