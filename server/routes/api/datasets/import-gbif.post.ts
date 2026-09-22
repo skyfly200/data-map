@@ -1,7 +1,6 @@
 import { defineEventHandler, readMultipartFormData, getHeader, createError } from 'h3'
 import { parse } from 'csv-parse/sync'
 import { v4 as uuidv4 } from 'uuid'
-import { verifyToken } from '~/netlify/lib/auth.mjs'
 import { uploadJson } from '~/netlify/lib/datasets-store.mjs'
 import { serviceClient } from '~/netlify/lib/supabase-storage.mjs'
 import { DEFAULT_VISIBILITY, slugify, nextFreeSlug } from '~/netlify/lib/dataset-access.mjs'
@@ -71,15 +70,17 @@ export default defineEventHandler(async (event) => {
     const geojson = { type: 'FeatureCollection', features }
     const previewGeojson = { type: 'FeatureCollection', features: features.slice(0, 100) }
 
-    // Try to save as a proper dataset when the user is authenticated
+    // Save as a proper dataset when a shared import token is configured and presented
     let savedDataset: any = null
+    const config = useRuntimeConfig()
+    const sharedToken = (config.public.gbifImportToken as string) || ''
     const authHeader = getHeader(event, 'authorization') || ''
     const tokenMatch = /^Bearer\s+(.+)$/i.exec(authHeader.trim())
-    const token = tokenMatch ? tokenMatch[1].trim() : null
-    const user = token ? await verifyToken(token) : null
+    const presentedToken = tokenMatch ? tokenMatch[1].trim() : ''
+    const authorized = sharedToken && presentedToken === sharedToken
     const client = serviceClient()
 
-    if (user && client) {
+    if (authorized && client) {
       const titlePart = formData.find(p => p.name === 'title')
       const rawTitle = titlePart?.data.toString('utf-8').trim() || ''
       const title = (rawTitle || `GBIF Import (${validCount} records)`).slice(0, 200)
@@ -90,12 +91,12 @@ export default defineEventHandler(async (event) => {
         .select('slug').like('slug', `${base}%`)
       const slug = nextFreeSlug(base, (clashes || []).map((r: any) => r.slug))
 
-      const path = `datasets/${user.id}/${slug}-${Date.now()}.geojson`
+      const path = `datasets/gbif/${slug}-${Date.now()}.geojson`
       await uploadJson(path, geojson)
 
       const bytes = JSON.stringify(geojson).length
       const { data, error } = await client.from('saved_datasets').insert({
-        owner_id: user.id,
+        owner_id: null,
         job_id: null,
         slug,
         title,

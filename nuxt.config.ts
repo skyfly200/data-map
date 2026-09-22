@@ -38,6 +38,11 @@ export default defineNuxtConfig({
       // together AND editing that policy — which is why the default is the
       // recommended arrangement.
       datasetsBucket: 'datasets',
+      // Shared token that authorises GBIF CSV imports to be saved as datasets
+      // without requiring a per-user login. Set NUXT_PUBLIC_GBIF_IMPORT_TOKEN to
+      // any non-empty secret; the server route checks the Authorization header
+      // against this value. When empty, GBIF imports fall back to preview-only mode.
+      gbifImportToken: '',
     },
   },
 })

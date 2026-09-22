@@ -179,7 +179,7 @@
 <script setup>
 import { ref } from 'vue'
 
-const { accessToken } = useAuth()
+const config = useRuntimeConfig()
 
 const dragOver = ref(false)
 const selectedFile = ref(null)
@@ -227,14 +227,14 @@ const processFile = async () => {
   result.value = null
 
   try {
-    const token = await accessToken().catch(() => null)
+    const sharedToken = config.public.gbifImportToken
     const formData = new FormData()
     formData.append('file', selectedFile.value)
 
     const response = await $fetch('/api/datasets/import-gbif', {
       method: 'POST',
       body: formData,
-      headers: token ? { authorization: `Bearer ${token}` } : {}
+      headers: sharedToken ? { authorization: `Bearer ${sharedToken}` } : {}
     })
 
     result.value = response
