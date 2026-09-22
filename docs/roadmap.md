@@ -61,6 +61,49 @@ water masking. Those are not "sample a band".
 Worth doing after there is evidence somebody has hit the wall of six stages.
 Composing jobs came first because it needed no new Earth Engine surface at all.
 
+### Member-supplied Earth Engine credentials
+
+Every job runs under one service account against one Cloud project, so all
+Earth Engine spend bills FRMS. That single pool is the whole reason `quotas.mjs`
+exists: the monthly units, the per-day and concurrency caps, and the admin floor
+all divide one budget fairly rather than protect against any one member. A member
+who needs more than their share, or who wants to run heavier processing than the
+shared budget should carry, has no answer today but "ask an admin to raise the
+number", which moves the cost onto FRMS rather than onto them.
+
+The way out is to let a member run their own jobs under their own Earth Engine
+project. `initEarthEngine` already takes a service-account key from the
+environment; the change is to take the job owner's stored credential instead when
+they have one, falling back to the shared account when they do not. A job on a
+member's own project spends the member's own Earth Engine budget, so `checkQuota`
+skips the shared monthly cap for it — they are metered by Google, not by the
+pool — while the point and concurrency caps stay, since those protect the worker
+and the throttle, not the budget.
+
+The hard part is not the wiring, it is holding the credential. A Google
+service-account key is a long-lived secret that can read and spend against the
+member's whole project, so storing one means a service-role-only column
+encrypted at rest with a key that is not in the same table, a validation
+round-trip that mints one throwaway tile before the key is trusted, and a way to
+rotate or revoke it that a member can reach without an admin. The safer shape is
+OAuth — the member authorises Nexstrata against their EE project and the app
+holds a refresh token rather than a raw key — but that is a consent flow and a
+token store rather than a form field, and it is more to build. Either way the
+credential never reaches the browser and never appears in a job spec, the same
+posture the custom-layer and dataset-access work already took.
+
+There is a licensing edge to name in the UI, not just the code: Earth Engine
+distinguishes commercial from noncommercial use per Cloud project, so a member
+pointing the app at their own project is asserting their project's terms cover
+what they are about to run. The guide already walks through making a Cloud
+project and registering it for Earth Engine (`guide/layers`), so the member-facing
+half is mostly written.
+
+Worth doing when a member's needs exceed what the shared budget should fund —
+the first real "I need my own quota" is the signal, the same way composing jobs
+waited for the first real "and then what". Until then the admin floor and a
+raised per-member quota cover it.
+
 ### Coverage page, reframed
 
 `/coverage` inventories the **local raster cache** — 25.9 GB of CHIRPS, ERA5 and

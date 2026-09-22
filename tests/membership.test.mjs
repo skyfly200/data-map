@@ -12,7 +12,8 @@ import {
   TIERS, atLeast, decodeJwtPayload, effectiveTier, neverExpires, tierFromClaims, tierFromToken,
 } from '../netlify/lib/tiers.mjs'
 import {
-  CHUNK_SIZE, DEFAULT_LIMITS, checkQuota, estimateUnits, quotaFraction, rollUpUsage, summariseUsage,
+  ADMIN_QUOTA_MONTHLY, CHUNK_SIZE, DEFAULT_LIMITS, checkQuota, estimateUnits, quotaFraction,
+  rollUpUsage, summariseUsage,
 } from '../netlify/lib/quotas.mjs'
 
 /** A JWT-shaped string. Unsigned: these functions decode, they do not verify. */
@@ -212,8 +213,11 @@ test('an admin is metered but not held to the per-member ceilings', () => {
   // Ceilings that divide a shared pool between members do not apply.
   assert.equal(checkQuota({ profile: admin, estimate: 1, running: 5 }).ok, true)
   assert.equal(checkQuota({ profile: admin, estimate: 1, points: 999999 }).ok, true)
-  // The pool itself still does.
-  assert.equal(checkQuota({ profile: admin, estimate: 999999 }).code, 'over_quota')
+  // A job past the member 500 but within the admin floor is allowed, where the
+  // same profile's units would have stopped a member.
+  assert.equal(checkQuota({ profile: admin, usage: { unitsThisMonth: 490 }, estimate: 600 }).ok, true)
+  // The pool itself still does: a runaway past the admin floor is refused.
+  assert.equal(checkQuota({ profile: admin, estimate: ADMIN_QUOTA_MONTHLY + 1 }).code, 'over_quota')
 })
 
 test('a raised quota takes effect immediately', () => {

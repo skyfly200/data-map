@@ -20,7 +20,10 @@ import { loadSource } from '../lib/job-source.mjs'
 import { runPipeline } from '../lib/ee-runner.mjs'
 import { uploadJson } from '../lib/datasets-store.mjs'
 
-export const config = { timeout: 300, schedule: '*/5 * * * *' }
+// Every minute, so a job that misses the poke below still starts within a
+// minute rather than up to five. The poke on submit is the fast path; this is
+// the backstop for when it does not arrive (a cold submit, a dropped fetch).
+export const config = { timeout: 300, schedule: '* * * * *' }
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json' },
@@ -41,11 +44,17 @@ function throttled(jobId) {
 }
 
 export default async function handler(request) {
-  // A scheduled invocation carries no user. A manual poke has to be an admin,
-  // so the queue cannot be driven by anyone who finds the URL.
+  // A scheduled invocation carries no user. A manual poke has to be an admin, so
+  // the queue cannot be driven by anyone who finds the URL — except the
+  // submit endpoint's server-to-server poke, which carries a shared secret so a
+  // member's job can start the worker the moment it is queued without making the
+  // member an admin. The secret is optional: without it, only the cron and an
+  // admin drive the queue, as before.
+  const pokeSecret = process.env.WORKER_POKE_SECRET
+  const poked = Boolean(pokeSecret) && request.headers.get('x-worker-secret') === pokeSecret
   const scheduled = request.headers.get('x-netlify-event') === 'schedule'
     || new URL(request.url).searchParams.get('scheduled') === '1'
-  if (!scheduled) {
+  if (!scheduled && !poked) {
     const auth = await requireAdmin(request)
     if (!auth.ok) return auth.response
   }
