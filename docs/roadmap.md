@@ -19,86 +19,18 @@ Nothing open.
 
 ### `WANT-1` Species distribution modeling (the point of the enrichment)
 
-The home page now frames Nexstrata as an ecosystem-modeling platform with
-enrichment as one stage of four — observe, enrich, model, predict. The first
-two ship; the model and predict stages do not yet, and the page marks that
-section "Roadmap" rather than claiming otherwise.
+MaxEnt ships end to end: `netlify/lib/maxent.mjs` holds the predictor registry,
+background plan, cross-validation, and `buildSuitabilityImage`; the worker runs
+`runModel` for a `kind: 'model'` job; `model-tiles` re-mints an expired surface
+from the stored spec; the jobs page has an Enrich / Model toggle with predictor
+selection; the map legend shows the AUC score, the effort-bias confound note, and
+a refresh button when tiles expire.
 
-The intended method is a presence-only species distribution model, MaxEnt the
-obvious first: the enrichment already produces exactly the feature matrix such a
-model reads — every environmental layer sampled at each presence point, at its
-own date. The pieces were background/pseudo-absence sampling, the fit itself, and
-projecting the fitted surface back across a region as a habitat suitability
-raster the map can draw beside the layers it was built from.
+Open: none of it has run against the real Earth Engine API — tested against a
+stub only (see `VDEBT-1`). GeoTIFF export (`V12-MOD-4`) is the heavier follow-up.
 
-The modelling core now ships as `netlify/lib/maxent.mjs`: a predictor registry
-(terrain, NDVI and standing soil moisture, all free and static), request
-validation (`normaliseModelSpec`), the effort-aware background plan
-(`backgroundPlan`, which never draws fewer background points than presences and
-weights toward them by default), and `buildSuitabilityImage`, which samples the
-predictors at the presences and at random background, trains
-`ee.Classifier.amnhMaxent`, and classifies the stack into a 0–1 suitability
-image. It is split so only that last function touches `ee`, and it is tested end
-to end against a stub.
-
-The `model` job kind now runs end to end on the server. `normaliseSpec` routes a
-`kind: 'model'` spec to `normaliseModelSpec`, sharing the same source checker so a
-model's presences come from the same dataset or bounding box an enrichment job's
-do; `job-queue` prices it with `estimateModelUnits` and draws its bar with
-`modelPlan`; and the worker branches on the kind, carrying the presences it
-already loads (`loadSource`) into `runModel`, which builds the presence
-FeatureCollection, fits the model, mints a tile template from the fitted surface,
-and stores it in the job's `result_meta` — a raster has no GeoJSON file, so the
-result is a tile URL rather than a stored feature collection.
-
-The sampling-bias problem is not a footnote here: presence-only modeling
-inherits the observer-effort bias the caveats already name, so background
-sampling has to be weighted by effort and every surface labelled with the
-confounds behind it, the same way the density heatmaps already are. The
-background plan holds the first half; the surface labelling is still owed.
-
-The UI now exists. The jobs page carries an Enrich / Model toggle: model mode
-offers the predictors instead of the enrichment stages, and a finished model
-shows a "view suitability on map" action that draws the surface as an overlay
-with its legend beside the layers it was built from.
-
-The trained model and its surface are stored durably rather than only for as long
-as one map id lasts. The model's definition — predictors, region, source and the
-cross-validation score — persists in the job row, and the surface is re-servable
-from it on demand: `model-tiles` re-mints the template from the stored model
-(sharing the result cache, so within its TTL it is a blob read rather than any
-Earth Engine work), the jobs page fetches a fresh one before drawing, and when a
-drawn surface's tiles do expire the map's legend offers to refresh it in place
-from the saved model rather than sending the viewer back to re-run the job. What
-is not yet stored is the raster itself as a file — an Earth Engine export to
-GeoTIFF for download (`V12-MOD-4`) is the heavier, asynchronous follow-up.
-
-The per-date layers the first cut left out now have their honest place. A
-suitability surface is a claim about a place, not a day, so a per-record daily
-value has nothing to project onto a pixel; the weather layers therefore return as
-climate normals — `precip_normal` and `temp_normal`, the multi-year means, which
-ARE a property of the place — offered as predictors alongside the terrain and
-vegetation ones. Phenology stays out on purpose: "when in the year" is not a
-property of a pixel, so it belongs to a per-date question the static surface does
-not ask.
-
-A surface now comes with a number for how much to trust it. `runModel` runs a
-spatially blocked cross-validation — presences and background assigned to folds
-by the 0.25° square they sit in, not at random, so a test point is not judged
-beside a training neighbour it is correlated with — trains a fold out at a time,
-and reports the held-out AUC as its mean and spread across folds. The AUC itself
-is computed in JavaScript (`rocAuc`, `crossValidationSummary`) from the held-out
-predictions Earth Engine returns, so the arithmetic that judges the model is
-tested without one. The score rides in `result_meta.cv` and shows on the job and
-in the map legend, with a plain grade beside it and an honest "not scored" when
-there are too few presences (`MIN_CV_PRESENCES`) for it to mean anything.
-
-None of it has run against the real Earth Engine API yet — `buildSuitabilityImage`,
-`crossValidate` and `runModel` are tested against a stub, the same verification
-debt the map layers carry below.
-
-Worth finishing once the enrichment output is being loaded as datasets often
-enough that "and then what" is a real question rather than a hypothetical.
+Worth exercising once enrichment output is loaded as datasets often enough that
+"and then what" is a real question.
 
 ### `WANT-2` Member-defined enrichment stages
 
