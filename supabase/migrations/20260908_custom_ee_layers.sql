@@ -1,3 +1,4 @@
+-- Originally: 003_custom_ee_layers.sql
 -- Map layers an administrator registers, pointing at their own Earth Engine
 -- assets.
 --

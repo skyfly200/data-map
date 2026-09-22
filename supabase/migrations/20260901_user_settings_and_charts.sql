@@ -1,3 +1,4 @@
+-- Originally: 001_user_settings_and_charts.sql
 -- Adds the two tables the app's account sync needs, and nothing else.
 --
 -- Run this against a database that already has the observation tables. It is

@@ -1,3 +1,4 @@
+-- Originally: 002_membership_jobs_and_admin.sql
 -- Membership tiers, the Earth Engine job queue, and the admin surface.
 --
 -- Run after 001_user_settings_and_charts.sql. Safe to run more than once.
