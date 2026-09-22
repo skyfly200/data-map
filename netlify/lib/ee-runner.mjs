@@ -33,9 +33,9 @@ import { GAP_REMAP, TEXTURE_CLASSES, visParams } from './ee-tile-layers.mjs'
 import { orderForGreatGroup } from './soil-taxonomy.mjs'
 import { derivedIndices } from './terrain-indices.mjs'
 import {
-  DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, MIN_CV_PRESENCES, backgroundPlan, buildSuitabilityImage,
-  crossValidate, crossValidationSummary, foldPoints, modelCacheKey, predictorStack, randomBackground,
-  suitabilityLegend,
+  DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, DEFAULT_CONTRIBUTION_THRESHOLD, MIN_CV_PRESENCES,
+  backgroundPlan, buildSuitabilityImage, crossValidate, crossValidationSummary, foldPoints,
+  modelCacheKey, predictorStack, randomBackground, suitabilityLegend,
 } from './maxent.mjs'
 
 // Where fitted model surfaces are cached, and for how long. The TTL is well
@@ -639,7 +639,7 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
   const _modelStart = Date.now()
   await initEarthEngine()
 
-  const predictors = spec.predictors?.length ? spec.predictors : DEFAULT_PREDICTORS
+  let predictors = spec.predictors?.length ? spec.predictors : DEFAULT_PREDICTORS
   const background = spec.background || DEFAULT_BACKGROUND
 
   const points = features
@@ -672,6 +672,40 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
   const presences = ee.FeatureCollection(
     points.map(([lon, lat]) => ee.Feature(ee.Geometry.Point([lon, lat]))),
   )
+
+  // ── Auto-optimization: two-pass scout → production ──────────────────────
+  // Train a scout model over the full predictor set, evaluate the variable
+  // contributions, then restrict to those above the threshold before the
+  // production fit. The scout is cheap: it is discarded once its explanations
+  // are read.
+  let contributions = null
+  if (spec.autoOptimize) {
+    onProgress({ fraction: 0.35, stage: 'scout', message: 'Running scout model…' })
+    const threshold = spec.contributionThreshold ?? DEFAULT_CONTRIBUTION_THRESHOLD
+    const stack = predictorStack(ee, predictors)
+    const geometry = ee.Geometry.Rectangle([region.west, region.south, region.east, region.north])
+    const bgPoints = ee.FeatureCollection.randomPoints({ region: geometry, points: background, seed: 1 })
+    const presenceSamples = stack.sampleRegions({ collection: presences, scale: 100, geometries: false })
+      .map((f) => f.set('presence', 1))
+    const bgSamples = stack.sampleRegions({ collection: bgPoints, scale: 100, geometries: false })
+      .map((f) => f.set('presence', 0))
+    const scoutTraining = presenceSamples.merge(bgSamples)
+    const scoutModel = ee.Classifier.amnhMaxent().train({
+      features: scoutTraining, classProperty: 'presence', inputProperties: predictors,
+    })
+    const rawExplain = await withRetry(
+      () => evaluate(ee.Dictionary(scoutModel.explain().get('Contributions'))),
+      { label: 'scout explain' },
+    )
+    contributions = rawExplain || {}
+    // Keep only predictors above the contribution threshold; fall back to all if
+    // none survive (the threshold may be too strict for this dataset).
+    const selected = predictors.filter((k) => (contributions[k] ?? 0) >= threshold)
+    if (selected.length >= 2) {
+      predictors = selected
+    }
+    console.log(`[ee] auto-optimize: kept ${predictors.length}/${Object.keys(contributions).length} predictors (threshold=${threshold}%)`)
+  }
 
   onProgress({ fraction: 0.4, stage: 'fit', message: 'Fitting the model…' })
   const { image, vis } = buildSuitabilityImage(ee, { presences, predictors, background, region, seed: 1 })
@@ -719,6 +753,9 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
     // vs a random background". Carries through to the legend so the surface is
     // always labelled with this confound.
     effortWeighted: backgroundPlan({ presenceCount: points.length, background }).weighted,
+    // Present when autoOptimize was on: maps each candidate predictor to its
+    // % contribution in the scout model.
+    contributions,
     // A minted template carries a map id, which expires; the member re-runs
     // the job to refresh it. Stamped so the UI can say how old the surface is.
     mintedAt: new Date().toISOString(),
@@ -795,4 +832,123 @@ export async function remintSuitability({ spec, features }) {
     try { await blobs.setJSON(cacheId, { template, meta, expires: Date.now() + MODEL_TTL_MS }) } catch { /* not fatal */ }
   }
   return { template, meta }
+}
+
+/**
+ * Produce evaluation data for a fitted MaxEnt model.
+ *
+ * Returns three kinds of data that power the response-curve and niche-overlap
+ * visualisations in the frontend:
+ *
+ *   presenceNiche   – covariate values sampled at each presence point.
+ *   backgroundNiche – covariate values sampled at the background pseudo-absences.
+ *   responseCurves  – synthetic sweep of each predictor while holding the rest
+ *                     at the regional mean, so the model's marginal response to
+ *                     each variable can be plotted.
+ *
+ * `spec.predictors` and `spec.background` come from the same normalised model
+ * spec used by runModel, so the evaluation always matches the surface it scores.
+ */
+export async function runEvaluation({ spec, features, onProgress = () => {} }) {
+  await initEarthEngine()
+
+  const predictors = spec.predictors?.length ? spec.predictors : DEFAULT_PREDICTORS
+  const background = spec.background || DEFAULT_BACKGROUND
+
+  const points = features
+    .map((f) => f?.geometry?.coordinates || [])
+    .map((co) => [Number(co[0]), Number(co[1])])
+    .filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat))
+  if (!points.length) throw new Error('That source has no usable coordinates.')
+
+  const region = spec.region || (() => {
+    let north = -90; let south = 90; let east = -180; let west = 180
+    for (const [lon, lat] of points) {
+      if (lat > north) north = lat; if (lat < south) south = lat
+      if (lon > east) east = lon; if (lon < west) west = lon
+    }
+    return { north: north + 0.1, south: south - 0.1, east: east + 0.1, west: west - 0.1 }
+  })()
+
+  const stack = predictorStack(ee, predictors)
+  const geometry = ee.Geometry.Rectangle([region.west, region.south, region.east, region.north])
+
+  // ── 1. Build the model (needed for response curves) ──────────────────────
+  onProgress({ fraction: 0, stage: 'fit', message: 'Fitting the model for evaluation…' })
+  const bgN = backgroundPlan({ presenceCount: points.length, background }).n
+  const presences = ee.FeatureCollection(
+    points.map(([lon, lat]) => ee.Feature(ee.Geometry.Point([lon, lat]))),
+  )
+  const bgPoints = ee.FeatureCollection.randomPoints({ region: geometry, points: bgN, seed: 1 })
+  const presenceSamples = stack.sampleRegions({ collection: presences, scale: 100, geometries: false })
+    .map((f) => f.set('presence', 1))
+  const bgSamples = stack.sampleRegions({ collection: bgPoints, scale: 100, geometries: false })
+    .map((f) => f.set('presence', 0))
+  const training = presenceSamples.merge(bgSamples)
+  const model = ee.Classifier.amnhMaxent().train({
+    features: training, classProperty: 'presence', inputProperties: predictors,
+  })
+
+  // ── 2. Presence niche data ────────────────────────────────────────────────
+  onProgress({ fraction: 0.3, stage: 'presences', message: 'Sampling presence covariates…' })
+  const sampledPresences = stack.sampleRegions({
+    collection: presences, scale: 100, tileScale: 8, geometries: false,
+  })
+  const presenceNiche = await withRetry(() => evaluate(sampledPresences), { label: 'presence niche' })
+
+  // ── 3. Background niche data ──────────────────────────────────────────────
+  onProgress({ fraction: 0.5, stage: 'background', message: 'Sampling background covariates…' })
+  const sampledBg = stack.sampleRegions({
+    collection: bgPoints, scale: 100, tileScale: 8, geometries: false,
+  })
+  const backgroundNiche = await withRetry(() => evaluate(sampledBg), { label: 'background niche' })
+
+  // ── 4. Response curves ────────────────────────────────────────────────────
+  // The regional mean of each predictor (evaluated once, used to hold non-target
+  // variables constant during the sweep). Computed from the sampled presences so
+  // the baseline reflects where the species was actually observed.
+  onProgress({ fraction: 0.7, stage: 'response', message: 'Computing response curves…' })
+  const meanDict = await withRetry(
+    () => evaluate(ee.Dictionary.fromLists(
+      ee.List(predictors),
+      ee.List(predictors.map((k) => training.aggregate_mean(k))),
+    )),
+    { label: 'regional means' },
+  )
+
+  const STEPS = 50
+  const responseCurves = {}
+  for (const varName of predictors) {
+    // Derive the observed range of this predictor from the presence samples.
+    const vals = (presenceNiche?.features || []).map((f) => f.properties?.[varName]).filter((v) => v != null)
+    if (!vals.length) continue
+    const minVal = Math.min(...vals)
+    const maxVal = Math.max(...vals)
+    if (minVal === maxVal) continue
+    const step = (maxVal - minVal) / STEPS
+    // Build a synthetic FeatureCollection where only `varName` varies; all
+    // other predictors are held at their regional mean.
+    const syntheticFC = ee.FeatureCollection(
+      Array.from({ length: STEPS + 1 }, (_, i) => {
+        const val = minVal + i * step
+        const props = { ...meanDict, [varName]: val }
+        return ee.Feature(null, props)
+      }),
+    )
+    const predicted = syntheticFC.classify(model, 'suitability')
+    const curveRows = await withRetry(() => evaluate(predicted), { label: `response:${varName}` })
+    responseCurves[varName] = (curveRows?.features || []).map((f) => ({
+      value: f.properties?.[varName],
+      suitability: f.properties?.suitability,
+    }))
+  }
+
+  onProgress({ fraction: 1, stage: 'done', message: 'Evaluation complete.' })
+
+  return {
+    presenceNiche: presenceNiche?.features?.map((f) => f.properties) || [],
+    backgroundNiche: backgroundNiche?.features?.map((f) => f.properties) || [],
+    responseCurves,
+    predictors,
+  }
 }

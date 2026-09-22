@@ -11,7 +11,8 @@
 import { adminClient, requireMemberFresh, requireUser } from '../lib/auth.mjs'
 import { normaliseModelSpec, estimateModelUnits } from '../lib/maxent.mjs'
 import { checkVisibility, viewerFrom } from '../lib/dataset-access.mjs'
-import { __EE_RUNNER__ } from '../lib/ee-runner.mjs' // Hypothetical runner interface
+import { runEvaluation, earthEngineConfigured } from '../lib/ee-runner.mjs'
+import { loadSource } from '../lib/job-source.mjs'
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
@@ -94,6 +95,43 @@ async function listModels(client, viewer) {
   return json({ ok: true, models: data || [] })
 }
 
+/**
+ * Run evaluation for a saved model run and return niche + response-curve data.
+ *
+ * The evaluation re-fits the model from the stored spec so it can predict
+ * synthetic sweeps, then samples the presence and background covariates for the
+ * niche-overlap visualisations. Heavy: expect ~30–60 seconds for a typical job.
+ */
+async function evaluate(client, viewer, jobId) {
+  if (!earthEngineConfigured()) {
+    return json({ ok: false, error: 'Earth Engine is not configured on this deployment.' }, 503)
+  }
+
+  const { data: run, error: runErr } = await client.from('model_runs')
+    .select('*, model_configs(*)')
+    .eq('job_id', jobId).maybeSingle()
+
+  if (runErr) throw new Error(runErr.message)
+  if (!run || run.model_configs?.owner_id !== viewer.userId) {
+    return json({ ok: false, error: 'Job not found or access denied.' }, 404)
+  }
+  if (run.status !== 'succeeded') {
+    return json({ ok: false, error: 'Evaluation is only available for succeeded jobs.' }, 409)
+  }
+
+  const config = run.model_configs
+  const source = config.source_dataset_id
+    ? { type: 'dataset', slug: config.source_dataset_id }
+    : null
+  if (!source) return json({ ok: false, error: 'This model has no linked source dataset.' }, 400)
+  const spec = { predictors: config.predictors, background: config.background_count, region: config.projection_region }
+  const features = await loadSource(source, { client, viewer })
+  if (!features.length) throw new Error('That model has no usable observations.')
+
+  const result = await runEvaluation({ spec, features })
+  return json({ ok: true, jobId, ...result })
+}
+
 /** Delete a model configuration. */
 async function removeModel(client, viewer, body) {
   const id = String(body.id || '').trim()
@@ -146,6 +184,15 @@ export default async function handler(request) {
       const auth = await requireMemberFresh(request)
       if (!auth.ok) return auth.response
       return await removeModel(client, viewerFrom(auth), await request.json())
+    }
+
+    // GET /.netlify/functions/modeling/maxent/evaluate/:jobId
+    // Returns niche distribution and response-curve data for a completed model run.
+    if (method === 'GET' && path.includes('/modeling/maxent/evaluate')) {
+      const auth = await requireMemberFresh(request)
+      if (!auth.ok) return auth.response
+      const jobId = path.split('/').pop()
+      return await evaluate(client, viewerFrom(auth), jobId)
     }
 
     return json({ ok: false, error: 'Not Found' }, 404)
