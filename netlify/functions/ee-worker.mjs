@@ -19,6 +19,7 @@ import {
 import { loadSource } from '../lib/job-source.mjs'
 import { runModel, runPipeline } from '../lib/ee-runner.mjs'
 import { uploadJson } from '../lib/datasets-store.mjs'
+import { notifyJobSettled } from '../lib/notify.mjs'
 
 // Every minute, so a job that misses the poke below still starts within a
 // minute rather than up to five. The poke on submit is the fast path; this is
@@ -91,6 +92,8 @@ export default async function handler(request) {
       const { template, meta } = await runModel({ spec, features, onProgress })
       spent = job.estimated_units || 0
       await finishJob(job.id, { resultPath: null, costUnits: spent, meta: { ...meta, template } })
+      // The member has almost certainly left the page by now; let them know.
+      await notifyJobSettled({ ...job, status: 'succeeded', result_meta: { ...meta, template } })
       return json({ ok: true, claimed: job.id, model: true, presences: meta.presences })
     }
 
@@ -103,22 +106,21 @@ export default async function handler(request) {
     const resultPath = `jobs/${job.user_id}/${job.id}.geojson`
     await uploadJson(resultPath, { type: 'FeatureCollection', features: result.features })
 
-    await finishJob(job.id, {
-      resultPath,
-      costUnits: spent,
-      meta: {
-        features: result.features.length,
-        sampled: result.sampled,
-        bands: result.bands,
-        stages: spec.stages,
-        skipped: result.skipped,
-      },
-    })
+    const meta = {
+      features: result.features.length,
+      sampled: result.sampled,
+      bands: result.bands,
+      stages: spec.stages,
+      skipped: result.skipped,
+    }
+    await finishJob(job.id, { resultPath, costUnits: spent, meta })
+    await notifyJobSettled({ ...job, status: 'succeeded', result_meta: meta })
     return json({ ok: true, claimed: job.id, features: result.features.length })
   } catch (err) {
     // Charged for what it spent before breaking: Earth Engine billed those
     // requests whether or not anything came back.
     await failJob(job.id, err, { costUnits: spent })
+    await notifyJobSettled({ ...job, status: 'failed', error: String(err?.message || err) })
     return json({ ok: false, claimed: job.id, error: String(err.message || err) }, 200)
   }
 }

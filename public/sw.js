@@ -395,3 +395,51 @@ self.addEventListener('message', (event) => {
       .then(() => reply({ type: 'cleared' })))
   }
 })
+
+/* ── Push notifications (V12-PERF-1) ──────────────────────────────────────────
+ *
+ * A job runs on the server for minutes while the member is usually elsewhere.
+ * When it settles, the ee-worker function sends a Web Push message here; this
+ * shows it, and a click focuses (or opens) the page that lists the result.
+ *
+ * Independent of the offline caches above — it shares this worker only because
+ * a scope may register just one.
+ */
+self.addEventListener('push', (event) => {
+  let data = {}
+  try {
+    data = event.data ? event.data.json() : {}
+  } catch {
+    data = { body: event.data ? event.data.text() : '' }
+  }
+  const title = data.title || 'Nexstrata'
+  const options = {
+    body: data.body || '',
+    icon: '/icon.svg',
+    badge: '/icon.svg',
+    // The click handler reads this to know where to go.
+    data: { url: data.url || '/jobs' },
+    tag: 'nexstrata-job',
+  }
+  event.waitUntil(self.registration.showNotification(title, options))
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const target = (event.notification.data && event.notification.data.url) || '/jobs'
+  event.waitUntil((async () => {
+    const all = await clients.matchAll({ type: 'window', includeUncontrolled: true })
+    // Focus an already-open tab on the same origin rather than opening another.
+    for (const client of all) {
+      try {
+        const url = new URL(client.url)
+        if (url.origin === self.location.origin && 'focus' in client) {
+          await client.focus()
+          if ('navigate' in client) await client.navigate(target)
+          return
+        }
+      } catch { /* skip a client we cannot parse */ }
+    }
+    if (clients.openWindow) await clients.openWindow(target)
+  })())
+})
