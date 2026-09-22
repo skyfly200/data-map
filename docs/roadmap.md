@@ -57,14 +57,22 @@ sampling has to be weighted by effort and every surface labelled with the
 confounds behind it, the same way the density heatmaps already are. The
 background plan holds the first half; the surface labelling is still owed.
 
-What remains is the surface, not the model. There is no UI yet: the jobs page
-submits enrichment jobs (stages, then a GeoJSON export), and a model job needs a
-form that offers the predictors and a "view suitability on map" action that draws
-`result_meta.template` as an overlay with its legend beside the layers it was
-built from. A minted map id expires, so that action has to notice a stale
-template and offer to re-run rather than draw blank tiles. The static-predictor
-first cut still owes a story for the per-date layers (weather, phenology) it
-leaves out.
+The UI now exists. The jobs page carries an Enrich / Model toggle: model mode
+offers the predictors instead of the enrichment stages, and a finished model
+shows a "view suitability on map" action that draws `result_meta.template` as an
+overlay with its legend beside the layers it was built from. A minted map id
+expires, so the overlay counts tile errors and, past a few, says the surface has
+expired and to re-run rather than leaving blank tiles reading as "nowhere is
+suitable."
+
+The per-date layers the first cut left out now have their honest place. A
+suitability surface is a claim about a place, not a day, so a per-record daily
+value has nothing to project onto a pixel; the weather layers therefore return as
+climate normals — `precip_normal` and `temp_normal`, the multi-year means, which
+ARE a property of the place — offered as predictors alongside the terrain and
+vegetation ones. Phenology stays out on purpose: "when in the year" is not a
+property of a pixel, so it belongs to a per-date question the static surface does
+not ask.
 
 A surface now comes with a number for how much to trust it. `runModel` runs a
 spatially blocked cross-validation — presences and background assigned to folds
