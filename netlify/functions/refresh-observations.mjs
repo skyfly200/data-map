@@ -11,13 +11,15 @@ import { join } from 'node:path'
 import { fetchInatFeatures, newFeatures, overlay } from '../lib/observations.mjs'
 import { openTerrain, enrichFeatureTerrain } from '../lib/terrain.mjs'
 import { loadBaseline } from '../lib/baseline.mjs'
-import { supabaseConfigured } from '../lib/supabase-storage.mjs'
+import { supabaseConfigured, serviceClient } from '../lib/supabase-storage.mjs'
 import { uploadJson, readJson } from '../lib/datasets-store.mjs'
+import { logCronRun } from '../lib/cron-jobs.mjs'
 
 // Run every 6 hours. Adjust the cron as needed.
 export const config = { schedule: '0 */6 * * *' }
 
 export default async () => {
+  const t0 = Date.now()
   try {
     let baseline = null
     if (supabaseConfigured()) baseline = await readJson('observations.geojson')
@@ -57,11 +59,21 @@ export default async () => {
       await store.setJSON('new-observations', { type: 'FeatureCollection', features: news })
     }
 
-    return new Response(
-      JSON.stringify({ ok: true, sink, baseline: baseline.features?.length ?? 0, new: news.length }),
-      { headers: { 'content-type': 'application/json' } },
-    )
+    const result = { ok: true, sink, baseline: baseline.features?.length ?? 0, new: news.length }
+    await logCronRun(serviceClient(), {
+      jobId: 'refresh-observations',
+      status: 'ok',
+      durationMs: Date.now() - t0,
+      details: result,
+    })
+    return new Response(JSON.stringify(result), { headers: { 'content-type': 'application/json' } })
   } catch (err) {
+    await logCronRun(serviceClient(), {
+      jobId: 'refresh-observations',
+      status: 'error',
+      durationMs: Date.now() - t0,
+      details: { error: String(err) },
+    })
     return new Response(JSON.stringify({ ok: false, error: String(err) }), {
       status: 500,
       headers: { 'content-type': 'application/json' },

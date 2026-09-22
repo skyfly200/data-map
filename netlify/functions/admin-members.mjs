@@ -16,6 +16,7 @@ import { adminClient, requireAdmin } from '../lib/auth.mjs'
 import { DEFAULT_LIMITS, summariseUsage } from '../lib/quotas.mjs'
 import { TIERS } from '../lib/tiers.mjs'
 import { CustomLayerError, normaliseCustomLayer } from '../lib/ee-custom-layers.mjs'
+import { CRON_JOBS } from '../lib/cron-jobs.mjs'
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json' },
@@ -126,6 +127,26 @@ export default async function handler(request) {
           .select('*').order('name')
         if (error) throw new Error(error.message)
         return json({ ok: true, layers: data || [] })
+      }
+      if (what === 'crons') {
+        // Last 50 log rows per job, newest first. Rows older than 90 days are
+        // dropped here so the table stays bounded without a scheduled prune job.
+        const cutoff = new Date(Date.now() - 90 * 86400000).toISOString()
+        const { data: logs, error: logErr } = await client
+          .from('cron_logs')
+          .select('*')
+          .gte('fired_at', cutoff)
+          .order('fired_at', { ascending: false })
+          .limit(200)
+        if (logErr) throw new Error(logErr.message)
+
+        // Group logs by job_id, capped at 50 per job.
+        const byJob = {}
+        for (const row of logs || []) {
+          if (!byJob[row.job_id]) byJob[row.job_id] = []
+          if (byJob[row.job_id].length < 50) byJob[row.job_id].push(row)
+        }
+        return json({ ok: true, jobs: CRON_JOBS, logs: byJob })
       }
       return json({ ok: true, members: await listMembers(client), limitFields: LIMIT_FIELDS })
     } catch (err) {
