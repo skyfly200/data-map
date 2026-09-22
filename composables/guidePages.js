@@ -104,7 +104,7 @@ export function guidePage(slug) {
  * the question it was asking is the data-quality tab.
  */
 export const LEGACY_ANCHORS = {
-  'start-here': '#start-here',
+  'start-here': '#quick-start',
   map: 'map#',
   'color-and-size': 'map#color-and-size',
   heatmaps: 'map#heatmaps',
