@@ -1,9 +1,16 @@
-// Upload the exported datasets (public/data) to Supabase Storage.
-// Run after export_geojson.py — e.g. from the GitHub Action — so Supabase
-// Storage becomes the source of truth the frontend + functions read from.
+// Upload the exported datasets (public/data) to Supabase Storage so that
+// Supabase becomes the single source of truth for observations.
+//
+// Run after export_geojson.py — this is the initial migration step that seeds
+// observations.geojson into Supabase. Subsequent updates are written by
+// netlify/functions/refresh-observations.mjs on its 6-hour schedule.
 //
 // No-ops (exit 0) when SUPABASE_* env is not configured, so it is safe to
 // always include in the pipeline. Requires SUPABASE_SERVICE_ROLE_KEY to write.
+//
+// After running, set NUXT_PUBLIC_DATASETS_MANIFEST_URL to the printed URL so
+// the client loads the manifest (and dataset GeoJSON paths) directly from
+// Supabase Storage instead of the bundled /data/datasets.json file.
 //
 //   node scripts/upload_datasets.mjs
 
