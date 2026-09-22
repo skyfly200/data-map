@@ -72,7 +72,7 @@ export const OPTION_DOCS: OptionDoc[] = [
     ],
     also: ['map-heatmap-density', 'map-heatmap-richness', 'map-heatmap-season',
       'map-heatmap-hotspots', 'map-heatmap-common', 'map-heatmap-land-cover',
-      'map-heatmap-wind', 'map-heatmap-field', 'map-cell-size', 'appearance-cell-shape'],
+      'map-heatmap-wind', 'map-heatmap-field', 'map-cell-size'],
   },
   {
     id: 'map-heatmap-density',
@@ -154,7 +154,7 @@ export const OPTION_DOCS: OptionDoc[] = [
       'When real wind data is present the heatmap switches to it automatically and relabels its legend, so the arrows never silently change meaning.',
     ],
     caveat: 'A short arrow means mixed terrain, not calm air. Aspect is averaged as a vector, because averaging compass degrees numerically puts the mean of 350° and 10° at 180°, exactly backwards.',
-    also: ['map-heatmap-field', 'map-cell-size', 'appearance-cell-shape'],
+    also: ['map-heatmap-field', 'map-cell-size'],
   },
   {
     id: 'map-heatmap-field',
@@ -167,7 +167,7 @@ export const OPTION_DOCS: OptionDoc[] = [
       'The tooltip on a point reports the cell mean along with how many observations went into it, because a mean of two is a different claim from a mean of two hundred.',
     ],
     caveat: 'These are not rasters. A cell has a value only where somebody recorded a find, so a blank cell means nobody looked there, not that the ground is dry, flat or bare. And because the sample points are wherever people walked, a cell mean describes the places finds were made in that cell, not the cell as a whole.',
-    also: ['map-heatmap', 'map-cell-size', 'appearance-cell-shape'],
+    also: ['map-heatmap', 'map-cell-size'],
   },
   {
     id: 'map-cell-size',
@@ -219,7 +219,7 @@ export const OPTION_DOCS: OptionDoc[] = [
       'Nothing is saved on its own beyond the app shell. Downloading a dataset and a few hundred tiles onto someone\'s mobile data without being asked is not a feature.',
     ],
     caveat: 'Saved data lives in this browser on this device. It is not uploaded, does not follow your account, and clearing the browser\'s site data removes it. Sizes shown per area are estimates: tiles are fetched from hosts that do not all report a length, and once stored they cannot be measured — the total on the Offline page is the browser\'s own figure and is the accurate one. Tile services also set their own terms on bulk downloading; save the area you are going to, not a region.',
-    also: ['map-basemaps', 'map-layer-order', 'data-species'],
+    also: ['map-basemaps', 'map-layer-order'],
   },
   {
     id: 'map-layer-order',
@@ -403,3 +403,45 @@ export const OPTION_DOCS: OptionDoc[] = [
     also: ['map-layer-blend'],
   },
 ]
+
+// ─── Lookups ─────────────────────────────────────────────────────────────────
+// The reference page, the tooltips and the guide all read the same table through
+// these, so an option is described once and linked to the same place everywhere.
+
+/** The entry for an option id, or null when there is none. */
+export function docFor(id: string): OptionDoc | null {
+  return OPTION_DOCS.find((d) => d.id === id) || null
+}
+
+/** An option's one-line summary, or '' when the id is unknown. */
+export function docSummary(id: string): string {
+  return docFor(id)?.summary || ''
+}
+
+/**
+ * The anchor for an option on the reference page.
+ *
+ * Namespaced with `opt-` because the reference and the guide's prose slug their
+ * headings the same way, and several options share a name with a section
+ * ("Filters", "Heatmap", "Share"); without the prefix the two claim one id and a
+ * tooltip scrolls to the wrong thing.
+ */
+export function docAnchor(id: string): string {
+  return `opt-${id}`
+}
+
+/** A link straight to an option's entry on the reference page. */
+export function docHref(id: string): string {
+  return `/guide/reference#${docAnchor(id)}`
+}
+
+/** The options grouped for display, each group named once, in declaration order. */
+export function docGroups(): { name: string; items: OptionDoc[] }[] {
+  const groups: { name: string; items: OptionDoc[] }[] = []
+  for (const doc of OPTION_DOCS) {
+    let group = groups.find((g) => g.name === doc.group)
+    if (!group) { group = { name: doc.group, items: [] }; groups.push(group) }
+    group.items.push(doc)
+  }
+  return groups
+}
