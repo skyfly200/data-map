@@ -9,13 +9,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
-  DEFAULT_PREDICTORS, MAX_BACKGROUND, MIN_BACKGROUND, MIN_PREDICTORS,
-  backgroundPlan, buildSuitabilityImage, normaliseModelSpec, predictorStack,
-  suitabilityLegend,
+  DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, MAX_BACKGROUND, MIN_BACKGROUND, MIN_PREDICTORS,
+  backgroundPlan, buildSuitabilityImage, estimateModelUnits, modelPlan, normaliseModelSpec,
+  predictorStack, suitabilityLegend,
 } from '../netlify/lib/maxent.mjs'
-import { SpecError } from '../netlify/lib/ee-pipeline.mjs'
+import { normaliseSpec, SpecError } from '../netlify/lib/ee-pipeline.mjs'
 
 const region = { north: 40.25, south: 39.55, east: -105.15, west: -105.8 }
+const bboxSource = { type: 'bbox', bounds: region, taxon: 'Morchella' }
 
 // ── Spec validation ──────────────────────────────────────────────────────────
 
@@ -58,6 +59,45 @@ test('the source is validated through the injected normaliser', () => {
     { normaliseSource: (s) => ({ ...s, checked: true }) },
   )
   assert.equal(spec.source.checked, true)
+})
+
+// ── Dispatch through the shared entry point ──────────────────────────────────
+
+test('normaliseSpec routes a model kind to the model normaliser', () => {
+  const spec = normaliseSpec({ kind: 'model', source: bboxSource })
+  assert.equal(spec.kind, 'model')
+  assert.deepEqual(spec.predictors, DEFAULT_PREDICTORS)
+  assert.equal(spec.source.type, 'bbox')
+})
+
+test('normaliseSpec still produces an enrichment spec by default', () => {
+  const spec = normaliseSpec({ source: bboxSource })
+  assert.equal(spec.kind, 'enrich')
+  assert.ok(Array.isArray(spec.stages) && spec.stages.length)
+})
+
+test('an unknown job kind is still refused', () => {
+  assert.throws(() => normaliseSpec({ kind: 'teleport', source: bboxSource }), SpecError)
+})
+
+// ── Cost and plan ────────────────────────────────────────────────────────────
+
+test('the model estimate grows with points, predictors and background', () => {
+  const base = estimateModelUnits({ points: 200, predictors: ['elevation', 'slope'], background: 500 })
+  const morePts = estimateModelUnits({ points: 5000, predictors: ['elevation', 'slope'], background: 500 })
+  const morePreds = estimateModelUnits({ points: 200, predictors: DEFAULT_PREDICTORS, background: 500 })
+  assert.ok(morePts > base)
+  assert.ok(morePreds > base)
+  assert.ok(Number.isInteger(base) && base > 0)
+})
+
+test('the model plan is four weighted phases from 0 to 1', () => {
+  const plan = modelPlan()
+  assert.deepEqual(plan.map((s) => s.key), ['presences', 'background', 'fit', 'project'])
+  assert.equal(plan[0].from, 0)
+  assert.equal(plan[plan.length - 1].to, 1)
+  // Monotonic, no gaps.
+  for (let i = 1; i < plan.length; i += 1) assert.equal(plan[i].from, plan[i - 1].to)
 })
 
 // ── The background plan ──────────────────────────────────────────────────────

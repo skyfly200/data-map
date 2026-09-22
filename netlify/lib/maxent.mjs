@@ -16,6 +16,7 @@
 // predictors, this region" into an Earth Engine image and how to paint it.
 
 import { SRTM, S2_SR, ERA5_DAILY, SpecError, normaliseBounds } from './ee-pipeline.mjs'
+import { CHUNK_SIZE } from './quotas.mjs'
 
 /**
  * The predictors a suitability model may use.
@@ -140,6 +141,48 @@ export function backgroundPlan({ presenceCount = 0, background = DEFAULT_BACKGRO
     weighted: Boolean(effortWeighted),
     enough: presenceCount >= MIN_PRESENCES,
   }
+}
+
+/**
+ * Roughly what a model job costs, in the same "one Earth Engine request" units a
+ * quota is measured in.
+ *
+ * The work is: sample the predictors at the presences and at the background
+ * points (one reduceRegions per chunk of each), then train and classify (a
+ * handful of evaluations that do not scale with points). Priced as a slight
+ * over-count, like estimateUnits, because refusing a job that would just have fit
+ * is a smaller harm than admitting one that blows the month.
+ */
+export function estimateModelUnits({ points = 0, predictors = DEFAULT_PREDICTORS, background = DEFAULT_BACKGROUND } = {}) {
+  const { n } = backgroundPlan({ presenceCount: points, background })
+  const sampleChunks = Math.ceil(Math.max(1, points) / CHUNK_SIZE) + Math.ceil(n / CHUNK_SIZE)
+  const stackDepth = Math.max(MIN_PREDICTORS, predictors.length || DEFAULT_PREDICTORS.length)
+  // Sampling both point sets across the predictor stack, plus a fixed handful
+  // for the fit and the region-wide classification.
+  return sampleChunks * stackDepth + 4
+}
+
+/**
+ * How a model job's progress bar is divided.
+ *
+ * Four visible phases, weighted by where the time actually goes: sampling the
+ * background dominates because it is the most points, the fit and the projection
+ * are a step each. A bar that names the phase beats one that only moves.
+ */
+export function modelPlan() {
+  const steps = [
+    { key: 'presences', label: 'Sampling the observations', weight: 1 },
+    { key: 'background', label: 'Sampling the background', weight: 2 },
+    { key: 'fit', label: 'Fitting the model', weight: 1 },
+    { key: 'project', label: 'Projecting suitability', weight: 2 },
+  ]
+  const total = steps.reduce((a, s) => a + s.weight, 0)
+  let done = 0
+  return steps.map((s) => {
+    const from = done / total
+    done += s.weight
+    return { key: s.key, label: s.label, from, to: done / total, weight: s.weight }
+  })
 }
 
 /**

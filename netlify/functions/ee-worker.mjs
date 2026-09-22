@@ -17,7 +17,7 @@ import {
   claimNextJob, failJob, finishJob, isCancelled, ownerViewer, planFor, reportProgress,
 } from '../lib/job-queue.mjs'
 import { loadSource } from '../lib/job-source.mjs'
-import { runPipeline } from '../lib/ee-runner.mjs'
+import { runModel, runPipeline } from '../lib/ee-runner.mjs'
 import { uploadJson } from '../lib/datasets-store.mjs'
 
 // Every minute, so a job that misses the poke below still starts within a
@@ -82,9 +82,19 @@ export default async function handler(request) {
     // and between stages rather than being interrupted.
     if (await isCancelled(job.id)) return json({ ok: true, claimed: job.id, cancelled: true })
 
-    const plan = planFor(job)
     const onProgress = throttled(job.id)
 
+    // A model job produces a raster — a fitted suitability surface — not a table
+    // of sampled points. Its result is a tile template stored in result_meta;
+    // there is no GeoJSON file to write.
+    if (spec.kind === 'model') {
+      const { template, meta } = await runModel({ spec, features, onProgress })
+      spent = job.estimated_units || 0
+      await finishJob(job.id, { resultPath: null, costUnits: spent, meta: { ...meta, template } })
+      return json({ ok: true, claimed: job.id, model: true, presences: meta.presences })
+    }
+
+    const plan = planFor(job)
     const result = await runPipeline({ spec, features, plan, onProgress })
     spent = job.estimated_units || 0
 

@@ -28,9 +28,12 @@ import {
 } from './ee-pipeline.mjs'
 // The class tables the map's keys are drawn from, so a sampled column and the
 // tiles under it name a class the same way.
-import { GAP_REMAP, TEXTURE_CLASSES } from './ee-tile-layers.mjs'
+import { GAP_REMAP, TEXTURE_CLASSES, visParams } from './ee-tile-layers.mjs'
 import { orderForGreatGroup } from './soil-taxonomy.mjs'
 import { derivedIndices } from './terrain-indices.mjs'
+import {
+  DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, backgroundPlan, buildSuitabilityImage, suitabilityLegend,
+} from './maxent.mjs'
 
 const MERIT_HYDRO = 'MERIT/Hydro/v1_0_1'
 
@@ -561,5 +564,97 @@ export async function runPipeline({ spec, features, plan, onProgress = () => {} 
     // rather than left to notice the gaps: those points can be filled by
     // running it again, which only re-samples what is still empty.
     skipped: skippedByStage,
+  }
+}
+
+/** The bounding box of a set of [lon, lat] points, padded a little and clamped. */
+function boundsOfPoints(points) {
+  let north = -90
+  let south = 90
+  let east = -180
+  let west = 180
+  for (const [lon, lat] of points) {
+    if (lat > north) north = lat
+    if (lat < south) south = lat
+    if (lon > east) east = lon
+    if (lon < west) west = lon
+  }
+  // A little room around the points, so the projected surface is not clipped to
+  // the exact hull of the observations.
+  const pad = 0.1
+  return {
+    north: Math.min(90, north + pad),
+    south: Math.max(-90, south - pad),
+    east: Math.min(180, east + pad),
+    west: Math.max(-180, west - pad),
+  }
+}
+
+/** Ask Earth Engine for a tile template for one image. getMapId is callback-shaped. */
+function mintTemplate(image, vis) {
+  return new Promise((resolve, reject) => {
+    ee.data.getMapId({ image, ...visParams(vis) }, (result, err) => {
+      if (err) return reject(new Error(String(err)))
+      const template = result?.urlFormat
+        || (result?.mapid
+          ? `https://earthengine.googleapis.com/v1/${result.mapid}/tiles/{z}/{x}/{y}`
+          : null)
+      if (!template) return reject(new Error('Earth Engine returned no tile URL.'))
+      return resolve(template)
+    })
+  })
+}
+
+/**
+ * Fit a MaxEnt suitability model over a set of presence features and return a
+ * tile template the map can draw, plus the metadata describing what was fitted.
+ *
+ * Unlike runPipeline, which writes a GeoJSON of sampled points, a model produces
+ * a raster: the fitted surface projected across the region. The result is a tile
+ * URL, so it is stored in the job's result_meta rather than as a file — a map id
+ * expires, and re-running the job re-mints it.
+ */
+export async function runModel({ spec, features, onProgress = () => {} }) {
+  await initEarthEngine()
+
+  const predictors = spec.predictors?.length ? spec.predictors : DEFAULT_PREDICTORS
+  const background = spec.background || DEFAULT_BACKGROUND
+
+  const points = features
+    .map((f) => f?.geometry?.coordinates || [])
+    .map((co) => [Number(co[0]), Number(co[1])])
+    .filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat))
+  if (!points.length) throw new Error('That source has no usable coordinates to model.')
+
+  // Draw the surface over the region the member named, or over the extent of the
+  // presences themselves when they did not.
+  const region = spec.region || boundsOfPoints(points)
+
+  onProgress({ fraction: 0, stage: 'presences', message: 'Sampling the observations…' })
+  const presences = ee.FeatureCollection(
+    points.map(([lon, lat]) => ee.Feature(ee.Geometry.Point([lon, lat]))),
+  )
+
+  onProgress({ fraction: 0.5, stage: 'fit', message: 'Fitting the model…' })
+  const { image, vis } = buildSuitabilityImage(ee, { presences, predictors, background, region, seed: 1 })
+
+  onProgress({ fraction: 0.85, stage: 'project', message: 'Projecting suitability…' })
+  const template = await withRetry(() => mintTemplate(image, vis), { label: 'model tiles' })
+
+  onProgress({ fraction: 1, stage: 'done', message: 'Finished.' })
+  return {
+    template,
+    meta: {
+      kind: 'model',
+      predictors,
+      presences: points.length,
+      background: backgroundPlan({ presenceCount: points.length, background }).n,
+      region,
+      vis,
+      legend: suitabilityLegend(),
+      // A minted template carries a map id, which expires; the member re-runs
+      // the job to refresh it. Stamped so the UI can say how old the surface is.
+      mintedAt: new Date().toISOString(),
+    },
   }
 }
