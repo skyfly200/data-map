@@ -14,6 +14,7 @@
         <!-- Summary Table -->
         <section class="panel wide">
           <h3 class="ct">Performance Summary</h3>
+          <div class="tbl-scroll">
           <table class="tbl">
             <thead>
               <tr>
@@ -34,11 +35,13 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </section>
 
         <!-- Comparison Matrix -->
         <section class="panel wide">
           <h3 class="ct">Predictor Overlap</h3>
+          <div class="tbl-scroll">
           <table class="tbl">
             <thead>
               <tr>
@@ -56,6 +59,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </section>
       </div>
     </template>
@@ -94,7 +98,11 @@ const allPredictors = computed(() => {
 }
 .panel.wide { grid-column: 1 / -1; }
 
+/* Comparing several models widens the predictor matrix past a tablet's width;
+   scroll it horizontally rather than letting it break the overlay layout. */
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .tbl { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+.tbl th, .tbl td { white-space: nowrap; }
 .tbl th { 
   text-align: left; color: var(--muted); font-weight: 600; padding: 8px; 
   border-bottom: 1px solid var(--border); 
@@ -113,4 +121,10 @@ const allPredictors = computed(() => {
 
 .check { color: var(--success); font-weight: bold; }
 .cross { color: var(--muted); opacity: 0.3; }
+
+@media (max-width: 820px) {
+  .comparison { padding: 12px 4px; }
+  .panel { padding: 16px 14px; }
+  .grid { gap: 14px; }
+}
 </style>

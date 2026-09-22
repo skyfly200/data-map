@@ -21,7 +21,7 @@
 
       <template v-else>
         <!-- Comparison Overlay -->
-        <div v-if="showComparison" class="overlay">
+        <div v-if="showComparison" class="overlay" @click.self="showComparison = false">
           <div class="overlay-content">
             <button class="close-btn" @click="showComparison = false">✕</button>
             <ModelComparison :selected="selectedModels" />
@@ -326,5 +326,41 @@ textarea { min-height: 60px; resize: vertical; }
   position: absolute; top: 12px; right: 12px; background: var(--surface-2);
   color: var(--text); border: 1px solid var(--border); border-radius: 50%;
   width: 24px; height: 24px; cursor: pointer; font-size: 12px;
+}
+
+/* ─── Responsive: tablets ─────────────────────────────────────────────────
+   The modeling interface is form-heavy; on a tablet the two-up rows and the
+   badge/date header run out of room, so they stack rather than crush. */
+@media (max-width: 820px) {
+  .modeling { padding: 14px 14px; }
+  .head .title-row { flex-wrap: wrap; gap: 10px; }
+  .panel { padding: 16px; }
+  .row.two { grid-template-columns: 1fr; gap: 12px; }
+  .model-top { flex-wrap: wrap; gap: 6px; }
+  .model-top .when { width: 100%; order: 3; }
+  .overlay { padding: 12px; }
+  .overlay-content { max-height: 94vh; padding: 16px; }
+}
+
+/* ─── Responsive: phones ──────────────────────────────────────────────────
+   One predictor per line, and actions go full-width so they are easy to tap. */
+@media (max-width: 520px) {
+  .stages { grid-template-columns: 1fr; }
+  .actions { flex-direction: column; align-items: stretch; }
+  .actions .btn { width: 100%; }
+  .actions .hint { text-align: center; }
+  .model-actions { flex-wrap: wrap; }
+  .model-actions .btn { flex: 1 1 auto; }
+}
+
+/* Touch devices: roomier tap targets for inputs, checkboxes and buttons so the
+   modeling form is usable with a finger rather than a mouse pointer. */
+@media (pointer: coarse) {
+  input, select, textarea { padding: 11px 13px; font-size: 16px; }
+  .btn { min-height: 44px; }
+  .stage { padding: 10px 12px; }
+  .stage input[type="checkbox"],
+  .model-select input[type="checkbox"] { width: 20px; height: 20px; }
+  .close-btn { width: 34px; height: 34px; font-size: 15px; }
 }
 </style>
