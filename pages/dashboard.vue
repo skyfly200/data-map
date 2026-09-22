@@ -41,7 +41,11 @@
           <span class="drag" title="Drag to reorder">⋮⋮</span>
           <button class="remove" title="Remove" @click="remove(w.id)">×</button>
         </div>
-        <component :is="componentFor(w.type)" :widget="w" :is-editing="editing" />
+        <!-- Widgets below the fold build as they scroll in, so opening the
+             dashboard does not fetch and compute every one at once. -->
+        <LazyVisible min-height="140px">
+          <component :is="componentFor(w.type)" :widget="w" :is-editing="editing" />
+        </LazyVisible>
       </section>
     </div>
   </div>
