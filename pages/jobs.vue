@@ -728,6 +728,7 @@ async function openModelOnMap(job) {
       region: meta.region || null,
       mintedAt: meta.mintedAt || null,
       cv: meta.cv ?? stored.cv ?? null,
+      effortWeighted: meta.effortWeighted ?? stored.effortWeighted ?? null,
     })
     router.push('/map')
   } finally {
