@@ -14,5 +14,5 @@ This is a NUXT based PWA for running & visualizing outputs of GEE scripts genera
 
 ## Further Documentation
 
-- **Roadmap**: Read `ROADMAP.md` for latest plans
+- **Roadmap**: Read `@docs/roadmap.md` for latest plans
 - **Database**: Read `@docs/schema.md` when modifying models

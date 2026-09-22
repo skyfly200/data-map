@@ -1,11 +1,9 @@
 # Roadmap
 
-What is known to be missing, and why. Ordered by what blocks something else
-first, then by what is most often asked for.
+What is known to be missing, and why. Ordered by what blocks something else first, then by what is most often asked for.
 
 Each entry says what is true today, not just what should be. An item here is a
-commitment to an open question; when it is closed the entry moves to the bottom
-section with the commit that closed it.
+commitment to an open question; when it is closed the entry added to a commit msg and is deleted here
 
 ---
 
