@@ -1084,6 +1084,7 @@ const heatmapCellIndex = computed(() => {
 // created empty, and the template is fetched the first time it is switched on —
 // minting one for a layer nobody looks at would spend quota for nothing.
 const eeTiles = useEeTiles()
+const maxEnt = useMaxEnt()
 // For authorising a point-sample of members' layers, the same token the tile
 // path uses.
 const { accessToken } = useAuth()
@@ -1113,6 +1114,24 @@ const overlayGroups = computed(() => {
   }
   return [...groups.entries()].map(([label, items]) => ({ label, items }))
 })
+
+// Sync MaxEnt model runs into the overlay layer list (HEAT-5).
+// Each completed model appears as a toggleable entry in the Layer Manager.
+// Entries are lightweight stubs — no actual Leaflet tile layer until the
+// tile URL can be obtained from the suitability asset path via the GEE endpoint.
+watch(maxEnt.maxentLayerSpecs, (specs) => {
+  // Remove stale maxent entries and replace with the current model list.
+  overlayLayers.value = [
+    ...overlayLayers.value.filter((o) => !o.key.startsWith('maxent:')),
+    ...specs.map((s) => ({
+      key: s.key,
+      name: s.name,
+      group: s.group,
+      note: s.note,
+      layer: null, // rendered via the heatmap mode, not a Leaflet tile layer
+    })),
+  ]
+}, { immediate: true })
 
 function setBase(key) {
   const next = baseLayers.value.find((b) => b.key === key)
@@ -1353,6 +1372,12 @@ function toggleOverlay(entry) {
     soloKey.value = ''
   }
   activeOverlays.value = next
+  // When a MaxEnt model layer is toggled on, switch the heatmap to MaxEnt
+  // mode and select that model so HeatmapControls reflects the active entry.
+  if (!wasOn && entry.key.startsWith('maxent:')) {
+    heatmaps.mode.value = 'maxent'
+    heatmaps.maxentModelId.value = entry.key.replace('maxent:', '')
+  }
   // Read from the active set rather than from the map: with a solo running, a
   // layer can be switched on and yet not be on the map, so hasLayer answers a
   // different question from the one the checkbox asked.
