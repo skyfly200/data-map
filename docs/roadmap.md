@@ -17,7 +17,7 @@ Nothing open.
 
 ## Wanted
 
-### Species distribution modeling (the point of the enrichment)
+### `WANT-1` Species distribution modeling (the point of the enrichment)
 
 The home page now frames Nexstrata as an ecosystem-modeling platform with
 enrichment as one stage of four — observe, enrich, model, predict. The first
@@ -71,7 +71,7 @@ Earth Engine work), the jobs page fetches a fresh one before drawing, and when a
 drawn surface's tiles do expire the map's legend offers to refresh it in place
 from the saved model rather than sending the viewer back to re-run the job. What
 is not yet stored is the raster itself as a file — an Earth Engine export to
-GeoTIFF for download (V12-MOD-4) is the heavier, asynchronous follow-up.
+GeoTIFF for download (`V12-MOD-4`) is the heavier, asynchronous follow-up.
 
 The per-date layers the first cut left out now have their honest place. A
 suitability surface is a claim about a place, not a day, so a per-record daily
@@ -100,7 +100,7 @@ debt the map layers carry below.
 Worth finishing once the enrichment output is being loaded as datasets often
 enough that "and then what" is a real question rather than a hypothetical.
 
-### Member-defined enrichment stages
+### `WANT-2` Member-defined enrichment stages
 
 `STAGES` is six hardcoded entries and `normaliseSpec` refuses any `kind` but
 `enrich`, so adding a seventh source is a code change and a deploy. That
@@ -122,7 +122,7 @@ water masking. Those are not "sample a band".
 Worth doing after there is evidence somebody has hit the wall of six stages.
 Composing jobs came first because it needed no new Earth Engine surface at all.
 
-### Member-supplied Earth Engine credentials
+### `WANT-3` Member-supplied Earth Engine credentials
 
 Every job runs under one service account against one Cloud project, so all
 Earth Engine spend bills FRMS. That single pool is the whole reason `quotas.mjs`
@@ -165,7 +165,7 @@ the first real "I need my own quota" is the signal, the same way composing jobs
 waited for the first real "and then what". Until then the admin floor and a
 raised per-member quota cover it.
 
-### Coverage page, reframed
+### `WANT-4` Coverage page, reframed
 
 `/coverage` inventories the **local raster cache** — 25.9 GB of CHIRPS, ERA5 and
 NDVI files on disk. As enrichment moves to Earth Engine that cache stops
@@ -179,7 +179,7 @@ the app currently says which you are looking at.
 Keep the URL, replace the contents, and let the raster inventory go when the
 cache does.
 
-### Navigation and the pages behind it
+### `WANT-5` Navigation and the pages behind it
 
 The nav grew around the tools that existed when each was added, and it shows.
 `/jobs` sits in it as a top-level destination, but a job is something you start
@@ -193,7 +193,7 @@ from where a job is launched), and add the pages that earn a top-level slot to
 it. The open question is which those are, and in what order — the nav is the
 app's table of contents, so what is in it is a claim about what the app is for.
 
-### A dashboard worth landing on
+### `WANT-6` A dashboard worth landing on
 
 The default view is thin: it opens on not much, and the interesting state — how
 many observations, how fresh, what has been enriched, what is worth looking at
@@ -210,9 +210,60 @@ of the app is under.
 
 ---
 
-## Verification debt
+## Future Enhancements
 
-### No Earth Engine layer has rendered against the real API
+### UI & UX Improvements
+
+- [ ] `V12-UI-1` **Intuitive Navigation**: Streamline the path from data import to model training to reduce friction
+- [ ] `V12-UI-2` **Contextual Onboarding**: Implement "empty state" guides and tooltips for complex modeling parameters
+- [ ] `V12-UI-3` **Visual Hierarchy Refinement**: Improve contrast and layout of side panels for better focus on the map
+- [ ] `V12-UI-4` **Interactive Data Previews**: Enhance dataset selection with instant visual summaries before committing to a model run
+- [ ] `V12-UI-5` **Accessibility Pass**: ~1/3 of interactive elements lack `aria-label`; add `aria-pressed` to login mode tabs, `aria-hidden` to decorative icons, and a visible label on the ObservationsTable search input (WCAG 2.1 AA)
+- [ ] `V12-UI-6` **Responsive Table Columns**: ObservationsTable has no `@media` rules — add column prioritisation and a pinned first column for small screens
+- [ ] `V12-UI-7` **Mobile Map Controls Discovery**: compact mode hides the basemap picker and heatmap controls entirely — replace with an accessible bottom-sheet or collapsible toolbar row so features remain reachable without opening LayerManager
+- [ ] `V12-UI-8` **Fluid Breakpoints**: most responsive behaviour is a binary compact/not-compact prop — supplement with CSS `@media` rules at tablet widths where the binary split creates awkward layouts
+
+### Advanced Modeling Features
+
+- [ ] `V12-MOD-1` **Ensemble Modeling**: Average predictions from multiple model runs
+- [ ] `V12-MOD-2` **Projection Tools**: Project models to future climate scenarios (CMIP6 integration)
+- [ ] `V12-MOD-3` **Batch Processing**: Train models for multiple species simultaneously
+- [ ] `V12-MOD-4` **Model Export**: Download suitability rasters as GeoTIFF
+- [ ] `V12-MOD-5` **Threshold Optimization**: Automatic threshold selection (MaxSSS, 10th percentile)
+
+### Data Quality & Ethics
+
+- [ ] `V12-ETH-1` **Sampling Bias Correction**: Automated thinning and bias file generation
+- [ ] `V12-ETH-2` **Spatial Autocorrelation Checks**: Warn about clustered occurrence records
+- [ ] `V12-ETH-3` **Extrapolation Risk Maps**: Highlight areas outside training environmental space (MOP/MEX analysis)
+- [ ] `V12-ETH-4` **Sensitive Species Protection**: Automatic coordinate obscuring for threatened species
+
+### Collaboration & Sharing
+
+- [ ] `V12-COLL-1` **Public Model Gallery**: Browse and reuse models from other users
+- [ ] `V12-COLL-2` **Team Workspaces**: Shared projects for research groups
+- [ ] `V12-COLL-3` **Model Citation Generator**: Auto-generate citations for published models
+- [ ] `V12-COLL-4` **Export to R/Python**: Generate reproducible scripts for external analysis
+
+### Performance & Scalability
+
+- [x] `V12-PERF-1` **Job Queue System**: Manage long-running training jobs with email notifications — a Postgres-backed queue (`ee_jobs`) with a claiming worker already runs pipeline/model jobs; when a job settles the worker now notifies the owner by **email** (Resend) and **Web Push** (VAPID), both opt-out per member and configurable from the Jobs page. See README → *Job completion notifications*.
+- [x] `V12-PERF-2` **Result Caching**: Store frequently accessed model outputs — fitted suitability surfaces are cached in Netlify Blobs keyed by `modelCacheKey` (predictors, region, source), so an identical model reuses the mint instead of re-fitting
+- [x] `V12-PERF-3` **Lazy Loading**: Defer heavy chart components until needed — `LazyVisible` builds off-screen gallery/dashboard items as they scroll in, and the chart builder is loaded (`LazyChartBuilder`) only when its tab opens
+- [x] `V12-PERF-4` **Mobile Optimization**: Responsive design for modeling interface on tablets — the MaxEnt page stacks its two-up rows, predictor grid and model headers at tablet/phone widths, enlarges tap targets on touch devices, and the model-comparison tables scroll horizontally instead of overflowing the overlay
+
+### Documentation & Onboarding
+
+- [ ] `V12-DOC-1` **Interactive Tutorial**: Step-by-step walkthrough for first MaxEnt run
+- [ ] `V12-DOC-2` **Video Guides**: Short screencasts for key workflows
+- [ ] `V12-DOC-3` **Glossary Tooltips**: Hover explanations for technical terms (AUC, regularization, etc.)
+- [ ] `V12-DOC-4` **Example Datasets**: Pre-loaded sample data for practice runs
+
+---
+
+## Verification Debt
+
+### `VDEBT-1` No Earth Engine layer has rendered against the real API
 
 The catalogue's asset IDs, band names and `system:index` values were written
 from documentation and from working Code Editor scripts, never executed against
@@ -234,12 +285,53 @@ makes verifying them a command rather than a project.
 
 ---
 
+## Technical Debt
+
+- [x] `DEBT-1` **TypeScript Migration**: Convert remaining `.js` files to `.ts` for better type safety (Core composables migration substantially complete)
+- [x] `DEBT-2` **Test Coverage**:
+  - [x] `DEBT-2.1` Unit tests for new MaxEnt visualization components (`ResponseCurve`, `ROCCurve`, etc.)
+  - [x] `DEBT-2.2` Integration tests for full modeling pipeline (API → GEE → Supabase)
+  - [ ] `DEBT-2.3` E2E tests for dashboard customization and widget system
+  - [x] `DEBT-2.4` Edge-case expansion for `tests/maxent.test.mjs`
+- [ ] `DEBT-3` **Error Handling**: Standardize error messages and recovery flows
+- [ ] `DEBT-4` **Accessibility Audit**: Ensure WCAG 2.1 compliance across new features
+- [ ] `DEBT-5` **Performance Monitoring**: Add logging for Earth Engine job durations and failures
+- [ ] `DEBT-6` **Type `any` Cleanup**: `ramps.ts` and `useMapHeatmaps.ts` use `any` for nearly all parameters — replace with proper interfaces for color stops, field metadata, and polygon types
+- [ ] `DEBT-7` **Netlify Backend TypeScript Migration**: all `netlify/lib/*.mjs` and `netlify/functions/*.mjs` are untyped — migrate to `.ts` with esbuild/tsup for the Netlify edge runtime
+- [ ] `DEBT-8` **MushroomMap Decomposition**: at ~2,800 lines with 25 watchers, split into focused composables (pin logic, heatmap logic, cluster logic, model-overlay logic) and extract the toolbar into its own component
+- [ ] `DEBT-9` **Silent Error Paths**: audit all `console.error`/`console.warn`-only paths (ChartCard export, map export, GbifImporter, MaxEnt polling, cloud sync) and wire each to the app's toast/notification system
+
+---
+
+## Known Issues
+
+- [ ] `ISSUE-1` LayerManager state persistence occasionally fails on mobile Safari
+- [ ] `ISSUE-2` Large GBIF exports (>10k records) may timeout during import
+- [ ] `ISSUE-3` Chart rendering slows with >50 data points in Saved Charts widget
+- [ ] `ISSUE-4` Earth Engine asset validation doesn't check geometry types comprehensively
+- [ ] `ISSUE-5` ObservationsTable virtual scroller uses `window.resize` instead of `ResizeObserver` on the container — viewport height goes stale when sidebars toggle or panels resize, causing too few/many rows to render
+- [ ] `ISSUE-6` MaxEnt polling errors are silently swallowed (`useMaxEnt.ts`) — if Earth Engine polling fails mid-run, job status freezes with no user feedback or retry escalation
+- [ ] `ISSUE-7` `Number(v).toFixed()` in ObservationsTable has no `NaN` guard — non-numeric cell values render as `"NaN"` instead of a dash or fallback
+- [ ] `ISSUE-8` Leaflet CSS is imported statically in MushroomMap even on non-map routes — should be deferred alongside the lazy Leaflet JS import
+
+---
+
+## Contribution Guidelines
+
+1. **Branch Naming**: `feature/<name>`, `fix/<name>`, or `roadmap/<phase>`
+2. **Commit Messages**: Follow conventional commits (`feat:`, `fix:`, `docs:`, etc.)
+3. **Testing**: All new features require tests before merge
+4. **Documentation**: Update guide and tooltips for user-facing changes
+5. **Code Review**: At least one approval required for PRs to `master`
+
+---
+
 ## Closed
 
 Entries move here with the commit that closed them, so the reason an item
 existed survives the fix.
 
-### Taxonomy resolution has stalled
+### `CLOSED-1` Taxonomy resolution has stalled
 
 Genus, family and order were populated for under 4% of the store, so every view
 that grouped above species was working from a small and probably unrepresentative
@@ -257,7 +349,7 @@ complete — and only the resolved-from-ancestry ranks (family and above) trip t
 note. The deeper fix, running the resolution pass to completion, is still worth
 doing; the app no longer lies about the ranks while it waits.
 
-### Saved filters did not sync
+### `CLOSED-2` Saved filters did not sync
 
 Recorded as `localStorage`-only, so not following a member between devices.
 That was already untrue when it was written: `useSavedFilters` writes to the
@@ -269,7 +361,7 @@ Noticed while working out what survives a move to a new domain — browser
 storage is per-origin, so the question of which preferences live only in the
 browser is the same question.
 
-### Data export
+### `CLOSED-3` Data export
 
 The app computed a filtered, enriched set of records and then would not hand it
 over: the only downloads that existed were chart SVG/PNG and map PNG.
@@ -292,7 +384,7 @@ beginning `=`, `+`, `-` or `@` is a formula in every spreadsheet, while the text
 in these fields comes from iNaturalist, which is to say from the public; those
 are prefixed with an apostrophe rather than stripped, so the value survives.
 
-### Storage access rules for job results
+### `CLOSED-4` Storage access rules for job results
 
 `ee-worker` wrote every finished job to `jobs/<user_id>/<job_id>.geojson` in the
 Supabase `datasets` bucket, and `useEeJobs.fetchResult` downloaded it from the
@@ -313,7 +405,7 @@ way to read anyone's private work the moment members could. The rule now lives
 in `netlify/lib/dataset-access.mjs` and is applied at submission and again in
 the worker.
 
-### Bucket name is declared twice
+### `CLOSED-5` Bucket name is declared twice
 
 `useEeJobs` hardcoded `'datasets'` while the server read
 `SUPABASE_DATASETS_BUCKET`, so renaming the bucket sent the client looking
@@ -323,3 +415,43 @@ Closed with the storage policies, which made it three declarations rather than
 two — a policy has to name the bucket as a SQL literal. The client now reads
 `runtimeConfig.public.datasetsBucket`, and both the config and the migration say
 that renaming it means changing all three together.
+
+### `CLOSED-6` Dashboard & User Experience (v1.0)
+
+- [x] `V10-DASH-1` Customizable dashboard page for logged-in users
+- [x] `V10-DASH-2` Drag-and-drop widget system (Saved Charts, Recent Jobs, Species List, Quick Filters, Environmental Stats)
+- [x] `V10-DASH-3` Dashboard quick access link in user dropdown menu
+- [x] `V10-DASH-4` Collapsible side panels (Active Layers & Layer Selection)
+- [x] `V10-DASH-5` Global visibility toggle button
+- [x] `V10-DASH-6` Advanced blend mode controls (hidden by default)
+- [x] `V10-DASH-7` Simplified copy for non-technical audience (Home page & Guide)
+
+### `CLOSED-7` Data Import & Integration (v1.0)
+
+- [x] `V10-DATA-1` Earth Engine asset import via asset path
+- [x] `V10-DATA-2` GBIF export import tool (CSV → GeoJSON → GEE asset path)
+- [x] `V10-DATA-3` Dataset validation and metadata extraction
+- [x] `V10-DATA-4` Session-based dataset management
+
+### `CLOSED-8` MaxEnt Modeling Suite — Core Infrastructure (v1.1)
+
+- [x] `V11-CORE-1` **Modeling Core**: Implement `netlify/lib/maxent.mjs` with predictor registry, spatial cross-validation, and `amnhMaxent` integration
+- [x] `V11-CORE-2` **Database Schema**: Create `model_configs`, `model_runs`, and `model_results` tables in Supabase
+- [x] `V11-CORE-3` **Server Routes**: `POST /api/modeling/maxent/train`, `GET /api/modeling/maxent/results/:jobId`, `GET /api/modeling/maxent/models`, `DELETE /api/modeling/maxent/models/:id`
+- [x] `V11-CORE-4` **Composable**: `useMaxEnt.ts` for state management and API communication
+- [x] `V11-CORE-5` **Privacy Controls**: Implement data visibility settings (Private/Members-only/Public) using shared project access logic
+
+### `CLOSED-9` MaxEnt Modeling Suite — User Interface (v1.1)
+
+- [x] `V11-UI-1` **Training Page** (`/pages/modeling/maxent.vue`): dataset selection with preview, predictor layer selection with correlation matrix warnings, model parameter configuration, real-time job progress tracking
+- [x] `V11-UI-2` **Results Visualization Components**: `ResponseCurve.vue`, `VariableContribution.vue`, `ROCCurve.vue`, `ConfusionMatrix.vue`
+- [x] `V11-UI-3` **Model Comparison Tool**: Side-by-side comparison of multiple model runs
+- [x] `V11-UI-4` **Suitability Map Renderer**: Display MaxEnt output as interactive heatmap layer
+
+### `CLOSED-10` MaxEnt Heatmap Integration (v1.1)
+
+- [x] `V11-HEAT-1` Extend `HeatmapControls.vue` with "MaxEnt Suitability" type
+- [x] `V11-HEAT-2` Add probability/binary visualization toggle
+- [x] `V11-HEAT-3` Implement threshold slider for binary classification
+- [x] `V11-HEAT-4` Confidence interval overlay option
+- [x] `V11-HEAT-5` Layer Manager integration for MaxEnt outputs
