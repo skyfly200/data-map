@@ -11,8 +11,8 @@ import assert from 'node:assert/strict'
 import {
   CV_FOLDS, DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, MAX_BACKGROUND, MIN_BACKGROUND, MIN_PREDICTORS,
   assignFold, backgroundPlan, buildSuitabilityImage, crossValidate, crossValidationSummary,
-  estimateModelUnits, foldPoints, modelPlan, normaliseModelSpec, predictorStack, randomBackground,
-  rocAuc, suitabilityLegend,
+  estimateModelUnits, foldPoints, modelPlan, normaliseModelSpec, predictorStack, PREDICTOR_KEYS,
+  randomBackground, rocAuc, suitabilityLegend,
 } from '../netlify/lib/maxent.mjs'
 import { normaliseSpec, SpecError } from '../netlify/lib/ee-pipeline.mjs'
 
@@ -255,6 +255,17 @@ test('predictorStack assembles one image per predictor', () => {
   const { ee, calls } = stubEe()
   predictorStack(ee, ['elevation', 'ndvi'])
   assert.ok(calls.includes('cat'), 'the bands are concatenated into one image')
+})
+
+test('the climate normals are available predictors and build', () => {
+  // The per-date weather layers return to the model as their long-run means.
+  assert.ok(['precip_normal', 'temp_normal'].every((k) => PREDICTOR_KEYS.includes(k)))
+  const spec = normaliseModelSpec({ region, predictors: ['elevation', 'precip_normal', 'temp_normal'] })
+  assert.deepEqual(spec.predictors, ['elevation', 'precip_normal', 'temp_normal'])
+  const { ee } = stubEe()
+  // Builds without throwing against the stub — the band-name and mean chain is
+  // followed, not evaluated.
+  assert.doesNotThrow(() => predictorStack(ee, spec.predictors))
 })
 
 test('cross-validation trains and classifies once per fold and selects three columns', () => {
