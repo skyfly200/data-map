@@ -24,6 +24,7 @@ const SETTINGS_KEYS = [
   'saved-filters',              // named filter subsets
   'explore-config',             // the chart builder's last configuration
   'inat-taxa',                  // which taxa to ask iNaturalist for
+  'dashboard-config',           // the dashboard's widgets and their order
 ]
 
 const CHARTS_KEY = 'saved-charts'

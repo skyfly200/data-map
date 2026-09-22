@@ -20,6 +20,7 @@
 // jobs with a message saying so, rather than failing halfway through one.
 
 import ee from '@google/earthengine'
+import { getStore as getModelStore } from '@netlify/blobs'
 
 import { CHUNK_SIZE } from './quotas.mjs'
 import {
@@ -33,8 +34,23 @@ import { orderForGreatGroup } from './soil-taxonomy.mjs'
 import { derivedIndices } from './terrain-indices.mjs'
 import {
   DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, MIN_CV_PRESENCES, backgroundPlan, buildSuitabilityImage,
-  crossValidate, crossValidationSummary, foldPoints, predictorStack, randomBackground, suitabilityLegend,
+  crossValidate, crossValidationSummary, foldPoints, modelCacheKey, predictorStack, randomBackground,
+  suitabilityLegend,
 } from './maxent.mjs'
+
+// Where fitted model surfaces are cached, and for how long. The TTL is well
+// inside the Earth Engine map id's own expiry, so a cached template is never
+// served after its tiles would have started 404ing.
+const MODEL_TTL_MS = 6 * 60 * 60 * 1000
+function modelStore() {
+  try {
+    // Imported lazily so a deployment without Blobs configured still runs models,
+    // just without the cross-member cache.
+    return getModelStore('ee-models')
+  } catch {
+    return null
+  }
+}
 
 const MERIT_HYDRO = 'MERIT/Hydro/v1_0_1'
 
@@ -631,6 +647,22 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
   // presences themselves when they did not.
   const region = spec.region || boundsOfPoints(points)
 
+  // Result cache (V12-PERF-2): the fit is identical for the same predictors,
+  // region and source, so a second member asking for the same model reuses the
+  // first one's mint rather than spending it again. The TTL is well inside the
+  // Earth Engine map id's own expiry, so a cached template never serves blank.
+  const cacheId = modelCacheKey(spec, region)
+  const blobs = modelStore()
+  if (blobs) {
+    try {
+      const hit = await blobs.get(cacheId, { type: 'json' })
+      if (hit && hit.expires > Date.now() && hit.template) {
+        onProgress({ fraction: 1, stage: 'done', message: 'Reused a cached surface.' })
+        return { template: hit.template, meta: { ...hit.meta, cached: true } }
+      }
+    } catch { /* a cache that cannot be read is a miss */ }
+  }
+
   onProgress({ fraction: 0, stage: 'presences', message: 'Sampling the observations…' })
   const presences = ee.FeatureCollection(
     points.map(([lon, lat]) => ee.Feature(ee.Geometry.Point([lon, lat]))),
@@ -665,23 +697,29 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
   onProgress({ fraction: 0.85, stage: 'project', message: 'Projecting suitability…' })
   const template = await withRetry(() => mintTemplate(image, vis), { label: 'model tiles' })
 
-  onProgress({ fraction: 1, stage: 'done', message: 'Finished.' })
-  return {
-    template,
-    meta: {
-      kind: 'model',
-      predictors,
-      presences: points.length,
-      background: bgN,
-      region,
-      vis,
-      legend: suitabilityLegend(),
-      // Null when there were too few presences to score honestly, or the score
-      // failed; the UI reads its absence as "not scored", not "scored zero".
-      cv,
-      // A minted template carries a map id, which expires; the member re-runs
-      // the job to refresh it. Stamped so the UI can say how old the surface is.
-      mintedAt: new Date().toISOString(),
-    },
+  const meta = {
+    kind: 'model',
+    predictors,
+    presences: points.length,
+    background: bgN,
+    region,
+    vis,
+    legend: suitabilityLegend(),
+    // Null when there were too few presences to score honestly, or the score
+    // failed; the UI reads its absence as "not scored", not "scored zero".
+    cv,
+    // A minted template carries a map id, which expires; the member re-runs
+    // the job to refresh it. Stamped so the UI can say how old the surface is.
+    mintedAt: new Date().toISOString(),
   }
+
+  // Cache the fitted surface for the next member asking for the same model.
+  if (blobs) {
+    try {
+      await blobs.setJSON(cacheId, { template, meta, expires: Date.now() + MODEL_TTL_MS })
+    } catch { /* not caching is not failing */ }
+  }
+
+  onProgress({ fraction: 1, stage: 'done', message: 'Finished.' })
+  return { template, meta }
 }

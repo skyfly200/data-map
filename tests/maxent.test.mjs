@@ -11,8 +11,8 @@ import assert from 'node:assert/strict'
 import {
   CV_FOLDS, DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, MAX_BACKGROUND, MIN_BACKGROUND, MIN_PREDICTORS,
   assignFold, backgroundPlan, buildSuitabilityImage, crossValidate, crossValidationSummary,
-  estimateModelUnits, foldPoints, modelPlan, normaliseModelSpec, predictorStack, PREDICTOR_KEYS,
-  randomBackground, rocAuc, suitabilityLegend,
+  estimateModelUnits, foldPoints, modelCacheKey, modelPlan, normaliseModelSpec, predictorStack,
+  PREDICTOR_KEYS, randomBackground, rocAuc, suitabilityLegend,
 } from '../netlify/lib/maxent.mjs'
 import { normaliseSpec, SpecError } from '../netlify/lib/ee-pipeline.mjs'
 
@@ -130,6 +130,29 @@ test('the suitability legend is a 0..1 ramp', () => {
   assert.equal(legend.min, '0')
   assert.equal(legend.max, '1')
   assert.ok(legend.stops.length >= 2)
+})
+
+// ── Result caching (V12-PERF-2) ──────────────────────────────────────────────
+
+test('the model cache key is stable across equivalent requests', () => {
+  const a = { predictors: ['ndvi', 'elevation'], background: 1000, source: { type: 'dataset', slug: 'x' } }
+  const b = { predictors: ['elevation', 'ndvi'], background: 1000, source: { type: 'dataset', slug: 'x' } }
+  // Predictor order does not change the model, so it must not change the key.
+  assert.equal(modelCacheKey(a, region), modelCacheKey(b, region))
+})
+
+test('the model cache key separates models that differ', () => {
+  const base = { predictors: DEFAULT_PREDICTORS, background: 1000, source: { type: 'dataset', slug: 'x' } }
+  const key = modelCacheKey(base, region)
+  assert.notEqual(key, modelCacheKey({ ...base, predictors: ['elevation', 'slope'] }, region))
+  assert.notEqual(key, modelCacheKey({ ...base, source: { type: 'dataset', slug: 'y' } }, region))
+  assert.notEqual(key, modelCacheKey(base, { ...region, north: region.north + 1 }))
+})
+
+test('a bbox source keys on its taxon and dates, a dataset on its slug', () => {
+  const bbox = modelCacheKey({ source: { type: 'bbox', taxon: 'Morchella', dateFrom: '2020-01-01' } }, region)
+  assert.match(bbox, /Morchella/)
+  assert.match(modelCacheKey({ source: { type: 'dataset', slug: 'my-finds' } }, region), /dataset:my-finds/)
 })
 
 // ── Cross-validation: the pure math ──────────────────────────────────────────

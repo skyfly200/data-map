@@ -255,3 +255,31 @@ export function makeArea({ id, name, bounds, minZoom, maxZoom, sources = [], sav
     savedAt: savedAt || new Date().toISOString(),
   }
 }
+
+/**
+ * A saved area described in the terms a person actually reads it in: the zoom
+ * span, how many layers, the tile count and its bytes, and the ground it covers
+ * in kilometres.
+ *
+ * Width is scaled by the cosine of the centre latitude, because a degree of
+ * longitude is 111 km at the equator and nearly nothing near the pole — without
+ * it every high-latitude area would claim a width it does not have.
+ */
+export function describeArea(area: SavedArea) {
+  const { north, south, east, west } = area.bounds
+  const KM_PER_DEGREE = 111.32
+  const centreLat = (north + south) / 2
+  const widthKm = Math.abs(east - west) * KM_PER_DEGREE * Math.cos((centreLat * Math.PI) / 180)
+  const heightKm = Math.abs(north - south) * KM_PER_DEGREE
+  const round = (n: number) => (
+    n >= 100 ? Math.round(n) : n >= 10 ? Math.round(n * 10) / 10 : Math.round(n * 100) / 100)
+  return {
+    zooms: area.minZoom === area.maxZoom
+      ? `zoom ${area.minZoom}`
+      : `zoom ${area.minZoom}–${area.maxZoom}`,
+    layers: (area.sources || []).length,
+    tiles: areaTileCount(area),
+    bytes: estimateAreaBytes(area),
+    extent: `${round(widthKm)} km × ${round(heightKm)} km`,
+  }
+}

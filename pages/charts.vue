@@ -7,7 +7,9 @@
               @click="tab = 'build'">Build</button>
     </nav>
 
-    <ChartBuilder v-if="tab === 'build'" class="build-pane" />
+    <!-- Lazy: the builder's chunk loads only when the Build tab is opened, not
+         on the gallery a reader lands on first (V12-PERF-3). -->
+    <LazyChartBuilder v-if="tab === 'build'" class="build-pane" />
 
     <template v-else>
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
@@ -86,7 +88,11 @@
                          note="This link opens this chart, over the same filtered data." />
               <button title="Remove" class="rm" @click="saved.remove(chart.id)">✕</button>
             </div>
-            <ChartRenderer :config="chart" @select="selected = $event" />
+            <!-- Off-screen charts are built as they scroll into view, so a
+                 gallery of many does not render them all at once (V12-PERF-3). -->
+            <LazyVisible min-height="260px">
+              <ChartRenderer :config="chart" @select="selected = $event" />
+            </LazyVisible>
           </ChartCard>
         </div>
       </section>

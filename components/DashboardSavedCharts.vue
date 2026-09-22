@@ -1,151 +1,56 @@
 <template>
-  <div class="dashboard-saved-charts">
-    <h3 class="widget-title">📊 Saved Charts</h3>
-    <div v-if="charts.length === 0" class="no-charts">
+  <div class="dash-widget saved-charts">
     <div class="widget-head">
-      <h3 class="widget-title">📊 Saved Charts</h3>
-      <NuxtLink v-if="chartList.length" to="/charts" class="widget-link">All charts ›</NuxtLink>
+      <h3 class="widget-title">📊 Saved charts</h3>
+      <NuxtLink to="/charts" class="widget-link">Gallery ›</NuxtLink>
     </div>
-    <div v-if="chartList.length === 0" class="no-charts">
-      <p>No saved charts yet.</p>
-      <NuxtLink to="/charts" class="create-chart-link">Create your first chart</NuxtLink>
-      <NuxtLink to="/charts" class="create-chart-link">Build your first chart</NuxtLink>
-    </div>
-    <div v-else class="charts-list">
-      <div v-for="chart in charts" :key="chart.id" class="chart-item">
-        <component 
-          :is="chart.chartType || 'ChartCard'" 
-          :config="chart.config"
-          :compact="true"
-        />
-      <div v-for="chart in chartList" :key="chart.id" class="chart-item">
-        <div class="chart-item-header">
-          <span class="chart-item-title">{{ chart.title || chart.type || 'Custom Chart' }}</span>
-          <NuxtLink to="/charts" class="chart-open-link" title="Open in Charts">↗</NuxtLink>
-        </div>
-        <div class="chart-render-wrapper">
-          <ChartRenderer :config="chart" />
-        </div>
-      </div>
-    </div>
+
+    <p v-if="!list.length" class="widget-note">
+      No saved charts yet. Build one on <NuxtLink to="/explore" class="widget-link">Explore</NuxtLink>.
+    </p>
+
+    <ul v-else class="chart-rows">
+      <li v-for="c in list" :key="c.id" class="chart-row">
+        <span class="chart-type">{{ typeLabel(c.type) }}</span>
+        <NuxtLink :to="chartHref(c)" class="chart-name">{{ c.title || untitled(c) }}</NuxtLink>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
 import { computed, onMounted } from 'vue'
 import { useSavedCharts } from '~/composables/useSavedCharts'
-import { useObservations } from '~/composables/useObservations'
-import ChartRenderer from '~/components/ChartRenderer.vue'
 
-const { savedCharts } = useSavedCharts()
-const charts = ref([])
 const { charts, loadFromStorage } = useSavedCharts()
-const { load: loadObs } = useObservations()
 
-onMounted(() => {
-  charts.value = savedCharts.value?.slice(0, 6) || []
-const chartList = computed(() => (charts.value || []).slice(0, 4))
+const list = computed(() => (charts.value || []).slice(0, 6))
 
-onMounted(async () => {
-  loadFromStorage()
-  await loadObs()
-})
+const TYPE_LABELS = {
+  scatter: 'Scatter', bar: 'Bar', box: 'Box', line: 'Line', heatmap: 'Heatmap', histogram: 'Histogram',
+}
+function typeLabel(t) { return TYPE_LABELS[t] || (t ? t[0].toUpperCase() + t.slice(1) : 'Chart') }
+function untitled(c) { return `${typeLabel(c.type)} chart` }
+function chartHref(c) {
+  try { return `/explore?cfg=${encodeURIComponent(JSON.stringify(c))}` } catch { return '/charts' }
+}
+
+onMounted(() => { loadFromStorage() })
 </script>
 
 <style scoped>
-.dashboard-saved-charts {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+.saved-charts { height: 100%; display: flex; flex-direction: column; }
+.widget-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.75rem; }
+.widget-title { margin: 0; font-size: 1rem; color: var(--text, #222); }
+.widget-link { font-size: 0.8rem; color: var(--accent, #2a78d6); text-decoration: none; }
+.widget-link:hover { text-decoration: underline; }
+.widget-note { text-align: center; padding: 1.25rem; color: var(--muted, #999); font-size: 0.85rem; }
+.chart-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.chart-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+.chart-type {
+  flex: 0 0 auto; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--muted, #777); background: var(--surface-2, #f0f0f0); border-radius: 4px; padding: 1px 6px;
 }
-
-.widget-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-}
-
-.widget-title {
-  margin: 0 0 1rem 0;
-  margin: 0;
-  font-size: 1rem;
-  color: var(--text, #222);
-}
-
-.widget-link {
-  font-size: 0.8rem;
-  color: var(--primary, #2a78d6);
-  text-decoration: none;
-}
-
-.widget-link:hover {
-  text-decoration: underline;
-}
-
-.no-charts {
-  text-align: center;
-  padding: 1.5rem;
-  color: var(--muted, #999);
-}
-
-.create-chart-link {
-  display: inline-block;
-  margin-top: 0.75rem;
-  color: var(--primary, #2a78d6);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.create-chart-link:hover {
-  text-decoration: underline;
-}
-
-.charts-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  gap: 1rem;
-  overflow-y: auto;
-  max-height: 480px;
-}
-
-.chart-item {
-  border-bottom: 1px solid var(--border-soft, #eee);
-  padding-bottom: 0.75rem;
-  border: 1px solid var(--border-soft, #eee);
-  border-radius: 8px;
-  padding: 0.75rem;
-  background: var(--surface, #fff);
-}
-
-.chart-item:last-child {
-  border-bottom: none;
-.chart-item-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-
-.chart-item-title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text, #222);
-}
-
-.chart-open-link {
-  color: var(--muted, #888);
-  text-decoration: none;
-  font-size: 0.85rem;
-}
-
-.chart-open-link:hover {
-  color: var(--primary, #2a78d6);
-}
-
-.chart-render-wrapper {
-  min-height: 160px;
-}
+.chart-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--accent, #2a78d6); text-decoration: none; }
+.chart-name:hover { text-decoration: underline; }
 </style>
