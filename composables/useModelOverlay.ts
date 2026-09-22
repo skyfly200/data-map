@@ -21,6 +21,8 @@ export interface ModelOverlay {
   region: { north: number; south: number; east: number; west: number } | null
   /** When the template was minted — a map id expires, so age is worth showing. */
   mintedAt: string | null
+  /** The cross-validation score, or null when the model was not scored. */
+  cv: { auc: number; sd: number; folds: number; grade: string } | null
 }
 
 export function useModelOverlay() {
