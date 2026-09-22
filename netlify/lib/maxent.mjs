@@ -15,7 +15,7 @@
 // already does that) or store the result. It turns "these presences, these
 // predictors, this region" into an Earth Engine image and how to paint it.
 
-import { SRTM, S2_SR, ERA5_DAILY, SpecError, normaliseBounds } from './ee-pipeline.mjs'
+import { SRTM, S2_SR, ERA5_DAILY, CHIRPS_DAILY, SpecError, normaliseBounds } from './ee-pipeline.mjs'
 import { CHUNK_SIZE } from './quotas.mjs'
 
 /**
@@ -58,6 +58,35 @@ export const MAXENT_PREDICTORS = {
       .select('volumetric_soil_water_layer_1')
       .mean()
       .rename('soil_moisture'),
+  },
+
+  // ── Climate normals ────────────────────────────────────────────────────────
+  // The enrichment samples weather on the day of each record, but a suitability
+  // surface is a claim about a place, not a day, so a per-record daily value has
+  // nothing to project onto a pixel. The honest way to bring weather into a
+  // static model is the climate normal: the long-run average, which IS a
+  // property of the place. So the per-date layers the model left out return here
+  // as their multi-year means.
+  precip_normal: {
+    label: 'Rainfall (normal)',
+    // Mean daily CHIRPS rainfall over the whole record. The absolute scale does
+    // not matter to MaxEnt — only how places compare — so the daily mean stands
+    // in for "how wet this place is on average" without an annual multiply.
+    image: (ee) => ee.ImageCollection(CHIRPS_DAILY)
+      .select('precipitation')
+      .mean()
+      .rename('precip_normal'),
+  },
+  temp_normal: {
+    label: 'Temperature (normal)',
+    // Mean daily 2 m air temperature from ERA5-Land, in °C. The standing warmth
+    // of a place, which for most species is the strongest climate predictor of
+    // where they can live at all.
+    image: (ee) => ee.ImageCollection(ERA5_DAILY)
+      .select('temperature_2m')
+      .mean()
+      .subtract(273.15)
+      .rename('temp_normal'),
   },
 }
 
