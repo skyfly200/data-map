@@ -1,13 +1,16 @@
 # Netlify build + functions config for the Nuxt frontend.
 # Nuxt 3 (Nitro) auto-selects the Netlify preset when building on Netlify and
-# emits static assets + its SSR route into `dist`. The Python data pipeline does
-# NOT run here — it runs offline (locally or in the GitHub Action) and commits
-# public/data/observations.geojson, which this build serves.
+# emits static assets + its SSR route into `dist`.
 #
-# Two custom functions add a live refresh layer:
-#   refresh-observations  – scheduled; fetches new iNaturalist sightings, merges
-#                           onto the committed baseline, writes to Netlify Blobs.
-#   observations          – serving; returns the blob copy, else the baseline.
+# Observations are stored in Supabase Storage (observations.geojson in the
+# datasets bucket). The static GeoJSON files have been removed from the repo.
+# Set NUXT_PUBLIC_DATASETS_MANIFEST_URL to the Supabase public URL printed by
+# scripts/upload_datasets.mjs so the client and functions read from Supabase.
+#
+# Two custom functions manage the live dataset:
+#   refresh-observations  – scheduled; fetches new iNaturalist sightings and
+#                           merges them into Supabase Storage every 6 hours.
+#   observations          – serving; reads observations.geojson from Supabase.
 
 [build]
   command = "npm run build"
@@ -24,23 +27,3 @@
   node_bundler = "esbuild"
   external_node_modules = ["@google/earthengine"]
 
-# The baseline GeoJSON is ~48 MB, and included_files at the top level puts it in
-# EVERY function bundle — twelve of them, of which four actually read it. The
-# other eight were packaging half a gigabyte between them for nothing, on every
-# build. Scoped per function instead.
-#
-# The old config also globbed data/terrain/*.tif, which matches no files.
-
-[functions."observations"]
-  included_files = ["public/data/observations.geojson"]
-
-[functions."refresh-observations"]
-  included_files = ["public/data/observations.geojson"]
-
-# Both reach the baseline through lib/job-source.mjs, to resolve the area a
-# pipeline job covers.
-[functions."ee-jobs"]
-  included_files = ["public/data/observations.geojson"]
-
-[functions."ee-worker"]
-  included_files = ["public/data/observations.geojson"]
