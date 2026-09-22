@@ -24,13 +24,13 @@
                access token, which the server render does not have, so a link
                drawn from it on the server hydrates into a different DOM. -->
           <ClientOnly>
-            <NuxtLink v-if="isMember" to="/jobs" class="nav-link">Jobs</NuxtLink>
+            <NuxtLink v-if="isMember" to="/modeling/maxent" class="nav-link">Modeling</NuxtLink>
           </ClientOnly>
         </nav>
         <PopoverMenu class="nav-pop" icon="☰" title="Go to" align="right" btn-class="hdr-btn">
           <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-item">{{ l.label }}</NuxtLink>
           <ClientOnly>
-            <NuxtLink v-if="isMember" to="/jobs" class="nav-item">Jobs</NuxtLink>
+            <NuxtLink v-if="isMember" to="/modeling/maxent" class="nav-item">Modeling</NuxtLink>
           </ClientOnly>
         </PopoverMenu>
         <ClientOnly>
@@ -184,7 +184,7 @@ shortcuts.register([
   { scope: 'Navigate', keys: 'c', label: 'Charts', run: go('/charts') },
   { scope: 'Navigate', keys: 'a', label: 'Analysis', run: go('/analysis') },
   { scope: 'Navigate', keys: 'd', label: 'Data', run: go('/data') },
-  { scope: 'Navigate', keys: 'j', label: 'Pipeline jobs', run: go('/jobs') },
+  { scope: 'Navigate', keys: 'x', label: 'Modeling', run: go('/modeling/maxent') },
   { scope: 'Navigate', keys: 'g', label: 'Guide', run: go('/guide') },
   { scope: 'General', keys: '?', label: 'Show this help', run: () => { shortcuts.helpOpen.value = !shortcuts.helpOpen.value } },
   { scope: 'General', keys: 'escape', label: 'Close dialogs and panels', run: () => { shortcuts.helpOpen.value = false } },
