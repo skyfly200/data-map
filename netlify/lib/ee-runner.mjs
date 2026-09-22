@@ -524,6 +524,7 @@ const RUNNERS = {
  * Returns the features with the sampled properties merged in.
  */
 export async function runPipeline({ spec, features, plan, onProgress = () => {} }) {
+  const _pipelineStart = Date.now()
   await initEarthEngine()
 
   const points = features.map((f, index) => {
@@ -555,6 +556,7 @@ export async function runPipeline({ spec, features, plan, onProgress = () => {} 
     if (!runner) continue
     onProgress({ fraction: step.from, stage: step.key, message: `${step.label}…` })
     const skipped = { n: 0 }
+    const _stageStart = Date.now()
     await runner(points, columns, (within) => {
       onProgress({
         fraction: step.from + (step.to - step.from) * Math.min(1, Math.max(0, within)),
@@ -562,6 +564,7 @@ export async function runPipeline({ spec, features, plan, onProgress = () => {} 
         message: `${step.label}…`,
       })
     }, skipped)
+    console.log(`[ee] stage ${step.key} completed in ${Date.now() - _stageStart}ms (skipped: ${skipped.n})`)
     if (skipped.n) skippedByStage[step.key] = skipped.n
   }
 
@@ -573,6 +576,7 @@ export async function runPipeline({ spec, features, plan, onProgress = () => {} 
   })
 
   onProgress({ fraction: 1, stage: 'done', message: 'Finished.' })
+  console.log(`[ee] pipeline completed in ${Date.now() - _pipelineStart}ms (points: ${points.length})`)
   return {
     features: out,
     bands: [...columns.keys()],
@@ -632,6 +636,7 @@ function mintTemplate(image, vis) {
  * expires, and re-running the job re-mints it.
  */
 export async function runModel({ spec, features, onProgress = () => {} }) {
+  const _modelStart = Date.now()
   await initEarthEngine()
 
   const predictors = spec.predictors?.length ? spec.predictors : DEFAULT_PREDICTORS
@@ -721,6 +726,7 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
   }
 
   onProgress({ fraction: 1, stage: 'done', message: 'Finished.' })
+  console.log(`[ee] model completed in ${Date.now() - _modelStart}ms (presences: ${points.length}, predictors: ${predictors.length})`)
   return { template, meta }
 }
 

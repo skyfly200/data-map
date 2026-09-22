@@ -965,7 +965,6 @@ async function saveMap() {
     exporter.download(blob, `map-${exporter.slugify(colorBy.value, 'view')}-${exporter.stamp()}.png`)
   } catch (err) {
     saveError.value = err.message || 'Could not save the map.'
-    console.error('Map export failed:', err)
   } finally {
     saving.value = false
   }

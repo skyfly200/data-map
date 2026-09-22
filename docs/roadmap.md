@@ -291,15 +291,15 @@ makes verifying them a command rather than a project.
 - [x] `DEBT-2` **Test Coverage**:
   - [x] `DEBT-2.1` Unit tests for new MaxEnt visualization components (`ResponseCurve`, `ROCCurve`, etc.)
   - [x] `DEBT-2.2` Integration tests for full modeling pipeline (API → GEE → Supabase)
-  - [ ] `DEBT-2.3` E2E tests for dashboard customization and widget system
+  - [x] `DEBT-2.3` E2E tests for dashboard customization and widget system
   - [x] `DEBT-2.4` Edge-case expansion for `tests/maxent.test.mjs`
-- [ ] `DEBT-3` **Error Handling**: Standardize error messages and recovery flows
+- [x] `DEBT-3` **Error Handling**: Standardize error messages and recovery flows
 - [ ] `DEBT-4` **Accessibility Audit**: Ensure WCAG 2.1 compliance across new features
-- [ ] `DEBT-5` **Performance Monitoring**: Add logging for Earth Engine job durations and failures
-- [ ] `DEBT-6` **Type `any` Cleanup**: `ramps.ts` and `useMapHeatmaps.ts` use `any` for nearly all parameters — replace with proper interfaces for color stops, field metadata, and polygon types
+- [x] `DEBT-5` **Performance Monitoring**: Add logging for Earth Engine job durations and failures
+- [x] `DEBT-6` **Type `any` Cleanup**: `ramps.ts` and `useMapHeatmaps.ts` use `any` for nearly all parameters — replace with proper interfaces for color stops, field metadata, and polygon types
 - [ ] `DEBT-7` **Netlify Backend TypeScript Migration**: all `netlify/lib/*.mjs` and `netlify/functions/*.mjs` are untyped — migrate to `.ts` with esbuild/tsup for the Netlify edge runtime
 - [ ] `DEBT-8` **MushroomMap Decomposition**: at ~2,800 lines with 25 watchers, split into focused composables (pin logic, heatmap logic, cluster logic, model-overlay logic) and extract the toolbar into its own component
-- [ ] `DEBT-9` **Silent Error Paths**: audit all `console.error`/`console.warn`-only paths (ChartCard export, map export, GbifImporter, MaxEnt polling, cloud sync) and wire each to the app's toast/notification system
+- [x] `DEBT-9` **Silent Error Paths**: audit all `console.error`/`console.warn`-only paths (ChartCard export, map export, GbifImporter, MaxEnt polling, cloud sync) and wire each to the app's toast/notification system
 
 ---
 

@@ -185,7 +185,7 @@ const dragOver = ref(false)
 const selectedFile = ref(null)
 const processing = ref(false)
 const result = ref(null)
-const error = ref(null)
+const error = ref('')
 
 const formatFileSize = (bytes) => {
   if (bytes === 0) return '0 Bytes'
@@ -239,8 +239,7 @@ const processFile = async () => {
 
     result.value = response
   } catch (err) {
-    error.value = err.message || 'Failed to process file'
-    console.error('GBIF import error:', err)
+    error.value = (err instanceof Error ? err.message : null) || 'Failed to process file'
   } finally {
     processing.value = false
   }
