@@ -296,6 +296,27 @@
          is too tight, or the feature is broken is what made this read as
          broken — the answer is usually that the column is simply not in the
          data yet. -->
+    <!-- A model's suitability surface, handed over from the jobs page. Drawn as
+         a tile overlay; this is its key, plus how old it is and whether its
+         (expiring) tiles have started to fail. -->
+    <div v-if="modelOverlay" class="legend overlay-legend">
+      <div class="legend-title">{{ modelOverlay.label }} · suitability</div>
+      <div class="gradient" :style="{ background: gradientCss(modelOverlay.legend.stops) }"></div>
+      <div class="gradient-scale">
+        <span>{{ modelOverlay.legend.min || '0' }} low</span>
+        <span>high {{ modelOverlay.legend.max || '1' }}</span>
+      </div>
+      <div class="legend-note">
+        Modelled habitat suitability, not observations.
+        <template v-if="modelOverlay.age"> Fitted {{ modelOverlay.age }}.</template>
+      </div>
+      <div v-if="modelOverlay.stale" class="legend-note warn">
+        These tiles have stopped loading — the fitted surface expires. Re-run the
+        model job to refresh it.
+      </div>
+      <button class="linkish" @click="removeModelOverlay">Remove this surface</button>
+    </div>
+
     <div v-if="!heatmapLegend && heatmapMode && loaded" class="legend overlay-legend">
       <div class="legend-title">{{ heatmapMeta.label }}</div>
       <div class="legend-note">{{ emptyHeatmapReason }}</div>
@@ -1096,6 +1117,81 @@ function restoreBase() {
   if (saved && saved !== activeBase.value && baseLayers.value.some((b) => b.key === saved)) {
     setBase(saved)
   }
+}
+
+// A suitability surface handed over from the jobs page. Drawn as one tile
+// overlay above the basemap and below the observation points, with its own
+// legend card. `modelLayer` is the Leaflet layer; `modelOverlay` is what the
+// legend reads.
+const overlayHandoff = useModelOverlay()
+const modelOverlay = ref(null)
+let modelLayer = null
+
+/** How old the surface is, from when its tiles were minted. */
+function overlayAge(mintedAt) {
+  if (!mintedAt) return ''
+  const d = new Date(mintedAt)
+  if (!Number.isFinite(d.getTime())) return ''
+  const hours = Math.floor((Date.now() - d.getTime()) / 3600000)
+  if (hours < 1) return 'just now'
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
+/** Draw the pending suitability surface, if the jobs page left one. */
+function applyModelOverlay() {
+  const pending = overlayHandoff.pending.value
+  if (!pending || !pending.template || !map || !L) return
+  removeModelOverlay()
+
+  const layer = L.tileLayer(pending.template, {
+    opacity: 0.7,
+    maxZoom: MAP_MAX_ZOOM,
+    // The surface tracks zoom the way the reference overlays do (see the note on
+    // updateWhenIdle where those are built).
+    updateWhenIdle: false,
+    updateWhenZooming: true,
+    className: 'model-suitability',
+  })
+
+  // A minted map id expires; when its tiles start 404ing the surface is gone,
+  // and a blank overlay reads as "nowhere is suitable" rather than "this
+  // expired". Count failures and say so instead.
+  let failed = 0
+  layer.on('tileerror', () => {
+    failed += 1
+    if (failed >= 3 && modelOverlay.value && !modelOverlay.value.stale) {
+      modelOverlay.value = { ...modelOverlay.value, stale: true }
+    }
+  })
+  layer.addTo(map)
+  modelLayer = layer
+
+  modelOverlay.value = {
+    label: pending.label || 'Model',
+    legend: pending.legend || { stops: ['#2c2f6b', '#c6301f'], min: '0', max: '1' },
+    age: overlayAge(pending.mintedAt),
+    stale: false,
+  }
+
+  // Frame the region the surface was projected over, so it is not off-screen.
+  const r = pending.region
+  if (r && Number.isFinite(r.north)) {
+    try {
+      map.fitBounds(L.latLngBounds([r.south, r.west], [r.north, r.east]).pad(0.05), { animate: false })
+    } catch { /* a bad region is not worth failing the draw over */ }
+  }
+
+  // Consumed, so a later revisit of the map does not redraw a surface the member
+  // removed. Reopening it from the jobs page sets it again.
+  overlayHandoff.clear()
+}
+
+/** Take the suitability surface off the map. */
+function removeModelOverlay() {
+  if (modelLayer && map) map.removeLayer(modelLayer)
+  modelLayer = null
+  modelOverlay.value = null
 }
 
 // The stacking order of the overlays that are on, topmost first, and how see-
@@ -2052,6 +2148,11 @@ onMounted(async () => {
     heatmaps.loadFromStorage()
     appearance.loadFromStorage()
 
+    // A suitability surface waiting from the jobs page, if the member pressed
+    // "View suitability on map". Drawn after the base layers exist so it sits
+    // above them.
+    applyModelOverlay()
+
     // A shared link wins over stored preferences: the point of opening one is to
     // see what the sender saw, not what you last had configured.
     const shared = share.apply(useRoute().query)
@@ -2502,6 +2603,12 @@ onBeforeUnmount(() => {
 }
 /* A caveat about the data being stretched should read as a caveat. */
 .legend-note.upscaled { color: #8a5a1f; }
+.legend-note.warn { color: #b3492f; }
+/* The one link inside a legend card (remove a model surface). */
+.overlay-legend .linkish {
+  margin-top: 6px; background: none; border: 0; padding: 0;
+  font: inherit; font-size: 12px; color: var(--accent); text-decoration: underline; cursor: pointer;
+}
 
 /* :deep — Leaflet builds the tooltip outside this component's tree. */
 .map-shell :deep(.obs-tip) {
