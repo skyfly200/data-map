@@ -216,8 +216,8 @@ onMounted(() => {
       if (savedActive) activePanelCollapsed.value = savedActive === 'true'
       const savedSelection = localStorage.getItem('layer-manager-selection-collapsed')
       if (savedSelection) selectionPanelCollapsed.value = savedSelection === 'true'
-    } catch (e) {
-      console.warn('LayerManager: Failed to read from localStorage', e)
+    } catch {
+      // Preference reads silently fall back to defaults.
     }
   }
 })
@@ -226,7 +226,7 @@ watch(activePanelCollapsed, (val) => {
     try {
       localStorage.setItem('layer-manager-active-collapsed', String(val))
     } catch (e) {
-      console.warn('LayerManager: Failed to save activePanelCollapsed to localStorage', e)
+      // Preference writes silently fail if storage is blocked.
     }
   }
 })
@@ -235,7 +235,7 @@ watch(selectionPanelCollapsed, (val) => {
     try {
       localStorage.setItem('layer-manager-selection-collapsed', String(val))
     } catch (e) {
-      console.warn('LayerManager: Failed to save selectionPanelCollapsed to localStorage', e)
+      // Preference writes silently fail if storage is blocked.
     }
   }
 })

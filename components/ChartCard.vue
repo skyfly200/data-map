@@ -46,7 +46,7 @@ async function save(event) {
       exporter.download(await exporter.svgToPng(svg, { scale: 2, background }), `${stem}.png`)
     }
   } catch (err) {
-    console.error('Chart export failed:', err)
+    useAppAlerts().error('Chart export failed — ' + (err instanceof Error ? err.message : String(err)))
   } finally {
     saving.value = false
   }

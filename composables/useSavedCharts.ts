@@ -28,7 +28,7 @@ export function useSavedCharts() {
         persist()
       }
     } catch (err: any) {
-      console.warn('Could not sync charts to your account:', err?.message || err)
+      useAppAlerts().warn('Could not sync charts to your account: ' + (err?.message || err))
     }
   }
 

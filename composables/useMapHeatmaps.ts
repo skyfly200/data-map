@@ -102,6 +102,7 @@ export interface HeatmapMode {
   field?: string
   circular?: boolean
   fieldRamp?: string[] | null
+  windNote?: string
 }
 
 export const HEATMAP_MODES: HeatmapMode[] = [
@@ -138,7 +139,7 @@ export const HEATMAP_MODES: HeatmapMode[] = [
     key: 'wind', label: 'Wind / aspect vectors', kind: 'vector', group: 'Terrain',
     note: 'Arrows point the way slopes face; length is how consistent the aspect is, color is wind exposure.',
     windNote: 'Arrows point downwind (ERA5 10 m mean); length is wind speed.',
-  } as any,
+  },
   // Cell means of the enriched fields, generated so a new enrichment column
   // becomes a readable layer by being named once above.
   ...FIELD_MODES.map((f) => ({
@@ -216,7 +217,7 @@ interface HeatmapCell {
   key: string
   lat: number
   lon: number
-  polygon: any
+  polygon: [number, number][]
   lat0: number
   lon0: number
   lat1: number
@@ -386,9 +387,9 @@ export function useMapHeatmaps() {
     return [...cells.values()]
   }
 
-  function windField(cells: HeatmapCell[], meta: any) {
+  function windField(cells: HeatmapCell[], meta: HeatmapMode) {
     const hasWind = cells.some((c) => c.windN > 0)
-    const out: any[] = []
+    const out: HeatmapCell[] = []
     for (const c of cells) {
       let dx, dy, magnitude
       if (hasWind) {
@@ -428,7 +429,7 @@ export function useMapHeatmaps() {
     }
   }
 
-  function modalField(cells: HeatmapCell[], meta: any, pick: (c: HeatmapCell) => Map<string, number>, colorKey: string) {
+  function modalField(cells: HeatmapCell[], meta: HeatmapMode, pick: (c: HeatmapCell) => Map<string, number>, colorKey: string) {
     for (const c of cells) {
       let best = null, bestN = 0
       for (const [v, n] of pick(c)) if (n > bestN) { best = v; bestN = n }
@@ -443,7 +444,7 @@ export function useMapHeatmaps() {
     return { cells, legend: { type: 'categorical', items, total: wins.size, note: meta.note } }
   }
 
-  function fieldMeans(cells: HeatmapCell[], meta: any) {
+  function fieldMeans(cells: HeatmapCell[], meta: HeatmapMode) {
     const key = meta.field
     const shown: HeatmapCell[] = []
     for (const c of cells) {
@@ -527,8 +528,8 @@ export function useMapHeatmaps() {
     }
 
     const fmt = m === 'season' || m === 'hotspots'
-      ? (c: any) => `${Math.round((c.n ? c.inWindow / c.n : 0) * 100)}%`
-      : (c: any) => String(c.value)
+      ? (c: HeatmapCell) => `${Math.round((c.n ? c.inWindow / c.n : 0) * 100)}%`
+      : (c: HeatmapCell) => String(c.value)
     const loCell = shown.reduce((a, b) => (a.raw as number <= b.raw as number ? a : b))
     const hiCell = shown.reduce((a, b) => (a.raw as number >= b.raw as number ? a : b))
 
