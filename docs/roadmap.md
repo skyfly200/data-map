@@ -151,6 +151,18 @@ A secondary benefit: Vercel's edge runtime and image optimisation improve cold-s
 
 Worth doing when there is a concrete reason to deploy on Vercel — a cost comparison, a team preference, or a feature only one platform offers — rather than speculatively.
 
+### `WANT-9` GBIF API direct loading
+
+Today GBIF data enters only through a manual CSV export — the user downloads an occurrence archive from gbif.org, uploads the file, and the server parses it. There is no path to querying GBIF from within the app.
+
+The GBIF Occurrence API (`https://api.gbif.org/v1/occurrence/search`) is public and requires no authentication for read access. A new Netlify function wrapping it could accept the same filter parameters the app already uses — taxon, bounding box, date range, coordinate uncertainty threshold — and return a GeoJSON FeatureCollection in the same shape `useObservations` expects. A member would search by species name, see a record count, and load directly into their dataset without leaving the app.
+
+The quota question matters here: GBIF search returns up to 100,000 records per download request (paginated at 300/page). The function should enforce a per-request cap and surface record counts before fetching, so a member does not accidentally queue a 90k-record pull on a slow connection. Coordinate uncertainty filtering should default on (`coordinateUncertaintyInMeters` ≤ some threshold) to match the quality bar the CSV importer already applies.
+
+`ISSUE-2` (large imports timing out) is a prerequisite to fix or mitigate first: the same timeout risk applies to API-fetched data, and streaming the response into Supabase Storage incrementally rather than building the full GeoJSON in memory is the right fix for both.
+
+Worth doing alongside any work to improve the import experience, and before `WANT-2` (member-defined enrichment stages) since GBIF API records are a natural source for those.
+
 ### `WANT-6` A dashboard worth landing on
 
 The default view is thin: it opens on not much, and the interesting state — how
