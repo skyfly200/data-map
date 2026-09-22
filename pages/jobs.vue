@@ -47,6 +47,29 @@
         <section class="panel">
           <h3>New job</h3>
 
+          <!-- Enrich samples the layers at each point; model fits a suitability
+               surface from those points. Two different outputs — a table vs a
+               raster — so it is the first choice, not a checkbox further down. -->
+          <div class="row">
+            <label>Job</label>
+            <div class="sources">
+              <label class="pick">
+                <input v-model="form.jobKind" type="radio" value="enrich" />
+                <span>Enrich points</span>
+              </label>
+              <label class="pick">
+                <input v-model="form.jobKind" type="radio" value="model" />
+                <span>Model suitability</span>
+              </label>
+            </div>
+          </div>
+          <p v-if="form.jobKind === 'model'" class="hint">
+            Fits a MaxEnt model from the observations you choose and draws a
+            habitat-suitability surface across their area. A model, not a survey:
+            it says where the environment resembles where the species was found,
+            which is not the same as where it is.
+          </p>
+
           <div class="row">
             <label for="job-title">Name</label>
             <input id="job-title" v-model="form.title" type="text" placeholder="Autumn foray, Front Range" />
@@ -163,7 +186,17 @@
             <p v-if="taxonNote" class="hint" :class="{ warn: taxonUnknown }">{{ taxonNote }}</p>
           </template>
 
-          <div class="row">
+          <div v-if="form.jobKind === 'model'" class="row">
+            <label>Predictors</label>
+            <div class="stages">
+              <label v-for="p in predictorList" :key="p.key" class="stage">
+                <input type="checkbox" :value="p.key" v-model="form.predictors" />
+                <span><strong>{{ p.label }}</strong></span>
+              </label>
+            </div>
+          </div>
+
+          <div v-else class="row">
             <label>Layers</label>
             <div class="stages">
               <label v-for="s in stageList" :key="s.key" class="stage">
@@ -184,7 +217,10 @@
                     @click="onSubmit">
               {{ jobsApi.submitting.value ? 'Submitting…' : 'Queue job' }}
             </button>
-            <span v-if="!form.stages.length" class="hint">Pick at least one layer.</span>
+            <span v-if="form.jobKind === 'model' && form.predictors.length < MIN_PREDICTORS" class="hint">
+              Pick at least {{ MIN_PREDICTORS }} predictors.
+            </span>
+            <span v-else-if="form.jobKind !== 'model' && !form.stages.length" class="hint">Pick at least one layer.</span>
             <span v-else-if="form.sourceType === 'dataset' && !form.datasetSlug" class="hint">
               Choose a dataset.
             </span>
@@ -212,7 +248,12 @@
                 <span class="when">{{ fmtWhen(job.created_at) }}</span>
               </div>
 
-              <p class="job-meta">
+              <p v-if="isModel(job)" class="job-meta">
+                {{ (job.result_meta?.presences || job.params?.points || 0).toLocaleString() }} presences ·
+                {{ (job.params?.predictors || []).length }} predictors ·
+                {{ job.cost_units || job.estimated_units || 0 }} units
+              </p>
+              <p v-else class="job-meta">
                 {{ (job.params?.points || 0).toLocaleString() }} points ·
                 {{ (job.params?.stages || []).length }} layers ·
                 {{ job.cost_units || job.estimated_units || 0 }} units
@@ -232,24 +273,32 @@
               </p>
 
               <div class="job-actions">
-                <button v-if="job.status === 'succeeded'" class="btn small primary"
-                        :disabled="opening === job.id" @click="openOnMap(job)">
-                  {{ opening === job.id ? 'Loading…' : 'Open on map' }}
-                </button>
-                <button v-if="job.status === 'succeeded' && !savedFrom(job)" class="btn small"
-                        @click="startSave(job)">
-                  Save as dataset
-                </button>
-                <!-- Fetched on demand, so opening the menu on a page of
-                     finished jobs does not download every one of them. -->
-                <ExportMenu v-if="job.status === 'succeeded'"
-                            :source="() => jobsApi.fetchResult(job)"
-                            :total="job.result_meta?.features || job.params?.points || 0"
-                            :name="job.title || 'job result'"
-                            subtitle="enriched by this job" />
-                <span v-else-if="job.status === 'succeeded'" class="saved-as">
-                  Saved as <strong>{{ savedFrom(job).title }}</strong>
-                </span>
+                <!-- A model job draws a suitability surface; an enrichment job
+                     loads its points, saves as a dataset, and exports. -->
+                <template v-if="job.status === 'succeeded' && isModel(job)">
+                  <button class="btn small primary" @click="openModelOnMap(job)">
+                    View suitability on map
+                  </button>
+                  <span v-if="modelAge(job)" class="saved-as">Fitted {{ modelAge(job) }}</span>
+                </template>
+                <template v-else-if="job.status === 'succeeded'">
+                  <button class="btn small primary"
+                          :disabled="opening === job.id" @click="openOnMap(job)">
+                    {{ opening === job.id ? 'Loading…' : 'Open on map' }}
+                  </button>
+                  <button v-if="!savedFrom(job)" class="btn small" @click="startSave(job)">
+                    Save as dataset
+                  </button>
+                  <!-- Fetched on demand, so opening the menu on a page of
+                       finished jobs does not download every one of them. -->
+                  <ExportMenu :source="() => jobsApi.fetchResult(job)"
+                              :total="job.result_meta?.features || job.params?.points || 0"
+                              :name="job.title || 'job result'"
+                              subtitle="enriched by this job" />
+                  <span v-if="savedFrom(job)" class="saved-as">
+                    Saved as <strong>{{ savedFrom(job).title }}</strong>
+                  </span>
+                </template>
                 <button v-if="running(job)" class="btn small" @click="jobsApi.cancel(job.id)">Cancel</button>
               </div>
 
@@ -333,6 +382,9 @@
 <script setup>
 import { computed, reactive, ref, onMounted } from 'vue'
 import { STAGES, DEFAULT_STAGES } from '~/netlify/lib/ee-pipeline.mjs'
+import {
+  MAXENT_PREDICTORS, PREDICTOR_KEYS, DEFAULT_PREDICTORS, MIN_PREDICTORS,
+} from '~/netlify/lib/maxent.mjs'
 import { VISIBILITY_LABELS } from '~/composables/useDatasets'
 import { countForTaxon, datasetHasTaxon } from '~/netlify/lib/dataset-taxa.mjs'
 
@@ -340,9 +392,16 @@ const membership = useMembership()
 const jobsApi = useEeJobs()
 const datasetsApi = useDatasets()
 const { addInlineDataset } = useObservations()
+const modelOverlay = useModelOverlay()
 const router = useRouter()
 
 const stageList = Object.entries(STAGES).map(([key, s]) => ({ key, ...s }))
+// The predictors a suitability model may use — the registry's labels, no Earth
+// Engine builders, so this is safe on the client.
+const predictorList = PREDICTOR_KEYS.map((key) => ({ key, label: MAXENT_PREDICTORS[key].label }))
+
+/** A model job carries a suitability template rather than a feature collection. */
+const isModel = (job) => job?.params?.kind === 'model' || Boolean(job?.result_meta?.template)
 
 // ─── The taxon field ─────────────────────────────────────────────────────────
 // Offered from the dataset in the browser, which is the dataset a bbox job is
@@ -420,6 +479,7 @@ const taxonNote = computed(() => {
 
 const form = reactive({
   title: '',
+  jobKind: 'enrich',
   sourceType: 'bbox',
   datasetSlug: '',
   assetPath: '',
@@ -428,13 +488,19 @@ const form = reactive({
   north: 40.5, south: 39.2, west: -106.2, east: -104.8,
   dateFrom: '', dateTo: '', taxon: '',
   stages: [...DEFAULT_STAGES],
+  predictors: [...DEFAULT_PREDICTORS],
 })
 
 /** Datasets this member may run a job over: their own, plus anything shared. */
 const sourceChoices = computed(() => datasetsApi.available.value)
 
 const canSubmit = computed(() => {
-  if (!form.stages.length) return false
+  // A model needs its predictors; an enrichment job needs its layers.
+  if (form.jobKind === 'model') {
+    if (form.predictors.length < MIN_PREDICTORS) return false
+  } else if (!form.stages.length) {
+    return false
+  }
   if (form.sourceType === 'dataset') return Boolean(form.datasetSlug)
   if (form.sourceType === 'ee_asset') return Boolean(form.assetPath && form.assetPath.trim())
   return true
@@ -463,7 +529,20 @@ function statusLabel(job) {
 function describe(job) {
   const p = job.params || {}
   const where = p.source?.type === 'dataset' ? p.source.slug : 'area'
+  if (isModel(job)) return `Suitability from ${p.predictors?.length || 0} predictors over ${where}`
   return `${p.stages?.length || 0} layers over ${where}`
+}
+
+/** How long ago a model's surface was fitted, since its map id will not last. */
+function modelAge(job) {
+  const at = job.result_meta?.mintedAt
+  if (!at) return ''
+  const d = new Date(at)
+  if (!Number.isFinite(d.getTime())) return ''
+  const hours = Math.floor((Date.now() - d.getTime()) / 3600000)
+  if (hours < 1) return 'just now'
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
 }
 
 /** How much of a finished job came back thin, if any did. */
@@ -531,13 +610,27 @@ async function onSubmit() {
       }
     }
 
-    const result = await jobsApi.submit({
-      kind: 'enrich',
-      title: form.title,
-      stages: form.stages,
-      source,
-    })
-    submitNote.value = `Queued: ${result.points.toLocaleString()} points, about `
+    const spec = form.jobKind === 'model'
+      ? {
+        kind: 'model',
+        title: form.title,
+        predictors: form.predictors,
+        // For a bbox source the presences' own area is where the surface is
+        // drawn; for a dataset it is the extent of its points (the worker
+        // derives it), so no region is sent here.
+        region: source.type === 'bbox' ? source.bounds : undefined,
+        source,
+      }
+      : {
+        kind: 'enrich',
+        title: form.title,
+        stages: form.stages,
+        source,
+      }
+
+    const result = await jobsApi.submit(spec)
+    const what = form.jobKind === 'model' ? 'presences' : 'points'
+    submitNote.value = `Queued: ${result.points.toLocaleString()} ${what}, about `
       + `${result.estimate} units. ${result.remaining} left this month.`
   } catch (e) {
     submitError.value = e.message
@@ -567,6 +660,27 @@ async function openOnMap(job) {
   } finally {
     opening.value = ''
   }
+}
+
+/**
+ * Hand a finished model's suitability surface to the map.
+ *
+ * A model job has no feature collection to load — its result is a tile template.
+ * It goes into the shared overlay state the map reads on mount, which draws it
+ * with its legend and fits to the region it was projected over.
+ */
+function openModelOnMap(job) {
+  const meta = job.result_meta || {}
+  if (!meta.template) { submitError.value = 'That model has no surface to draw.'; return }
+  modelOverlay.show({
+    jobId: job.id,
+    label: job.title || 'Suitability',
+    template: meta.template,
+    legend: meta.legend || { type: 'ramp', min: '0', max: '1', stops: ['#2c2f6b', '#c6301f'] },
+    region: meta.region || null,
+    mintedAt: meta.mintedAt || null,
+  })
+  router.push('/map')
 }
 
 // ── Saving a result as a dataset ─────────────────────────────────────────────
