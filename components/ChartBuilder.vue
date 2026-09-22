@@ -103,9 +103,12 @@
 
     <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
     <p v-else-if="pending && !rows.length" class="msg">Loading…</p>
-    <ChartCard v-else class="stage">
-      <ChartRenderer :config="config" @select="selected = $event" />
-    </ChartCard>
+    <template v-else>
+      <p v-if="groupCoverageNote" class="msg warn coverage">{{ groupCoverageNote }}</p>
+      <ChartCard class="stage">
+        <ChartRenderer :config="config" @select="selected = $event" />
+      </ChartCard>
+    </template>
 
     <ObservationDrawer :selected="selected" @close="selected = null" />
   </div>
@@ -113,6 +116,7 @@
 
 <script setup>
 import { hasValue, useObservations } from '~/composables/useObservations'
+import { coverageNote } from '~/composables/fieldCoverage'
 import { ALL_NUMERIC, ALL_CATEGORY, SORT_MODES } from '~/composables/useChartFields'
 import { useSavedCharts } from '~/composables/useSavedCharts'
 import {
@@ -187,6 +191,20 @@ const config = computed(() => ({
   horizontal: horizontal.value, showToday: showToday.value, sortBy: sortBy.value,
   stackField: stackField.value, normalise: normalise.value,
 }))
+
+// When a chart is grouped, split or coloured by a taxonomic rank most records
+// lack, it is drawn over a slice — say which. Reads whichever grouping field the
+// current chart type actually uses, and shows the first that is a thin rank.
+const groupCoverageNote = computed(() => {
+  const c = config.value
+  const fields = [c.groupField, c.rowField, c.colField, c.seriesField, c.stackField, c.colorField]
+  for (const field of fields) {
+    if (!field) continue
+    const note = coverageNote(rows.value, field)
+    if (note) return note
+  }
+  return ''
+})
 
 // Click a scatter point to open its observation (iNat link + open on map).
 const selected = ref(null)

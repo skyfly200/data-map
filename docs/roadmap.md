@@ -171,18 +171,34 @@ the app currently says which you are looking at.
 Keep the URL, replace the contents, and let the raster inventory go when the
 cache does.
 
----
+### Navigation and the pages behind it
 
-## Data quality
+The nav grew around the tools that existed when each was added, and it shows.
+`/jobs` sits in it as a top-level destination, but a job is something you start
+and then wait on, not a place you go — it belongs behind the thing that produces
+it (the map, a dataset) or under an account menu, not beside Map and Charts. And
+the pages that have since become the ones worth landing on are not all in the nav
+at all.
 
-### Taxonomy resolution has stalled
+Two moves, one question. Remove `/jobs` from the nav (the page stays, reached
+from where a job is launched), and add the pages that earn a top-level slot to
+it. The open question is which those are, and in what order — the nav is the
+app's table of contents, so what is in it is a claim about what the app is for.
 
-Genus, family and order are populated for under 4% of the store, so every view
-that groups above species is working from a small and probably unrepresentative
-slice. The ranks are offered in the UI as if they were populated.
+### A dashboard worth landing on
 
-Either the resolution pass needs to run to completion, or the views that group
-by an unpopulated rank need to say what fraction they are drawn from.
+The default view is thin: it opens on not much, and the interesting state — how
+many observations, how fresh, what has been enriched, what is worth looking at
+today — is scattered across pages a member has to go find. A landing dashboard
+should carry that at a glance.
+
+More widgets, and better ones: totals and recency, a small map or heat preview,
+the enrichment coverage the reframed Coverage page will compute, recent jobs and
+datasets, maybe a "finds like today's conditions" prompt once the model can
+answer it. The work is partly which widgets (each has to answer a real question,
+not decorate), partly the layout that makes them read as one view rather than a
+pile, and partly the shared state so a widget reflects the same filters the rest
+of the app is under.
 
 ---
 
@@ -199,12 +215,39 @@ This is why `ee-tiles` reports failures loudly and by name: a layer that comes
 back blank looks exactly like ground with nothing on it. It is not a substitute
 for rendering each one once and looking at it.
 
+There is now a way to run that pass rather than only describe it:
+`scripts/verify_ee_layers.mjs` resolves every layer at its defaults, runs its
+prepare and count steps, mints a tile template, and prints a pass/fail line per
+layer, exiting non-zero if any failed. What is left is not code — it is running
+it once on a deployment that has Earth Engine credentials and eyeballing the
+layers that pass, because a mint proves the asset and bands but not that the
+pixels are right. Until then the band names remain unverified; the harness just
+makes verifying them a command rather than a project.
+
 ---
 
 ## Closed
 
 Entries move here with the commit that closed them, so the reason an item
 existed survives the fix.
+
+### Taxonomy resolution has stalled
+
+Genus, family and order were populated for under 4% of the store, so every view
+that grouped above species was working from a small and probably unrepresentative
+slice while the UI offered the ranks as if they were populated. The entry asked
+for one of two fixes: run the resolution pass to completion, or have the views say
+what fraction they are drawn from.
+
+Closed with the second. `composables/fieldCoverage.ts` computes the fraction of
+records carrying a field, and `coverageNote` turns a thin rank into the sentence
+a view shows; the map's "colour by" and the chart builder now carry it when the
+points or bars are grouped by a rank most records lack, naming the count and the
+percent so a key of five families no longer reads as the whole dataset. Genus and
+species are exempt — genus is split from the binomial when missing, so both are
+complete — and only the resolved-from-ancestry ranks (family and above) trip the
+note. The deeper fix, running the resolution pass to completion, is still worth
+doing; the app no longer lies about the ranks while it waits.
 
 ### Saved filters did not sync
 
