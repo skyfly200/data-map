@@ -146,6 +146,7 @@
               <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
             </optgroup>
           </select>
+          <p v-if="colorCoverageNote" class="pop-note warn">{{ colorCoverageNote }}</p>
         </div>
         <div v-if="colorOptions.numeric.length" class="pop-field">
           <label for="sizeby-sel">Size by <HelpLink option="map-size-by" /></label>
@@ -414,6 +415,7 @@ import { drawnKeys, effectiveBlend, reorderStack } from '~/composables/blendMode
 import { normaliseCodes } from '~/netlify/lib/ee-tile-layers.mjs'
 import { RAMP_PRESETS } from '~/composables/useMapHeatmaps'
 import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
+import { coverageNote } from '~/composables/fieldCoverage'
 import { fieldValue } from '~/composables/statistics'
 import { useAppearance } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
@@ -707,6 +709,11 @@ const colorOptions = computed(() => {
   ))
   return { category: present(ALL_CATEGORY), numeric: present(ALL_NUMERIC) }
 })
+
+// When the points are coloured by a taxonomic rank that most records lack, the
+// map is showing a slice — say so, rather than let a key of five families read
+// as the whole dataset.
+const colorCoverageNote = computed(() => coverageNote(filteredData.value?.features || [], colorBy.value))
 
 // If a dataset switch drops the active dimension's data, fall back to the first
 // option still available (cluster, in practice).
@@ -2646,6 +2653,8 @@ onBeforeUnmount(() => {
   font-size: 0.78rem; color: var(--muted); white-space: nowrap;
 }
 .pop-field select { width: 100%; }
+.pop-note { margin: 5px 0 0; font-size: 0.72rem; line-height: 1.4; color: var(--muted); }
+.pop-note.warn { color: #8a5a1f; }
 
 /* Layer rows. A whole row is the hit target, not just the box. */
 /* The layer manager's opener. Sized and stated by the shared block above with
