@@ -99,10 +99,11 @@
 ## Technical Debt & Refactoring
 
 - [x] `DEBT-1` **TypeScript Migration**: Convert remaining `.js` files to `.ts` for better type safety (Core composables migration substantially complete)
-- [ ] `DEBT-2` **Test Coverage**:
-  - Unit tests for all new MaxEnt components
-  - Integration tests for full modeling pipeline
-  - E2E tests for dashboard customization
+- [x] `DEBT-2` **Test Coverage**:
+  - [x] `DEBT-2.1` Unit tests for new MaxEnt visualization components (`ResponseCurve`, `ROCCurve`, etc.)
+  - [x] `DEBT-2.2` Integration tests for full modeling pipeline (API $\rightarrow$ GEE $\rightarrow$ Supabase)
+  - [ ] `DEBT-2.3` E2E tests for dashboard customization and widget system
+  - [x] `DEBT-2.4` Edge-case expansion for `tests/maxent.test.mjs`
 - [ ] `DEBT-3` **Error Handling**: Standardize error messages and recovery flows
 - [ ] `DEBT-4` **Accessibility Audit**: Ensure WCAG 2.1 compliance across new features
 - [ ] `DEBT-5` **Performance Monitoring**: Add logging for Earth Engine job durations and failures

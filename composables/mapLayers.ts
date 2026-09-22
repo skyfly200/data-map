@@ -63,7 +63,8 @@ export function tileBounds(x: number, y: number, z: number): [number, number, nu
 }
 
 /** One tile's worth of an ArcGIS MapServer `export` request. */
-export function arcgisExportUrl(service: string, x: number, y: number, z: number, { size = 256, layers = '' } = {}: { size?: number, layers?: string }): string {
+export function arcgisExportUrl(service: string, x: number, y: number, z: number, options: { size?: number, layers?: string } = { size: 256, layers: '' }): string {
+  const { size = 256, layers = '' } = options
   const [xmin, ymin, xmax, ymax] = tileBounds(x, y, z)
   const q = new URLSearchParams({
     bbox: `${xmin},${ymin},${xmax},${ymax}`,
@@ -84,7 +85,8 @@ export function arcgisExportUrl(service: string, x: number, y: number, z: number
  * URL each. `date` is ISO yyyy-mm-dd; layers that do not vary in time still take
  * one and ignore it.
  */
-export function gibsUrl(layer: string, { level = 6, format = 'png', date = '{date}' } = {}: { level?: number, format?: string, date?: string }): string {
+export function gibsUrl(layer: string, options: { level?: number, format?: string, date?: string } = { level: 6, format: 'png', date: '{date}' }): string {
+  const { level = 6, format = 'png', date = '{date}' } = options
   return 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best'
     + `/${layer}/default/${date}/GoogleMapsCompatible_Level${level}/{z}/{y}/{x}.${format}`
 }
@@ -104,7 +106,8 @@ export function gibsUrl(layer: string, { level = 6, format = 'png', date = '{dat
  * maxNativeZoom and lets Leaflet upscale beyond it, so the layer stays on screen
  * rather than vanishing when you zoom in.
  */
-export function gibs(layer: string, level: number, { format = 'png' } = {}: { format?: string }) {
+export function gibs(layer: string, level: number, options: { format?: string } = { format: 'png' }) {
+  const { format = 'png' } = options
   return { url: gibsUrl(layer, { level, format }), maxZoom: level }
 }
 
