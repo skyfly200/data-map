@@ -248,6 +248,9 @@ regularisation, is what stops it from fitting noise.
   method in step 6 above.
 - Valavi et al., [blockCV](https://doi.org/10.1111/2041-210X.13107) — spatial
   cross-validation, and why a random split gives you a score that is too high.
+- [Species Distribution Modeling with
+  MaxEnt](https://www.youtube.com/watch?v=ucTf_c76J90) — video. A walkthrough of
+  fitting a MaxEnt model, if you would rather watch the workflow than read it.
 
 ## Soils
 

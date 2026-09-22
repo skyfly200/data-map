@@ -70,6 +70,7 @@ supabase_migrations/001_user_settings_and_charts.sql
 | Variable | Where | What it is |
 |---|---|---|
 | `SUPABASE_SERVICE_ROLE_KEY` | functions | Bypasses row-level security. **Server only.** |
+| `WORKER_POKE_SECRET` | functions | Optional. Any long random string. Lets the submit endpoint start the job worker the instant a job is queued, instead of waiting for the next scheduled run. Without it, jobs still start — on the worker's every-minute schedule. **Server only.** |
 
 This one is the difference between a member being able to *read* their tier and
 the server being able to *set* it. Tier and quota columns are deliberately not

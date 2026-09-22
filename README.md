@@ -446,3 +446,10 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## Citations
+
+### Data Sources
+
+* **Species Occurrences:** GBIF.org (18 September 2026) GBIF Occurrence Download https://doi.org/10.15468/dl.vea6qx
+* **Terrain & Climate:** USGS 3DEP 10m DEM, NLCD 2021, ERA5-Land (via Google Earth Engine)

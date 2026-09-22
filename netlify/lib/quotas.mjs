@@ -18,6 +18,17 @@ export const DEFAULT_LIMITS = {
   ee_max_concurrent: 1,
 }
 
+/**
+ * The monthly unit floor an admin gets, whatever their profile row says.
+ *
+ * Admins are still metered — a runaway job has to stop eventually, which is why
+ * this is a large number rather than no limit — but the 500 a new profile starts
+ * with is a member's share of a shared pool, not a budget for the person running
+ * the platform. An admin whose row was never raised should not be turned away at
+ * the same ceiling as everyone else, so their limit is floored here.
+ */
+export const ADMIN_QUOTA_MONTHLY = 100_000
+
 /** Points per Earth Engine request; matches CHUNK_SIZE in scripts/ee_enrich.py. */
 export const CHUNK_SIZE = 500
 
@@ -103,18 +114,26 @@ export function checkQuota({ profile, usage = {}, running = 0, estimate = 0, poi
     }
   }
 
+  // An admin keeps whatever their row grants but never less than the admin
+  // floor, so the person running the platform is not stopped at a member's share
+  // of the pool. They are still metered against it — a runaway job halts — just
+  // at a ceiling that fits their role.
+  const monthlyQuota = tier === 'admin'
+    ? Math.max(limits.ee_quota_monthly, ADMIN_QUOTA_MONTHLY)
+    : limits.ee_quota_monthly
+
   const spent = usage.unitsThisMonth || 0
-  if (spent + estimate > limits.ee_quota_monthly) {
-    const left = Math.max(0, limits.ee_quota_monthly - spent)
+  if (spent + estimate > monthlyQuota) {
+    const left = Math.max(0, monthlyQuota - spent)
     return {
       ok: false,
       code: 'over_quota',
       message: `That job needs about ${estimate} units and you have ${left} left this month `
-        + `of ${limits.ee_quota_monthly}. An admin can raise your quota.`,
+        + `of ${monthlyQuota}. An admin can raise your quota.`,
     }
   }
 
-  return { ok: true, tier, estimate, remaining: limits.ee_quota_monthly - spent - estimate }
+  return { ok: true, tier, estimate, remaining: monthlyQuota - spent - estimate }
 }
 
 /** Usage rolled up the way checkQuota wants it, from a member's job rows. */
