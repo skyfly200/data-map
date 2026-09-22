@@ -41,20 +41,35 @@ predictors at the presences and at random background, trains
 image. It is split so only that last function touches `ee`, and it is tested end
 to end against a stub.
 
+The `model` job kind now runs end to end on the server. `normaliseSpec` routes a
+`kind: 'model'` spec to `normaliseModelSpec`, sharing the same source checker so a
+model's presences come from the same dataset or bounding box an enrichment job's
+do; `job-queue` prices it with `estimateModelUnits` and draws its bar with
+`modelPlan`; and the worker branches on the kind, carrying the presences it
+already loads (`loadSource`) into `runModel`, which builds the presence
+FeatureCollection, fits the model, mints a tile template from the fitted surface,
+and stores it in the job's `result_meta` — a raster has no GeoJSON file, so the
+result is a tile URL rather than a stored feature collection.
+
 The sampling-bias problem is not a footnote here: presence-only modeling
 inherits the observer-effort bias the caveats already name, so background
 sampling has to be weighted by effort and every surface labelled with the
 confounds behind it, the same way the density heatmaps already are. The
 background plan holds the first half; the surface labelling is still owed.
 
-What remains is the wiring, not the model. A `model` job kind has to carry the
-presence points the worker already loads (`loadSource`) into Earth Engine as a
-FeatureCollection, hand them to `buildSuitabilityImage`, mint a tile template
-from the result rather than the GeoJSON an enrichment job writes, and store it so
-the map can draw it as a layer beside the predictors. The static-predictor first
-cut also owes a story for the per-date layers (weather, phenology) it leaves out,
-and a spatial-cross-validation score so a surface comes with a number for how
-much to trust it rather than only a picture.
+What remains is the surface, not the model. There is no UI yet: the jobs page
+submits enrichment jobs (stages, then a GeoJSON export), and a model job needs a
+form that offers the predictors and a "view suitability on map" action that draws
+`result_meta.template` as an overlay with its legend beside the layers it was
+built from. A minted map id expires, so that action has to notice a stale
+template and offer to re-run rather than draw blank tiles. The static-predictor
+first cut also owes a story for the per-date layers (weather, phenology) it
+leaves out, and a spatial-cross-validation score so a surface comes with a number
+for how much to trust it rather than only a picture.
+
+None of it has run against the real Earth Engine API yet — `buildSuitabilityImage`
+and `runModel` are tested against a stub, the same verification debt the map
+layers carry below.
 
 Worth finishing once the enrichment output is being loaded as datasets often
 enough that "and then what" is a real question rather than a hypothetical.

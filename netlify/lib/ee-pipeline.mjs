@@ -18,6 +18,10 @@
 
 import { CHUNK_SIZE } from './quotas.mjs'
 import { ASSETS } from './ee-tile-layers.mjs'
+// A model job's spec has its own shape. Imported here so normaliseSpec stays the
+// one entry point every caller already uses; the cycle is safe because both
+// modules only reach across inside function bodies, never at load time.
+import { normaliseModelSpec } from './maxent.mjs'
 
 // ─── Dataset ids, kept in step with scripts/ee_enrich.py ─────────────────────
 export const SRTM = 'USGS/SRTMGL1_003'
@@ -210,8 +214,46 @@ export function normaliseBounds(input) {
  * field is either checked against a fixed set or clamped to a range; nothing
  * from the caller reaches Earth Engine as an identifier.
  */
+/**
+ * The `source` half of a spec, validated on its own.
+ *
+ * Both an enrichment job and a model job draw their points from the same two
+ * source shapes — a saved dataset, or a bounding box and filters — so the
+ * checking lives here once and each kind wraps its own fields around it.
+ */
+export function normaliseSource(rawSource) {
+  const source = rawSource && typeof rawSource === 'object' ? rawSource : {}
+  const type = String(source.type || 'bbox')
+
+  if (type === 'dataset') {
+    const slug = String(source.slug || '').trim()
+    // Slugs address a row the caller must already be allowed to read; the
+    // pattern keeps anything path-shaped out of a storage key.
+    if (!/^[a-z0-9][a-z0-9_-]{0,80}$/i.test(slug)) throw new SpecError('That dataset name is not valid.')
+    return { type: 'dataset', slug }
+  }
+  if (type === 'bbox') {
+    const bounds = normaliseBounds(source.bounds)
+    const from = isoDate(source.dateFrom, 'dateFrom')
+    const to = isoDate(source.dateTo, 'dateTo')
+    if (from && to && from > to) throw new SpecError('The start date is after the end date.')
+    if (from && to) {
+      const days = (new Date(`${to}T00:00:00Z`) - new Date(`${from}T00:00:00Z`)) / 86400000
+      if (days > MAX_DAYS) throw new SpecError('That date range is longer than five years.')
+    }
+    const taxon = source.taxon === undefined || source.taxon === null ? '' : String(source.taxon).trim()
+    if (taxon.length > 120) throw new SpecError('That taxon name is too long.')
+    return { type: 'bbox', bounds, dateFrom: from, dateTo: to, taxon }
+  }
+  throw new SpecError(`Unknown source type “${type}”.`)
+}
+
 export function normaliseSpec(input = {}) {
   const kind = String(input.kind || 'enrich')
+  // A model job is a different shape — predictors and a region rather than
+  // stages — so it has its own normaliser, given the same source checker so its
+  // presences come from the same two sources an enrichment job's do.
+  if (kind === 'model') return normaliseModelSpec(input, { normaliseSource })
   if (kind !== 'enrich') throw new SpecError(`Unknown job kind “${kind}”.`)
 
   const requested = Array.isArray(input.stages) && input.stages.length
@@ -223,35 +265,9 @@ export function normaliseSpec(input = {}) {
   // the same spec and the cost estimate does not depend on typing order.
   const stages = STAGE_KEYS.filter((k) => requested.includes(k))
 
-  const source = input.source && typeof input.source === 'object' ? input.source : {}
-  const type = String(source.type || 'bbox')
-  let normalisedSource
-
-  if (type === 'dataset') {
-    const slug = String(source.slug || '').trim()
-    // Slugs address a row the caller must already be allowed to read; the
-    // pattern keeps anything path-shaped out of a storage key.
-    if (!/^[a-z0-9][a-z0-9_-]{0,80}$/i.test(slug)) throw new SpecError('That dataset name is not valid.')
-    normalisedSource = { type: 'dataset', slug }
-  } else if (type === 'bbox') {
-    const bounds = normaliseBounds(source.bounds)
-    const from = isoDate(source.dateFrom, 'dateFrom')
-    const to = isoDate(source.dateTo, 'dateTo')
-    if (from && to && from > to) throw new SpecError('The start date is after the end date.')
-    if (from && to) {
-      const days = (new Date(`${to}T00:00:00Z`) - new Date(`${from}T00:00:00Z`)) / 86400000
-      if (days > MAX_DAYS) throw new SpecError('That date range is longer than five years.')
-    }
-    const taxon = source.taxon === undefined || source.taxon === null ? '' : String(source.taxon).trim()
-    if (taxon.length > 120) throw new SpecError('That taxon name is too long.')
-    normalisedSource = { type: 'bbox', bounds, dateFrom: from, dateTo: to, taxon }
-  } else {
-    throw new SpecError(`Unknown source type “${type}”.`)
-  }
-
   const title = String(input.title || '').trim().slice(0, 120)
 
-  return { kind, stages, source: normalisedSource, title }
+  return { kind, stages, source: normaliseSource(input.source), title }
 }
 
 /** Bands a spec will produce, in catalogue order. */

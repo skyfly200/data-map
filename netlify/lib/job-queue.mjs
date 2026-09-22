@@ -14,6 +14,7 @@ import { adminClient } from './auth.mjs'
 import { estimateUnits, summariseUsage, checkQuota } from './quotas.mjs'
 import { effectiveTier } from './tiers.mjs'
 import { STAGES, normaliseSpec, progressPlan } from './ee-pipeline.mjs'
+import { estimateModelUnits, modelPlan } from './maxent.mjs'
 import { explainEmpty } from './job-source.mjs'
 
 /** A job left running longer than this is assumed dead and may be reclaimed. */
@@ -71,7 +72,9 @@ export async function submitJob({ user, profile, spec: rawSpec, counter }) {
   // first one whichever had actually happened.
   if (!points) throw new QueueError(explainEmpty(spec.source, breakdown))
 
-  const estimate = estimateUnits({ points, dates, stages: spec.stages }, STAGES)
+  const estimate = spec.kind === 'model'
+    ? estimateModelUnits({ points, predictors: spec.predictors, background: spec.background })
+    : estimateUnits({ points, dates, stages: spec.stages }, STAGES)
 
   // Everything this member has run, for the daily count, the month's spend and
   // how many jobs they already have in flight.
@@ -236,5 +239,6 @@ export async function listJobs(userId, { limit = 50, all = false } = {}) {
 /** The plan a job will follow, for the progress bar and the cost estimate. */
 export function planFor(job) {
   const spec = job?.params || {}
+  if (spec.kind === 'model') return modelPlan()
   return progressPlan(spec.stages || [], { points: spec.points || 0, dates: spec.dates || 1 })
 }
