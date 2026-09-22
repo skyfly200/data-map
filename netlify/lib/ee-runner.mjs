@@ -723,3 +723,62 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
   onProgress({ fraction: 1, stage: 'done', message: 'Finished.' })
   return { template, meta }
 }
+
+/**
+ * Re-mint a stored model's suitability surface, cheaply.
+ *
+ * A model job's tile template carries an Earth Engine map id, which expires — so
+ * a surface saved on a job goes blank after a while even though the model that
+ * made it is durably stored in the job row. This rebuilds the surface from that
+ * stored spec and mints a fresh template, without re-running the cross-validation
+ * (its score is already saved). It shares the same result cache as runModel, so
+ * within the TTL this is a blob read rather than any Earth Engine work at all.
+ *
+ * `features` are the presences, loaded from the model's own source by the caller.
+ */
+export async function remintSuitability({ spec, features }) {
+  const predictors = spec.predictors?.length ? spec.predictors : DEFAULT_PREDICTORS
+  const background = spec.background || DEFAULT_BACKGROUND
+
+  const points = features
+    .map((f) => f?.geometry?.coordinates || [])
+    .map((co) => [Number(co[0]), Number(co[1])])
+    .filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat))
+  if (!points.length) throw new Error('That model has no usable presences to re-mint.')
+
+  const region = spec.region || boundsOfPoints(points)
+  const cacheId = modelCacheKey(spec, region)
+  const blobs = modelStore()
+
+  if (blobs) {
+    try {
+      const hit = await blobs.get(cacheId, { type: 'json' })
+      if (hit && hit.expires > Date.now() && hit.template) {
+        return { template: hit.template, meta: { ...hit.meta, cached: true } }
+      }
+    } catch { /* a cache that cannot be read is a miss */ }
+  }
+
+  await initEarthEngine()
+  const bgN = backgroundPlan({ presenceCount: points.length, background }).n
+  const presences = ee.FeatureCollection(
+    points.map(([lon, lat]) => ee.Feature(ee.Geometry.Point([lon, lat]))),
+  )
+  const { image, vis } = buildSuitabilityImage(ee, { presences, predictors, background, region, seed: 1 })
+  const template = await withRetry(() => mintTemplate(image, vis), { label: 'model tiles' })
+
+  const meta = {
+    kind: 'model',
+    predictors,
+    presences: points.length,
+    background: bgN,
+    region,
+    vis,
+    legend: suitabilityLegend(),
+    mintedAt: new Date().toISOString(),
+  }
+  if (blobs) {
+    try { await blobs.setJSON(cacheId, { template, meta, expires: Date.now() + MODEL_TTL_MS }) } catch { /* not fatal */ }
+  }
+  return { template, meta }
+}

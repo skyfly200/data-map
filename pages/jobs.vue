@@ -277,8 +277,8 @@
                 <!-- A model job draws a suitability surface; an enrichment job
                      loads its points, saves as a dataset, and exports. -->
                 <template v-if="job.status === 'succeeded' && isModel(job)">
-                  <button class="btn small primary" @click="openModelOnMap(job)">
-                    View suitability on map
+                  <button class="btn small primary" :disabled="opening === job.id" @click="openModelOnMap(job)">
+                    {{ opening === job.id ? 'Loading…' : 'View suitability on map' }}
                   </button>
                   <span v-if="modelAge(job)" class="saved-as">Fitted {{ modelAge(job) }}</span>
                 </template>
@@ -682,19 +682,33 @@ async function openOnMap(job) {
  * It goes into the shared overlay state the map reads on mount, which draws it
  * with its legend and fits to the region it was projected over.
  */
-function openModelOnMap(job) {
-  const meta = job.result_meta || {}
-  if (!meta.template) { submitError.value = 'That model has no surface to draw.'; return }
-  modelOverlay.show({
-    jobId: job.id,
-    label: job.title || 'Suitability',
-    template: meta.template,
-    legend: meta.legend || { type: 'ramp', min: '0', max: '1', stops: ['#2c2f6b', '#c6301f'] },
-    region: meta.region || null,
-    mintedAt: meta.mintedAt || null,
-    cv: meta.cv || null,
-  })
-  router.push('/map')
+async function openModelOnMap(job) {
+  const stored = job.result_meta || {}
+  opening.value = job.id
+  submitError.value = ''
+  try {
+    // Re-mint from the stored model so the map never draws an expired template.
+    // Falls back to whatever the job saved if the re-mint is unavailable.
+    let meta = stored
+    let template = stored.template
+    try {
+      const fresh = await jobsApi.modelTiles(job)
+      if (fresh?.template) { template = fresh.template; meta = { ...stored, ...fresh.meta } }
+    } catch { /* fall back to the stored template */ }
+    if (!template) { submitError.value = 'That model has no surface to draw.'; return }
+    modelOverlay.show({
+      jobId: job.id,
+      label: job.title || 'Suitability',
+      template,
+      legend: meta.legend || { type: 'ramp', min: '0', max: '1', stops: ['#2c2f6b', '#c6301f'] },
+      region: meta.region || null,
+      mintedAt: meta.mintedAt || null,
+      cv: meta.cv ?? stored.cv ?? null,
+    })
+    router.push('/map')
+  } finally {
+    opening.value = ''
+  }
 }
 
 // ── Saving a result as a dataset ─────────────────────────────────────────────
