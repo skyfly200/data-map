@@ -319,8 +319,11 @@
         <template v-else>Not cross-validated — too few observations to score.</template>
       </div>
       <div v-if="modelOverlay.stale" class="legend-note warn">
-        These tiles have stopped loading — the fitted surface expires. Re-run the
-        model job to refresh it.
+        These tiles have stopped loading — the fitted surface expires.
+        <button v-if="modelOverlay.jobId" class="linkish" :disabled="modelOverlay.refreshing"
+                @click="refreshModelOverlay">
+          {{ modelOverlay.refreshing ? 'Refreshing…' : 'Refresh from the saved model' }}
+        </button>
       </div>
       <button class="linkish" @click="removeModelOverlay">Remove this surface</button>
     </div>
@@ -1182,11 +1185,13 @@ function applyModelOverlay() {
   modelLayer = layer
 
   modelOverlay.value = {
+    jobId: pending.jobId || '',
     label: pending.label || 'Model',
     legend: pending.legend || { stops: ['#2c2f6b', '#c6301f'], min: '0', max: '1' },
     age: overlayAge(pending.mintedAt),
     cv: pending.cv || null,
     stale: false,
+    refreshing: false,
   }
 
   // Frame the region the surface was projected over, so it is not off-screen.
@@ -1200,6 +1205,33 @@ function applyModelOverlay() {
   // Consumed, so a later revisit of the map does not redraw a surface the member
   // removed. Reopening it from the jobs page sets it again.
   overlayHandoff.clear()
+}
+
+/**
+ * Re-mint an expired surface from its stored model, in place.
+ *
+ * The template carries an Earth Engine map id that expires; rather than send the
+ * viewer back to the jobs page to re-run, ask the server to re-serve the stored
+ * model and swap the tile URL under the same layer.
+ */
+async function refreshModelOverlay() {
+  const o = modelOverlay.value
+  if (!o?.jobId || !modelLayer) return
+  modelOverlay.value = { ...o, refreshing: true }
+  try {
+    const token = await accessToken()
+    const res = await fetch(`/.netlify/functions/model-tiles?job=${encodeURIComponent(o.jobId)}`, {
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    })
+    const body = await res.json()
+    if (!res.ok || !body.ok || !body.template) throw new Error(body.error || 'Could not refresh the surface.')
+    modelLayer.setUrl(body.template)
+    modelOverlay.value = {
+      ...modelOverlay.value, stale: false, refreshing: false, age: overlayAge(body.meta?.mintedAt),
+    }
+  } catch {
+    modelOverlay.value = { ...modelOverlay.value, refreshing: false }
+  }
 }
 
 /** Take the suitability surface off the map. */

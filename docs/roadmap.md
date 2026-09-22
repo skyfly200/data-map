@@ -59,11 +59,19 @@ background plan holds the first half; the surface labelling is still owed.
 
 The UI now exists. The jobs page carries an Enrich / Model toggle: model mode
 offers the predictors instead of the enrichment stages, and a finished model
-shows a "view suitability on map" action that draws `result_meta.template` as an
-overlay with its legend beside the layers it was built from. A minted map id
-expires, so the overlay counts tile errors and, past a few, says the surface has
-expired and to re-run rather than leaving blank tiles reading as "nowhere is
-suitable."
+shows a "view suitability on map" action that draws the surface as an overlay
+with its legend beside the layers it was built from.
+
+The trained model and its surface are stored durably rather than only for as long
+as one map id lasts. The model's definition — predictors, region, source and the
+cross-validation score — persists in the job row, and the surface is re-servable
+from it on demand: `model-tiles` re-mints the template from the stored model
+(sharing the result cache, so within its TTL it is a blob read rather than any
+Earth Engine work), the jobs page fetches a fresh one before drawing, and when a
+drawn surface's tiles do expire the map's legend offers to refresh it in place
+from the saved model rather than sending the viewer back to re-run the job. What
+is not yet stored is the raster itself as a file — an Earth Engine export to
+GeoTIFF for download (V12-MOD-4) is the heavier, asynchronous follow-up.
 
 The per-date layers the first cut left out now have their honest place. A
 suitability surface is a claim about a place, not a day, so a per-record daily

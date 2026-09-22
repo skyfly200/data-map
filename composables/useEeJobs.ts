@@ -140,6 +140,23 @@ export function useEeJobs() {
     return JSON.parse(await data.text())
   }
 
+  /**
+   * A fresh suitability template for a stored model.
+   *
+   * The template on a model's result_meta carries an Earth Engine map id that
+   * expires; this re-mints it from the durably-stored model (cached server-side),
+   * so viewing a model's map always works rather than drawing blank tiles.
+   */
+  async function modelTiles(job: EeJob): Promise<{ template: string; meta: any } | null> {
+    const token = await accessToken()
+    const res = await fetch(`/.netlify/functions/model-tiles?job=${encodeURIComponent(job.id)}`, {
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    })
+    const body = await res.json()
+    if (!res.ok || !body.ok) throw new Error(body.error || 'That model surface could not be re-served.')
+    return { template: body.template, meta: body.meta }
+  }
+
   // Poll only while something is actually moving.
   let timer: ReturnType<typeof setInterval> | null = null
   function stopPolling() { if (timer) { clearInterval(timer); timer = null } }
@@ -161,6 +178,6 @@ export function useEeJobs() {
 
   return {
     jobs, active, loading, error, submitting,
-    refresh, submit, cancel, fetchResult, startPolling, stopPolling,
+    refresh, submit, cancel, fetchResult, modelTiles, startPolling, stopPolling,
   }
 }
