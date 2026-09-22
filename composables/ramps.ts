@@ -25,7 +25,7 @@ export const MAX_STOPS = 8
 const HEX = /^#[0-9a-f]{6}$/i
 
 /** Six-digit hex, or null. Three-digit shorthand is expanded rather than lost. */
-export function toHex(value: any): string | null {
+export function toHex(value: unknown): string | null {
   const raw = String(value ?? '').trim()
   if (HEX.test(raw)) return raw.toLowerCase()
   const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(raw)
@@ -41,7 +41,7 @@ export function toHex(value: any): string | null {
 // pairs. A ramp that cannot be read should fall back to the default, not to
 // something invented from the half of it that parsed.
  */
-export function normaliseStops(stops: any): string[] | null {
+export function normaliseStops(stops: unknown): string[] | null {
   if (!Array.isArray(stops)) return null
   const clean = stops.map(toHex).filter((h): h is string => Boolean(h))
   if (clean.length < MIN_STOPS) return null
@@ -49,8 +49,8 @@ export function normaliseStops(stops: any): string[] | null {
 }
 
 /** Clamped interpolation between two colours. */
-export function mix(a: string, b: string, t: any): string {
-  const k = Math.max(0, Math.min(1, Number.isFinite(t) ? (t as number) : 0))
+export function mix(a: string, b: string, t: unknown): string {
+  const k = Math.max(0, Math.min(1, Number.isFinite(t as number) ? (t as number) : 0))
   const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16))
   const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16))
   return `#${pa.map((v, i) => Math.round(v + (pb[i] - v) * k).toString(16).padStart(2, '0')).join('')}`
@@ -63,17 +63,17 @@ export function mix(a: string, b: string, t: any): string {
 // a stop dropped into the middle of a two-colour scale lands in the middle,
 // where the person who added it is looking.
  */
-export function rampColor(stops: string[] | null | undefined, t: any): string {
+export function rampColor(stops: string[] | null | undefined, t: unknown): string {
   if (!Array.isArray(stops) || !stops.length) return '#888888'
   if (stops.length === 1) return stops[0]
-  const k = Math.max(0, Math.min(1, Number.isFinite(t) ? (t as number) : 0))
+  const k = Math.max(0, Math.min(1, Number.isFinite(t as number) ? (t as number) : 0))
   const scaled = k * (stops.length - 1)
   const i = Math.min(stops.length - 2, Math.floor(scaled))
   return mix(stops[i], stops[i + 1], scaled - i)
 }
 
 /** The CSS for a swatch of the whole ramp. */
-export function gradientCss(stops: any, angle = '90deg'): string {
+export function gradientCss(stops: unknown, angle = '90deg'): string {
   const clean = normaliseStops(stops) || ['#888888', '#888888']
   return `linear-gradient(${angle}, ${clean.join(', ')})`
 }
@@ -85,7 +85,7 @@ export function gradientCss(stops: any, angle = '90deg'): string {
 // adding a stop changes nothing until it is moved — the ramp a person was
 // looking at is still the ramp they have.
  */
-export function addStop(stops: any, index: any): string[] {
+export function addStop(stops: unknown, index: unknown): string[] {
   const clean = normaliseStops(stops) || ['#ffffff', '#000000']
   if (clean.length >= MAX_STOPS) return clean
   const at = Math.max(0, Math.min(clean.length - 2, Number(index) || 0))
@@ -94,7 +94,7 @@ export function addStop(stops: any, index: any): string[] {
 }
 
 /** A stop removed, unless that would leave fewer than two. */
-export function removeStop(stops: any, index: any): string[] {
+export function removeStop(stops: unknown, index: unknown): string[] {
   const clean = normaliseStops(stops) || []
   if (clean.length <= MIN_STOPS) return clean
   const at = Number(index)
@@ -103,7 +103,7 @@ export function removeStop(stops: any, index: any): string[] {
 }
 
 /** One stop recoloured. Anything unparseable leaves the ramp as it was. */
-export function setStop(stops: any, index: any, color: any): string[] {
+export function setStop(stops: unknown, index: unknown, color: unknown): string[] {
   const clean = normaliseStops(stops) || []
   const hex = toHex(color)
   const at = Number(index)
@@ -112,7 +112,7 @@ export function setStop(stops: any, index: any, color: any): string[] {
 }
 
 /** The same ramp the other way up. */
-export function reverseStops(stops: any): string[] | null {
+export function reverseStops(stops: unknown): string[] | null {
   const clean = normaliseStops(stops)
   return clean ? [...clean].reverse() : clean
 }

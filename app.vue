@@ -53,6 +53,7 @@
       <NuxtPage />
     </main>
     <ClientOnly><ShortcutsHelp /></ClientOnly>
+    <ClientOnly><AppAlerts /></ClientOnly>
   </div>
 </template>
 

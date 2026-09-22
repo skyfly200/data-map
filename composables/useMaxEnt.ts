@@ -12,8 +12,9 @@ export interface MaxEntConfig {
   predictors: string[]
   background_count: number
   effort_weighted: boolean
-  projection_region?: any
+  projection_region?: { north: number; south: number; east: number; west: number }
   source_dataset_id?: string
+  suitability_asset_path?: string
   visibility: string
   created_at: string
   updated_at: string
@@ -36,7 +37,7 @@ export interface MaxEntRun {
   started_at: string
   finished_at?: string
   error_message?: string
-  run_meta?: any
+  run_meta?: Record<string, unknown>
   model_configs: MaxEntConfig
 }
 
@@ -108,7 +109,10 @@ export function useMaxEnt() {
           activeJob.value = { ...activeJob.value!, status: 'failed', error_message: data.error }
         }
       } catch (e: any) {
-        console.error('Polling error:', e)
+        clearInterval(timer)
+        const msg = e?.message || 'Polling failed unexpectedly.'
+        error.value = msg
+        if (activeJob.value) activeJob.value = { ...activeJob.value, status: 'failed', error_message: msg }
       }
     }, 5000)
   }
@@ -140,7 +144,7 @@ export function useMaxEnt() {
       group: 'MaxEnt Models',
       note: m.description || 'MaxEnt habitat suitability surface.',
       // The GEE asset path is what the tile endpoint renders.
-      assetPath: (m as any).suitability_asset_path ?? null,
+      assetPath: m.suitability_asset_path ?? null,
       visibility: m.visibility,
     }))
   )

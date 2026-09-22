@@ -66,6 +66,8 @@ export default async function handler(request) {
 
   const spec = job.params || {}
   let spent = 0
+  const _jobStart = Date.now()
+  console.log(`[ee-worker] starting job ${job.id} (kind: ${spec.kind || 'enrich'})`)
 
   try {
     // Resolved as the member who submitted it, not as the worker. The worker's
@@ -94,6 +96,7 @@ export default async function handler(request) {
       await finishJob(job.id, { resultPath: null, costUnits: spent, meta: { ...meta, template } })
       // The member has almost certainly left the page by now; let them know.
       await notifyJobSettled({ ...job, status: 'succeeded', result_meta: { ...meta, template } })
+      console.log(`[ee-worker] model job ${job.id} succeeded in ${Date.now() - _jobStart}ms (presences: ${meta.presences})`)
       return json({ ok: true, claimed: job.id, model: true, presences: meta.presences })
     }
 
@@ -115,10 +118,12 @@ export default async function handler(request) {
     }
     await finishJob(job.id, { resultPath, costUnits: spent, meta })
     await notifyJobSettled({ ...job, status: 'succeeded', result_meta: meta })
+    console.log(`[ee-worker] job ${job.id} succeeded in ${Date.now() - _jobStart}ms (features: ${result.features.length})`)
     return json({ ok: true, claimed: job.id, features: result.features.length })
   } catch (err) {
     // Charged for what it spent before breaking: Earth Engine billed those
     // requests whether or not anything came back.
+    console.error(`[ee-worker] job ${job.id} failed after ${Date.now() - _jobStart}ms:`, err?.message || err)
     await failJob(job.id, err, { costUnits: spent })
     await notifyJobSettled({ ...job, status: 'failed', error: String(err?.message || err) })
     return json({ ok: false, claimed: job.id, error: String(err.message || err) }, 200)
