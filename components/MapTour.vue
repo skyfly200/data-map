@@ -41,45 +41,44 @@ const STEPS = [
   {
     icon: '🗺️',
     title: 'Welcome to the map',
-    body: 'Every dot is a real observation, enriched with the environment around it. '
-      + 'Here is a two-minute tour of what you can do; skip any time.',
+    body: 'Each dot is a species record enriched with environmental data. '
+      + 'A short tour of the controls—skip any time.',
   },
   {
     icon: '🧭',
-    title: 'Stack up layers',
-    body: 'The Layers button opens overlays for fire history, forest and soil, terrain '
-      + '(slope, aspect, wetness), weather, and satellite greenness and moisture. Group '
-      + 'them by subject, source or type, and stack several at once.',
+    title: 'Environmental layers',
+    body: 'Open Layers to overlay fire history, forest type, soil, terrain analysis, '
+      + 'weather, and satellite vegetation indices. Stack several at once.',
   },
   {
     icon: '🎨',
     title: 'Colour and size the points',
-    body: 'Under Points, colour the observations by any field (species, season, elevation) '
-      + 'and size them by a second. The legend explains whatever you pick.',
+    body: 'Under Points, colour observations by any field—species, elevation, season—'
+      + 'and size them by a second. The legend updates to match.',
   },
   {
     icon: '🔥',
     title: 'Aggregate into heatmaps',
-    body: 'Switch from points to a heatmap to bin the finds into hexes or squares, from a '
-      + 'hundred metres to tens of kilometres, and read density or an averaged field per cell.',
+    body: 'Switch to Heatmap to bin records into hexes or squares, from ~100 m to ~28 km. '
+      + 'Show density or the mean of any environmental field per cell.',
   },
   {
     icon: '📍',
-    title: 'Drop a pin anywhere',
-    body: 'Click the map to drop a point and read its coordinates, plus code and ground '
-      + 'elevation, the heatmap cell under it, and the nearest recorded find. Drag to fine-tune.',
+    title: 'Drop a pin',
+    body: 'Click anywhere to read coordinates, elevation, the heatmap cell value, and '
+      + 'the nearest observation. Drag to move the pin.',
   },
   {
     icon: '🔎',
-    title: 'Filter and search',
-    body: 'Narrow to a species, a season, a date range or a region, and every view, the map, '
-      + 'the charts, the stats, follows the same filters.',
+    title: 'Filters apply everywhere',
+    body: 'Set a taxon, date range, season, or region under Filters and every view—'
+      + 'map, charts, statistics—updates to match.',
   },
   {
     icon: '💾',
-    title: 'Save offline and share',
-    body: 'Cache an area with its layers for the field where there is no signal, and share any '
-      + 'view as a link or an embed that restores exactly what you are looking at.',
+    title: 'Offline and sharing',
+    body: 'Cache a map area for use in the field without signal. Share any view as a '
+      + 'URL that restores your exact filters, layers, and position.',
   },
 ]
 

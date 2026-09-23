@@ -1,16 +1,16 @@
 # Guide
 
-Nexstrata helps you understand where species live. It uses Google Earth Engine to:
+Nexstrata maps where species occur and models where they might. It uses Google Earth Engine to:
 
-- **Sample** environmental data at your observation locations
+- **Sample** environmental data at each observation's location and date
 - **Map** computed layers as interactive tiles
 - **Analyze** patterns through charts and statistics
 
-Start with mushroom observations from iNaturalist—each record shows environmental conditions where it was found. But Nexstrata works with any data that has location and date information.
+It works with any presence-point data: iNaturalist, GBIF, or your own uploads.
 
 ![Source data goes through a job into a dataset. Every view reads the dataset.](figure:data-flow)
 
-> **Note** iNaturalist records are opportunistic sightings, not systematic surveys. Areas with many records might have more mushrooms—or just more observers. Each view tells you if it corrects for this bias.
+> **Note** Observation records are opportunistic, not systematic surveys. Record density reflects observer effort as much as actual occurrence. Each view states whether it corrects for this bias.
 
 ## Quick start
 
