@@ -61,6 +61,7 @@ import DashboardSpeciesList from '~/components/DashboardSpeciesList.vue'
 import DashboardEnvStats from '~/components/DashboardEnvStats.vue'
 import DashboardSavedCharts from '~/components/DashboardSavedCharts.vue'
 import DashboardQuickFilters from '~/components/DashboardQuickFilters.vue'
+import DashboardNowFruiting from '~/components/DashboardNowFruiting.vue'
 
 const { isAuthed } = useAuth()
 const { orderedWidgets, load, add, remove, reorder, reset } = useDashboardState()
@@ -73,6 +74,7 @@ const WIDGET_TYPES = [
   { type: 'env-stats', label: 'Environmental stats', icon: '🌡️', component: DashboardEnvStats },
   { type: 'saved-charts', label: 'Saved charts', icon: '📊', component: DashboardSavedCharts },
   { type: 'quick-filters', label: 'Quick filters', icon: '🔍', component: DashboardQuickFilters },
+  { type: 'now-fruiting', label: 'Now fruiting', icon: '🍄', component: DashboardNowFruiting },
 ]
 const COMPONENTS = Object.fromEntries(WIDGET_TYPES.map((w) => [w.type, w.component]))
 function componentFor(type) { return COMPONENTS[type] || DashboardOverview }
