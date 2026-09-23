@@ -77,6 +77,12 @@ export const GUIDE_PAGES: GuidePage[] = [
     blurb: 'Which product each column comes from, and the terms on it.',
   },
   {
+    slug: 'report-bug',
+    file: 'report-bug.md',
+    title: 'Report a bug',
+    blurb: 'How to file an issue on GitHub.',
+  },
+  {
     // Generated from the option registry rather than written, so it has no
     // Markdown file behind it.
     slug: 'reference',
