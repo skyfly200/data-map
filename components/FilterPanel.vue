@@ -125,8 +125,8 @@
           </label>
         </div>
         <p class="fp-hint">
-          Counted after the other filters, so it means “enough records in what you
-          are looking at”. A species seen twice cannot tell you where it fruits.
+          Counted after the other filters, so it means "enough records in what you
+          are looking at". A species seen twice cannot tell you where it fruits.
         </p>
       </fieldset>
 

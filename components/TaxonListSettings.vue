@@ -93,7 +93,7 @@ function add() {
   if (!isTaxonName(name)) {
     // Said rather than swallowed. A name silently refused looks like a broken
     // button, and the usual cause is a stray character nobody can see.
-    addError.value = `“${name}” does not look like a taxon name. Letters, spaces and hyphens only.`
+    addError.value = `"${name}" does not look like a taxon name. Letters, spaces and hyphens only.`
     return
   }
   if (!addTaxon(name)) {

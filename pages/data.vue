@@ -55,7 +55,7 @@
           <p v-if="error" class="msg error">Could not load observations ({{ error }}).</p>
           <p v-else-if="pending && !speciesOptions.length" class="msg">Loading…</p>
           <p v-else-if="!speciesOptions.length" class="msg">No {{ levelLabel.toLowerCase() }} in the current dataset.</p>
-          <p v-else-if="!visibleGroups.length" class="msg">No {{ levelLabel.toLowerCase() }} match “{{ speciesQuery }}”.</p>
+          <p v-else-if="!visibleGroups.length" class="msg">No {{ levelLabel.toLowerCase() }} match "{{ speciesQuery }}".</p>
 
           <div v-else class="table-wrap">
             <table>

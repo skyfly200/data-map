@@ -37,14 +37,14 @@
                               :style="run.running ? { width: `${Math.round((run.done / run.total) * 100)}%` } : null"></span></div>
       <span class="ptext">
         <template v-if="run.running">
-          {{ run.done }} of {{ run.total }} — fetching “{{ fetchingName }}”…
+          {{ run.done }} of {{ run.total }} — fetching "{{ fetchingName }}"…
           {{ run.loaded.toLocaleString() }} so far, {{ elapsed }}s
           <button class="linkish" @click="run.stop = true">
             {{ run.stop ? 'Stopping after this one…' : 'Stop' }}
           </button>
         </template>
         <template v-else>
-          Fetching &amp; clustering “{{ fetchingName }}”… {{ elapsed }}s
+          Fetching &amp; clustering "{{ fetchingName }}"… {{ elapsed }}s
           <em>(a genus or family can take a minute or more)</em>
         </template>
       </span>
@@ -216,7 +216,7 @@ async function fetchNew() {
     const data = await fetchOne(q)
     if (!data.count) {
       fetchOk.value = false
-      fetchMsg.value = `No research-grade observations found for “${q}”.`
+      fetchMsg.value = `No research-grade observations found for "${q}".`
       return
     }
     fetchOk.value = true
