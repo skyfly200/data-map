@@ -60,7 +60,7 @@ export default async function handler(request) {
     // Resolved as the member who owns the job, not as the service account, so a
     // dataset source is read under the same rules the job ran under.
     const features = await loadSource(spec.source, { client, viewer: await ownerViewer(job) })
-    if (!features.length) return json({ ok: false, error: 'That model's source no longer has any observations.' }, 404)
+    if (!features.length) return json({ ok: false, error: "That model's source no longer has any observations." }, 404)
 
     const { template, meta } = await remintSuitability({ spec, features })
     // The score is durable on the job; carry it back so the surface still shows it.

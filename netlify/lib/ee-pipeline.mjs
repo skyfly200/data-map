@@ -188,7 +188,7 @@ export function normaliseBounds(input) {
   let east = num(input.east, 'east')
   let west = num(input.west, 'west')
 
-  if (north <= south) throw new SpecError('The area's north edge must be above its south edge.')
+  if (north <= south) throw new SpecError("The area's north edge must be above its south edge.")
   for (const [v, n] of [[north, 'north'], [south, 'south']]) {
     if (v < -90 || v > 90) throw new SpecError(`${n} must be between -90 and 90.`)
   }

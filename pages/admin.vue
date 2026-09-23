@@ -451,7 +451,7 @@ async function saveLayer() {
       method: 'POST',
       body: JSON.stringify({ action: 'save-layer', ...draftLayer }),
     })
-    note.value = draftLayer.id ? 'Layer saved.' : 'Layer added. It appears in the map's layer picker.'
+    note.value = draftLayer.id ? 'Layer saved.' : "Layer added. It appears in the map's layer picker."
     resetLayer()
     await show('layers')
   } catch (e) {
