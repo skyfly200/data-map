@@ -211,9 +211,9 @@
     </div>
     <!-- Earth Engine layer fetching a tile template — shown until the URL is
          ready and tiles start loading. -->
-    <div v-if="eeLoading.size" class="legend ee-loading">
+    <div v-for="name in eeLoading.values()" :key="name" class="legend ee-loading">
       <span class="ee-spinner" aria-hidden="true"></span>
-      <span class="ee-loading-label">Rendering layer…</span>
+      <span class="ee-loading-label">Rendering {{ name }}…</span>
     </div>
     <!-- An Earth Engine layer that failed to render says why, by name. Blank
          ground on a fire map reads as ground that never burned, so a silent
@@ -1118,7 +1118,7 @@ const { accessToken } = useAuth()
 const offline = useOffline()
 const eeParams = ref({})
 const eeErrors = ref([])
-const eeLoading = ref(new Set())
+const eeLoading = ref(new Map()) // key → layer name
 // The layer picker's contents. Populated once the map and its layers exist, so
 // the Vue side never has to know how Leaflet builds them.
 const baseLayers = ref([])
@@ -1461,7 +1461,9 @@ async function refreshEeLayer(spec) {
   const layer = eeLayers.get(spec.key)
   if (!layer || !map.hasLayer(layer)) return
   eeErrors.value = eeErrors.value.filter((e) => e.key !== spec.key)
-  eeLoading.value = new Set([...eeLoading.value, spec.key])
+  const loadingNext = new Map(eeLoading.value)
+  loadingNext.set(spec.key, spec.name)
+  eeLoading.value = loadingNext
   try {
     const minted = await eeTiles.template(spec.key, paramsFor(spec))
     // setUrl rather than a rebuild, so the layer keeps its place in the stack
@@ -1477,9 +1479,9 @@ async function refreshEeLayer(spec) {
     // one showing that nothing is there, and on a fire map that is a lie.
     eeErrors.value = [...eeErrors.value, { key: spec.key, name: spec.name, message: err.message }]
   } finally {
-    const next = new Set(eeLoading.value)
-    next.delete(spec.key)
-    eeLoading.value = next
+    const loadingDone = new Map(eeLoading.value)
+    loadingDone.delete(spec.key)
+    eeLoading.value = loadingDone
   }
 }
 
