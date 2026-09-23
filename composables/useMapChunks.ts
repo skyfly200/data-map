@@ -102,6 +102,20 @@ const version = ref(0)
 let indexPromise: Promise<any> | null = null
 const inFlight = new Map<string, Promise<void>>()
 
+/** Clear all loaded state when switching to a different dataset. */
+export function resetMapChunks() {
+  indexPromise = null
+  inFlight.clear()
+  index.value = null
+  available.value = false
+  overviewLoaded.value = false
+  loadedCells.value = new Set()
+  pending.value = 0
+  failed.value = 0
+  byId.value = new Map()
+  version.value = 0
+}
+
 function idOf(feature: ObservationFeature): string {
   const p = feature?.properties || {}
   if (p.inat_id !== undefined && p.inat_id !== null) return `i${p.inat_id}`

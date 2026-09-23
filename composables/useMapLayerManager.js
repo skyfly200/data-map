@@ -195,6 +195,10 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
       const text = String(value).trim()
       if (!text) return
       next = text
+    } else if (p?.type === 'date') {
+      const date = String(value).trim()
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
+      next = date
     } else {
       next = Math.floor(Number(value))
       if (!Number.isFinite(next)) next = p?.default ?? 0

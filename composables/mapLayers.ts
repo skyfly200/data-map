@@ -40,6 +40,9 @@ export interface TileLayer {
   attribution: string
   maxZoom: number
   opacity?: number
+  // Suggested CSS mix-blend-mode when drawn over a basemap. Applied automatically
+  // on first toggle; the user can override it via the layer manager.
+  blend?: string
   note?: string
   time?: boolean
   lag?: number
@@ -141,29 +144,29 @@ export const TILE_LAYERS: TileLayer[] = [
   {
     name: 'Hillshade', group: 'Terrain',
     url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Esri', maxZoom: 16, opacity: 0.6,
+    attribution: 'Esri', maxZoom: 16, opacity: 0.65, blend: 'multiply',
   },
   {
     name: 'USGS topo', group: 'Terrain',
     url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'USGS The National Map', maxZoom: 16,
+    attribution: 'USGS The National Map', maxZoom: 16, opacity: 0.75, blend: 'normal',
   },
   {
     name: 'USGS imagery', group: 'Terrain',
     url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'USGS The National Map', maxZoom: 16,
+    attribution: 'USGS The National Map', maxZoom: 16, opacity: 0.80, blend: 'normal',
   },
   {
     name: 'OpenTopoMap relief', group: 'Terrain',
     url: 'https://tile.opentopomap.org/{z}/{x}/{y}.png',
-    attribution: 'OpenTopoMap (CC-BY-SA)', maxZoom: 17, opacity: 0.5,
+    attribution: 'OpenTopoMap (CC-BY-SA)', maxZoom: 17, opacity: 0.55, blend: 'multiply',
   },
 
   // ── Weather ───────────────────────────────────────────────────────────────
   {
     name: 'Radar (US, now)', group: 'Weather',
     arcgis: 'https://mapservices.weather.noaa.gov/eventdriven/rest/services/radar/radar_base_reflectivity/MapServer',
-    attribution: 'NOAA / NWS', maxZoom: 12, opacity: 0.7,
+    attribution: 'NOAA / NWS', maxZoom: 12, opacity: 0.70, blend: 'screen',
     note: 'Live NEXRAD base reflectivity over the US. Reflectivity is not rainfall: hail, bright banding and ground clutter all show up as returns.',
     legend: {
       type: 'ramp', unit: 'dBZ', min: '5', max: '75',
@@ -174,7 +177,7 @@ export const TILE_LAYERS: TileLayer[] = [
     name: 'Rain past 24h (US)', group: 'Weather',
     arcgis: 'https://mapservices.weather.noaa.gov/raster/rest/services/obs/rfc_qpe/MapServer',
     layers: 'show:25',
-    attribution: 'NOAA / NWS River Forecast Centers', maxZoom: 12, opacity: 0.65,
+    attribution: 'NOAA / NWS River Forecast Centers', maxZoom: 12, opacity: 0.65, blend: 'screen',
     note: 'Quantitative precipitation estimate from gauge-corrected radar, so it is an estimate of what fell, not a gauge reading. US only.',
     legend: {
       type: 'ramp', unit: 'in', min: '0.01', max: '8+',
@@ -185,7 +188,7 @@ export const TILE_LAYERS: TileLayer[] = [
     name: 'Rain past 7d (US)', group: 'Weather',
     arcgis: 'https://mapservices.weather.noaa.gov/raster/rest/services/obs/rfc_qpe/MapServer',
     layers: 'show:53',
-    attribution: 'NOAA / NWS River Forecast Centers', maxZoom: 12, opacity: 0.65,
+    attribution: 'NOAA / NWS River Forecast Centers', maxZoom: 12, opacity: 0.65, blend: 'screen',
     note: 'Seven-day gauge-corrected QPE accumulation. Useful for reading how wet the ground has been through a fruiting window rather than a single storm. US only.',
     legend: {
       type: 'ramp', unit: 'in', min: '0.01', max: '16+',
@@ -196,7 +199,7 @@ export const TILE_LAYERS: TileLayer[] = [
     name: 'Rain past 30d (US)', group: 'Weather',
     arcgis: 'https://mapservices.weather.noaa.gov/raster/rest/services/obs/rfc_qpe/MapServer',
     layers: 'show:65',
-    attribution: 'NOAA / NWS River Forecast Centers', maxZoom: 12, opacity: 0.65,
+    attribution: 'NOAA / NWS River Forecast Centers', maxZoom: 12, opacity: 0.65, blend: 'screen',
     note: 'Thirty-day QPE accumulation, a proxy for seasonal soil wetting ahead of a flush. US only.',
     legend: {
       type: 'ramp', unit: 'in', min: '0.01', max: '30+',
@@ -206,7 +209,7 @@ export const TILE_LAYERS: TileLayer[] = [
   {
     name: 'Rainfall (global)', group: 'Weather',
     ...gibs('IMERG_Precipitation_Rate', 6),
-    attribution: 'NASA GIBS / GPM IMERG', opacity: 0.7, time: true, lag: 1,
+    attribution: 'NASA GIBS / GPM IMERG', opacity: 0.70, blend: 'screen', time: true, lag: 1,
     note: 'Satellite precipitation rate at ~10 km. Global, but coarse: a cell is bigger than most of the places on this map, so read it as weather, not as a shower.',
     legend: {
       type: 'ramp', unit: 'mm/hr', min: '0.1', max: '30',
@@ -216,7 +219,7 @@ export const TILE_LAYERS: TileLayer[] = [
   {
     name: 'Land surface temp', group: 'Weather',
     ...gibs('MODIS_Terra_Land_Surface_Temp_Day', 7),
-    attribution: 'NASA GIBS / MODIS Terra', opacity: 0.6, time: true, lag: 3,
+    attribution: 'NASA GIBS / MODIS Terra', opacity: 0.65, blend: 'screen', time: true, lag: 3,
     note: 'Daytime skin temperature of the ground itself, not air temperature: bare rock in sun reads far hotter than the air above it. Cloudy days are gaps.',
     legend: {
       type: 'ramp', unit: '°C', min: '−25', max: '45',
@@ -228,7 +231,7 @@ export const TILE_LAYERS: TileLayer[] = [
   {
     name: 'NDVI (greenness)', group: 'Vegetation',
     ...gibs('MODIS_Terra_NDVI_8Day', 9),
-    attribution: 'NASA GIBS / MODIS Terra', opacity: 0.6, time: true, lag: 10,
+    attribution: 'NASA GIBS / MODIS Terra', opacity: 0.65, blend: 'multiply', time: true, lag: 10,
     note: 'An 8-day composite ending on the chosen date, at 250 m. Dense conifer and dense broadleaf both saturate near the top, so it separates bare from green far better than it separates forest types.',
     legend: {
       type: 'ramp', unit: 'NDVI', min: '−0.2', max: '1.0',
@@ -240,18 +243,18 @@ export const TILE_LAYERS: TileLayer[] = [
   {
     name: 'Place labels', group: 'Context',
     url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Esri', maxZoom: 16,
+    attribution: 'Esri', maxZoom: 16, opacity: 0.80, blend: 'normal',
   },
   {
     name: 'Hiking trails', group: 'Context',
     url: 'https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png',
-    attribution: 'waymarkedtrails.org · OpenStreetMap (CC-BY-SA)', maxZoom: 18,
+    attribution: 'waymarkedtrails.org · OpenStreetMap (CC-BY-SA)', maxZoom: 18, opacity: 0.80, blend: 'normal',
     note: 'Waymarked hiking routes from OpenStreetMap. Not a complete trail map: an unmapped path is missing, not absent.',
   },
   {
     name: 'Land ownership (US)', group: 'Context',
     url: 'https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_Cached_without_PriUnk/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'BLM Surface Management Agency', maxZoom: 16, opacity: 0.45,
+    attribution: 'BLM Surface Management Agency', maxZoom: 16, opacity: 0.50, blend: 'multiply',
     note: 'US federal and state land, by managing agency. Unpainted means private or unrecorded, not necessarily open. Always confirm access before relying on it.',
     legend: {
       type: 'classes',

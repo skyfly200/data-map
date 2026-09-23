@@ -127,7 +127,7 @@ export const ASSETS = {
   // TNC Global Human Modification index v3, 90 m, global static snapshot. A
   // cumulative measure of how much human infrastructure (roads, agriculture,
   // urban, etc.) has modified each pixel, 0 = unmodified, 1 = fully modified.
-  TNC_HM: 'TNC/HM/v3/90m_s',
+  CSP_HM: 'CSP/HM/GlobalHumanModification',
   // JRC GHSL global population surfaces, 100 m, modelled for every 5-year epoch
   // from 1975 to 2030. Population count per grid cell, so a single pixel in a
   // dense city is hundreds of people.
@@ -467,6 +467,17 @@ function readParams(schema, input = {}) {
         throw new LayerError(`${spec.label} may only contain letters, spaces, hyphens and periods.`)
       }
       out[key] = text
+    } else if (spec.type === 'date') {
+      // ISO date string (YYYY-MM-DD). Validate format and optional min/max bounds.
+      const date = String(raw).trim()
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        throw new LayerError(`${spec.label} must be a date in YYYY-MM-DD format.`)
+      }
+      const dMin = typeof spec.min === 'function' ? spec.min() : spec.min
+      const dMax = typeof spec.max === 'function' ? spec.max() : spec.max
+      if (dMin && date < dMin) throw new LayerError(`${spec.label} must be on or after ${dMin}.`)
+      if (dMax && date > dMax) throw new LayerError(`${spec.label} must be on or before ${dMax}.`)
+      out[key] = date
     } else {
       throw new LayerError(`Unsupported parameter type for ${key}.`)
     }
@@ -1511,23 +1522,32 @@ export const EE_TILE_LAYERS = {
       + 'consistent rain record, good for how wet a region has been rather than where a shower fell. '
       + 'It lags real time by a day or two, so a one-day window near today can come back empty.',
     params: {
-      days: { type: 'int', label: 'Days to total', default: 7, min: 1, max: 60 },
+      from: {
+        type: 'date', label: 'From',
+        default: () => {
+          const d = new Date(); d.setDate(d.getDate() - 7); return d.toISOString().slice(0, 10)
+        },
+        min: '1979-01-01',
+        max: () => new Date().toISOString().slice(0, 10),
+      },
+      to: {
+        type: 'date', label: 'To',
+        default: () => new Date().toISOString().slice(0, 10),
+        min: '1979-01-02',
+        max: () => new Date().toISOString().slice(0, 10),
+      },
     },
     legend: {
       type: 'ramp', unit: 'mm', min: '0', max: '100+',
       stops: ['#f7fbff', '#d0e1f2', '#94c4df', '#4a97c9', '#1764ab', '#08306b'],
     },
-    count: (ee, { days }) => {
-      const end = new Date()
-      const start = new Date(end.getTime() - days * 86400000)
+    count: (ee, { from, to }) => {
       return ee.ImageCollection(ASSETS.NOAA_CPC_PRECIP)
-        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+        .filterDate(from, to).size()
     },
-    build(ee, { days }) {
-      const end = new Date()
-      const start = new Date(end.getTime() - days * 86400000)
+    build(ee, { from, to }) {
       const image = ee.ImageCollection(ASSETS.NOAA_CPC_PRECIP)
-        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .filterDate(from, to)
         .select('precipitation')
         .sum()
       return { image, vis: { min: 0, max: 100, palette: ['#f7fbff', '#d0e1f2', '#94c4df', '#4a97c9', '#1764ab', '#08306b'] } }
@@ -1712,9 +1732,7 @@ export const EE_TILE_LAYERS = {
       stops: ['#1a9641', '#a6d96a', '#ffffbf', '#fdae61', '#d7191c'],
     },
     build(ee) {
-      const image = ee.ImageCollection(ASSETS.TNC_HM)
-        .mosaic()
-        .select('cumulative_human_modification')
+      const image = ee.Image(ASSETS.CSP_HM).select('gHM')
       return {
         image: image.updateMask(image.gte(0)),
         vis: { min: 0, max: 1, palette: ['#1a9641', '#a6d96a', '#ffffbf', '#fdae61', '#d7191c'] },

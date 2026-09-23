@@ -283,6 +283,11 @@
                  :maxlength="p.maxLength || 60" :placeholder="p.default"
                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
                  @change="setEeParam(n.ee, name, $event.target.value)" />
+          <input v-else-if="p.type === 'date'" :id="`ee-${n.slug}-${name}`" type="date"
+                 :min="typeof p.min === 'function' ? p.min() : p.min"
+                 :max="typeof p.max === 'function' ? p.max() : p.max"
+                 :value="(eeParams[n.ee] || {})[name] ?? (typeof p.default === 'function' ? p.default() : p.default)"
+                 @change="setEeParam(n.ee, name, $event.target.value)" />
           <input v-else :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
                  @change="setEeParam(n.ee, name, Number($event.target.value))" />
@@ -725,8 +730,20 @@ function toggleOverlayByKey(key) { _toggleOverlayByKey(key); syncActiveTemplates
 async function refreshEeLayer(spec) { await _refreshEeLayer(spec); syncActiveTemplates() }
 
 // ─── Suitability surface (model overlay) ─────────────────────────────────────
-const { modelOverlay, applyModelOverlay, refreshModelOverlay, removeModelOverlay } =
+const { modelOverlay, applyModelOverlay, refreshModelOverlay, removeModelOverlay, loadModelById } =
   useMapModelOverlay({ mapRef, LRef, accessToken })
+
+// Load tiles when a MaxEnt model is selected; remove when deselected.
+watch(() => heatmaps.maxentModelId.value, (id) => {
+  if (heatmaps.mode.value === 'maxent' && id) loadModelById(id)
+  else if (!id) removeModelOverlay()
+})
+// Entering maxent mode with a model already chosen should load it immediately.
+// Switching away should remove the overlay so a stale surface is not left on.
+watch(() => heatmaps.mode.value, (m, prev) => {
+  if (m === 'maxent' && heatmaps.maxentModelId.value) loadModelById(heatmaps.maxentModelId.value)
+  else if (prev === 'maxent' && m !== 'maxent') removeModelOverlay()
+})
 
 async function addEeLayers() {
   const layers = await eeTiles.loadCatalogue()
@@ -1086,8 +1103,8 @@ onBeforeUnmount(() => {
 .overlay.error { color: #b00020; }
 
 .controls {
-  position: absolute; top: 12px; left: 12px; z-index: 500; display: flex; gap: 10px; align-items: center;
-  flex-wrap: wrap;
+  position: absolute; top: 12px; right: 12px; z-index: 500; display: flex; gap: 10px; align-items: center;
+  flex-wrap: wrap; justify-content: flex-end;
 }
 /* One look for every button in the bar, wherever its component happens to
    define it. Five components contribute controls here and each had its own
@@ -1499,7 +1516,7 @@ onBeforeUnmount(() => {
 
 /* Mobile: tighten the on-map controls and legend so they don't swallow the map. */
 @media (max-width: 640px) {
-  .controls { top: 8px; left: 8px; right: 8px; gap: 6px; }
+  .controls { top: 8px; left: 8px; right: 8px; gap: 6px; justify-content: flex-start; }
   /* Two dropdowns to a row instead of one. Each pairing is natural — what the
      dots mean beside how big they are, the overlay beside its cell size — and
      it halves the number of rows the bar spends covering the map. */

@@ -89,5 +89,58 @@ export function useMapModelOverlay({ mapRef, LRef, accessToken }) {
     }
   }
 
-  return { modelOverlay, applyModelOverlay, refreshModelOverlay, removeModelOverlay }
+  async function loadModelById(jobId) {
+    const map = mapRef.value
+    const L = LRef.value
+    if (!jobId || !map || !L) return
+    removeModelOverlay()
+    const token = await accessToken()
+    let body
+    try {
+      const res = await fetch(`/.netlify/functions/model-tiles?job=${encodeURIComponent(jobId)}`, {
+        headers: token ? { authorization: `Bearer ${token}` } : {},
+      })
+      body = await res.json()
+      if (!res.ok || !body.ok || !body.template) throw new Error(body.error || 'Could not load model.')
+    } catch (err) {
+      return { error: err.message }
+    }
+
+    const layer = L.tileLayer(body.template, {
+      opacity: 0.7,
+      maxZoom: MAP_MAX_ZOOM,
+      updateWhenIdle: false,
+      updateWhenZooming: true,
+      className: 'model-suitability',
+    })
+    let failed = 0
+    layer.on('tileerror', () => {
+      failed += 1
+      if (failed >= 3 && modelOverlay.value && !modelOverlay.value.stale) {
+        modelOverlay.value = { ...modelOverlay.value, stale: true }
+      }
+    })
+    layer.addTo(map)
+    modelLayer = layer
+
+    const meta = body.meta || {}
+    modelOverlay.value = {
+      jobId,
+      label: meta.label || 'Model',
+      legend: meta.legend || { stops: ['#2c2f6b', '#c6301f'], min: '0', max: '1' },
+      age: overlayAge(meta.mintedAt),
+      cv: meta.cv || null,
+      stale: false,
+      refreshing: false,
+    }
+
+    const r = meta.region
+    if (r && Number.isFinite(r.north)) {
+      try {
+        map.fitBounds(L.latLngBounds([r.south, r.west], [r.north, r.east]).pad(0.05), { animate: false })
+      } catch { /* bad region */ }
+    }
+  }
+
+  return { modelOverlay, applyModelOverlay, refreshModelOverlay, removeModelOverlay, loadModelById }
 }

@@ -3,7 +3,7 @@
 // This composable coordinates the training process:
 // 1. Configuration -> 2. Job Submission -> 3. Polling for Results.
 
-import { computed, markRaw } from 'vue'
+import { computed, markRaw, onScopeDispose } from 'vue'
 
 export interface MaxEntConfig {
   id: string
@@ -41,11 +41,17 @@ export interface MaxEntRun {
   model_configs: MaxEntConfig
 }
 
+// Module-level handle so only one poll runs at a time even if the composable
+// scope is recreated (e.g. hot reload), and so onScopeDispose can reach it.
+let activeJobStop: (() => void) | null = null
+
 export function useMaxEnt() {
   const models = useState<MaxEntConfig[]>('maxent-models', () => [])
   const activeJob = useState<MaxEntRun | null>('maxent-active-job', () => null)
   const pending = useState<boolean>('maxent-pending', () => false)
   const error = useState<string>('maxent-error', () => '')
+
+  onScopeDispose(() => { activeJobStop?.(); activeJobStop = null })
 
   /** Fetch the user's saved model configurations. */
   async function fetchModels() {
@@ -80,8 +86,8 @@ export function useMaxEnt() {
         model_configs: data.config,
       } as MaxEntRun
 
-      // Start polling for results
-      pollJobStatus(data.jobId)
+      // Start polling for results. The returned stop fn is registered for cleanup.
+      activeJobStop = pollJobStatus(data.jobId)
       return { ok: true, jobId: data.jobId }
     } catch (e: any) {
       error.value = e.message
@@ -92,7 +98,7 @@ export function useMaxEnt() {
   }
 
   /** Poll for job completion and fetch results, with retry on transient errors. */
-  async function pollJobStatus(jobId: string) {
+  function pollJobStatus(jobId: string): () => void {
     const MAX_RETRIES = 3
     let consecutiveErrors = 0
 
@@ -101,7 +107,7 @@ export function useMaxEnt() {
         const res = await fetch(`/.netlify/functions/modeling/maxent/results/${jobId}`)
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
-        consecutiveErrors = 0 // reset on success
+        consecutiveErrors = 0
 
         if (data.ok && data.result) {
           clearInterval(timer)
@@ -124,11 +130,12 @@ export function useMaxEnt() {
           if (activeJob.value) activeJob.value = { ...activeJob.value, status: 'failed', error_message: `Polling stopped after ${MAX_RETRIES} errors: ${msg}` }
           useAppAlerts().error(`MaxEnt polling stopped after ${MAX_RETRIES} retries — ${msg}`)
         } else {
-          // Transient error — warn but keep polling
           useAppAlerts().warn?.(`MaxEnt polling error (retry ${consecutiveErrors}/${MAX_RETRIES}) — ${msg}`)
         }
       }
     }, 5000)
+
+    return () => clearInterval(timer)
   }
 
   /** Delete a saved model configuration. */
