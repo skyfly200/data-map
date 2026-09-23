@@ -2207,16 +2207,41 @@ onMounted(async () => {
               const hasFilter = loM != null || hiM != null
               const lo = loM ?? -Infinity
               const hi = hiM ?? Infinity
+              // Band gradient stops: deep blue (low) → teal → green (mid) → yellow → orange (high).
+              // Lerped in RGB; five stops give the ramp a bit of shape without a full colour-space
+              // library. Indices 0–4, evenly spaced across the band.
+              const GRAD = [
+                [30, 100, 200],  // deep blue   (lowest in band)
+                [42, 161, 210],  // sky teal
+                [80, 185, 120],  // green        (mid-band)
+                [220, 185,  60], // warm yellow
+                [210,  90,  30], // orange-red   (highest in band)
+              ]
+              function bandColor(t) {
+                // t ∈ [0, 1]; map into the four segments of the five-stop ramp.
+                const seg = Math.min(3, Math.floor(t * 4))
+                const s = t * 4 - seg
+                const a = GRAD[seg], b2 = GRAD[seg + 1]
+                return [
+                  Math.round(a[0] + s * (b2[0] - a[0])),
+                  Math.round(a[1] + s * (b2[1] - a[1])),
+                  Math.round(a[2] + s * (b2[2] - a[2])),
+                ]
+              }
               for (let i = 0; i < src.length; i += 4) {
                 const elev = src[i] * 256 + src[i + 1] + src[i + 2] / 256 - 32768
                 if (hasFilter) {
                   if (elev >= lo && elev <= hi) {
-                    out.data[i] = 42; out.data[i + 1] = 161; out.data[i + 2] = 210; out.data[i + 3] = 175
+                    // Normalise within the band and apply the gradient.
+                    const span = hi - lo
+                    const t = span > 0 ? (elev - lo) / span : 0.5
+                    const [r, g, b] = bandColor(Math.max(0, Math.min(1, t)))
+                    out.data[i] = r; out.data[i + 1] = g; out.data[i + 2] = b; out.data[i + 3] = 185
                   } else {
                     out.data[i] = 0; out.data[i + 1] = 0; out.data[i + 2] = 0; out.data[i + 3] = 55
                   }
                 } else {
-                  // Hypsometric tint: green (low) → tan (mid) → grey (high)
+                  // No filter: hypsometric tint (green → tan → grey) across the full DEM range.
                   const t = Math.max(0, Math.min(1, (elev + 50) / 4500))
                   let r, g, b
                   if (t < 0.4) {
@@ -2261,8 +2286,12 @@ onMounted(async () => {
             name: 'Elevation band',
             note: 'Decoded from Terrarium DEM tiles. With an elevation filter set (Map Filters), in-band terrain is highlighted; without one, a hypsometric tint shows relief.',
             legend: {
-              type: 'ramp', unit: 'm', min: '0', max: '4 500+',
-              stops: ['#84b870', '#c9a86c', '#a0a0a0'],
+              type: 'ramp', unit: 'm',
+              min: filters.value.elevMin != null ? String(filters.value.elevMin) : '0',
+              max: filters.value.elevMax != null ? String(filters.value.elevMax) : '4 500+',
+              stops: filters.value.elevMin != null || filters.value.elevMax != null
+                ? ['#1e64c8', '#2aa1d2', '#50b978', '#dcb93c', '#d25a1e']
+                : ['#84b870', '#c9a86c', '#a0a0a0'],
             },
             slug: 'elevation-band',
           }]
