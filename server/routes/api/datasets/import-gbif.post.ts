@@ -30,6 +30,9 @@ export default defineEventHandler(async (event) => {
     const features: any[] = []
     let skippedCount = 0
 
+    const COMMON_FIELDS = ['basisOfRecord', 'establishmentMeans', 'lifeStage', 'sex',
+      'individualCount', 'country', 'stateProvince', 'county']
+
     for (const row of records) {
       const lat = parseFloat(row.decimalLatitude || row.lat || '')
       const lon = parseFloat(row.decimalLongitude || row.lon || '')
@@ -39,27 +42,24 @@ export default defineEventHandler(async (event) => {
         continue
       }
 
-      const feature: any = {
+      const props: any = {
+        species: row.species || row.scientificName || 'Unknown',
+        date: row.eventDate || (row.year ? `${row.year}` : null),
+        gbifId: row.gbifID || null,
+        occurrenceStatus: row.occurrenceStatus || 'PRESENT',
+        coordinateUncertainty: row.coordinateUncertaintyInMeters
+          ? parseFloat(row.coordinateUncertaintyInMeters) : null,
+      }
+
+      for (const field of COMMON_FIELDS) {
+        if (row[field]) props[field] = row[field]
+      }
+
+      features.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [lon, lat] },
-        properties: {
-          species: row.species || row.scientificName || 'Unknown',
-          date: row.eventDate || (row.year ? `${row.year}` : null),
-          gbifId: row.gbifID || null,
-          occurrenceStatus: row.occurrenceStatus || 'PRESENT',
-          coordinateUncertainty: row.coordinateUncertaintyInMeters
-            ? parseFloat(row.coordinateUncertaintyInMeters) : null,
-          originalData: row
-        }
-      }
-
-      const commonFields = ['basisOfRecord', 'establishmentMeans', 'lifeStage', 'sex',
-        'individualCount', 'country', 'stateProvince', 'county']
-      for (const field of commonFields) {
-        if (row[field]) feature.properties[field] = row[field]
-      }
-
-      features.push(feature)
+        properties: props,
+      })
     }
 
     if (features.length === 0) {
@@ -91,9 +91,9 @@ export default defineEventHandler(async (event) => {
       const slug = nextFreeSlug(base, (clashes || []).map((r: any) => r.slug))
 
       const path = `datasets/${user.id}/${slug}-${Date.now()}.geojson`
-      await uploadJson(path, geojson)
+      const body = await uploadJson(path, geojson)
 
-      const bytes = JSON.stringify(geojson).length
+      const bytes = body.length
       const { data, error } = await client.from('saved_datasets').insert({
         owner_id: user.id,
         job_id: null,
