@@ -16,7 +16,8 @@ import { adminClient, requireAdmin } from '../lib/auth.mjs'
 import {
   claimNextJob, failJob, finishJob, isCancelled, ownerViewer, planFor, reportProgress,
 } from '../lib/job-queue.mjs'
-import { loadSource } from '../lib/job-source.mjs'
+import { explainEmpty, explainSelection, loadSource } from '../lib/job-source.mjs'
+import { loadBaseline } from '../lib/baseline.mjs'
 import { runModel, runPipeline } from '../lib/ee-runner.mjs'
 import { uploadJson } from '../lib/datasets-store.mjs'
 import { notifyJobSettled } from '../lib/notify.mjs'
@@ -81,7 +82,21 @@ export default async function handler(request) {
       client: adminClient(),
       viewer: await ownerViewer(job),
     })
-    if (!features.length) throw new Error('That source no longer has any observations.')
+    if (!features.length) {
+      let msg
+      if (spec.source?.type === 'dataset') {
+        msg = `Dataset "${spec.source.slug}" exists but contains no observations.`
+      } else {
+        const baseline = await loadBaseline()
+        const breakdown = explainSelection(baseline?.features || [], spec.source)
+        msg = explainEmpty(spec.source, {
+          total: (baseline?.features || []).length,
+          inBounds: breakdown.inBounds,
+          inDates: breakdown.inDates,
+        })
+      }
+      throw new Error(msg)
+    }
 
     // Cancelling is a member writing to their own row; the worker notices here
     // and between stages rather than being interrupted.
