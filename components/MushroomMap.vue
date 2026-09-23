@@ -450,8 +450,9 @@ import { useUnits } from '~/composables/useUnits'
 
 const {
   data, filteredData, load, loadProgressive, chunks, partial,
-  speciesFilter, focusObservation, setFocusObservation,
+  speciesFilter, focusObservation, setFocusObservation, error: obsError,
 } = useObservations()
+watch(obsError, (msg) => { if (msg) useAppAlerts().error('Could not load observations — ' + msg) })
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const { filters } = useFilters()
 const live = useLiveClusters()
@@ -991,7 +992,9 @@ async function saveMap() {
     const blob = await exporter.mapToPng(mapEl.value, { scale: 2 })
     exporter.download(blob, `map-${exporter.slugify(colorBy.value, 'view')}-${exporter.stamp()}.png`)
   } catch (err) {
-    saveError.value = err.message || 'Could not save the map.'
+    const msg = err.message || 'Could not save the map.'
+    saveError.value = msg
+    useAppAlerts().error(msg)
   } finally {
     saving.value = false
   }
