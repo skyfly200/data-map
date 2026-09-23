@@ -66,7 +66,7 @@ export const DEFAULT_TIER = 'member'
 export const ASSETS = {
   MODIS_BURN: 'MODIS/061/MCD64A1',
   MTBS_SEVERITY: 'USFS/GTAC/MTBS/annual_burn_severity_mosaics/v1',
-  FIRMS: 'FIRMS',
+  FIRMS: 'NASA/FIRMS/modis/Global',
   S2_SR: 'COPERNICUS/S2_SR_HARMONIZED',
   // Hansen Global Forest Change: year of stand-replacing forest loss, 30 m,
   // global. Loss is any removal of the canopy — harvest, clearing, blowdown or
