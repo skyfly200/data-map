@@ -3,10 +3,7 @@
     <nav class="tabs">
       <button :class="{ on: tab === 'species' }" @click="tab = 'species'">Species</button>
       <button :class="{ on: tab === 'table' }" @click="tab = 'table'">Table</button>
-      <!-- "Fetch new" is hidden while its backend is being replaced. The tab
-           and the component are both left in place rather than deleted, so
-           turning it back on is one flag rather than a revert. -->
-      <button v-if="SHOW_FETCH" :class="{ on: tab === 'fetch' }" @click="tab = 'fetch'">Fetch new</button>
+      <button :class="{ on: tab === 'fetch' }" @click="tab = 'fetch'">Fetch new</button>
     </nav>
 
     <div class="dataset-bar">
@@ -22,7 +19,7 @@
       </aside>
       <section class="main">
         <!-- ── Fetch a new species ────────────────────────────────────── -->
-        <FetchSpecies v-if="SHOW_FETCH && tab === 'fetch'" />
+        <FetchSpecies v-if="tab === 'fetch'" />
 
         <!-- ── Full observation table ─────────────────────────────────── -->
         <ObservationsTable v-else-if="tab === 'table'" />
@@ -102,15 +99,8 @@ onMounted(load)
 // Tabs (in the URL so /data?tab=table deep-links, and old /table redirects here).
 const route = useRoute()
 const router = useRouter()
-// Fetching new observations is switched off while its backend is replaced.
-// One flag rather than a deletion: the component and its tab are intact and
-// turning them back on is a one-line change.
-const SHOW_FETCH = false
-
-const TABS = ['species', 'table', ...(SHOW_FETCH ? ['fetch'] : [])]
+const TABS = ['species', 'table', 'fetch']
 const tab = computed({
-  // An old /data?tab=fetch link (or a bookmark) lands on Species rather than on
-  // a tab whose panel renders nothing.
   get: () => (TABS.includes(route.query.tab) ? route.query.tab : 'species'),
   set: (v) => router.replace({ query: { ...route.query, tab: v } }),
 })

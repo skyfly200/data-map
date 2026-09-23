@@ -1,27 +1,33 @@
 <template>
   <div class="fetch">
     <div class="fetch-new">
-      <label>Fetch a taxon from iNaturalist</label>
+      <label>Fetch a taxon</label>
       <template v-if="configured && !isAuthed">
         <span class="fmsg">Live fetching is rate-protected.</span>
         <NuxtLink to="/login" class="signin-link">Sign in to fetch</NuxtLink>
       </template>
       <template v-else>
-        <!-- Any rank: iNaturalist matches a taxon name at whatever level it
-             sits, so "Amanitaceae" imports the family and "Fungi" the kingdom.
-             The pipeline resolves each record's own ancestry on the way in, so
-             a mixed import stays filterable at every rank. -->
+        <!-- Any rank: iNaturalist / GBIF match a taxon name at whatever level it
+             sits, so "Amanitaceae" imports the family and "Fungi" the kingdom. -->
         <input v-model="newSpecies" type="text" list="taxon-suggestions"
                placeholder="e.g. Amanita muscaria, Amanitaceae, Fungi"
                :disabled="fetching" @keyup.enter="fetchNew" />
-        <!-- The saved list as suggestions. Typing is still free-form — the list
-             is what you usually want, not a limit on what you can ask for. -->
         <datalist id="taxon-suggestions">
           <option v-for="t in taxa" :key="t" :value="t"></option>
         </datalist>
+
+        <!-- Source picker: GBIF for large / historical queries, iNat otherwise. -->
+        <div class="source-row">
+          <span class="src-label">Source</span>
+          <div class="src-tabs">
+            <button v-for="s in SOURCES" :key="s.key" class="src-tab"
+                    :class="{ on: source === s.key }" :title="s.hint"
+                    @click="source = s.key">{{ s.label }}</button>
+          </div>
+          <span class="src-hint">{{ activeSource.hint }}</span>
+        </div>
+
         <button :disabled="fetching || !newSpecies.trim()" @click="fetchNew">{{ fetching ? 'Fetching…' : 'Fetch' }}</button>
-        <!-- One button for the whole saved list, because the alternative is
-             typing forty genus names in turn and remembering which you did. -->
         <button v-if="taxa.length" class="ghost" :disabled="fetching"
                 :title="`Fetch each of the ${taxa.length} taxa in your list, one after another`"
                 @click="fetchList">
@@ -68,8 +74,24 @@ const { addInlineDataset } = useObservations()
 const { isAuthed, configured, accessToken } = useAuth()
 const { filters } = useFilters()
 
-// Turn the active location/time filters into iNaturalist query params so a
-// scoped fetch pulls only what matches, instead of the whole history.
+const SOURCES = [
+  { key: 'auto', label: 'Auto', hint: 'iNaturalist for recent/small pulls; GBIF for historical or large (> 5 000 records / > 60-day span).' },
+  { key: 'inat', label: 'iNaturalist', hint: 'Research-grade observations from iNaturalist. Best for recent, region-scoped queries.' },
+  { key: 'gbif', label: 'GBIF', hint: 'Global occurrence records from GBIF. Better for large historical datasets.' },
+]
+const source = ref('auto')
+const activeSource = computed(() => SOURCES.find((s) => s.key === source.value) || SOURCES[0])
+
+// Decide which backend to use for a given query.
+function resolveSource(d1, d2) {
+  if (source.value !== 'auto') return source.value
+  if (!d1 && !d2) return 'inat'
+  const ms = (d2 ? new Date(d2) : new Date()) - (d1 ? new Date(d1) : new Date())
+  const days = ms / 86400000
+  return days > 60 ? 'gbif' : 'inat'
+}
+
+// Turn the active location/time filters into query params.
 function fetchScopeParams() {
   const f = filters.value
   const p = new URLSearchParams()
@@ -80,7 +102,6 @@ function fetchScopeParams() {
   }
   if (f.dateFrom) p.set('d1', f.dateFrom)
   if (f.dateTo) p.set('d2', f.dateTo)
-  // Whole-year / month shortcuts become a date range for iNaturalist.
   if (f.year && !f.dateFrom && !f.dateTo) {
     const mm = f.month ? String(f.month).padStart(2, '0') : null
     if (mm) {
@@ -101,9 +122,6 @@ const fetchingName = ref('')
 const elapsed = ref(0)
 let timer = null
 
-// The saved list, from Options. Read here so the fetch box can offer it as
-// suggestions and run the whole of it, rather than being a box you have to
-// remember forty genus names to use.
 const { taxa, loadFromStorage } = useTaxonList()
 onMounted(loadFromStorage)
 
@@ -118,22 +136,18 @@ function startTimer() {
 function stopTimer() { if (timer) { clearInterval(timer); timer = null } }
 onBeforeUnmount(stopTimer)
 
-/**
- * One taxon, fetched and loaded. Throws with something worth reading.
- *
- * Split out of the button handler so the same path serves one name typed in and
- * a whole saved list run through in turn — a list that fetched differently from
- * a single name would eventually differ in a way nobody noticed.
- */
 async function fetchOne(q) {
   const token = await accessToken()
   const headers = token ? { authorization: `Bearer ${token}` } : {}
   const scope = fetchScopeParams()
   scope.set('species', q)
 
+  const backend = resolveSource(scope.get('d1'), scope.get('d2'))
+  const fn = backend === 'gbif' ? 'gbif-fetch' : 'fetch-species'
+
   let res
   try {
-    res = await fetch(`/.netlify/functions/fetch-species?${scope.toString()}`, { headers })
+    res = await fetch(`/.netlify/functions/${fn}?${scope.toString()}`, { headers })
   } catch {
     throw new Error("couldn't reach the fetch function, it only runs on the deployed site.")
   }
@@ -155,7 +169,12 @@ async function fetchOne(q) {
   const data = await res.json()
   if (!data.ok) throw new Error(data.error || 'fetch failed')
   if (data.count) {
-    const entry = { id: data.slug, label: `${data.species} (${data.count})`, path: data.path || `mem:${data.slug}` }
+    const src = backend === 'gbif' ? 'GBIF' : 'iNat'
+    const entry = {
+      id: data.slug,
+      label: `${data.species} (${src}, ${data.count})`,
+      path: data.path || `mem:${data.slug}`,
+    }
     addInlineDataset(entry, data.geojson)
   }
   return data
@@ -241,6 +260,14 @@ async function fetchNew() {
 }
 .fetch-new label { font-size: 0.85rem; font-weight: 600; color: var(--text); }
 .fetch-new input { flex: 0 1 260px; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 0.88rem; background: var(--input-bg); color: var(--text); }
+
+.source-row { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.src-label { font-size: 0.82rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.src-tabs { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.src-tab { border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 4px 10px; font-size: 0.82rem; font-weight: 600; }
+.src-tab:hover { background: var(--surface-3); color: var(--text); }
+.src-tab.on { background: var(--surface-3); color: var(--text); }
+.src-hint { font-size: 0.78rem; color: var(--muted); max-width: 320px; }
 .fetch-new button { border: 1px solid #2b7a3d; background: #2b7a3d; color: #fff; border-radius: 6px; padding: 6px 14px; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
 .fetch-new button:disabled { opacity: 0.55; cursor: default; }
 .fmsg { font-size: 0.82rem; }

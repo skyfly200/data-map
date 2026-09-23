@@ -115,6 +115,7 @@ const { activeCount: filterCount } = useFilters()
 // header), so a separate "Home" tab would be a second control for the same
 // destination.
 const NAV = [
+  { to: '/dashboard', label: 'Dashboard' },
   { to: '/map', label: 'Map' },
   { to: '/charts', label: 'Charts' },
   { to: '/analysis', label: 'Analysis' },
@@ -181,6 +182,7 @@ const router = useRouter()
 const go = (path) => () => router.push(path)
 
 shortcuts.register([
+  { scope: 'Navigate', keys: 'h', label: 'Dashboard', run: go('/dashboard') },
   { scope: 'Navigate', keys: 'm', label: 'Map', run: go('/map') },
   { scope: 'Navigate', keys: 'c', label: 'Charts', run: go('/charts') },
   { scope: 'Navigate', keys: 'a', label: 'Analysis', run: go('/analysis') },
