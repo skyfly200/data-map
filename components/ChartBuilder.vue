@@ -10,6 +10,7 @@
           <option value="line">Line</option>
           <option value="area">Area</option>
           <option value="box">Box plot by category</option>
+          <option value="violin">Violin plot by category</option>
           <option value="histogram">Histogram</option>
           <option value="heatmap">Heatmap</option>
           <option value="radar">Radar</option>
@@ -49,6 +50,11 @@
       </template>
 
       <template v-else-if="chartType === 'box'">
+        <label class="ctrl"><span>Group by <HelpLink option="chart-group-by" /></span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Value <HelpLink option="chart-value" /></span><select v-model="valueField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+      </template>
+
+      <template v-else-if="chartType === 'violin'">
         <label class="ctrl"><span>Group by <HelpLink option="chart-group-by" /></span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Value <HelpLink option="chart-value" /></span><select v-model="valueField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
       </template>
@@ -180,7 +186,7 @@ const typeDocId = computed(() => TYPE_DOCS[chartType.value] || 'chart-type')
 
 // Only charts that lay categories out in a row have an order worth choosing.
 // A scatter or histogram has no category axis to sort.
-const SORTABLE_TYPES = new Set(['bar', 'stacked', 'box', 'radar'])
+const SORTABLE_TYPES = new Set(['bar', 'stacked', 'box', 'violin', 'radar'])
 
 const config = computed(() => ({
   type: chartType.value,

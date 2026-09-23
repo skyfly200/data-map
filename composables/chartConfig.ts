@@ -56,7 +56,7 @@ export function defaultChartConfig(): Record<string, any> {
 
 /** The chart types the builder can render, for validating a decoded link. */
 export const CHART_TYPES = [
-  'scatter', 'bar', 'stacked', 'line', 'area', 'box', 'histogram', 'heatmap',
+  'scatter', 'bar', 'stacked', 'line', 'area', 'box', 'violin', 'histogram', 'heatmap',
   'radar', 'donut',
 ]
 
@@ -128,7 +128,7 @@ export function describeChart(config = {}, labelFor = (k: string) => k): string 
     return `${labelFor(config.yField)} vs. ${labelFor(config.xField)}`
   }
   if (t === 'histogram') return `Distribution of ${labelFor(config.valueField)}`
-  if (t === 'box') return `${labelFor(config.valueField)} by ${labelFor(config.groupField)}`
+  if (t === 'box' || t === 'violin') return `${labelFor(config.valueField)} by ${labelFor(config.groupField)}`
   if (t === 'heatmap') return `${labelFor(config.rowField)} × ${labelFor(config.colField)}`
   if (t === 'stacked') {
     return `${labelFor(config.groupField)} by ${labelFor(config.stackField || config.colorField)}`

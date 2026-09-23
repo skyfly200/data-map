@@ -6,6 +6,7 @@
     :todayX="todayX" :todayLabel="todayLabel" @select="$emit('select', $event)" />
   <BarChart v-else-if="config.type === 'bar'" :title="title" :data="barData" :horizontal="!!config.horizontal" :format="barFmt" />
   <BoxPlot v-else-if="config.type === 'box'" :title="title" :data="boxData" :xLabel="labelOf(config.valueField)" :valueKey="config.valueField" :format="fmtOf(config.valueField)" />
+  <ViolinChart v-else-if="config.type === 'violin'" :title="title" :data="boxData" :xLabel="labelOf(config.valueField)" :valueKey="config.valueField" :format="fmtOf(config.valueField)" />
   <BarChart v-else-if="config.type === 'histogram'" :title="title" :data="histogramData" :format="(v) => String(v)" />
   <HeatmapChart v-else-if="config.type === 'heatmap'" :title="title" :rows="heatmap.rows" :cols="heatmap.cols"
     :matrix="heatmap.matrix" :format="heatFmt" />
@@ -386,7 +387,7 @@ const title = computed(() => {
   if (t === 'scatter') return `${labelOf(c.value.yField)} vs. ${labelOf(c.value.xField)}`
   if (t === 'bar') return c.value.measure === 'count' ? `Count by ${catLabel(c.value.groupField)}` : `Mean ${labelOf(c.value.measure)} by ${catLabel(c.value.groupField)}`
   if (t === 'line' || t === 'area') return `${labelOf(c.value.yField)} over ${labelOf(c.value.xField)}`
-  if (t === 'box') return `${labelOf(c.value.valueField)} by ${catLabel(c.value.groupField)}`
+  if (t === 'box' || t === 'violin') return `${labelOf(c.value.valueField)} by ${catLabel(c.value.groupField)}`
   if (t === 'histogram') return `Distribution of ${labelOf(c.value.valueField)}`
   if (t === 'heatmap') return `${catLabel(c.value.rowField)} × ${catLabel(c.value.colField)}`
   if (t === 'radar' || t === 'donut') return `${c.value.measure === 'count' ? 'Count' : labelOf(c.value.measure)} by ${catLabel(c.value.groupField)}`
@@ -401,7 +402,7 @@ const isEmpty = computed(() => {
   if (t === 'line' || t === 'area') return lineChartSeries.value.length === 0
   if (t === 'donut') return donutData.value.length === 0
   if (t === 'radar') return radarData.value.length === 0
-  if (t === 'box') return boxData.value.length === 0
+  if (t === 'box' || t === 'violin') return boxData.value.length === 0
   if (t === 'histogram') return histogramData.value.length === 0
   if (t === 'heatmap') return heatmap.value.rows.length === 0
   return false
