@@ -15,9 +15,9 @@ export interface AppAlert {
 
 let nextId = 1
 
-const alerts = useState<AppAlert[]>('app-alerts', () => [])
-
 export function useAppAlerts() {
+  const alerts = useState<AppAlert[]>('app-alerts', () => [])
+
   function push(level: AlertLevel, message: string, ttl?: number) {
     const id = nextId++
     const defaultTtl = level === 'error' ? undefined : 8000
