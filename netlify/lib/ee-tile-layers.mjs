@@ -116,6 +116,22 @@ export const ASSETS = {
   // map is EPSG:3857, so the GIBS tiles 404'd. The `sm_surface` band is
   // volumetric water in the top 5 cm.
   SMAP: 'NASA/SMAP/SPL4SMGP/007',
+  // CSP ERGo terrain indices from SRTM, global. Pre-computed at the source and
+  // published as ready-to-use images, so no on-demand computation is needed.
+  // mTPI is a multi-scale topographic position index (values −500–500 m) that
+  // separates valley floors from ridgelines better than a single-radius TPI.
+  // CHILI is a continuous heat-insolation load index (0–255) that integrates
+  // slope angle, aspect and neighbourhood shading into one solar-loading score.
+  CSP_SRTM_MTPI: 'CSP/ERGo/1_0/Global/SRTM_mTPI',
+  CSP_SRTM_CHILI: 'CSP/ERGo/1_0/Global/SRTM_CHILI',
+  // TNC Global Human Modification index v3, 90 m, global static snapshot. A
+  // cumulative measure of how much human infrastructure (roads, agriculture,
+  // urban, etc.) has modified each pixel, 0 = unmodified, 1 = fully modified.
+  TNC_HM: 'TNC/HM/v3/90m_s',
+  // JRC GHSL global population surfaces, 100 m, modelled for every 5-year epoch
+  // from 1975 to 2030. Population count per grid cell, so a single pixel in a
+  // dense city is hundreds of people.
+  GHSL_POP: 'JRC/GHSL/P2023A/GHS_POP',
   // Copernicus Sentinel-1 C-band SAR, ~10 m, global. VV backscatter over land
   // rises with surface wetness (and roughness), so a recent mean is a radar
   // proxy for how wet the ground is — and unlike optical NDMI it sees through
@@ -1669,6 +1685,141 @@ export const EE_TILE_LAYERS = {
         .mean()
         .subtract(273.15)
       return { image, vis: { min: 0, max: 15, palette: ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'] } }
+    },
+  },
+
+  // ── Human influence ────────────────────────────────────────────────────────
+  //
+  // Two global datasets that capture what people have done to the landscape.
+  // Human modification tells you where the ground is still ecologically intact;
+  // population tells you how many people live nearby — a forager's proxy for
+  // access pressure and how hard a spot is likely to be hit.
+
+  'human-modification': {
+    name: 'Human modification index',
+    group: 'Human influence',
+    tier: 'free',
+    attribution: 'TNC Global Human Modification v3 via Google Earth Engine',
+    opacity: 0.65,
+    sourceMasked: true,
+    note: 'TNC Global Human Modification index (gHM) at 90 m, a static snapshot. '
+      + 'Values range 0 (wilderness) to 1 (fully modified by roads, agriculture, '
+      + 'built-up land and similar). Low values (green) are where ecological '
+      + 'processes still run largely intact. Read gradients, not boundaries: the '
+      + 'transition from modified to intact is rarely a line.',
+    legend: {
+      type: 'ramp', unit: 'gHM', min: '0', max: '1',
+      stops: ['#1a9641', '#a6d96a', '#ffffbf', '#fdae61', '#d7191c'],
+    },
+    build(ee) {
+      const image = ee.ImageCollection(ASSETS.TNC_HM)
+        .mosaic()
+        .select('cumulative_human_modification')
+      return {
+        image: image.updateMask(image.gte(0)),
+        vis: { min: 0, max: 1, palette: ['#1a9641', '#a6d96a', '#ffffbf', '#fdae61', '#d7191c'] },
+      }
+    },
+  },
+
+  'population-density': {
+    name: 'Population density (GHSL)',
+    group: 'Human influence',
+    tier: 'free',
+    attribution: 'JRC GHSL GHS-POP P2023A via Google Earth Engine',
+    opacity: 0.7,
+    sourceMasked: true,
+    note: 'Modelled population count per 100 m cell from the Global Human '
+      + 'Settlement Layer, for the chosen epoch (1975–2030 in five-year steps). '
+      + 'Shown on a log scale — one pale pixel in a city holds far more people '
+      + 'than one bright pixel in a village. Useful as a proxy for how heavily '
+      + 'a spot is visited rather than for reading absolute counts.',
+    params: {
+      year: {
+        type: 'enum', label: 'Epoch',
+        default: '2020',
+        values: ['1975', '1980', '1985', '1990', '1995', '2000', '2005', '2010', '2015', '2020', '2025', '2030'],
+      },
+    },
+    legend: {
+      type: 'ramp', unit: 'people / cell (log)', min: '1', max: '1000+',
+      stops: ['#feebe2', '#fcc5c0', '#fa9fb5', '#f768a1', '#ae017e', '#7a0177'],
+    },
+    count: (ee, { year }) => ee.ImageCollection(ASSETS.GHSL_POP)
+      .filterDate(`${year}-01-01`, `${Number(year) + 1}-01-01`).size(),
+    build(ee, { year }) {
+      const image = ee.ImageCollection(ASSETS.GHSL_POP)
+        .filterDate(`${year}-01-01`, `${Number(year) + 1}-01-01`)
+        .first()
+        .select('population_count')
+      // Log1p so zero stays zero and the distribution compresses enough to read
+      // without saturating on dense cities. Mask where no one lives.
+      const logPop = image.log1p()
+      return {
+        image: logPop.updateMask(image.gt(0)),
+        vis: { min: 0, max: 7, palette: ['#feebe2', '#fcc5c0', '#fa9fb5', '#f768a1', '#ae017e', '#7a0177'] },
+      }
+    },
+  },
+
+  // ── Extended terrain indices ────────────────────────────────────────────────
+  //
+  // Two pre-computed CSP/ERGo indices that go beyond the SRTM layers above.
+  // mTPI integrates position across multiple neighbourhood scales, so a summit
+  // plateau reads differently from a narrow ridge even though both sit above
+  // their immediate surroundings. CHILI is a heat-insolation score that folds
+  // shading into the aspect estimate, so a north-facing slope shaded by a ridge
+  // reads colder than a north-facing slope with an open sky.
+
+  'srtm-mtpi': {
+    name: 'Topographic position (mTPI)',
+    group: 'Terrain analysis',
+    tier: 'free',
+    attribution: 'CSP ERGo / NASA SRTM via Google Earth Engine',
+    opacity: 0.7,
+    sourceMasked: true,
+    note: 'Multi-Scale Topographic Position Index from CSP ERGo at 90 m, global. '
+      + 'Negative values (blue) are valley floors and basins; positive (red) are '
+      + 'ridgelines and summits. Computed by comparing each pixel to its '
+      + 'neighbourhood at several radii, so a broad plateau reads as flat even '
+      + 'if it sits above a local hollow. A proxy for cold-air pooling, drainage '
+      + 'and moisture accumulation at the landscape scale.',
+    legend: {
+      type: 'ramp', unit: 'mTPI (m)', min: 'valley', max: 'ridge',
+      stops: ['#2166ac', '#67a9cf', '#d1e5f0', '#f7f7f7', '#fddbc7', '#ef8a62', '#b2182b'],
+    },
+    build(ee) {
+      const image = ee.Image(ASSETS.CSP_SRTM_MTPI).select('constant')
+      return {
+        image,
+        vis: { min: -300, max: 300, palette: ['#2166ac', '#67a9cf', '#d1e5f0', '#f7f7f7', '#fddbc7', '#ef8a62', '#b2182b'] },
+      }
+    },
+  },
+
+  'srtm-chili': {
+    name: 'Heat-insolation load (CHILI)',
+    group: 'Terrain analysis',
+    tier: 'free',
+    attribution: 'CSP ERGo / NASA SRTM via Google Earth Engine',
+    opacity: 0.7,
+    sourceMasked: true,
+    note: 'Continuous Heat-Insolation Load Index from CSP ERGo at 90 m, global. '
+      + 'Low values (blue) are cold, shaded or north-facing ground; high values '
+      + '(red) are hot, sun-exposed south- and west-facing slopes. Unlike the '
+      + 'simpler solar-exposure layer, CHILI accounts for local shading by '
+      + 'adjacent terrain, so a south-facing bench in a canyon reads cooler than '
+      + 'one on an open hillside.',
+    legend: {
+      type: 'ramp', unit: 'CHILI', min: 'cool / shaded', max: 'hot / exposed',
+      stops: ['#2166ac', '#67a9cf', '#d1e5f0', '#fee090', '#fc8d59', '#d73027'],
+    },
+    build(ee) {
+      const image = ee.Image(ASSETS.CSP_SRTM_CHILI).select('constant')
+      return {
+        image,
+        vis: { min: 0, max: 255, palette: ['#2166ac', '#67a9cf', '#d1e5f0', '#fee090', '#fc8d59', '#d73027'] },
+      }
     },
   },
 
