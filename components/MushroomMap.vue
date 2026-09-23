@@ -477,6 +477,7 @@ const mapEl = ref(null)
 // against.
 const controlsEl = ref(null)
 let controlsResize = null
+let mapResize = null
 
 function trackControlsHeight() {
   if (!import.meta.client || !controlsEl.value) return
@@ -2229,6 +2230,16 @@ onMounted(async () => {
     syncMapView()
     syncActiveTemplates()
 
+    // Leaflet calculates tile positions and canvas bounds from the container size
+    // it measures at creation. Any resize after that — drawer sliding in, screen
+    // rotation, mobile keyboard, browser window resize — leaves the internal pixel
+    // origin stale so every layer appears offset from the basemap. Watching the
+    // container and calling invalidateSize() keeps the two in sync.
+    if (typeof ResizeObserver !== 'undefined') {
+      mapResize = new ResizeObserver(() => { if (map) map.invalidateSize({ animate: false }) })
+      mapResize.observe(mapEl.value)
+    }
+
     heatmaps.loadFromStorage()
     appearance.loadFromStorage()
 
@@ -2344,6 +2355,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKeydown)
   controlsResize?.disconnect()
+  mapResize?.disconnect()
   if (map) map.remove()
 })
 </script>
