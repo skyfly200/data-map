@@ -21,73 +21,73 @@
     <!-- Anything the host wants above the stack. On a phone the map's basemap
          and heatmap controls render here, because three more buttons did not
          fit on the bar beside them. -->
-    <div v-if=”$slots.top” class=”lm-top”><slot name=”top” /></div>
+    <div v-if="$slots.top" class="lm-top"><slot name="top" /></div>
 
     <!-- Tab bar: Active layers vs Browse catalogue -->
-    <div class=”lm-tabs” role=”tablist”>
-      <button role=”tab” class=”lm-tab” :class=”{ on: activeTab === 'active' }”
-              :aria-selected=”activeTab === 'active'” @click=”activeTab = 'active'”>
+    <div class="lm-tabs" role="tablist">
+      <button role="tab" class="lm-tab" :class="{ on: activeTab === 'active' }"
+              :aria-selected="activeTab === 'active'" @click="activeTab = 'active'">
         Active
-        <span v-if=”activeList.length” class=”lm-tab-badge”>{{ activeList.length }}</span>
+        <span v-if="activeList.length" class="lm-tab-badge">{{ activeList.length }}</span>
       </button>
-      <button role=”tab” class=”lm-tab” :class=”{ on: activeTab === 'browse' }”
-              :aria-selected=”activeTab === 'browse'” @click=”activeTab = 'browse'”>
+      <button role="tab" class="lm-tab" :class="{ on: activeTab === 'browse' }"
+              :aria-selected="activeTab === 'browse'" @click="activeTab = 'browse'">
         Browse
       </button>
     </div>
 
     <!-- Active layers tab -->
-    <section v-show=”activeTab === 'active'” class=”lm-active lm-tab-panel” role=”tabpanel”>
-      <div v-if=”!activeList.length” class=”lm-empty lm-empty-active”>
+    <section v-show="activeTab === 'active'" class="lm-active lm-tab-panel" role="tabpanel">
+      <div v-if="!activeList.length" class="lm-empty lm-empty-active">
         No layers drawn yet — switch to Browse to add some.
       </div>
-      <div v-else class=”lm-sec-head”>
+      <div v-else class="lm-sec-head">
         <span>Drawn, top first</span>
-        <HelpLink option=”map-layer-order” />
+        <HelpLink option="map-layer-order" />
       </div>
-      <ul v-if=”activeList.length” class=”lm-stack”>
-        <li v-for=”(item, i) in activeList” :key=”item.key” class=”lm-on”
-            :class=”{ muted: solo && solo !== item.key }”>
-          <div class=”lm-on-top”>
-            <button class=”lm-swatch” :title=”`Hide ${item.name}`” @click=”$emit('toggle', item.key)”>
-              <span class=”lm-tick” aria-hidden=”true”>✓</span>
+      <ul v-if="activeList.length" class="lm-stack">
+        <li v-for="(item, i) in activeList" :key="item.key" class="lm-on"
+            :class="{ muted: solo && solo !== item.key }">
+          <div class="lm-on-top">
+            <button class="lm-swatch" :title="`Hide ${item.name}`" @click="$emit('toggle', item.key)">
+              <span class="lm-tick" aria-hidden="true">✓</span>
             </button>
-            <span class=”lm-on-name” :title=”item.name”>{{ item.name }}</span>
-            <span v-if=”eeLoading.has(item.key)” class=”lm-ee-spinner” aria-label=”Rendering…” title=”Rendering layer…”></span>
-            <button class=”lm-solo” :class=”{ on: solo === item.key }”
-                    :aria-pressed=”String(solo === item.key)”
-                    :title=”solo === item.key ? 'Draw every layer again' : `Draw only ${item.name}`”
-                    @click=”$emit('solo', solo === item.key ? '' : item.key)”>S</button>
-            <span class=”lm-order”>
-              <button :disabled=”i === 0” title=”Send to the top”
-                      @click=”$emit('move', item.key, 'top')”>⤒</button>
-              <button :disabled=”i === 0” title=”Move up” @click=”$emit('move', item.key, -1)”>▲</button>
-              <button :disabled=”i === activeList.length - 1” title=”Move down”
-                      @click=”$emit('move', item.key, 1)”>▼</button>
-              <button :disabled=”i === activeList.length - 1” title=”Send to the bottom”
-                      @click=”$emit('move', item.key, 'bottom')”>⤓</button>
+            <span class="lm-on-name" :title="item.name">{{ item.name }}</span>
+            <span v-if="eeLoading.has(item.key)" class="lm-ee-spinner" aria-label="Rendering…" title="Rendering layer…"></span>
+            <button class="lm-solo" :class="{ on: solo === item.key }"
+                    :aria-pressed="String(solo === item.key)"
+                    :title="solo === item.key ? 'Draw every layer again' : `Draw only ${item.name}`"
+                    @click="$emit('solo', solo === item.key ? '' : item.key)">S</button>
+            <span class="lm-order">
+              <button :disabled="i === 0" title="Send to the top"
+                      @click="$emit('move', item.key, 'top')">⤒</button>
+              <button :disabled="i === 0" title="Move up" @click="$emit('move', item.key, -1)">▲</button>
+              <button :disabled="i === activeList.length - 1" title="Move down"
+                      @click="$emit('move', item.key, 1)">▼</button>
+              <button :disabled="i === activeList.length - 1" title="Send to the bottom"
+                      @click="$emit('move', item.key, 'bottom')">⤓</button>
             </span>
           </div>
-          <label class=”lm-op”>
-            <span class=”lm-op-label”>{{ Math.round(opacityOf(item.key) * 100) }}%</span>
-            <input type=”range” min=”0.05” max=”1” step=”0.05” :value=”opacityOf(item.key)”
-                   :aria-label=”`Opacity of ${item.name}`”
-                   @input=”$emit('opacity', item.key, Number($event.target.value))” />
+          <label class="lm-op">
+            <span class="lm-op-label">{{ Math.round(opacityOf(item.key) * 100) }}%</span>
+            <input type="range" min="0.05" max="1" step="0.05" :value="opacityOf(item.key)"
+                   :aria-label="`Opacity of ${item.name}`"
+                   @input="$emit('opacity', item.key, Number($event.target.value))" />
           </label>
-          <div class=”lm-blend-wrapper”>
-            <button class=”lm-advanced-toggle” @click=”toggleBlend(item.key)”
-                    :aria-expanded=”String(expandedBlends.has(item.key))”>
-              <span class=”lm-caret” :class=”{ open: expandedBlends.has(item.key) }” aria-hidden=”true”>▸</span>
+          <div class="lm-blend-wrapper">
+            <button class="lm-advanced-toggle" @click="toggleBlend(item.key)"
+                    :aria-expanded="String(expandedBlends.has(item.key))">
+              <span class="lm-caret" :class="{ open: expandedBlends.has(item.key) }" aria-hidden="true">▸</span>
               Advanced
             </button>
-            <div v-show=”expandedBlends.has(item.key)” class=”lm-blend-controls”>
-              <label class=”lm-blend”>
-                <span class=”lm-blend-label”>Blend</span>
-                <select :value=”blendOf(item.key)” :aria-label=”`Blend mode of ${item.name}`”
-                        :title=”blendNote(blendOf(item.key))”
-                        @change=”$emit('blend', item.key, $event.target.value)”>
-                  <option value=””>{{ inheritLabel }}</option>
-                  <option v-for=”m in BLEND_MODES” :key=”m.key” :value=”m.key” :title=”m.note”>
+            <div v-show="expandedBlends.has(item.key)" class="lm-blend-controls">
+              <label class="lm-blend">
+                <span class="lm-blend-label">Blend</span>
+                <select :value="blendOf(item.key)" :aria-label="`Blend mode of ${item.name}`"
+                        :title="blendNote(blendOf(item.key))"
+                        @change="$emit('blend', item.key, $event.target.value)">
+                  <option value="">{{ inheritLabel }}</option>
+                  <option v-for="m in BLEND_MODES" :key="m.key" :value="m.key" :title="m.note">
                     {{ m.label }}
                   </option>
                 </select>
@@ -99,46 +99,46 @@
     </section>
 
     <!-- Browse / layer selector tab -->
-    <section v-show=”activeTab === 'browse'” class=”lm-selection lm-tab-panel” role=”tabpanel”>
-      <div class=”lm-search”>
-        <input v-model=”query” type=”search” placeholder=”Search layers”
-               aria-label=”Search layers” />
+    <section v-show="activeTab === 'browse'" class="lm-selection lm-tab-panel" role="tabpanel">
+      <div class="lm-search">
+        <input v-model="query" type="search" placeholder="Search layers"
+               aria-label="Search layers" />
       </div>
 
-    <div class=”lm-groupby” role=”group” aria-label=”Group layers by”>
-      <span class=”lm-groupby-label”>Group by</span>
-      <div class=”lm-seg”>
-        <button v-for=”m in GROUP_MODES” :key=”m.key” type=”button”
-                class=”lm-seg-btn” :class=”{ on: groupMode === m.key }”
-                :aria-pressed=”groupMode === m.key” @click=”setGroupMode(m.key)”>
+    <div class="lm-groupby" role="group" aria-label="Group layers by">
+      <span class="lm-groupby-label">Group by</span>
+      <div class="lm-seg">
+        <button v-for="m in GROUP_MODES" :key="m.key" type="button"
+                class="lm-seg-btn" :class="{ on: groupMode === m.key }"
+                :aria-pressed="groupMode === m.key" @click="setGroupMode(m.key)">
           {{ m.label }}
         </button>
       </div>
     </div>
 
-    <div class=”lm-body”>
-      <p v-if=”!filtered.length” class=”lm-empty”>
-        Nothing matches “{{ query }}”.
+    <div class="lm-body">
+      <p v-if="!filtered.length" class="lm-empty">
+        Nothing matches "{{ query }}".
       </p>
 
-      <section v-for=”g in filtered” :key=”g.label” class=”lm-group”>
-        <button type=”button” class=”lm-group-head” :aria-expanded=”isOpen(g.label)”
-                @click=”togglePanel(g.label)”>
-          <span class=”lm-caret” :class=”{ open: isOpen(g.label) }” aria-hidden=”true”>▸</span>
-          <span class=”lm-group-label”>{{ g.label }}</span>
-          <span class=”lm-group-meta”>
-            <span v-if=”activeCount(g)” class=”lm-group-on”>{{ activeCount(g) }} on</span>
-            <span class=”lm-group-total”>{{ g.items.length }}</span>
+      <section v-for="g in filtered" :key="g.label" class="lm-group">
+        <button type="button" class="lm-group-head" :aria-expanded="isOpen(g.label)"
+                @click="togglePanel(g.label)">
+          <span class="lm-caret" :class="{ open: isOpen(g.label) }" aria-hidden="true">▸</span>
+          <span class="lm-group-label">{{ g.label }}</span>
+          <span class="lm-group-meta">
+            <span v-if="activeCount(g)" class="lm-group-on">{{ activeCount(g) }} on</span>
+            <span class="lm-group-total">{{ g.items.length }}</span>
           </span>
         </button>
-        <div v-show=”isOpen(g.label)” class=”lm-group-items”>
-          <label v-for=”o in g.items” :key=”o.key” class=”lm-row” :class=”{ on: active.has(o.key) }”>
-            <input type=”checkbox” :checked=”active.has(o.key)” @change=”$emit('toggle', o.key)” />
-            <span class=”lm-row-main”>
-              <span class=”lm-row-name”>{{ o.name }}</span>
-              <span v-if=”eeLoading.has(o.key)” class=”lm-ee-spinner” aria-label=”Rendering…” title=”Rendering layer…”></span>
-              <em v-if=”o.tier && o.tier !== 'free'” class=”lm-tier”>{{ o.tier }}</em>
-              <small v-if=”o.note” class=”lm-note”>{{ o.note }}</small>
+        <div v-show="isOpen(g.label)" class="lm-group-items">
+          <label v-for="o in g.items" :key="o.key" class="lm-row" :class="{ on: active.has(o.key) }">
+            <input type="checkbox" :checked="active.has(o.key)" @change="$emit('toggle', o.key)" />
+            <span class="lm-row-main">
+              <span class="lm-row-name">{{ o.name }}</span>
+              <span v-if="eeLoading.has(o.key)" class="lm-ee-spinner" aria-label="Rendering…" title="Rendering layer…"></span>
+              <em v-if="o.tier && o.tier !== 'free'" class="lm-tier">{{ o.tier }}</em>
+              <small v-if="o.note" class="lm-note">{{ o.note }}</small>
             </span>
           </label>
         </div>

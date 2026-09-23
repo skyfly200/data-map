@@ -12,7 +12,7 @@ export async function uploadJson(path, obj, contentType = 'application/geo+json'
     contentType, upsert: true,
   })
   if (error) throw error
-  return path
+  return body
 }
 
 export async function readJson(path) {

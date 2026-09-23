@@ -296,9 +296,9 @@ async function remove(area) {
   note.value = ''
   // Confirmed because it is not undoable and the thing being lost is the
   // reason someone drove somewhere with a phone.
-  if (!window.confirm(`Delete “${area.name}”? Tiles another saved area still needs are kept.`)) return
+  if (!window.confirm(`Delete "${area.name}"? Tiles another saved area still needs are kept.`)) return
   await offline.deleteArea(area.id)
-  note.value = `“${area.name}” deleted.`
+  note.value = `"${area.name}" deleted.`
 }
 
 async function doSaveShell() {

@@ -451,7 +451,7 @@ async function saveLayer() {
       method: 'POST',
       body: JSON.stringify({ action: 'save-layer', ...draftLayer }),
     })
-    note.value = draftLayer.id ? 'Layer saved.' : 'Layer added. It appears in the map’s layer picker.'
+    note.value = draftLayer.id ? 'Layer saved.' : "Layer added. It appears in the map's layer picker."
     resetLayer()
     await show('layers')
   } catch (e) {
@@ -462,7 +462,7 @@ async function saveLayer() {
 }
 
 async function removeLayer(l) {
-  if (!confirm(`Remove the layer “${l.name}”?`)) return
+  if (!confirm(`Remove the layer "${l.name}"?`)) return
   error.value = ''
   try {
     await call('/.netlify/functions/admin-members', {
@@ -603,7 +603,7 @@ async function setVisibility(d, visibility) {
 }
 
 async function removeDataset(d) {
-  if (!confirm(`Remove “${d.title}” from the dataset list?`)) return
+  if (!confirm(`Remove "${d.title}" from the dataset list?`)) return
   error.value = ''
   try {
     await call('/.netlify/functions/admin-members', {

@@ -46,7 +46,7 @@
 
       <div v-if="layout.editing.value && layout.hiddenCharts.value.length" class="hidden-bar">
         <span class="hb-label">Hidden:</span>
-        <button v-for="h in layout.hiddenCharts.value" :key="h.id" class="hb-chip" :title="`Show “${h.title}”`"
+        <button v-for="h in layout.hiddenCharts.value" :key="h.id" class="hb-chip" :title="`Show '${h.title}'`"
                 @click="layout.show(h.id)">
           {{ h.title }} <span class="plus">+</span>
         </button>
@@ -81,7 +81,7 @@
               <span class="grip" title="Drag to rearrange" aria-hidden="true">⠿</span>
               <button title="Move left" :disabled="i === 0" @click="saved.move(chart.id, -1)">‹</button>
               <button title="Move right" :disabled="i === saved.charts.value.length - 1" @click="saved.move(chart.id, 1)">›</button>
-              <button :title="`Open “${chartName(chart)}” in the chart builder`"
+              <button :title="`Open '${chartName(chart)}' in the chart builder`"
                       :aria-label="`Edit ${chartName(chart)}`" @click="editChart(chart.id)">✎</button>
               <ShareMenu compact :title="chartName(chart)" path="/charts"
                          :extra="{ tab: 'build', cfg: encodeChartConfig(chart) }"
@@ -100,7 +100,7 @@
     <div class="grid">
       <GalleryChart id="clusters">
         <BarChart title="Observations per environmental cluster" :data="clusterData" :format="int" />
-        <p class="note">Colors match the map. “Unclustered” = missing every clustering feature.</p>
+        <p class="note">Colors match the map. "Unclustered" = missing every clustering feature.</p>
       </GalleryChart>
 
       <GalleryChart id="rain-leadup">

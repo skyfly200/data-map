@@ -201,7 +201,7 @@ async function renderCustom(request, key) {
   if (!layer) return json({ ok: false, error: 'That layer no longer exists.' }, 404)
 
   const auth = await requireTier(request, layer.tier, {
-    message: `“${layer.name}” is a members' layer.`,
+    message: `"${layer.name}" is a members' layer.`,
   })
   if (!auth.ok) return auth.response
 
@@ -240,7 +240,7 @@ async function renderCustom(request, key) {
     const detail = String(err?.message || err).slice(0, 300)
     return json({
       ok: false,
-      error: `Earth Engine could not render “${layer.name}”: ${detail}`,
+      error: `Earth Engine could not render "${layer.name}": ${detail}`,
       hint: 'Check the asset ID, that the service account has read access to it, '
         + 'and that a band is named if the asset has more than one.',
       layer: key,
@@ -263,13 +263,13 @@ async function renderCustom(request, key) {
 async function classTable(request, key) {
   const layer = EE_TILE_LAYERS[key]
   if (!layer?.prepare) {
-    return json({ ok: false, error: `“${key}” has no class table.` }, 404)
+    return json({ ok: false, error: `"${key}" has no class table.` }, 404)
   }
 
   // Same gate as rendering it. The names are not a secret, but asking for them
   // spends an Earth Engine call on a cold cache.
   const auth = await requireTier(request, tierFor(key), {
-    message: `“${layer.name}” is a members' layer.`,
+    message: `"${layer.name}" is a members' layer.`,
   })
   if (!auth.ok) return auth.response
 
@@ -294,7 +294,7 @@ async function classTable(request, key) {
     })
   } catch (err) {
     const detail = String(err?.message || err).slice(0, 300)
-    return json({ ok: false, error: `Could not read the classes of “${layer.name}”: ${detail}` }, 502)
+    return json({ ok: false, error: `Could not read the classes of "${layer.name}": ${detail}` }, 502)
   }
 }
 
@@ -339,7 +339,7 @@ export default async function handler(request) {
   // while the layers that spend real compute per tile are what membership buys.
   // See DEFAULT_TIER in ../lib/ee-tile-layers.mjs.
   const auth = await requireTier(request, tierFor(key), {
-    message: `“${describeLayer(key)?.name || key}” is a members' layer. `
+    message: `"${describeLayer(key)?.name || key}" is a members' layer. `
       + 'Years since fire and burn severity are open to everyone.',
   })
   if (!auth.ok) return auth.response
@@ -428,7 +428,7 @@ export default async function handler(request) {
     const detail = String(err?.message || err).slice(0, 300)
     return json({
       ok: false,
-      error: `Earth Engine could not render “${layer.name}”: ${detail}`,
+      error: `Earth Engine could not render "${layer.name}": ${detail}`,
       layer: key,
       params,
     }, 502)

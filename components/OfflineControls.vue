@@ -228,8 +228,8 @@ async function saveArea() {
   if (!res) return
   areaName.value = ''
   lastResult.value = res.failed
-    ? `Saved ${(res.done - res.failed).toLocaleString()} of ${res.total.toLocaleString()} tiles for “${res.area.name}”; the rest could not be reached.`
-    : `“${res.area.name}” saved — ${res.done.toLocaleString()} tiles.`
+    ? `Saved ${(res.done - res.failed).toLocaleString()} of ${res.total.toLocaleString()} tiles for "${res.area.name}"; the rest could not be reached.`
+    : `"${res.area.name}" saved — ${res.done.toLocaleString()} tiles.`
 }
 
 async function clearAll() {
