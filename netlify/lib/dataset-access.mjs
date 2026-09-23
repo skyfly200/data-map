@@ -103,7 +103,7 @@ export async function resolveDataset({ client, slug, viewer }) {
   // Same error for absent and forbidden. See the note at the top of the file:
   // telling them apart is a way to enumerate other members' dataset names.
   const refuse = () => {
-    throw new DatasetAccessError(`No dataset named “${slug}” is available to you.`,
+    throw new DatasetAccessError(`No dataset named "${slug}" is available to you.`,
       { status: 404, code: 'no_dataset' })
   }
 

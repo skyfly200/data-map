@@ -81,7 +81,7 @@ export function normaliseEmail(raw) {
   const email = String(raw ?? '').trim().toLowerCase()
   if (!email) throw new MembershipError('An email address is required.', 'no_email')
   if (email.length > 320 || !EMAIL.test(email)) {
-    throw new MembershipError(`“${raw}” is not an email address.`, 'bad_email')
+    throw new MembershipError(`"${raw}" is not an email address.`, 'bad_email')
   }
   return email
 }
@@ -105,9 +105,9 @@ export function normaliseGrant(input = {}) {
   const email = normaliseEmail(input.email)
 
   const tier = input.tier === undefined || input.tier === '' ? 'member' : String(input.tier)
-  if (!TIERS.includes(tier)) throw new MembershipError(`Unknown tier “${tier}”.`, 'bad_tier')
+  if (!TIERS.includes(tier)) throw new MembershipError(`Unknown tier "${tier}".`, 'bad_tier')
   if (tier === 'free') {
-    throw new MembershipError('Use revoke to remove a membership, not a grant of “free”.', 'bad_tier')
+    throw new MembershipError('Use revoke to remove a membership, not a grant of "free".', 'bad_tier')
   }
 
   const hasMonths = input.months !== undefined && input.months !== null && input.months !== ''

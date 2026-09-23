@@ -1183,7 +1183,7 @@ export const EE_TILE_LAYERS = {
     palette: NDVI_PALETTE,
     note: 'The same NDVI, but a median over one season of one year rather than the last few weeks, '
       + 'so a dry summer can be set beside a wet one at the same point in the year. Computed from '
-      + 'raw Sentinel-2 as you look, which is why it is a members’ layer.',
+      + 'raw Sentinel-2 as you look, which is why it is a members' layer.',
   }),
 
   'ndmi-seasonal': seasonalIndexLayer({
@@ -1566,7 +1566,7 @@ export const EE_TILE_LAYERS = {
     // Ocean is masked in the source and every land pixel is a real estimate.
     sourceMasked: true,
     note: 'Volumetric water the soil holds at field capacity (33 kPa suction), 250 m, global, at the '
-      + 'chosen depth. This is capacity, not today’s moisture: how much water the ground can retain '
+      + 'chosen depth. This is capacity, not today's moisture: how much water the ground can retain '
       + 'after it drains, which is what keeps a site damp between rains. Deeper blue holds more. A '
       + 'modelled property of the soil, so it does not change with the weather.',
     params: {
@@ -1894,7 +1894,7 @@ export function tierFor(key) {
 /** A layer and its validated parameters, or a LayerError saying what is wrong. */
 export function resolveLayer(key, input = {}) {
   const layer = EE_TILE_LAYERS[key]
-  if (!layer) throw new LayerError(`Unknown layer “${key}”.`)
+  if (!layer) throw new LayerError(`Unknown layer "${key}".`)
   const params = readParams(layer.params || {}, input)
   return { key, layer, params }
 }

@@ -33,7 +33,7 @@ export const BLEND_MODES: BlendMode[] = [
   { key: 'darken', label: 'Darken', note: 'The darker of the two, channel by channel.' },
   { key: 'lighten', label: 'Lighten', note: 'The lighter of the two, channel by channel.' },
   { key: 'difference', label: 'Difference', note: 'What the two disagree and opposite.' },
-  { key: 'luminosity', label: 'Luminosity', note: 'This layer’s brightness, the colour below.' },
+  { key: 'luminosity', label: 'Luminosity', note: 'This layer's brightness, the colour below.' },
 ]
 
 const KEYS = BLEND_MODES.map((m) => m.key)

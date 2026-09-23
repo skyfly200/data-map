@@ -66,7 +66,7 @@ export function validateAssetId(raw) {
     if (part.length > MAX_SEGMENT_LEN) throw new CustomLayerError('One part of that asset ID is too long.')
     if (!SEGMENT.test(part)) {
       throw new CustomLayerError(
-        `“${part}” is not a valid part of an asset ID. Use letters, digits, dot, dash and underscore.`,
+        `"${part}" is not a valid part of an asset ID. Use letters, digits, dot, dash and underscore.`,
       )
     }
   }
@@ -106,7 +106,7 @@ export function validatePalette(raw) {
     // Earth Engine takes bare hex without the hash; the hash is accepted here
     // because that is how every palette is written everywhere else.
     const withHash = s.startsWith('#') ? s : `#${s}`
-    if (!HEX.test(withHash)) throw new CustomLayerError(`“${s}” is not a 6-digit hex color.`)
+    if (!HEX.test(withHash)) throw new CustomLayerError(`"${s}" is not a 6-digit hex color.`)
     return withHash.toLowerCase()
   })
   if (colors.length > 32) throw new CustomLayerError('A palette of more than 32 colors is not readable.')

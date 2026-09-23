@@ -135,19 +135,19 @@ async function fetchOne(q) {
   try {
     res = await fetch(`/.netlify/functions/fetch-species?${scope.toString()}`, { headers })
   } catch {
-    throw new Error('couldn’t reach the fetch function, it only runs on the deployed site.')
+    throw new Error('couldn't reach the fetch function, it only runs on the deployed site.')
   }
 
   if (res.status === 401) {
     let detail = ''
     try { detail = (await res.json())?.error || '' } catch { /* ignore */ }
     if (!token) {
-      throw new Error('the server requires sign-in, but the app couldn’t read your session. '
+      throw new Error('the server requires sign-in, but the app couldn't read your session. '
         + 'Make sure NUXT_PUBLIC_SUPABASE_URL and NUXT_PUBLIC_SUPABASE_ANON_KEY are set (and redeploy), then sign in again.')
     }
-    throw new Error('you’re signed in, but the server rejected the session. '
-      + 'This usually means the function’s SUPABASE_URL / SUPABASE_ANON_KEY point at a different project (or wrong key) '
-      + 'than the app’s NUXT_PUBLIC_SUPABASE_*, line those up and redeploy. '
+    throw new Error('you're signed in, but the server rejected the session. '
+      + 'This usually means the function's SUPABASE_URL / SUPABASE_ANON_KEY point at a different project (or wrong key) '
+      + 'than the app's NUXT_PUBLIC_SUPABASE_*, line those up and redeploy. '
       + (detail ? `(server: ${detail})` : ''))
   }
   if (!res.ok) throw new Error(`server returned ${res.status}.`)
@@ -225,7 +225,7 @@ async function fetchNew() {
     newSpecies.value = ''
   } catch (e) {
     fetchOk.value = false
-    fetchMsg.value = `Couldn’t fetch, ${e.message}`
+    fetchMsg.value = `Couldn't fetch, ${e.message}`
   } finally {
     stopTimer()
     fetching.value = false

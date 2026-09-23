@@ -86,7 +86,7 @@ async function download(client, viewer, slug) {
   const row = await resolveDataset({ client, slug, viewer })
   const data = await readJson(row.path)
   if (!data) {
-    throw new DatasetAccessError(`“${row.slug}” is registered but its file could not be read.`,
+    throw new DatasetAccessError(`"${row.slug}" is registered but its file could not be read.`,
       { status: 500, code: 'no_file' })
   }
   return json({ ok: true, dataset: row, geojson: data })
@@ -316,7 +316,7 @@ export default async function handler(request) {
       default:
         return json({
           ok: false,
-          error: `Unknown action “${body.action ?? ''}”.`,
+          error: `Unknown action "${body.action ?? ''}".`,
           actions: ['save', 'update', 'delete', 'import_asset'],
           note: `Datasets are ${DEFAULT_VISIBILITY} unless you say otherwise.`,
         }, 400)
