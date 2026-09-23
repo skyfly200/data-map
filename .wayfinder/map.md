@@ -22,6 +22,7 @@ Standing preferences:
 
 ## Decisions so far
 
+- [VDEBT-1: Diagnose EE layer rendering against the real API](.wayfinder/tickets/001-vdebt1-research.md): 4 confirmed code breaks found: bare FIRMS asset ID, WorldCover used as Image not Collection, CANOPY_PCT band name mismatch, fc.toList().getRegion() wrong API. TREEMAP private-path flagged as high-risk.
 - [ISSUE-1: Fix LayerManager state persistence on mobile Safari](.wayfinder/tickets/002-issue1-mobile-safari.md): Persisted `activeOverlays`, `overlayOrder`, `layerOpacity` to `localStorage` under `map-overlay-state`; restore on mount for static layers, per-layer for async EE layers.
 - [VDEBT-1: Apply EE layer fixes from diagnosis](.wayfinder/tickets/007-vdebt1-fix.md): Fixed 4 confirmed breaks — WorldCover as Image not Collection, CANOPY_PCT→CANOPYPCT band name, getRegion on EE List in ee-assets, bare 'FIRMS' asset ID. TREEMAP private-path access still needs live verification.
 - [PERF-4: Debounce map coloring watch](.wayfinder/tickets/003-perf4-coloring-debounce.md): 40ms debounce on the `eachLayer` restyle watch; rapid filter changes now collapse to one pass.
@@ -32,9 +33,7 @@ Standing preferences:
 
 ## Not yet specified
 
-- Whether VDEBT-1 reveals code defects (wrong band names / asset IDs) or just needs credentials wired correctly — diagnosis gates the fix scope and may reshape ticket 007.
-- Whether WANT-11 needs a new composable or extends `useEeJobs` — depends on job result shape surfaced by VDEBT-1 research and the grilling in ticket 005.
-- Scope of charts perf work (ticket 008): if Thursday is reachable with time to spare.
+_All fog cleared. The way to the destination is now fully specified and all tickets are closed._
 
 ## Out of scope
 

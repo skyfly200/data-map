@@ -1,6 +1,6 @@
 ---
 label: wayfinder:research
-status: open
+status: closed
 ---
 
 # VDEBT-1: Diagnose EE layer rendering against the real API
