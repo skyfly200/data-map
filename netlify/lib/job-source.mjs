@@ -99,7 +99,7 @@ export async function loadSource(source, { client = null, viewer = null, read = 
       // Distinct from "no such dataset" because the fix is different and this
       // one is ours, not theirs.
       throw new DatasetAccessError(
-        `Dataset “${row.slug}” is registered but its file could not be read.`,
+        `Dataset "${row.slug}" is registered but its file could not be read.`,
         { status: 500, code: 'no_file' })
     }
     return data.features || []
@@ -142,7 +142,7 @@ export function explainEmpty(source = {}, breakdown = null) {
       + 'against. That is a fault on our side rather than in what you asked for.'
   }
   if (!breakdown.inBounds) {
-    return 'No observations fall inside that area. Try “Use the current map view” with the map '
+    return 'No observations fall inside that area. Try "Use the current map view" with the map '
       + 'over somewhere the points are.'
   }
   if (!breakdown.inDates) {
@@ -152,6 +152,6 @@ export function explainEmpty(source = {}, breakdown = null) {
       + `between ${from} and ${to}. Widen the date range.`
   }
   return `${n(breakdown.inDates)} observations are in that area and date range, but none of them `
-    + `match the taxon “${source.taxon}”. Clear the taxon to enrich all of them, or pick one the `
+    + `match the taxon "${source.taxon}". Clear the taxon to enrich all of them, or pick one the `
     + 'dataset actually carries.'
 }

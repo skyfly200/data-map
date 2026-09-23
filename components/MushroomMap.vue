@@ -439,21 +439,22 @@
 
 <script setup>
 // Leaflet CSS is loaded dynamically on mount so it does not bloat non-map routes.
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { hasValue, useObservations } from '~/composables/useObservations'
-import { PALETTE, UNCLUSTERED, categoryColor, colorFor } from '~/composables/useAppearance'
-import { classColorFor, fraction, matchNote, paletteFor } from '~/composables/fieldPalettes'
-import { gradientCss, normaliseStops, rampColor } from '~/composables/ramps'
-import { drawnKeys, effectiveBlend, reorderStack } from '~/composables/blendModes'
-import { normaliseCodes } from '~/netlify/lib/ee-tile-layers.mjs'
-import { RAMP_PRESETS } from '~/composables/useMapHeatmaps'
-import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
-import { coverageNote } from '~/composables/fieldCoverage'
-import { fieldValue } from '~/composables/statistics'
+import { gradientCss } from '~/composables/ramps'
 import { useAppearance } from '~/composables/useAppearance'
-import { useUnits } from '~/composables/useUnits'
 import { useGlossary } from '~/composables/useGlossary'
 import GlossaryTooltip from '~/components/GlossaryTooltip.vue'
+import { useMapPointStyle, FIELD_LABEL, fmtNum } from '~/composables/useMapPointStyle'
+import { useMapPin } from '~/composables/useMapPin'
+import { useMapLayerManager } from '~/composables/useMapLayerManager'
+import { useMapTileDate, MAP_MAX_ZOOM } from '~/composables/useMapTileDate'
+import { useMapModelOverlay } from '~/composables/useMapModelOverlay'
+import { useMapHeatmapRenderer } from '~/composables/useMapHeatmapRenderer'
+import { useMapSelection } from '~/composables/useMapSelection'
+import { useMapLocate } from '~/composables/useMapLocate'
+import { setupReferenceTileLayers } from '~/composables/useMapRefTileLayers'
+import { setupElevBandLayer } from '~/composables/useMapElevBandLayer'
 
 const { define: g } = useGlossary()
 
@@ -470,27 +471,22 @@ const live = useLiveClusters()
 // that already filled the width of the screen.
 const { compact } = useCompactMap()
 const appearance = useAppearance()
-// How stacked layers combine when nobody has set a layer by hand. A preference,
-// so it is read from Appearance rather than kept here.
 const { stackBlend } = appearance
-
-/**
- * The ramp the viewer has chosen for numeric point colouring, or null for
- * "whatever suits the field".
- *
- * Null is the default and means the field decides: one a layer also draws
- * borrows that layer's palette, anything else takes the app's own ramp.
- */
-const chosenPointRamp = computed(() => {
-  const key = appearance.pointRampKey.value
-  if (key === 'auto') return null
-  if (key === 'custom') return normaliseStops(appearance.pointRampCustom.value)
-  return RAMP_PRESETS.find((p) => p.key === key)?.ramp || null
-})
 const share = useShareState()
-const { pointRadius, pointOpacity, pointOutline, colorSeed, activeColors, colorOverrides } = appearance
+
+const {
+  colorBy, sizeBy, hoverValue,
+  colorOptions, colorCoverageNote, coloring, legendValues, sizeScale,
+  radiusFor, markerStyle,
+  hoverEnter, hoverLeave, pickValue,
+  pointRadius, pointOpacity, pointOutline, colorSeed, activeColors, colorOverrides,
+} = useMapPointStyle({ filteredData, live })
 
 const mapEl = ref(null)
+const mapRef = shallowRef(null)
+const LRef = shallowRef(null)
+// The active GeoJSON point layer; shared between heatmap renderer and point-style watch.
+const geoLayerRef = shallowRef(null)
 
 // Leaflet parks its own controls in the map's corners, and on a phone the
 // control bar is tall enough (three wrapped rows, more with the season sliders
@@ -515,132 +511,23 @@ function trackControlsHeight() {
 }
 const loaded = ref(false)
 const loadError = ref('')
-// Remember the "Color by" dimension per viewer.
-const COLORBY_KEY = 'map-color-by'
-const colorBy = ref('cluster')
-if (import.meta.client) {
-  const saved = localStorage.getItem(COLORBY_KEY)
-  if (saved) colorBy.value = saved
-}
-watch(colorBy, (v) => { if (import.meta.client) localStorage.setItem(COLORBY_KEY, v) })
-// Remember the "Size by" dimension per viewer.
-const SIZEBY_KEY = 'map-size-by'
-const sizeBy = ref('')
-if (import.meta.client) {
-  const saved = localStorage.getItem(SIZEBY_KEY)
-  if (saved !== null) sizeBy.value = saved
-}
-watch(sizeBy, (v) => { if (import.meta.client) localStorage.setItem(SIZEBY_KEY, v) })
-const selected = ref(null)
-const selectedLatLng = ref(null)
 // The locate button lives in a Leaflet control rather than the Vue template, so
 // its busy state is applied by hand. One class on one element is a smaller cost
 // than teleporting a component into a control container.
-let locateBtn = null
-const locating = ref(false)
-const locateError = ref('')
-watch(locating, (v) => { if (locateBtn) locateBtn.classList.toggle('busy', v) })
-watch(locateError, (msg) => { if (locateBtn && msg) locateBtn.title = msg })
-let map, geoLayer, L, userLayer, selectedMarker
+let map, L
+const { locating, locateError, setLocateBtn, locateMe } = useMapLocate({ mapRef, LRef })
+// mapRef and LRef are set in onMounted so composables can reactively access them
 
 // Holds enriched observation info (photos, description, etc.) fetched from iNaturalist API
 
 // ─── Heatmaps ─────────────────────────────────────────────────────────────────
-// Grid summaries computed from the observations and drawn under the points:
-// density, species richness, seasonal activity, an in-season hotspot score,
-// the most common species and land cover, and a cell mean of any enriched
-// field — rainfall, soil moisture, NDVI, slope, aspect, TWI, sun and wind
-// exposure. See composables/useMapHeatmaps.js for what each one means.
-const heatmaps = useMapHeatmaps()
 const {
-  mode: heatmapMode, cellSize: heatmapCell, cellShape, seasonDay, seasonWindow,
-  activeMode: heatmapMeta, groupedModes, heatmapOpacity, tileOpacity, CELL_SIZES,
-} = heatmaps
-let heatmapLayer = null
-
-const heatmapResult = computed(() =>
-  heatmaps.computeHeatmap(filteredData.value?.features || [], heatmapMode.value))
-const heatmapLegend = computed(() => heatmapResult.value.legend)
-
-/**
- * Why a heatmap came out empty, distinguishing the three reasons.
- *
- * "Not in the data yet" is by far the most common and the least guessable: the
- * pipeline's NDVI and vegetation-moisture stages have not populated the shipped
- * dataset, so those modes have nothing to draw however far you zoom. Saying
- * that is the difference between a known gap and an apparently broken feature.
- */
-const emptyHeatmapReason = computed(() => {
-  const field = heatmapMeta.value?.field
-  const feats = filteredData.value?.features || []
-  if (!feats.length) return 'No observations match the current filters.'
-  if (!field) return 'Nothing to show for the current filters.'
-
-  const present = feats.some((f) => Number.isFinite(fieldValue(f.properties || {}, field)))
-  if (!present) {
-    // Label as written, not lowercased: NDVI and TWI are acronyms and "no ndvi
-    // values" reads like a typo.
-    return `No ${heatmapMeta.value.label} values in this dataset. `
-      + 'The pipeline has not filled this column in yet, so it will stay blank until it is re-run.'
-  }
-  return 'No cells at this zoom. Zoom in, or widen the filters.'
-})
-
-/**
- * One arrow for a vector cell: a shaft plus two barbs, as canvas polylines.
- *
- * Directions are in compass space (dx east, dy north), so the shaft is drawn in
- * degrees with the longitude step divided by cos(lat) — otherwise every arrow
- * would skew east as you move away from the equator.
- */
-function arrowFor(c) {
-  const span = (c.lat1 - c.lat0) * 0.42          // keep arrows inside their cell
-  const len = span * (0.35 + 0.65 * (c.t ?? 0.5))
-  const kx = 1 / Math.max(0.2, Math.cos((c.lat * Math.PI) / 180))
-  const tipLat = c.lat + c.dy * len
-  const tipLon = c.lon + c.dx * len * kx
-  const tailLat = c.lat - c.dy * len
-  const tailLon = c.lon - c.dx * len * kx
-
-  // Barbs at ±150° from the shaft direction, a third of its length.
-  const barb = len * 0.38
-  const head = (deg) => {
-    const a = Math.atan2(c.dx, c.dy) + (deg * Math.PI) / 180
-    return [tipLat - Math.cos(a) * barb, tipLon - Math.sin(a) * barb * kx]
-  }
-  const style = { color: c.color, weight: 1.6, opacity: 0.9, interactive: false }
-  return [
-    L.polyline([[tailLat, tailLon], [tipLat, tipLon]], style),
-    L.polyline([head(-28), [tipLat, tipLon], head(28)], style),
-  ]
-}
-
-function renderHeatmap() {
-  if (!map || !L) return
-  if (heatmapLayer) { heatmapLayer.remove(); heatmapLayer = null }
-  const { cells } = heatmapResult.value
-  if (!cells.length) return
-
-  const shapes = heatmapResult.value.legend?.type === 'vector'
-    ? cells.flatMap((c) => arrowFor(c))
-    // Polygons go through the map's canvas renderer, so a few thousand cells
-    // cost one canvas rather than a few thousand DOM nodes. The grid hands over
-    // an outline whichever shape it is binning into, so this does not care.
-    : cells.map((c) => L.polygon(c.polygon, {
-      stroke: false, fillColor: c.color, fillOpacity: heatmapOpacity.value, interactive: false,
-    }))
-
-  heatmapLayer = L.layerGroup(shapes)
-  heatmapLayer.addTo(map)
-  // Keep the observation points on top of the shading.
-  if (geoLayer) geoLayer.bringToFront()
-}
-
-watch(heatmapResult, () => renderHeatmap())
-// Opacity is a redraw rather than a recompute: the cells are unchanged, only
-// how hard they sit on the basemap.
-watch(heatmapOpacity, () => renderHeatmap())
-watch([heatmapMode, heatmapCell, cellShape, seasonDay, seasonWindow], () => heatmaps.persist())
+  heatmaps,
+  heatmapMode, heatmapCell, cellShape, seasonDay, seasonWindow,
+  heatmapMeta, groupedModes, heatmapOpacity, tileOpacity, CELL_SIZES,
+  heatmapResult, heatmapLegend, emptyHeatmapReason,
+  renderHeatmap, heatmapCellIndex, heatmapCellAt,
+} = useMapHeatmapRenderer({ mapRef, LRef, geoLayerRef, filteredData })
 
 // ─── Reference tile layers ────────────────────────────────────────────────────
 // Public raster services stacked over the basemap — relief, rainfall, land
@@ -651,303 +538,32 @@ watch([heatmapMode, heatmapCell, cellShape, seasonDay, seasonWindow], () => heat
 // observations themselves. A layer covers the whole map because somebody else
 // measured it everywhere; a heatmap covers only where people have looked.
 
-// How far in the map will go. Every tile layer is given this as its maxZoom
-// and its own tile ceiling as maxNativeZoom, so the map's limit is a decision
-// made here rather than an accident of whichever basemap happens to be on.
-//
-// 19 is roughly individual-tree scale, which is the scale a foray is planned
-// at: "the north side of that draw" is a question about tens of metres. Past
-// its native level a layer is upscaled, and upscaleNote below says so.
-const MAP_MAX_ZOOM = 19
+// When focusing an observation, the next re-render must not refit/clear it.
+// Leaflet owns the centre and zoom, so they are mirrored into a ref for the
+// share link rather than read out of shared state.
+const mapView = ref(null)
 
-/**
- * Warn when a visible layer has run out of real tiles.
- *
- * Leaflet upscales past maxNativeZoom, which is what keeps these layers on
- * screen at all — but an upscaled tile looks like a measurement at that scale
- * and is not one. Rainfall sampled at 10 km does not resolve to 30 m because
- * the map was zoomed; it just gets blockier.
- */
-function upscaleNote(n) {
-  const zoom = mapView.value?.zoom
-  if (!n?.native || !Number.isFinite(zoom) || zoom <= n.native) return ''
-  return `Zoomed past this layer's detail — the tiles are stretched from zoom ${n.native}, not resolved finer.`
-}
-
-// Which day the time-varying layers draw. Defaults to the shortest lag in the
-// catalogue, so switching one on lands on a date that exists rather than on
-// today, which for an 8-day composite is always blank.
-const DEFAULT_LAG = Math.min(...TILE_LAYERS.filter((l) => l.time).map((l) => l.lag ?? 1))
-const tileDate = ref(layerDate(DEFAULT_LAG))
-// Nothing is published for tomorrow, so the picker will not offer it.
-const maxTileDate = layerDate(0)
-
-// Reference layers that could not be reached. Shown rather than swallowed:
-// an empty ownership layer reads as "no public land here".
-// The season sliders collapse by default: their summary says what they are set
-// to, so the bar stays one row until you actually want to move them.
-// Whether the map key is folded away. Remembered, because it is a standing
-// preference about screen space rather than a per-visit decision.
-const KEY_COLLAPSED = 'map-key-collapsed'
-const keyCollapsed = ref(false)
-function setKeyCollapsed(v) {
-  keyCollapsed.value = v
-  try { localStorage.setItem(KEY_COLLAPSED, v ? '1' : '0') } catch { /* private mode */ }
-}
-onMounted(() => {
-  // Read on the client only: the server has no localStorage, and rendering the
-  // key expanded there and collapsed here is a hydration mismatch.
-  try { keyCollapsed.value = localStorage.getItem(KEY_COLLAPSED) === '1' } catch { /* ignore */ }
-})
+// ─── Tile date + UI state ─────────────────────────────────────────────────────
+const {
+  tileDate, maxTileDate, tileErrors, activeTileNotes, tileLayers,
+  activeTileTemplates, keyCollapsed, setKeyCollapsed, upscaleNote, syncActiveTemplates,
+} = useMapTileDate({ mapRef, mapView })
 
 // The heatmap popover, so the keyboard shortcut can still reach the season
 // controls now that they live inside it.
 const heatmapPop = ref(null)
 
-// The legend value under the cursor. Everything not matching it is faded on the
-// map, so a row in the key and the marks it stands for can be seen together.
-const hoverValue = ref(null)
-
-// Hover is a mouse idea, and highlighting a legend row has to work without one.
-//
-// A touch screen synthesises a mouseenter on tap but never a matching
-// mouseleave, so a tapped row isolated a category and left the reader with a
-// faded map and no way to clear it. Adding a click handler on top made it
-// worse: the synthesised enter set the value and the click immediately toggled
-// it back off, so tapping did nothing at all.
-//
-// Pointer events carry the device that raised them, so each gets what suits it
-// — transient hover on a mouse, a sticky toggle on a finger.
-function hoverEnter(label, e) { if (e.pointerType === 'mouse') hoverValue.value = label }
-function hoverLeave(e) { if (!e || e.pointerType === 'mouse') hoverValue.value = null }
-function pickValue(label, e) {
-  if (e && e.pointerType === 'mouse') return
-  hoverValue.value = hoverValue.value === label ? null : label
-}
-const tileErrors = ref([])
-// The caveat belonging to whichever reference layers are switched on.
-const activeTileNotes = ref([])
-// The built tile layers, so the opacity slider can reach them after setup.
-const tileLayers = []
-
-// The fallback ramp, for a numeric field no layer draws — elevation, day of
-// year, rainfall. Anything a layer DOES draw borrows that layer's palette
-// instead; see composables/fieldPalettes.js.
-const RAMP = ['#e8f1fb', '#0b3d91']
-
-// Field labels + which keys are categorical, drawn from the shared chart
-// registry so the map and the Explore builder stay in sync.
-const CATEGORY_KEYS = new Set(ALL_CATEGORY.map((f) => f.key))
-const FIELD_LABEL = Object.fromEntries([...ALL_CATEGORY, ...ALL_NUMERIC].map((f) => [f.key, f.label]))
-
-// Offer only the dimensions that actually carry data in the current dataset,
-// so an un-enriched layer (e.g. NDVI still empty) doesn't yield an all-gray map.
-const colorOptions = computed(() => {
-  const feats = filteredData.value?.features || []
-  const present = (list) => list.filter((f) => (
-    f.key === 'live_cluster' ? live.active.value : feats.some((ft) => hasValue(ft.properties[f.key]))
-  ))
-  return { category: present(ALL_CATEGORY), numeric: present(ALL_NUMERIC) }
-})
-
-// When the points are coloured by a taxonomic rank that most records lack, the
-// map is showing a slice — say so, rather than let a key of five families read
-// as the whole dataset.
-const colorCoverageNote = computed(() => coverageNote(filteredData.value?.features || [], colorBy.value))
-
-// If a dataset switch drops the active dimension's data, fall back to the first
-// option still available (cluster, in practice).
-watch(colorOptions, (opts) => {
-  const keys = [...opts.category, ...opts.numeric].map((o) => o.key)
-  if (keys.length && !keys.includes(colorBy.value)) colorBy.value = keys[0]
-  // Drop a size field that the new dataset doesn't carry.
-  if (sizeBy.value && !opts.numeric.some((o) => o.key === sizeBy.value)) sizeBy.value = ''
-})
-
-function fmtNum(v) { return Math.abs(v) >= 100 ? Math.round(v).toLocaleString() : Number(v).toFixed(2) }
-
-
-// Build the color function + legend for the current "color by" dimension.
-const coloring = computed(() => {
-  const feats = filteredData.value?.features || []
-  const key = colorBy.value
-  const title = FIELD_LABEL[key] || key
-
-  // Live (in-browser) clusters: values come from the reactive assignment map,
-  // not a property. Same stable palette as the pipeline clusters.
-  if (key === 'live_cluster') {
-    const seen = new Set()
-    let hasNull = false
-    for (const f of feats) {
-      const lab = live.labelFor(f.properties)
-      if (hasValue(lab)) seen.add(lab); else hasNull = true
-    }
-    const legend = [...seen].sort().map((lab) => ({ label: lab, color: categoryColor('live_cluster', lab) }))
-    if (hasNull) legend.push({ label: 'Unclustered', color: UNCLUSTERED })
-    return {
-      type: 'categorical', title, legend,
-      colorFn: (p) => categoryColor('live_cluster', live.labelFor(p)),
-      // The legend label this mark would carry, for hover highlighting.
-      labelOf: (p) => (hasValue(live.labelFor(p)) ? live.labelFor(p) : 'Unclustered'),
-    }
-  }
-
-  // Cluster keeps its own stable palette + an explicit "Unclustered" bucket.
-  if (key === 'cluster') {
-    const seen = new Set()
-    let hasNull = false
-    for (const f of feats) {
-      const c = f.properties.cluster
-      if (hasValue(c)) seen.add(c); else hasNull = true
-    }
-    const legend = [...seen].sort((a, b) => a - b).map((c) => ({ label: `Cluster ${c}`, color: colorFor(c) }))
-    if (hasNull) legend.push({ label: 'Unclustered', color: UNCLUSTERED })
-    return {
-      type: 'categorical', title, legend,
-      colorFn: (p) => colorFor(p.cluster),
-      labelOf: (p) => (hasValue(p.cluster) ? `Cluster ${p.cluster}` : 'Unclustered'),
-    }
-  }
-
-  // Any other categorical dimension (land cover, species, …): assign palette
-  // colors to the distinct values present, most frequent first. The legend is
-  // capped (a dataset can have hundreds of species) with a "+N more" row.
-  if (CATEGORY_KEYS.has(key)) {
-    const counts = new Map()
-    for (const f of feats) {
-      const v = f.properties[key]
-      if (hasValue(v)) counts.set(v, (counts.get(v) || 0) + 1)
-    }
-    const cats = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
-    const LEGEND_CAP = 12
-    // Where a layer draws the same classes, take its colours: a land cover dot
-    // should be the colour of the land cover under it, not a hash of its name.
-    // Anything the layer has no class for still falls back to the stable
-    // palette, so an unexpected value is coloured rather than dropped.
-    const palette = paletteFor(key)
-    const classes = palette?.kind === 'classes' ? palette.items : null
-    const colorOf = (v) => (classes && classColorFor(classes, v)) || categoryColor(key, v)
-
-    const legend = cats.slice(0, LEGEND_CAP).map((v) => ({ label: String(v), color: colorOf(v) }))
-    if (cats.length > LEGEND_CAP) legend.push({ label: `+${cats.length - LEGEND_CAP} more`, color: UNCLUSTERED })
-    return {
-      type: 'categorical', title, legend,
-      match: palette ? matchNote(palette) : '',
-      colorFn: (p) => (hasValue(p[key]) ? colorOf(p[key]) : UNCLUSTERED),
-      labelOf: (p) => (hasValue(p[key]) ? String(p[key]) : null),
-    }
-  }
-
-  // Numeric (sequential). Elevation and temperature follow the ft/m and °F/°C
-  // settings, so the gradient scale matches the units shown elsewhere.
-  const meta = ALL_NUMERIC.find((f) => f.key === key) || {}
-  const conv = meta.unit === 'elev' ? elevValue : meta.unit === 'temp' ? tempValue : (v) => Number(v)
-  const unitSuffix = meta.unit === 'elev' ? ` (${unit.value})` : meta.unit === 'temp' ? ` (°${tempUnit.value})` : ''
-  const vals = feats.map((f) => f.properties[key]).filter(hasValue).map((v) => conv(Number(v)))
-  const dataMin = vals.length ? Math.min(...vals) : 0
-  const dataMax = vals.length ? Math.max(...vals) : 1
-
-  // Where a layer draws the same quantity, borrow its ramp — and its stretch
-  // too when the two sides measure in the same units, so a dot over a pixel is
-  // the same colour for the same value. Where the pipeline normalises and the
-  // layer does not, the palette still matches but the scale is the data's own;
-  // `match` says which of the two the viewer is looking at.
-  const palette = paletteFor(key)
-  // A ramp the viewer chose outranks the layer match. Choosing a scale is a
-  // decision about every field at once, and having it silently not apply to the
-  // handful of fields a layer also draws would read as the control being broken.
-  const chosen = chosenPointRamp.value
-  const stops = chosen || (palette?.kind === 'ramp' ? palette.stops : RAMP)
-  // The layer's stretch only applies while its palette does.
-  const [min, max] = (!chosen && palette?.domain) || [dataMin, dataMax]
-
-  return {
-    type: 'sequential', title: title + unitSuffix, min, max, stops,
-    match: !chosen && palette ? matchNote(palette) : '',
-    colorFn: (p) => {
-      const raw = p[key]
-      if (!hasValue(raw)) return UNCLUSTERED
-      return rampColor(stops, fraction(conv(Number(raw)), [min, max]))
-    },
-  }
-})
-
-// The RAW category values on screen, most common first — what the appearance
-// panel keys its per-value overrides on. Deliberately not taken from the legend,
-// whose labels are display text ("Cluster 3") rather than the value itself.
-const legendValues = computed(() => {
-  if (coloring.value?.type !== 'categorical') return []
-  const key = colorBy.value
-  const counts = new Map()
-  for (const f of filteredData.value?.features || []) {
-    const v = key === 'live_cluster' ? live.labelFor(f.properties) : f.properties[key]
-    if (hasValue(v)) counts.set(v, (counts.get(v) || 0) + 1)
-  }
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
-})
-
-// Size points by a numeric field (radius), or a uniform size when "none".
-const sizeScale = computed(() => {
-  if (!sizeBy.value) return null
-  const feats = filteredData.value?.features || []
-  const vals = feats.map((f) => f.properties[sizeBy.value]).filter(hasValue).map(Number)
-  if (!vals.length) return null
-  return { lo: Math.min(...vals), hi: Math.max(...vals) }
-})
-function radiusFor(props) {
-  // The configured point size sets the baseline; a "Size by" field then scales
-  // marks around it, so both controls compose instead of fighting.
-  const base = pointRadius.value
-  const s = sizeScale.value
-  if (!s) return base * 1.5
-  const v = props[sizeBy.value]
-  if (!hasValue(v)) return base * 0.75
-  return base + base * 2.25 * ((Number(v) - s.lo) / ((s.hi - s.lo) || 1))
-}
-
-/**
- * How one observation is drawn. Every place that styles a marker goes through
- * here, so creation and re-styling cannot disagree.
- *
- * The outline follows the opacity slider rather than staying at full strength:
- * fading the dots while their rings stayed solid turned a dense area into a gray
- * mesh — the opposite of what turning the dots down is for.
- */
-function markerStyle(props) {
-  // While a legend row is hovered, everything it does not stand for fades back
-  // rather than disappearing — the surrounding marks are the context that makes
-  // the highlighted ones mean something.
-  const c = coloring.value
-  const faded = hoverValue.value !== null && typeof c.labelOf === 'function'
-    && c.labelOf(props) !== hoverValue.value
-  const fill = faded ? pointOpacity.value * 0.12 : pointOpacity.value
-  return {
-    radius: radiusFor(props),
-    fillColor: c.colorFn(props),
-    fillOpacity: fill,
-    stroke: pointOutline.value && !faded,
-    weight: pointOutline.value && !faded ? 1 : 0,
-    color: '#222',
-    opacity: pointOutline.value && !faded ? fill : 0,
-  }
-}
-
 // Coloring, sizing, palette, per-value overrides and point styling all restyle
 // the existing layer in place — no need to rebuild it, which would refit the
 // view.
 watch([coloring, sizeScale, activeColors, colorOverrides, pointRadius, pointOpacity, pointOutline, colorSeed, hoverValue], () => {
-  if (!geoLayer) return
-  geoLayer.eachLayer((l) => {
+  if (!geoLayerRef.value) return
+  geoLayerRef.value.eachLayer((l) => {
     const style = markerStyle(l.feature.properties)
     l.setStyle(style)
     l.setRadius(style.radius)
   })
 })
-
-// When focusing an observation, the next re-render must not refit/clear it.
-// Leaflet owns the centre and zoom, so they are mirrored into a ref for the
-// share link rather than read out of shared state.
-const mapView = ref(null)
 // Flatten the live map — tiles, the point canvas, any overlay canvas — into a
 // PNG. Everything is measured on screen rather than recomputed, so what is saved
 // is exactly what is displayed.
@@ -969,8 +585,8 @@ if (import.meta.client) {
 }
 watch(showPoints, (v) => {
   if (import.meta.client) localStorage.setItem(POINTS_KEY, v ? '1' : '0')
-  if (!map || !geoLayer) return
-  if (v) { geoLayer.addTo(map); geoLayer.bringToFront() } else geoLayer.remove()
+  if (!map || !geoLayerRef.value) return
+  if (v) { geoLayerRef.value.addTo(map); geoLayerRef.value.bringToFront() } else geoLayerRef.value.remove()
 })
 
 // ─── Tooltips ───────────────────────────────────────────────────────────────
@@ -1068,30 +684,6 @@ const viewBounds = ref(null)
 // are the same string, but an Earth Engine template holds a token that expires
 // within hours: filed under its URL, a saved tile is unreachable by the time
 // anyone is standing in the woods reading it. The id is what the cache keys on.
-const activeTileTemplates = ref([])
-function syncActiveTemplates() {
-  if (!map) return
-  const out = []
-  map.eachLayer((l) => {
-    // ArcGIS export layers build their URLs per tile rather than from a
-    // template, so they cannot be enumerated ahead of time and are skipped.
-    if (!l._url || typeof l._url !== 'string' || !l._url.includes('{z}')) return
-    // The name rides along so the offline estimate can say which layer is
-    // costing the download, rather than listing anonymous URLs at somebody
-    // deciding what to turn off.
-    out.push({
-      template: l._url,
-      id: l._spec?.ee ? l._spec.key : l._url,
-      name: l._spec?.name || '',
-      // Where this layer runs out of tiles, so a save does not request zooms it
-      // does not publish. maxNativeZoom is the real ceiling; maxZoom on these
-      // layers is the map's own limit, which every layer shares.
-      maxZoom: Number.isFinite(l.options?.maxNativeZoom) ? l.options.maxNativeZoom : null,
-    })
-  })
-  activeTileTemplates.value = out
-}
-
 const datasetLabel = computed(() => {
   const n = filteredData.value?.features?.length || 0
   return n ? `${n.toLocaleString()} observations` : ''
@@ -1103,18 +695,6 @@ const shareTitle = computed(() => {
   return `${n.toLocaleString()} ${what}: data-map`
 })
 
-let suppressFit = false
-// Whether the map has ever been fitted to data. Until it has, a fit is the
-// thing that puts the viewer somewhere sensible at all.
-let fittedOnce = false
-
-// Heatmap cells indexed by their grid key, so the cell under a point is found
-// by arithmetic rather than by scanning thousands of polygons on every hover.
-const heatmapCellIndex = computed(() => {
-  const index = new Map()
-  for (const c of heatmapResult.value.cells || []) index.set(c.key, c)
-  return index
-})
 
 // ─── Earth Engine layers ─────────────────────────────────────────────────────
 // These have no fixed URL: the server asks Earth Engine to render the layer and
@@ -1129,459 +709,41 @@ const { accessToken } = useAuth()
 // Only for registering minted templates against their layer, so saved Earth
 // Engine tiles survive a token rotation. The saving itself lives in the panel.
 const offline = useOffline()
-const eeParams = ref({})
-const eeErrors = ref([])
-const eeLoading = ref(new Map()) // key → layer name
-// The layer picker's contents. Populated once the map and its layers exist, so
-// the Vue side never has to know how Leaflet builds them.
-const baseLayers = ref([])
-const overlayLayers = ref([])
-// The basemap the viewer last chose, remembered per browser so the map opens on
-// the one they read best rather than resetting to the default every visit.
-const BASE_KEY = 'map-basemap'
-const activeBase = ref('grey')
-// A Set of the overlay keys currently on. Replaced rather than mutated so the
-// template re-renders.
-const activeOverlays = ref(new Set())
 
-/** Overlays grouped for display, in catalogue order. */
-const overlayGroups = computed(() => {
-  const groups = new Map()
-  for (const o of overlayLayers.value) {
-    if (!groups.has(o.group)) groups.set(o.group, [])
-    groups.get(o.group).push(o)
-  }
-  return [...groups.entries()].map(([label, items]) => ({ label, items }))
-})
+const {
+  overlayOrder, layerOpacity, layerBlend, soloKey,
+  activeOverlays, overlayLayers, baseLayers, activeBase, activeBaseName,
+  overlayGroups, eeParams, eeErrors, eeLoading, eeLayers, activeEeLayers,
+  applyOverlayOrder, applyBlendModes, applySolo,
+  setSolo, setLayerBlend, moveOverlay, setLayerOpacity, clearOverlays,
+  paramsFor, debounceEeRefresh, setEeParam,
+  setBase: _setBase, restoreBase: _restoreBase,
+  toggleOverlay: _toggleOverlay, toggleOverlayByKey: _toggleOverlayByKey,
+  refreshEeLayer: _refreshEeLayer,
+} = useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeTiles, maxEnt })
 
-// Sync MaxEnt model runs into the overlay layer list (HEAT-5).
-// Each completed model appears as a toggleable entry in the Layer Manager.
-// Entries are lightweight stubs — no actual Leaflet tile layer until the
-// tile URL can be obtained from the suitability asset path via the GEE endpoint.
-watch(maxEnt.maxentLayerSpecs, (specs) => {
-  // Remove stale maxent entries and replace with the current model list.
-  overlayLayers.value = [
-    ...overlayLayers.value.filter((o) => !o.key.startsWith('maxent:')),
-    ...specs.map((s) => ({
-      key: s.key,
-      name: s.name,
-      group: s.group,
-      note: s.note,
-      layer: null, // rendered via the heatmap mode, not a Leaflet tile layer
-    })),
-  ]
-}, { immediate: true })
+// Wrap the three functions that must also call syncActiveTemplates after running.
+function setBase(key) { _setBase(key); syncActiveTemplates() }
+function restoreBase() { _restoreBase(); syncActiveTemplates() }
+function toggleOverlay(entry) { _toggleOverlay(entry); syncActiveTemplates() }
+function toggleOverlayByKey(key) { _toggleOverlayByKey(key); syncActiveTemplates() }
+async function refreshEeLayer(spec) { await _refreshEeLayer(spec); syncActiveTemplates() }
 
-function setBase(key) {
-  const next = baseLayers.value.find((b) => b.key === key)
-  if (!next || !map) return
-  for (const b of baseLayers.value) if (b.layer !== next.layer) map.removeLayer(b.layer)
-  if (!map.hasLayer(next.layer)) next.layer.addTo(map)
-  // Basemaps sit under everything; without this a basemap switched on later
-  // draws over the reference layers and the points.
-  next.layer.bringToBack()
-  activeBase.value = key
-  try { localStorage.setItem(BASE_KEY, key) } catch { /* private mode; just don't remember */ }
-  syncActiveTemplates()
-}
+// ─── Suitability surface (model overlay) ─────────────────────────────────────
+const { modelOverlay, applyModelOverlay, refreshModelOverlay, removeModelOverlay, loadModelById } =
+  useMapModelOverlay({ mapRef, LRef, accessToken })
 
-/** Restore the remembered basemap, if it is one that still exists. */
-function restoreBase() {
-  let saved = null
-  try { saved = localStorage.getItem(BASE_KEY) } catch { /* no storage; keep the default */ }
-  if (saved && saved !== activeBase.value && baseLayers.value.some((b) => b.key === saved)) {
-    setBase(saved)
-  }
-}
-
-// A suitability surface handed over from the jobs page. Drawn as one tile
-// overlay above the basemap and below the observation points, with its own
-// legend card. `modelLayer` is the Leaflet layer; `modelOverlay` is what the
-// legend reads.
-const overlayHandoff = useModelOverlay()
-const modelOverlay = ref(null)
-let modelLayer = null
-
-/** How old the surface is, from when its tiles were minted. */
-function overlayAge(mintedAt) {
-  if (!mintedAt) return ''
-  const d = new Date(mintedAt)
-  if (!Number.isFinite(d.getTime())) return ''
-  const hours = Math.floor((Date.now() - d.getTime()) / 3600000)
-  if (hours < 1) return 'just now'
-  if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
-}
-
-/** Draw the pending suitability surface, if the jobs page left one. */
-function applyModelOverlay() {
-  const pending = overlayHandoff.pending.value
-  if (!pending || !pending.template || !map || !L) return
-  removeModelOverlay()
-
-  const layer = L.tileLayer(pending.template, {
-    opacity: 0.7,
-    maxZoom: MAP_MAX_ZOOM,
-    // The surface tracks zoom the way the reference overlays do (see the note on
-    // updateWhenIdle where those are built).
-    updateWhenIdle: false,
-    updateWhenZooming: true,
-    className: 'model-suitability',
-  })
-
-  // A minted map id expires; when its tiles start 404ing the surface is gone,
-  // and a blank overlay reads as "nowhere is suitable" rather than "this
-  // expired". Count failures and say so instead.
-  let failed = 0
-  layer.on('tileerror', () => {
-    failed += 1
-    if (failed >= 3 && modelOverlay.value && !modelOverlay.value.stale) {
-      modelOverlay.value = { ...modelOverlay.value, stale: true }
-    }
-  })
-  layer.addTo(map)
-  modelLayer = layer
-
-  modelOverlay.value = {
-    jobId: pending.jobId || '',
-    label: pending.label || 'Model',
-    legend: pending.legend || { stops: ['#2c2f6b', '#c6301f'], min: '0', max: '1' },
-    age: overlayAge(pending.mintedAt),
-    cv: pending.cv || null,
-    stale: false,
-    refreshing: false,
-  }
-
-  // Frame the region the surface was projected over, so it is not off-screen.
-  const r = pending.region
-  if (r && Number.isFinite(r.north)) {
-    try {
-      map.fitBounds(L.latLngBounds([r.south, r.west], [r.north, r.east]).pad(0.05), { animate: false })
-    } catch { /* a bad region is not worth failing the draw over */ }
-  }
-
-  // Consumed, so a later revisit of the map does not redraw a surface the member
-  // removed. Reopening it from the jobs page sets it again.
-  overlayHandoff.clear()
-}
-
-/**
- * Re-mint an expired surface from its stored model, in place.
- *
- * The template carries an Earth Engine map id that expires; rather than send the
- * viewer back to the jobs page to re-run, ask the server to re-serve the stored
- * model and swap the tile URL under the same layer.
- */
-async function refreshModelOverlay() {
-  const o = modelOverlay.value
-  if (!o?.jobId || !modelLayer) return
-  modelOverlay.value = { ...o, refreshing: true }
-  try {
-    const token = await accessToken()
-    const res = await fetch(`/.netlify/functions/model-tiles?job=${encodeURIComponent(o.jobId)}`, {
-      headers: token ? { authorization: `Bearer ${token}` } : {},
-    })
-    const body = await res.json()
-    if (!res.ok || !body.ok || !body.template) throw new Error(body.error || 'Could not refresh the surface.')
-    modelLayer.setUrl(body.template)
-    modelOverlay.value = {
-      ...modelOverlay.value, stale: false, refreshing: false, age: overlayAge(body.meta?.mintedAt),
-    }
-  } catch {
-    modelOverlay.value = { ...modelOverlay.value, refreshing: false }
-  }
-}
-
-/** Take the suitability surface off the map. */
-function removeModelOverlay() {
-  if (modelLayer && map) map.removeLayer(modelLayer)
-  modelLayer = null
-  modelOverlay.value = null
-}
-
-/**
- * Fetch tiles for a model job by id and display the suitability surface.
- * Called when the user selects a model from the layer manager or the
- * HeatmapControls dropdown, so the overlay loads without a page navigation.
- */
-async function loadModelById(jobId: string) {
-  if (!jobId || !map || !L) return
-  removeModelOverlay()
-  const token = await accessToken()
-  let body: any
-  try {
-    const res = await fetch(`/.netlify/functions/model-tiles?job=${encodeURIComponent(jobId)}`, {
-      headers: token ? { authorization: `Bearer ${token}` } : {},
-    })
-    body = await res.json()
-    if (!res.ok || !body.ok || !body.template) throw new Error(body.error || 'Could not load model.')
-  } catch (err: any) {
-    // Surface the error the same way EE errors are shown
-    eeErrors.value = [...eeErrors.value, { key: `maxent:${jobId}`, name: 'MaxEnt model', message: err.message }]
-    return
-  }
-
-  const layer = L.tileLayer(body.template, {
-    opacity: 0.7,
-    maxZoom: MAP_MAX_ZOOM,
-    updateWhenIdle: false,
-    updateWhenZooming: true,
-    className: 'model-suitability',
-  })
-  let failed = 0
-  layer.on('tileerror', () => {
-    failed += 1
-    if (failed >= 3 && modelOverlay.value && !modelOverlay.value.stale) {
-      modelOverlay.value = { ...modelOverlay.value, stale: true }
-    }
-  })
-  layer.addTo(map)
-  modelLayer = layer
-
-  const meta = body.meta || {}
-  modelOverlay.value = {
-    jobId,
-    label: meta.label || 'Model',
-    legend: meta.legend || { stops: ['#2c2f6b', '#c6301f'], min: '0', max: '1' },
-    age: overlayAge(meta.mintedAt),
-    cv: meta.cv || null,
-    stale: false,
-    refreshing: false,
-  }
-
-  const r = meta.region
-  if (r && Number.isFinite(r.north)) {
-    try {
-      map.fitBounds(L.latLngBounds([r.south, r.west], [r.north, r.east]).pad(0.05), { animate: false })
-    } catch { /* bad region */ }
-  }
-}
-
-// When the user picks a MaxEnt model (from layer manager or HeatmapControls),
-// load its tiles immediately — no page navigation required.
+// Load tiles when a MaxEnt model is selected; remove when deselected.
 watch(() => heatmaps.maxentModelId.value, (id) => {
-  if (heatmaps.mode.value === 'maxent' && id) {
-    loadModelById(id)
-  } else if (!id) {
-    removeModelOverlay()
-  }
+  if (heatmaps.mode.value === 'maxent' && id) loadModelById(id)
+  else if (!id) removeModelOverlay()
 })
-
-// Switching to maxent mode with a model already selected should load it.
+// Entering maxent mode with a model already chosen should load it immediately.
 // Switching away should remove the overlay so a stale surface is not left on.
 watch(() => heatmaps.mode.value, (m, prev) => {
-  if (m === 'maxent' && heatmaps.maxentModelId.value) {
-    loadModelById(heatmaps.maxentModelId.value)
-  } else if (prev === 'maxent' && m !== 'maxent') {
-    removeModelOverlay()
-  }
+  if (m === 'maxent' && heatmaps.maxentModelId.value) loadModelById(heatmaps.maxentModelId.value)
+  else if (prev === 'maxent' && m !== 'maxent') removeModelOverlay()
 })
-
-// The stacking order of the overlays that are on, topmost first, and how see-
-// through each one is. Both are per-layer because both were global and that was
-// wrong: overlays hide one another, so land ownership under a hillshade is a
-// different map from the same two the other way up, and dimming the pile to
-// read through it dimmed the one thing you were trying to read.
-const overlayOrder = ref([])
-const layerOpacity = ref({})
-
-// Per-layer blend overrides, and the one layer being looked at on its own.
-// Both are session state beside the order and the opacity, not preferences: a
-// solo is a thing you do for ten seconds, and a blend set on one layer means
-// nothing once that layer is off. The stack DEFAULT is a preference, and lives
-// with the rest of them in Appearance.
-const layerBlend = ref({})
-const soloKey = ref('')
-
-/** Push the current order down into Leaflet as z-indexes. */
-function applyOverlayOrder() {
-  if (!map) return
-  const n = overlayOrder.value.length
-  overlayOrder.value.forEach((key, i) => {
-    const entry = overlayLayers.value.find((o) => o.key === key)
-    // Topmost first in the list, so the first entry gets the highest index.
-    entry?.layer?.setZIndex?.(200 + (n - i))
-  })
-}
-
-/**
- * Push the blend modes down onto each drawn layer's own container.
- *
- * Leaflet gives every tile layer a div of its own inside the tile pane, so a
- * mix-blend-mode there composites that layer against the ones below it and
- * nothing else. The browser does the work per frame; no tile is re-fetched and
- * nothing is recomputed, which is why this is a dropdown rather than a job.
- *
- * Solo is applied here too, because the set of layers that are drawn is the set
- * whose blending matters — a hidden layer with multiply still on it would come
- * back blended when the solo ended, which is right, and blending a layer that
- * is not on screen is work for nothing.
- */
-function applyBlendModes() {
-  const drawn = drawnKeys([...activeOverlays.value], soloKey.value)
-  for (const entry of overlayLayers.value) {
-    const el = entry.layer?.getContainer?.()
-    if (!el) continue
-    el.style.mixBlendMode = drawn.includes(entry.key)
-      ? effectiveBlend(entry.key, {
-        overrides: layerBlend.value, fallback: stackBlend.value, drawn: drawn.length,
-      })
-      : 'normal'
-  }
-}
-
-/**
- * Add or remove layers so that only the soloed one is drawn.
- *
- * The active set is not touched. Solo answers "what is this one contributing",
- * and answering it must not cost the viewer the stack they built — so the rest
- * stay ticked in the manager, dimmed, and come back untouched.
- */
-function applySolo() {
-  if (!map) return
-  const drawn = new Set(drawnKeys([...activeOverlays.value], soloKey.value))
-  for (const key of activeOverlays.value) {
-    const entry = overlayLayers.value.find((o) => o.key === key)
-    if (!entry?.layer) continue
-    const on = map.hasLayer(entry.layer)
-    if (drawn.has(key) && !on) entry.layer.addTo(map)
-    else if (!drawn.has(key) && on) map.removeLayer(entry.layer)
-  }
-  applyOverlayOrder()
-  applyBlendModes()
-}
-
-function setSolo(key) {
-  soloKey.value = key === soloKey.value ? '' : key
-  applySolo()
-}
-
-function setLayerBlend(key, mode) {
-  // '' is "inherit the stack default", which is not the same as normal: change
-  // the default later and this layer should move with it.
-  const next = { ...layerBlend.value }
-  if (mode) next[key] = mode
-  else delete next[key]
-  layerBlend.value = next
-  applyBlendModes()
-}
-
-function toggleOverlay(entry) {
-  if (!map) return
-  const wasOn = activeOverlays.value.has(entry.key)
-  const next = new Set(activeOverlays.value)
-  if (wasOn) {
-    next.delete(entry.key)
-    overlayOrder.value = overlayOrder.value.filter((k) => k !== entry.key)
-    // Take it off the map here. applySolo only walks the active set, so once the
-    // key is gone from there it can no longer remove this layer — leaving an
-    // unticked layer still drawn, which is the bug this fixes.
-    if (entry.layer && map.hasLayer(entry.layer)) map.removeLayer(entry.layer)
-    // Switching off the layer that was soloed ends the solo rather than
-    // leaving an empty map with three layers still ticked.
-    if (soloKey.value === entry.key) soloKey.value = ''
-  } else {
-    next.add(entry.key)
-    // A layer just switched on goes on top, which is where someone who just
-    // asked for it expects to see it — and ends any solo, since asking for a
-    // second layer is asking to see two.
-    overlayOrder.value = [entry.key, ...overlayOrder.value]
-    soloKey.value = ''
-    // Seed the blend mode from the layer's catalogue suggestion, but only if
-    // the user has not already set one for this key.
-    const suggestedBlend = entry.layer?._spec?.blend
-    if (suggestedBlend && !layerBlend.value[entry.key]) {
-      const next = { ...layerBlend.value, [entry.key]: suggestedBlend }
-      layerBlend.value = next
-    }
-  }
-  activeOverlays.value = next
-  // When a MaxEnt model layer is toggled on, switch the heatmap to MaxEnt
-  // mode and select that model so HeatmapControls reflects the active entry.
-  if (!wasOn && entry.key.startsWith('maxent:')) {
-    heatmaps.mode.value = 'maxent'
-    heatmaps.maxentModelId.value = entry.key.replace('maxent:', '')
-  }
-  // Read from the active set rather than from the map: with a solo running, a
-  // layer can be switched on and yet not be on the map, so hasLayer answers a
-  // different question from the one the checkbox asked.
-  applySolo()
-  syncActiveTemplates()
-}
-
-function toggleOverlayByKey(key) {
-  const entry = overlayLayers.value.find((o) => o.key === key)
-  if (entry) toggleOverlay(entry)
-}
-
-function moveOverlay(key, delta) {
-  // `delta` is a number of places, or 'top' or 'bottom'.
-  overlayOrder.value = reorderStack(overlayOrder.value, key, delta)
-  applyOverlayOrder()
-  // The stack default blends each layer against what is below it, so moving a
-  // layer changes what it is blended with.
-  applyBlendModes()
-}
-
-/** One layer's own opacity, multiplied into the global dimmer. */
-function setLayerOpacity(key, value) {
-  const entry = overlayLayers.value.find((o) => o.key === key)
-  if (!entry) return
-  layerOpacity.value = { ...layerOpacity.value, [key]: value }
-  entry.layer.setOpacity(entry.layer._baseOpacity * value * tileOpacity.value)
-  heatmaps.persist()
-}
-
-function clearOverlays() {
-  soloKey.value = ''
-  for (const key of [...activeOverlays.value]) toggleOverlayByKey(key)
-}
-
-// Changing the default moves every layer nobody has set by hand, which is what
-// makes it a default rather than a one-time stamp.
-watch(stackBlend, () => applyBlendModes())
-
-const activeBaseName = computed(() =>
-  baseLayers.value.find((b) => b.key === activeBase.value)?.name || '')
-const eeLayers = new Map()
-
-/** The parameters a layer is currently set to, defaulted from its schema. */
-function paramsFor(spec) {
-  const held = eeParams.value[spec.key] || {}
-  const out = {}
-  for (const [name, p] of Object.entries(spec.params || {})) {
-    out[name] = held[name] ?? p.default
-  }
-  return out
-}
-
-async function refreshEeLayer(spec) {
-  const layer = eeLayers.get(spec.key)
-  if (!layer || !map.hasLayer(layer)) return
-  eeErrors.value = eeErrors.value.filter((e) => e.key !== spec.key)
-  const loadingNext = new Map(eeLoading.value)
-  loadingNext.set(spec.key, spec.name)
-  eeLoading.value = loadingNext
-  try {
-    const minted = await eeTiles.template(spec.key, paramsFor(spec))
-    // setUrl rather than a rebuild, so the layer keeps its place in the stack
-    // and its toggle stays on.
-    layer.setUrl(minted.template)
-    // Tell the offline worker which layer this token belongs to. Without it a
-    // tile saved under an earlier token cannot be matched to this request, and
-    // an area saved this morning draws blank this afternoon.
-    offline.registerEeTemplate(spec.key, minted.template)
-    syncActiveTemplates()
-  } catch (err) {
-    // Loud and by name. A layer that fails quietly is indistinguishable from
-    // one showing that nothing is there, and on a fire map that is a lie.
-    eeErrors.value = [...eeErrors.value, { key: spec.key, name: spec.name, message: err.message }]
-  } finally {
-    const loadingDone = new Map(eeLoading.value)
-    loadingDone.delete(spec.key)
-    eeLoading.value = loadingDone
-  }
-}
 
 async function addEeLayers() {
   const layers = await eeTiles.loadCatalogue()
@@ -1638,455 +800,24 @@ async function addEeLayers() {
   }
 }
 
-/**
- * A parameter changed on an active Earth Engine layer: re-render it.
- *
- * Clamped to the schema the server sent. A number box can be typed into as well
- * as stepped, so "5" lands in a year field easily enough, and the server would
- * rightly refuse it — spending a round trip to be told what the schema already
- * says here. The server still checks; this only avoids asking a question whose
- * answer is known.
- */
-function setEeParam(key, name, value) {
-  const spec = eeTiles.catalogue.value.find((l) => l.key === key)
-  if (!spec) return
-  const p = spec.params?.[name]
-  let next
-  if (p?.type === 'enum') {
-    // A choice from a fixed list: keep it as the string it is, falling back to
-    // the default if somehow handed something off the list.
-    next = (p.values || []).includes(String(value)) ? String(value) : (p.default ?? (p.values || [])[0])
-  } else if (p?.type === 'codes') {
-    // A set of class codes. Normalised here with the same function the server
-    // normalises with, so the cache key the browser produces is the one the
-    // server produces and a selection is minted once rather than twice.
-    try {
-      next = normaliseCodes(value, p.max)
-    } catch {
-      return
-    }
-  } else if (p?.type === 'text') {
-    // A typed value, e.g. a taxon name. Kept as a trimmed string; an empty one
-    // is ignored rather than sent, since the server rejects it and re-minting on
-    // every emptied field would only surface an error mid-type.
-    const text = String(value).trim()
-    if (!text) return
-    next = text
-  } else if (p?.type === 'date') {
-    const date = String(value).trim()
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
-    next = date
-  } else {
-    next = Math.floor(Number(value))
-    if (!Number.isFinite(next)) next = p?.default ?? 0
-    if (p && Number.isFinite(p.min)) next = Math.max(p.min, next)
-    if (p && Number.isFinite(p.max)) next = Math.min(p.max, next)
-  }
-
-  eeParams.value = {
-    ...eeParams.value,
-    [key]: { ...(eeParams.value[key] || {}), [name]: next },
-  }
-  // Debounced: stepping a year field or dragging a "days back" spinner fires a
-  // change per stop, and each re-mint is an Earth Engine call and a serverless
-  // invocation. Coalescing the bursts into one request per key spends one call
-  // for a settled value rather than one for every value passed through.
-  debounceEeRefresh(spec)
-}
-
-// Per-layer timers, so changing one layer's parameters never delays another's.
-const eeRefreshTimers = new Map()
-function debounceEeRefresh(spec, wait = 400) {
-  clearTimeout(eeRefreshTimers.get(spec.key))
-  eeRefreshTimers.set(spec.key, setTimeout(() => {
-    eeRefreshTimers.delete(spec.key)
-    refreshEeLayer(spec)
-  }, wait))
-}
-
 // ─── Dropped point ───────────────────────────────────────────────────────────
-// Somewhere the viewer picked, as opposed to somewhere a record exists. Held as
-// plain numbers rather than a Leaflet marker so the panel can be reactive and
-// the marker stays a detail of the map.
-const pin = ref(null)
-const copied = ref(false)
-let pinMarker = null
+const {
+  pin, copied,
+  pinElevation, pinElevationText,
+  pinSamples, pinSampling, pinSampleError,
+  pinPlusCode, pinCell, pinCellValue, pinNearest,
+  setPin, clearPin, copyPin, copyText,
+  samplePinLayers, sampleText, heatmapCellAt: _pinHeatmapCellAt,
+} = useMapPin({ mapRef, LRef, heatmapCellIndex, heatmapMode, heatmapCell, filteredData, activeEeLayers, accessToken, heatmaps })
 
-// A self-contained SVG marker for the dropped point. Leaflet's default marker
-// pulls its image from a PNG whose URL the bundler rewrites out from under it,
-// so it 404s and the pin shows up blank; an inline divIcon has no asset to lose.
-// Blue, to read apart from the red pin that marks a selected observation.
-function dropPinIcon() {
-  return L.divIcon({
-    className: 'drop-pin', iconSize: [28, 40], iconAnchor: [14, 38], tooltipAnchor: [0, -34],
-    html: `<svg viewBox="0 0 24 34" width="28" height="40" aria-hidden="true">
-      <path d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 34 12 34s12-13.4 12-22.1C24 5.3 18.6 0 12 0z"
-            fill="#2d7ff9" stroke="#fff" stroke-width="1.5"/>
-      <circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>`,
-  })
-}
-
-function setPin(lat, lon) {
-  pin.value = { lat, lon }
-  copied.value = false
-  if (!map || !L) return
-  if (pinMarker) { pinMarker.setLatLng([lat, lon]); return }
-  pinMarker = L.marker([lat, lon], {
-    draggable: true,
-    icon: dropPinIcon(),
-    // Above the canvas the observations draw into, so the pin is never lost
-    // under a dense patch of dots.
-    zIndexOffset: 1000,
-    title: 'Dropped point — drag to move',
-  }).addTo(map)
-  // Dragging is how you correct a click that landed a hundred metres off,
-  // which on a phone is most of them.
-  pinMarker.on('drag move', () => {
-    const ll = pinMarker.getLatLng()
-    pin.value = { lat: ll.lat, lon: ll.lng }
-    copied.value = false
-  })
-}
-
-function clearPin() {
-  pin.value = null
-  if (pinMarker) { pinMarker.remove(); pinMarker = null }
-}
-
-async function copyPin() {
-  if (!pin.value) return
-  const text = `${pin.value.lat.toFixed(5)}, ${pin.value.lon.toFixed(5)}`
-  try {
-    await navigator.clipboard.writeText(text)
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 1600)
-  } catch {
-    // Clipboard access is refused in plenty of contexts; selecting the text is
-    // still possible, so this is not worth an error message.
-  }
-}
-
-// A plus code for the point, at 11 digits (~3 m) since a dropped pin is a
-// specific spot rather than a neighbourhood. encodePlusCode is auto-imported
-// from composables/plusCode.js.
-const pinPlusCode = computed(() => (pin.value ? encodePlusCode(pin.value.lat, pin.value.lon, 11) : ''))
-
-// Ground elevation at the point. undefined while loading, null when it could
-// not be fetched, a number in metres otherwise — three states so the panel can
-// say "…" versus "—" rather than conflating them. From Open-Meteo's free,
-// key-less elevation API (Copernicus DEM at 90 m), so it adds no cost and no
-// Earth Engine quota; a dropped pin fetches once, debounced, and a drag replaces
-// the in-flight request rather than stacking them.
-const pinElevation = ref(undefined)
-let elevTimer = null
-let elevSeq = 0
-watch(pin, (p) => {
-  pinElevation.value = p ? undefined : null
-  if (!p) return
-  clearTimeout(elevTimer)
-  const seq = (elevSeq += 1)
-  elevTimer = setTimeout(async () => {
-    try {
-      const url = `https://api.open-meteo.com/v1/elevation?latitude=${p.lat.toFixed(5)}&longitude=${p.lon.toFixed(5)}`
-      const res = await fetch(url)
-      const data = await res.json()
-      const v = Array.isArray(data?.elevation) ? Number(data.elevation[0]) : NaN
-      if (seq === elevSeq) pinElevation.value = Number.isFinite(v) ? v : null
-    } catch {
-      if (seq === elevSeq) pinElevation.value = null
-    }
-  }, 350)
-}, { deep: true })
-
-/** Elevation formatted in both units, or the loading/unavailable marker. */
-const pinElevationText = computed(() => {
-  const v = pinElevation.value
-  if (v === undefined) return '…'
-  if (v === null) return '—'
-  return `${Math.round(v)} m · ${Math.round(v * 3.28084).toLocaleString()} ft`
+// ─── Observation selection + point rendering ──────────────────────────────────
+const { selected, selectedLatLng, renderPoints, applyFocus, setSuppressFit, setFittedOnce } = useMapSelection({
+  mapRef, LRef, geoLayerRef, filteredData, chunks,
+  focusObservation, setFocusObservation,
+  coloring, colorBy, sizeBy,
+  heatmapMode, heatmapMeta, heatmapCellAt,
+  markerStyle, showPoints,
 })
-
-/** Copy any short string, reusing the pin's copied flag for the tick. */
-async function copyText(text) {
-  try {
-    await navigator.clipboard.writeText(text)
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 1600)
-  } catch { /* clipboard refused; the text is still selectable */ }
-}
-
-// The active Earth Engine layers, with their current parameters, that the
-// "Sample layers here" button will read at the pin. Reference layers (GIBS,
-// ArcGIS) are external tiles with no server-side image to sample, so only the
-// Earth Engine layers are offered.
-const activeEeLayers = computed(() => {
-  const cat = eeTiles.catalogue.value || []
-  const out = []
-  for (const key of activeOverlays.value) {
-    const spec = cat.find((l) => l.key === key)
-    if (spec) out.push({ key, params: paramsFor(spec) })
-  }
-  return out
-})
-
-const pinSamples = ref(null)
-const pinSampling = ref(false)
-const pinSampleError = ref('')
-
-// A new point invalidates the old readings: sampling is per-coordinate, so the
-// values from the last spot must not linger under a pin that has since moved.
-watch(pin, () => { pinSamples.value = null; pinSampleError.value = '' }, { deep: true })
-
-/**
- * Read the active Earth Engine layers at the pin, on demand.
- *
- * On demand, not automatically, because each layer sampled is one Earth Engine
- * read: a button press spends that deliberately, where sampling on every pin
- * drop would spend it on every misclick.
- */
-async function samplePinLayers() {
-  if (!pin.value || !activeEeLayers.value.length || pinSampling.value) return
-  pinSampling.value = true
-  pinSampleError.value = ''
-  try {
-    const token = await accessToken()
-    const res = await fetch('/.netlify/functions/ee-sample', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', ...(token ? { authorization: `Bearer ${token}` } : {}) },
-      body: JSON.stringify({ lat: pin.value.lat, lon: pin.value.lon, layers: activeEeLayers.value }),
-    })
-    const data = await res.json().catch(() => ({}))
-    if (!res.ok || !data.ok) throw new Error(data.error || `Could not sample (${res.status}).`)
-    pinSamples.value = data.results || []
-  } catch (e) {
-    pinSampleError.value = e.message
-  } finally {
-    pinSampling.value = false
-  }
-}
-
-/** One sampled layer's value, formatted for the panel. */
-function sampleText(s) {
-  if (s.error) return 'unavailable'
-  if (s.empty) return 'no data here'
-  if (s.label) return s.label
-  if (s.channels) return s.channels.map((c) => Math.round(c.value)).join(' / ')
-  if (s.value === null || s.value === undefined) return '—'
-  return `${typeof s.value === 'number' ? fmtNum(s.value) : s.value}${s.unit ? ` ${s.unit}` : ''}`
-}
-
-/** The heatmap cell under the pin, if a heatmap is on and it has one there. */
-const pinCell = computed(() => (pin.value ? heatmapCellAt(pin.value.lat, pin.value.lon) : null))
-
-const pinCellValue = computed(() => {
-  const cell = pinCell.value
-  if (!cell) return ''
-  const v = cell.value
-  if (v === null || v === undefined) return '—'
-  return typeof v === 'number' ? fmtNum(v) : String(v)
-})
-
-/** The closest loaded observation, so the pin has something to be relative to. */
-const pinNearest = computed(() => {
-  if (!pin.value) return null
-  const feats = filteredData.value?.features || []
-  if (!feats.length) return null
-  const { lat, lon } = pin.value
-  // Equirectangular is plenty at these distances and avoids a trig call per
-  // feature across tens of thousands of them.
-  const scale = Math.cos((lat * Math.PI) / 180)
-  let best = null
-  let bestD = Infinity
-  for (const f of feats) {
-    const co = f.geometry?.coordinates
-    if (!co) continue
-    const dx = (Number(co[0]) - lon) * scale
-    const dy = Number(co[1]) - lat
-    const d = dx * dx + dy * dy
-    if (d < bestD) { bestD = d; best = f }
-  }
-  if (!best) return null
-  const km = Math.sqrt(bestD) * 111.32
-  const p = best.properties || {}
-  const name = p.species || p.genus || 'a record'
-  const away = km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
-  return { label: `${name}, ${away} away`, feature: best }
-})
-
-function heatmapCellAt(lat, lon) {
-  if (!heatmapCell.value || !heatmapMode.value) return null
-  return heatmapCellIndex.value.get(heatmaps.keyAt(lat, lon)) || null
-}
-
-const esc = (v) => String(v)
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
-/** What the tooltip says about one observation, given how the map is set up. */
-function pointTooltip(feature) {
-  const p = feature?.properties || {}
-  const co = feature?.geometry?.coordinates
-  const rows = []
-
-  const title = p.species || 'Observation'
-  if (p.date) rows.push(['Observed', p.date])
-
-  // The value behind this mark's color, named by the dimension chosen.
-  const c = coloring.value
-  if (c && typeof c.labelOf === 'function') {
-    const v = c.labelOf(p)
-    // "Cluster · Cluster 1" reads as a stutter, so a value that already carries
-    // its dimension's name stands on its own.
-    if (hasValue(v) && v !== title) {
-      const dim = String(c.title || '')
-      const val = String(v)
-      if (dim && val.toLowerCase().startsWith(dim.toLowerCase())) rows.push(['', val])
-      else rows.push([dim, val])
-    }
-  } else if (colorBy.value && hasValue(p[colorBy.value])) {
-    rows.push([FIELD_LABEL[colorBy.value] || colorBy.value, fmtNum(p[colorBy.value])])
-  }
-  if (sizeBy.value && hasValue(p[sizeBy.value])) {
-    rows.push([`${FIELD_LABEL[sizeBy.value] || sizeBy.value} (size)`, fmtNum(p[sizeBy.value])])
-  }
-
-  // And what the heatmap makes of the cell this point falls in.
-  if (heatmapMode.value && co) {
-    const cell = heatmapCellAt(co[1], co[0])
-    if (cell) {
-      const m = heatmapMode.value
-      const meta = heatmapMeta.value
-      const label = meta?.label || 'Heatmap'
-      const value = meta?.kind === 'field'
-        // The cell mean, with how many readings went into it — a mean of two is
-        // a different claim from a mean of two hundred.
-        ? `${meta.circular ? `${Math.round(cell.value)}°` : fmtNum(cell.value)} (${cell.samples} obs)`
-        : m === 'common' || m === 'land_cover' ? (cell.label || ', ')
-          : m === 'season' || m === 'hotspots'
-            ? `${Math.round((cell.n ? cell.inWindow / cell.n : 0) * 100)}% of ${cell.n} finds`
-            : m === 'richness' ? `${cell.species.size} species`
-              : m === 'wind' ? `${Math.round(cell.aspectDeg ?? 0)}°`
-                : `${cell.n} observations`
-      rows.push([label, value])
-    }
-  }
-
-  return `<strong>${esc(title)}</strong>`
-    + rows.map(([k, v]) => `<span class="ot-row">${k ? `<span class="ot-k">${esc(k)}</span>` : ''}${esc(v)}</span>`).join('')
-}
-
-// The drawer shows the coordinates, but a GeoJSON feature keeps them in its
-// geometry rather than its properties — so they are carried across here.
-function selectFeature(feature) {
-  if (!feature) return null
-  const co = feature.geometry?.coordinates
-  // Whether this point is the thinned copy from the overview or the full record
-  // from its cell. The drawer needs to know: an unenriched-looking record that
-  // is merely un-fetched must not be reported as one the pipeline never
-  // sampled. The flag lives on the feature, not its properties, so it has to be
-  // carried across explicitly.
-  const thinned = chunks.available.value && !feature.__full
-  const base = { ...feature.properties, __thinned: thinned }
-  return co ? { ...base, lon: co[0], lat: co[1] } : base
-}
-
-// Rebuild the point layer whenever the dataset changes (e.g. species switch).
-function renderPoints(geo) {
-  if (!map || !L || !geo) return
-  if (geoLayer) { geoLayer.remove(); geoLayer = null }
-  if (!suppressFit) selected.value = null
-
-  geoLayer = L.geoJSON(geo, {
-    pointToLayer: (feature, latlng) => L.circleMarker(latlng, markerStyle(feature.properties)),
-  }).addTo(map)
-
-  // One tooltip and one click handler for the whole layer, resolved against
-  // whichever marker the event came from. Binding them per feature created a
-  // Tooltip object and a listener for every observation — ~48k of each — which
-  // cost more than drawing the markers did.
-  // Hovering a point says what it is AND what the map is currently saying about
-  // it: the value behind its color and size, and what the overlay reports for
-  // the cell it sits in. Without that, the encodings can only be read by eye
-  // against a legend, and the overlay could not be read at a point at all.
-  geoLayer.bindTooltip((lyr) => pointTooltip(lyr.feature),
-                       { direction: 'top', sticky: true, className: 'obs-tip' })
-  geoLayer.on('click', (e) => {
-    const feature = e.layer?.feature
-    if (!feature) return
-    selected.value = selectFeature(feature)
-    const co = feature.geometry?.coordinates
-    selectedLatLng.value = co ? [co[1], co[0]] : null
-  })
-
-  if (!showPoints.value) geoLayer.remove()
-
-  const bounds = geoLayer.getBounds()
-  // Non-animated: an in-flight fit animation would block a subsequent zoom-in to
-  // a focused observation (Leaflet ignores zoom changes mid-animation).
-  if (bounds.isValid() && !suppressFit) {
-    map.fitBounds(bounds.pad(0.1), { animate: false })
-    fittedOnce = true
-  }
-  suppressFit = false // one-shot
-}
-
-// Fitting the view to the data is right when a filter narrows to one species,
-// and wrong when a chunk lands. The viewer panned somewhere deliberately; the
-// ground under them arriving is not a reason to throw them back to the extent
-// of the whole dataset. Worse, the fit fires moveend, which asks for the cells
-// of the view it just jumped to, which lands another chunk: the map would sit
-// there flicking between where you were and the whole country.
-//
-// The first chunked render is the overview, which is everything, so that one
-// still fits. After that only a real data change moves the map.
-let seenChunkVersion = 0
-watch(filteredData, (geo) => {
-  if (chunks.version.value !== seenChunkVersion) {
-    seenChunkVersion = chunks.version.value
-    if (fittedOnce) suppressFit = true
-  }
-  renderPoints(geo)
-})
-
-// "Open on map" from a chart: select the matching observation and pan to it.
-function applyFocus(target) {
-  if (!target || !map) return
-  const lon = Number(target.lon), lat = Number(target.lat)
-  const feats = filteredData.value?.features || []
-  const match = (target.uuid && feats.find((f) => f.properties?.uuid === target.uuid))
-    || feats.find((f) => {
-      const co = f.geometry?.coordinates
-      return co && Math.abs(co[0] - lon) < 1e-6 && Math.abs(co[1] - lat) < 1e-6
-    })
-  if (match) selected.value = selectFeature(match)
-  if (Number.isFinite(lat) && Number.isFinite(lon)) {
-    selectedLatLng.value = [lat, lon]
-    // Zoom in on the observation (not just pan). Stop any in-flight fit-to-data
-    // animation first, or it would complete and override this zoom.
-    suppressFit = true
-    map.setView([lat, lon], 15)
-  }
-  setFocusObservation(null) // consume so a later revisit doesn't re-trigger
-}
-watch(focusObservation, (t) => t && applyFocus(t))
-
-// A location pin marks the currently-selected observation (from a click or from
-// "Open on map"), and clears when the detail drawer is closed.
-function pinIcon() {
-  return L.divIcon({
-    className: 'obs-pin', iconSize: [28, 40], iconAnchor: [14, 38], tooltipAnchor: [0, -34],
-    html: `<svg viewBox="0 0 24 34" width="28" height="40" aria-hidden="true">
-      <path d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 34 12 34s12-13.4 12-22.1C24 5.3 18.6 0 12 0z"
-            fill="#e34948" stroke="#fff" stroke-width="1.5"/>
-      <circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>`,
-  })
-}
-watch(selectedLatLng, (ll) => {
-  if (!map || !L) return
-  if (selectedMarker) { selectedMarker.remove(); selectedMarker = null }
-  if (ll) selectedMarker = L.marker(ll, { icon: pinIcon(), interactive: false, zIndexOffset: 1000 }).addTo(map)
-})
-// Closing the drawer (selected → null) removes the pin.
-watch(selected, (s) => { if (!s) selectedLatLng.value = null })
 
 onMounted(async () => {
   try {
@@ -2159,6 +890,8 @@ onMounted(async () => {
       tap: true, tapTolerance: 20,
       maxZoom: MAP_MAX_ZOOM,
     }).setView([39.5, -105.7], 7)
+    mapRef.value = map
+    LRef.value = L
     // Locate first, then zoom: Leaflet stacks a corner's controls in the order
     // they are added, so this puts the crosshair directly above the +/- pair
     // rather than in the control bar at the top, which is where it was competing
@@ -2172,7 +905,7 @@ onMounted(async () => {
         btn.title = tip('Centre the map on where you are', 'l')
         btn.setAttribute('aria-label', 'My location')
         btn.innerHTML = '<span class="dot-icon"></span>'
-        locateBtn = btn
+        setLocateBtn(btn)
         // stop() as well as preventDefault: without it the click reaches the map
         // underneath and, in pin mode, drops a point behind the button.
         L.DomEvent.on(btn, 'click', (e) => { L.DomEvent.stop(e); locateMe() })
@@ -2182,112 +915,12 @@ onMounted(async () => {
     })
     new LocateControl({ position: 'bottomleft' }).addTo(map)
     L.control.zoom({ position: 'bottomleft' }).addTo(map)
-    // ArcGIS MapServer services render from a bbox rather than serving a cut
-    // tile pyramid, so their tiles are asked for by extent. Everything else is
-    // a plain XYZ template.
-    const ArcGISLayer = L.TileLayer.extend({
-      getTileUrl(coords) {
-        return arcgisExportUrl(this.options.service, coords.x, coords.y, coords.z,
-          { size: 256, layers: this.options.serviceLayers })
-      },
-    })
 
-    // Reference tile services as toggleable layers alongside the basemaps.
-    const tileOverlayList = []
-    for (const o of TILE_LAYERS) {
-      const opts = {
-        // The catalogue's maxZoom is where each service's tiles stop, which is
-        // maxNativeZoom here. Passed as maxZoom it made every coarse layer —
-        // all of Weather, Ground and Vegetation — vanish the moment the map was
-        // zoomed past it, so ticking them appeared to do nothing at all.
-        attribution: o.attribution, maxZoom: MAP_MAX_ZOOM, maxNativeZoom: o.maxZoom,
-        opacity: (o.opacity ?? 1) * tileOpacity.value,
-        crossOrigin: 'anonymous',
-        // Leaflet defaults updateWhenIdle to true on touch devices, which leaves
-        // an overlay's tiles pinned in place through a pinch-zoom and only
-        // repositioned once the gesture ends — the layer reads as "stuck" while
-        // the basemap moves under it. Update continuously instead so the overlay
-        // tracks the zoom the way the basemap does.
-        updateWhenIdle: false, updateWhenZooming: true,
-      }
-      const layer = o.arcgis
-        ? new ArcGISLayer('', { ...opts, service: o.arcgis, serviceLayers: o.layers || '' })
-        : L.tileLayer(o.url.replace('{date}', tileDate.value), opts)
-      // Its own opacity is kept beside it: the global dimmer multiplies into
-      // this rather than replacing it, so a hillshade meant to sit at 60%
-      // stays proportionally lighter than a layer meant to sit at full.
-      layer._baseOpacity = o.opacity ?? 1
-      layer._spec = o
-      tileLayers.push(layer)
-      // A reference layer that fails to load looks exactly like one saying there
-      // is nothing there — no trails, no public land — which is the most
-      // misleading thing this map could do. Track whether a layer has ever
-      // succeeded, and say so when it has not.
-      let loaded = 0
-      let failed = 0
-      layer.on('tileload', () => {
-        loaded += 1
-        if (loaded === 1) tileErrors.value = tileErrors.value.filter((n) => n !== o.name)
-      })
-      layer.on('tileerror', () => {
-        failed += 1
-        // One failure is a hiccup; several with nothing loaded is the service.
-        if (loaded === 0 && failed >= 3 && !tileErrors.value.includes(o.name)) {
-          tileErrors.value = [...tileErrors.value, o.name]
-        }
-      })
-      // Its key and its caveat travel with it: shown while it is on, gone when
-      // it is off. A layer with neither still registers nothing, which is right
-      // — imagery and place labels are pictures, not measurements.
-      if (o.note || o.legend || o.time) {
-        layer.on('add', () => {
-          if (!activeTileNotes.value.some((n) => n.name === o.name)) {
-            activeTileNotes.value = [...activeTileNotes.value, {
-              name: o.name, note: o.note, legend: o.legend, time: !!o.time,
-              native: o.maxZoom,
-              slug: o.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-            }]
-          }
-        })
-      }
-      // Clear the warning when the layer is switched off, so it does not linger.
-      layer.on('remove', () => {
-        tileErrors.value = tileErrors.value.filter((n) => n !== o.name)
-        activeTileNotes.value = activeTileNotes.value.filter((n) => n.name !== o.name)
-        loaded = 0
-        failed = 0
-      })
-      tileOverlayList.push({
-        key: o.name, name: o.name, group: o.group, layer, note: o.note,
-        source: layerSource(o.attribution), type: layerDataType(o.legend),
-      })
-    }
-    // The global dimmer still dims everything at once — but it now multiplies
-    // into whatever each layer has been set to individually, rather than
-    // replacing it. A hillshade meant to sit at 60% stays proportionally
-    // lighter than a layer meant to sit at full, and a layer someone has faded
-    // by hand in the manager stays faded.
-    watch(tileOpacity, (v) => {
-      for (const l of tileLayers) {
-        const own = layerOpacity.value[l._spec?.ee ? l._spec.key : l._spec?.name] ?? 1
-        l.setOpacity(l._baseOpacity * own * v)
-      }
-      heatmaps.persist()
+    // Reference tile services (public rasters: hillshade, land cover, trails…).
+    const tileOverlayList = setupReferenceTileLayers({
+      L, map, tileOpacity, tileDate, tileErrors, activeTileNotes,
+      tileLayers, layerOpacity, heatmaps,
     })
-
-    // Moving the date re-points the time-varying layers at another day's tiles.
-    // setUrl redraws in place, so a layer keeps its position in the stack and
-    // its toggle stays on rather than the layer being rebuilt under the viewer.
-    watch(tileDate, (d) => {
-      if (!d) return
-      for (const l of tileLayers) {
-        if (l._spec?.time && l._spec.url) l.setUrl(l._spec.url.replace('{date}', d))
-      }
-    })
-    // Our own layer picker rather than L.control.layers, for two reasons. It
-    // sits in the control bar with everything else instead of floating over the
-    // map in its own white box, and Leaflet's takes one flat list, so grouping
-    // had to be smuggled into the labels as markup.
     baseLayers.value = [
       { key: 'grey', name: 'Light gray', layer: grey },
       { key: 'greyDark', name: 'Dark gray', layer: greyDark },
@@ -2295,142 +928,12 @@ onMounted(async () => {
       { key: 'topo', name: 'Terrain (OpenTopoMap)', layer: topo },
       { key: 'sat', name: 'Satellite (Esri)', layer: sat },
     ]
-    // The map was created with the default basemap; swap in the remembered one
-    // now that the choices exist.
     restoreBase()
     overlayLayers.value = tileOverlayList
 
-    // ─── Elevation band canvas layer ────────────────────────────────────────
-    // Extends L.GridLayer with a per-tile canvas that fetches Terrarium DEM
-    // tiles (R*256 + G + B/256 - 32768 = metres), then paints:
-    //   • a teal highlight for pixels inside the elevation filter band, with a
-    //     dark mask outside it — when elevMin or elevMax is set.
-    //   • a hypsometric tint (green → tan → grey) when no filter is active,
-    //     so the layer still shows terrain context without a filter.
-    // Redraw is triggered whenever the filter changes; the layer key matches the
-    // overlay name so LayerManager handles it uniformly.
-    {
-      const ElevBandGridLayer = L.GridLayer.extend({
-        createTile(coords, done) {
-          const sz = this.getTileSize()
-          const canvas = document.createElement('canvas')
-          canvas.width = sz.x
-          canvas.height = sz.y
-          const url = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${coords.z}/${coords.x}/${coords.y}.png`
-          const img = new Image()
-          img.crossOrigin = 'anonymous'
-          img.onload = () => {
-            try {
-              const ctx = canvas.getContext('2d')
-              ctx.drawImage(img, 0, 0, sz.x, sz.y)
-              const src = ctx.getImageData(0, 0, sz.x, sz.y).data
-              const out = ctx.createImageData(sz.x, sz.y)
-              const loM = this.options.elevMin
-              const hiM = this.options.elevMax
-              const hasFilter = loM != null || hiM != null
-              const lo = loM ?? -Infinity
-              const hi = hiM ?? Infinity
-              // Band gradient stops: deep blue (low) → teal → green (mid) → yellow → orange (high).
-              // Lerped in RGB; five stops give the ramp a bit of shape without a full colour-space
-              // library. Indices 0–4, evenly spaced across the band.
-              const GRAD = [
-                [30, 100, 200],  // deep blue   (lowest in band)
-                [42, 161, 210],  // sky teal
-                [80, 185, 120],  // green        (mid-band)
-                [220, 185,  60], // warm yellow
-                [210,  90,  30], // orange-red   (highest in band)
-              ]
-              function bandColor(t) {
-                // t ∈ [0, 1]; map into the four segments of the five-stop ramp.
-                const seg = Math.min(3, Math.floor(t * 4))
-                const s = t * 4 - seg
-                const a = GRAD[seg], b2 = GRAD[seg + 1]
-                return [
-                  Math.round(a[0] + s * (b2[0] - a[0])),
-                  Math.round(a[1] + s * (b2[1] - a[1])),
-                  Math.round(a[2] + s * (b2[2] - a[2])),
-                ]
-              }
-              for (let i = 0; i < src.length; i += 4) {
-                const elev = src[i] * 256 + src[i + 1] + src[i + 2] / 256 - 32768
-                if (hasFilter) {
-                  if (elev >= lo && elev <= hi) {
-                    // Normalise within the band and apply the gradient.
-                    const span = hi - lo
-                    const t = span > 0 ? (elev - lo) / span : 0.5
-                    const [r, g, b] = bandColor(Math.max(0, Math.min(1, t)))
-                    out.data[i] = r; out.data[i + 1] = g; out.data[i + 2] = b; out.data[i + 3] = 185
-                  } else {
-                    out.data[i] = 0; out.data[i + 1] = 0; out.data[i + 2] = 0; out.data[i + 3] = 55
-                  }
-                } else {
-                  // No filter: hypsometric tint (green → tan → grey) across the full DEM range.
-                  const t = Math.max(0, Math.min(1, (elev + 50) / 4500))
-                  let r, g, b
-                  if (t < 0.4) {
-                    const s = t / 0.4
-                    r = Math.round(132 + s * 56); g = Math.round(184 - s * 32); b = Math.round(112 - s * 16)
-                  } else {
-                    const s = (t - 0.4) / 0.6
-                    r = Math.round(188 - s * 28); g = Math.round(152 + s * 6); b = Math.round(96 + s * 62)
-                  }
-                  out.data[i] = r; out.data[i + 1] = g; out.data[i + 2] = b; out.data[i + 3] = 130
-                }
-              }
-              ctx.putImageData(out, 0, 0)
-            } catch { /* silently ignore decode errors on bad tiles */ }
-            done(null, canvas)
-          }
-          img.onerror = () => done(null, canvas)
-          img.src = url
-          return canvas
-        },
-      })
-
-      const elevBandLayer = new ElevBandGridLayer({
-        elevMin: null, elevMax: null,
-        tileSize: 256, maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 14,
-        opacity: 0.75, attribution: 'Elevation: Tilezen / Amazon Web Services (CC BY)',
-        updateWhenIdle: false, updateWhenZooming: true,
-      })
-      elevBandLayer._baseOpacity = 0.75
-      tileLayers.push(elevBandLayer)
-
-      // Sync filter → layer params and redraw when the filter changes.
-      watch([() => filters.value.elevMin, () => filters.value.elevMax], ([lo, hi]) => {
-        elevBandLayer.options.elevMin = lo ?? null
-        elevBandLayer.options.elevMax = hi ?? null
-        if (map?.hasLayer(elevBandLayer)) elevBandLayer.redraw()
-      })
-
-      elevBandLayer.on('add', () => {
-        if (!activeTileNotes.value.some((n) => n.name === 'Elevation band')) {
-          activeTileNotes.value = [...activeTileNotes.value, {
-            name: 'Elevation band',
-            note: 'Decoded from Terrarium DEM tiles. With an elevation filter set (Map Filters), in-band terrain is highlighted; without one, a hypsometric tint shows relief.',
-            legend: {
-              type: 'ramp', unit: 'm',
-              min: filters.value.elevMin != null ? String(filters.value.elevMin) : '0',
-              max: filters.value.elevMax != null ? String(filters.value.elevMax) : '4 500+',
-              stops: filters.value.elevMin != null || filters.value.elevMax != null
-                ? ['#1e64c8', '#2aa1d2', '#50b978', '#dcb93c', '#d25a1e']
-                : ['#84b870', '#c9a86c', '#a0a0a0'],
-            },
-            slug: 'elevation-band',
-          }]
-        }
-      })
-      elevBandLayer.on('remove', () => {
-        activeTileNotes.value = activeTileNotes.value.filter((n) => n.name !== 'Elevation band')
-      })
-
-      tileOverlayList.push({
-        key: 'Elevation band', name: 'Elevation band', group: 'Terrain',
-        layer: elevBandLayer,
-        note: 'Highlights terrain within the elevation filter. Hypsometric tint when no filter is set.',
-        source: 'Tilezen/Amazon', type: 'Continuous raster',
-      })
-    }
+    // Elevation band canvas layer — decodes Terrarium DEM tiles, highlights
+    // the elevation filter band or shows a hypsometric tint when none is set.
+    tileOverlayList.push(setupElevBandLayer({ L, map, filters, activeTileNotes, tileLayers }))
 
     // Earth Engine layers arrive after their catalogue does, so they join the
     // list rather than being in it from the start.
@@ -2517,13 +1020,13 @@ onMounted(async () => {
     if (!data.value) throw new Error('no data')
     // A link carrying a view sets it explicitly; skip the fit-to-data that would
     // otherwise throw that view away.
-    if (shared.view) suppressFit = true
+    if (shared.view) setSuppressFit(true)
     renderPoints(filteredData.value)
     if (shared.view) {
       map.setView(shared.view.center, shared.view.zoom, { animate: false })
       // The map is now deliberately placed, so the chunks that arrive for this
       // view must not refit it away.
-      fittedOnce = true
+      setFittedOnce(true)
     }
     syncMapView()
     renderHeatmap()
@@ -2534,38 +1037,6 @@ onMounted(async () => {
     loadError.value = `Could not load map (${err.message}).`
   }
 })
-
-// Show a dot at the viewer's location (browser geolocation, opt-in per click).
-function locateMe() {
-  if (!map || !L) return
-  if (!('geolocation' in navigator)) {
-    locateError.value = 'Geolocation not supported by this browser.'
-    return
-  }
-  locating.value = true
-  locateError.value = ''
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      locating.value = false
-      const { latitude: lat, longitude: lon, accuracy } = pos.coords
-      if (userLayer) { userLayer.remove(); userLayer = null }
-      userLayer = L.layerGroup([
-        // Accuracy halo + a solid "you are here" dot.
-        L.circle([lat, lon], { radius: accuracy || 0, color: '#2a78d6', weight: 1, fillOpacity: 0.12 }),
-        L.circleMarker([lat, lon], { radius: 7, color: '#fff', weight: 2, fillColor: '#2a78d6', fillOpacity: 1 })
-          .bindTooltip('You are here', { direction: 'top' }),
-      ]).addTo(map)
-      map.setView([lat, lon], Math.max(map.getZoom() || 0, 11))
-    },
-    (err) => {
-      locating.value = false
-      locateError.value = err.code === err.PERMISSION_DENIED
-        ? 'Location permission denied.'
-        : 'Could not get your location.'
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
-  )
-}
 
 // Only while the map is on screen: pressing "o" on the Charts page should do
 // nothing rather than reach for a control that is not there.

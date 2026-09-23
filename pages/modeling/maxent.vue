@@ -254,7 +254,7 @@ async function onSubmit() {
 }
 
 async function confirmDelete(model) {
-  if (confirm(`Are you sure you want to delete “${model.title}”?`)) {
+  if (confirm(`Are you sure you want to delete "${model.title}"?`)) {
     const res = await deleteModel(model.id)
     if (res.ok) await fetchModels()
   }

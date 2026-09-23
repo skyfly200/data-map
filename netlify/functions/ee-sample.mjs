@@ -131,7 +131,7 @@ export default async function handler(request) {
 
   for (const key of keys) {
     const auth = await requireTier(request, tierFor(key), {
-      message: `“${describeLayer(key)?.name || key}” is a members' layer.`,
+      message: `"${describeLayer(key)?.name || key}" is a members' layer.`,
     })
     if (!auth.ok) return auth.response
   }

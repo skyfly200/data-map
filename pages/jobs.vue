@@ -495,7 +495,7 @@ const taxonUnknown = computed(() => Boolean(form.taxon.trim()) && !taxonCount.va
 const taxonNote = computed(() => {
   if (!form.taxon.trim()) return ''
   if (taxonUnknown.value) {
-    return `Nothing in the loaded dataset matches “${form.taxon.trim()}”, so this job would `
+    return `Nothing in the loaded dataset matches "${form.taxon.trim()}", so this job would `
       + 'select no observations. Pick a name from the list, or clear it to enrich the whole area.'
   }
   return `${taxonCount.value.toLocaleString()} observations in the dataset carry that name, `
@@ -779,7 +779,7 @@ async function setVisibility(dataset, visibility) {
 }
 
 async function removeDataset(dataset) {
-  if (!confirm(`Delete “${dataset.title}”? The job result itself is kept.`)) return
+  if (!confirm(`Delete "${dataset.title}"? The job result itself is kept.`)) return
   try {
     await datasetsApi.remove(dataset.id)
     await datasetsApi.refreshAvailable()
