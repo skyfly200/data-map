@@ -283,6 +283,11 @@
                  :maxlength="p.maxLength || 60" :placeholder="p.default"
                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
                  @change="setEeParam(n.ee, name, $event.target.value)" />
+          <input v-else-if="p.type === 'date'" :id="`ee-${n.slug}-${name}`" type="date"
+                 :min="typeof p.min === 'function' ? p.min() : p.min"
+                 :max="typeof p.max === 'function' ? p.max() : p.max"
+                 :value="(eeParams[n.ee] || {})[name] ?? (typeof p.default === 'function' ? p.default() : p.default)"
+                 @change="setEeParam(n.ee, name, $event.target.value)" />
           <input v-else :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
                  @change="setEeParam(n.ee, name, Number($event.target.value))" />
@@ -1294,6 +1299,84 @@ function removeModelOverlay() {
   modelOverlay.value = null
 }
 
+/**
+ * Fetch tiles for a model job by id and display the suitability surface.
+ * Called when the user selects a model from the layer manager or the
+ * HeatmapControls dropdown, so the overlay loads without a page navigation.
+ */
+async function loadModelById(jobId: string) {
+  if (!jobId || !map || !L) return
+  removeModelOverlay()
+  const token = await accessToken()
+  let body: any
+  try {
+    const res = await fetch(`/.netlify/functions/model-tiles?job=${encodeURIComponent(jobId)}`, {
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    })
+    body = await res.json()
+    if (!res.ok || !body.ok || !body.template) throw new Error(body.error || 'Could not load model.')
+  } catch (err: any) {
+    // Surface the error the same way EE errors are shown
+    eeErrors.value = [...eeErrors.value, { key: `maxent:${jobId}`, name: 'MaxEnt model', message: err.message }]
+    return
+  }
+
+  const layer = L.tileLayer(body.template, {
+    opacity: 0.7,
+    maxZoom: MAP_MAX_ZOOM,
+    updateWhenIdle: false,
+    updateWhenZooming: true,
+    className: 'model-suitability',
+  })
+  let failed = 0
+  layer.on('tileerror', () => {
+    failed += 1
+    if (failed >= 3 && modelOverlay.value && !modelOverlay.value.stale) {
+      modelOverlay.value = { ...modelOverlay.value, stale: true }
+    }
+  })
+  layer.addTo(map)
+  modelLayer = layer
+
+  const meta = body.meta || {}
+  modelOverlay.value = {
+    jobId,
+    label: meta.label || 'Model',
+    legend: meta.legend || { stops: ['#2c2f6b', '#c6301f'], min: '0', max: '1' },
+    age: overlayAge(meta.mintedAt),
+    cv: meta.cv || null,
+    stale: false,
+    refreshing: false,
+  }
+
+  const r = meta.region
+  if (r && Number.isFinite(r.north)) {
+    try {
+      map.fitBounds(L.latLngBounds([r.south, r.west], [r.north, r.east]).pad(0.05), { animate: false })
+    } catch { /* bad region */ }
+  }
+}
+
+// When the user picks a MaxEnt model (from layer manager or HeatmapControls),
+// load its tiles immediately — no page navigation required.
+watch(() => heatmaps.maxentModelId.value, (id) => {
+  if (heatmaps.mode.value === 'maxent' && id) {
+    loadModelById(id)
+  } else if (!id) {
+    removeModelOverlay()
+  }
+})
+
+// Switching to maxent mode with a model already selected should load it.
+// Switching away should remove the overlay so a stale surface is not left on.
+watch(() => heatmaps.mode.value, (m, prev) => {
+  if (m === 'maxent' && heatmaps.maxentModelId.value) {
+    loadModelById(heatmaps.maxentModelId.value)
+  } else if (prev === 'maxent' && m !== 'maxent') {
+    removeModelOverlay()
+  }
+})
+
 // The stacking order of the overlays that are on, topmost first, and how see-
 // through each one is. Both are per-layer because both were global and that was
 // wrong: overlays hide one another, so land ownership under a hillshade is a
@@ -1589,6 +1672,10 @@ function setEeParam(key, name, value) {
     const text = String(value).trim()
     if (!text) return
     next = text
+  } else if (p?.type === 'date') {
+    const date = String(value).trim()
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
+    next = date
   } else {
     next = Math.floor(Number(value))
     if (!Number.isFinite(next)) next = p?.default ?? 0
