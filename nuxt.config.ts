@@ -15,6 +15,9 @@ export default defineNuxtConfig({
       },
     },
   },
+  routeRules: {
+    '/analysis': { redirect: '/charts?tab=analysis' },
+  },
   nitro: {
     preset: 'netlify',
     // The observation GeoJSON is ~48 MB of highly repetitive JSON that gzips to

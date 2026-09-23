@@ -19,7 +19,7 @@
              scrolls sideways hides the ones nobody scrolls to. Below the
              breakpoint this is a menu; above it, the links themselves. -->
         <nav class="app-nav">
-          <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-link">{{ l.label }}</NuxtLink>
+          <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-link" :title="l.title" :aria-label="l.title">{{ l.label }}</NuxtLink>
           <!-- Members only, and client-side only. The tier comes out of the
                access token, which the server render does not have, so a link
                drawn from it on the server hydrates into a different DOM. -->
@@ -28,7 +28,7 @@
           </ClientOnly>
         </nav>
         <PopoverMenu class="nav-pop" icon="☰" title="Go to" align="right" btn-class="hdr-btn">
-          <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-item">{{ l.label }}</NuxtLink>
+          <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-item">{{ l.title || l.label }}</NuxtLink>
           <ClientOnly>
             <NuxtLink v-if="isMember" to="/modeling/maxent" class="nav-item">Modeling</NuxtLink>
           </ClientOnly>
@@ -118,9 +118,8 @@ const NAV = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/map', label: 'Map' },
   { to: '/charts', label: 'Charts' },
-  { to: '/analysis', label: 'Analysis' },
   { to: '/data', label: 'Data' },
-  { to: '/guide', label: 'Guide' },
+  { to: '/guide', label: '📖', title: 'Guide' },
 ]
 
 // Shown beside NAV when the viewer is a member. Not part of NAV itself, because
@@ -185,7 +184,7 @@ shortcuts.register([
   { scope: 'Navigate', keys: 'h', label: 'Dashboard', run: go('/dashboard') },
   { scope: 'Navigate', keys: 'm', label: 'Map', run: go('/map') },
   { scope: 'Navigate', keys: 'c', label: 'Charts', run: go('/charts') },
-  { scope: 'Navigate', keys: 'a', label: 'Analysis', run: go('/analysis') },
+  { scope: 'Navigate', keys: 'a', label: 'Analysis', run: go('/charts?tab=analysis') },
   { scope: 'Navigate', keys: 'd', label: 'Data', run: go('/data') },
   { scope: 'Navigate', keys: 'x', label: 'Modeling', run: go('/modeling/maxent') },
   { scope: 'Navigate', keys: 'g', label: 'Guide', run: go('/guide') },
