@@ -63,6 +63,11 @@ import DashboardSavedCharts from '~/components/DashboardSavedCharts.vue'
 import DashboardQuickFilters from '~/components/DashboardQuickFilters.vue'
 import DashboardNowFruiting from '~/components/DashboardNowFruiting.vue'
 import DashboardPhenology from '~/components/DashboardPhenology.vue'
+import DashboardModelLeaderboard from '~/components/DashboardModelLeaderboard.vue'
+import DashboardMapPreview from '~/components/DashboardMapPreview.vue'
+import DashboardDataQuality from '~/components/DashboardDataQuality.vue'
+import DashboardFavorites from '~/components/DashboardFavorites.vue'
+import DashboardWeather from '~/components/DashboardWeather.vue'
 
 const { isAuthed } = useAuth()
 const { orderedWidgets, load, add, remove, reorder, reset } = useDashboardState()
@@ -77,6 +82,11 @@ const WIDGET_TYPES = [
   { type: 'quick-filters', label: 'Quick filters', icon: '🔍', component: DashboardQuickFilters },
   { type: 'now-fruiting', label: 'Now fruiting', icon: '🍄', component: DashboardNowFruiting },
   { type: 'phenology', label: 'Phenology calendar', icon: '📅', component: DashboardPhenology },
+  { type: 'model-leaderboard', label: 'Model leaderboard', icon: '🏆', component: DashboardModelLeaderboard },
+  { type: 'map-preview', label: 'Map preview', icon: '🗺️', component: DashboardMapPreview },
+  { type: 'data-quality', label: 'Data quality', icon: '🔬', component: DashboardDataQuality },
+  { type: 'favorites', label: 'Favorites', icon: '⭐', component: DashboardFavorites },
+  { type: 'weather', label: 'Weather correlation', icon: '🌧️', component: DashboardWeather },
 ]
 const COMPONENTS = Object.fromEntries(WIDGET_TYPES.map((w) => [w.type, w.component]))
 function componentFor(type) { return COMPONENTS[type] || DashboardOverview }
