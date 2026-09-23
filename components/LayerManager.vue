@@ -21,76 +21,73 @@
     <!-- Anything the host wants above the stack. On a phone the map's basemap
          and heatmap controls render here, because three more buttons did not
          fit on the bar beside them. -->
-    <div v-if="$slots.top" class="lm-top"><slot name="top" /></div>
+    <div v-if=”$slots.top” class=”lm-top”><slot name=”top” /></div>
 
-    <!-- The active stack, first and separately.
-         An overlay list is read in two completely different ways: "what can I
-         add" is a browse, "what is on and in what order" is a glance. The old
-         single dropdown answered only the first, and the second had to be
-         reconstructed by scanning forty checkboxes for ticks. -->
-    <section v-if="activeList.length" class="lm-active" :class="{ collapsed: activePanelCollapsed }">
-      <div class="lm-sec-head">
-        <button class="lm-collapse-toggle" @click="activePanelCollapsed = !activePanelCollapsed"
-                :aria-expanded="String(!activePanelCollapsed)" title="Collapse active layers">
-          <span class="lm-caret" :class="{ open: !activePanelCollapsed }" aria-hidden="true">▸</span>
-          <span>Drawn, top first</span>
-        </button>
-        <HelpLink option="map-layer-order" />
+    <!-- Tab bar: Active layers vs Browse catalogue -->
+    <div class=”lm-tabs” role=”tablist”>
+      <button role=”tab” class=”lm-tab” :class=”{ on: activeTab === 'active' }”
+              :aria-selected=”activeTab === 'active'” @click=”activeTab = 'active'”>
+        Active
+        <span v-if=”activeList.length” class=”lm-tab-badge”>{{ activeList.length }}</span>
+      </button>
+      <button role=”tab” class=”lm-tab” :class=”{ on: activeTab === 'browse' }”
+              :aria-selected=”activeTab === 'browse'” @click=”activeTab = 'browse'”>
+        Browse
+      </button>
+    </div>
+
+    <!-- Active layers tab -->
+    <section v-show=”activeTab === 'active'” class=”lm-active lm-tab-panel” role=”tabpanel”>
+      <div v-if=”!activeList.length” class=”lm-empty lm-empty-active”>
+        No layers drawn yet — switch to Browse to add some.
       </div>
-      <ul class="lm-stack">
-        <li v-for="(item, i) in activeList" :key="item.key" class="lm-on"
-            :class="{ muted: solo && solo !== item.key }">
-          <div class="lm-on-top">
-            <button class="lm-swatch" :title="`Hide ${item.name}`" @click="$emit('toggle', item.key)">
-              <span class="lm-tick" aria-hidden="true">✓</span>
+      <div v-else class=”lm-sec-head”>
+        <span>Drawn, top first</span>
+        <HelpLink option=”map-layer-order” />
+      </div>
+      <ul v-if=”activeList.length” class=”lm-stack”>
+        <li v-for=”(item, i) in activeList” :key=”item.key” class=”lm-on”
+            :class=”{ muted: solo && solo !== item.key }”>
+          <div class=”lm-on-top”>
+            <button class=”lm-swatch” :title=”`Hide ${item.name}`” @click=”$emit('toggle', item.key)”>
+              <span class=”lm-tick” aria-hidden=”true”>✓</span>
             </button>
-            <span class="lm-on-name" :title="item.name">{{ item.name }}</span>
-            <span v-if="eeLoading.has(item.key)" class="lm-ee-spinner" aria-label="Rendering…" title="Rendering layer…"></span>
-            <!-- Solo answers "what is this one contributing", which otherwise
-                 costs you the stack you built and a minute rebuilding it. The
-                 others stay ticked; they are only not drawn. -->
-            <button class="lm-solo" :class="{ on: solo === item.key }"
-                    :aria-pressed="String(solo === item.key)"
-                    :title="solo === item.key ? 'Draw every layer again' : `Draw only ${item.name}`"
-                    @click="$emit('solo', solo === item.key ? '' : item.key)">S</button>
-            <!-- Stacking, because overlays hide each other: land ownership under
-                 a hillshade is a different map from the same two the other way
-                 up, and there is no other way to say which you meant. -->
-            <span class="lm-order">
-              <button :disabled="i === 0" title="Send to the top"
-                      @click="$emit('move', item.key, 'top')">⤒</button>
-              <button :disabled="i === 0" title="Move up" @click="$emit('move', item.key, -1)">▲</button>
-              <button :disabled="i === activeList.length - 1" title="Move down"
-                      @click="$emit('move', item.key, 1)">▼</button>
-              <button :disabled="i === activeList.length - 1" title="Send to the bottom"
-                      @click="$emit('move', item.key, 'bottom')">⤓</button>
+            <span class=”lm-on-name” :title=”item.name”>{{ item.name }}</span>
+            <span v-if=”eeLoading.has(item.key)” class=”lm-ee-spinner” aria-label=”Rendering…” title=”Rendering layer…”></span>
+            <button class=”lm-solo” :class=”{ on: solo === item.key }”
+                    :aria-pressed=”String(solo === item.key)”
+                    :title=”solo === item.key ? 'Draw every layer again' : `Draw only ${item.name}`”
+                    @click=”$emit('solo', solo === item.key ? '' : item.key)”>S</button>
+            <span class=”lm-order”>
+              <button :disabled=”i === 0” title=”Send to the top”
+                      @click=”$emit('move', item.key, 'top')”>⤒</button>
+              <button :disabled=”i === 0” title=”Move up” @click=”$emit('move', item.key, -1)”>▲</button>
+              <button :disabled=”i === activeList.length - 1” title=”Move down”
+                      @click=”$emit('move', item.key, 1)”>▼</button>
+              <button :disabled=”i === activeList.length - 1” title=”Send to the bottom”
+                      @click=”$emit('move', item.key, 'bottom')”>⤓</button>
             </span>
           </div>
-          <label class="lm-op">
-            <span class="lm-op-label">{{ Math.round(opacityOf(item.key) * 100) }}%</span>
-            <input type="range" min="0.05" max="1" step="0.05" :value="opacityOf(item.key)"
-                   :aria-label="`Opacity of ${item.name}`"
-                   @input="$emit('opacity', item.key, Number($event.target.value))" />
+          <label class=”lm-op”>
+            <span class=”lm-op-label”>{{ Math.round(opacityOf(item.key) * 100) }}%</span>
+            <input type=”range” min=”0.05” max=”1” step=”0.05” :value=”opacityOf(item.key)”
+                   :aria-label=”`Opacity of ${item.name}`”
+                   @input=”$emit('opacity', item.key, Number($event.target.value))” />
           </label>
-          <!-- Opacity and blending answer different questions, and opacity
-               answers one of them badly: two layers at 50% is both washed out,
-               where multiply keeps both at full strength and combines them by
-               value. Shown per layer because one layer in a stack is usually
-               the one that should combine. Blend controls now hidden under Advanced. -->
-          <div class="lm-blend-wrapper">
-            <button class="lm-advanced-toggle" @click="toggleBlend(item.key)"
-                    :aria-expanded="String(expandedBlends.has(item.key))">
-              <span class="lm-caret" :class="{ open: expandedBlends.has(item.key) }" aria-hidden="true">▸</span>
+          <div class=”lm-blend-wrapper”>
+            <button class=”lm-advanced-toggle” @click=”toggleBlend(item.key)”
+                    :aria-expanded=”String(expandedBlends.has(item.key))”>
+              <span class=”lm-caret” :class=”{ open: expandedBlends.has(item.key) }” aria-hidden=”true”>▸</span>
               Advanced
             </button>
-            <div v-show="expandedBlends.has(item.key)" class="lm-blend-controls">
-              <label class="lm-blend">
-                <span class="lm-blend-label">Blend</span>
-                <select :value="blendOf(item.key)" :aria-label="`Blend mode of ${item.name}`"
-                        :title="blendNote(blendOf(item.key))"
-                        @change="$emit('blend', item.key, $event.target.value)">
-                  <option value="">{{ inheritLabel }}</option>
-                  <option v-for="m in BLEND_MODES" :key="m.key" :value="m.key" :title="m.note">
+            <div v-show=”expandedBlends.has(item.key)” class=”lm-blend-controls”>
+              <label class=”lm-blend”>
+                <span class=”lm-blend-label”>Blend</span>
+                <select :value=”blendOf(item.key)” :aria-label=”`Blend mode of ${item.name}`”
+                        :title=”blendNote(blendOf(item.key))”
+                        @change=”$emit('blend', item.key, $event.target.value)”>
+                  <option value=””>{{ inheritLabel }}</option>
+                  <option v-for=”m in BLEND_MODES” :key=”m.key” :value=”m.key” :title=”m.note”>
                     {{ m.label }}
                   </option>
                 </select>
@@ -101,59 +98,47 @@
       </ul>
     </section>
 
-    <!-- Collapsible layer selection panel -->
-    <section class="lm-selection" :class="{ collapsed: selectionPanelCollapsed }">
-      <div class="lm-search">
-        <input v-model="query" type="search" placeholder="Search layers"
-               aria-label="Search layers" />
+    <!-- Browse / layer selector tab -->
+    <section v-show=”activeTab === 'browse'” class=”lm-selection lm-tab-panel” role=”tabpanel”>
+      <div class=”lm-search”>
+        <input v-model=”query” type=”search” placeholder=”Search layers”
+               aria-label=”Search layers” />
       </div>
 
-    <!-- How the browse below is sectioned. Subject is the catalogue's own
-         grouping; source and type re-cut the same layers for when you are
-         after a provider or a kind of raster rather than a topic. -->
-    <div class="lm-groupby" role="group" aria-label="Group layers by">
-      <span class="lm-groupby-label">Group by</span>
-      <div class="lm-seg">
-        <button v-for="m in GROUP_MODES" :key="m.key" type="button"
-                class="lm-seg-btn" :class="{ on: groupMode === m.key }"
-                :aria-pressed="groupMode === m.key" @click="setGroupMode(m.key)">
+    <div class=”lm-groupby” role=”group” aria-label=”Group layers by”>
+      <span class=”lm-groupby-label”>Group by</span>
+      <div class=”lm-seg”>
+        <button v-for=”m in GROUP_MODES” :key=”m.key” type=”button”
+                class=”lm-seg-btn” :class=”{ on: groupMode === m.key }”
+                :aria-pressed=”groupMode === m.key” @click=”setGroupMode(m.key)”>
           {{ m.label }}
         </button>
       </div>
     </div>
 
-    <div class="lm-body">
-      <p v-if="!filtered.length" class="lm-empty">
+    <div class=”lm-body”>
+      <p v-if=”!filtered.length” class=”lm-empty”>
         Nothing matches “{{ query }}”.
       </p>
 
-      <!-- Each group is an expansion panel. The catalogue has grown past what a
-           single open list can carry without scrolling — nine reference layers,
-           the Earth Engine layers, and whatever assets are registered — so a
-           reader browses one section at a time rather than the whole inventory
-           at once. A search overrides the panels and opens everything that
-           matches, since when you are looking for a layer you do not want to
-           first guess which section hid it. -->
-      <section v-for="g in filtered" :key="g.label" class="lm-group">
-        <button type="button" class="lm-group-head" :aria-expanded="isOpen(g.label)"
-                @click="togglePanel(g.label)">
-          <span class="lm-caret" :class="{ open: isOpen(g.label) }" aria-hidden="true">▸</span>
-          <span class="lm-group-label">{{ g.label }}</span>
-          <span class="lm-group-meta">
-            <span v-if="activeCount(g)" class="lm-group-on">{{ activeCount(g) }} on</span>
-            <span class="lm-group-total">{{ g.items.length }}</span>
+      <section v-for=”g in filtered” :key=”g.label” class=”lm-group”>
+        <button type=”button” class=”lm-group-head” :aria-expanded=”isOpen(g.label)”
+                @click=”togglePanel(g.label)”>
+          <span class=”lm-caret” :class=”{ open: isOpen(g.label) }” aria-hidden=”true”>▸</span>
+          <span class=”lm-group-label”>{{ g.label }}</span>
+          <span class=”lm-group-meta”>
+            <span v-if=”activeCount(g)” class=”lm-group-on”>{{ activeCount(g) }} on</span>
+            <span class=”lm-group-total”>{{ g.items.length }}</span>
           </span>
         </button>
-        <div v-show="isOpen(g.label)" class="lm-group-items">
-          <label v-for="o in g.items" :key="o.key" class="lm-row" :class="{ on: active.has(o.key) }">
-            <input type="checkbox" :checked="active.has(o.key)" @change="$emit('toggle', o.key)" />
-            <span class="lm-row-main">
-              <span class="lm-row-name">{{ o.name }}</span>
-              <span v-if="eeLoading.has(o.key)" class="lm-ee-spinner" aria-label="Rendering…" title="Rendering layer…"></span>
-              <!-- Listed but marked, rather than hidden: knowing FRMS
-                   computes it is part of what membership is for. -->
-              <em v-if="o.tier && o.tier !== 'free'" class="lm-tier">{{ o.tier }}</em>
-              <small v-if="o.note" class="lm-note">{{ o.note }}</small>
+        <div v-show=”isOpen(g.label)” class=”lm-group-items”>
+          <label v-for=”o in g.items” :key=”o.key” class=”lm-row” :class=”{ on: active.has(o.key) }”>
+            <input type=”checkbox” :checked=”active.has(o.key)” @change=”$emit('toggle', o.key)” />
+            <span class=”lm-row-main”>
+              <span class=”lm-row-name”>{{ o.name }}</span>
+              <span v-if=”eeLoading.has(o.key)” class=”lm-ee-spinner” aria-label=”Rendering…” title=”Rendering layer…”></span>
+              <em v-if=”o.tier && o.tier !== 'free'” class=”lm-tier”>{{ o.tier }}</em>
+              <small v-if=”o.note” class=”lm-note”>{{ o.note }}</small>
             </span>
           </label>
         </div>
@@ -209,39 +194,27 @@ defineEmits(['toggle', 'opacity', 'move', 'blend', 'solo', 'clear', 'close'])
 const query = ref('')
 const win = ref(null)
 
-// Collapsible active layers panel - state persisted in localStorage
-const activePanelCollapsed = ref(false)
-// Collapsible layer selection panel - state persisted in localStorage
-const selectionPanelCollapsed = ref(false)
+// Tab state: 'active' shows drawn stack, 'browse' shows layer catalogue
+const activeTab = ref('browse')
 onMounted(() => {
   if (import.meta.client) {
     try {
-      const savedActive = localStorage.getItem('layer-manager-active-collapsed')
-      if (savedActive) activePanelCollapsed.value = savedActive === 'true'
-      const savedSelection = localStorage.getItem('layer-manager-selection-collapsed')
-      if (savedSelection) selectionPanelCollapsed.value = savedSelection === 'true'
+      const saved = localStorage.getItem('layer-manager-tab')
+      if (saved === 'active' || saved === 'browse') activeTab.value = saved
     } catch {
       // Preference reads silently fall back to defaults.
     }
   }
 })
-watch(activePanelCollapsed, (val) => {
+watch(activeTab, (val) => {
   if (import.meta.client) {
-    try {
-      localStorage.setItem('layer-manager-active-collapsed', String(val))
-    } catch (e) {
-      // Preference writes silently fail if storage is blocked.
-    }
+    try { localStorage.setItem('layer-manager-tab', val) } catch { /* blocked */ }
   }
 })
-watch(selectionPanelCollapsed, (val) => {
-  if (import.meta.client) {
-    try {
-      localStorage.setItem('layer-manager-selection-collapsed', String(val))
-    } catch (e) {
-      // Preference writes silently fail if storage is blocked.
-    }
-  }
+
+// Auto-switch to Active tab when first layer is added
+watch(() => props.order.length, (len, prev) => {
+  if (len > 0 && prev === 0) activeTab.value = 'active'
 })
 
 // Per-layer blend controls expanded state
@@ -447,18 +420,38 @@ onMounted(() => { if (props.open) seedPanels() })
 }
 .lm-top :deep(.lm-extra[open] > summary) { margin-bottom: 4px; }
 
+/* Tab bar */
+.lm-tabs {
+  display: flex; flex: 0 0 auto;
+  border-bottom: 1px solid var(--border-soft, #eee);
+}
+.lm-tab {
+  flex: 1 1 0; border: 0; background: transparent;
+  color: var(--muted, #777); font: inherit; font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; padding: 7px 10px; display: flex; align-items: center; justify-content: center; gap: 5px;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.lm-tab:hover { color: var(--text); background: var(--surface-2, #f4f4f4); }
+.lm-tab.on { color: var(--accent, #2b7a3d); border-bottom-color: var(--accent, #2b7a3d); background: transparent; }
+.lm-tab-badge {
+  background: var(--accent, #2b7a3d); color: #fff;
+  border-radius: 999px; padding: 1px 6px; font-size: 0.64rem; font-weight: 700;
+}
+
+/* Tab panels — each fills the remaining height and scrolls internally */
+.lm-tab-panel {
+  flex: 1 1 auto; min-height: 0;
+  display: flex; flex-direction: column;
+}
+
 .lm-active {
-  flex: 0 1 auto;
-  min-height: 0;
-  max-height: 260px;
   overflow-y: auto; overscroll-behavior: contain;
-  padding: 9px 12px; border-bottom: 1px solid var(--border-soft, #eee);
+  padding: 10px 12px 12px;
   background: var(--surface-2, #f7f7f7);
 }
-.lm-active.collapsed {
-  max-height: none;
-  overflow-y: visible;
-  padding: 0 12px;
+.lm-empty-active {
+  color: var(--muted, #777); font-size: 0.78rem; text-align: center;
+  padding: 24px 12px;
 }
 .lm-stack { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
 .lm-on-top { display: flex; align-items: center; gap: 7px; }
@@ -568,15 +561,9 @@ onMounted(() => { if (props.open) seedPanels() })
 }
 .lm-search input:focus { border-color: var(--accent, #2b7a3d); outline: none; }
 
-/* Collapsible selection panel */
+/* Browse tab panel */
 .lm-selection {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-.lm-selection.collapsed {
-  flex: 0 0 auto;
+  overflow: hidden;
 }
 
 .lm-groupby {
@@ -606,9 +593,6 @@ onMounted(() => { if (props.open) seedPanels() })
 .lm-body {
   flex: 1 1 auto; min-height: 0;
   overflow-y: auto; overscroll-behavior: contain; padding: 10px 12px 12px;
-}
-.lm-selection.collapsed .lm-body {
-  display: none;
 }
 .lm-empty { margin: 4px 0; color: var(--muted, #777); font-size: 0.78rem; }
 
@@ -685,11 +669,7 @@ onMounted(() => { if (props.open) seedPanels() })
        the thing it is for. */
     max-height: 70%;
   }
-  /* The split between the two lists, as a contract rather than as whatever
-     flexbox happened to do. The stack takes what it needs up to a third of the
-     screen; the browse list is never squeezed below a usable height, because
-     reaching it is the reason the window is open. */
-  .lm-active { flex: 1 1 auto; max-height: 32vh; }
+  .lm-tab-panel { min-height: 0; }
   .lm-body { min-height: 116px; }
 
   /* A drawn layer was three stacked rows — name, opacity, blend — so four
