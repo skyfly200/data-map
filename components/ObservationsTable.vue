@@ -106,13 +106,13 @@ function sortBy(key) {
   else { sortKey.value = key; sortDir.value = 1 }
 }
 
-const COL_CSS: Record<string, string> = {
+const COL_CSS = {
   solar_exposure: 'col-solar', wind_exposure: 'col-wind',
   water_retention: 'col-water', cluster: 'col-cluster',
   land_cover_label: 'col-land-cover', ndvi: 'col-ndvi',
   soil_moisture: 'col-soil', day_of_year: 'col-day',
 }
-function colClass(key: string) { return COL_CSS[key] ?? '' }
+function colClass(key) { return COL_CSS[key] ?? '' }
 
 function display(col, v) {
   if (!hasValue(v)) return ', '
@@ -205,7 +205,7 @@ watch([query, sortKey, sortDir], () => {
 
 watch(visibleRows, () => nextTick(measure))
 
-let ro: ResizeObserver | null = null
+let ro = null
 
 onMounted(() => {
   nextTick(() => {
