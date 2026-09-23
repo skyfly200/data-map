@@ -219,6 +219,7 @@
 
 <script setup>
 import { hasValue, useObservations } from '~/composables/useObservations'
+import { useDatasets } from '~/composables/useDatasets'
 import { PALETTE, UNCLUSTERED, categoryColor, colorFor } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
 import { useSavedCharts } from '~/composables/useSavedCharts'
@@ -255,7 +256,8 @@ const savedDrag = useDragReorder({
 function onDragKey(e) { if (e.key === 'Escape' && savedDrag.dragging.value) savedDrag.cancel() }
 onMounted(() => window.addEventListener('keydown', onDragKey))
 onBeforeUnmount(() => window.removeEventListener('keydown', onDragKey))
-const { rows, error, pending, load } = useObservations()
+const { rows, error, pending, load, addInlineDataset } = useObservations()
+const datasetsApi = useDatasets()
 const { unit, elevValue, tempUnit, tempValue } = useUnits()
 const appearance = useAppearance()
 const share = useShareState()
@@ -284,6 +286,23 @@ function editChart(id) {
 }
 // Restore filters/palette from a shared link before the charts compute.
 onMounted(() => share.apply(useRoute().query))
+onMounted(async () => {
+  const slug = route.query.dataset
+  if (slug && typeof slug === 'string') {
+    try {
+      const ds = await datasetsApi.activate(slug)
+      if (ds) {
+        const geojson = await datasetsApi.loadActiveGeojson()
+        if (geojson) {
+          addInlineDataset(
+            { id: `dataset-${ds.id}`, label: ds.title, path: `mem:dataset-${ds.id}` },
+            geojson,
+          )
+        }
+      }
+    } catch { /* fall through — charts still work with whatever was loaded */ }
+  }
+})
 onMounted(() => {
   load(); saved.loadFromStorage(); layout.loadFromStorage(); appearance.loadFromStorage()
 })
@@ -499,27 +518,25 @@ const tempHighLowDist = computed(() => {
   if (!combined.length) return []
 
   const step = 2
-  const min = Math.floor(Math.min(...combined) / step) * step
-  const max = Math.ceil(Math.max(...combined) / step) * step
-  const bins = []
-
-  for (let lo = min; lo < max; lo += step) {
-    const highCount = highVals.filter((v) => v >= lo && v < lo + step).length
-    const lowCount = lowVals.filter((v) => v >= lo && v < lo + step).length
-    bins.push({
-      label: `Low ${lo}–${lo + step}°${tempUnit.value}`,
-      short: `L ${lo}`,
-      value: lowCount,
-      color: '#1baf7a',
-    })
-    bins.push({
-      label: `High ${lo}–${lo + step}°${tempUnit.value}`,
-      short: `H ${lo}`,
-      value: highCount,
-      color: '#2a78d6',
-    })
+  const domMin = Math.floor(Math.min(...combined) / step) * step
+  const domMax = Math.ceil(Math.max(...combined) / step) * step
+  const binCount = Math.round((domMax - domMin) / step)
+  const highCounts = new Array(binCount).fill(0)
+  const lowCounts = new Array(binCount).fill(0)
+  for (const v of highVals) {
+    const i = Math.floor((v - domMin) / step)
+    if (i >= 0 && i < binCount) highCounts[i] += 1
   }
-
+  for (const v of lowVals) {
+    const i = Math.floor((v - domMin) / step)
+    if (i >= 0 && i < binCount) lowCounts[i] += 1
+  }
+  const bins = []
+  for (let bi = 0; bi < binCount; bi++) {
+    const lo = domMin + bi * step
+    bins.push({ label: `Low ${lo}–${lo + step}°${tempUnit.value}`, short: `L ${lo}`, value: lowCounts[bi], color: '#1baf7a' })
+    bins.push({ label: `High ${lo}–${lo + step}°${tempUnit.value}`, short: `H ${lo}`, value: highCounts[bi], color: '#2a78d6' })
+  }
   return bins
 })
 
@@ -559,9 +576,13 @@ const coverageData = computed(() => {
     ['Water retention', 'water_retention'], ['Elevation', 'elevation'],
     ['Land cover', 'land_cover_label'], ['Cluster', 'cluster'],
   ]
-  return attrs.map(([label, key]) => ({
-    label, value: rows.value.filter((r) => hasValue(r[key])).length,
-  }))
+  const counts = Object.fromEntries(attrs.map(([, key]) => [key, 0]))
+  for (const r of rows.value) {
+    for (const [, key] of attrs) {
+      if (hasValue(r[key])) counts[key] += 1
+    }
+  }
+  return attrs.map(([label, key]) => ({ label, value: counts[key] }))
 })
 
 const monthData = computed(() => {
@@ -574,18 +595,22 @@ const elevationData = computed(() => {
   const vals = rows.value.map((r) => r.elevation).filter(hasValue).map((m) => elevValue(m))
   if (!vals.length) return []
   const step = unit.value === 'ft' ? 1000 : 500
-  const min = Math.floor(Math.min(...vals) / step) * step
-  const max = Math.ceil(Math.max(...vals) / step) * step
-  const bins = []
-  for (let lo = min; lo < max; lo += step) {
-    const n = vals.filter((v) => v >= lo && v < lo + step).length
-    bins.push({
+  const domMin = Math.floor(Math.min(...vals) / step) * step
+  const domMax = Math.ceil(Math.max(...vals) / step) * step
+  const binCount = Math.round((domMax - domMin) / step)
+  const counts = new Array(binCount).fill(0)
+  for (const v of vals) {
+    const i = Math.floor((v - domMin) / step)
+    if (i >= 0 && i < binCount) counts[i] += 1
+  }
+  return counts.map((n, bi) => {
+    const lo = domMin + bi * step
+    return {
       label: `${lo.toLocaleString()}–${(lo + step).toLocaleString()} ${unit.value}`,
       short: `${(lo / 1000)}k`,
       value: n,
-    })
-  }
-  return bins
+    }
+  })
 })
 
 const landCoverData = computed(() => {
