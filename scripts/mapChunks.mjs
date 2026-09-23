@@ -45,6 +45,11 @@ export const CELL_SIZE = 0.5
 export const OVERVIEW_FIELDS = [
   'species', 'genus', 'date', 'day_of_year', 'cluster',
   'land_cover_label', 'inat_id',
+  // Needed for the country/state/county filters in useFilters.matchesFilters.
+  // Without it, admin-area filters exclude every overview feature (no location
+  // field → parsePlace returns nulls → country/state mismatch → feature hidden),
+  // so the map looks blank until full cells load.
+  'location',
   // The eleven field heatmaps in composables/useMapHeatmaps.js. Keep in step:
   // a mode added there without its column here is a menu entry that does
   // nothing, which is worse than not offering it.
