@@ -437,7 +437,6 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { hasValue, useObservations } from '~/composables/useObservations'
 import { gradientCss } from '~/composables/ramps'
-import { normaliseCodes } from '~/netlify/lib/ee-tile-layers.mjs'
 import { useAppearance } from '~/composables/useAppearance'
 import { useGlossary } from '~/composables/useGlossary'
 import GlossaryTooltip from '~/components/GlossaryTooltip.vue'
@@ -465,6 +464,7 @@ const live = useLiveClusters()
 // that already filled the width of the screen.
 const { compact } = useCompactMap()
 const appearance = useAppearance()
+const { stackBlend } = appearance
 const share = useShareState()
 
 const {
@@ -706,273 +706,29 @@ const { accessToken } = useAuth()
 // Only for registering minted templates against their layer, so saved Earth
 // Engine tiles survive a token rotation. The saving itself lives in the panel.
 const offline = useOffline()
-const eeParams = ref({})
-const eeErrors = ref([])
-const eeLoading = ref(new Map()) // key → layer name
-// The layer picker's contents. Populated once the map and its layers exist, so
-// the Vue side never has to know how Leaflet builds them.
-const baseLayers = ref([])
-const overlayLayers = ref([])
-// The basemap the viewer last chose, remembered per browser so the map opens on
-// the one they read best rather than resetting to the default every visit.
-const BASE_KEY = 'map-basemap'
-const activeBase = ref('grey')
-// A Set of the overlay keys currently on. Replaced rather than mutated so the
-// template re-renders.
-const activeOverlays = ref(new Set())
 
-/** Overlays grouped for display, in catalogue order. */
-const overlayGroups = computed(() => {
-  const groups = new Map()
-  for (const o of overlayLayers.value) {
-    if (!groups.has(o.group)) groups.set(o.group, [])
-    groups.get(o.group).push(o)
-  }
-  return [...groups.entries()].map(([label, items]) => ({ label, items }))
-})
+const {
+  overlayOrder, layerOpacity, layerBlend, soloKey,
+  activeOverlays, overlayLayers, baseLayers, activeBase, activeBaseName,
+  overlayGroups, eeParams, eeErrors, eeLoading, eeLayers, activeEeLayers,
+  applyOverlayOrder, applyBlendModes, applySolo,
+  setSolo, setLayerBlend, moveOverlay, setLayerOpacity, clearOverlays,
+  paramsFor, debounceEeRefresh, setEeParam,
+  setBase: _setBase, restoreBase: _restoreBase,
+  toggleOverlay: _toggleOverlay, toggleOverlayByKey: _toggleOverlayByKey,
+  refreshEeLayer: _refreshEeLayer,
+} = useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeTiles, maxEnt })
 
-// Sync MaxEnt model runs into the overlay layer list (HEAT-5).
-// Each completed model appears as a toggleable entry in the Layer Manager.
-// Entries are lightweight stubs — no actual Leaflet tile layer until the
-// tile URL can be obtained from the suitability asset path via the GEE endpoint.
-watch(maxEnt.maxentLayerSpecs, (specs) => {
-  // Remove stale maxent entries and replace with the current model list.
-  overlayLayers.value = [
-    ...overlayLayers.value.filter((o) => !o.key.startsWith('maxent:')),
-    ...specs.map((s) => ({
-      key: s.key,
-      name: s.name,
-      group: s.group,
-      note: s.note,
-      layer: null, // rendered via the heatmap mode, not a Leaflet tile layer
-    })),
-  ]
-}, { immediate: true })
-
-function setBase(key) {
-  const next = baseLayers.value.find((b) => b.key === key)
-  if (!next || !map) return
-  for (const b of baseLayers.value) if (b.layer !== next.layer) map.removeLayer(b.layer)
-  if (!map.hasLayer(next.layer)) next.layer.addTo(map)
-  // Basemaps sit under everything; without this a basemap switched on later
-  // draws over the reference layers and the points.
-  next.layer.bringToBack()
-  activeBase.value = key
-  try { localStorage.setItem(BASE_KEY, key) } catch { /* private mode; just don't remember */ }
-  syncActiveTemplates()
-}
-
-/** Restore the remembered basemap, if it is one that still exists. */
-function restoreBase() {
-  let saved = null
-  try { saved = localStorage.getItem(BASE_KEY) } catch { /* no storage; keep the default */ }
-  if (saved && saved !== activeBase.value && baseLayers.value.some((b) => b.key === saved)) {
-    setBase(saved)
-  }
-}
+// Wrap the three functions that must also call syncActiveTemplates after running.
+function setBase(key) { _setBase(key); syncActiveTemplates() }
+function restoreBase() { _restoreBase(); syncActiveTemplates() }
+function toggleOverlay(entry) { _toggleOverlay(entry); syncActiveTemplates() }
+function toggleOverlayByKey(key) { _toggleOverlayByKey(key); syncActiveTemplates() }
+async function refreshEeLayer(spec) { await _refreshEeLayer(spec); syncActiveTemplates() }
 
 // ─── Suitability surface (model overlay) ─────────────────────────────────────
 const { modelOverlay, applyModelOverlay, refreshModelOverlay, removeModelOverlay } =
   useMapModelOverlay({ mapRef, LRef, accessToken })
-
-// The stacking order of the overlays that are on, topmost first, and how see-
-// through each one is. Both are per-layer because both were global and that was
-// wrong: overlays hide one another, so land ownership under a hillshade is a
-// different map from the same two the other way up, and dimming the pile to
-// read through it dimmed the one thing you were trying to read.
-const overlayOrder = ref([])
-const layerOpacity = ref({})
-
-// Per-layer blend overrides, and the one layer being looked at on its own.
-// Both are session state beside the order and the opacity, not preferences: a
-// solo is a thing you do for ten seconds, and a blend set on one layer means
-// nothing once that layer is off. The stack DEFAULT is a preference, and lives
-// with the rest of them in Appearance.
-const layerBlend = ref({})
-const soloKey = ref('')
-
-/** Push the current order down into Leaflet as z-indexes. */
-function applyOverlayOrder() {
-  if (!map) return
-  const n = overlayOrder.value.length
-  overlayOrder.value.forEach((key, i) => {
-    const entry = overlayLayers.value.find((o) => o.key === key)
-    // Topmost first in the list, so the first entry gets the highest index.
-    entry?.layer?.setZIndex?.(200 + (n - i))
-  })
-}
-
-/**
- * Push the blend modes down onto each drawn layer's own container.
- *
- * Leaflet gives every tile layer a div of its own inside the tile pane, so a
- * mix-blend-mode there composites that layer against the ones below it and
- * nothing else. The browser does the work per frame; no tile is re-fetched and
- * nothing is recomputed, which is why this is a dropdown rather than a job.
- *
- * Solo is applied here too, because the set of layers that are drawn is the set
- * whose blending matters — a hidden layer with multiply still on it would come
- * back blended when the solo ended, which is right, and blending a layer that
- * is not on screen is work for nothing.
- */
-function applyBlendModes() {
-  const drawn = drawnKeys([...activeOverlays.value], soloKey.value)
-  for (const entry of overlayLayers.value) {
-    const el = entry.layer?.getContainer?.()
-    if (!el) continue
-    el.style.mixBlendMode = drawn.includes(entry.key)
-      ? effectiveBlend(entry.key, {
-        overrides: layerBlend.value, fallback: stackBlend.value, drawn: drawn.length,
-      })
-      : 'normal'
-  }
-}
-
-/**
- * Add or remove layers so that only the soloed one is drawn.
- *
- * The active set is not touched. Solo answers "what is this one contributing",
- * and answering it must not cost the viewer the stack they built — so the rest
- * stay ticked in the manager, dimmed, and come back untouched.
- */
-function applySolo() {
-  if (!map) return
-  const drawn = new Set(drawnKeys([...activeOverlays.value], soloKey.value))
-  for (const key of activeOverlays.value) {
-    const entry = overlayLayers.value.find((o) => o.key === key)
-    if (!entry?.layer) continue
-    const on = map.hasLayer(entry.layer)
-    if (drawn.has(key) && !on) entry.layer.addTo(map)
-    else if (!drawn.has(key) && on) map.removeLayer(entry.layer)
-  }
-  applyOverlayOrder()
-  applyBlendModes()
-}
-
-function setSolo(key) {
-  soloKey.value = key === soloKey.value ? '' : key
-  applySolo()
-}
-
-function setLayerBlend(key, mode) {
-  // '' is "inherit the stack default", which is not the same as normal: change
-  // the default later and this layer should move with it.
-  const next = { ...layerBlend.value }
-  if (mode) next[key] = mode
-  else delete next[key]
-  layerBlend.value = next
-  applyBlendModes()
-}
-
-function toggleOverlay(entry) {
-  if (!map) return
-  const wasOn = activeOverlays.value.has(entry.key)
-  const next = new Set(activeOverlays.value)
-  if (wasOn) {
-    next.delete(entry.key)
-    overlayOrder.value = overlayOrder.value.filter((k) => k !== entry.key)
-    // Take it off the map here. applySolo only walks the active set, so once the
-    // key is gone from there it can no longer remove this layer — leaving an
-    // unticked layer still drawn, which is the bug this fixes.
-    if (entry.layer && map.hasLayer(entry.layer)) map.removeLayer(entry.layer)
-    // Switching off the layer that was soloed ends the solo rather than
-    // leaving an empty map with three layers still ticked.
-    if (soloKey.value === entry.key) soloKey.value = ''
-  } else {
-    next.add(entry.key)
-    // A layer just switched on goes on top, which is where someone who just
-    // asked for it expects to see it — and ends any solo, since asking for a
-    // second layer is asking to see two.
-    overlayOrder.value = [entry.key, ...overlayOrder.value]
-    soloKey.value = ''
-  }
-  activeOverlays.value = next
-  // When a MaxEnt model layer is toggled on, switch the heatmap to MaxEnt
-  // mode and select that model so HeatmapControls reflects the active entry.
-  if (!wasOn && entry.key.startsWith('maxent:')) {
-    heatmaps.mode.value = 'maxent'
-    heatmaps.maxentModelId.value = entry.key.replace('maxent:', '')
-  }
-  // Read from the active set rather than from the map: with a solo running, a
-  // layer can be switched on and yet not be on the map, so hasLayer answers a
-  // different question from the one the checkbox asked.
-  applySolo()
-  syncActiveTemplates()
-}
-
-function toggleOverlayByKey(key) {
-  const entry = overlayLayers.value.find((o) => o.key === key)
-  if (entry) toggleOverlay(entry)
-}
-
-function moveOverlay(key, delta) {
-  // `delta` is a number of places, or 'top' or 'bottom'.
-  overlayOrder.value = reorderStack(overlayOrder.value, key, delta)
-  applyOverlayOrder()
-  // The stack default blends each layer against what is below it, so moving a
-  // layer changes what it is blended with.
-  applyBlendModes()
-}
-
-/** One layer's own opacity, multiplied into the global dimmer. */
-function setLayerOpacity(key, value) {
-  const entry = overlayLayers.value.find((o) => o.key === key)
-  if (!entry) return
-  layerOpacity.value = { ...layerOpacity.value, [key]: value }
-  entry.layer.setOpacity(entry.layer._baseOpacity * value * tileOpacity.value)
-  heatmaps.persist()
-}
-
-function clearOverlays() {
-  soloKey.value = ''
-  for (const key of [...activeOverlays.value]) toggleOverlayByKey(key)
-}
-
-// Changing the default moves every layer nobody has set by hand, which is what
-// makes it a default rather than a one-time stamp.
-watch(stackBlend, () => applyBlendModes())
-
-const activeBaseName = computed(() =>
-  baseLayers.value.find((b) => b.key === activeBase.value)?.name || '')
-const eeLayers = new Map()
-
-/** The parameters a layer is currently set to, defaulted from its schema. */
-function paramsFor(spec) {
-  const held = eeParams.value[spec.key] || {}
-  const out = {}
-  for (const [name, p] of Object.entries(spec.params || {})) {
-    out[name] = held[name] ?? p.default
-  }
-  return out
-}
-
-async function refreshEeLayer(spec) {
-  const layer = eeLayers.get(spec.key)
-  if (!layer || !map.hasLayer(layer)) return
-  eeErrors.value = eeErrors.value.filter((e) => e.key !== spec.key)
-  const loadingNext = new Map(eeLoading.value)
-  loadingNext.set(spec.key, spec.name)
-  eeLoading.value = loadingNext
-  try {
-    const minted = await eeTiles.template(spec.key, paramsFor(spec))
-    // setUrl rather than a rebuild, so the layer keeps its place in the stack
-    // and its toggle stays on.
-    layer.setUrl(minted.template)
-    // Tell the offline worker which layer this token belongs to. Without it a
-    // tile saved under an earlier token cannot be matched to this request, and
-    // an area saved this morning draws blank this afternoon.
-    offline.registerEeTemplate(spec.key, minted.template)
-    syncActiveTemplates()
-  } catch (err) {
-    // Loud and by name. A layer that fails quietly is indistinguishable from
-    // one showing that nothing is there, and on a fire map that is a lie.
-    eeErrors.value = [...eeErrors.value, { key: spec.key, name: spec.name, message: err.message }]
-  } finally {
-    const loadingDone = new Map(eeLoading.value)
-    loadingDone.delete(spec.key)
-    eeLoading.value = loadingDone
-  }
-}
 
 async function addEeLayers() {
   const layers = await eeTiles.loadCatalogue()
@@ -1029,276 +785,15 @@ async function addEeLayers() {
   }
 }
 
-/**
- * A parameter changed on an active Earth Engine layer: re-render it.
- *
- * Clamped to the schema the server sent. A number box can be typed into as well
- * as stepped, so "5" lands in a year field easily enough, and the server would
- * rightly refuse it — spending a round trip to be told what the schema already
- * says here. The server still checks; this only avoids asking a question whose
- * answer is known.
- */
-function setEeParam(key, name, value) {
-  const spec = eeTiles.catalogue.value.find((l) => l.key === key)
-  if (!spec) return
-  const p = spec.params?.[name]
-  let next
-  if (p?.type === 'enum') {
-    // A choice from a fixed list: keep it as the string it is, falling back to
-    // the default if somehow handed something off the list.
-    next = (p.values || []).includes(String(value)) ? String(value) : (p.default ?? (p.values || [])[0])
-  } else if (p?.type === 'codes') {
-    // A set of class codes. Normalised here with the same function the server
-    // normalises with, so the cache key the browser produces is the one the
-    // server produces and a selection is minted once rather than twice.
-    try {
-      next = normaliseCodes(value, p.max)
-    } catch {
-      return
-    }
-  } else if (p?.type === 'text') {
-    // A typed value, e.g. a taxon name. Kept as a trimmed string; an empty one
-    // is ignored rather than sent, since the server rejects it and re-minting on
-    // every emptied field would only surface an error mid-type.
-    const text = String(value).trim()
-    if (!text) return
-    next = text
-  } else {
-    next = Math.floor(Number(value))
-    if (!Number.isFinite(next)) next = p?.default ?? 0
-    if (p && Number.isFinite(p.min)) next = Math.max(p.min, next)
-    if (p && Number.isFinite(p.max)) next = Math.min(p.max, next)
-  }
-
-  eeParams.value = {
-    ...eeParams.value,
-    [key]: { ...(eeParams.value[key] || {}), [name]: next },
-  }
-  // Debounced: stepping a year field or dragging a "days back" spinner fires a
-  // change per stop, and each re-mint is an Earth Engine call and a serverless
-  // invocation. Coalescing the bursts into one request per key spends one call
-  // for a settled value rather than one for every value passed through.
-  debounceEeRefresh(spec)
-}
-
-// Per-layer timers, so changing one layer's parameters never delays another's.
-const eeRefreshTimers = new Map()
-function debounceEeRefresh(spec, wait = 400) {
-  clearTimeout(eeRefreshTimers.get(spec.key))
-  eeRefreshTimers.set(spec.key, setTimeout(() => {
-    eeRefreshTimers.delete(spec.key)
-    refreshEeLayer(spec)
-  }, wait))
-}
-
 // ─── Dropped point ───────────────────────────────────────────────────────────
-// Somewhere the viewer picked, as opposed to somewhere a record exists. Held as
-// plain numbers rather than a Leaflet marker so the panel can be reactive and
-// the marker stays a detail of the map.
-const pin = ref(null)
-const copied = ref(false)
-let pinMarker = null
-
-// A self-contained SVG marker for the dropped point. Leaflet's default marker
-// pulls its image from a PNG whose URL the bundler rewrites out from under it,
-// so it 404s and the pin shows up blank; an inline divIcon has no asset to lose.
-// Blue, to read apart from the red pin that marks a selected observation.
-function dropPinIcon() {
-  return L.divIcon({
-    className: 'drop-pin', iconSize: [28, 40], iconAnchor: [14, 38], tooltipAnchor: [0, -34],
-    html: `<svg viewBox="0 0 24 34" width="28" height="40" aria-hidden="true">
-      <path d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 34 12 34s12-13.4 12-22.1C24 5.3 18.6 0 12 0z"
-            fill="#2d7ff9" stroke="#fff" stroke-width="1.5"/>
-      <circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>`,
-  })
-}
-
-function setPin(lat, lon) {
-  pin.value = { lat, lon }
-  copied.value = false
-  if (!map || !L) return
-  if (pinMarker) { pinMarker.setLatLng([lat, lon]); return }
-  pinMarker = L.marker([lat, lon], {
-    draggable: true,
-    icon: dropPinIcon(),
-    // Above the canvas the observations draw into, so the pin is never lost
-    // under a dense patch of dots.
-    zIndexOffset: 1000,
-    title: 'Dropped point — drag to move',
-  }).addTo(map)
-  // Dragging is how you correct a click that landed a hundred metres off,
-  // which on a phone is most of them.
-  pinMarker.on('drag move', () => {
-    const ll = pinMarker.getLatLng()
-    pin.value = { lat: ll.lat, lon: ll.lng }
-    copied.value = false
-  })
-}
-
-function clearPin() {
-  pin.value = null
-  if (pinMarker) { pinMarker.remove(); pinMarker = null }
-}
-
-async function copyPin() {
-  if (!pin.value) return
-  const text = `${pin.value.lat.toFixed(5)}, ${pin.value.lon.toFixed(5)}`
-  try {
-    await navigator.clipboard.writeText(text)
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 1600)
-  } catch {
-    // Clipboard access is refused in plenty of contexts; selecting the text is
-    // still possible, so this is not worth an error message.
-  }
-}
-
-// A plus code for the point, at 11 digits (~3 m) since a dropped pin is a
-// specific spot rather than a neighbourhood. encodePlusCode is auto-imported
-// from composables/plusCode.js.
-const pinPlusCode = computed(() => (pin.value ? encodePlusCode(pin.value.lat, pin.value.lon, 11) : ''))
-
-// Ground elevation at the point. undefined while loading, null when it could
-// not be fetched, a number in metres otherwise — three states so the panel can
-// say "…" versus "—" rather than conflating them. From Open-Meteo's free,
-// key-less elevation API (Copernicus DEM at 90 m), so it adds no cost and no
-// Earth Engine quota; a dropped pin fetches once, debounced, and a drag replaces
-// the in-flight request rather than stacking them.
-const pinElevation = ref(undefined)
-let elevTimer = null
-let elevSeq = 0
-watch(pin, (p) => {
-  pinElevation.value = p ? undefined : null
-  if (!p) return
-  clearTimeout(elevTimer)
-  const seq = (elevSeq += 1)
-  elevTimer = setTimeout(async () => {
-    try {
-      const url = `https://api.open-meteo.com/v1/elevation?latitude=${p.lat.toFixed(5)}&longitude=${p.lon.toFixed(5)}`
-      const res = await fetch(url)
-      const data = await res.json()
-      const v = Array.isArray(data?.elevation) ? Number(data.elevation[0]) : NaN
-      if (seq === elevSeq) pinElevation.value = Number.isFinite(v) ? v : null
-    } catch {
-      if (seq === elevSeq) pinElevation.value = null
-    }
-  }, 350)
-}, { deep: true })
-
-/** Elevation formatted in both units, or the loading/unavailable marker. */
-const pinElevationText = computed(() => {
-  const v = pinElevation.value
-  if (v === undefined) return '…'
-  if (v === null) return '—'
-  return `${Math.round(v)} m · ${Math.round(v * 3.28084).toLocaleString()} ft`
-})
-
-/** Copy any short string, reusing the pin's copied flag for the tick. */
-async function copyText(text) {
-  try {
-    await navigator.clipboard.writeText(text)
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 1600)
-  } catch { /* clipboard refused; the text is still selectable */ }
-}
-
-// The active Earth Engine layers, with their current parameters, that the
-// "Sample layers here" button will read at the pin. Reference layers (GIBS,
-// ArcGIS) are external tiles with no server-side image to sample, so only the
-// Earth Engine layers are offered.
-const activeEeLayers = computed(() => {
-  const cat = eeTiles.catalogue.value || []
-  const out = []
-  for (const key of activeOverlays.value) {
-    const spec = cat.find((l) => l.key === key)
-    if (spec) out.push({ key, params: paramsFor(spec) })
-  }
-  return out
-})
-
-const pinSamples = ref(null)
-const pinSampling = ref(false)
-const pinSampleError = ref('')
-
-// A new point invalidates the old readings: sampling is per-coordinate, so the
-// values from the last spot must not linger under a pin that has since moved.
-watch(pin, () => { pinSamples.value = null; pinSampleError.value = '' }, { deep: true })
-
-/**
- * Read the active Earth Engine layers at the pin, on demand.
- *
- * On demand, not automatically, because each layer sampled is one Earth Engine
- * read: a button press spends that deliberately, where sampling on every pin
- * drop would spend it on every misclick.
- */
-async function samplePinLayers() {
-  if (!pin.value || !activeEeLayers.value.length || pinSampling.value) return
-  pinSampling.value = true
-  pinSampleError.value = ''
-  try {
-    const token = await accessToken()
-    const res = await fetch('/.netlify/functions/ee-sample', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', ...(token ? { authorization: `Bearer ${token}` } : {}) },
-      body: JSON.stringify({ lat: pin.value.lat, lon: pin.value.lon, layers: activeEeLayers.value }),
-    })
-    const data = await res.json().catch(() => ({}))
-    if (!res.ok || !data.ok) throw new Error(data.error || `Could not sample (${res.status}).`)
-    pinSamples.value = data.results || []
-  } catch (e) {
-    pinSampleError.value = e.message
-  } finally {
-    pinSampling.value = false
-  }
-}
-
-/** One sampled layer's value, formatted for the panel. */
-function sampleText(s) {
-  if (s.error) return 'unavailable'
-  if (s.empty) return 'no data here'
-  if (s.label) return s.label
-  if (s.channels) return s.channels.map((c) => Math.round(c.value)).join(' / ')
-  if (s.value === null || s.value === undefined) return '—'
-  return `${typeof s.value === 'number' ? fmtNum(s.value) : s.value}${s.unit ? ` ${s.unit}` : ''}`
-}
-
-/** The heatmap cell under the pin, if a heatmap is on and it has one there. */
-const pinCell = computed(() => (pin.value ? heatmapCellAt(pin.value.lat, pin.value.lon) : null))
-
-const pinCellValue = computed(() => {
-  const cell = pinCell.value
-  if (!cell) return ''
-  const v = cell.value
-  if (v === null || v === undefined) return '—'
-  return typeof v === 'number' ? fmtNum(v) : String(v)
-})
-
-/** The closest loaded observation, so the pin has something to be relative to. */
-const pinNearest = computed(() => {
-  if (!pin.value) return null
-  const feats = filteredData.value?.features || []
-  if (!feats.length) return null
-  const { lat, lon } = pin.value
-  // Equirectangular is plenty at these distances and avoids a trig call per
-  // feature across tens of thousands of them.
-  const scale = Math.cos((lat * Math.PI) / 180)
-  let best = null
-  let bestD = Infinity
-  for (const f of feats) {
-    const co = f.geometry?.coordinates
-    if (!co) continue
-    const dx = (Number(co[0]) - lon) * scale
-    const dy = Number(co[1]) - lat
-    const d = dx * dx + dy * dy
-    if (d < bestD) { bestD = d; best = f }
-  }
-  if (!best) return null
-  const km = Math.sqrt(bestD) * 111.32
-  const p = best.properties || {}
-  const name = p.species || p.genus || 'a record'
-  const away = km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
-  return { label: `${name}, ${away} away`, feature: best }
-})
+const {
+  pin, copied,
+  pinElevation, pinElevationText,
+  pinSamples, pinSampling, pinSampleError,
+  pinPlusCode, pinCell, pinCellValue, pinNearest,
+  setPin, clearPin, copyPin, copyText,
+  samplePinLayers, sampleText, heatmapCellAt: _pinHeatmapCellAt,
+} = useMapPin({ mapRef, LRef, heatmapCellIndex, heatmapMode, heatmapCell, filteredData, activeEeLayers, accessToken, heatmaps })
 
 // ─── Observation selection + point rendering ──────────────────────────────────
 const { selected, selectedLatLng, renderPoints, applyFocus, setSuppressFit, setFittedOnce } = useMapSelection({
