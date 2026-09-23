@@ -444,10 +444,12 @@ import { useMapPointStyle, FIELD_LABEL, fmtNum } from '~/composables/useMapPoint
 import { useMapPin } from '~/composables/useMapPin'
 import { useMapLayerManager } from '~/composables/useMapLayerManager'
 import { useMapTileDate, MAP_MAX_ZOOM } from '~/composables/useMapTileDate'
-import { TILE_LAYERS } from '~/composables/mapLayers'
 import { useMapModelOverlay } from '~/composables/useMapModelOverlay'
 import { useMapHeatmapRenderer } from '~/composables/useMapHeatmapRenderer'
 import { useMapSelection } from '~/composables/useMapSelection'
+import { useMapLocate } from '~/composables/useMapLocate'
+import { setupReferenceTileLayers } from '~/composables/useMapRefTileLayers'
+import { setupElevBandLayer } from '~/composables/useMapElevBandLayer'
 
 const { define: g } = useGlossary()
 
@@ -507,12 +509,8 @@ const loadError = ref('')
 // The locate button lives in a Leaflet control rather than the Vue template, so
 // its busy state is applied by hand. One class on one element is a smaller cost
 // than teleporting a component into a control container.
-let locateBtn = null
-const locating = ref(false)
-const locateError = ref('')
-watch(locating, (v) => { if (locateBtn) locateBtn.classList.toggle('busy', v) })
-watch(locateError, (msg) => { if (locateBtn && msg) locateBtn.title = msg })
-let map, L, userLayer
+let map, L
+const { locating, locateError, setLocateBtn, locateMe } = useMapLocate({ mapRef, LRef })
 // mapRef and LRef are set in onMounted so composables can reactively access them
 
 // Holds enriched observation info (photos, description, etc.) fetched from iNaturalist API
@@ -890,7 +888,7 @@ onMounted(async () => {
         btn.title = tip('Centre the map on where you are', 'l')
         btn.setAttribute('aria-label', 'My location')
         btn.innerHTML = '<span class="dot-icon"></span>'
-        locateBtn = btn
+        setLocateBtn(btn)
         // stop() as well as preventDefault: without it the click reaches the map
         // underneath and, in pin mode, drops a point behind the button.
         L.DomEvent.on(btn, 'click', (e) => { L.DomEvent.stop(e); locateMe() })
@@ -900,112 +898,12 @@ onMounted(async () => {
     })
     new LocateControl({ position: 'bottomleft' }).addTo(map)
     L.control.zoom({ position: 'bottomleft' }).addTo(map)
-    // ArcGIS MapServer services render from a bbox rather than serving a cut
-    // tile pyramid, so their tiles are asked for by extent. Everything else is
-    // a plain XYZ template.
-    const ArcGISLayer = L.TileLayer.extend({
-      getTileUrl(coords) {
-        return arcgisExportUrl(this.options.service, coords.x, coords.y, coords.z,
-          { size: 256, layers: this.options.serviceLayers })
-      },
-    })
 
-    // Reference tile services as toggleable layers alongside the basemaps.
-    const tileOverlayList = []
-    for (const o of TILE_LAYERS) {
-      const opts = {
-        // The catalogue's maxZoom is where each service's tiles stop, which is
-        // maxNativeZoom here. Passed as maxZoom it made every coarse layer —
-        // all of Weather, Ground and Vegetation — vanish the moment the map was
-        // zoomed past it, so ticking them appeared to do nothing at all.
-        attribution: o.attribution, maxZoom: MAP_MAX_ZOOM, maxNativeZoom: o.maxZoom,
-        opacity: (o.opacity ?? 1) * tileOpacity.value,
-        crossOrigin: 'anonymous',
-        // Leaflet defaults updateWhenIdle to true on touch devices, which leaves
-        // an overlay's tiles pinned in place through a pinch-zoom and only
-        // repositioned once the gesture ends — the layer reads as "stuck" while
-        // the basemap moves under it. Update continuously instead so the overlay
-        // tracks the zoom the way the basemap does.
-        updateWhenIdle: false, updateWhenZooming: true,
-      }
-      const layer = o.arcgis
-        ? new ArcGISLayer('', { ...opts, service: o.arcgis, serviceLayers: o.layers || '' })
-        : L.tileLayer(o.url.replace('{date}', tileDate.value), opts)
-      // Its own opacity is kept beside it: the global dimmer multiplies into
-      // this rather than replacing it, so a hillshade meant to sit at 60%
-      // stays proportionally lighter than a layer meant to sit at full.
-      layer._baseOpacity = o.opacity ?? 1
-      layer._spec = o
-      tileLayers.push(layer)
-      // A reference layer that fails to load looks exactly like one saying there
-      // is nothing there — no trails, no public land — which is the most
-      // misleading thing this map could do. Track whether a layer has ever
-      // succeeded, and say so when it has not.
-      let loaded = 0
-      let failed = 0
-      layer.on('tileload', () => {
-        loaded += 1
-        if (loaded === 1) tileErrors.value = tileErrors.value.filter((n) => n !== o.name)
-      })
-      layer.on('tileerror', () => {
-        failed += 1
-        // One failure is a hiccup; several with nothing loaded is the service.
-        if (loaded === 0 && failed >= 3 && !tileErrors.value.includes(o.name)) {
-          tileErrors.value = [...tileErrors.value, o.name]
-        }
-      })
-      // Its key and its caveat travel with it: shown while it is on, gone when
-      // it is off. A layer with neither still registers nothing, which is right
-      // — imagery and place labels are pictures, not measurements.
-      if (o.note || o.legend || o.time) {
-        layer.on('add', () => {
-          if (!activeTileNotes.value.some((n) => n.name === o.name)) {
-            activeTileNotes.value = [...activeTileNotes.value, {
-              name: o.name, note: o.note, legend: o.legend, time: !!o.time,
-              native: o.maxZoom,
-              slug: o.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-            }]
-          }
-        })
-      }
-      // Clear the warning when the layer is switched off, so it does not linger.
-      layer.on('remove', () => {
-        tileErrors.value = tileErrors.value.filter((n) => n !== o.name)
-        activeTileNotes.value = activeTileNotes.value.filter((n) => n.name !== o.name)
-        loaded = 0
-        failed = 0
-      })
-      tileOverlayList.push({
-        key: o.name, name: o.name, group: o.group, layer, note: o.note,
-        source: layerSource(o.attribution), type: layerDataType(o.legend),
-      })
-    }
-    // The global dimmer still dims everything at once — but it now multiplies
-    // into whatever each layer has been set to individually, rather than
-    // replacing it. A hillshade meant to sit at 60% stays proportionally
-    // lighter than a layer meant to sit at full, and a layer someone has faded
-    // by hand in the manager stays faded.
-    watch(tileOpacity, (v) => {
-      for (const l of tileLayers) {
-        const own = layerOpacity.value[l._spec?.ee ? l._spec.key : l._spec?.name] ?? 1
-        l.setOpacity(l._baseOpacity * own * v)
-      }
-      heatmaps.persist()
+    // Reference tile services (public rasters: hillshade, land cover, trails…).
+    const tileOverlayList = setupReferenceTileLayers({
+      L, map, tileOpacity, tileDate, tileErrors, activeTileNotes,
+      tileLayers, layerOpacity, heatmaps,
     })
-
-    // Moving the date re-points the time-varying layers at another day's tiles.
-    // setUrl redraws in place, so a layer keeps its position in the stack and
-    // its toggle stays on rather than the layer being rebuilt under the viewer.
-    watch(tileDate, (d) => {
-      if (!d) return
-      for (const l of tileLayers) {
-        if (l._spec?.time && l._spec.url) l.setUrl(l._spec.url.replace('{date}', d))
-      }
-    })
-    // Our own layer picker rather than L.control.layers, for two reasons. It
-    // sits in the control bar with everything else instead of floating over the
-    // map in its own white box, and Leaflet's takes one flat list, so grouping
-    // had to be smuggled into the labels as markup.
     baseLayers.value = [
       { key: 'grey', name: 'Light gray', layer: grey },
       { key: 'greyDark', name: 'Dark gray', layer: greyDark },
@@ -1013,142 +911,12 @@ onMounted(async () => {
       { key: 'topo', name: 'Terrain (OpenTopoMap)', layer: topo },
       { key: 'sat', name: 'Satellite (Esri)', layer: sat },
     ]
-    // The map was created with the default basemap; swap in the remembered one
-    // now that the choices exist.
     restoreBase()
     overlayLayers.value = tileOverlayList
 
-    // ─── Elevation band canvas layer ────────────────────────────────────────
-    // Extends L.GridLayer with a per-tile canvas that fetches Terrarium DEM
-    // tiles (R*256 + G + B/256 - 32768 = metres), then paints:
-    //   • a teal highlight for pixels inside the elevation filter band, with a
-    //     dark mask outside it — when elevMin or elevMax is set.
-    //   • a hypsometric tint (green → tan → grey) when no filter is active,
-    //     so the layer still shows terrain context without a filter.
-    // Redraw is triggered whenever the filter changes; the layer key matches the
-    // overlay name so LayerManager handles it uniformly.
-    {
-      const ElevBandGridLayer = L.GridLayer.extend({
-        createTile(coords, done) {
-          const sz = this.getTileSize()
-          const canvas = document.createElement('canvas')
-          canvas.width = sz.x
-          canvas.height = sz.y
-          const url = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${coords.z}/${coords.x}/${coords.y}.png`
-          const img = new Image()
-          img.crossOrigin = 'anonymous'
-          img.onload = () => {
-            try {
-              const ctx = canvas.getContext('2d')
-              ctx.drawImage(img, 0, 0, sz.x, sz.y)
-              const src = ctx.getImageData(0, 0, sz.x, sz.y).data
-              const out = ctx.createImageData(sz.x, sz.y)
-              const loM = this.options.elevMin
-              const hiM = this.options.elevMax
-              const hasFilter = loM != null || hiM != null
-              const lo = loM ?? -Infinity
-              const hi = hiM ?? Infinity
-              // Band gradient stops: deep blue (low) → teal → green (mid) → yellow → orange (high).
-              // Lerped in RGB; five stops give the ramp a bit of shape without a full colour-space
-              // library. Indices 0–4, evenly spaced across the band.
-              const GRAD = [
-                [30, 100, 200],  // deep blue   (lowest in band)
-                [42, 161, 210],  // sky teal
-                [80, 185, 120],  // green        (mid-band)
-                [220, 185,  60], // warm yellow
-                [210,  90,  30], // orange-red   (highest in band)
-              ]
-              function bandColor(t) {
-                // t ∈ [0, 1]; map into the four segments of the five-stop ramp.
-                const seg = Math.min(3, Math.floor(t * 4))
-                const s = t * 4 - seg
-                const a = GRAD[seg], b2 = GRAD[seg + 1]
-                return [
-                  Math.round(a[0] + s * (b2[0] - a[0])),
-                  Math.round(a[1] + s * (b2[1] - a[1])),
-                  Math.round(a[2] + s * (b2[2] - a[2])),
-                ]
-              }
-              for (let i = 0; i < src.length; i += 4) {
-                const elev = src[i] * 256 + src[i + 1] + src[i + 2] / 256 - 32768
-                if (hasFilter) {
-                  if (elev >= lo && elev <= hi) {
-                    // Normalise within the band and apply the gradient.
-                    const span = hi - lo
-                    const t = span > 0 ? (elev - lo) / span : 0.5
-                    const [r, g, b] = bandColor(Math.max(0, Math.min(1, t)))
-                    out.data[i] = r; out.data[i + 1] = g; out.data[i + 2] = b; out.data[i + 3] = 185
-                  } else {
-                    out.data[i] = 0; out.data[i + 1] = 0; out.data[i + 2] = 0; out.data[i + 3] = 55
-                  }
-                } else {
-                  // No filter: hypsometric tint (green → tan → grey) across the full DEM range.
-                  const t = Math.max(0, Math.min(1, (elev + 50) / 4500))
-                  let r, g, b
-                  if (t < 0.4) {
-                    const s = t / 0.4
-                    r = Math.round(132 + s * 56); g = Math.round(184 - s * 32); b = Math.round(112 - s * 16)
-                  } else {
-                    const s = (t - 0.4) / 0.6
-                    r = Math.round(188 - s * 28); g = Math.round(152 + s * 6); b = Math.round(96 + s * 62)
-                  }
-                  out.data[i] = r; out.data[i + 1] = g; out.data[i + 2] = b; out.data[i + 3] = 130
-                }
-              }
-              ctx.putImageData(out, 0, 0)
-            } catch { /* silently ignore decode errors on bad tiles */ }
-            done(null, canvas)
-          }
-          img.onerror = () => done(null, canvas)
-          img.src = url
-          return canvas
-        },
-      })
-
-      const elevBandLayer = new ElevBandGridLayer({
-        elevMin: null, elevMax: null,
-        tileSize: 256, maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 14,
-        opacity: 0.75, attribution: 'Elevation: Tilezen / Amazon Web Services (CC BY)',
-        updateWhenIdle: false, updateWhenZooming: true,
-      })
-      elevBandLayer._baseOpacity = 0.75
-      tileLayers.push(elevBandLayer)
-
-      // Sync filter → layer params and redraw when the filter changes.
-      watch([() => filters.value.elevMin, () => filters.value.elevMax], ([lo, hi]) => {
-        elevBandLayer.options.elevMin = lo ?? null
-        elevBandLayer.options.elevMax = hi ?? null
-        if (map?.hasLayer(elevBandLayer)) elevBandLayer.redraw()
-      })
-
-      elevBandLayer.on('add', () => {
-        if (!activeTileNotes.value.some((n) => n.name === 'Elevation band')) {
-          activeTileNotes.value = [...activeTileNotes.value, {
-            name: 'Elevation band',
-            note: 'Decoded from Terrarium DEM tiles. With an elevation filter set (Map Filters), in-band terrain is highlighted; without one, a hypsometric tint shows relief.',
-            legend: {
-              type: 'ramp', unit: 'm',
-              min: filters.value.elevMin != null ? String(filters.value.elevMin) : '0',
-              max: filters.value.elevMax != null ? String(filters.value.elevMax) : '4 500+',
-              stops: filters.value.elevMin != null || filters.value.elevMax != null
-                ? ['#1e64c8', '#2aa1d2', '#50b978', '#dcb93c', '#d25a1e']
-                : ['#84b870', '#c9a86c', '#a0a0a0'],
-            },
-            slug: 'elevation-band',
-          }]
-        }
-      })
-      elevBandLayer.on('remove', () => {
-        activeTileNotes.value = activeTileNotes.value.filter((n) => n.name !== 'Elevation band')
-      })
-
-      tileOverlayList.push({
-        key: 'Elevation band', name: 'Elevation band', group: 'Terrain',
-        layer: elevBandLayer,
-        note: 'Highlights terrain within the elevation filter. Hypsometric tint when no filter is set.',
-        source: 'Tilezen/Amazon', type: 'Continuous raster',
-      })
-    }
+    // Elevation band canvas layer — decodes Terrarium DEM tiles, highlights
+    // the elevation filter band or shows a hypsometric tint when none is set.
+    tileOverlayList.push(setupElevBandLayer({ L, map, filters, activeTileNotes, tileLayers }))
 
     // Earth Engine layers arrive after their catalogue does, so they join the
     // list rather than being in it from the start.
@@ -1252,38 +1020,6 @@ onMounted(async () => {
     loadError.value = `Could not load map (${err.message}).`
   }
 })
-
-// Show a dot at the viewer's location (browser geolocation, opt-in per click).
-function locateMe() {
-  if (!map || !L) return
-  if (!('geolocation' in navigator)) {
-    locateError.value = 'Geolocation not supported by this browser.'
-    return
-  }
-  locating.value = true
-  locateError.value = ''
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      locating.value = false
-      const { latitude: lat, longitude: lon, accuracy } = pos.coords
-      if (userLayer) { userLayer.remove(); userLayer = null }
-      userLayer = L.layerGroup([
-        // Accuracy halo + a solid "you are here" dot.
-        L.circle([lat, lon], { radius: accuracy || 0, color: '#2a78d6', weight: 1, fillOpacity: 0.12 }),
-        L.circleMarker([lat, lon], { radius: 7, color: '#fff', weight: 2, fillColor: '#2a78d6', fillOpacity: 1 })
-          .bindTooltip('You are here', { direction: 'top' }),
-      ]).addTo(map)
-      map.setView([lat, lon], Math.max(map.getZoom() || 0, 11))
-    },
-    (err) => {
-      locating.value = false
-      locateError.value = err.code === err.PERMISSION_DENIED
-        ? 'Location permission denied.'
-        : 'Could not get your location.'
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
-  )
-}
 
 // Only while the map is on screen: pressing "o" on the Charts page should do
 // nothing rather than reach for a control that is not there.
