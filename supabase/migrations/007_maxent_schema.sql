@@ -1,3 +1,4 @@
+-- Migration date: 2026-09-21
 -- MaxEnt Modeling Suite Schema
 -- Version 1.1
 

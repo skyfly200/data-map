@@ -1,4 +1,4 @@
--- Originally: 003_custom_ee_layers.sql
+-- Migration date: 2026-09-08
 -- Map layers an administrator registers, pointing at their own Earth Engine
 -- assets.
 --

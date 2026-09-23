@@ -1,4 +1,4 @@
--- Originally: 004_membership_api.sql
+-- Migration date: 2026-09-10
 -- Membership granted from outside the app, by an automation.
 --
 -- Run after 003_custom_ee_layers.sql. Safe to run more than once.

@@ -1,4 +1,4 @@
--- Originally: 001_user_settings_and_charts.sql
+-- Migration date: 2026-09-01
 -- Adds the two tables the app's account sync needs, and nothing else.
 --
 -- Run this against a database that already has the observation tables. It is
