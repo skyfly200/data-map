@@ -38,10 +38,6 @@ export const OBSERVATION_DATASETS = [
   { id: 'all', label: 'All species', path: DEFAULT_DATASET },
 ]
 
-export {
-  PALETTE, UNCLUSTERED, SERIES_1,
-  colorFor, stableColor, categoryColor, categoryShape,
-} from '~/composables/useAppearance'
 
 export async function fetchObservationDetails(id: string | number): Promise<any | null> {
   if (!id) return null

@@ -21,7 +21,8 @@
 </template>
 
 <script setup>
-import { SERIES_1, UNCLUSTERED, categoryColor, categoryShape, hasValue, useObservations } from '~/composables/useObservations'
+import { hasValue, useObservations } from '~/composables/useObservations'
+import { SERIES_1, UNCLUSTERED, categoryColor, categoryShape } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
 import { ALL_NUMERIC, ALL_CATEGORY, sortEntries } from '~/composables/useChartFields'
 

@@ -435,9 +435,10 @@
 <script setup>
 import 'leaflet/dist/leaflet.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservations } from '~/composables/useObservations'
-import { classColorFor, fraction, matchNote, paletteFor, rampColor } from '~/composables/fieldPalettes'
-import { gradientCss, normaliseStops } from '~/composables/ramps'
+import { hasValue, useObservations } from '~/composables/useObservations'
+import { PALETTE, UNCLUSTERED, categoryColor, colorFor } from '~/composables/useAppearance'
+import { classColorFor, fraction, matchNote, paletteFor } from '~/composables/fieldPalettes'
+import { gradientCss, normaliseStops, rampColor } from '~/composables/ramps'
 import { drawnKeys, effectiveBlend, reorderStack } from '~/composables/blendModes'
 import { normaliseCodes } from '~/netlify/lib/ee-tile-layers.mjs'
 import { RAMP_PRESETS } from '~/composables/useMapHeatmaps'

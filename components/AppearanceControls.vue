@@ -151,8 +151,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { categoryColor } from '~/composables/useObservations'
-import { overrideKey, useAppearance } from '~/composables/useAppearance'
+import { overrideKey, useAppearance, categoryColor } from '~/composables/useAppearance'
 import { gradientCss } from '~/composables/ramps'
 import { BLEND_MODES } from '~/composables/blendModes'
 

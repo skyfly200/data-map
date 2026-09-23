@@ -108,9 +108,10 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import {
-  LOCATION_PRECISION_LABELS, colorFor, hasValue, inatUrl, inatPhotoUrl,
+  LOCATION_PRECISION_LABELS, hasValue, inatUrl, inatPhotoUrl,
   useObservations, fetchObservationDetails,
 } from '~/composables/useObservations'
+import { colorFor } from '~/composables/useAppearance'
 import { STAT_TIPS, detailSections, missingEnrichment } from '~/composables/observationDetail'
 import { useUnits } from '~/composables/useUnits'
 

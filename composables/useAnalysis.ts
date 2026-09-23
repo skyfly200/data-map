@@ -18,7 +18,6 @@ import {
   ANALYSIS_FIELDS, fieldValue, spearman, meanSd, median,
 } from '~/composables/statistics'
 
-export { ANALYSIS_FIELDS, fieldValue, spearman, meanSd, median }
 
 export interface AnalysisField extends typeof ANALYSIS_FIELDS[number] {
   n: number
