@@ -1,4 +1,4 @@
--- Originally: 002_membership_jobs_and_admin.sql
+-- Migration date: 2026-09-05
 -- Membership tiers, the Earth Engine job queue, and the admin surface.
 --
 -- Run after 001_user_settings_and_charts.sql. Safe to run more than once.

@@ -1,3 +1,4 @@
+-- Migration date: 2026-09-22
 -- Cron job run log. Each scheduled function writes one row per invocation
 -- (or per claimed job for ee-worker, which runs every minute). Kept for 90
 -- days; older rows are pruned by the admin endpoint on read.

@@ -1,4 +1,4 @@
--- Originally: 006_job_notifications.sql
+-- Migration date: 2026-09-15
 -- Notifications for long-running jobs (V12-PERF-1).
 --
 -- A pipeline or model job runs on the server and can take minutes, so a member
