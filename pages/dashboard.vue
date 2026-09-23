@@ -68,7 +68,7 @@ import DashboardMapPreview from '~/components/DashboardMapPreview.vue'
 import DashboardDataQuality from '~/components/DashboardDataQuality.vue'
 import DashboardFavorites from '~/components/DashboardFavorites.vue'
 import DashboardWeather from '~/components/DashboardWeather.vue'
-import DashboardObsTrend from '~/components/DashboardObsTrend.vue'
+import DashboardChart from '~/components/DashboardChart.vue'
 
 const { isAuthed } = useAuth()
 const { orderedWidgets, load, add, remove, reorder, reset } = useDashboardState()
@@ -88,7 +88,7 @@ const WIDGET_TYPES = [
   { type: 'data-quality', label: 'Data quality', icon: '🔬', component: DashboardDataQuality },
   { type: 'favorites', label: 'Favorites', icon: '⭐', component: DashboardFavorites },
   { type: 'weather', label: 'Weather correlation', icon: '🌧️', component: DashboardWeather },
-  { type: 'obs-trend', label: 'Observations trend', icon: '📈', component: DashboardObsTrend },
+  { type: 'chart', label: 'Custom chart', icon: '📊', component: DashboardChart },
 ]
 const COMPONENTS = Object.fromEntries(WIDGET_TYPES.map((w) => [w.type, w.component]))
 function componentFor(type) { return COMPONENTS[type] || DashboardOverview }
