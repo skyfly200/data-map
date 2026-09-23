@@ -22,6 +22,10 @@
         <span class="nf-meta">
           <span class="nf-peak" :title="`Peak ${s.peakLabel} from today · ${s.iqr}d IQR`">{{ s.peakLabel }}</span>
           <span class="nf-iqr" :title="`Fruiting window width (IQR): ${s.iqr} days`">{{ s.iqr }}d</span>
+          <span v-if="s.elevBand" class="nf-elev"
+                :title="`Typical elevation band (IQR): ${elevLabel(s.elevBand.loM)}–${elevLabel(s.elevBand.hiM)}`">
+            {{ elevLabel(s.elevBand.loM) }}–{{ elevLabel(s.elevBand.hiM) }}
+          </span>
           <span class="nf-count">{{ s.count.toLocaleString() }}</span>
         </span>
       </li>
@@ -41,9 +45,11 @@
 import { computed, onMounted, ref } from 'vue'
 import { useObservations } from '~/composables/useObservations'
 import { useMaxEnt } from '~/composables/useMaxEnt'
+import { useUnits } from '~/composables/useUnits'
 
 const { rows, load } = useObservations()
 const { models, fetchModels } = useMaxEnt()
+const { elevLabel } = useUnits()
 
 const loading = ref(true)
 
@@ -78,15 +84,17 @@ function obsDoy(r) {
 
 const topSpecies = computed(() => {
   // Bucket observations by species, keeping only those inside the window.
-  const buckets = new Map() // name -> { count, doys[] }
+  const buckets = new Map() // name -> { count, doys[], elevs[] }
   for (const r of rows.value || []) {
     if (!r.species) continue
     const doy = obsDoy(r)
     if (doy === null || doyDist(doy, todayDoy) > WINDOW) continue
-    if (!buckets.has(r.species)) buckets.set(r.species, { count: 0, doys: [] })
+    if (!buckets.has(r.species)) buckets.set(r.species, { count: 0, doys: [], elevs: [] })
     const b = buckets.get(r.species)
     b.count++
     b.doys.push(doy)
+    const elev = Number(r.elevation)
+    if (Number.isFinite(elev)) b.elevs.push(elev)
   }
 
   // For each species compute the median DOY and IQR of windowed observations.
@@ -94,7 +102,7 @@ const topSpecies = computed(() => {
   // species peaking right now with a tight season beats one that happens to
   // have a broad season straddling today). Ties break on count.
   return [...buckets.entries()]
-    .map(([name, { count, doys }]) => {
+    .map(([name, { count, doys, elevs }]) => {
       const sorted = [...doys].sort((a, b) => a - b)
       const n = sorted.length
       const mid = Math.floor(n / 2)
@@ -107,7 +115,15 @@ const topSpecies = computed(() => {
       const dist = doyDist(medianDoy, todayDoy)
       const score = dist + iqr * 0.5
       const peakLabel = dist === 0 ? 'today' : `±${dist}d`
-      return { name, count, dist, iqr, score, peakLabel }
+      // Elevation band: IQR of elevations from windowed records (metres stored).
+      let elevBand = null
+      if (elevs.length >= 3) {
+        const es = [...elevs].sort((a, b) => a - b)
+        const elo = es[Math.floor(es.length * 0.25)]
+        const ehi = es[Math.floor(es.length * 0.75)]
+        elevBand = { loM: elo, hiM: ehi }
+      }
+      return { name, count, dist, iqr, score, peakLabel, elevBand }
     })
     .sort((a, b) => a.score - b.score || b.count - a.count)
     .slice(0, TOP_N)
@@ -160,6 +176,7 @@ onMounted(async () => {
 .nf-meta { display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0; }
 .nf-peak { font-size: 0.7rem; color: var(--accent, #2a78d6); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .nf-iqr { font-size: 0.7rem; color: var(--muted, #888); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nf-elev { font-size: 0.68rem; color: var(--muted, #888); font-variant-numeric: tabular-nums; white-space: nowrap; opacity: 0.8; }
 .nf-count { font-size: 0.75rem; color: var(--muted, #888); font-variant-numeric: tabular-nums; }
 
 .nf-model {
