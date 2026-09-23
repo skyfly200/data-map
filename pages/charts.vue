@@ -103,14 +103,9 @@
         <p class="note">Colors match the map. "Unclustered" = missing every clustering feature.</p>
       </GalleryChart>
 
-      <GalleryChart id="rain-leadup">
+      <GalleryChart id="rain-leadup" v-if="hasRainData">
         <BarChart title="Avg. rain in the 7 days before an observation" :data="rainLeadUp" :format="mm" />
         <p class="note">Mean daily precipitation (mm) across all observations, by days before the find.</p>
-      </GalleryChart>
-
-      <GalleryChart id="coverage">
-        <BarChart title="Enrichment coverage (values present)" :data="coverageData" :format="cov" horizontal />
-        <p class="note">How many of the {{ rows.length }} observations carry each attribute. Gaps fill in as the full pipeline runs.</p>
       </GalleryChart>
 
       <GalleryChart id="by-month">
@@ -179,13 +174,13 @@
       <GalleryChart id="phenology" v-if="phenologyBySpecies.length">
         <BoxPlot title="Fruiting season by species" :data="phenologyBySpecies" xLabel="Day of year" valueKey="day_of_year"
           :format="(v) => Math.round(v)" />
-        <p class="note">When each species (≥3 obs) is found through the year, the forager's calendar.</p>
+        <p class="note">When each species is found through the year (top {{ TOP_SPECIES_BOX }} by count, ≥3 obs each).</p>
       </GalleryChart>
 
       <GalleryChart id="elevation-by-species" v-if="elevationBySpecies.length">
         <BoxPlot :title="`Elevation range by species (${unit})`" :data="elevationBySpecies" :xLabel="`Elevation (${unit})`" valueKey="elevation"
           :format="(v) => Math.round(v).toLocaleString()" />
-        <p class="note">Elevation band each species (≥3 obs) prefers.</p>
+        <p class="note">Elevation band each species prefers (top {{ TOP_SPECIES_BOX }} by count, ≥3 obs each).</p>
       </GalleryChart>
 
       <GalleryChart id="cluster-profile" v-if="clusterProfile.rows.length">
@@ -205,7 +200,7 @@
         <p class="note">Distribution of total precipitation (mm) in the week before each observation.</p>
       </GalleryChart>
 
-      <GalleryChart id="aspect">
+      <GalleryChart id="aspect" v-if="aspectValues.length">
         <WindRose title="Slope aspect of finds" :values="aspectValues" />
         <p class="note">Which compass direction the ground faces at each find (from the DEM).</p>
       </GalleryChart>
@@ -315,12 +310,12 @@ const speciesValues = computed(() =>
     .sort((a, b) => b[1] - a[1]).map(([v]) => v))
 
 const int = (v) => String(v)
-const cov = (v) => `${v}/${rows.value.length}`
 const mm = (v) => `${v}`
 const deg = (v) => `${v}°`
 
 const hasDayTemp = computed(() => rows.value.some((r) => hasValue(r.tmax) || hasValue(r.tmin)))
 const hasTempHistory = computed(() => rows.value.some((r) => hasValue(r.tmax_d0)))
+const hasRainData = computed(() => rows.value.some((r) => hasValue(r.prcp_d0)))
 
 // ── Scatter plots (per-observation granularity, colored by cluster) ──────────
 const ptColor = (r) => (hasValue(r.cluster) ? colorFor(r.cluster) : UNCLUSTERED)
@@ -329,7 +324,7 @@ const clusterLegend = computed(() => {
   let hasNull = false
   for (const r of rows.value) { if (hasValue(r.cluster)) seen.add(r.cluster); else hasNull = true }
   const out = [...seen].sort((a, b) => a - b).map((c) => ({ label: `C${c}`, color: colorFor(c) }))
-  if (hasNull) out.push({ label: ', ', color: UNCLUSTERED })
+  if (hasNull) out.push({ label: 'Unclustered', color: UNCLUSTERED })
   return out
 })
 
@@ -353,6 +348,7 @@ const selected = ref(null)
 
 // ── Distribution charts (box plots, heatmaps, wind-rose) ─────────────────────
 const MIN_PER_SPECIES = 3
+const TOP_SPECIES_BOX = 25
 
 function speciesGroups(valueFn) {
   const groups = new Map()
@@ -365,9 +361,7 @@ function speciesGroups(valueFn) {
   return [...groups.entries()]
     .filter(([, vals]) => vals.length >= MIN_PER_SPECIES)
     .sort((a, b) => b[1].length - a[1].length)
-    // categoryColor, not a positional palette index: a species then keeps the
-    // same color here, on the map, and in every other chart — and honours a
-    // per-value override from the appearance panel.
+    .slice(0, TOP_SPECIES_BOX)
     .map(([label, values]) => ({ label, values, color: categoryColor('species', label) }))
 }
 
@@ -565,24 +559,8 @@ const clusterData = computed(() => {
   }
   const out = [...counts.entries()].sort((a, b) => a[0] - b[0])
     .map(([c, n]) => ({ label: `Cluster ${c}`, short: `C${c}`, value: n, color: colorFor(c) }))
-  if (unclustered) out.push({ label: 'Unclustered', short: ': ', value: unclustered, color: UNCLUSTERED })
+  if (unclustered) out.push({ label: 'Unclustered', short: 'uncl.', value: unclustered, color: UNCLUSTERED })
   return out
-})
-
-const coverageData = computed(() => {
-  const attrs = [
-    ['NDVI', 'ndvi'], ['Soil moisture', 'soil_moisture'],
-    ['Solar exposure', 'solar_exposure'], ['Wind exposure', 'wind_exposure'],
-    ['Water retention', 'water_retention'], ['Elevation', 'elevation'],
-    ['Land cover', 'land_cover_label'], ['Cluster', 'cluster'],
-  ]
-  const counts = Object.fromEntries(attrs.map(([, key]) => [key, 0]))
-  for (const r of rows.value) {
-    for (const [, key] of attrs) {
-      if (hasValue(r[key])) counts[key] += 1
-    }
-  }
-  return attrs.map(([label, key]) => ({ label, value: counts[key] }))
 })
 
 const monthData = computed(() => {
