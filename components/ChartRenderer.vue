@@ -6,6 +6,7 @@
     :todayX="todayX" :todayLabel="todayLabel" @select="$emit('select', $event)" />
   <BarChart v-else-if="config.type === 'bar'" :title="title" :data="barData" :horizontal="!!config.horizontal" :format="barFmt" />
   <BoxPlot v-else-if="config.type === 'box'" :title="title" :data="boxData" :xLabel="labelOf(config.valueField)" :valueKey="config.valueField" :format="fmtOf(config.valueField)" />
+  <ViolinChart v-else-if="config.type === 'violin'" :title="title" :data="boxData" :xLabel="labelOf(config.valueField)" :valueKey="config.valueField" :format="fmtOf(config.valueField)" />
   <BarChart v-else-if="config.type === 'histogram'" :title="title" :data="histogramData" :format="(v) => String(v)" />
   <HeatmapChart v-else-if="config.type === 'heatmap'" :title="title" :rows="heatmap.rows" :cols="heatmap.cols"
     :matrix="heatmap.matrix" :format="heatFmt" />
@@ -17,6 +18,17 @@
   <StackedBarChart v-else-if="config.type === 'stacked'" :title="title" :groups="stackedData.groups"
     :keys="stackedData.keys" :colors="stackedData.colors" :horizontal="!!config.horizontal"
     :format="barFmt" :normalise="!!config.normalise" />
+  <StripChart v-else-if="config.type === 'strip'" :title="title" :data="boxData" :xLabel="labelOf(config.valueField)" :valueKey="config.valueField" :format="fmtOf(config.valueField)" />
+  <RidgelineChart v-else-if="config.type === 'ridgeline'" :title="title" :data="boxData" :xLabel="labelOf(config.valueField)" :valueKey="config.valueField" :format="fmtOf(config.valueField)" />
+  <HexbinChart v-else-if="config.type === 'hexbin'" :title="title" :data="scatterData"
+    :xLabel="labelOf(config.xField)" :yLabel="labelOf(config.yField)"
+    :xFormat="fmtOf(config.xField)" :yFormat="fmtOf(config.yField)"
+    :xKey="config.xField" :yKey="config.yField" :bins="config.bins || 20" />
+  <ParallelCoords v-else-if="config.type === 'parallel'" :title="title" :lines="parallelLines" :axes="parallelAxes" :legend="coloring.legend" />
+  <BubbleMapChart v-else-if="config.type === 'bubble_map'" :title="title" :data="bubbleMapData"
+    :sizeLabel="config.sizeField ? labelOf(config.sizeField) : 'Count'"
+    :sizeFormat="config.sizeField ? fmtOf(config.sizeField) : (v) => String(v)"
+    :legend="coloring.legend" />
   <p v-if="isEmpty" class="cr-empty">No data for this combination.</p>
 </template>
 
@@ -380,30 +392,101 @@ const heatmap = computed(() => {
 })
 const heatFmt = computed(() => (c.value.measure === 'count' ? (v) => `${Math.round(v)}` : (v) => Number(v).toFixed(1)))
 
+// Parallel coordinates: each observation becomes a polyline across selected axes.
+// Use all numeric fields unless the user has selected specific ones via axisFields.
+const PARALLEL_AXES_DEFAULT = ['elevation', 'day_of_year', 'tmax', 'ndvi', 'slope']
+const parallelAxes = computed(() => {
+  const keys = (c.value.axisFields?.length ? c.value.axisFields : PARALLEL_AXES_DEFAULT)
+    .filter((k) => ALL_NUMERIC.find((f) => f.key === k))
+  return keys.map((k) => ({
+    key: k,
+    label: labelOf(k),
+    format: fmtOf(k),
+  }))
+})
+
+const parallelLines = computed(() => {
+  const axKeys = parallelAxes.value.map((a) => a.key)
+  return rows.value
+    .map((r) => {
+      const vals = {}
+      let hasAll = true
+      for (const k of axKeys) {
+        const v = numVal(r, k)
+        if (v === null) { hasAll = false; break }
+        vals[k] = v
+      }
+      if (!hasAll) return null
+      return {
+        label: r.species || '',
+        color: c.value.colorField ? coloring.value.colorOf(catVal(r, c.value.colorField)) : SERIES_1,
+        vals,
+      }
+    })
+    .filter(Boolean)
+    .slice(0, 500) // cap to keep SVG manageable
+})
+
+// Bubble map: aggregate observations by location, size by count or a numeric field.
+const bubbleMapData = computed(() => {
+  const GRID = 0.05 // degrees — snap close points together
+  const cells = new Map()
+  for (const r of rows.value) {
+    const lat = hasValue(r.lat) ? Number(r.lat) : null
+    const lng = hasValue(r.lon) ? Number(r.lon) : null
+    if (lat === null || lng === null || !Number.isFinite(lat) || !Number.isFinite(lng)) continue
+    const key = `${Math.round(lat / GRID)},${Math.round(lng / GRID)}`
+    if (!cells.has(key)) cells.set(key, { lat: 0, lng: 0, n: 0, vals: [], colorVal: null })
+    const cell = cells.get(key)
+    cell.lat += lat; cell.lng += lng; cell.n++
+    if (c.value.sizeField) {
+      const v = numVal(r, c.value.sizeField)
+      if (v !== null) cell.vals.push(v)
+    }
+    if (!cell.colorVal && c.value.colorField) cell.colorVal = catVal(r, c.value.colorField)
+  }
+  return [...cells.values()].map((cell) => ({
+    lat: cell.lat / cell.n,
+    lng: cell.lng / cell.n,
+    n: cell.n,
+    label: '',
+    sizeVal: c.value.sizeField && cell.vals.length
+      ? cell.vals.reduce((s, v) => s + v, 0) / cell.vals.length
+      : cell.n,
+    color: c.value.colorField && cell.colorVal
+      ? coloring.value.colorOf(cell.colorVal)
+      : SERIES_1,
+  }))
+})
+
 const title = computed(() => {
   if (c.value.title) return c.value.title
   const t = c.value.type
-  if (t === 'scatter') return `${labelOf(c.value.yField)} vs. ${labelOf(c.value.xField)}`
+  if (t === 'scatter' || t === 'hexbin') return `${labelOf(c.value.yField)} vs. ${labelOf(c.value.xField)}`
   if (t === 'bar') return c.value.measure === 'count' ? `Count by ${catLabel(c.value.groupField)}` : `Mean ${labelOf(c.value.measure)} by ${catLabel(c.value.groupField)}`
   if (t === 'line' || t === 'area') return `${labelOf(c.value.yField)} over ${labelOf(c.value.xField)}`
-  if (t === 'box') return `${labelOf(c.value.valueField)} by ${catLabel(c.value.groupField)}`
+  if (t === 'box' || t === 'violin' || t === 'strip' || t === 'ridgeline') return `${labelOf(c.value.valueField)} by ${catLabel(c.value.groupField)}`
   if (t === 'histogram') return `Distribution of ${labelOf(c.value.valueField)}`
   if (t === 'heatmap') return `${catLabel(c.value.rowField)} × ${catLabel(c.value.colField)}`
   if (t === 'radar' || t === 'donut') return `${c.value.measure === 'count' ? 'Count' : labelOf(c.value.measure)} by ${catLabel(c.value.groupField)}`
+  if (t === 'parallel') return 'Environmental profile'
+  if (t === 'bubble_map') return c.value.sizeField ? `${labelOf(c.value.sizeField)} map` : 'Observation map'
   return ''
 })
 defineExpose({ title })
 
 const isEmpty = computed(() => {
   const t = c.value.type
-  if (t === 'scatter') return scatterData.value.length === 0
+  if (t === 'scatter' || t === 'hexbin') return scatterData.value.length === 0
   if (t === 'bar') return barData.value.length === 0
   if (t === 'line' || t === 'area') return lineChartSeries.value.length === 0
   if (t === 'donut') return donutData.value.length === 0
   if (t === 'radar') return radarData.value.length === 0
-  if (t === 'box') return boxData.value.length === 0
+  if (t === 'box' || t === 'violin' || t === 'strip' || t === 'ridgeline') return boxData.value.length === 0
   if (t === 'histogram') return histogramData.value.length === 0
   if (t === 'heatmap') return heatmap.value.rows.length === 0
+  if (t === 'parallel') return parallelLines.value.length === 0
+  if (t === 'bubble_map') return bubbleMapData.value.length === 0
   return false
 })
 </script>

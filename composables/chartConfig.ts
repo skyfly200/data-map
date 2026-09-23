@@ -56,8 +56,8 @@ export function defaultChartConfig(): Record<string, any> {
 
 /** The chart types the builder can render, for validating a decoded link. */
 export const CHART_TYPES = [
-  'scatter', 'bar', 'stacked', 'line', 'area', 'box', 'histogram', 'heatmap',
-  'radar', 'donut',
+  'scatter', 'bar', 'stacked', 'line', 'area', 'box', 'violin', 'strip', 'ridgeline',
+  'histogram', 'heatmap', 'hexbin', 'parallel', 'bubble_map', 'radar', 'donut',
 ]
 
 /**
@@ -128,7 +128,10 @@ export function describeChart(config = {}, labelFor = (k: string) => k): string 
     return `${labelFor(config.yField)} vs. ${labelFor(config.xField)}`
   }
   if (t === 'histogram') return `Distribution of ${labelFor(config.valueField)}`
-  if (t === 'box') return `${labelFor(config.valueField)} by ${labelFor(config.groupField)}`
+  if (t === 'box' || t === 'violin' || t === 'strip' || t === 'ridgeline') return `${labelFor(config.valueField)} by ${labelFor(config.groupField)}`
+  if (t === 'hexbin') return `${labelFor(config.yField)} vs. ${labelFor(config.xField)}`
+  if (t === 'parallel') return 'Environmental profile'
+  if (t === 'bubble_map') return config.sizeField ? `${labelFor(config.sizeField)} map` : 'Observation map'
   if (t === 'heatmap') return `${labelFor(config.rowField)} × ${labelFor(config.colField)}`
   if (t === 'stacked') {
     return `${labelFor(config.groupField)} by ${labelFor(config.stackField || config.colorField)}`
