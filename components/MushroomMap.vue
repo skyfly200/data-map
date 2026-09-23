@@ -438,13 +438,17 @@ import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vu
 import { hasValue, useObservations } from '~/composables/useObservations'
 import { gradientCss } from '~/composables/ramps'
 import { normaliseCodes } from '~/netlify/lib/ee-tile-layers.mjs'
-import { fieldValue } from '~/composables/statistics'
 import { useAppearance } from '~/composables/useAppearance'
 import { useGlossary } from '~/composables/useGlossary'
 import GlossaryTooltip from '~/components/GlossaryTooltip.vue'
-import { useMapPointStyle, FIELD_LABEL } from '~/composables/useMapPointStyle'
+import { useMapPointStyle, FIELD_LABEL, fmtNum } from '~/composables/useMapPointStyle'
 import { useMapPin } from '~/composables/useMapPin'
 import { useMapLayerManager } from '~/composables/useMapLayerManager'
+import { useMapTileDate, MAP_MAX_ZOOM } from '~/composables/useMapTileDate'
+import { TILE_LAYERS } from '~/composables/mapLayers'
+import { useMapModelOverlay } from '~/composables/useMapModelOverlay'
+import { useMapHeatmapRenderer } from '~/composables/useMapHeatmapRenderer'
+import { useMapSelection } from '~/composables/useMapSelection'
 
 const { define: g } = useGlossary()
 
@@ -474,6 +478,8 @@ const {
 const mapEl = ref(null)
 const mapRef = shallowRef(null)
 const LRef = shallowRef(null)
+// The active GeoJSON point layer; shared between heatmap renderer and point-style watch.
+const geoLayerRef = shallowRef(null)
 
 // Leaflet parks its own controls in the map's corners, and on a phone the
 // control bar is tall enough (three wrapped rows, more with the season sliders
@@ -498,8 +504,6 @@ function trackControlsHeight() {
 }
 const loaded = ref(false)
 const loadError = ref('')
-const selected = ref(null)
-const selectedLatLng = ref(null)
 // The locate button lives in a Leaflet control rather than the Vue template, so
 // its busy state is applied by hand. One class on one element is a smaller cost
 // than teleporting a component into a control container.
@@ -508,107 +512,19 @@ const locating = ref(false)
 const locateError = ref('')
 watch(locating, (v) => { if (locateBtn) locateBtn.classList.toggle('busy', v) })
 watch(locateError, (msg) => { if (locateBtn && msg) locateBtn.title = msg })
-let map, geoLayer, L, userLayer, selectedMarker
+let map, L, userLayer
 // mapRef and LRef are set in onMounted so composables can reactively access them
 
 // Holds enriched observation info (photos, description, etc.) fetched from iNaturalist API
 
 // ─── Heatmaps ─────────────────────────────────────────────────────────────────
-// Grid summaries computed from the observations and drawn under the points:
-// density, species richness, seasonal activity, an in-season hotspot score,
-// the most common species and land cover, and a cell mean of any enriched
-// field — rainfall, soil moisture, NDVI, slope, aspect, TWI, sun and wind
-// exposure. See composables/useMapHeatmaps.js for what each one means.
-const heatmaps = useMapHeatmaps()
 const {
-  mode: heatmapMode, cellSize: heatmapCell, cellShape, seasonDay, seasonWindow,
-  activeMode: heatmapMeta, groupedModes, heatmapOpacity, tileOpacity, CELL_SIZES,
-} = heatmaps
-let heatmapLayer = null
-
-const heatmapResult = computed(() =>
-  heatmaps.computeHeatmap(filteredData.value?.features || [], heatmapMode.value))
-const heatmapLegend = computed(() => heatmapResult.value.legend)
-
-/**
- * Why a heatmap came out empty, distinguishing the three reasons.
- *
- * "Not in the data yet" is by far the most common and the least guessable: the
- * pipeline's NDVI and vegetation-moisture stages have not populated the shipped
- * dataset, so those modes have nothing to draw however far you zoom. Saying
- * that is the difference between a known gap and an apparently broken feature.
- */
-const emptyHeatmapReason = computed(() => {
-  const field = heatmapMeta.value?.field
-  const feats = filteredData.value?.features || []
-  if (!feats.length) return 'No observations match the current filters.'
-  if (!field) return 'Nothing to show for the current filters.'
-
-  const present = feats.some((f) => Number.isFinite(fieldValue(f.properties || {}, field)))
-  if (!present) {
-    // Label as written, not lowercased: NDVI and TWI are acronyms and "no ndvi
-    // values" reads like a typo.
-    return `No ${heatmapMeta.value.label} values in this dataset. `
-      + 'The pipeline has not filled this column in yet, so it will stay blank until it is re-run.'
-  }
-  return 'No cells at this zoom. Zoom in, or widen the filters.'
-})
-
-/**
- * One arrow for a vector cell: a shaft plus two barbs, as canvas polylines.
- *
- * Directions are in compass space (dx east, dy north), so the shaft is drawn in
- * degrees with the longitude step divided by cos(lat) — otherwise every arrow
- * would skew east as you move away from the equator.
- */
-function arrowFor(c) {
-  const span = (c.lat1 - c.lat0) * 0.42          // keep arrows inside their cell
-  const len = span * (0.35 + 0.65 * (c.t ?? 0.5))
-  const kx = 1 / Math.max(0.2, Math.cos((c.lat * Math.PI) / 180))
-  const tipLat = c.lat + c.dy * len
-  const tipLon = c.lon + c.dx * len * kx
-  const tailLat = c.lat - c.dy * len
-  const tailLon = c.lon - c.dx * len * kx
-
-  // Barbs at ±150° from the shaft direction, a third of its length.
-  const barb = len * 0.38
-  const head = (deg) => {
-    const a = Math.atan2(c.dx, c.dy) + (deg * Math.PI) / 180
-    return [tipLat - Math.cos(a) * barb, tipLon - Math.sin(a) * barb * kx]
-  }
-  const style = { color: c.color, weight: 1.6, opacity: 0.9, interactive: false }
-  return [
-    L.polyline([[tailLat, tailLon], [tipLat, tipLon]], style),
-    L.polyline([head(-28), [tipLat, tipLon], head(28)], style),
-  ]
-}
-
-function renderHeatmap() {
-  if (!map || !L) return
-  if (heatmapLayer) { heatmapLayer.remove(); heatmapLayer = null }
-  const { cells } = heatmapResult.value
-  if (!cells.length) return
-
-  const shapes = heatmapResult.value.legend?.type === 'vector'
-    ? cells.flatMap((c) => arrowFor(c))
-    // Polygons go through the map's canvas renderer, so a few thousand cells
-    // cost one canvas rather than a few thousand DOM nodes. The grid hands over
-    // an outline whichever shape it is binning into, so this does not care.
-    : cells.map((c) => L.polygon(c.polygon, {
-      stroke: false, fillColor: c.color, fillOpacity: heatmapOpacity.value, interactive: false,
-    }))
-
-  heatmapLayer = L.layerGroup(shapes)
-  heatmapLayer.addTo(map)
-  // Keep the observation points on top of the shading.
-  if (geoLayer) geoLayer.bringToFront()
-}
-
-watch(heatmapResult, () => renderHeatmap())
-// Opacity is a redraw rather than a recompute: the cells are unchanged, only
-// how hard they sit on the basemap.
-watch(heatmapOpacity, () => renderHeatmap())
-watch([heatmapMode, heatmapCell, cellShape, seasonDay, seasonWindow], () => heatmaps.persist())
+  heatmaps,
+  heatmapMode, heatmapCell, cellShape, seasonDay, seasonWindow,
+  heatmapMeta, groupedModes, heatmapOpacity, tileOpacity, CELL_SIZES,
+  heatmapResult, heatmapLegend, emptyHeatmapReason,
+  renderHeatmap, heatmapCellIndex, heatmapCellAt,
+} = useMapHeatmapRenderer({ mapRef, LRef, geoLayerRef, filteredData })
 
 // ─── Reference tile layers ────────────────────────────────────────────────────
 // Public raster services stacked over the basemap — relief, rainfall, land
@@ -619,81 +535,32 @@ watch([heatmapMode, heatmapCell, cellShape, seasonDay, seasonWindow], () => heat
 // observations themselves. A layer covers the whole map because somebody else
 // measured it everywhere; a heatmap covers only where people have looked.
 
-// How far in the map will go. Every tile layer is given this as its maxZoom
-// and its own tile ceiling as maxNativeZoom, so the map's limit is a decision
-// made here rather than an accident of whichever basemap happens to be on.
-//
-// 19 is roughly individual-tree scale, which is the scale a foray is planned
-// at: "the north side of that draw" is a question about tens of metres. Past
-// its native level a layer is upscaled, and upscaleNote below says so.
-const MAP_MAX_ZOOM = 19
+// When focusing an observation, the next re-render must not refit/clear it.
+// Leaflet owns the centre and zoom, so they are mirrored into a ref for the
+// share link rather than read out of shared state.
+const mapView = ref(null)
 
-/**
- * Warn when a visible layer has run out of real tiles.
- *
- * Leaflet upscales past maxNativeZoom, which is what keeps these layers on
- * screen at all — but an upscaled tile looks like a measurement at that scale
- * and is not one. Rainfall sampled at 10 km does not resolve to 30 m because
- * the map was zoomed; it just gets blockier.
- */
-function upscaleNote(n) {
-  const zoom = mapView.value?.zoom
-  if (!n?.native || !Number.isFinite(zoom) || zoom <= n.native) return ''
-  return `Zoomed past this layer's detail — the tiles are stretched from zoom ${n.native}, not resolved finer.`
-}
-
-// Which day the time-varying layers draw. Defaults to the shortest lag in the
-// catalogue, so switching one on lands on a date that exists rather than on
-// today, which for an 8-day composite is always blank.
-const DEFAULT_LAG = Math.min(...TILE_LAYERS.filter((l) => l.time).map((l) => l.lag ?? 1))
-const tileDate = ref(layerDate(DEFAULT_LAG))
-// Nothing is published for tomorrow, so the picker will not offer it.
-const maxTileDate = layerDate(0)
-
-// Reference layers that could not be reached. Shown rather than swallowed:
-// an empty ownership layer reads as "no public land here".
-// The season sliders collapse by default: their summary says what they are set
-// to, so the bar stays one row until you actually want to move them.
-// Whether the map key is folded away. Remembered, because it is a standing
-// preference about screen space rather than a per-visit decision.
-const KEY_COLLAPSED = 'map-key-collapsed'
-const keyCollapsed = ref(false)
-function setKeyCollapsed(v) {
-  keyCollapsed.value = v
-  try { localStorage.setItem(KEY_COLLAPSED, v ? '1' : '0') } catch { /* private mode */ }
-}
-onMounted(() => {
-  // Read on the client only: the server has no localStorage, and rendering the
-  // key expanded there and collapsed here is a hydration mismatch.
-  try { keyCollapsed.value = localStorage.getItem(KEY_COLLAPSED) === '1' } catch { /* ignore */ }
-})
+// ─── Tile date + UI state ─────────────────────────────────────────────────────
+const {
+  tileDate, maxTileDate, tileErrors, activeTileNotes, tileLayers,
+  activeTileTemplates, keyCollapsed, setKeyCollapsed, upscaleNote, syncActiveTemplates,
+} = useMapTileDate({ mapRef, mapView })
 
 // The heatmap popover, so the keyboard shortcut can still reach the season
 // controls now that they live inside it.
 const heatmapPop = ref(null)
 
-const tileErrors = ref([])
-// The caveat belonging to whichever reference layers are switched on.
-const activeTileNotes = ref([])
-// The built tile layers, so the opacity slider can reach them after setup.
-const tileLayers = []
-
 // Coloring, sizing, palette, per-value overrides and point styling all restyle
 // the existing layer in place — no need to rebuild it, which would refit the
 // view.
 watch([coloring, sizeScale, activeColors, colorOverrides, pointRadius, pointOpacity, pointOutline, colorSeed, hoverValue], () => {
-  if (!geoLayer) return
-  geoLayer.eachLayer((l) => {
+  if (!geoLayerRef.value) return
+  geoLayerRef.value.eachLayer((l) => {
     const style = markerStyle(l.feature.properties)
     l.setStyle(style)
     l.setRadius(style.radius)
   })
 })
-
-// When focusing an observation, the next re-render must not refit/clear it.
-// Leaflet owns the centre and zoom, so they are mirrored into a ref for the
-// share link rather than read out of shared state.
-const mapView = ref(null)
 // Flatten the live map — tiles, the point canvas, any overlay canvas — into a
 // PNG. Everything is measured on screen rather than recomputed, so what is saved
 // is exactly what is displayed.
@@ -715,8 +582,8 @@ if (import.meta.client) {
 }
 watch(showPoints, (v) => {
   if (import.meta.client) localStorage.setItem(POINTS_KEY, v ? '1' : '0')
-  if (!map || !geoLayer) return
-  if (v) { geoLayer.addTo(map); geoLayer.bringToFront() } else geoLayer.remove()
+  if (!map || !geoLayerRef.value) return
+  if (v) { geoLayerRef.value.addTo(map); geoLayerRef.value.bringToFront() } else geoLayerRef.value.remove()
 })
 
 // ─── Tooltips ───────────────────────────────────────────────────────────────
@@ -814,30 +681,6 @@ const viewBounds = ref(null)
 // are the same string, but an Earth Engine template holds a token that expires
 // within hours: filed under its URL, a saved tile is unreachable by the time
 // anyone is standing in the woods reading it. The id is what the cache keys on.
-const activeTileTemplates = ref([])
-function syncActiveTemplates() {
-  if (!map) return
-  const out = []
-  map.eachLayer((l) => {
-    // ArcGIS export layers build their URLs per tile rather than from a
-    // template, so they cannot be enumerated ahead of time and are skipped.
-    if (!l._url || typeof l._url !== 'string' || !l._url.includes('{z}')) return
-    // The name rides along so the offline estimate can say which layer is
-    // costing the download, rather than listing anonymous URLs at somebody
-    // deciding what to turn off.
-    out.push({
-      template: l._url,
-      id: l._spec?.ee ? l._spec.key : l._url,
-      name: l._spec?.name || '',
-      // Where this layer runs out of tiles, so a save does not request zooms it
-      // does not publish. maxNativeZoom is the real ceiling; maxZoom on these
-      // layers is the map's own limit, which every layer shares.
-      maxZoom: Number.isFinite(l.options?.maxNativeZoom) ? l.options.maxNativeZoom : null,
-    })
-  })
-  activeTileTemplates.value = out
-}
-
 const datasetLabel = computed(() => {
   const n = filteredData.value?.features?.length || 0
   return n ? `${n.toLocaleString()} observations` : ''
@@ -849,18 +692,6 @@ const shareTitle = computed(() => {
   return `${n.toLocaleString()} ${what}: data-map`
 })
 
-let suppressFit = false
-// Whether the map has ever been fitted to data. Until it has, a fit is the
-// thing that puts the viewer somewhere sensible at all.
-let fittedOnce = false
-
-// Heatmap cells indexed by their grid key, so the cell under a point is found
-// by arithmetic rather than by scanning thousands of polygons on every hover.
-const heatmapCellIndex = computed(() => {
-  const index = new Map()
-  for (const c of heatmapResult.value.cells || []) index.set(c.key, c)
-  return index
-})
 
 // ─── Earth Engine layers ─────────────────────────────────────────────────────
 // These have no fixed URL: the server asks Earth Engine to render the layer and
@@ -940,110 +771,9 @@ function restoreBase() {
   }
 }
 
-// A suitability surface handed over from the jobs page. Drawn as one tile
-// overlay above the basemap and below the observation points, with its own
-// legend card. `modelLayer` is the Leaflet layer; `modelOverlay` is what the
-// legend reads.
-const overlayHandoff = useModelOverlay()
-const modelOverlay = ref(null)
-let modelLayer = null
-
-/** How old the surface is, from when its tiles were minted. */
-function overlayAge(mintedAt) {
-  if (!mintedAt) return ''
-  const d = new Date(mintedAt)
-  if (!Number.isFinite(d.getTime())) return ''
-  const hours = Math.floor((Date.now() - d.getTime()) / 3600000)
-  if (hours < 1) return 'just now'
-  if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
-}
-
-/** Draw the pending suitability surface, if the jobs page left one. */
-function applyModelOverlay() {
-  const pending = overlayHandoff.pending.value
-  if (!pending || !pending.template || !map || !L) return
-  removeModelOverlay()
-
-  const layer = L.tileLayer(pending.template, {
-    opacity: 0.7,
-    maxZoom: MAP_MAX_ZOOM,
-    // The surface tracks zoom the way the reference overlays do (see the note on
-    // updateWhenIdle where those are built).
-    updateWhenIdle: false,
-    updateWhenZooming: true,
-    className: 'model-suitability',
-  })
-
-  // A minted map id expires; when its tiles start 404ing the surface is gone,
-  // and a blank overlay reads as "nowhere is suitable" rather than "this
-  // expired". Count failures and say so instead.
-  let failed = 0
-  layer.on('tileerror', () => {
-    failed += 1
-    if (failed >= 3 && modelOverlay.value && !modelOverlay.value.stale) {
-      modelOverlay.value = { ...modelOverlay.value, stale: true }
-    }
-  })
-  layer.addTo(map)
-  modelLayer = layer
-
-  modelOverlay.value = {
-    jobId: pending.jobId || '',
-    label: pending.label || 'Model',
-    legend: pending.legend || { stops: ['#2c2f6b', '#c6301f'], min: '0', max: '1' },
-    age: overlayAge(pending.mintedAt),
-    cv: pending.cv || null,
-    stale: false,
-    refreshing: false,
-  }
-
-  // Frame the region the surface was projected over, so it is not off-screen.
-  const r = pending.region
-  if (r && Number.isFinite(r.north)) {
-    try {
-      map.fitBounds(L.latLngBounds([r.south, r.west], [r.north, r.east]).pad(0.05), { animate: false })
-    } catch { /* a bad region is not worth failing the draw over */ }
-  }
-
-  // Consumed, so a later revisit of the map does not redraw a surface the member
-  // removed. Reopening it from the jobs page sets it again.
-  overlayHandoff.clear()
-}
-
-/**
- * Re-mint an expired surface from its stored model, in place.
- *
- * The template carries an Earth Engine map id that expires; rather than send the
- * viewer back to the jobs page to re-run, ask the server to re-serve the stored
- * model and swap the tile URL under the same layer.
- */
-async function refreshModelOverlay() {
-  const o = modelOverlay.value
-  if (!o?.jobId || !modelLayer) return
-  modelOverlay.value = { ...o, refreshing: true }
-  try {
-    const token = await accessToken()
-    const res = await fetch(`/.netlify/functions/model-tiles?job=${encodeURIComponent(o.jobId)}`, {
-      headers: token ? { authorization: `Bearer ${token}` } : {},
-    })
-    const body = await res.json()
-    if (!res.ok || !body.ok || !body.template) throw new Error(body.error || 'Could not refresh the surface.')
-    modelLayer.setUrl(body.template)
-    modelOverlay.value = {
-      ...modelOverlay.value, stale: false, refreshing: false, age: overlayAge(body.meta?.mintedAt),
-    }
-  } catch {
-    modelOverlay.value = { ...modelOverlay.value, refreshing: false }
-  }
-}
-
-/** Take the suitability surface off the map. */
-function removeModelOverlay() {
-  if (modelLayer && map) map.removeLayer(modelLayer)
-  modelLayer = null
-  modelOverlay.value = null
-}
+// ─── Suitability surface (model overlay) ─────────────────────────────────────
+const { modelOverlay, applyModelOverlay, refreshModelOverlay, removeModelOverlay } =
+  useMapModelOverlay({ mapRef, LRef, accessToken })
 
 // The stacking order of the overlays that are on, topmost first, and how see-
 // through each one is. Both are per-layer because both were global and that was
@@ -1570,180 +1300,14 @@ const pinNearest = computed(() => {
   return { label: `${name}, ${away} away`, feature: best }
 })
 
-function heatmapCellAt(lat, lon) {
-  if (!heatmapCell.value || !heatmapMode.value) return null
-  return heatmapCellIndex.value.get(heatmaps.keyAt(lat, lon)) || null
-}
-
-const esc = (v) => String(v)
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
-/** What the tooltip says about one observation, given how the map is set up. */
-function pointTooltip(feature) {
-  const p = feature?.properties || {}
-  const co = feature?.geometry?.coordinates
-  const rows = []
-
-  const title = p.species || 'Observation'
-  if (p.date) rows.push(['Observed', p.date])
-
-  // The value behind this mark's color, named by the dimension chosen.
-  const c = coloring.value
-  if (c && typeof c.labelOf === 'function') {
-    const v = c.labelOf(p)
-    // "Cluster · Cluster 1" reads as a stutter, so a value that already carries
-    // its dimension's name stands on its own.
-    if (hasValue(v) && v !== title) {
-      const dim = String(c.title || '')
-      const val = String(v)
-      if (dim && val.toLowerCase().startsWith(dim.toLowerCase())) rows.push(['', val])
-      else rows.push([dim, val])
-    }
-  } else if (colorBy.value && hasValue(p[colorBy.value])) {
-    rows.push([FIELD_LABEL[colorBy.value] || colorBy.value, fmtNum(p[colorBy.value])])
-  }
-  if (sizeBy.value && hasValue(p[sizeBy.value])) {
-    rows.push([`${FIELD_LABEL[sizeBy.value] || sizeBy.value} (size)`, fmtNum(p[sizeBy.value])])
-  }
-
-  // And what the heatmap makes of the cell this point falls in.
-  if (heatmapMode.value && co) {
-    const cell = heatmapCellAt(co[1], co[0])
-    if (cell) {
-      const m = heatmapMode.value
-      const meta = heatmapMeta.value
-      const label = meta?.label || 'Heatmap'
-      const value = meta?.kind === 'field'
-        // The cell mean, with how many readings went into it — a mean of two is
-        // a different claim from a mean of two hundred.
-        ? `${meta.circular ? `${Math.round(cell.value)}°` : fmtNum(cell.value)} (${cell.samples} obs)`
-        : m === 'common' || m === 'land_cover' ? (cell.label || ', ')
-          : m === 'season' || m === 'hotspots'
-            ? `${Math.round((cell.n ? cell.inWindow / cell.n : 0) * 100)}% of ${cell.n} finds`
-            : m === 'richness' ? `${cell.species.size} species`
-              : m === 'wind' ? `${Math.round(cell.aspectDeg ?? 0)}°`
-                : `${cell.n} observations`
-      rows.push([label, value])
-    }
-  }
-
-  return `<strong>${esc(title)}</strong>`
-    + rows.map(([k, v]) => `<span class="ot-row">${k ? `<span class="ot-k">${esc(k)}</span>` : ''}${esc(v)}</span>`).join('')
-}
-
-// The drawer shows the coordinates, but a GeoJSON feature keeps them in its
-// geometry rather than its properties — so they are carried across here.
-function selectFeature(feature) {
-  if (!feature) return null
-  const co = feature.geometry?.coordinates
-  // Whether this point is the thinned copy from the overview or the full record
-  // from its cell. The drawer needs to know: an unenriched-looking record that
-  // is merely un-fetched must not be reported as one the pipeline never
-  // sampled. The flag lives on the feature, not its properties, so it has to be
-  // carried across explicitly.
-  const thinned = chunks.available.value && !feature.__full
-  const base = { ...feature.properties, __thinned: thinned }
-  return co ? { ...base, lon: co[0], lat: co[1] } : base
-}
-
-// Rebuild the point layer whenever the dataset changes (e.g. species switch).
-function renderPoints(geo) {
-  if (!map || !L || !geo) return
-  if (geoLayer) { geoLayer.remove(); geoLayer = null }
-  if (!suppressFit) selected.value = null
-
-  geoLayer = L.geoJSON(geo, {
-    pointToLayer: (feature, latlng) => L.circleMarker(latlng, markerStyle(feature.properties)),
-  }).addTo(map)
-
-  // One tooltip and one click handler for the whole layer, resolved against
-  // whichever marker the event came from. Binding them per feature created a
-  // Tooltip object and a listener for every observation — ~48k of each — which
-  // cost more than drawing the markers did.
-  // Hovering a point says what it is AND what the map is currently saying about
-  // it: the value behind its color and size, and what the overlay reports for
-  // the cell it sits in. Without that, the encodings can only be read by eye
-  // against a legend, and the overlay could not be read at a point at all.
-  geoLayer.bindTooltip((lyr) => pointTooltip(lyr.feature),
-                       { direction: 'top', sticky: true, className: 'obs-tip' })
-  geoLayer.on('click', (e) => {
-    const feature = e.layer?.feature
-    if (!feature) return
-    selected.value = selectFeature(feature)
-    const co = feature.geometry?.coordinates
-    selectedLatLng.value = co ? [co[1], co[0]] : null
-  })
-
-  if (!showPoints.value) geoLayer.remove()
-
-  const bounds = geoLayer.getBounds()
-  // Non-animated: an in-flight fit animation would block a subsequent zoom-in to
-  // a focused observation (Leaflet ignores zoom changes mid-animation).
-  if (bounds.isValid() && !suppressFit) {
-    map.fitBounds(bounds.pad(0.1), { animate: false })
-    fittedOnce = true
-  }
-  suppressFit = false // one-shot
-}
-
-// Fitting the view to the data is right when a filter narrows to one species,
-// and wrong when a chunk lands. The viewer panned somewhere deliberately; the
-// ground under them arriving is not a reason to throw them back to the extent
-// of the whole dataset. Worse, the fit fires moveend, which asks for the cells
-// of the view it just jumped to, which lands another chunk: the map would sit
-// there flicking between where you were and the whole country.
-//
-// The first chunked render is the overview, which is everything, so that one
-// still fits. After that only a real data change moves the map.
-let seenChunkVersion = 0
-watch(filteredData, (geo) => {
-  if (chunks.version.value !== seenChunkVersion) {
-    seenChunkVersion = chunks.version.value
-    if (fittedOnce) suppressFit = true
-  }
-  renderPoints(geo)
+// ─── Observation selection + point rendering ──────────────────────────────────
+const { selected, selectedLatLng, renderPoints, applyFocus, setSuppressFit, setFittedOnce } = useMapSelection({
+  mapRef, LRef, geoLayerRef, filteredData, chunks,
+  focusObservation, setFocusObservation,
+  coloring, colorBy, sizeBy,
+  heatmapMode, heatmapMeta, heatmapCellAt,
+  markerStyle, showPoints,
 })
-
-// "Open on map" from a chart: select the matching observation and pan to it.
-function applyFocus(target) {
-  if (!target || !map) return
-  const lon = Number(target.lon), lat = Number(target.lat)
-  const feats = filteredData.value?.features || []
-  const match = (target.uuid && feats.find((f) => f.properties?.uuid === target.uuid))
-    || feats.find((f) => {
-      const co = f.geometry?.coordinates
-      return co && Math.abs(co[0] - lon) < 1e-6 && Math.abs(co[1] - lat) < 1e-6
-    })
-  if (match) selected.value = selectFeature(match)
-  if (Number.isFinite(lat) && Number.isFinite(lon)) {
-    selectedLatLng.value = [lat, lon]
-    // Zoom in on the observation (not just pan). Stop any in-flight fit-to-data
-    // animation first, or it would complete and override this zoom.
-    suppressFit = true
-    map.setView([lat, lon], 15)
-  }
-  setFocusObservation(null) // consume so a later revisit doesn't re-trigger
-}
-watch(focusObservation, (t) => t && applyFocus(t))
-
-// A location pin marks the currently-selected observation (from a click or from
-// "Open on map"), and clears when the detail drawer is closed.
-function pinIcon() {
-  return L.divIcon({
-    className: 'obs-pin', iconSize: [28, 40], iconAnchor: [14, 38], tooltipAnchor: [0, -34],
-    html: `<svg viewBox="0 0 24 34" width="28" height="40" aria-hidden="true">
-      <path d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 34 12 34s12-13.4 12-22.1C24 5.3 18.6 0 12 0z"
-            fill="#e34948" stroke="#fff" stroke-width="1.5"/>
-      <circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>`,
-  })
-}
-watch(selectedLatLng, (ll) => {
-  if (!map || !L) return
-  if (selectedMarker) { selectedMarker.remove(); selectedMarker = null }
-  if (ll) selectedMarker = L.marker(ll, { icon: pinIcon(), interactive: false, zIndexOffset: 1000 }).addTo(map)
-})
-// Closing the drawer (selected → null) removes the pin.
-watch(selected, (s) => { if (!s) selectedLatLng.value = null })
 
 onMounted(async () => {
   try {
@@ -1816,6 +1380,8 @@ onMounted(async () => {
       tap: true, tapTolerance: 20,
       maxZoom: MAP_MAX_ZOOM,
     }).setView([39.5, -105.7], 7)
+    mapRef.value = map
+    LRef.value = L
     // Locate first, then zoom: Leaflet stacks a corner's controls in the order
     // they are added, so this puts the crosshair directly above the +/- pair
     // rather than in the control bar at the top, which is where it was competing
@@ -2174,13 +1740,13 @@ onMounted(async () => {
     if (!data.value) throw new Error('no data')
     // A link carrying a view sets it explicitly; skip the fit-to-data that would
     // otherwise throw that view away.
-    if (shared.view) suppressFit = true
+    if (shared.view) setSuppressFit(true)
     renderPoints(filteredData.value)
     if (shared.view) {
       map.setView(shared.view.center, shared.view.zoom, { animate: false })
       // The map is now deliberately placed, so the chunks that arrive for this
       // view must not refit it away.
-      fittedOnce = true
+      setFittedOnce(true)
     }
     syncMapView()
     renderHeatmap()
