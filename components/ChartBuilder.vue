@@ -11,6 +11,11 @@
           <option value="area">Area</option>
           <option value="box">Box plot by category</option>
           <option value="violin">Violin plot by category</option>
+          <option value="strip">Strip / jitter plot</option>
+          <option value="ridgeline">Ridgeline (joy plot)</option>
+          <option value="hexbin">Hexbin (density scatter)</option>
+          <option value="parallel">Parallel coordinates</option>
+          <option value="bubble_map">Bubble map</option>
           <option value="histogram">Histogram</option>
           <option value="heatmap">Heatmap</option>
           <option value="radar">Radar</option>
@@ -57,6 +62,31 @@
       <template v-else-if="chartType === 'violin'">
         <label class="ctrl"><span>Group by <HelpLink option="chart-group-by" /></span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
         <label class="ctrl"><span>Value <HelpLink option="chart-value" /></span><select v-model="valueField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+      </template>
+
+      <template v-else-if="chartType === 'strip'">
+        <label class="ctrl"><span>Group by <HelpLink option="chart-group-by" /></span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Value <HelpLink option="chart-value" /></span><select v-model="valueField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+      </template>
+
+      <template v-else-if="chartType === 'ridgeline'">
+        <label class="ctrl"><span>Group by <HelpLink option="chart-group-by" /></span><select v-model="groupField"><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Value <HelpLink option="chart-value" /></span><select v-model="valueField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+      </template>
+
+      <template v-else-if="chartType === 'hexbin'">
+        <label class="ctrl"><span>X <HelpLink option="chart-x" /></span><select v-model="xField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Y <HelpLink option="chart-y" /></span><select v-model="yField"><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Bins <HelpLink option="chart-bins" /></span><input type="number" min="4" max="40" v-model.number="bins" /></label>
+      </template>
+
+      <template v-else-if="chartType === 'parallel'">
+        <label class="ctrl"><span>Color <HelpLink option="chart-color-field" /></span><select v-model="colorField"><option value="">(none)</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+      </template>
+
+      <template v-else-if="chartType === 'bubble_map'">
+        <label class="ctrl"><span>Size by</span><select v-model="sizeField"><option value="">(count)</option><option v-for="f in numericFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
+        <label class="ctrl"><span>Color <HelpLink option="chart-color-field" /></span><select v-model="colorField"><option value="">(none)</option><option v-for="f in categoryFields" :key="f.key" :value="f.key">{{ f.label }}</option></select></label>
       </template>
 
       <template v-else-if="chartType === 'histogram'">
@@ -186,7 +216,7 @@ const typeDocId = computed(() => TYPE_DOCS[chartType.value] || 'chart-type')
 
 // Only charts that lay categories out in a row have an order worth choosing.
 // A scatter or histogram has no category axis to sort.
-const SORTABLE_TYPES = new Set(['bar', 'stacked', 'box', 'violin', 'radar'])
+const SORTABLE_TYPES = new Set(['bar', 'stacked', 'box', 'violin', 'strip', 'ridgeline', 'radar'])
 
 const config = computed(() => ({
   type: chartType.value,
