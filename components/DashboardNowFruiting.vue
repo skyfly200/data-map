@@ -20,7 +20,8 @@
       <li v-for="s in topSpecies" :key="s.name" class="nf-item">
         <span class="nf-name">{{ s.name }}</span>
         <span class="nf-meta">
-          <span class="nf-peak" :title="`Peak ${s.peakLabel} days from today`">{{ s.peakLabel }}</span>
+          <span class="nf-peak" :title="`Peak ${s.peakLabel} from today · ${s.iqr}d IQR`">{{ s.peakLabel }}</span>
+          <span class="nf-iqr" :title="`Fruiting window width (IQR): ${s.iqr} days`">{{ s.iqr }}d</span>
           <span class="nf-count">{{ s.count.toLocaleString() }}</span>
         </span>
       </li>
@@ -88,21 +89,27 @@ const topSpecies = computed(() => {
     b.doys.push(doy)
   }
 
-  // For each species compute the median DOY of windowed observations, then
-  // rank by proximity of that median to today (peak overlap first), breaking
-  // ties by observation count.
+  // For each species compute the median DOY and IQR of windowed observations.
+  // Rank by a composite score: peak proximity to today + half the IQR (so a
+  // species peaking right now with a tight season beats one that happens to
+  // have a broad season straddling today). Ties break on count.
   return [...buckets.entries()]
     .map(([name, { count, doys }]) => {
       const sorted = [...doys].sort((a, b) => a - b)
-      const mid = Math.floor(sorted.length / 2)
-      const medianDoy = sorted.length % 2 === 0
+      const n = sorted.length
+      const mid = Math.floor(n / 2)
+      const medianDoy = n % 2 === 0
         ? Math.round((sorted[mid - 1] + sorted[mid]) / 2)
         : sorted[mid]
+      const q1 = sorted[Math.floor(n * 0.25)]
+      const q3 = sorted[Math.floor(n * 0.75)]
+      const iqr = q3 - q1  // already within ±WINDOW so no wrap needed
       const dist = doyDist(medianDoy, todayDoy)
-      const peakLabel = dist === 0 ? 'today' : dist <= 3 ? `±${dist}d` : `±${dist}d`
-      return { name, count, dist, peakLabel }
+      const score = dist + iqr * 0.5
+      const peakLabel = dist === 0 ? 'today' : `±${dist}d`
+      return { name, count, dist, iqr, score, peakLabel }
     })
-    .sort((a, b) => a.dist - b.dist || b.count - a.count)
+    .sort((a, b) => a.score - b.score || b.count - a.count)
     .slice(0, TOP_N)
 })
 
@@ -152,6 +159,7 @@ onMounted(async () => {
 .nf-name { font-size: 0.82rem; color: var(--text, #222); font-style: italic; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nf-meta { display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0; }
 .nf-peak { font-size: 0.7rem; color: var(--accent, #2a78d6); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nf-iqr { font-size: 0.7rem; color: var(--muted, #888); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .nf-count { font-size: 0.75rem; color: var(--muted, #888); font-variant-numeric: tabular-nums; }
 
 .nf-model {
