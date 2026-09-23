@@ -19,7 +19,8 @@
 
 import { computed, ref } from 'vue'
 import { mix, normaliseStops, rampColor } from './ramps'
-import { categoryColor, hasValue } from '~/composables/useObservations'
+import { hasValue } from '~/composables/useObservations'
+import { categoryColor } from '~/composables/useAppearance'
 import { cellAt, cellKeyAt, CELL_SHAPES } from '~/composables/gridCells'
 import { ALL_NUMERIC } from '~/composables/useChartFields'
 import { fieldValue } from '~/composables/statistics'

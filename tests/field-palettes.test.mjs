@@ -12,8 +12,9 @@ import assert from 'node:assert/strict'
 
 import {
   FIELD_LAYERS, MATCHED_FIELDS,
-  classColorFor, fraction, matchNote, mix, paletteFor, rampColor,
+  classColorFor, fraction, matchNote, paletteFor,
 } from '../composables/fieldPalettes.js'
+import { mix, rampColor } from '../composables/ramps.js'
 import { EE_TILE_LAYERS, WORLDCOVER_CLASSES, WORLDCOVER_FROM, resolveLayer }
   from '../netlify/lib/ee-tile-layers.mjs'
 

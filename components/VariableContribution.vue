@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { SERIES_1 } from '~/composables/useObservations'
+import { SERIES_1 } from '~/composables/useAppearance'
 import { scaleContribution } from '~/composables/maxentViz'
 
 const props = defineProps({

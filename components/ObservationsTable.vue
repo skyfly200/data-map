@@ -56,7 +56,8 @@
 </template>
 
 <script setup>
-import { colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { colorFor } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
 
 const { rows, filteredData, error, pending, load, selectedDataset, availableDatasets }

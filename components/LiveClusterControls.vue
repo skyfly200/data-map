@@ -67,7 +67,7 @@ defineProps({
   inline: { type: Boolean, default: false },
 })
 
-import { colorFor } from '~/composables/useObservations'
+import { colorFor } from '~/composables/useAppearance'
 
 const { enabled, k, mode, features, geoWeight, presentFeatures, sizes } = useLiveClusters()
 

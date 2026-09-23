@@ -17,14 +17,7 @@
 //   geometry to save width leaves something that is no longer GeoJSON, so the
 //   column selection applies to properties only.
 
-export interface ObservationFeature {
-  type: 'Feature'
-  geometry: {
-    type: 'Point'
-    coordinates: [number, number]
-  }
-  properties: Record<string, any>
-}
+export type { ObservationFeature } from '~/composables/useObservations'
 
 /** Columns every row has, in the order a reader expects to meet them. */
 export const IDENTITY_COLUMNS = ['id', 'date', 'scientific_name', 'common_name']
