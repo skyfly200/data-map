@@ -384,6 +384,67 @@ export const LAYER_PRESETS = [
         + 'the model endorses.',
     },
   },
+  {
+    id: 'terrain-index',
+    label: 'Terrain index, continuous (TPI / CHILI / similar)',
+    hint: 'A pre-computed terrain index such as CSP/ERGo SRTM mTPI or CHILI — '
+      + 'a single image whose single band spans a signed or unsigned range.',
+    assetHint: 'CSP/ERGo/1_0/Global/SRTM_mTPI',
+    layer: {
+      group: 'Terrain analysis',
+      asset_type: 'image',
+      band: 'constant',
+      vis_min: -300,
+      vis_max: 300,
+      palette: '#2166ac, #67a9cf, #d1e5f0, #f7f7f7, #fddbc7, #ef8a62, #b2182b',
+      opacity: 0.7,
+      note: 'A terrain index. Adjust the minimum and maximum to the actual range '
+        + 'of the asset you are registering, and flip the palette if the low end '
+        + 'should be warm.',
+    },
+  },
+  {
+    id: 'human-influence',
+    label: 'Human influence / modification (0–1)',
+    hint: 'A continuous index of human pressure such as TNC Global Human '
+      + 'Modification (cumulative_human_modification) or similar. 0 = intact, '
+      + '1 = fully modified.',
+    assetHint: 'TNC/HM/v3/90m_s',
+    layer: {
+      group: 'Human influence',
+      asset_type: 'image_collection',
+      reducer: 'mosaic',
+      band: 'cumulative_human_modification',
+      vis_min: 0,
+      vis_max: 1,
+      mask_below: 0,
+      palette: '#1a9641, #a6d96a, #ffffbf, #fdae61, #d7191c',
+      opacity: 0.65,
+      note: 'Human modification index. Values at or below 0 are hidden; adjust '
+        + 'the band name to match the asset you are registering.',
+    },
+  },
+  {
+    id: 'population',
+    label: 'Population count / density',
+    hint: 'A population surface such as GHSL GHS-POP (population_count) or '
+      + 'WorldPop. The palette is suited to a log-scaled or low-maximum layer.',
+    assetHint: 'JRC/GHSL/P2023A/GHS_POP',
+    layer: {
+      group: 'Human influence',
+      asset_type: 'image_collection',
+      reducer: 'mosaic',
+      band: 'population_count',
+      vis_min: 0,
+      vis_max: 500,
+      mask_below: 1,
+      palette: '#feebe2, #fcc5c0, #fa9fb5, #f768a1, #ae017e, #7a0177',
+      opacity: 0.7,
+      note: 'Population count per cell. Values below 1 are hidden. The maximum '
+        + 'is set to 500 per cell; lower it if the layer washes out in rural areas, '
+        + 'raise it if dense cities dominate.',
+    },
+  },
 ]
 
 /** Apply a preset over a draft, leaving anything the admin has already typed. */
