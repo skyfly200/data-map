@@ -13,225 +13,80 @@ through every stratum onto a geotag on the ground.
 
 The repository is still `data-map`; the app is Nexstrata.
 
-## Python Script Pipeline
+## Enrichment Pipeline (JavaScript / Earth Engine)
 
-Install the pipeline dependencies:
+Observation data is enriched entirely server-side in Node via
+`netlify/lib/ee-pipeline.mjs` and `netlify/lib/ee-runner.mjs`. There is no
+Python requirement to run the app or refresh data.
 
-```bash
-pip install -r requirements.txt
-```
+### How enrichment works
 
-### Python Notebook Pipeline
-[View the notebook on Kaggle](https://www.kaggle.com/code/skylerflywilson/nexstrata-data-enrichment-pipeline)
+A member submits an enrichment job from the **Jobs** page (or one is queued
+automatically after an import). The job queue (`netlify/lib/job-queue.mjs`)
+picks it up, and `ee-runner.mjs` calls Earth Engine's `reduceRegions` for each
+stage. Requests are batched by observation date — points sharing a date share
+one composite and one round trip — so a 7-day weather history costs one EE call
+per date, not one per observation.
 
-Find the .ipynb file in the notebook directory
-[Kaggle Notebook File](kaggle_pipeline.ipynb)
+| Column | Earth Engine dataset |
+| --- | --- |
+| `ndvi` | `COPERNICUS/S2_SR_HARMONIZED` |
+| `soil_moisture` | `ECMWF/ERA5_LAND/DAILY_AGGR` |
+| `prcp_d0..d6` | `UCSB-CHG/CHIRPS/DAILY` |
+| `tmax_d0..d6`, `tmin_d0..d6` | `ECMWF/ERA5_LAND/DAILY_AGGR` |
+| `land_cover` | `ESA/WorldCover/v200` |
+| `elevation`, `slope`, `aspect` | `USGS/SRTMGL1_003` |
+| `solar_exposure`, `wind_exposure`, `water_retention` | derived terrain indices from SRTM + `MERIT/Hydro/v1_0_1` |
 
+Enrichment results are written back to Supabase Storage and become immediately
+available in the app without a redeploy.
+
+### Data sources
+
+- **iNaturalist** — `netlify/functions/fetch-species.mjs` (on-demand, auth-gated)
+  and `netlify/functions/refresh-observations.mjs` (scheduled every 6 h). Best
+  for recent sightings and smaller taxon pulls (< 5 000 records or < 60 days).
+- **GBIF** — `components/GbifImporter.vue` handles CSV uploads today. A live
+  GBIF API import flow is planned (`WANT-9` in the roadmap); prefer GBIF for
+  large or historical pulls.
+
+After any import, new features arrive with `enrichment_level: 'none'`. An
+automatic enrichment trigger is planned (`WANT-10`); until then, submit an
+enrichment job manually from the Jobs page.
 
 ### Credentials
 
-Earth Engine supplies every environmental layer, so it is the only credential
-the pipeline needs. The rest are for the raster fallback described below.
+Set these in your Netlify environment (or `.env` for local dev):
 
-**Finding `EARTHENGINE_PROJECT`**: it is the *project ID* of a Google Cloud
-project registered for Earth Engine (e.g. `my-project-451208`), not the display
-name and not the project number:
-
-- [console.cloud.google.com](https://console.cloud.google.com/), the project
-  picker lists every project with its ID column
-- [code.earthengine.google.com](https://code.earthengine.google.com/): the Code
-  Editor shows the active project top-right and in the Assets tab
-- not registered yet? [code.earthengine.google.com/register](https://code.earthengine.google.com/register)
-  attaches a Cloud project to Earth Engine (free for noncommercial use)
-- already using gcloud? `gcloud config get-value project`
-
-`python scripts/preflight.py --ee-project` prints the one this checkout will use
-(reading `EARTHENGINE_PROJECT`, then the stored Earth Engine credential, then
-gcloud), or explains where to find one. Put it in `.env` at the repo root:
-
-```
-EARTHENGINE_PROJECT=your-project-id
-```
-
-| For | Set |
+| Variable | Purpose |
 | --- | --- |
-| **Everything environmental (Earth Engine)** | run `python gauth.py` once; set `EARTHENGINE_PROJECT` to your Google Cloud project id |
-| DEM ([OpenTopography](https://portal.opentopography.org/login)): *fallback only* | `OPENTOPOGRAPHY_API_KEY` |
-| Soil moisture ([Copernicus CDS](https://cds.climate.copernicus.eu)), *fallback only* | copy `.cdsapirc.example` to `~/.cdsapirc` with your key (and accept the ERA5-Land license on the CDS site) |
+| `EARTHENGINE_SERVICE_ACCOUNT_KEY` | JSON key for a Google Cloud service account with Earth Engine access |
+| `EARTHENGINE_PROJECT` | Cloud project ID registered for Earth Engine (e.g. `my-project-451208`) |
+| `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` | Supabase project — stores jobs, results, and datasets |
 
-### Data layout (per-species CSV store)
+**Finding `EARTHENGINE_PROJECT`**: [console.cloud.google.com](https://console.cloud.google.com/)
+lists every project with its ID column. Not registered?
+[code.earthengine.google.com/register](https://code.earthengine.google.com/register)
+attaches a Cloud project to Earth Engine (free for noncommercial use).
 
-Observations live as one lightweight CSV per species, not a single monolithic
-file, under a dedicated folder, with enriched copies alongside:
+### Legacy Python pipeline
 
-```
-data/
-  species/<slug>.csv     raw observations, one file per species (tracked)
-  enriched/<slug>.csv    enriched observations, clusters folded in (git-ignored, regenerable)
-  archive/               originals moved by the migration (git-ignored, local backup)
-```
+> **Obsolete.** The Python scripts (`iNat.py`, `enrich_with_rasters.py`,
+> `ee_enrich.py`, `cluster.py`, `export_geojson.py`, `run_pipeline.py`) and the
+> GitHub Action (`refresh-data.yml`) that ran them are no longer the primary
+> data path. They are retained for reference until the JS pipeline covers all
+> stages end-to-end in production (see `WANT-10` in the roadmap). Do not add new
+> enrichment columns to the Python scripts; add them to `STAGES` in
+> `netlify/lib/ee-pipeline.mjs`.
 
-`species_store.py` is the shared accessor every stage reads/writes through; set
-`DATA_DIR` to relocate the whole store (defaults to `data`). Coming from the old
-monolithic `mushroom_observations*.csv` files? Run the one-shot migration: it
-merges every root CSV (de-duped on uuid), splits by species, and archives the
-originals:
-
-```bash
-python migrate_data_layout.py --dry-run   # preview
-python migrate_data_layout.py             # migrate (archives originals)
-```
-
-Stages (run in order, or just `python run_pipeline.py`, which chains them):
-
-1. **`iNat.py`**: pull mushroom observations from iNaturalist (+ elevation and
-   weather) → per-species CSVs in `data/species/` (incremental runs merge and
-   de-dupe on uuid; `REFRESH_ALL=1` overwrites).
-2. **`enrich_with_rasters.py`**: fill in every environmental column for those
-   observations → per-species files in `data/enriched/` (resumable; a `.done`
-   marker signals completion). `ee_enrich.py` samples each layer from Earth
-   Engine *at the observation points*, so nothing bulky is downloaded:
-
-   | Column | Earth Engine dataset |
-   | --- | --- |
-   | `ndvi` | `COPERNICUS/S2_SR_HARMONIZED` |
-   | `soil_moisture` | `ECMWF/ERA5_LAND/DAILY_AGGR` |
-   | `prcp_d0..d6` | `UCSB-CHG/CHIRPS/DAILY` |
-   | `tmax_d0..d6`, `tmin_d0..d6` | `ECMWF/ERA5_LAND/DAILY_AGGR` |
-   | `land_cover` | `ESA/WorldCover/v200` |
-   | `elevation`, `slope`, `aspect` | `USGS/SRTMGL1_003` |
-   | `solar_exposure`, `wind_exposure`, `water_retention` | derived from the sampled terrain + `MERIT/Hydro/v1_0_1` upstream drainage area |
-
-   Requests are batched by observation *date*: points sharing a date share one
-   composite and one `reduceRegions`, so a 7-day weather history costs one round
-   trip per date rather than one per observation (the old Open-Meteo stage made
-   an HTTP request per observation) or seven file downloads.
-
-3. **`cluster.py`**: KMeans-cluster observations by environmental similarity
-   *globally* across all species, writing the `cluster` label back into each
-   `data/enriched/` file. Tune the count with `CLUSTER_COUNT` or `--clusters`.
-
-#### Raster fallback
-
-The original path, download the source rasters, then sample them locally, is
-still there and runs automatically whenever Earth Engine is unavailable. Each
-raster stage only touches rows still missing its column, so after a successful
-Earth Engine pass they are no-ops.
-
-To use it deliberately (it is also what `validate_wetness.py raster` and the
-Coverage page read):
-
-```bash
-FETCH_RASTERS=1 python fetch.py            # ERA5 via CDS, CHIRPS, WorldCover, SRTM DEM
-python terrain_pipeline.py                 # derive the terrain-exposure layers
-python enrich_with_rasters.py
-```
-
-`USE_EARTH_ENGINE=0` (or `SKIP_EARTH_ENGINE=1`) turns the Earth Engine stages off
-entirely; `SEQUENTIAL_FETCH=1` stops the fallback downloads running concurrently.
-`fetch.py` and `terrain_pipeline.py` are skipped by `run_pipeline.py` while Earth
-Engine is available.
-
-### Running in a notebook / Colab
-
-The notebook and the command line run **the same code**. `run_pipeline.run_all()`
-is the entry point behind `python run_pipeline.py`, so a notebook never restates
-the stage order or repeats a skip rule:
-
-```python
-import run_pipeline
-run_pipeline.run_all()                 # identical to `python run_pipeline.py`
-run_pipeline.run_all(root="/kaggle/working")   # or point it at another checkout
-```
-
-`run_all` runs the stages from the repo root, where the per-species store and
-raster caches live, and restores the caller's working directory afterwards.
-`notebooks/kaggle_pipeline.ipynb` is exactly this: configure credentials,
-authenticate Earth Engine, one `run_all()` call, then review the results.
-
-Every module is also import-safe, the run logic lives in functions behind an
-`if __name__ == "__main__"` guard, so you can still drive individual steps:
-
-```python
-import ee_enrich, species_store as store
-df = store.load_all(store.SPECIES_DIR)
-ee_enrich.enrich_precip_ee(df, max_workers=4)   # one stage, gentler on EE quota
-```
-
-In Colab, `pip install earthengine-api pyinaturalist python-dotenv scikit-learn`
-and authenticate Earth Engine with `ee.Authenticate()`.
-
-### Topographic exposure layers
-
-`terrain_pipeline.py` reads the DEM and writes these GeoTIFFs to
-`dem/derived/`, which `enrich_with_rasters.py` samples as columns:
-
-| Layer | Meaning |
-| --- | --- |
-| `slope`, `aspect` | Steepness (degrees) and downhill compass bearing. |
-| `solar_exposure` | Potential incoming solar radiation (0–1), from slope + aspect integrated over sun positions across the seasons. South-facing slopes score high in the northern hemisphere. |
-| `wind_exposure` | Topographic wind exposure (0–1): multi-scale topographic position (ridges exposed, valleys sheltered) combined with how much a slope faces the prevailing wind. Set the wind direction with `--wind-dir` (default 270°/westerly). |
-| `water_retention` | Topographic Wetness Index (0–1): `ln(a / tan(slope))` from D8 flow accumulation. Flat, converging, valley-bottom terrain retains water; steep ridges shed it. |
-
-The DEM download needs a free [OpenTopography](https://portal.opentopography.org/login)
-API key in `OPENTOPOGRAPHY_API_KEY`.
-
-### Validating water retention against observed moisture
-
-`water_retention` is a *static* terrain prediction; `validate_wetness.py` checks
-how well it agrees with independently observed moisture. Because TWI is a
-potential (not an instantaneous state) and is log-scaled, agreement is measured
-with **Spearman rank** correlation and is strongest right after rain.
-
-```bash
-# Quick check against the columns already in the enriched CSV
-python validate_wetness.py points
-
-# Rigorous pixel-wise check against a satellite moisture raster you export
-# (Sentinel-1 VV backscatter, Sentinel-2 NDMI, or SMAP), masking water/built-up
-python validate_wetness.py raster --satellite ndmi.tif --landcover world_cover/<tile>.tif
-```
-
-ERA5-Land soil moisture (~9 km) is only a coarse sanity check; for a meaningful
-comparison export a fine-resolution satellite moisture layer over the DEM
-footprint. `fetch.py` can export two, both via Earth Engine to Google Drive
-(folder `EarthEngineMoisture`):
-
-- **`fetch_sentinel1_moisture`**: Sentinel-1 VV backscatter (90 m), the
-  strongest soil-moisture proxy (SAR, all-weather).
-- **`fetch_sentinel2_ndmi`**: Sentinel-2 NDMI `(B8−B11)/(B8+B11)` (20 m),
-  optical vegetation/surface moisture.
-
-These are large exports, so they only run when opted in:
-
-```bash
-EXPORT_SATELLITE_MOISTURE=1 python fetch.py   # queues the exports for the observed date span
-# ...download the GeoTIFF from Drive, then:
-python validate_wetness.py raster --satellite s1_vv_<window>.tif \
-    --landcover world_cover/<tile>.tif --scatter wetness_check.png
-```
-
-Sentinel-1 VV tracks bare/low-vegetation soil moisture best, so masking dense
-vegetation and built-up/water (via `--landcover`) sharpens the comparison.
-
-### Raster coverage summary
-
-`raster_coverage.py` scans the environmental-layer cache (CHIRPS precip, ERA5
-soil, NDVI, tree cover, DEM, WorldCover) and writes `public/data/coverage.json`. Per layer: file count, date range, on-disk size, and geographic extent, plus
-a date→layers index. `run_pipeline.py` runs it after the export step, and the
-frontend **Coverage** tab renders it as layer cards plus a date × layer matrix
-so gaps are obvious at a glance.
-
-```bash
-python raster_coverage.py            # → public/data/coverage.json
-python raster_coverage.py --pretty   # human-readable
-```
+The old Kaggle notebook (`notebooks/kaggle_pipeline.ipynb`) and the raster
+fallback path (`fetch.py`, `terrain_pipeline.py`) remain in the repository but
+are not run in CI.
 
 ## Nuxt frontend & Netlify deploy
 
 The frontend is a Nuxt 3 app that renders the observations on a Leaflet map,
 colored by environmental cluster, with the enriched attributes in each popup.
-It reads a **static GeoJSON** file, no backend or database.
 
 **Filtering.** The **Data** tab is the control centre: pick species, and narrow
 by **location** (country / state / county, parsed from each record's place
@@ -242,19 +97,20 @@ header links back to the Data tab from any view. When you fetch a *new* species
 while location/time filters are set, the fetch is scoped to match (iNaturalist
 radius + observed-date range) instead of pulling the whole history.
 
-Data flow: the Python pipeline runs **offline** and produces a small GeoJSON that
-the app serves statically. The heavy raster processing never runs on Netlify.
+**Data flow:**
 
 ```
-enrich_with_rasters.py → cluster.py → export_geojson.py
-                                          → public/data/observations.geojson
-                                                → committed → Netlify redeploys
-```
-
-Regenerate the map data after re-running the pipeline:
-
-```bash
-python export_geojson.py          # writes public/data/observations.geojson
+iNat API / GBIF import
+       ↓
+Netlify Functions (fetch-species, refresh-observations, gbif-fetch)
+       ↓
+Supabase Storage (observations.geojson, species/<slug>.geojson)
+       ↓
+ee-jobs → ee-worker → ee-pipeline.mjs (Earth Engine enrichment)
+       ↓
+Supabase Storage (enriched dataset written back)
+       ↓
+useObservations (progressive chunk loading) → map / table / charts
 ```
 
 Run the site locally:
@@ -273,31 +129,21 @@ pipeline.
 
 ### Keeping the data fresh (automated)
 
-Two schedules refresh the map, split by what each environment can run:
-
-- **GitHub Action** (`.github/workflows/refresh-data.yml`, daily) runs the
-  Python pipeline headless, the parts that need Python (raster download,
-  terrain derivation, enrichment, clustering), and commits an updated
-  `public/data/observations.geojson`, which triggers a Netlify redeploy. Earth
-  Engine steps are skipped (`SKIP_EARTH_ENGINE=1`, since EE exports to Drive
-  can't run headless). Put `OPENTOPOGRAPHY_API_KEY` (and optionally
-  `CDSAPI_URL` / `CDSAPI_KEY`) in the repo's Actions secrets.
-
 - **Scheduled Netlify Function** (`netlify/functions/refresh-observations.mjs`,
-  every 6 h) does a fast, light refresh in Node: fetches recent iNaturalist
-  sightings, merges any new ones onto the committed baseline, samples the
-  terrain rasters for those points (if `data/terrain/*.tif` are committed), and
-  writes the result to **Netlify Blobs**. The serving function
-  (`netlify/functions/observations.mjs`) returns that fresh copy, or the
-  baseline file if the blob isn't present. The map fetches
-  `/.netlify/functions/observations` and falls back to the static file.
+  every 6 h) fetches recent iNaturalist sightings, merges new ones onto the
+  current dataset, and writes the result to **Supabase Storage** (or Netlify
+  Blobs as a fallback). The serving function (`netlify/functions/observations.mjs`)
+  returns that fresh copy. Configure the iNaturalist query with env vars
+  (`INAT_TAXON`, `INAT_LAT`, `INAT_LNG`, `INAT_RADIUS`) in Netlify site settings.
 
-  Netlify functions can't run Python/GDAL/Earth Engine, so the light refresh
-  only adds new sightings with terrain context; the satellite-derived columns
-  (NDVI, soil moisture) are filled in on the next GitHub Action run.
+  New observations arrive with `enrichment_level: 'none'`. Submit an enrichment
+  job from the Jobs page to populate the EE columns. Automatic post-import
+  enrichment is tracked in `WANT-10`.
 
-  Configure the iNaturalist query with env vars (`INAT_TAXON`, `INAT_LAT`,
-  `INAT_LNG`, `INAT_RADIUS`) in the Netlify site settings.
+> **Note:** The GitHub Action (`refresh-data.yml`) that ran the Python
+> enrichment pipeline daily is no longer the primary refresh path. It is
+> retained for reference but should not be relied on for new deployments. See
+> the [Legacy Python pipeline](#legacy-python-pipeline) note above.
 
 ### Serving datasets from Supabase Storage (optional)
 
@@ -324,10 +170,10 @@ Setup:
 3. The service-role key is **write-only server-side**, it lives in Actions /
    Netlify env, never in the browser bundle.
 
-Data flow: Python pipeline → `public/data/` → `upload_datasets.mjs` → Supabase
-Storage → frontend + `observations` function read from Supabase; the scheduled
-`refresh-observations` function writes `new-observations.geojson` to the same
-bucket.
+Data flow: import (iNat / GBIF) → EE enrichment job → `observations.geojson`
+written to Supabase Storage → frontend + `observations` function read from
+Supabase; the scheduled `refresh-observations` function merges new sightings
+into the same bucket.
 
 ### Membership from an automation
 

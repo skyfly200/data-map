@@ -40,6 +40,10 @@ function messageFrom(data: any, status: number): string {
   return data?.message || `Earth Engine tiles error (${status})`
 }
 
+// Module-level so the cache survives component remounts and hot reload without
+// re-minting tile templates (each mint costs an EE getMapId() round trip).
+const minted = new Map<string, EeTemplate>()
+
 export function useEeTiles() {
   const { accessToken } = useAuth()
 
@@ -49,10 +53,6 @@ export function useEeTiles() {
   // layer key → its class table. Shared, because two layers over the same asset
   // would otherwise each read the same four hundred names.
   const classTables = useState<Record<string, any>>('ee-tiles-classes', () => ({}))
-
-  // Keyed by layer key + params, matching the server's cache key, so switching
-  // a layer off and on does not re-mint.
-  const minted = new Map<string, EeTemplate>()
 
   async function loadCatalogue(): Promise<EeLayer[]> {
     if (catalogue.value.length) return catalogue.value

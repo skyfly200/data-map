@@ -12,7 +12,8 @@ import { adminClient, requireMemberFresh, requireUser } from '../lib/auth.mjs'
 import { normaliseModelSpec, estimateModelUnits } from '../lib/maxent.mjs'
 import { checkVisibility, viewerFrom } from '../lib/dataset-access.mjs'
 import { runEvaluation, earthEngineConfigured } from '../lib/ee-runner.mjs'
-import { loadSource } from '../lib/job-source.mjs'
+import { loadSource, measureSource } from '../lib/job-source.mjs'
+import { submitJob } from '../lib/job-queue.mjs'
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
@@ -23,14 +24,11 @@ function fail(err) {
 }
 
 /** Submit a training job to Earth Engine. */
-async function train(client, viewer, body) {
+async function train(client, auth, body) {
+  const viewer = viewerFrom(auth)
+
   // 1. Validate and Normalise
   const spec = normaliseModelSpec(body)
-  const units = estimateModelUnits({
-    points: 0, // This would be fetched from the source_dataset in a real impl
-    predictors: spec.predictors,
-    background: spec.background,
-  })
 
   // 2. Create Configuration
   const visibility = checkVisibility(body.visibility, viewer)
@@ -48,10 +46,15 @@ async function train(client, viewer, body) {
 
   if (configErr) throw new Error(configErr.message)
 
-  // 3. Trigger Earth Engine Job (via runner)
-  // In a real implementation, this would call the EE API and get a job ID back.
-  const job = await __EE_RUNNER__.submitMaxEntJob(spec) 
-  const jobId = job.id
+  // 3. Submit via the standard job queue (same path as ee-jobs.mjs).
+  const result = await submitJob({
+    user: auth.user,
+    profile: auth.profile,
+    spec: { type: 'maxent', config_id: config.id, ...spec },
+    counter: (s) => measureSource(s, { client, viewer }),
+  })
+  const jobId = result.job?.id
+  if (!jobId) throw new Error('Job queue did not return a job ID.')
 
   // 4. Record the Run
   const { error: runErr } = await client.from('model_runs').insert({
@@ -177,7 +180,7 @@ export default async function handler(request) {
     if (method === 'POST' && path.includes('/modeling/maxent/train')) {
       const auth = await requireMemberFresh(request)
       if (!auth.ok) return auth.response
-      return await train(client, viewerFrom(auth), await request.json())
+      return await train(client, auth, await request.json())
     }
 
     if (method === 'DELETE' && path.includes('/modeling/maxent/models')) {
