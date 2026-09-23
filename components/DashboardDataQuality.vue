@@ -1,7 +1,7 @@
 <template>
   <div class="dash-widget data-quality">
     <div class="widget-head">
-      <h3 class="widget-title">🔬 Data quality</h3>
+      <h3 class="widget-title"><span aria-hidden="true">🔬 </span>Data quality</h3>
       <NuxtLink to="/data" class="widget-link">Data ›</NuxtLink>
     </div>
 

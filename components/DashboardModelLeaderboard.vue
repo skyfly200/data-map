@@ -1,7 +1,7 @@
 <template>
   <div class="dash-widget model-lb">
     <div class="widget-head">
-      <h3 class="widget-title">🏆 Model leaderboard</h3>
+      <h3 class="widget-title"><span aria-hidden="true">🏆 </span>Model leaderboard</h3>
       <NuxtLink to="/modeling/maxent" class="widget-link">Models ›</NuxtLink>
     </div>
 

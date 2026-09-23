@@ -91,29 +91,42 @@ export function useMaxEnt() {
     }
   }
 
-  /** Poll for job completion and fetch results. */
+  /** Poll for job completion and fetch results, with retry on transient errors. */
   async function pollJobStatus(jobId: string) {
+    const MAX_RETRIES = 3
+    let consecutiveErrors = 0
+
     const timer = setInterval(async () => {
       try {
         const res = await fetch(`/.netlify/functions/modeling/maxent/results/${jobId}`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
-        
+        consecutiveErrors = 0 // reset on success
+
         if (data.ok && data.result) {
           clearInterval(timer)
           activeJob.value = { ...activeJob.value!, status: 'succeeded' }
-          await fetchModels() // Refresh models list
+          await fetchModels()
         } else if (data.ok && data.status === 'pending') {
           activeJob.value = { ...activeJob.value!, status: 'running' }
         } else if (!data.ok) {
           clearInterval(timer)
-          activeJob.value = { ...activeJob.value!, status: 'failed', error_message: data.error }
+          const msg = data.error || 'Job failed on the server.'
+          activeJob.value = { ...activeJob.value!, status: 'failed', error_message: msg }
+          useAppAlerts().error('MaxEnt job failed — ' + msg)
         }
       } catch (e: any) {
-        clearInterval(timer)
+        consecutiveErrors++
         const msg = e?.message || 'Polling failed unexpectedly.'
-        error.value = msg
-        if (activeJob.value) activeJob.value = { ...activeJob.value, status: 'failed', error_message: msg }
-        useAppAlerts().error('MaxEnt job polling failed — ' + msg)
+        if (consecutiveErrors >= MAX_RETRIES) {
+          clearInterval(timer)
+          error.value = msg
+          if (activeJob.value) activeJob.value = { ...activeJob.value, status: 'failed', error_message: `Polling stopped after ${MAX_RETRIES} errors: ${msg}` }
+          useAppAlerts().error(`MaxEnt polling stopped after ${MAX_RETRIES} retries — ${msg}`)
+        } else {
+          // Transient error — warn but keep polling
+          useAppAlerts().warn?.(`MaxEnt polling error (retry ${consecutiveErrors}/${MAX_RETRIES}) — ${msg}`)
+        }
       }
     }, 5000)
   }

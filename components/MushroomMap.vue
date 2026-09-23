@@ -433,7 +433,7 @@
 </template>
 
 <script setup>
-import 'leaflet/dist/leaflet.css'
+// Leaflet CSS is loaded dynamically on mount so it does not bloat non-map routes.
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { hasValue, useObservations } from '~/composables/useObservations'
 import { PALETTE, UNCLUSTERED, categoryColor, colorFor } from '~/composables/useAppearance'
@@ -1998,6 +1998,7 @@ onMounted(async () => {
   try {
     await nextTick()
     if (!mapEl.value) throw new Error('map container not ready')
+    await import('leaflet/dist/leaflet.css')
     L = (await import('leaflet')).default
 
     // crossOrigin: the image export composites these tiles onto a canvas, and a

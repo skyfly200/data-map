@@ -188,8 +188,8 @@ of the app is under.
 - [ ] `V12-UI-2` **Contextual Onboarding**: Implement "empty state" guides and tooltips for complex modeling parameters
 - [ ] `V12-UI-3` **Visual Hierarchy Refinement**: Improve contrast and layout of side panels for better focus on the map
 - [ ] `V12-UI-4` **Interactive Data Previews**: Enhance dataset selection with instant visual summaries before committing to a model run
-- [ ] `V12-UI-5` **Accessibility Pass**: ~1/3 of interactive elements lack `aria-label`; add `aria-pressed` to login mode tabs, `aria-hidden` to decorative icons, and a visible label on the ObservationsTable search input (WCAG 2.1 AA)
-- [ ] `V12-UI-6` **Responsive Table Columns**: ObservationsTable has no `@media` rules — add column prioritisation and a pinned first column for small screens
+- [x] `V12-UI-5` **Accessibility Pass**: ~1/3 of interactive elements lack `aria-label`; add `aria-pressed` to login mode tabs, `aria-hidden` to decorative icons, and a visible label on the ObservationsTable search input (WCAG 2.1 AA)
+- [x] `V12-UI-6` **Responsive Table Columns**: ObservationsTable has no `@media` rules — add column prioritisation and a pinned first column for small screens
 - [ ] `V12-UI-7` **Mobile Map Controls Discovery**: compact mode hides the basemap picker and heatmap controls entirely — replace with an accessible bottom-sheet or collapsible toolbar row so features remain reachable without opening LayerManager
 - [ ] `V12-UI-8` **Fluid Breakpoints**: most responsive behaviour is a binary compact/not-compact prop — supplement with CSS `@media` rules at tablet widths where the binary split creates awkward layouts
 
@@ -260,7 +260,7 @@ makes verifying them a command rather than a project.
   - [x] `DEBT-2.3` E2E tests for dashboard customization and widget system
   - [x] `DEBT-2.4` Edge-case expansion for `tests/maxent.test.mjs`
 - [x] `DEBT-3` **Error Handling**: Standardize error messages and recovery flows
-- [ ] `DEBT-4` **Accessibility Audit**: Ensure WCAG 2.1 compliance across new features
+- [x] `DEBT-4` **Accessibility Audit**: Ensure WCAG 2.1 compliance across new features
 - [x] `DEBT-5` **Performance Monitoring**: Add logging for Earth Engine job durations and failures
 - [x] `DEBT-6` **Type `any` Cleanup**: `ramps.ts` and `useMapHeatmaps.ts` use `any` for nearly all parameters — replace with proper interfaces for color stops, field metadata, and polygon types
 - [ ] `DEBT-7` **Netlify Backend TypeScript Migration**: all `netlify/lib/*.mjs` and `netlify/functions/*.mjs` are untyped — migrate to `.ts` with esbuild/tsup for the Netlify edge runtime
@@ -275,10 +275,10 @@ makes verifying them a command rather than a project.
 - [ ] `ISSUE-2` Large GBIF exports (>10k records) may timeout during import
 - [ ] `ISSUE-3` Chart rendering slows with >50 data points in Saved Charts widget
 - [ ] `ISSUE-4` Earth Engine asset validation doesn't check geometry types comprehensively
-- [ ] `ISSUE-5` ObservationsTable virtual scroller uses `window.resize` instead of `ResizeObserver` on the container — viewport height goes stale when sidebars toggle or panels resize, causing too few/many rows to render
-- [ ] `ISSUE-6` MaxEnt polling errors are silently swallowed (`useMaxEnt.ts`) — if Earth Engine polling fails mid-run, job status freezes with no user feedback or retry escalation
-- [ ] `ISSUE-7` `Number(v).toFixed()` in ObservationsTable has no `NaN` guard — non-numeric cell values render as `"NaN"` instead of a dash or fallback
-- [ ] `ISSUE-8` Leaflet CSS is imported statically in MushroomMap even on non-map routes — should be deferred alongside the lazy Leaflet JS import
+- [x] `ISSUE-5` ObservationsTable virtual scroller uses `window.resize` instead of `ResizeObserver` on the container — viewport height goes stale when sidebars toggle or panels resize, causing too few/many rows to render
+- [x] `ISSUE-6` MaxEnt polling errors are silently swallowed (`useMaxEnt.ts`) — if Earth Engine polling fails mid-run, job status freezes with no user feedback or retry escalation
+- [x] `ISSUE-7` `Number(v).toFixed()` in ObservationsTable has no `NaN` guard — non-numeric cell values render as `"NaN"` instead of a dash or fallback
+- [x] `ISSUE-8` Leaflet CSS is imported statically in MushroomMap even on non-map routes — should be deferred alongside the lazy Leaflet JS import
 
 ---
 

@@ -1,7 +1,7 @@
 <template>
   <div class="dash-widget now-fruiting">
     <div class="widget-head">
-      <h3 class="widget-title">🍄 Now Fruiting</h3>
+      <h3 class="widget-title"><span aria-hidden="true">🍄 </span>Now Fruiting</h3>
       <div class="widget-actions">
         <NuxtLink :to="mapLink" class="widget-link">Map ›</NuxtLink>
         <NuxtLink to="/modeling/maxent" class="widget-link">Model ›</NuxtLink>

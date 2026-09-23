@@ -1,7 +1,7 @@
 <template>
   <div class="dash-widget species-list">
     <div class="widget-head">
-      <h3 class="widget-title">🍄 Top species</h3>
+      <h3 class="widget-title"><span aria-hidden="true">🍄 </span>Top species</h3>
       <NuxtLink to="/charts" class="widget-link">Charts ›</NuxtLink>
     </div>
 

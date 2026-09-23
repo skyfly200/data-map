@@ -1,7 +1,7 @@
 <template>
   <div class="dash-widget map-preview">
     <div class="widget-head">
-      <h3 class="widget-title">🗺️ Map preview</h3>
+      <h3 class="widget-title"><span aria-hidden="true">🗺️ </span>Map preview</h3>
       <NuxtLink :to="mapLink" class="widget-link">Full map ›</NuxtLink>
     </div>
 
