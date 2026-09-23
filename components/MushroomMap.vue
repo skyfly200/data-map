@@ -725,7 +725,7 @@ const {
   paramsFor, debounceEeRefresh, setEeParam,
   setBase: _setBase, restoreBase: _restoreBase, restoreOverlays, restoreEeLayer,
   toggleOverlay: _toggleOverlay, toggleOverlayByKey: _toggleOverlayByKey,
-  refreshEeLayer,
+  refreshEeLayer: _refreshEeLayer,
 } = useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeTiles, maxEnt })
 
 // Wrap the three functions that must also call syncActiveTemplates after running.
