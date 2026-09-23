@@ -113,6 +113,18 @@
       </label>
 
       <LiveClusterControls class="lc-item" />
+
+      <div v-if="saved.charts.value.length" class="load-row">
+        <label class="ctrl load-ctrl">
+          <span>Load</span>
+          <select v-model="loadId">
+            <option value="">— saved chart —</option>
+            <option v-for="c in saved.charts.value" :key="c.id" :value="c.id">{{ chartLabel(c) }}</option>
+          </select>
+        </label>
+        <button class="load-btn" :disabled="!loadId" title="Load the selected chart into the builder" @click="loadChart">Edit</button>
+      </div>
+
       <div class="actions">
         <ShareMenu :title="shareTitle" :extra="shareExtra" path="/charts"
                    note="This link opens this chart, over the same filtered data." />
@@ -338,6 +350,19 @@ function stopEditing() {
   editingId.value = ''
   router.replace({ query: { ...route.query, edit: undefined, cfg: undefined } })
 }
+
+const loadId = ref('')
+const chartLabel = (chart) => describeChart(chart, labelFor)
+function loadChart() {
+  if (!loadId.value) return
+  const id = loadId.value
+  const chart = saved.byId(id)
+  if (!chart) return
+  editingId.value = id
+  applyConfig(chartConfigOf(chart))
+  loadId.value = ''
+  router.replace({ query: { ...route.query, edit: id, cfg: undefined } })
+}
 </script>
 
 <style scoped>
@@ -359,6 +384,18 @@ function stopEditing() {
 .ctrl input[type="range"] { width: 96px; accent-color: var(--accent); }
 .ctrl .gval { color: var(--text); font-weight: 600; min-width: 1.4em; text-align: right; }
 .ctrl.chk { gap: 5px; }
+.load-row {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 8px;
+}
+.load-ctrl { flex: 1 1 auto; }
+.load-ctrl select { flex: 1 1 auto; }
+.load-btn {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  border-radius: 6px; padding: 5px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  white-space: nowrap;
+}
+.load-btn:hover:not(:disabled) { background: var(--surface-2); }
+.load-btn:disabled { opacity: 0.4; cursor: default; }
 .actions {
   grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end;
   gap: 8px; flex-wrap: wrap;
