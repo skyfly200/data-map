@@ -113,6 +113,7 @@ export function useMaxEnt() {
         const msg = e?.message || 'Polling failed unexpectedly.'
         error.value = msg
         if (activeJob.value) activeJob.value = { ...activeJob.value, status: 'failed', error_message: msg }
+        useAppAlerts().error('MaxEnt job polling failed — ' + msg)
       }
     }, 5000)
   }

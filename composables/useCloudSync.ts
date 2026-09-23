@@ -269,7 +269,7 @@ export function useCloudSync() {
       error.value = info.message
       errorHint.value = info.hint
       errorRaw.value = info.raw
-      console.warn('[cloud sync]', info.raw)
+      if (import.meta.client) useAppAlerts().warn(info.message + (info.hint ? ' ' + info.hint : ''))
       return { settings: null, charts: null }
     }
   }
@@ -290,7 +290,7 @@ export function useCloudSync() {
         error.value = info.message
         errorHint.value = info.hint
         errorRaw.value = info.raw
-        console.warn('[cloud sync]', info.raw)
+        if (import.meta.client) useAppAlerts().warn(info.message + (info.hint ? ' ' + info.hint : ''))
       }
     }, delay)
   }
