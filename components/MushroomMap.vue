@@ -268,6 +268,11 @@
                   @change="setEeParam(n.ee, name, $event.target.value)">
             <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
           </select>
+          <select v-else-if="p.type === 'yearSelect'" :id="`ee-${n.slug}-${name}`"
+                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                  @change="setEeParam(n.ee, name, Number($event.target.value))">
+            <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
+          </select>
           <input v-else-if="p.type === 'text'" :id="`ee-${n.slug}-${name}`" type="search"
                  :maxlength="p.maxLength || 60" :placeholder="p.default"
                  :value="(eeParams[n.ee] || {})[name] ?? p.default"

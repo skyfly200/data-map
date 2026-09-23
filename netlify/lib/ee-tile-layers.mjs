@@ -424,7 +424,7 @@ function readParams(schema, input = {}) {
       out[key] = typeof spec.default === 'function' ? spec.default() : spec.default
       continue
     }
-    if (spec.type === 'int') {
+    if (spec.type === 'int' || spec.type === 'yearSelect') {
       const n = Math.floor(Number(raw))
       if (!Number.isFinite(n)) throw new LayerError(`${spec.label} must be a whole number.`)
       const min = typeof spec.min === 'function' ? spec.min() : spec.min
@@ -747,8 +747,8 @@ export const EE_TILE_LAYERS = {
       + 'A late-summer burn and an early-spring one are different prospects for the following spring.',
     params: {
       year: {
-        type: 'int', label: 'Year', default: () => THIS_YEAR() - MODIS_LAG_YEARS,
-        min: MODIS_FIRST_YEAR, max: () => THIS_YEAR(),
+        type: 'yearSelect', label: 'Year', default: () => THIS_YEAR() - MODIS_LAG_YEARS,
+        min: MODIS_FIRST_YEAR, max: () => THIS_YEAR() - MODIS_LAG_YEARS,
       },
     },
     legend: {
@@ -1794,14 +1794,21 @@ export function describeLayer(key) {
     // the layer is switched on.
     classes: layer.prepare ? 'great-groups' : undefined,
     legendInBrowser: layer.legendInBrowser || undefined,
-    params: Object.fromEntries(Object.entries(layer.params || {}).map(([k, spec]) => [k, {
-      label: spec.label,
-      type: spec.type,
-      default: typeof spec.default === 'function' ? spec.default() : spec.default,
-      min: typeof spec.min === 'function' ? spec.min() : spec.min,
-      max: typeof spec.max === 'function' ? spec.max() : spec.max,
-      values: spec.values,
-    }])),
+    params: Object.fromEntries(Object.entries(layer.params || {}).map(([k, spec]) => {
+      const min = typeof spec.min === 'function' ? spec.min() : spec.min
+      const max = typeof spec.max === 'function' ? spec.max() : spec.max
+      const values = spec.type === 'yearSelect'
+        ? Array.from({ length: max - min + 1 }, (_, i) => max - i)
+        : spec.values
+      return [k, {
+        label: spec.label,
+        type: spec.type,
+        default: typeof spec.default === 'function' ? spec.default() : spec.default,
+        min,
+        max,
+        values,
+      }]
+    })),
   }
 }
 
