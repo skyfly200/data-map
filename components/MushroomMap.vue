@@ -558,8 +558,24 @@ const {
 } = heatmaps
 let heatmapLayer = null
 
-const heatmapResult = computed(() =>
-  heatmaps.computeHeatmap(filteredData.value?.features || [], heatmapMode.value))
+// Debounced rebuild: filteredData changes on every filter interaction, and
+// computeHeatmap is O(n) over all observations. Collapsing rapid-fire updates
+// into one rebuild keeps the map responsive during slider drags.
+const heatmapResult = ref(heatmaps.computeHeatmap(filteredData.value?.features || [], heatmapMode.value))
+let heatmapRebuildTimer = null
+watch(
+  [filteredData, heatmapMode],
+  () => {
+    clearTimeout(heatmapRebuildTimer)
+    heatmapRebuildTimer = setTimeout(() => {
+      heatmapResult.value = heatmaps.computeHeatmap(
+        filteredData.value?.features || [],
+        heatmapMode.value,
+      )
+    }, 50)
+  },
+  { immediate: true },
+)
 const heatmapLegend = computed(() => heatmapResult.value.legend)
 
 /**
@@ -935,13 +951,19 @@ function markerStyle(props) {
 // Coloring, sizing, palette, per-value overrides and point styling all restyle
 // the existing layer in place — no need to rebuild it, which would refit the
 // view.
+// Debounced: rapid-fire changes (filter slider drag, palette picker) collapse into
+// one restyle pass instead of one per reactive tick across up to 48k markers.
+let coloringDebounceTimer = null
 watch([coloring, sizeScale, activeColors, colorOverrides, pointRadius, pointOpacity, pointOutline, colorSeed, hoverValue], () => {
   if (!geoLayer) return
-  geoLayer.eachLayer((l) => {
-    const style = markerStyle(l.feature.properties)
-    l.setStyle(style)
-    l.setRadius(style.radius)
-  })
+  clearTimeout(coloringDebounceTimer)
+  coloringDebounceTimer = setTimeout(() => {
+    geoLayer.eachLayer((l) => {
+      const style = markerStyle(l.feature.properties)
+      l.setStyle(style)
+      l.setRadius(style.radius)
+    })
+  }, 40)
 })
 
 // When focusing an observation, the next re-render must not refit/clear it.
@@ -1143,6 +1165,51 @@ const activeBase = ref('grey')
 // A Set of the overlay keys currently on. Replaced rather than mutated so the
 // template re-renders.
 const activeOverlays = ref(new Set())
+
+// Overlay state is persisted so layers survive navigation and background-tab
+// eviction on mobile Safari. soloKey and layerBlend are intentionally excluded:
+// they are session gestures (ten seconds of solo, a blend set while comparing
+// two layers) not standing preferences.
+const OVERLAY_STATE_KEY = 'map-overlay-state'
+function saveOverlayState() {
+  if (!import.meta.client) return
+  try {
+    localStorage.setItem(OVERLAY_STATE_KEY, JSON.stringify({
+      active: [...activeOverlays.value],
+      order: overlayOrder.value,
+      opacity: layerOpacity.value,
+    }))
+  } catch { /* private mode or quota */ }
+}
+function restoreOverlays() {
+  if (!import.meta.client) return
+  let saved = null
+  try { saved = JSON.parse(localStorage.getItem(OVERLAY_STATE_KEY) || 'null') } catch { return }
+  if (!saved) return
+  const { active = [], order = [], opacity = {} } = saved
+  // Only restore keys that exist in the current catalogue; EE layers may not be
+  // loaded yet and are handled separately when addEeLayer fires.
+  const available = new Set(overlayLayers.value.map((o) => o.key))
+  const toRestore = active.filter((k) => available.has(k))
+  for (const key of toRestore) {
+    const entry = overlayLayers.value.find((o) => o.key === key)
+    if (entry) toggleOverlay(entry)
+  }
+  // Restore order for the keys that came back.
+  const restoredSet = new Set(toRestore)
+  const restoredOrder = order.filter((k) => restoredSet.has(k))
+  if (restoredOrder.length) overlayOrder.value = restoredOrder
+  // Restore per-layer opacity.
+  const opacityEntries = Object.entries(opacity).filter(([k]) => restoredSet.has(k))
+  if (opacityEntries.length) {
+    layerOpacity.value = { ...layerOpacity.value, ...Object.fromEntries(opacityEntries) }
+    for (const [key, value] of opacityEntries) {
+      const entry = overlayLayers.value.find((o) => o.key === key)
+      if (entry?.layer) entry.layer.setOpacity(entry.layer._baseOpacity * value * tileOpacity.value)
+    }
+  }
+  applyOverlayOrder()
+}
 
 /** Overlays grouped for display, in catalogue order. */
 const overlayGroups = computed(() => {
@@ -1537,6 +1604,10 @@ function clearOverlays() {
   for (const key of [...activeOverlays.value]) toggleOverlayByKey(key)
 }
 
+// Persist overlay selections so they survive navigation and mobile Safari
+// background-tab eviction.
+watch([activeOverlays, overlayOrder, layerOpacity], saveOverlayState, { deep: true })
+
 // Changing the default moves every layer nobody has set by hand, which is what
 // makes it a default rather than a one-time stamp.
 watch(stackBlend, () => applyBlendModes())
@@ -1635,6 +1706,23 @@ async function addEeLayers() {
       key: spec.key, name: spec.name, group: spec.group, layer, tier: spec.tier, note: spec.note,
       source: layerSource(spec.attribution), type: layerDataType(spec.legend),
     }]
+
+    // If this EE layer was active in the previous session, restore it now that
+    // its catalogue entry exists. Static layers are restored in bulk after init;
+    // EE layers arrive one at a time from the server and need per-layer recovery.
+    if (import.meta.client) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(OVERLAY_STATE_KEY) || 'null')
+        if (saved?.active?.includes(spec.key) && !activeOverlays.value.has(spec.key)) {
+          toggleOverlay({ key: spec.key, layer })
+          const op = saved.opacity?.[spec.key]
+          if (op != null) {
+            layerOpacity.value = { ...layerOpacity.value, [spec.key]: op }
+            layer.setOpacity(layer._baseOpacity * op * tileOpacity.value)
+          }
+        }
+      } catch { /* storage unavailable */ }
+    }
   }
 }
 
@@ -2299,6 +2387,7 @@ onMounted(async () => {
     // now that the choices exist.
     restoreBase()
     overlayLayers.value = tileOverlayList
+    restoreOverlays()
 
     // ─── Elevation band canvas layer ────────────────────────────────────────
     // Extends L.GridLayer with a per-tile canvas that fetches Terrarium DEM
