@@ -209,6 +209,12 @@
         empty ground.
       </div>
     </div>
+    <!-- Earth Engine layer fetching a tile template — shown until the URL is
+         ready and tiles start loading. -->
+    <div v-if="eeLoading.size" class="legend ee-loading">
+      <span class="ee-spinner" aria-hidden="true"></span>
+      <span class="ee-loading-label">Rendering layer…</span>
+    </div>
     <!-- An Earth Engine layer that failed to render says why, by name. Blank
          ground on a fire map reads as ground that never burned, so a silent
          failure here would be worse than no layer at all. -->
@@ -1112,6 +1118,7 @@ const { accessToken } = useAuth()
 const offline = useOffline()
 const eeParams = ref({})
 const eeErrors = ref([])
+const eeLoading = ref(new Set())
 // The layer picker's contents. Populated once the map and its layers exist, so
 // the Vue side never has to know how Leaflet builds them.
 const baseLayers = ref([])
@@ -1454,6 +1461,7 @@ async function refreshEeLayer(spec) {
   const layer = eeLayers.get(spec.key)
   if (!layer || !map.hasLayer(layer)) return
   eeErrors.value = eeErrors.value.filter((e) => e.key !== spec.key)
+  eeLoading.value = new Set([...eeLoading.value, spec.key])
   try {
     const minted = await eeTiles.template(spec.key, paramsFor(spec))
     // setUrl rather than a rebuild, so the layer keeps its place in the stack
@@ -1468,6 +1476,10 @@ async function refreshEeLayer(spec) {
     // Loud and by name. A layer that fails quietly is indistinguishable from
     // one showing that nothing is there, and on a fire map that is a lie.
     eeErrors.value = [...eeErrors.value, { key: spec.key, name: spec.name, message: err.message }]
+  } finally {
+    const next = new Set(eeLoading.value)
+    next.delete(spec.key)
+    eeLoading.value = next
   }
 }
 
@@ -2857,6 +2869,16 @@ onBeforeUnmount(() => {
 .tile-note { max-width: 260px; }
 .tile-warn { max-width: 260px; border-color: #e0b4b4; background: rgba(255, 244, 244, 0.97); }
 .tile-warn .legend-title { color: #b00020; }
+.ee-loading { display: flex; align-items: center; gap: 8px; max-width: 260px; }
+.ee-loading-label { font-size: 0.82em; color: var(--fg-muted, #666); }
+@keyframes ee-spin { to { transform: rotate(360deg); } }
+.ee-spinner {
+  display: inline-block; width: 14px; height: 14px; flex-shrink: 0;
+  border: 2px solid var(--border, #ccc);
+  border-top-color: var(--accent, #3b82f6);
+  border-radius: 50%;
+  animation: ee-spin 0.7s linear infinite;
+}
 
 /* Day-of-year window controls for the seasonal overlays. */
 /* Collapsed, it is one chip the width of its own summary. Expanded, it floats
