@@ -139,5 +139,12 @@ export function useDashboardState() {
   function reorder(movingId: string, targetId: string) { manager.reorder(movingId, targetId); sync(); persist() }
   function reset(config: DashboardConfig) { manager.setConfig(config); sync(); persist() }
 
-  return { widgets, order, orderedWidgets, loaded, load, add, remove, reorder, reset }
+  function updateSettings(id: string, settings: Record<string, any>) {
+    const w = manager.activeWidgets.find((x) => x.id === id)
+    if (!w) return
+    w.settings = { ...w.settings, ...settings }
+    sync(); persist()
+  }
+
+  return { widgets, order, orderedWidgets, loaded, load, add, remove, reorder, reset, updateSettings }
 }
