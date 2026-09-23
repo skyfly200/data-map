@@ -248,15 +248,20 @@ export function useObservations() {
     return load()
   }
 
-  function addInlineDataset(entry: any, geojson: ObservationCollection) {
-    deriveFields(geojson)
-    inlineDatasets.set(entry.path, geojson)
+  function addInlineDataset(entry: any, geojson?: ObservationCollection) {
     if (!availableDatasets.value.some((d) => d.path === entry.path)) {
       availableDatasets.value = [...availableDatasets.value, entry]
     }
     speciesFilter.value = []
-    data.value = markRaw(geojson)
-    selectedDataset.value = entry.path
+    if (geojson) {
+      deriveFields(geojson)
+      inlineDatasets.set(entry.path, geojson)
+      data.value = markRaw(geojson)
+      selectedDataset.value = entry.path
+    } else {
+      // Geojson was persisted to storage; load it from the returned path.
+      setDataset(entry.path)
+    }
     if (import.meta.client && !String(entry.path).startsWith('mem:')) {
       try { localStorage.setItem(DATASET_KEY, entry.path) } catch { /* ignore */ }
     }
