@@ -64,6 +64,7 @@
       <NuxtLink v-if="isAdmin" to="/admin" class="acct-item" @click="open = false">🛡 Admin portal</NuxtLink>
       <NuxtLink to="/offline" class="acct-item" @click="open = false">⬇ Offline</NuxtLink>
       <NuxtLink to="/options" class="acct-item" @click="open = false">⚙ Options</NuxtLink>
+      <NuxtLink to="/guide/report-bug" class="acct-item" @click="open = false">🐛 Report a bug</NuxtLink>
       <button v-if="signedIn" class="acct-item danger" @click="onSignOut">Sign out</button>
       <NuxtLink v-else-if="configured" to="/login" class="acct-item" @click="open = false">Sign in</NuxtLink>
     </div>

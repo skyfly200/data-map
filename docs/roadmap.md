@@ -1,11 +1,9 @@
 # Roadmap
 
-What is known to be missing, and why. Ordered by what blocks something else
-first, then by what is most often asked for.
+What is known to be missing, and why. Ordered by what blocks something else first, then by what is most often asked for.
 
 Each entry says what is true today, not just what should be. An item here is a
-commitment to an open question; when it is closed the entry moves to the bottom
-section with the commit that closed it.
+commitment to an open question; when it is closed the entry added to a commit msg and is deleted here
 
 ---
 
@@ -17,90 +15,22 @@ Nothing open.
 
 ## Wanted
 
-### Species distribution modeling (the point of the enrichment)
+### `WANT-1` Species distribution modeling (the point of the enrichment)
 
-The home page now frames Nexstrata as an ecosystem-modeling platform with
-enrichment as one stage of four — observe, enrich, model, predict. The first
-two ship; the model and predict stages do not yet, and the page marks that
-section "Roadmap" rather than claiming otherwise.
+MaxEnt ships end to end: `netlify/lib/maxent.mjs` holds the predictor registry,
+background plan, cross-validation, and `buildSuitabilityImage`; the worker runs
+`runModel` for a `kind: 'model'` job; `model-tiles` re-mints an expired surface
+from the stored spec; the jobs page has an Enrich / Model toggle with predictor
+selection; the map legend shows the AUC score, the effort-bias confound note, and
+a refresh button when tiles expire.
 
-The intended method is a presence-only species distribution model, MaxEnt the
-obvious first: the enrichment already produces exactly the feature matrix such a
-model reads — every environmental layer sampled at each presence point, at its
-own date. The pieces were background/pseudo-absence sampling, the fit itself, and
-projecting the fitted surface back across a region as a habitat suitability
-raster the map can draw beside the layers it was built from.
+Open: none of it has run against the real Earth Engine API — tested against a
+stub only (see `VDEBT-1`). GeoTIFF export (`V12-MOD-4`) is the heavier follow-up.
 
-The modelling core now ships as `netlify/lib/maxent.mjs`: a predictor registry
-(terrain, NDVI and standing soil moisture, all free and static), request
-validation (`normaliseModelSpec`), the effort-aware background plan
-(`backgroundPlan`, which never draws fewer background points than presences and
-weights toward them by default), and `buildSuitabilityImage`, which samples the
-predictors at the presences and at random background, trains
-`ee.Classifier.amnhMaxent`, and classifies the stack into a 0–1 suitability
-image. It is split so only that last function touches `ee`, and it is tested end
-to end against a stub.
+Worth exercising once enrichment output is loaded as datasets often enough that
+"and then what" is a real question.
 
-The `model` job kind now runs end to end on the server. `normaliseSpec` routes a
-`kind: 'model'` spec to `normaliseModelSpec`, sharing the same source checker so a
-model's presences come from the same dataset or bounding box an enrichment job's
-do; `job-queue` prices it with `estimateModelUnits` and draws its bar with
-`modelPlan`; and the worker branches on the kind, carrying the presences it
-already loads (`loadSource`) into `runModel`, which builds the presence
-FeatureCollection, fits the model, mints a tile template from the fitted surface,
-and stores it in the job's `result_meta` — a raster has no GeoJSON file, so the
-result is a tile URL rather than a stored feature collection.
-
-The sampling-bias problem is not a footnote here: presence-only modeling
-inherits the observer-effort bias the caveats already name, so background
-sampling has to be weighted by effort and every surface labelled with the
-confounds behind it, the same way the density heatmaps already are. The
-background plan holds the first half; the surface labelling is still owed.
-
-The UI now exists. The jobs page carries an Enrich / Model toggle: model mode
-offers the predictors instead of the enrichment stages, and a finished model
-shows a "view suitability on map" action that draws the surface as an overlay
-with its legend beside the layers it was built from.
-
-The trained model and its surface are stored durably rather than only for as long
-as one map id lasts. The model's definition — predictors, region, source and the
-cross-validation score — persists in the job row, and the surface is re-servable
-from it on demand: `model-tiles` re-mints the template from the stored model
-(sharing the result cache, so within its TTL it is a blob read rather than any
-Earth Engine work), the jobs page fetches a fresh one before drawing, and when a
-drawn surface's tiles do expire the map's legend offers to refresh it in place
-from the saved model rather than sending the viewer back to re-run the job. What
-is not yet stored is the raster itself as a file — an Earth Engine export to
-GeoTIFF for download (V12-MOD-4) is the heavier, asynchronous follow-up.
-
-The per-date layers the first cut left out now have their honest place. A
-suitability surface is a claim about a place, not a day, so a per-record daily
-value has nothing to project onto a pixel; the weather layers therefore return as
-climate normals — `precip_normal` and `temp_normal`, the multi-year means, which
-ARE a property of the place — offered as predictors alongside the terrain and
-vegetation ones. Phenology stays out on purpose: "when in the year" is not a
-property of a pixel, so it belongs to a per-date question the static surface does
-not ask.
-
-A surface now comes with a number for how much to trust it. `runModel` runs a
-spatially blocked cross-validation — presences and background assigned to folds
-by the 0.25° square they sit in, not at random, so a test point is not judged
-beside a training neighbour it is correlated with — trains a fold out at a time,
-and reports the held-out AUC as its mean and spread across folds. The AUC itself
-is computed in JavaScript (`rocAuc`, `crossValidationSummary`) from the held-out
-predictions Earth Engine returns, so the arithmetic that judges the model is
-tested without one. The score rides in `result_meta.cv` and shows on the job and
-in the map legend, with a plain grade beside it and an honest "not scored" when
-there are too few presences (`MIN_CV_PRESENCES`) for it to mean anything.
-
-None of it has run against the real Earth Engine API yet — `buildSuitabilityImage`,
-`crossValidate` and `runModel` are tested against a stub, the same verification
-debt the map layers carry below.
-
-Worth finishing once the enrichment output is being loaded as datasets often
-enough that "and then what" is a real question rather than a hypothetical.
-
-### Member-defined enrichment stages
+### `WANT-2` Member-defined enrichment stages
 
 `STAGES` is six hardcoded entries and `normaliseSpec` refuses any `kind` but
 `enrich`, so adding a seventh source is a code change and a deploy. That
@@ -122,7 +52,7 @@ water masking. Those are not "sample a band".
 Worth doing after there is evidence somebody has hit the wall of six stages.
 Composing jobs came first because it needed no new Earth Engine surface at all.
 
-### Member-supplied Earth Engine credentials
+### `WANT-3` Member-supplied Earth Engine credentials
 
 Every job runs under one service account against one Cloud project, so all
 Earth Engine spend bills FRMS. That single pool is the whole reason `quotas.mjs`
@@ -165,7 +95,7 @@ the first real "I need my own quota" is the signal, the same way composing jobs
 waited for the first real "and then what". Until then the admin floor and a
 raised per-member quota cover it.
 
-### Coverage page, reframed
+### `WANT-4` Coverage page, reframed
 
 `/coverage` inventories the **local raster cache** — 25.9 GB of CHIRPS, ERA5 and
 NDVI files on disk. As enrichment moves to Earth Engine that cache stops
@@ -179,7 +109,7 @@ the app currently says which you are looking at.
 Keep the URL, replace the contents, and let the raster inventory go when the
 cache does.
 
-### Navigation and the pages behind it
+### `WANT-5` Navigation and the pages behind it
 
 The nav grew around the tools that existed when each was added, and it shows.
 `/jobs` sits in it as a top-level destination, but a job is something you start
@@ -193,7 +123,47 @@ from where a job is launched), and add the pages that earn a top-level slot to
 it. The open question is which those are, and in what order — the nav is the
 app's table of contents, so what is in it is a claim about what the app is for.
 
-### A dashboard worth landing on
+### `WANT-7` MaxEnt observation bias correction
+
+Citizen science platforms (iNaturalist, GBIF) produce severe sampling bias because observations cluster near human infrastructure — roads and trails. Uncorrected, MaxEnt learns human travel patterns instead of true ecological niches, producing suitability maps that mirror trail networks rather than habitat.
+
+**Critical rule:** Do not feed human footprint, population density, or trail distance layers as standard MaxEnt environmental covariates. The model treats them as positive habitat preferences (e.g. concluding a species "thrives" on compacted dirt paths). These layers belong only in background sample weighting.
+
+**Strategy A — Bias Grid (recommended):** Build a sampling effort surface by combining trail proximity rasters, human population density (WorldPop or LandScan), and general observation density into a single continuous raster. Pass it to MaxEnt via the `biasfile=sampling_effort.tif` argument. This instructs MaxEnt to draw more pseudo-absence background points near high-traffic areas where observers actually look, and fewer in inaccessible terrain, canceling out human travel bias.
+
+**Strategy B — Target Group Background (TGB) with conspicuousness filtering:** Restrict pseudo-absence background to ecologically and morphologically comparable taxa (e.g. large, charismatic macrofungi — visible boletes and amanitas — that attract the same observers) rather than all species. Programmatically drop records from casual or one-time users; strictly prioritise Research Grade observations to reduce misidentification noise.
+
+`WANT-1` already names this as an open item; this entry spells out the implementation path so it can be tracked and closed on its own. `V12-ETH-1` in Future Enhancements covers the automated thinning and bias file generation that the bias grid strategy requires.
+
+### `WANT-8` Vercel and Netlify cross-compatibility
+
+The backend currently targets Netlify Functions exclusively (`netlify/functions/`, `netlify/lib/`). There is no path to deploying on Vercel without rewriting the serverless layer.
+
+The goal is for the same codebase to build and deploy on either platform without forking. The two surfaces are close but not identical: Netlify Functions use `handler(event, context)` with a `netlify.toml` routing config; Vercel uses `api/` file-based routing with a `vercel.json` config and its own `VercelRequest`/`VercelResponse` types. Environment variable naming conventions also differ by convention (Netlify exports `NETLIFY=true`; Vercel exports `VERCEL=1`).
+
+The practical approach is an adapter layer — a thin request/response normalisation shim that each platform's entry point calls — so the business logic in `netlify/lib/` is platform-agnostic and the adapters are the only platform-specific code. That means:
+
+1. Extract all handler logic into framework-free modules (most of `netlify/lib/` already qualifies).
+2. Write a Netlify adapter and a Vercel adapter, each no more than a request unwrap and response wrap.
+3. CI should build and lint both targets so neither rots.
+
+A secondary benefit: Vercel's edge runtime and image optimisation improve cold-start latency for the Nuxt SSR layer, which Netlify's edge functions approximate but don't match exactly.
+
+Worth doing when there is a concrete reason to deploy on Vercel — a cost comparison, a team preference, or a feature only one platform offers — rather than speculatively.
+
+### `WANT-9` GBIF API direct loading
+
+Today GBIF data enters only through a manual CSV export — the user downloads an occurrence archive from gbif.org, uploads the file, and the server parses it. There is no path to querying GBIF from within the app.
+
+The GBIF Occurrence API (`https://api.gbif.org/v1/occurrence/search`) is public and requires no authentication for read access. A new Netlify function wrapping it could accept the same filter parameters the app already uses — taxon, bounding box, date range, coordinate uncertainty threshold — and return a GeoJSON FeatureCollection in the same shape `useObservations` expects. A member would search by species name, see a record count, and load directly into their dataset without leaving the app.
+
+The quota question matters here: GBIF search returns up to 100,000 records per download request (paginated at 300/page). The function should enforce a per-request cap and surface record counts before fetching, so a member does not accidentally queue a 90k-record pull on a slow connection. Coordinate uncertainty filtering should default on (`coordinateUncertaintyInMeters` ≤ some threshold) to match the quality bar the CSV importer already applies.
+
+`ISSUE-2` (large imports timing out) is a prerequisite to fix or mitigate first: the same timeout risk applies to API-fetched data, and streaming the response into Supabase Storage incrementally rather than building the full GeoJSON in memory is the right fix for both.
+
+Worth doing alongside any work to improve the import experience, and before `WANT-2` (member-defined enrichment stages) since GBIF API records are a natural source for those.
+
+### `WANT-6` A dashboard worth landing on
 
 The default view is thin: it opens on not much, and the interesting state — how
 many observations, how fresh, what has been enriched, what is worth looking at
@@ -210,9 +180,56 @@ of the app is under.
 
 ---
 
-## Verification debt
+## Future Enhancements
 
-### No Earth Engine layer has rendered against the real API
+### UI & UX Improvements
+
+- [ ] `V12-UI-1` **Intuitive Navigation**: Streamline the path from data import to model training to reduce friction
+- [ ] `V12-UI-2` **Contextual Onboarding**: Implement "empty state" guides and tooltips for complex modeling parameters
+- [ ] `V12-UI-3` **Visual Hierarchy Refinement**: Improve contrast and layout of side panels for better focus on the map
+- [ ] `V12-UI-4` **Interactive Data Previews**: Enhance dataset selection with instant visual summaries before committing to a model run
+- [x] `V12-UI-5` **Accessibility Pass**: ~1/3 of interactive elements lack `aria-label`; add `aria-pressed` to login mode tabs, `aria-hidden` to decorative icons, and a visible label on the ObservationsTable search input (WCAG 2.1 AA)
+- [x] `V12-UI-6` **Responsive Table Columns**: ObservationsTable has no `@media` rules — add column prioritisation and a pinned first column for small screens
+- [ ] `V12-UI-7` **Mobile Map Controls Discovery**: compact mode hides the basemap picker and heatmap controls entirely — replace with an accessible bottom-sheet or collapsible toolbar row so features remain reachable without opening LayerManager
+- [ ] `V12-UI-8` **Fluid Breakpoints**: most responsive behaviour is a binary compact/not-compact prop — supplement with CSS `@media` rules at tablet widths where the binary split creates awkward layouts
+
+### Advanced Modeling Features
+
+- [ ] `V12-MOD-1` **Ensemble Modeling**: Average predictions from multiple model runs
+- [ ] `V12-MOD-2` **Projection Tools**: Project models to future climate scenarios (CMIP6 integration)
+- [ ] `V12-MOD-3` **Batch Processing**: Train models for multiple species simultaneously
+- [ ] `V12-MOD-4` **Model Export**: Download suitability rasters as GeoTIFF
+- [ ] `V12-MOD-5` **Threshold Optimization**: Automatic threshold selection (MaxSSS, 10th percentile)
+
+### Data Quality & Ethics
+
+- [ ] `V12-ETH-1` **Sampling Bias Correction**: Automated thinning and bias file generation
+- [ ] `V12-ETH-2` **Spatial Autocorrelation Checks**: Warn about clustered occurrence records
+- [ ] `V12-ETH-3` **Extrapolation Risk Maps**: Highlight areas outside training environmental space (MOP/MEX analysis)
+- [ ] `V12-ETH-4` **Sensitive Species Protection**: Automatic coordinate obscuring for threatened species
+
+### Collaboration & Sharing
+
+- [ ] `V12-COLL-1` **Public Model Gallery**: Browse and reuse models from other users
+- [ ] `V12-COLL-2` **Team Workspaces**: Shared projects for research groups
+- [ ] `V12-COLL-3` **Model Citation Generator**: Auto-generate citations for published models
+- [ ] `V12-COLL-4` **Export to R/Python**: Generate reproducible scripts for external analysis
+
+### Performance & Scalability
+
+
+### Documentation & Onboarding
+
+- [x] `V12-DOC-1` **Interactive Tutorial**: Step-by-step walkthrough for first MaxEnt run
+- [ ] `V12-DOC-2` **Video Guides**: Short screencasts for key workflows
+- [x] `V12-DOC-3` **Glossary Tooltips**: Hover explanations for technical terms (AUC, regularization, etc.)
+- [ ] `V12-DOC-4` **Example Datasets**: Pre-loaded sample data for practice runs
+
+---
+
+## Verification Debt
+
+### `VDEBT-1` No Earth Engine layer has rendered against the real API
 
 The catalogue's asset IDs, band names and `system:index` values were written
 from documentation and from working Code Editor scripts, never executed against
@@ -234,92 +251,42 @@ makes verifying them a command rather than a project.
 
 ---
 
-## Closed
+## Technical Debt
 
-Entries move here with the commit that closed them, so the reason an item
-existed survives the fix.
+- [x] `DEBT-1` **TypeScript Migration**: Convert remaining `.js` files to `.ts` for better type safety (Core composables migration substantially complete)
+- [x] `DEBT-2` **Test Coverage**:
+  - [x] `DEBT-2.1` Unit tests for new MaxEnt visualization components (`ResponseCurve`, `ROCCurve`, etc.)
+  - [x] `DEBT-2.2` Integration tests for full modeling pipeline (API → GEE → Supabase)
+  - [x] `DEBT-2.3` E2E tests for dashboard customization and widget system
+  - [x] `DEBT-2.4` Edge-case expansion for `tests/maxent.test.mjs`
+- [x] `DEBT-3` **Error Handling**: Standardize error messages and recovery flows
+- [x] `DEBT-4` **Accessibility Audit**: Ensure WCAG 2.1 compliance across new features
+- [x] `DEBT-5` **Performance Monitoring**: Add logging for Earth Engine job durations and failures
+- [x] `DEBT-6` **Type `any` Cleanup**: `ramps.ts` and `useMapHeatmaps.ts` use `any` for nearly all parameters — replace with proper interfaces for color stops, field metadata, and polygon types
+- [ ] `DEBT-7` **Netlify Backend TypeScript Migration**: all `netlify/lib/*.mjs` and `netlify/functions/*.mjs` are untyped — migrate to `.ts` with esbuild/tsup for the Netlify edge runtime
+- [ ] `DEBT-8` **MushroomMap Decomposition**: at ~2,800 lines with 25 watchers, split into focused composables (pin logic, heatmap logic, cluster logic, model-overlay logic) and extract the toolbar into its own component
+- [x] `DEBT-9` **Silent Error Paths**: audit all `console.error`/`console.warn`-only paths (ChartCard export, map export, GbifImporter, MaxEnt polling, cloud sync) and wire each to the app's toast/notification system
 
-### Taxonomy resolution has stalled
+---
 
-Genus, family and order were populated for under 4% of the store, so every view
-that grouped above species was working from a small and probably unrepresentative
-slice while the UI offered the ranks as if they were populated. The entry asked
-for one of two fixes: run the resolution pass to completion, or have the views say
-what fraction they are drawn from.
+## Known Issues
 
-Closed with the second. `composables/fieldCoverage.ts` computes the fraction of
-records carrying a field, and `coverageNote` turns a thin rank into the sentence
-a view shows; the map's "colour by" and the chart builder now carry it when the
-points or bars are grouped by a rank most records lack, naming the count and the
-percent so a key of five families no longer reads as the whole dataset. Genus and
-species are exempt — genus is split from the binomial when missing, so both are
-complete — and only the resolved-from-ancestry ranks (family and above) trip the
-note. The deeper fix, running the resolution pass to completion, is still worth
-doing; the app no longer lies about the ranks while it waits.
+- [ ] `ISSUE-1` LayerManager state persistence occasionally fails on mobile Safari
+- [ ] `ISSUE-2` Large GBIF exports (>10k records) may timeout during import
+- [ ] `ISSUE-3` Chart rendering slows with >50 data points in Saved Charts widget
+- [ ] `ISSUE-4` Earth Engine asset validation doesn't check geometry types comprehensively
+- [x] `ISSUE-5` ObservationsTable virtual scroller uses `window.resize` instead of `ResizeObserver` on the container — viewport height goes stale when sidebars toggle or panels resize, causing too few/many rows to render
+- [x] `ISSUE-6` MaxEnt polling errors are silently swallowed (`useMaxEnt.ts`) — if Earth Engine polling fails mid-run, job status freezes with no user feedback or retry escalation
+- [x] `ISSUE-7` `Number(v).toFixed()` in ObservationsTable has no `NaN` guard — non-numeric cell values render as `"NaN"` instead of a dash or fallback
+- [x] `ISSUE-8` Leaflet CSS is imported statically in MushroomMap even on non-map routes — should be deferred alongside the lazy Leaflet JS import
 
-### Saved filters did not sync
+---
 
-Recorded as `localStorage`-only, so not following a member between devices.
-That was already untrue when it was written: `useSavedFilters` writes to the
-`saved-filters` key and `SETTINGS_KEYS` in `useCloudSync` lists that key, so it
-is snapshotted to Supabase with the other preferences. Removed rather than
-fixed, since there was nothing to fix.
+## Contribution Guidelines
 
-Noticed while working out what survives a move to a new domain — browser
-storage is per-origin, so the question of which preferences live only in the
-browser is the same question.
+1. **Branch Naming**: `feature/<name>`, `fix/<name>`, or `roadmap/<phase>`
+2. **Commit Messages**: Follow conventional commits (`feat:`, `fix:`, `docs:`, etc.)
+3. **Testing**: All new features require tests before merge
+4. **Documentation**: Update guide and tooltips for user-facing changes
 
-### Data export
-
-The app computed a filtered, enriched set of records and then would not hand it
-over: the only downloads that existed were chart SVG/PNG and map PNG.
-
-Closed with `composables/dataExport.js` and an `ExportMenu` on the data table,
-each finished job and each saved dataset. GeoJSON and CSV, with column
-selection defaulting to what the table is showing — the enriched row runs to
-about fifty columns, so which ones is a real question.
-
-It is open rather than a membership benefit, and that was the decision the entry
-asked for. The reference dataset is already a public file the app fetches by URL,
-so asking somebody to sign in to download what they could already fetch directly
-would be theatre; a job result is the member's own work and they had to be a
-member to produce it.
-
-Two things the encoders are careful about, both silent when wrong. A CSV field
-containing a comma, a quote or a newline shifts every column after it unless it
-is quoted and its quotes doubled — one species note is enough. And a cell
-beginning `=`, `+`, `-` or `@` is a formula in every spreadsheet, while the text
-in these fields comes from iNaturalist, which is to say from the public; those
-are prefixed with an apostrophe rather than stripped, so the value survives.
-
-### Storage access rules for job results
-
-`ee-worker` wrote every finished job to `jobs/<user_id>/<job_id>.geojson` in the
-Supabase `datasets` bucket, and `useEeJobs.fetchResult` downloaded it from the
-browser with the member's own session — with no `storage.objects` policy in any
-migration. A private bucket meant a member could not read their own result; a
-public one meant anyone with a path could read anyone's.
-
-Closed by `005_dataset_storage_access.sql`: the bucket is private, a member
-reads their own `jobs/<uid>/` prefix, admins read everything, and there is no
-write policy at all so results stay the pipeline's to write. A dataset shared
-with other members is read through the server instead, because sharing lives in
-the row and a path-prefix policy cannot see it.
-
-The same work found something worse next door. `loadSource` built a storage
-path straight from the slug in a job spec and read it, with no check that the
-caller was allowed to — harmless while only admins could create datasets, and a
-way to read anyone's private work the moment members could. The rule now lives
-in `netlify/lib/dataset-access.mjs` and is applied at submission and again in
-the worker.
-
-### Bucket name is declared twice
-
-`useEeJobs` hardcoded `'datasets'` while the server read
-`SUPABASE_DATASETS_BUCKET`, so renaming the bucket sent the client looking
-somewhere the server was not writing, with nothing naming the cause.
-
-Closed with the storage policies, which made it three declarations rather than
-two — a policy has to name the bucket as a SQL literal. The client now reads
-`runtimeConfig.public.datasetsBucket`, and both the config and the migration say
-that renaming it means changing all three together.
+---

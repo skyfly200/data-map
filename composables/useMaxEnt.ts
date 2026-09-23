@@ -1,9 +1,9 @@
 // State management and API communication for the MaxEnt Modeling Suite.
-// 
-// This composable coordinates the training process: 
+//
+// This composable coordinates the training process:
 // 1. Configuration -> 2. Job Submission -> 3. Polling for Results.
 
-import { markRaw } from 'vue'
+import { computed, markRaw } from 'vue'
 
 export interface MaxEntConfig {
   id: string
@@ -12,8 +12,9 @@ export interface MaxEntConfig {
   predictors: string[]
   background_count: number
   effort_weighted: boolean
-  projection_region?: any
+  projection_region?: { north: number; south: number; east: number; west: number }
   source_dataset_id?: string
+  suitability_asset_path?: string
   visibility: string
   created_at: string
   updated_at: string
@@ -36,7 +37,7 @@ export interface MaxEntRun {
   started_at: string
   finished_at?: string
   error_message?: string
-  run_meta?: any
+  run_meta?: Record<string, unknown>
   model_configs: MaxEntConfig
 }
 
@@ -90,25 +91,42 @@ export function useMaxEnt() {
     }
   }
 
-  /** Poll for job completion and fetch results. */
+  /** Poll for job completion and fetch results, with retry on transient errors. */
   async function pollJobStatus(jobId: string) {
+    const MAX_RETRIES = 3
+    let consecutiveErrors = 0
+
     const timer = setInterval(async () => {
       try {
         const res = await fetch(`/.netlify/functions/modeling/maxent/results/${jobId}`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
-        
+        consecutiveErrors = 0 // reset on success
+
         if (data.ok && data.result) {
           clearInterval(timer)
           activeJob.value = { ...activeJob.value!, status: 'succeeded' }
-          await fetchModels() // Refresh models list
+          await fetchModels()
         } else if (data.ok && data.status === 'pending') {
           activeJob.value = { ...activeJob.value!, status: 'running' }
         } else if (!data.ok) {
           clearInterval(timer)
-          activeJob.value = { ...activeJob.value!, status: 'failed', error_message: data.error }
+          const msg = data.error || 'Job failed on the server.'
+          activeJob.value = { ...activeJob.value!, status: 'failed', error_message: msg }
+          useAppAlerts().error('MaxEnt job failed — ' + msg)
         }
       } catch (e: any) {
-        console.error('Polling error:', e)
+        consecutiveErrors++
+        const msg = e?.message || 'Polling failed unexpectedly.'
+        if (consecutiveErrors >= MAX_RETRIES) {
+          clearInterval(timer)
+          error.value = msg
+          if (activeJob.value) activeJob.value = { ...activeJob.value, status: 'failed', error_message: `Polling stopped after ${MAX_RETRIES} errors: ${msg}` }
+          useAppAlerts().error(`MaxEnt polling stopped after ${MAX_RETRIES} retries — ${msg}`)
+        } else {
+          // Transient error — warn but keep polling
+          useAppAlerts().warn?.(`MaxEnt polling error (retry ${consecutiveErrors}/${MAX_RETRIES}) — ${msg}`)
+        }
       }
     }, 5000)
   }
@@ -131,8 +149,23 @@ export function useMaxEnt() {
     }
   }
 
+  // Layer Manager entries for completed model runs (HEAT-5).
+  // Each succeeded model exposes its suitability asset as a toggleable layer.
+  const maxentLayerSpecs = computed(() =>
+    models.value.map((m) => ({
+      key: `maxent:${m.id}`,
+      name: m.title,
+      group: 'MaxEnt Models',
+      note: m.description || 'MaxEnt habitat suitability surface.',
+      // The GEE asset path is what the tile endpoint renders.
+      assetPath: m.suitability_asset_path ?? null,
+      visibility: m.visibility,
+    }))
+  )
+
   return {
     models, activeJob, pending, error,
     fetchModels, trainModel, deleteModel,
+    maxentLayerSpecs,
   }
 }

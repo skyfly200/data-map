@@ -16,19 +16,19 @@ export interface SavedChart {
 
 export function useSavedCharts() {
   const charts = useState<SavedChart[]>('saved-charts', () => [])
-  const cloud = useCloudSync()
+  const cloud = safeCloudSync()
 
   async function pushCloud() {
-    if (!cloud.enabled.value) return
+    if (!cloud?.enabled.value) return
     try {
-      const saved = await cloud.pushCharts(charts.value)
+      const saved = await cloud!.pushCharts(charts.value)
       // Adopt the server-assigned ids so a later edit updates the same rows.
       if (saved.length === charts.value.length) {
         charts.value = saved
         persist()
       }
     } catch (err: any) {
-      console.warn('Could not sync charts to your account:', err?.message || err)
+      useAppAlerts().warn('Could not sync charts to your account: ' + (err?.message || err))
     }
   }
 

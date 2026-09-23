@@ -79,6 +79,11 @@
               </tbody>
             </table>
           </div>
+          <ClientOnly>
+            <NuxtLink v-if="isMember" to="/modeling/maxent" class="model-cta">
+              Train a model with this data →
+            </NuxtLink>
+          </ClientOnly>
         </template>
       </section>
     </div>
@@ -91,6 +96,7 @@ import { useObservations } from '~/composables/useObservations'
 const { data, speciesOptions, speciesFilter, setSpeciesFilter, error, pending, load,
   selectedDataset, availableDatasets, setDataset,
   taxonRank, setTaxonRank, availableRanks } = useObservations()
+const { isMember } = useMembership()
 onMounted(load)
 
 // Tabs (in the URL so /data?tab=table deep-links, and old /table redirects here).
@@ -259,4 +265,12 @@ tr.off .bar { background: #cbd5e1; }
   font-size: 0.88rem; background: var(--input-bg); color: var(--text);
 }
 .species-search .found { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+
+.model-cta {
+  display: inline-block; margin-top: 16px;
+  padding: 8px 16px; border-radius: 6px;
+  background: var(--accent); color: var(--accent-ink);
+  font-size: 0.88rem; font-weight: 600; text-decoration: none;
+}
+.model-cta:hover { opacity: 0.88; }
 </style>

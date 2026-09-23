@@ -5,7 +5,18 @@ export default defineNuxtConfig({
   experimental: {
     appManifest: false,
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        onwarn(warning, warn) {
+          if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
+          warn(warning)
+        },
+      },
+    },
+  },
   nitro: {
+    preset: 'netlify',
     // The observation GeoJSON is ~48 MB of highly repetitive JSON that gzips to
     // under 7 MB. Without this it ships uncompressed: Nitro serves public/
     // assets byte-for-byte, so every visitor downloaded the full 48 MB.

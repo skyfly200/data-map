@@ -1,10 +1,14 @@
 // Serving Netlify Function: returns the observations GeoJSON for the map.
-// The committed baseline is authoritative (fully enriched + clustered); the
-// scheduled function's blob only adds genuinely-new interim sightings on top.
-// This guarantees a newer baseline always wins over an older blob.
 //
-// The frontend calls /.netlify/functions/observations and itself falls back to
-// the static /data/observations.geojson if this function is unavailable.
+// When Supabase is configured, observations.geojson in Supabase Storage is the
+// single authoritative dataset — the refresh function merges new sightings in
+// on each run, so no overlay is needed at serve time.
+//
+// Without Supabase the committed baseline (bundled with the deployment) is served
+// with any new-observations blob from Netlify overlaid on top at request time.
+//
+// The frontend calls /.netlify/functions/observations and falls back to the
+// static /data/observations.geojson if this function is unavailable.
 
 import { getStore } from '@netlify/blobs'
 import { overlay } from '../lib/observations.mjs'
@@ -13,9 +17,11 @@ import { supabaseConfigured } from '../lib/supabase-storage.mjs'
 import { readJson } from '../lib/datasets-store.mjs'
 import { taxaInFeatures } from '../lib/dataset-taxa.mjs'
 
-// The taxon summary, computed once per warm process. The baseline is a file
-// bundled with the deployment, so it cannot change under us — and parsing fifty
-// megabytes of GeoJSON to count names is not something to do per request.
+// The taxon summary, computed once per warm process. Parsing fifty megabytes of
+// GeoJSON to count names is not something to do per request, and the dataset
+// changes at most once per refresh run (every 6 hours), so a process-scoped
+// cache is an acceptable trade. A cold start after a refresh picks up the
+// latest counts on its first ?summary=taxa request.
 let taxaCache = null
 
 /**
@@ -33,8 +39,9 @@ let taxaCache = null
  */
 async function taxaSummary() {
   if (!taxaCache) {
-    const baseline = await loadBaseline()
-    const features = baseline?.features || []
+    let dataset = supabaseConfigured() ? await readJson('observations.geojson') : null
+    if (!dataset) dataset = await loadBaseline()
+    const features = dataset?.features || []
     taxaCache = { ranks: taxaInFeatures(features), total: features.length }
   }
   return new Response(JSON.stringify({ ok: true, ...taxaCache }), {
@@ -50,17 +57,18 @@ export default async (request) => {
   const url = new URL(request.url)
   if (url.searchParams.get('summary') === 'taxa') return taxaSummary()
 
-  // Baseline: Supabase Storage when configured, else the committed file.
-  let baseline = null
-  if (supabaseConfigured()) baseline = await readJson('observations.geojson')
-  if (!baseline) baseline = await loadBaseline()
-
-  // Interim-new sightings: Supabase object when configured, else Netlify Blob.
-  let extras = []
+  // When Supabase is configured, observations.geojson is the single authoritative
+  // file — the refresh function merges new sightings in on each run, so no
+  // overlay is needed here. Fall back to the committed baseline + Netlify Blob
+  // overlay for deployments without Supabase.
+  let collection = null
   if (supabaseConfigured()) {
-    const fc = await readJson('new-observations.geojson')
-    extras = fc?.features || []
-  } else {
+    collection = await readJson('observations.geojson')
+  }
+
+  if (!collection) {
+    const baseline = await loadBaseline()
+    let extras = []
     try {
       const store = getStore('observations')
       const blob = await store.get('new-observations', { type: 'json' })
@@ -68,9 +76,8 @@ export default async (request) => {
     } catch {
       // Blobs unavailable — serve the baseline alone.
     }
+    collection = overlay(baseline, extras)
   }
-
-  const collection = overlay(baseline, extras)
 
   return new Response(JSON.stringify(collection), {
     headers: {

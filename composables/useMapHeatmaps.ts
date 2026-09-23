@@ -19,7 +19,8 @@
 
 import { computed, ref } from 'vue'
 import { mix, normaliseStops, rampColor } from './ramps'
-import { categoryColor, hasValue } from '~/composables/useObservations'
+import { hasValue } from '~/composables/useObservations'
+import { categoryColor } from '~/composables/useAppearance'
 import { cellAt, cellKeyAt, CELL_SHAPES } from '~/composables/gridCells'
 import { ALL_NUMERIC } from '~/composables/useChartFields'
 import { fieldValue } from '~/composables/statistics'
@@ -102,10 +103,15 @@ export interface HeatmapMode {
   field?: string
   circular?: boolean
   fieldRamp?: string[] | null
+  windNote?: string
 }
 
 export const HEATMAP_MODES: HeatmapMode[] = [
   { key: '', label: 'None', kind: 'none', note: '' },
+  {
+    key: 'maxent', label: 'MaxEnt Suitability', kind: 'sequential', group: 'MaxEnt',
+    note: 'Predicted habitat suitability from a trained MaxEnt model. Select a model run and configure the visualization below.',
+  },
   {
     key: 'density', label: 'Observation density', kind: 'sequential', group: 'Observations',
     note: 'Observations per cell. Reflects where people look as much as where mushrooms are.',
@@ -134,7 +140,7 @@ export const HEATMAP_MODES: HeatmapMode[] = [
     key: 'wind', label: 'Wind / aspect vectors', kind: 'vector', group: 'Terrain',
     note: 'Arrows point the way slopes face; length is how consistent the aspect is, color is wind exposure.',
     windNote: 'Arrows point downwind (ERA5 10 m mean); length is wind speed.',
-  } as any,
+  },
   // Cell means of the enriched fields, generated so a new enrichment column
   // becomes a readable layer by being named once above.
   ...FIELD_MODES.map((f) => ({
@@ -212,7 +218,7 @@ interface HeatmapCell {
   key: string
   lat: number
   lon: number
-  polygon: any
+  polygon: [number, number][]
   lat0: number
   lon0: number
   lat1: number
@@ -253,6 +259,12 @@ export function useMapHeatmaps() {
   const heatmapOpacity = useState('map-heatmap-opacity', () => 0.55)
   const tileOpacity = useState('map-tile-opacity', () => 1)
 
+  // MaxEnt suitability display state (HEAT-2, HEAT-3, HEAT-4)
+  const maxentVizMode = useState<'probability' | 'binary'>('maxent-viz-mode', () => 'probability')
+  const maxentThreshold = useState<number>('maxent-threshold', () => 0.5)
+  const maxentShowCI = useState<boolean>('maxent-show-ci', () => false)
+  const maxentModelId = useState<string>('maxent-model-id', () => '')
+
   const activeMode = computed(() => HEATMAP_MODES.find((m) => m.key === mode.value) || HEATMAP_MODES[0])
 
   const groupedModes = computed(() => {
@@ -274,6 +286,8 @@ export function useMapHeatmaps() {
         seasonDay: seasonDay.value, seasonWindow: seasonWindow.value,
         rampKey: heatmapRampKey.value, rampCustom: heatmapRampCustom.value,
         heatmapOpacity: heatmapOpacity.value, tileOpacity: tileOpacity.value,
+        maxentVizMode: maxentVizMode.value, maxentThreshold: maxentThreshold.value,
+        maxentShowCI: maxentShowCI.value, maxentModelId: maxentModelId.value,
       }))
       cloud?.schedulePush()
     } catch { /* ignore */ }
@@ -304,6 +318,14 @@ export function useMapHeatmaps() {
         && saved.rampCustom.every((c) => /^#[0-9a-f]{6}$/i.test(c))) {
         heatmapRampCustom.value = normaliseStops(saved.rampCustom)
       }
+      if (saved.maxentVizMode === 'probability' || saved.maxentVizMode === 'binary') {
+        maxentVizMode.value = saved.maxentVizMode
+      }
+      if (Number.isFinite(saved.maxentThreshold) && saved.maxentThreshold >= 0.05 && saved.maxentThreshold <= 0.95) {
+        maxentThreshold.value = saved.maxentThreshold
+      }
+      if (typeof saved.maxentShowCI === 'boolean') maxentShowCI.value = saved.maxentShowCI
+      if (typeof saved.maxentModelId === 'string') maxentModelId.value = saved.maxentModelId
     } catch { /* keep defaults */ }
   }
 
@@ -366,9 +388,9 @@ export function useMapHeatmaps() {
     return [...cells.values()]
   }
 
-  function windField(cells: HeatmapCell[], meta: any) {
+  function windField(cells: HeatmapCell[], meta: HeatmapMode) {
     const hasWind = cells.some((c) => c.windN > 0)
-    const out: any[] = []
+    const out: HeatmapCell[] = []
     for (const c of cells) {
       let dx, dy, magnitude
       if (hasWind) {
@@ -408,7 +430,7 @@ export function useMapHeatmaps() {
     }
   }
 
-  function modalField(cells: HeatmapCell[], meta: any, pick: (c: HeatmapCell) => Map<string, number>, colorKey: string) {
+  function modalField(cells: HeatmapCell[], meta: HeatmapMode, pick: (c: HeatmapCell) => Map<string, number>, colorKey: string) {
     for (const c of cells) {
       let best = null, bestN = 0
       for (const [v, n] of pick(c)) if (n > bestN) { best = v; bestN = n }
@@ -423,7 +445,7 @@ export function useMapHeatmaps() {
     return { cells, legend: { type: 'categorical', items, total: wins.size, note: meta.note } }
   }
 
-  function fieldMeans(cells: HeatmapCell[], meta: any) {
+  function fieldMeans(cells: HeatmapCell[], meta: HeatmapMode) {
     const key = meta.field
     const shown: HeatmapCell[] = []
     for (const c of cells) {
@@ -507,8 +529,8 @@ export function useMapHeatmaps() {
     }
 
     const fmt = m === 'season' || m === 'hotspots'
-      ? (c: any) => `${Math.round((c.n ? c.inWindow / c.n : 0) * 100)}%`
-      : (c: any) => String(c.value)
+      ? (c: HeatmapCell) => `${Math.round((c.n ? c.inWindow / c.n : 0) * 100)}%`
+      : (c: HeatmapCell) => String(c.value)
     const loCell = shown.reduce((a, b) => (a.raw as number <= b.raw as number ? a : b))
     const hiCell = shown.reduce((a, b) => (a.raw as number >= b.raw as number ? a : b))
 
@@ -558,5 +580,6 @@ export function useMapHeatmaps() {
     HEATMAP_MODES, CELL_SIZES, CELL_SHAPES,
     computeHeatmap, buildCells, keyAt, persist, loadFromStorage,
     RAMP_PRESETS, DEFAULT_RAMPS, heatmapRampKey, heatmapRampCustom, rampFor,
+    maxentVizMode, maxentThreshold, maxentShowCI, maxentModelId,
   }
 }

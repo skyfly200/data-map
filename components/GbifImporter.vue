@@ -5,7 +5,7 @@
     <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
       <p class="text-sm text-blue-800">
         <strong>How it works:</strong> Upload your GBIF CSV export file. We'll validate the coordinates,
-        convert it to GeoJSON format, and prepare it for upload to your Earth Engine assets.
+        convert it to GeoJSON, and save it directly to your datasets for use in pipeline jobs.
       </p>
     </div>
 
@@ -97,8 +97,20 @@
           </div>
         </div>
 
-        <!-- Asset Path -->
-        <div class="p-3 bg-yellow-50 border border-yellow-200 rounded">
+        <!-- Saved dataset info -->
+        <div v-if="result.dataset" class="p-3 bg-green-50 border border-green-200 rounded">
+          <p class="text-sm font-medium text-green-800 mb-1">Saved to your datasets</p>
+          <p class="text-xs text-green-700">
+            <span class="font-medium">{{ result.dataset.title }}</span>
+            &mdash; slug: <code class="bg-white px-1 rounded">{{ result.dataset.slug }}</code>
+          </p>
+          <p class="text-xs text-green-600 mt-1">
+            Ready to use as a source in pipeline jobs.
+          </p>
+        </div>
+
+        <!-- Manual upload fallback (unauthenticated or Supabase not configured) -->
+        <div v-else-if="result.assetPath" class="p-3 bg-yellow-50 border border-yellow-200 rounded">
           <p class="text-sm font-medium text-yellow-800 mb-2">Next Step: Upload to Earth Engine</p>
           <code class="block text-xs bg-white p-2 rounded border border-yellow-200 break-all">
             {{ result.assetPath }}
@@ -167,11 +179,13 @@
 <script setup>
 import { ref } from 'vue'
 
+const { accessToken } = useAuth()
+
 const dragOver = ref(false)
 const selectedFile = ref(null)
 const processing = ref(false)
 const result = ref(null)
-const error = ref(null)
+const error = ref('')
 
 const formatFileSize = (bytes) => {
   if (bytes === 0) return '0 Bytes'
@@ -213,18 +227,19 @@ const processFile = async () => {
   result.value = null
 
   try {
+    const token = await accessToken().catch(() => null)
     const formData = new FormData()
     formData.append('file', selectedFile.value)
 
     const response = await $fetch('/api/datasets/import-gbif', {
       method: 'POST',
-      body: formData
+      body: formData,
+      headers: token ? { authorization: `Bearer ${token}` } : {}
     })
 
     result.value = response
   } catch (err) {
-    error.value = err.message || 'Failed to process file'
-    console.error('GBIF import error:', err)
+    error.value = (err instanceof Error ? err.message : null) || 'Failed to process file'
   } finally {
     processing.value = false
   }

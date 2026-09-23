@@ -24,7 +24,7 @@
           <button class="ghost" @click="doSignOut">Sign out</button>
         </div>
         <button class="oauth-btn passkey-add" :disabled="busy" @click="addPasskey">
-          <IconPasskey class="ico" /> <span>Add a passkey to this account</span>
+          <IconPasskey class="ico" aria-hidden="true" /> <span>Add a passkey to this account</span>
         </button>
         <p v-if="msg" :class="['msg', ok ? 'ok' : 'err']">{{ msg }}</p>
       </template>
@@ -33,13 +33,13 @@
         <!-- Passkey + OAuth -->
         <div class="oauth">
           <button class="oauth-btn" :disabled="busy" @click="passkey">
-            <IconPasskey class="ico" /> <span>Sign in with a passkey</span>
+            <IconPasskey class="ico" aria-hidden="true" /> <span>Sign in with a passkey</span>
           </button>
           <button class="oauth-btn" @click="oauth('github')">
-            <IconGithub class="ico" /> <span>Continue with GitHub</span>
+            <IconGithub class="ico" aria-hidden="true" /> <span>Continue with GitHub</span>
           </button>
           <button class="oauth-btn" @click="oauth('google')">
-            <IconGoogle class="ico" /> <span>Continue with Google</span>
+            <IconGoogle class="ico" aria-hidden="true" /> <span>Continue with Google</span>
           </button>
         </div>
 
@@ -59,10 +59,10 @@
           </button>
         </form>
 
-        <div class="modes">
-          <button :class="{ on: mode === 'signin' }" @click="mode = 'signin'">Password sign in</button>
-          <button :class="{ on: mode === 'signup' }" @click="mode = 'signup'">Create account</button>
-          <button :class="{ on: mode === 'magic' }" @click="mode = 'magic'">Magic link</button>
+        <div class="modes" role="group" aria-label="Sign-in method">
+          <button :class="{ on: mode === 'signin' }" :aria-pressed="mode === 'signin'" @click="mode = 'signin'">Password sign in</button>
+          <button :class="{ on: mode === 'signup' }" :aria-pressed="mode === 'signup'" @click="mode = 'signup'">Create account</button>
+          <button :class="{ on: mode === 'magic' }" :aria-pressed="mode === 'magic'" @click="mode = 'magic'">Magic link</button>
         </div>
 
         <p v-if="msg" :class="['msg', ok ? 'ok' : 'err']">{{ msg }}</p>

@@ -61,6 +61,14 @@ import DashboardSpeciesList from '~/components/DashboardSpeciesList.vue'
 import DashboardEnvStats from '~/components/DashboardEnvStats.vue'
 import DashboardSavedCharts from '~/components/DashboardSavedCharts.vue'
 import DashboardQuickFilters from '~/components/DashboardQuickFilters.vue'
+import DashboardNowFruiting from '~/components/DashboardNowFruiting.vue'
+import DashboardPhenology from '~/components/DashboardPhenology.vue'
+import DashboardModelLeaderboard from '~/components/DashboardModelLeaderboard.vue'
+import DashboardMapPreview from '~/components/DashboardMapPreview.vue'
+import DashboardDataQuality from '~/components/DashboardDataQuality.vue'
+import DashboardFavorites from '~/components/DashboardFavorites.vue'
+import DashboardWeather from '~/components/DashboardWeather.vue'
+import DashboardChart from '~/components/DashboardChart.vue'
 
 const { isAuthed } = useAuth()
 const { orderedWidgets, load, add, remove, reorder, reset } = useDashboardState()
@@ -73,6 +81,14 @@ const WIDGET_TYPES = [
   { type: 'env-stats', label: 'Environmental stats', icon: '🌡️', component: DashboardEnvStats },
   { type: 'saved-charts', label: 'Saved charts', icon: '📊', component: DashboardSavedCharts },
   { type: 'quick-filters', label: 'Quick filters', icon: '🔍', component: DashboardQuickFilters },
+  { type: 'now-fruiting', label: 'Now fruiting', icon: '🍄', component: DashboardNowFruiting },
+  { type: 'phenology', label: 'Phenology calendar', icon: '📅', component: DashboardPhenology },
+  { type: 'model-leaderboard', label: 'Model leaderboard', icon: '🏆', component: DashboardModelLeaderboard },
+  { type: 'map-preview', label: 'Map preview', icon: '🗺️', component: DashboardMapPreview },
+  { type: 'data-quality', label: 'Data quality', icon: '🔬', component: DashboardDataQuality },
+  { type: 'favorites', label: 'Favorites', icon: '⭐', component: DashboardFavorites },
+  { type: 'weather', label: 'Weather correlation', icon: '🌧️', component: DashboardWeather },
+  { type: 'chart', label: 'Custom chart', icon: '📊', component: DashboardChart },
 ]
 const COMPONENTS = Object.fromEntries(WIDGET_TYPES.map((w) => [w.type, w.component]))
 function componentFor(type) { return COMPONENTS[type] || DashboardOverview }
@@ -80,10 +96,10 @@ function componentFor(type) { return COMPONENTS[type] || DashboardOverview }
 // The layout a new member lands on: an overview and the three most-answered
 // panels, so the page reads as something rather than an empty grid.
 const DEFAULTS = {
-  widgets: ['overview', 'recent-jobs', 'species-list', 'env-stats'].map((type, i) => ({
+  widgets: ['overview', 'now-fruiting', 'phenology', 'recent-jobs', 'species-list', 'env-stats'].map((type, i) => ({
     id: `def-${type}`, type, settings: {}, order: i,
   })),
-  order: ['def-overview', 'def-recent-jobs', 'def-species-list', 'def-env-stats'],
+  order: ['def-overview', 'def-now-fruiting', 'def-phenology', 'def-recent-jobs', 'def-species-list', 'def-env-stats'],
 }
 
 const editing = ref(false)

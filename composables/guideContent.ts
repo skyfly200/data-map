@@ -21,6 +21,7 @@ import jobsMd from '~/content/guide/jobs.md?raw'
 import layersMd from '~/content/guide/layers.md?raw'
 import learningMd from '~/content/guide/learning.md?raw'
 import sourcesMd from '~/content/guide/sources.md?raw'
+import reportBugMd from '~/content/guide/report-bug.md?raw'
 
 /** slug → Markdown. The reference page has no entry; it is generated. */
 export const GUIDE_SOURCES: Record<string, string> = {
@@ -33,6 +34,7 @@ export const GUIDE_SOURCES: Record<string, string> = {
   layers: layersMd,
   learning: learningMd,
   sources: sourcesMd,
+  'report-bug': reportBugMd,
 }
 
 /** The Markdown of a page, or '' for the generated reference. */

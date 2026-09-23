@@ -18,6 +18,7 @@
           <button :class="{ on: tab === 'members' }" role="tab" @click="show('members')">Members</button>
           <button :class="{ on: tab === 'datasets' }" role="tab" @click="show('datasets')">Datasets</button>
           <button :class="{ on: tab === 'layers' }" role="tab" @click="show('layers')">Map layers</button>
+          <button :class="{ on: tab === 'crons' }" role="tab" @click="show('crons')">Cron jobs</button>
         </div>
 
         <p v-if="error" class="msg error">{{ error }}</p>
@@ -254,6 +255,49 @@
           </ul>
         </section>
 
+        <!-- ── Cron jobs ──────────────────────────────────────────────── -->
+        <section v-if="tab === 'crons' && !loading" class="panel">
+          <p class="hint lead">
+            Scheduled functions — their cron expression, a description, and the last 50 logged
+            runs. Logs appear after the first run following the
+            <code>cron_logs</code> migration.
+          </p>
+
+          <div v-for="job in cronJobs" :key="job.id" class="cron-job">
+            <div class="cron-head">
+              <strong>{{ job.name }}</strong>
+              <code class="cron-sched">{{ job.schedule }}</code>
+              <span class="cron-desc">{{ job.description }}</span>
+            </div>
+
+            <div v-if="!cronLogs[job.id]?.length" class="cron-empty">No runs recorded yet.</div>
+            <table v-else class="cron-table">
+              <thead>
+                <tr>
+                  <th>Fired at</th>
+                  <th>Status</th>
+                  <th>Duration</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in cronLogs[job.id]" :key="row.id" :class="row.status">
+                  <td class="mono">{{ fmtTs(row.fired_at) }}</td>
+                  <td>
+                    <span class="status-dot" :class="row.status"></span>
+                    {{ row.status }}
+                  </td>
+                  <td class="mono">{{ row.duration_ms != null ? `${row.duration_ms} ms` : '—' }}</td>
+                  <td class="details-cell">
+                    <span v-if="row.status === 'error'" class="detail-err">{{ row.details?.error || 'unknown error' }}</span>
+                    <span v-else class="detail-ok">{{ summariseDetails(row.details) }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <!-- ── Datasets ───────────────────────────────────────────────── -->
         <section v-if="tab === 'datasets' && !loading" class="panel">
           <p v-if="!datasets.length" class="msg">No saved datasets yet.</p>
@@ -352,6 +396,8 @@ const sortedMembers = computed(() => {
 const members = ref([])
 const datasets = ref([])
 const layers = ref([])
+const cronJobs = ref([])
+const cronLogs = ref({})
 
 /** A blank registration form. Defaults that render something rather than nothing. */
 const BLANK_LAYER = {
@@ -477,12 +523,32 @@ async function show(which) {
     const data = await call(`/.netlify/functions/admin-members?what=${which}`)
     if (which === 'members') members.value = data.members || []
     else if (which === 'layers') layers.value = data.layers || []
+    else if (which === 'crons') { cronJobs.value = data.jobs || []; cronLogs.value = data.logs || {} }
     else datasets.value = data.datasets || []
   } catch (e) {
     error.value = e.message
   } finally {
     loading.value = false
   }
+}
+
+function fmtTs(iso) {
+  const d = new Date(iso)
+  if (!Number.isFinite(d.getTime())) return iso
+  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+}
+
+function summariseDetails(d) {
+  if (!d || !Object.keys(d).length) return ''
+  const parts = []
+  if (d.new != null) parts.push(`${d.new} new`)
+  if (d.baseline != null) parts.push(`${d.baseline} baseline`)
+  if (d.sink) parts.push(d.sink)
+  if (d.features != null) parts.push(`${d.features} features`)
+  if (d.presences != null) parts.push(`${d.presences} presences`)
+  if (d.kind) parts.push(d.kind)
+  if (d.jobId) parts.push(`job ${d.jobId}`)
+  return parts.join(' · ') || JSON.stringify(d)
 }
 
 function edit(m) {
@@ -652,4 +718,30 @@ input, select, textarea { background: var(--bg); color: var(--text); border: 1px
 }
 .linkish.danger { color: #b3492f; margin-left: 10px; }
 .row-top code { font-size: 0.72rem; }
+
+/* ── Cron jobs ──────────────────────────────────────────────────────────── */
+.cron-job { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+.cron-job:last-child { margin-bottom: 0; }
+.cron-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+.cron-sched { font: 0.8em ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--accent); }
+.cron-desc { font-size: 0.76rem; color: var(--muted); flex: 1 1 100%; margin-top: 2px; }
+.cron-empty { font-size: 0.78rem; color: var(--muted); font-style: italic; }
+
+.cron-table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+.cron-table th { text-align: left; font-weight: 600; color: var(--muted); padding: 4px 8px 6px;
+  border-bottom: 1px solid var(--border); }
+.cron-table td { padding: 4px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.cron-table tr:last-child td { border-bottom: none; }
+.cron-table tr.error td { background: color-mix(in srgb, #b3492f 6%, transparent); }
+
+.status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  margin-right: 5px; vertical-align: middle; }
+.status-dot.ok { background: #3d8b5f; }
+.status-dot.error { background: #b3492f; }
+
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.73rem; white-space: nowrap; }
+.details-cell { max-width: 360px; word-break: break-word; }
+.detail-ok { color: var(--muted); }
+.detail-err { color: #b3492f; font-weight: 500; }
 </style>

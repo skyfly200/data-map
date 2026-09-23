@@ -373,6 +373,55 @@ When Supabase public keys are **not** set, the login UI shows a
 allow only because the server is likewise unconfigured), so local dev works
 with zero credentials.
 
+### Job completion notifications (email + push)
+
+A pipeline or model job runs on the server for minutes, so a member usually
+leaves the page. When a job settles, the `ee-worker` function notifies its owner
+over two independent channels, **both opt-out and on by default**, and each a
+silent no-op until its env is set. Members turn either off (or turn push on for
+a browser) from the **Jobs** page → *Notifications*.
+
+First apply the migration, which adds the two preference columns to `profiles`
+and a `push_subscriptions` table:
+
+```
+supabase_migrations/006_job_notifications.sql
+```
+
+**Email — [Resend](https://resend.com).** No new dependency; the worker calls
+the HTTP API with `fetch`. Set in the Netlify env:
+
+- `RESEND_API_KEY` — an API key from the Resend dashboard.
+- `NOTIFY_FROM_EMAIL` — a **verified** sender on that account, e.g.
+  `Nexstrata <notifications@your-domain.org>`. An unverified From is rejected,
+  so without this, email stays off.
+- `NOTIFY_APP_URL` *(optional)* — the base URL used for the “view it” link.
+  Defaults to Netlify's own `URL` / `DEPLOY_PRIME_URL`.
+
+**Push — Web Push (VAPID).** Uses the `web-push` package (added to
+`dependencies`). Generate a key pair once:
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Then set in the Netlify env:
+
+- `VAPID_PUBLIC_KEY` — the public half; also handed to the browser (via
+  `/.netlify/functions/job-notifications`) so it can subscribe. Public by design.
+- `VAPID_PRIVATE_KEY` — the private half; **server-only**, never in the bundle.
+- `VAPID_SUBJECT` *(optional)* — a `mailto:` or `https:` contact for the push
+  service, e.g. `mailto:admin@your-domain.org`.
+
+Push also needs a service worker, which the app already ships (`public/sw.js`,
+shared with offline support) — its `push` / `notificationclick` handlers show
+the message and focus the Jobs page on click. Delivery requires HTTPS (Netlify
+serves HTTPS; on `localhost` browsers allow it for testing). Subscriptions the
+push service reports as gone (404/410) are pruned automatically.
+
+With neither channel configured the queue behaves exactly as before: jobs run,
+progress is written to the row, and the browser polls it — no notifications.
+
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 ## Setup

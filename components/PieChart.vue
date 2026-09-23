@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { PALETTE, UNCLUSTERED } from '~/composables/useObservations'
+import { PALETTE, UNCLUSTERED } from '~/composables/useAppearance'
 
 const props = defineProps({
   title: { type: String, default: '' },

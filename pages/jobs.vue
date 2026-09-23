@@ -375,6 +375,29 @@
             </li>
           </ul>
         </section>
+
+        <!-- ── Notifications ──────────────────────────────────────────────
+             A job runs after this tab is closed, so this is how a member hears
+             it finished. Each channel only shows once the deployment has it
+             configured. -->
+        <section v-if="notify.emailAvailable.value || notify.pushAvailable.value" class="panel">
+          <h3>Notifications</h3>
+          <p class="sub">Tell me when a job finishes, so you don't have to keep this page open.</p>
+
+          <label v-if="notify.emailAvailable.value" class="notif-row">
+            <input type="checkbox" :checked="notify.emailOn.value" :disabled="notify.busy.value"
+                   @change="notify.setEmail($event.target.checked)" />
+            <span><strong>Email me</strong> at my account address when a job finishes or fails.</span>
+          </label>
+
+          <label v-if="notify.pushAvailable.value" class="notif-row">
+            <input type="checkbox" :checked="notify.pushOn.value" :disabled="notify.busy.value"
+                   @change="$event.target.checked ? notify.enablePush() : notify.disablePush()" />
+            <span><strong>Push a notification</strong> to this browser when a job settles.</span>
+          </label>
+
+          <p v-if="notify.error.value" class="msg error">{{ notify.error.value }}</p>
+        </section>
       </template>
     </ClientOnly>
   </div>
@@ -394,6 +417,7 @@ const jobsApi = useEeJobs()
 const datasetsApi = useDatasets()
 const { addInlineDataset } = useObservations()
 const modelOverlay = useModelOverlay()
+const notify = usePushNotifications()
 const router = useRouter()
 
 const stageList = Object.entries(STAGES).map(([key, s]) => ({ key, ...s }))
@@ -704,6 +728,7 @@ async function openModelOnMap(job) {
       region: meta.region || null,
       mintedAt: meta.mintedAt || null,
       cv: meta.cv ?? stored.cv ?? null,
+      effortWeighted: meta.effortWeighted ?? stored.effortWeighted ?? null,
     })
     router.push('/map')
   } finally {
@@ -776,6 +801,7 @@ onMounted(() => {
   jobsApi.refresh()
   datasetsApi.refresh()
   datasetsApi.refreshAvailable()
+  notify.load()
 })
 </script>
 
@@ -839,6 +865,10 @@ input[type="text"], input[type="number"], input[type="date"] {
 .msg.error { color: #b3492f; }
 .msg.ok { color: #3d8b5f; }
 .msg.warn { color: #8b6b3d; }
+
+.notif-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; font-size: 0.86rem; cursor: pointer; }
+.notif-row input { margin-top: 2px; flex: none; }
+.notif-row span { color: var(--text); }
 
 .job-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .job { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }

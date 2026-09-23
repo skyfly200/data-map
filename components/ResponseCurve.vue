@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-import { SERIES_1 } from '~/composables/useObservations'
+import { SERIES_1 } from '~/composables/useAppearance'
 import { scalePoint, generateTicks, DEFAULT_DIMS } from '~/composables/maxentViz'
 
 const props = defineProps({

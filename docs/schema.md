@@ -1,0 +1,1 @@
+more info in `SUPABASE_SETUP.md` or `supabase_schema.sql`

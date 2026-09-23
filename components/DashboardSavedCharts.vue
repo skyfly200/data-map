@@ -1,7 +1,7 @@
 <template>
   <div class="dash-widget saved-charts">
     <div class="widget-head">
-      <h3 class="widget-title">📊 Saved charts</h3>
+      <h3 class="widget-title"><span aria-hidden="true">📊 </span>Saved charts</h3>
       <NuxtLink to="/charts" class="widget-link">Gallery ›</NuxtLink>
     </div>
 

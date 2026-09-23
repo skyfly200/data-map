@@ -19,6 +19,8 @@ import {
 import { loadSource } from '../lib/job-source.mjs'
 import { runModel, runPipeline } from '../lib/ee-runner.mjs'
 import { uploadJson } from '../lib/datasets-store.mjs'
+import { notifyJobSettled } from '../lib/notify.mjs'
+import { logCronRun } from '../lib/cron-jobs.mjs'
 
 // Every minute, so a job that misses the poke below still starts within a
 // minute rather than up to five. The poke on submit is the fast path; this is
@@ -60,11 +62,14 @@ export default async function handler(request) {
   }
 
   const workerId = `${process.env.AWS_LAMBDA_LOG_STREAM_NAME || 'worker'}-${Date.now()}`
+  const t0 = Date.now()
   const job = await claimNextJob(workerId)
   if (!job) return json({ ok: true, claimed: null, message: 'Nothing queued.' })
 
   const spec = job.params || {}
   let spent = 0
+  const _jobStart = Date.now()
+  console.log(`[ee-worker] starting job ${job.id} (kind: ${spec.kind || 'enrich'})`)
 
   try {
     // Resolved as the member who submitted it, not as the worker. The worker's
@@ -91,6 +96,10 @@ export default async function handler(request) {
       const { template, meta } = await runModel({ spec, features, onProgress })
       spent = job.estimated_units || 0
       await finishJob(job.id, { resultPath: null, costUnits: spent, meta: { ...meta, template } })
+      // The member has almost certainly left the page by now; let them know.
+      await notifyJobSettled({ ...job, status: 'succeeded', result_meta: { ...meta, template } })
+      console.log(`[ee-worker] model job ${job.id} succeeded in ${Date.now() - _jobStart}ms (presences: ${meta.presences})`)
+      await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'ok', durationMs: Date.now() - t0, details: { jobId: job.id, kind: 'model', presences: meta.presences } })
       return json({ ok: true, claimed: job.id, model: true, presences: meta.presences })
     }
 
@@ -103,22 +112,25 @@ export default async function handler(request) {
     const resultPath = `jobs/${job.user_id}/${job.id}.geojson`
     await uploadJson(resultPath, { type: 'FeatureCollection', features: result.features })
 
-    await finishJob(job.id, {
-      resultPath,
-      costUnits: spent,
-      meta: {
-        features: result.features.length,
-        sampled: result.sampled,
-        bands: result.bands,
-        stages: spec.stages,
-        skipped: result.skipped,
-      },
-    })
+    const meta = {
+      features: result.features.length,
+      sampled: result.sampled,
+      bands: result.bands,
+      stages: spec.stages,
+      skipped: result.skipped,
+    }
+    await finishJob(job.id, { resultPath, costUnits: spent, meta })
+    await notifyJobSettled({ ...job, status: 'succeeded', result_meta: meta })
+    console.log(`[ee-worker] job ${job.id} succeeded in ${Date.now() - _jobStart}ms (features: ${result.features.length})`)
+    await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'ok', durationMs: Date.now() - t0, details: { jobId: job.id, kind: 'enrich', features: result.features.length } })
     return json({ ok: true, claimed: job.id, features: result.features.length })
   } catch (err) {
     // Charged for what it spent before breaking: Earth Engine billed those
     // requests whether or not anything came back.
+    console.error(`[ee-worker] job ${job.id} failed after ${Date.now() - _jobStart}ms:`, err?.message || err)
     await failJob(job.id, err, { costUnits: spent })
+    await notifyJobSettled({ ...job, status: 'failed', error: String(err?.message || err) })
+    await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'error', durationMs: Date.now() - t0, details: { jobId: job.id, error: String(err?.message || err) } })
     return json({ ok: false, claimed: job.id, error: String(err.message || err) }, 200)
   }
 }

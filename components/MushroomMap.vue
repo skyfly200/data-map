@@ -14,7 +14,7 @@
          on is a question you answer by looking at the map. -->
     <LayerManager
       :open="showLayers" :groups="overlayGroups" :active="activeOverlays"
-      :order="overlayOrder" :opacity="layerOpacity"
+      :order="overlayOrder" :opacity="layerOpacity" :ee-loading="eeLoading"
       :blend="layerBlend" :stack-blend="stackBlend" :solo="soloKey"
       @blend="setLayerBlend" @solo="setSolo"
       @toggle="toggleOverlayByKey" @opacity="setLayerOpacity" @move="moveOverlay"
@@ -209,6 +209,12 @@
         empty ground.
       </div>
     </div>
+    <!-- Earth Engine layer fetching a tile template — shown until the URL is
+         ready and tiles start loading. -->
+    <div v-for="name in eeLoading.values()" :key="name" class="legend ee-loading">
+      <span class="ee-spinner" aria-hidden="true"></span>
+      <span class="ee-loading-label">Rendering {{ name }}…</span>
+    </div>
     <!-- An Earth Engine layer that failed to render says why, by name. Blank
          ground on a fire map reads as ground that never burned, so a silent
          failure here would be worse than no layer at all. -->
@@ -268,6 +274,11 @@
                   @change="setEeParam(n.ee, name, $event.target.value)">
             <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
           </select>
+          <select v-else-if="p.type === 'yearSelect'" :id="`ee-${n.slug}-${name}`"
+                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                  @change="setEeParam(n.ee, name, Number($event.target.value))">
+            <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
+          </select>
           <input v-else-if="p.type === 'text'" :id="`ee-${n.slug}-${name}`" type="search"
                  :maxlength="p.maxLength || 60" :placeholder="p.default"
                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
@@ -313,10 +324,23 @@
       </div>
       <div class="legend-note">
         <template v-if="modelOverlay.cv">
-          <strong>AUC {{ modelOverlay.cv.auc.toFixed(2) }}</strong> ({{ modelOverlay.cv.grade }}) ·
+          <strong><GlossaryTooltip term="AUC" :definition="g('AUC')">AUC {{ modelOverlay.cv.auc.toFixed(2) }}</GlossaryTooltip></strong> ({{ modelOverlay.cv.grade }}) ·
           {{ modelOverlay.cv.folds }}-fold spatial CV, ±{{ modelOverlay.cv.sd.toFixed(2) }}
         </template>
         <template v-else>Not cross-validated — too few observations to score.</template>
+      </div>
+      <!-- Observer-effort bias is always present in presence-only models: the
+           surface reflects where recorders went as much as where the species
+           lives. Effort-weighted background (target-group background) reduces
+           this by sampling the contrast against where recording happened, rather
+           than against a uniform random background, but it does not remove it. -->
+      <div class="legend-note">
+        <template v-if="modelOverlay.effortWeighted">
+          Background effort-weighted · observer-effort bias reduced but not removed — people record where people go.
+        </template>
+        <template v-else>
+          Uniform background · observer-effort bias: where few records exist may look unsuitable regardless of habitat.
+        </template>
       </div>
       <div v-if="modelOverlay.stale" class="legend-note warn">
         These tiles have stopped loading — the fitted surface expires.
@@ -409,11 +433,12 @@
 </template>
 
 <script setup>
-import 'leaflet/dist/leaflet.css'
+// Leaflet CSS is loaded dynamically on mount so it does not bloat non-map routes.
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservations } from '~/composables/useObservations'
-import { classColorFor, fraction, matchNote, paletteFor, rampColor } from '~/composables/fieldPalettes'
-import { gradientCss, normaliseStops } from '~/composables/ramps'
+import { hasValue, useObservations } from '~/composables/useObservations'
+import { PALETTE, UNCLUSTERED, categoryColor, colorFor } from '~/composables/useAppearance'
+import { classColorFor, fraction, matchNote, paletteFor } from '~/composables/fieldPalettes'
+import { gradientCss, normaliseStops, rampColor } from '~/composables/ramps'
 import { drawnKeys, effectiveBlend, reorderStack } from '~/composables/blendModes'
 import { normaliseCodes } from '~/netlify/lib/ee-tile-layers.mjs'
 import { RAMP_PRESETS } from '~/composables/useMapHeatmaps'
@@ -422,12 +447,18 @@ import { coverageNote } from '~/composables/fieldCoverage'
 import { fieldValue } from '~/composables/statistics'
 import { useAppearance } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
+import { useGlossary } from '~/composables/useGlossary'
+import GlossaryTooltip from '~/components/GlossaryTooltip.vue'
+
+const { define: g } = useGlossary()
 
 const {
   data, filteredData, load, loadProgressive, chunks, partial,
-  speciesFilter, focusObservation, setFocusObservation,
+  speciesFilter, focusObservation, setFocusObservation, error: obsError,
 } = useObservations()
+watch(obsError, (msg) => { if (msg) useAppAlerts().error('Could not load observations — ' + msg) })
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
+const { filters } = useFilters()
 const live = useLiveClusters()
 // On a phone the basemap, the heatmap and the clustering controls move inside
 // the two windows that remain, rather than being three more buttons on a bar
@@ -464,6 +495,7 @@ const mapEl = ref(null)
 // against.
 const controlsEl = ref(null)
 let controlsResize = null
+let mapResize = null
 
 function trackControlsHeight() {
   if (!import.meta.client || !controlsEl.value) return
@@ -964,8 +996,9 @@ async function saveMap() {
     const blob = await exporter.mapToPng(mapEl.value, { scale: 2 })
     exporter.download(blob, `map-${exporter.slugify(colorBy.value, 'view')}-${exporter.stamp()}.png`)
   } catch (err) {
-    saveError.value = err.message || 'Could not save the map.'
-    console.error('Map export failed:', err)
+    const msg = err.message || 'Could not save the map.'
+    saveError.value = msg
+    useAppAlerts().error(msg)
   } finally {
     saving.value = false
   }
@@ -1084,6 +1117,7 @@ const heatmapCellIndex = computed(() => {
 // created empty, and the template is fetched the first time it is switched on —
 // minting one for a layer nobody looks at would spend quota for nothing.
 const eeTiles = useEeTiles()
+const maxEnt = useMaxEnt()
 // For authorising a point-sample of members' layers, the same token the tile
 // path uses.
 const { accessToken } = useAuth()
@@ -1092,6 +1126,7 @@ const { accessToken } = useAuth()
 const offline = useOffline()
 const eeParams = ref({})
 const eeErrors = ref([])
+const eeLoading = ref(new Map()) // key → layer name
 // The layer picker's contents. Populated once the map and its layers exist, so
 // the Vue side never has to know how Leaflet builds them.
 const baseLayers = ref([])
@@ -1113,6 +1148,24 @@ const overlayGroups = computed(() => {
   }
   return [...groups.entries()].map(([label, items]) => ({ label, items }))
 })
+
+// Sync MaxEnt model runs into the overlay layer list (HEAT-5).
+// Each completed model appears as a toggleable entry in the Layer Manager.
+// Entries are lightweight stubs — no actual Leaflet tile layer until the
+// tile URL can be obtained from the suitability asset path via the GEE endpoint.
+watch(maxEnt.maxentLayerSpecs, (specs) => {
+  // Remove stale maxent entries and replace with the current model list.
+  overlayLayers.value = [
+    ...overlayLayers.value.filter((o) => !o.key.startsWith('maxent:')),
+    ...specs.map((s) => ({
+      key: s.key,
+      name: s.name,
+      group: s.group,
+      note: s.note,
+      layer: null, // rendered via the heatmap mode, not a Leaflet tile layer
+    })),
+  ]
+}, { immediate: true })
 
 function setBase(key) {
   const next = baseLayers.value.find((b) => b.key === key)
@@ -1353,6 +1406,12 @@ function toggleOverlay(entry) {
     soloKey.value = ''
   }
   activeOverlays.value = next
+  // When a MaxEnt model layer is toggled on, switch the heatmap to MaxEnt
+  // mode and select that model so HeatmapControls reflects the active entry.
+  if (!wasOn && entry.key.startsWith('maxent:')) {
+    heatmaps.mode.value = 'maxent'
+    heatmaps.maxentModelId.value = entry.key.replace('maxent:', '')
+  }
   // Read from the active set rather than from the map: with a solo running, a
   // layer can be switched on and yet not be on the map, so hasLayer answers a
   // different question from the one the checkbox asked.
@@ -1410,6 +1469,9 @@ async function refreshEeLayer(spec) {
   const layer = eeLayers.get(spec.key)
   if (!layer || !map.hasLayer(layer)) return
   eeErrors.value = eeErrors.value.filter((e) => e.key !== spec.key)
+  const loadingNext = new Map(eeLoading.value)
+  loadingNext.set(spec.key, spec.name)
+  eeLoading.value = loadingNext
   try {
     const minted = await eeTiles.template(spec.key, paramsFor(spec))
     // setUrl rather than a rebuild, so the layer keeps its place in the stack
@@ -1424,6 +1486,10 @@ async function refreshEeLayer(spec) {
     // Loud and by name. A layer that fails quietly is indistinguishable from
     // one showing that nothing is there, and on a fire map that is a lie.
     eeErrors.value = [...eeErrors.value, { key: spec.key, name: spec.name, message: err.message }]
+  } finally {
+    const loadingDone = new Map(eeLoading.value)
+    loadingDone.delete(spec.key)
+    eeLoading.value = loadingDone
   }
 }
 
@@ -1932,6 +1998,7 @@ onMounted(async () => {
   try {
     await nextTick()
     if (!mapEl.value) throw new Error('map container not ready')
+    await import('leaflet/dist/leaflet.css')
     L = (await import('leaflet')).default
 
     // crossOrigin: the image export composites these tiles onto a canvas, and a
@@ -2139,6 +2206,138 @@ onMounted(async () => {
     restoreBase()
     overlayLayers.value = tileOverlayList
 
+    // ─── Elevation band canvas layer ────────────────────────────────────────
+    // Extends L.GridLayer with a per-tile canvas that fetches Terrarium DEM
+    // tiles (R*256 + G + B/256 - 32768 = metres), then paints:
+    //   • a teal highlight for pixels inside the elevation filter band, with a
+    //     dark mask outside it — when elevMin or elevMax is set.
+    //   • a hypsometric tint (green → tan → grey) when no filter is active,
+    //     so the layer still shows terrain context without a filter.
+    // Redraw is triggered whenever the filter changes; the layer key matches the
+    // overlay name so LayerManager handles it uniformly.
+    {
+      const ElevBandGridLayer = L.GridLayer.extend({
+        createTile(coords, done) {
+          const sz = this.getTileSize()
+          const canvas = document.createElement('canvas')
+          canvas.width = sz.x
+          canvas.height = sz.y
+          const url = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${coords.z}/${coords.x}/${coords.y}.png`
+          const img = new Image()
+          img.crossOrigin = 'anonymous'
+          img.onload = () => {
+            try {
+              const ctx = canvas.getContext('2d')
+              ctx.drawImage(img, 0, 0, sz.x, sz.y)
+              const src = ctx.getImageData(0, 0, sz.x, sz.y).data
+              const out = ctx.createImageData(sz.x, sz.y)
+              const loM = this.options.elevMin
+              const hiM = this.options.elevMax
+              const hasFilter = loM != null || hiM != null
+              const lo = loM ?? -Infinity
+              const hi = hiM ?? Infinity
+              // Band gradient stops: deep blue (low) → teal → green (mid) → yellow → orange (high).
+              // Lerped in RGB; five stops give the ramp a bit of shape without a full colour-space
+              // library. Indices 0–4, evenly spaced across the band.
+              const GRAD = [
+                [30, 100, 200],  // deep blue   (lowest in band)
+                [42, 161, 210],  // sky teal
+                [80, 185, 120],  // green        (mid-band)
+                [220, 185,  60], // warm yellow
+                [210,  90,  30], // orange-red   (highest in band)
+              ]
+              function bandColor(t) {
+                // t ∈ [0, 1]; map into the four segments of the five-stop ramp.
+                const seg = Math.min(3, Math.floor(t * 4))
+                const s = t * 4 - seg
+                const a = GRAD[seg], b2 = GRAD[seg + 1]
+                return [
+                  Math.round(a[0] + s * (b2[0] - a[0])),
+                  Math.round(a[1] + s * (b2[1] - a[1])),
+                  Math.round(a[2] + s * (b2[2] - a[2])),
+                ]
+              }
+              for (let i = 0; i < src.length; i += 4) {
+                const elev = src[i] * 256 + src[i + 1] + src[i + 2] / 256 - 32768
+                if (hasFilter) {
+                  if (elev >= lo && elev <= hi) {
+                    // Normalise within the band and apply the gradient.
+                    const span = hi - lo
+                    const t = span > 0 ? (elev - lo) / span : 0.5
+                    const [r, g, b] = bandColor(Math.max(0, Math.min(1, t)))
+                    out.data[i] = r; out.data[i + 1] = g; out.data[i + 2] = b; out.data[i + 3] = 185
+                  } else {
+                    out.data[i] = 0; out.data[i + 1] = 0; out.data[i + 2] = 0; out.data[i + 3] = 55
+                  }
+                } else {
+                  // No filter: hypsometric tint (green → tan → grey) across the full DEM range.
+                  const t = Math.max(0, Math.min(1, (elev + 50) / 4500))
+                  let r, g, b
+                  if (t < 0.4) {
+                    const s = t / 0.4
+                    r = Math.round(132 + s * 56); g = Math.round(184 - s * 32); b = Math.round(112 - s * 16)
+                  } else {
+                    const s = (t - 0.4) / 0.6
+                    r = Math.round(188 - s * 28); g = Math.round(152 + s * 6); b = Math.round(96 + s * 62)
+                  }
+                  out.data[i] = r; out.data[i + 1] = g; out.data[i + 2] = b; out.data[i + 3] = 130
+                }
+              }
+              ctx.putImageData(out, 0, 0)
+            } catch { /* silently ignore decode errors on bad tiles */ }
+            done(null, canvas)
+          }
+          img.onerror = () => done(null, canvas)
+          img.src = url
+          return canvas
+        },
+      })
+
+      const elevBandLayer = new ElevBandGridLayer({
+        elevMin: null, elevMax: null,
+        tileSize: 256, maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 14,
+        opacity: 0.75, attribution: 'Elevation: Tilezen / Amazon Web Services (CC BY)',
+        updateWhenIdle: false, updateWhenZooming: true,
+      })
+      elevBandLayer._baseOpacity = 0.75
+      tileLayers.push(elevBandLayer)
+
+      // Sync filter → layer params and redraw when the filter changes.
+      watch([() => filters.value.elevMin, () => filters.value.elevMax], ([lo, hi]) => {
+        elevBandLayer.options.elevMin = lo ?? null
+        elevBandLayer.options.elevMax = hi ?? null
+        if (map?.hasLayer(elevBandLayer)) elevBandLayer.redraw()
+      })
+
+      elevBandLayer.on('add', () => {
+        if (!activeTileNotes.value.some((n) => n.name === 'Elevation band')) {
+          activeTileNotes.value = [...activeTileNotes.value, {
+            name: 'Elevation band',
+            note: 'Decoded from Terrarium DEM tiles. With an elevation filter set (Map Filters), in-band terrain is highlighted; without one, a hypsometric tint shows relief.',
+            legend: {
+              type: 'ramp', unit: 'm',
+              min: filters.value.elevMin != null ? String(filters.value.elevMin) : '0',
+              max: filters.value.elevMax != null ? String(filters.value.elevMax) : '4 500+',
+              stops: filters.value.elevMin != null || filters.value.elevMax != null
+                ? ['#1e64c8', '#2aa1d2', '#50b978', '#dcb93c', '#d25a1e']
+                : ['#84b870', '#c9a86c', '#a0a0a0'],
+            },
+            slug: 'elevation-band',
+          }]
+        }
+      })
+      elevBandLayer.on('remove', () => {
+        activeTileNotes.value = activeTileNotes.value.filter((n) => n.name !== 'Elevation band')
+      })
+
+      tileOverlayList.push({
+        key: 'Elevation band', name: 'Elevation band', group: 'Terrain',
+        layer: elevBandLayer,
+        note: 'Highlights terrain within the elevation filter. Hypsometric tint when no filter is set.',
+        source: 'Tilezen/Amazon', type: 'Continuous raster',
+      })
+    }
+
     // Earth Engine layers arrive after their catalogue does, so they join the
     // list rather than being in it from the start.
     addEeLayers()
@@ -2191,6 +2390,16 @@ onMounted(async () => {
     map.on('baselayerchange overlayadd overlayremove', syncActiveTemplates)
     syncMapView()
     syncActiveTemplates()
+
+    // Leaflet calculates tile positions and canvas bounds from the container size
+    // it measures at creation. Any resize after that — drawer sliding in, screen
+    // rotation, mobile keyboard, browser window resize — leaves the internal pixel
+    // origin stale so every layer appears offset from the basemap. Watching the
+    // container and calling invalidateSize() keeps the two in sync.
+    if (typeof ResizeObserver !== 'undefined') {
+      mapResize = new ResizeObserver(() => { if (map) map.invalidateSize({ animate: false }) })
+      mapResize.observe(mapEl.value)
+    }
 
     heatmaps.loadFromStorage()
     appearance.loadFromStorage()
@@ -2307,6 +2516,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKeydown)
   controlsResize?.disconnect()
+  mapResize?.disconnect()
   if (map) map.remove()
 })
 </script>
@@ -2670,6 +2880,16 @@ onBeforeUnmount(() => {
 .tile-note { max-width: 260px; }
 .tile-warn { max-width: 260px; border-color: #e0b4b4; background: rgba(255, 244, 244, 0.97); }
 .tile-warn .legend-title { color: #b00020; }
+.ee-loading { display: flex; align-items: center; gap: 8px; max-width: 260px; }
+.ee-loading-label { font-size: 0.82em; color: var(--fg-muted, #666); }
+@keyframes ee-spin { to { transform: rotate(360deg); } }
+.ee-spinner {
+  display: inline-block; width: 14px; height: 14px; flex-shrink: 0;
+  border: 2px solid var(--border, #ccc);
+  border-top-color: var(--accent, #3b82f6);
+  border-radius: 50%;
+  animation: ee-spin 0.7s linear infinite;
+}
 
 /* Day-of-year window controls for the seasonal overlays. */
 /* Collapsed, it is one chip the width of its own summary. Expanded, it floats

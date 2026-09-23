@@ -1,7 +1,7 @@
 <template>
   <div class="table-page">
     <div class="toolbar">
-      <input v-model="query" type="search" class="search" placeholder="Filter by species or location…" />
+      <input v-model="query" type="search" class="search" placeholder="Filter by species or location…" aria-label="Filter observations by species or location" />
       <span class="count">{{ filtered.length }} / {{ rows.length }} observations</span>
       <!-- Exports what the table is showing, filters and search included —
            which is the set somebody has just finished deciding they wanted. -->
@@ -13,10 +13,12 @@
     <p v-else-if="pending && !rows.length" class="msg">Loading…</p>
 
     <div v-else ref="scroller" class="table-wrap" @scroll.passive="onScroll">
-      <table>
+      <table aria-label="Observations">
         <thead>
           <tr>
-            <th v-for="col in columns" :key="col.key" :class="{ sortable: col.sortable }" @click="col.sortable && sortBy(col.key)">
+            <th v-for="col in columns" :key="col.key"
+                :class="[{ sortable: col.sortable }, colClass(col.key)]"
+                @click="col.sortable && sortBy(col.key)">
               {{ col.label }}
               <span v-if="sortKey === col.key" class="arrow">{{ sortDir === 1 ? '▲' : '▼' }}</span>
             </th>
@@ -28,7 +30,7 @@
                the ones above and below so the scrollbar still spans the full set. -->
           <tr v-if="padTop" class="spacer" :style="{ height: `${padTop}px` }"><td :colspan="columns.length + 1"></td></tr>
           <tr v-for="(row, i) in visibleRows" :key="row.uuid || start + i" ref="rowEls">
-            <td v-for="col in columns" :key="col.key" :class="col.numeric ? 'num' : ''">
+            <td v-for="col in columns" :key="col.key" :class="[col.numeric ? 'num' : '', colClass(col.key)]">
               <template v-if="col.key === 'cluster'">
                 <span v-if="hasValue(row.cluster)" class="chip" :style="{ background: colorFor(row.cluster) }">{{ row.cluster }}</span>
                 <span v-else class="muted">, </span>
@@ -37,7 +39,7 @@
                 <em>{{ row.species || ', ' }}</em>
               </template>
               <template v-else-if="col.key === 'elevation'">
-                {{ hasValue(row.elevation) ? Math.round(elevValue(row.elevation)).toLocaleString() : ': ' }}
+                {{ hasValue(row.elevation) ? (v => Number.isFinite(v) ? v.toLocaleString() : '—')(Math.round(elevValue(row.elevation))) : '—' }}
               </template>
               <template v-else>
                 {{ display(col, row[col.key]) }}
@@ -56,7 +58,8 @@
 </template>
 
 <script setup>
-import { colorFor, hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { hasValue, inatUrl, useObservations } from '~/composables/useObservations'
+import { colorFor } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
 
 const { rows, filteredData, error, pending, load, selectedDataset, availableDatasets }
@@ -103,9 +106,17 @@ function sortBy(key) {
   else { sortKey.value = key; sortDir.value = 1 }
 }
 
+const COL_CSS = {
+  solar_exposure: 'col-solar', wind_exposure: 'col-wind',
+  water_retention: 'col-water', cluster: 'col-cluster',
+  land_cover_label: 'col-land-cover', ndvi: 'col-ndvi',
+  soil_moisture: 'col-soil', day_of_year: 'col-day',
+}
+function colClass(key) { return COL_CSS[key] ?? '' }
+
 function display(col, v) {
   if (!hasValue(v)) return ', '
-  if (col.numeric && typeof col.round === 'number') return Number(v).toFixed(col.round)
+  if (col.numeric && typeof col.round === 'number') { const n = Number(v); return Number.isFinite(n) ? n.toFixed(col.round) : '—' }
   return v
 }
 
@@ -194,14 +205,20 @@ watch([query, sortKey, sortDir], () => {
 
 watch(visibleRows, () => nextTick(measure))
 
+let ro = null
+
 onMounted(() => {
-  nextTick(measure)
-  if (import.meta.client) {
-    window.addEventListener('resize', measure, { passive: true })
-  }
+  nextTick(() => {
+    measure()
+    if (import.meta.client && scroller.value && typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(measure)
+      ro.observe(scroller.value)
+    }
+  })
 })
 onUnmounted(() => {
-  if (import.meta.client) window.removeEventListener('resize', measure)
+  ro?.disconnect()
+  ro = null
 })
 </script>
 
@@ -246,4 +263,27 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .muted { color: var(--muted); }
 .ext { text-decoration: none; color: var(--accent); font-weight: 700; }
+
+/* ─── Responsive: tablet ──────────────────────────────────────────────────
+   Hide low-priority columns at tablet width to avoid horizontal scroll. */
+@media (max-width: 900px) {
+  .col-solar, .col-wind, .col-water, .col-cluster { display: none; }
+}
+
+/* ─── Responsive: phone ───────────────────────────────────────────────────
+   Pin the species column and hide most enrichment columns. The key facts
+   (species, date, location, elevation) stay visible; everything else is gone. */
+@media (max-width: 600px) {
+  .toolbar { flex-wrap: wrap; }
+  .search { flex: 1 1 100%; }
+
+  .col-land-cover, .col-ndvi, .col-soil, .col-day { display: none; }
+
+  /* Pinned first column (species): sticky left so it stays visible while
+     scrolling the narrower set of remaining columns horizontally. */
+  thead th:first-child,
+  tbody td:first-child { position: sticky; left: 0; z-index: 2; background: var(--surface-2); }
+  tbody tr:hover td:first-child { background: var(--surface-3, var(--surface-2)); }
+  tbody tr.spacer td:first-child { background: none; z-index: auto; }
+}
 </style>

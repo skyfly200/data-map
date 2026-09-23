@@ -70,7 +70,7 @@
 
 <script setup>
 import { useId } from 'vue'
-import { SERIES_1 } from '~/composables/useObservations'
+import { SERIES_1 } from '~/composables/useAppearance'
 import { boundsFor, clampDomain } from '~/composables/useChartFields'
 
 const props = defineProps({

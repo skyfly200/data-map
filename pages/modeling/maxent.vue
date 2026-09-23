@@ -1,14 +1,22 @@
 <template>
   <div class="modeling">
+    <MaxEntTutorial ref="tutorialRef" />
+
     <div class="head">
       <div class="title-row">
         <h2>MaxEnt Modeling</h2>
-        <button v-if="selectedModels.length > 0" class="btn small primary" @click="showComparison = true">
-          Compare Selected ({{ selectedModels.length }})
-        </button>
+        <div class="title-actions">
+          <button class="btn small ghost" aria-label="Open tutorial" @click="tutorialRef?.start()">
+            ? Tutorial
+          </button>
+          <button v-if="selectedModels.length > 0" class="btn small primary" @click="showComparison = true">
+            Compare Selected ({{ selectedModels.length }})
+          </button>
+        </div>
       </div>
       <p class="sub">
-        Predict habitat suitability by learning from environmental conditions at sighting locations.
+        Predict <GlossaryTooltip term="habitat suitability" :definition="g('habitat suitability')">habitat suitability</GlossaryTooltip>
+        by learning from environmental conditions at sighting locations.
         A model is not a survey: it says where the environment resembles where the species was found.
       </p>
     </div>
@@ -21,7 +29,7 @@
 
       <template v-else>
         <!-- Comparison Overlay -->
-        <div v-if="showComparison" class="overlay">
+        <div v-if="showComparison" class="overlay" @click.self="showComparison = false">
           <div class="overlay-content">
             <button class="close-btn" @click="showComparison = false">✕</button>
             <ModelComparison :selected="selectedModels" />
@@ -53,19 +61,29 @@
           </div>
 
           <div class="row">
-            <label>Predictors</label>
+            <label>
+              <GlossaryTooltip term="predictors" :definition="g('predictors')">Predictors</GlossaryTooltip>
+              <span class="field-hint">Select at least {{ MIN_PREDICTORS }}</span>
+            </label>
             <div class="stages">
-              <label v-for="p in predictorList" :key="p.key" class="stage">
+              <label v-for="p in predictorList" :key="p.key" class="stage" :title="PREDICTOR_DESCRIPTIONS[p.key]">
                 <input type="checkbox" :value="p.key" v-model="form.predictors" />
-                <span><strong>{{ p.label }}</strong></span>
+                <span>
+                  <strong>{{ p.label }}</strong>
+                  <em class="pred-desc">{{ PREDICTOR_DESCRIPTIONS[p.key] }}</em>
+                </span>
               </label>
             </div>
           </div>
 
           <div class="row two">
             <label class="stack">
-              <span>Background Points</span>
-              <input v-model.number="form.backgroundCount" type="number" step="100" />
+              <span>
+                <GlossaryTooltip term="background points" :definition="g('background points')">Background Points</GlossaryTooltip>
+                <span class="field-hint">{{ MIN_BACKGROUND }}–{{ MAX_BACKGROUND }}</span>
+              </span>
+              <input v-model.number="form.backgroundCount" type="number" :min="MIN_BACKGROUND" :max="MAX_BACKGROUND" step="100" />
+              <span class="field-note">Random locations sampled to contrast against presences. More = slower but more stable; 1,000 is a reasonable start.</span>
             </label>
             <label class="stack">
               <span>Visibility</span>
@@ -121,7 +139,23 @@
           </div>
 
           <p v-if="loading" class="msg">Loading…</p>
-          <p v-else-if="!models.length" class="msg">No saved models yet.</p>
+          <div v-else-if="!models.length" class="empty-state">
+            <p class="empty-title">No models yet — here's how it works</p>
+            <ol class="onboarding-steps">
+              <li>
+                <strong>Pick a dataset</strong>
+                <span>Go to the <NuxtLink to="/data">Data page</NuxtLink> and select the species and filters you want to model. The form above will let you choose which dataset to train on.</span>
+              </li>
+              <li>
+                <strong>Choose predictors</strong>
+                <span>Tick the environmental layers that are ecologically meaningful for your species. Terrain and vegetation are a good baseline; add climate normals if your species is temperature- or rainfall-sensitive.</span>
+              </li>
+              <li>
+                <strong>Queue the model</strong>
+                <span>Hit <em>Queue Model</em> above. Training runs on Google Earth Engine and usually takes a few minutes. When it finishes you'll see your model here with an AUC score and a "View on Map" button.</span>
+              </li>
+            </ol>
+          </div>
 
           <ul v-else class="model-list">
             <li v-for="m in models" :key="m.id" class="model-item" :class="{ selected: m.selected }">
@@ -136,7 +170,7 @@
               <p class="model-meta">
                 {{ m.predictors.length }} predictors · {{ m.background_count }} background points
                 <template v-if="m.results">
-                  · <span class="cv-score">{{ m.results[0]?.auc }} AUC</span>
+                  · <span class="cv-score">{{ m.results[0]?.auc }} <GlossaryTooltip term="AUC" :definition="g('AUC')">AUC</GlossaryTooltip></span>
                 </template>
               </p>
               <div class="model-actions">
@@ -155,7 +189,23 @@
 
 <script setup>
 import { computed, reactive, ref, onMounted } from 'vue'
-import { PREDICTOR_KEYS, MAXENT_PREDICTORS, MIN_PREDICTORS, DEFAULT_PREDICTORS } from '~/netlify/lib/maxent.mjs'
+import { PREDICTOR_KEYS, MAXENT_PREDICTORS, MIN_PREDICTORS, MAX_BACKGROUND, MIN_BACKGROUND, DEFAULT_PREDICTORS } from '~/netlify/lib/maxent.mjs'
+import { useGlossary } from '~/composables/useGlossary'
+import GlossaryTooltip from '~/components/GlossaryTooltip.vue'
+import MaxEntTutorial from '~/components/MaxEntTutorial.vue'
+
+const { define: g } = useGlossary()
+const tutorialRef = ref(null)
+
+const PREDICTOR_DESCRIPTIONS = {
+  elevation: 'Height above sea level (SRTM). Strong driver of temperature, moisture and vegetation zones.',
+  slope: 'Steepness of terrain. Affects drainage, disturbance regime and micro-climate.',
+  aspect: 'Direction a slope faces. Controls sun exposure and moisture retention.',
+  ndvi: 'Vegetation greenness index from Sentinel-2 imagery (multi-year median). Proxy for habitat quality and food availability.',
+  soil_moisture: 'Long-run average top-layer soil wetness from ERA5-Land. Use for moisture-dependent species.',
+  precip_normal: 'Mean daily rainfall from CHIRPS (climate normal). Use for species with strong precipitation limits.',
+  temp_normal: 'Mean daily 2 m air temperature from ERA5-Land (climate normal). Often the strongest climate predictor of range limits.',
+}
 import { VISIBILITY_LABELS } from '~/composables/useDatasets'
 import ModelComparison from '~/components/ModelComparison.vue'
 
@@ -239,6 +289,7 @@ onMounted(fetchModels)
 .modeling { padding: 16px 18px; max-width: 1200px; margin: 0 auto; }
 .head { margin-bottom: 24px; }
 .head .title-row { display: flex; justify-content: space-between; align-items: center; }
+.title-actions { display: flex; align-items: center; gap: 8px; }
 .head h2 { margin: 0; }
 .head .sub { color: var(--muted); font-size: 0.86rem; line-height: 1.4; }
 
@@ -263,11 +314,29 @@ textarea { min-height: 60px; resize: vertical; }
 
 .stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-top: 4px; }
 .stage {
-  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  display: flex; align-items: flex-start; gap: 8px; padding: 6px 10px;
   background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
 }
 .stage:hover { background: var(--surface-3); }
-.stage input { margin: 0; }
+.stage input { margin: 2px 0 0; flex: 0 0 auto; }
+.stage span { display: flex; flex-direction: column; gap: 2px; }
+.pred-desc { font-size: 0.74rem; color: var(--muted); font-style: normal; line-height: 1.3; }
+
+.field-hint { font-weight: 400; color: var(--muted); font-size: 0.76rem; margin-left: 4px; }
+.field-note { font-size: 0.76rem; color: var(--muted); line-height: 1.4; margin-top: 4px; }
+
+.empty-state {
+  padding: 20px; background: var(--surface-2); border-radius: 8px;
+  border: 1px dashed var(--border);
+}
+.empty-title { font-weight: 600; margin: 0 0 14px; font-size: 0.9rem; color: var(--text-strong); }
+.onboarding-steps {
+  margin: 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 12px;
+}
+.onboarding-steps li { font-size: 0.84rem; color: var(--muted); line-height: 1.5; }
+.onboarding-steps li strong { color: var(--text); display: block; margin-bottom: 2px; }
+.onboarding-steps a { color: var(--accent); text-decoration: none; }
+.onboarding-steps a:hover { text-decoration: underline; }
 
 .actions { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
 .hint { font-size: 0.76rem; color: var(--muted); }
@@ -326,5 +395,41 @@ textarea { min-height: 60px; resize: vertical; }
   position: absolute; top: 12px; right: 12px; background: var(--surface-2);
   color: var(--text); border: 1px solid var(--border); border-radius: 50%;
   width: 24px; height: 24px; cursor: pointer; font-size: 12px;
+}
+
+/* ─── Responsive: tablets ─────────────────────────────────────────────────
+   The modeling interface is form-heavy; on a tablet the two-up rows and the
+   badge/date header run out of room, so they stack rather than crush. */
+@media (max-width: 820px) {
+  .modeling { padding: 14px 14px; }
+  .head .title-row { flex-wrap: wrap; gap: 10px; }
+  .panel { padding: 16px; }
+  .row.two { grid-template-columns: 1fr; gap: 12px; }
+  .model-top { flex-wrap: wrap; gap: 6px; }
+  .model-top .when { width: 100%; order: 3; }
+  .overlay { padding: 12px; }
+  .overlay-content { max-height: 94vh; padding: 16px; }
+}
+
+/* ─── Responsive: phones ──────────────────────────────────────────────────
+   One predictor per line, and actions go full-width so they are easy to tap. */
+@media (max-width: 520px) {
+  .stages { grid-template-columns: 1fr; }
+  .actions { flex-direction: column; align-items: stretch; }
+  .actions .btn { width: 100%; }
+  .actions .hint { text-align: center; }
+  .model-actions { flex-wrap: wrap; }
+  .model-actions .btn { flex: 1 1 auto; }
+}
+
+/* Touch devices: roomier tap targets for inputs, checkboxes and buttons so the
+   modeling form is usable with a finger rather than a mouse pointer. */
+@media (pointer: coarse) {
+  input, select, textarea { padding: 11px 13px; font-size: 16px; }
+  .btn { min-height: 44px; }
+  .stage { padding: 10px 12px; }
+  .stage input[type="checkbox"],
+  .model-select input[type="checkbox"] { width: 20px; height: 20px; }
+  .close-btn { width: 34px; height: 34px; font-size: 15px; }
 }
 </style>
