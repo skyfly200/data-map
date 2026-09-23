@@ -34,11 +34,23 @@
     </p>
 
     <div v-else class="dash-grid">
-      <section v-for="w in orderedWidgets" :key="w.id" class="dash-cell" :class="{ editing }"
+      <section v-for="w in orderedWidgets" :key="w.id"
+               class="dash-cell"
+               :class="cellClass(w, editing)"
                :draggable="editing"
                @dragstart="onDragStart(w.id)" @dragover.prevent @drop="onDrop(w.id)">
         <div v-if="editing" class="cell-bar">
           <span class="drag" title="Drag to reorder">⋮⋮</span>
+          <div class="size-btns" title="Resize widget">
+            <button :class="{ on: !w.settings.colspan || w.settings.colspan === 1 }"
+                    title="1 column" @click="updateSettings(w.id, { colspan: 1 })">▪</button>
+            <button :class="{ on: w.settings.colspan === 2 }"
+                    title="2 columns" @click="updateSettings(w.id, { colspan: 2 })">▪▪</button>
+            <button :class="{ on: w.settings.colspan === 'full' }"
+                    title="Full width" @click="updateSettings(w.id, { colspan: 'full' })">▬</button>
+            <button :class="{ on: w.settings.tall }"
+                    title="Toggle tall" @click="updateSettings(w.id, { tall: !w.settings.tall })">↕</button>
+          </div>
           <button class="remove" title="Remove" @click="remove(w.id)">×</button>
         </div>
         <!-- Widgets below the fold build as they scroll in, so opening the
@@ -71,7 +83,7 @@ import DashboardWeather from '~/components/DashboardWeather.vue'
 import DashboardChart from '~/components/DashboardChart.vue'
 
 const { isAuthed } = useAuth()
-const { orderedWidgets, load, add, remove, reorder, reset } = useDashboardState()
+const { orderedWidgets, load, add, remove, reorder, reset, updateSettings } = useDashboardState()
 
 // The widget catalogue: what a member can put on the dashboard, and what draws it.
 const WIDGET_TYPES = [
@@ -93,13 +105,30 @@ const WIDGET_TYPES = [
 const COMPONENTS = Object.fromEntries(WIDGET_TYPES.map((w) => [w.type, w.component]))
 function componentFor(type) { return COMPONENTS[type] || DashboardOverview }
 
-// The layout a new member lands on: an overview and the three most-answered
-// panels, so the page reads as something rather than an empty grid.
+// The layout a new member lands on. Sizes chosen so the default grid reads well
+// at common viewport widths without wasted space.
 const DEFAULTS = {
-  widgets: ['overview', 'now-fruiting', 'phenology', 'recent-jobs', 'species-list', 'env-stats'].map((type, i) => ({
-    id: `def-${type}`, type, settings: {}, order: i,
-  })),
-  order: ['def-overview', 'def-now-fruiting', 'def-phenology', 'def-recent-jobs', 'def-species-list', 'def-env-stats'],
+  widgets: [
+    { id: 'def-overview',     type: 'overview',     settings: {},                   order: 0 },
+    { id: 'def-now-fruiting', type: 'now-fruiting',  settings: {},                   order: 1 },
+    { id: 'def-map-preview',  type: 'map-preview',   settings: { colspan: 2, tall: true }, order: 2 },
+    { id: 'def-phenology',    type: 'phenology',     settings: { colspan: 2 },       order: 3 },
+    { id: 'def-recent-jobs',  type: 'recent-jobs',   settings: {},                   order: 4 },
+    { id: 'def-species-list', type: 'species-list',  settings: {},                   order: 5 },
+    { id: 'def-env-stats',    type: 'env-stats',     settings: { colspan: 2 },       order: 6 },
+  ],
+  order: ['def-overview', 'def-now-fruiting', 'def-map-preview', 'def-phenology',
+          'def-recent-jobs', 'def-species-list', 'def-env-stats'],
+}
+
+function cellClass(w, isEditing) {
+  const span = w.settings?.colspan
+  return {
+    editing:    isEditing,
+    'span-2':   span === 2,
+    'span-full': span === 'full',
+    tall:       Boolean(w.settings?.tall),
+  }
 }
 
 const editing = ref(false)
@@ -120,7 +149,7 @@ onMounted(() => { load(DEFAULTS) })
 
 <style scoped>
 .dash-guard { max-width: 420px; margin: 4rem auto; text-align: center; display: grid; gap: 0.8rem; }
-.dashboard { max-width: 1100px; margin: 0 auto; padding: 1rem 1rem 3rem; }
+.dashboard { padding: 1rem 1.5rem 3rem; }
 .dash-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
 .dash-header h1 { margin: 0; font-size: 1.5rem; }
 .sub { margin: 0.2rem 0 0; color: var(--muted, #777); font-size: 0.9rem; }
@@ -144,18 +173,46 @@ onMounted(() => { load(DEFAULTS) })
 
 .dash-empty { text-align: center; color: var(--muted, #888); padding: 3rem 1rem; }
 
-.dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; align-items: start; }
+/* Grid: 1 column on mobile → 2 on tablet → auto-fill (≥320px) on desktop.
+   Cells span additional columns via .span-2 / .span-full; .tall doubles height. */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
 .dash-cell {
   position: relative; background: var(--surface, #fff); border: 1px solid var(--border, #e5e5e5);
-  border-radius: 12px; padding: 1rem; min-height: 120px;
+  border-radius: 12px; padding: 1rem; min-height: 140px;
+  transition: box-shadow 0.15s;
 }
 .dash-cell.editing { border-style: dashed; cursor: grab; }
-.cell-bar { display: flex; justify-content: space-between; align-items: center; margin: -0.3rem -0.3rem 0.4rem; }
+.dash-cell.editing:hover { box-shadow: 0 0 0 2px var(--accent, #2a78d6); }
+.dash-cell.span-2 { grid-column: span 2; }
+.dash-cell.span-full { grid-column: 1 / -1; }
+.dash-cell.tall { min-height: 480px; }
+
+.cell-bar { display: flex; justify-content: space-between; align-items: center; margin: -0.3rem -0.3rem 0.4rem; gap: 0.3rem; }
 .drag { color: var(--muted, #aaa); cursor: grab; user-select: none; }
+
+.size-btns { display: flex; gap: 2px; margin: 0 auto 0 0.5rem; }
+.size-btns button {
+  border: 1px solid var(--border, #ddd); background: var(--surface-2, #f5f5f5); color: var(--muted, #888);
+  border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; cursor: pointer; line-height: 1.4;
+}
+.size-btns button:hover { background: var(--surface-3, #eee); color: var(--text, #222); }
+.size-btns button.on { background: var(--accent, #2a78d6); border-color: var(--accent, #2a78d6); color: #fff; }
+
 .remove {
   border: 0; background: none; color: var(--muted, #999); font-size: 1.2rem; line-height: 1; cursor: pointer;
 }
 .remove:hover { color: #b3492f; }
 
-@media (max-width: 560px) { .dash-grid { grid-template-columns: 1fr; } }
+@media (max-width: 680px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash-cell.span-2, .dash-cell.span-full { grid-column: 1; }
+}
+@media (min-width: 681px) and (max-width: 960px) {
+  .dash-cell.span-full { grid-column: 1 / -1; }
+}
 </style>
