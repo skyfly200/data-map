@@ -105,8 +105,18 @@ export const ASSETS = {
   SRTM: 'USGS/SRTMGL1_003',
   // Upstream drainage area (band 'upa', km²), the contributing-area term the
   // topographic wetness index needs and that a slope raster cannot supply on
-  // its own.
+  // its own. Also carries 'hnd' (Height Above Nearest Drainage, m) and 'wth'
+  // (river channel width, m), each published as ready-to-use bands.
   MERIT_HYDRO: 'MERIT/Hydro/v1_0_1',
+  // GRIDMET/DROUGHT daily drought indices, ~4 km, CONUS, from 1979. Carries
+  // PDSI, Palmer Z, KBDI, and the SPI/SPEI/EDDI families at multiple time
+  // windows as separate bands.
+  GRIDMET_DROUGHT: 'GRIDMET/DROUGHT',
+  // USGS Watershed Boundary Dataset, HUC02 through HUC12 FeatureCollections.
+  // Asset IDs follow the pattern USGS/WBD_2017/HUC<level>; the watershed-huc
+  // layer constructs the full id from its level parameter rather than listing
+  // six separate constants here.
+  WBD_BASE: 'USGS/WBD_2017',
   // USFS TreeMap: modelled forest structure on the FIA plot grid, 30 m, US
   // forests only. A collection whose 2016 image is the baseline, so it is
   // filtered by date and .first() picked out like the burn products.
@@ -1837,6 +1847,273 @@ export const EE_TILE_LAYERS = {
       return {
         image,
         vis: { min: 0, max: 255, palette: ['#2166ac', '#67a9cf', '#d1e5f0', '#fee090', '#fc8d59', '#d73027'] },
+      }
+    },
+  },
+
+  // ── GRIDMET drought indices ────────────────────────────────────────────────
+  //
+  // GRIDMET/DROUGHT is a daily ~4 km product covering CONUS from 1979. PDSI and
+  // KBDI are free: cheap means of published bands, cached and shared. SPI and
+  // EDDI are members' layers because the band-select on a user-chosen window
+  // forces a distinct render per parameter combination.
+
+  'gridmet-pdsi': {
+    name: 'Palmer Drought Severity Index (PDSI)',
+    group: 'Weather',
+    tier: 'free',
+    attribution: 'GRIDMET / University of Idaho via Google Earth Engine',
+    opacity: 0.75,
+    sourceMasked: true,
+    note: 'Palmer Drought Severity Index from GRIDMET, ~4 km, CONUS, averaged over the chosen '
+      + 'recent days. Negative (brown) is dry; positive (blue) is wet. PDSI integrates both '
+      + 'precipitation and evapotranspiration, so a long hot spell drives it negative even if '
+      + 'rain fell. The normal range is roughly ±4; values beyond are extreme.',
+    params: {
+      days: { type: 'int', label: 'Days to average', default: 30, min: 1, max: 180 },
+    },
+    legend: {
+      type: 'ramp', unit: 'PDSI', min: '−4 (dry)', max: '+4 (wet)',
+      stops: ['#8c510a', '#d8b365', '#f6e8c3', '#f5f5f5', '#c7eae5', '#5ab4ac', '#01665e'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.GRIDMET_DROUGHT)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+    },
+    build(ee, { days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      const image = ee.ImageCollection(ASSETS.GRIDMET_DROUGHT)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .select('pdsi')
+        .mean()
+      return {
+        image,
+        vis: { min: -4, max: 4, palette: ['#8c510a', '#d8b365', '#f6e8c3', '#f5f5f5', '#c7eae5', '#5ab4ac', '#01665e'] },
+      }
+    },
+  },
+
+  'gridmet-kbdi': {
+    name: 'Keetch-Byram Drought Index (KBDI)',
+    group: 'Weather',
+    tier: 'free',
+    attribution: 'GRIDMET / University of Idaho via Google Earth Engine',
+    opacity: 0.75,
+    sourceMasked: true,
+    note: 'Keetch-Byram Drought Index from GRIDMET, ~4 km, CONUS, averaged over the chosen recent '
+      + 'days. KBDI measures soil and duff moisture deficit: 0 is saturated, 800 is extreme drought. '
+      + 'It is primarily a fire-danger index — a high KBDI means fuels are critically dry. '
+      + 'Green is wet; red is dry.',
+    params: {
+      days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 90 },
+    },
+    legend: {
+      type: 'ramp', unit: 'KBDI', min: '0 (wet)', max: '800 (dry)',
+      stops: ['#1a9641', '#a6d96a', '#ffffbf', '#fdae61', '#d7191c'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.GRIDMET_DROUGHT)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+    },
+    build(ee, { days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      const image = ee.ImageCollection(ASSETS.GRIDMET_DROUGHT)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .select('kbdi')
+        .mean()
+      return {
+        image,
+        vis: { min: 0, max: 800, palette: ['#1a9641', '#a6d96a', '#ffffbf', '#fdae61', '#d7191c'] },
+      }
+    },
+  },
+
+  'gridmet-spi': {
+    name: 'Standardized Precipitation Index (SPI)',
+    group: 'Weather',
+    tier: DEFAULT_TIER,
+    attribution: 'GRIDMET / University of Idaho via Google Earth Engine',
+    opacity: 0.75,
+    sourceMasked: true,
+    note: 'Standardized Precipitation Index from GRIDMET, ~4 km, CONUS. SPI expresses cumulative '
+      + 'precipitation as a z-score relative to the long-term average for the chosen time window. '
+      + 'Negative (brown) is below-average; positive (blue) is above-average. Short windows (30 d) '
+      + 'reflect recent rains; longer windows (90 d, 1 yr) capture seasonal drought. '
+      + 'Averaged over the chosen recent days.',
+    params: {
+      window: {
+        type: 'enum', label: 'Time window', default: 'spi30d',
+        values: ['spi1d', 'spi5d', 'spi10d', 'spi30d', 'spi90d', 'spi180d', 'spi270d', 'spi1y', 'spi2y'],
+      },
+      days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 90 },
+    },
+    legend: {
+      type: 'ramp', unit: 'SPI', min: '−3 (dry)', max: '+3 (wet)',
+      stops: ['#8c510a', '#d8b365', '#f6e8c3', '#f5f5f5', '#c7eae5', '#5ab4ac', '#01665e'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.GRIDMET_DROUGHT)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+    },
+    build(ee, { window, days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      const image = ee.ImageCollection(ASSETS.GRIDMET_DROUGHT)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .select(window)
+        .mean()
+      return {
+        image,
+        vis: { min: -3, max: 3, palette: ['#8c510a', '#d8b365', '#f6e8c3', '#f5f5f5', '#c7eae5', '#5ab4ac', '#01665e'] },
+      }
+    },
+  },
+
+  'gridmet-eddi': {
+    name: 'Evaporative Demand Drought Index (EDDI)',
+    group: 'Weather',
+    tier: DEFAULT_TIER,
+    attribution: 'GRIDMET / University of Idaho via Google Earth Engine',
+    opacity: 0.75,
+    sourceMasked: true,
+    note: 'Evaporative Demand Drought Index from GRIDMET, ~4 km, CONUS. EDDI measures how much '
+      + 'the atmosphere is "pulling" for water relative to the historical norm. Positive (red) means '
+      + 'demand exceeds supply — hot, dry, windy conditions that stress vegetation and dry out fuels. '
+      + 'Negative (blue) is suppressed evaporative demand. Averaged over the chosen recent days.',
+    params: {
+      window: {
+        type: 'enum', label: 'Time window', default: 'eddi30d',
+        values: ['eddi1d', 'eddi5d', 'eddi10d', 'eddi30d', 'eddi90d', 'eddi180d', 'eddi270d', 'eddi1y'],
+      },
+      days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 90 },
+    },
+    legend: {
+      type: 'ramp', unit: 'EDDI', min: '−3 (low demand)', max: '+3 (high demand)',
+      stops: ['#2166ac', '#67a9cf', '#d1e5f0', '#f7f7f7', '#fddbc7', '#ef8a62', '#b2182b'],
+    },
+    count: (ee, { days }) => {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      return ee.ImageCollection(ASSETS.GRIDMET_DROUGHT)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
+    },
+    build(ee, { window, days }) {
+      const end = new Date()
+      const start = new Date(end.getTime() - days * 86400000)
+      const image = ee.ImageCollection(ASSETS.GRIDMET_DROUGHT)
+        .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
+        .select(window)
+        .mean()
+      return {
+        image,
+        vis: { min: -3, max: 3, palette: ['#2166ac', '#67a9cf', '#d1e5f0', '#f7f7f7', '#fddbc7', '#ef8a62', '#b2182b'] },
+      }
+    },
+  },
+
+  // ── MERIT Hydro ────────────────────────────────────────────────────────────
+  //
+  // MERIT Hydro is already used internally for the TWI calculation (the 'upa'
+  // band). The two additional bands published alongside it are useful on their
+  // own: HAND tells you how high the ground sits above the nearest stream, which
+  // is the primary predictor of bottomland and floodplain moisture; river width
+  // shows the channel network scaled by stream order, so the difference between
+  // a creek and a river reads immediately. Both are free: one cached render each,
+  // shared by all viewers.
+
+  'merit-hand': {
+    name: 'Height above nearest drainage (HAND)',
+    group: 'Hydrology',
+    tier: 'free',
+    attribution: 'MERIT Hydro v1.0.1 via Google Earth Engine',
+    opacity: 0.75,
+    sourceMasked: true,
+    note: 'How high each pixel sits above the nearest stream or river, from MERIT Hydro at ~90 m, '
+      + 'global. Low values (blue) are valley floors, stream banks and floodplains — the ground that '
+      + 'stays wet longest after rain and where cold air drains at night. High values (brown) drain '
+      + 'fast and heat up. A shape of the terrain relative to water, not a measurement of moisture, '
+      + 'so pair it with the soil moisture or rain layers.',
+    legend: {
+      type: 'ramp', unit: 'm above stream', min: '0', max: '30+',
+      stops: ['#01665e', '#5ab4ac', '#c7eae5', '#f6e8c3', '#d8b365', '#8c510a'],
+    },
+    build(ee) {
+      const image = ee.Image(ASSETS.MERIT_HYDRO).select('hnd')
+      return {
+        image: image.updateMask(image.gte(0)),
+        vis: { min: 0, max: 30, palette: ['#01665e', '#5ab4ac', '#c7eae5', '#f6e8c3', '#d8b365', '#8c510a'] },
+      }
+    },
+  },
+
+  'merit-river-width': {
+    name: 'River channel width',
+    group: 'Hydrology',
+    tier: 'free',
+    attribution: 'MERIT Hydro v1.0.1 via Google Earth Engine',
+    opacity: 0.85,
+    note: 'Modelled river channel width from MERIT Hydro at ~90 m, global. Only river-channel pixels '
+      + 'carry a value; everything else is masked. The colour and apparent weight of a line show how '
+      + 'large the watercourse is — wide rivers are deep blue, small creeks are pale. Useful for '
+      + 'reading drainage structure and finding the larger streams a forager would use as landmarks.',
+    legend: {
+      type: 'ramp', unit: 'm wide', min: '10', max: '500+',
+      stops: ['#c6dbef', '#6baed6', '#2171b5', '#084594'],
+    },
+    build(ee) {
+      const wth = ee.Image(ASSETS.MERIT_HYDRO).select('wth')
+      // wth is 0 on non-river pixels and the channel width elsewhere; masking
+      // the zeros leaves only the river network. The upper end is clipped at 500 m
+      // so the Amazon does not compress everything else into the pale end.
+      return {
+        image: wth.updateMask(wth.gt(0)),
+        vis: { min: 10, max: 500, palette: ['#c6dbef', '#6baed6', '#2171b5', '#084594'] },
+      }
+    },
+  },
+
+  // ── Watershed boundaries (USGS WBD) ───────────────────────────────────────
+  //
+  // The USGS Watershed Boundary Dataset published as six nested FeatureCollections,
+  // HUC02 through HUC12. Rendered as outline overlays from the vector data.
+  // Free: the render is cached at each zoom level and shared by all viewers.
+  // HUC10 and HUC12 produce very dense grids at coarse zoom; the note says so.
+
+  'watershed-huc': {
+    name: 'Watershed boundaries (HUC)',
+    group: 'Hydrology',
+    tier: 'free',
+    attribution: 'USGS Watershed Boundary Dataset 2017 via Google Earth Engine',
+    opacity: 0.8,
+    note: 'USGS Watershed Boundary Dataset boundaries as outlines, US only. HUC2 (18 major regions) '
+      + 'through HUC12 (sub-watersheds, finest). Finer levels are very dense at small scales — '
+      + 'HUC10 and HUC12 are most readable when zoomed in to a county or smaller.',
+    params: {
+      level: {
+        type: 'enum', label: 'HUC level', default: 'HUC04',
+        values: ['HUC02', 'HUC04', 'HUC06', 'HUC08', 'HUC10', 'HUC12'],
+      },
+    },
+    legend: {
+      type: 'classes',
+      items: [{ color: '#4682b4', label: 'Watershed boundary' }],
+    },
+    build(ee, { level }) {
+      const fc = ee.FeatureCollection(`${ASSETS.WBD_BASE}/${level}`)
+      // Paint as 2-pixel outlines; mask the background so the base map shows
+      // through the interior of each watershed.
+      const outline = ee.Image().byte().paint({ featureCollection: fc, color: 1, width: 2 })
+      return {
+        image: outline.updateMask(outline),
+        vis: { min: 0, max: 1, palette: ['#4682b4'] },
       }
     },
   },
