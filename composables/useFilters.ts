@@ -128,10 +128,16 @@ export function matchesFilters(feature: any, f: ObservationFilters): boolean {
     if (haversineKm(f.center, { lat, lng }) > f.radiusKm) return false
   }
   if (f.country || f.state || f.county) {
-    const place = parsePlace(p.location)
-    if (f.country && place.country !== f.country) return false
-    if (f.state && place.state !== f.state) return false
-    if (f.county && place.county !== f.county) return false
+    // Overview features (from the thinned pre-paint file) may lack `location`
+    // until their cell loads and the full record replaces them. Excluding them
+    // outright makes the map look blank the moment any admin-area filter is
+    // applied. Pass them through; the cell's arrival will correct any mismatch.
+    if (p.location) {
+      const place = parsePlace(p.location)
+      if (f.country && place.country !== f.country) return false
+      if (f.state && place.state !== f.state) return false
+      if (f.county && place.county !== f.county) return false
+    }
   }
   const date = p.date
   if (f.year || f.month || f.week || f.dateFrom || f.dateTo) {
