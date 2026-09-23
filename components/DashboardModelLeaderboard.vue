@@ -17,9 +17,9 @@
         <span class="lb-grade" :class="`grade-${(m.grade || 'n').toLowerCase()}`">
           {{ m.grade || '—' }}
         </span>
-        <span class="lb-auc" :title="`AUC ${m.auc?.toFixed(3) ?? '—'}`">
+        <GlossaryTooltip term="AUC" :definition="aucDef" class="lb-auc">
           {{ m.auc != null ? m.auc.toFixed(3) : '—' }}
-        </span>
+        </GlossaryTooltip>
         <NuxtLink :to="`/map?layer=maxent:${m.id}`" class="lb-map-link" title="View on map">↗</NuxtLink>
       </li>
     </ol>
@@ -29,6 +29,11 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useMaxEnt } from '~/composables/useMaxEnt'
+import { useGlossary } from '~/composables/useGlossary'
+import GlossaryTooltip from '~/components/GlossaryTooltip.vue'
+
+const { define: g } = useGlossary()
+const aucDef = g('AUC')
 
 const { models, fetchModels, pending: loading } = useMaxEnt()
 

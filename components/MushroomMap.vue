@@ -324,7 +324,7 @@
       </div>
       <div class="legend-note">
         <template v-if="modelOverlay.cv">
-          <strong>AUC {{ modelOverlay.cv.auc.toFixed(2) }}</strong> ({{ modelOverlay.cv.grade }}) ·
+          <strong><GlossaryTooltip term="AUC" :definition="g('AUC')">AUC {{ modelOverlay.cv.auc.toFixed(2) }}</GlossaryTooltip></strong> ({{ modelOverlay.cv.grade }}) ·
           {{ modelOverlay.cv.folds }}-fold spatial CV, ±{{ modelOverlay.cv.sd.toFixed(2) }}
         </template>
         <template v-else>Not cross-validated — too few observations to score.</template>
@@ -447,6 +447,10 @@ import { coverageNote } from '~/composables/fieldCoverage'
 import { fieldValue } from '~/composables/statistics'
 import { useAppearance } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
+import { useGlossary } from '~/composables/useGlossary'
+import GlossaryTooltip from '~/components/GlossaryTooltip.vue'
+
+const { define: g } = useGlossary()
 
 const {
   data, filteredData, load, loadProgressive, chunks, partial,

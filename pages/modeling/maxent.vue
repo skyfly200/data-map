@@ -1,14 +1,22 @@
 <template>
   <div class="modeling">
+    <MaxEntTutorial ref="tutorialRef" />
+
     <div class="head">
       <div class="title-row">
         <h2>MaxEnt Modeling</h2>
-        <button v-if="selectedModels.length > 0" class="btn small primary" @click="showComparison = true">
-          Compare Selected ({{ selectedModels.length }})
-        </button>
+        <div class="title-actions">
+          <button class="btn small ghost" aria-label="Open tutorial" @click="tutorialRef?.start()">
+            ? Tutorial
+          </button>
+          <button v-if="selectedModels.length > 0" class="btn small primary" @click="showComparison = true">
+            Compare Selected ({{ selectedModels.length }})
+          </button>
+        </div>
       </div>
       <p class="sub">
-        Predict habitat suitability by learning from environmental conditions at sighting locations.
+        Predict <GlossaryTooltip term="habitat suitability" :definition="g('habitat suitability')">habitat suitability</GlossaryTooltip>
+        by learning from environmental conditions at sighting locations.
         A model is not a survey: it says where the environment resembles where the species was found.
       </p>
     </div>
@@ -53,7 +61,10 @@
           </div>
 
           <div class="row">
-            <label>Predictors <span class="field-hint">Select at least {{ MIN_PREDICTORS }}</span></label>
+            <label>
+              <GlossaryTooltip term="predictors" :definition="g('predictors')">Predictors</GlossaryTooltip>
+              <span class="field-hint">Select at least {{ MIN_PREDICTORS }}</span>
+            </label>
             <div class="stages">
               <label v-for="p in predictorList" :key="p.key" class="stage" :title="PREDICTOR_DESCRIPTIONS[p.key]">
                 <input type="checkbox" :value="p.key" v-model="form.predictors" />
@@ -67,7 +78,10 @@
 
           <div class="row two">
             <label class="stack">
-              <span>Background Points <span class="field-hint">{{ MIN_BACKGROUND }}–{{ MAX_BACKGROUND }}</span></span>
+              <span>
+                <GlossaryTooltip term="background points" :definition="g('background points')">Background Points</GlossaryTooltip>
+                <span class="field-hint">{{ MIN_BACKGROUND }}–{{ MAX_BACKGROUND }}</span>
+              </span>
               <input v-model.number="form.backgroundCount" type="number" :min="MIN_BACKGROUND" :max="MAX_BACKGROUND" step="100" />
               <span class="field-note">Random locations sampled to contrast against presences. More = slower but more stable; 1,000 is a reasonable start.</span>
             </label>
@@ -156,7 +170,7 @@
               <p class="model-meta">
                 {{ m.predictors.length }} predictors · {{ m.background_count }} background points
                 <template v-if="m.results">
-                  · <span class="cv-score">{{ m.results[0]?.auc }} AUC</span>
+                  · <span class="cv-score">{{ m.results[0]?.auc }} <GlossaryTooltip term="AUC" :definition="g('AUC')">AUC</GlossaryTooltip></span>
                 </template>
               </p>
               <div class="model-actions">
@@ -176,6 +190,12 @@
 <script setup>
 import { computed, reactive, ref, onMounted } from 'vue'
 import { PREDICTOR_KEYS, MAXENT_PREDICTORS, MIN_PREDICTORS, MAX_BACKGROUND, MIN_BACKGROUND, DEFAULT_PREDICTORS } from '~/netlify/lib/maxent.mjs'
+import { useGlossary } from '~/composables/useGlossary'
+import GlossaryTooltip from '~/components/GlossaryTooltip.vue'
+import MaxEntTutorial from '~/components/MaxEntTutorial.vue'
+
+const { define: g } = useGlossary()
+const tutorialRef = ref(null)
 
 const PREDICTOR_DESCRIPTIONS = {
   elevation: 'Height above sea level (SRTM). Strong driver of temperature, moisture and vegetation zones.',
@@ -269,6 +289,7 @@ onMounted(fetchModels)
 .modeling { padding: 16px 18px; max-width: 1200px; margin: 0 auto; }
 .head { margin-bottom: 24px; }
 .head .title-row { display: flex; justify-content: space-between; align-items: center; }
+.title-actions { display: flex; align-items: center; gap: 8px; }
 .head h2 { margin: 0; }
 .head .sub { color: var(--muted); font-size: 0.86rem; line-height: 1.4; }
 

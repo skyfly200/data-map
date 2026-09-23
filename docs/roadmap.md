@@ -220,9 +220,9 @@ of the app is under.
 
 ### Documentation & Onboarding
 
-- [ ] `V12-DOC-1` **Interactive Tutorial**: Step-by-step walkthrough for first MaxEnt run
+- [x] `V12-DOC-1` **Interactive Tutorial**: Step-by-step walkthrough for first MaxEnt run
 - [ ] `V12-DOC-2` **Video Guides**: Short screencasts for key workflows
-- [ ] `V12-DOC-3` **Glossary Tooltips**: Hover explanations for technical terms (AUC, regularization, etc.)
+- [x] `V12-DOC-3` **Glossary Tooltips**: Hover explanations for technical terms (AUC, regularization, etc.)
 - [ ] `V12-DOC-4` **Example Datasets**: Pre-loaded sample data for practice runs
 
 ---

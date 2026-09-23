@@ -19,7 +19,7 @@
             <thead>
               <tr>
                 <th>Model</th>
-                <th class="num">AUC</th>
+                <th class="num"><GlossaryTooltip term="AUC" :definition="g('AUC')">AUC</GlossaryTooltip></th>
                 <th class="num">SD</th>
                 <th>Grade</th>
                 <th>Predictors</th>
@@ -68,6 +68,10 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useGlossary } from '~/composables/useGlossary'
+import GlossaryTooltip from '~/components/GlossaryTooltip.vue'
+
+const { define: g } = useGlossary()
 
 const props = defineProps({
   selected: { type: Array, required: true },
