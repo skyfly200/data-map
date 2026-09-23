@@ -434,21 +434,17 @@
 
 <script setup>
 // Leaflet CSS is loaded dynamically on mount so it does not bloat non-map routes.
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { hasValue, useObservations } from '~/composables/useObservations'
-import { PALETTE, UNCLUSTERED, categoryColor, colorFor } from '~/composables/useAppearance'
-import { classColorFor, fraction, matchNote, paletteFor } from '~/composables/fieldPalettes'
-import { gradientCss, normaliseStops, rampColor } from '~/composables/ramps'
-import { drawnKeys, effectiveBlend, reorderStack } from '~/composables/blendModes'
+import { gradientCss } from '~/composables/ramps'
 import { normaliseCodes } from '~/netlify/lib/ee-tile-layers.mjs'
-import { RAMP_PRESETS } from '~/composables/useMapHeatmaps'
-import { ALL_CATEGORY, ALL_NUMERIC } from '~/composables/useChartFields'
-import { coverageNote } from '~/composables/fieldCoverage'
 import { fieldValue } from '~/composables/statistics'
 import { useAppearance } from '~/composables/useAppearance'
-import { useUnits } from '~/composables/useUnits'
 import { useGlossary } from '~/composables/useGlossary'
 import GlossaryTooltip from '~/components/GlossaryTooltip.vue'
+import { useMapPointStyle, FIELD_LABEL } from '~/composables/useMapPointStyle'
+import { useMapPin } from '~/composables/useMapPin'
+import { useMapLayerManager } from '~/composables/useMapLayerManager'
 
 const { define: g } = useGlossary()
 
@@ -465,27 +461,19 @@ const live = useLiveClusters()
 // that already filled the width of the screen.
 const { compact } = useCompactMap()
 const appearance = useAppearance()
-// How stacked layers combine when nobody has set a layer by hand. A preference,
-// so it is read from Appearance rather than kept here.
-const { stackBlend } = appearance
-
-/**
- * The ramp the viewer has chosen for numeric point colouring, or null for
- * "whatever suits the field".
- *
- * Null is the default and means the field decides: one a layer also draws
- * borrows that layer's palette, anything else takes the app's own ramp.
- */
-const chosenPointRamp = computed(() => {
-  const key = appearance.pointRampKey.value
-  if (key === 'auto') return null
-  if (key === 'custom') return normaliseStops(appearance.pointRampCustom.value)
-  return RAMP_PRESETS.find((p) => p.key === key)?.ramp || null
-})
 const share = useShareState()
-const { pointRadius, pointOpacity, pointOutline, colorSeed, activeColors, colorOverrides } = appearance
+
+const {
+  colorBy, sizeBy, hoverValue,
+  colorOptions, colorCoverageNote, coloring, legendValues, sizeScale,
+  radiusFor, markerStyle,
+  hoverEnter, hoverLeave, pickValue,
+  pointRadius, pointOpacity, pointOutline, colorSeed, activeColors, colorOverrides,
+} = useMapPointStyle({ filteredData, live })
 
 const mapEl = ref(null)
+const mapRef = shallowRef(null)
+const LRef = shallowRef(null)
 
 // Leaflet parks its own controls in the map's corners, and on a phone the
 // control bar is tall enough (three wrapped rows, more with the season sliders
@@ -510,22 +498,6 @@ function trackControlsHeight() {
 }
 const loaded = ref(false)
 const loadError = ref('')
-// Remember the "Color by" dimension per viewer.
-const COLORBY_KEY = 'map-color-by'
-const colorBy = ref('cluster')
-if (import.meta.client) {
-  const saved = localStorage.getItem(COLORBY_KEY)
-  if (saved) colorBy.value = saved
-}
-watch(colorBy, (v) => { if (import.meta.client) localStorage.setItem(COLORBY_KEY, v) })
-// Remember the "Size by" dimension per viewer.
-const SIZEBY_KEY = 'map-size-by'
-const sizeBy = ref('')
-if (import.meta.client) {
-  const saved = localStorage.getItem(SIZEBY_KEY)
-  if (saved !== null) sizeBy.value = saved
-}
-watch(sizeBy, (v) => { if (import.meta.client) localStorage.setItem(SIZEBY_KEY, v) })
 const selected = ref(null)
 const selectedLatLng = ref(null)
 // The locate button lives in a Leaflet control rather than the Vue template, so
@@ -537,6 +509,7 @@ const locateError = ref('')
 watch(locating, (v) => { if (locateBtn) locateBtn.classList.toggle('busy', v) })
 watch(locateError, (msg) => { if (locateBtn && msg) locateBtn.title = msg })
 let map, geoLayer, L, userLayer, selectedMarker
+// mapRef and LRef are set in onMounted so composables can reactively access them
 
 // Holds enriched observation info (photos, description, etc.) fetched from iNaturalist API
 
@@ -699,233 +672,11 @@ onMounted(() => {
 // controls now that they live inside it.
 const heatmapPop = ref(null)
 
-// The legend value under the cursor. Everything not matching it is faded on the
-// map, so a row in the key and the marks it stands for can be seen together.
-const hoverValue = ref(null)
-
-// Hover is a mouse idea, and highlighting a legend row has to work without one.
-//
-// A touch screen synthesises a mouseenter on tap but never a matching
-// mouseleave, so a tapped row isolated a category and left the reader with a
-// faded map and no way to clear it. Adding a click handler on top made it
-// worse: the synthesised enter set the value and the click immediately toggled
-// it back off, so tapping did nothing at all.
-//
-// Pointer events carry the device that raised them, so each gets what suits it
-// — transient hover on a mouse, a sticky toggle on a finger.
-function hoverEnter(label, e) { if (e.pointerType === 'mouse') hoverValue.value = label }
-function hoverLeave(e) { if (!e || e.pointerType === 'mouse') hoverValue.value = null }
-function pickValue(label, e) {
-  if (e && e.pointerType === 'mouse') return
-  hoverValue.value = hoverValue.value === label ? null : label
-}
 const tileErrors = ref([])
 // The caveat belonging to whichever reference layers are switched on.
 const activeTileNotes = ref([])
 // The built tile layers, so the opacity slider can reach them after setup.
 const tileLayers = []
-
-// The fallback ramp, for a numeric field no layer draws — elevation, day of
-// year, rainfall. Anything a layer DOES draw borrows that layer's palette
-// instead; see composables/fieldPalettes.js.
-const RAMP = ['#e8f1fb', '#0b3d91']
-
-// Field labels + which keys are categorical, drawn from the shared chart
-// registry so the map and the Explore builder stay in sync.
-const CATEGORY_KEYS = new Set(ALL_CATEGORY.map((f) => f.key))
-const FIELD_LABEL = Object.fromEntries([...ALL_CATEGORY, ...ALL_NUMERIC].map((f) => [f.key, f.label]))
-
-// Offer only the dimensions that actually carry data in the current dataset,
-// so an un-enriched layer (e.g. NDVI still empty) doesn't yield an all-gray map.
-const colorOptions = computed(() => {
-  const feats = filteredData.value?.features || []
-  const present = (list) => list.filter((f) => (
-    f.key === 'live_cluster' ? live.active.value : feats.some((ft) => hasValue(ft.properties[f.key]))
-  ))
-  return { category: present(ALL_CATEGORY), numeric: present(ALL_NUMERIC) }
-})
-
-// When the points are coloured by a taxonomic rank that most records lack, the
-// map is showing a slice — say so, rather than let a key of five families read
-// as the whole dataset.
-const colorCoverageNote = computed(() => coverageNote(filteredData.value?.features || [], colorBy.value))
-
-// If a dataset switch drops the active dimension's data, fall back to the first
-// option still available (cluster, in practice).
-watch(colorOptions, (opts) => {
-  const keys = [...opts.category, ...opts.numeric].map((o) => o.key)
-  if (keys.length && !keys.includes(colorBy.value)) colorBy.value = keys[0]
-  // Drop a size field that the new dataset doesn't carry.
-  if (sizeBy.value && !opts.numeric.some((o) => o.key === sizeBy.value)) sizeBy.value = ''
-})
-
-function fmtNum(v) { return Math.abs(v) >= 100 ? Math.round(v).toLocaleString() : Number(v).toFixed(2) }
-
-
-// Build the color function + legend for the current "color by" dimension.
-const coloring = computed(() => {
-  const feats = filteredData.value?.features || []
-  const key = colorBy.value
-  const title = FIELD_LABEL[key] || key
-
-  // Live (in-browser) clusters: values come from the reactive assignment map,
-  // not a property. Same stable palette as the pipeline clusters.
-  if (key === 'live_cluster') {
-    const seen = new Set()
-    let hasNull = false
-    for (const f of feats) {
-      const lab = live.labelFor(f.properties)
-      if (hasValue(lab)) seen.add(lab); else hasNull = true
-    }
-    const legend = [...seen].sort().map((lab) => ({ label: lab, color: categoryColor('live_cluster', lab) }))
-    if (hasNull) legend.push({ label: 'Unclustered', color: UNCLUSTERED })
-    return {
-      type: 'categorical', title, legend,
-      colorFn: (p) => categoryColor('live_cluster', live.labelFor(p)),
-      // The legend label this mark would carry, for hover highlighting.
-      labelOf: (p) => (hasValue(live.labelFor(p)) ? live.labelFor(p) : 'Unclustered'),
-    }
-  }
-
-  // Cluster keeps its own stable palette + an explicit "Unclustered" bucket.
-  if (key === 'cluster') {
-    const seen = new Set()
-    let hasNull = false
-    for (const f of feats) {
-      const c = f.properties.cluster
-      if (hasValue(c)) seen.add(c); else hasNull = true
-    }
-    const legend = [...seen].sort((a, b) => a - b).map((c) => ({ label: `Cluster ${c}`, color: colorFor(c) }))
-    if (hasNull) legend.push({ label: 'Unclustered', color: UNCLUSTERED })
-    return {
-      type: 'categorical', title, legend,
-      colorFn: (p) => colorFor(p.cluster),
-      labelOf: (p) => (hasValue(p.cluster) ? `Cluster ${p.cluster}` : 'Unclustered'),
-    }
-  }
-
-  // Any other categorical dimension (land cover, species, …): assign palette
-  // colors to the distinct values present, most frequent first. The legend is
-  // capped (a dataset can have hundreds of species) with a "+N more" row.
-  if (CATEGORY_KEYS.has(key)) {
-    const counts = new Map()
-    for (const f of feats) {
-      const v = f.properties[key]
-      if (hasValue(v)) counts.set(v, (counts.get(v) || 0) + 1)
-    }
-    const cats = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
-    const LEGEND_CAP = 12
-    // Where a layer draws the same classes, take its colours: a land cover dot
-    // should be the colour of the land cover under it, not a hash of its name.
-    // Anything the layer has no class for still falls back to the stable
-    // palette, so an unexpected value is coloured rather than dropped.
-    const palette = paletteFor(key)
-    const classes = palette?.kind === 'classes' ? palette.items : null
-    const colorOf = (v) => (classes && classColorFor(classes, v)) || categoryColor(key, v)
-
-    const legend = cats.slice(0, LEGEND_CAP).map((v) => ({ label: String(v), color: colorOf(v) }))
-    if (cats.length > LEGEND_CAP) legend.push({ label: `+${cats.length - LEGEND_CAP} more`, color: UNCLUSTERED })
-    return {
-      type: 'categorical', title, legend,
-      match: palette ? matchNote(palette) : '',
-      colorFn: (p) => (hasValue(p[key]) ? colorOf(p[key]) : UNCLUSTERED),
-      labelOf: (p) => (hasValue(p[key]) ? String(p[key]) : null),
-    }
-  }
-
-  // Numeric (sequential). Elevation and temperature follow the ft/m and °F/°C
-  // settings, so the gradient scale matches the units shown elsewhere.
-  const meta = ALL_NUMERIC.find((f) => f.key === key) || {}
-  const conv = meta.unit === 'elev' ? elevValue : meta.unit === 'temp' ? tempValue : (v) => Number(v)
-  const unitSuffix = meta.unit === 'elev' ? ` (${unit.value})` : meta.unit === 'temp' ? ` (°${tempUnit.value})` : ''
-  const vals = feats.map((f) => f.properties[key]).filter(hasValue).map((v) => conv(Number(v)))
-  const dataMin = vals.length ? Math.min(...vals) : 0
-  const dataMax = vals.length ? Math.max(...vals) : 1
-
-  // Where a layer draws the same quantity, borrow its ramp — and its stretch
-  // too when the two sides measure in the same units, so a dot over a pixel is
-  // the same colour for the same value. Where the pipeline normalises and the
-  // layer does not, the palette still matches but the scale is the data's own;
-  // `match` says which of the two the viewer is looking at.
-  const palette = paletteFor(key)
-  // A ramp the viewer chose outranks the layer match. Choosing a scale is a
-  // decision about every field at once, and having it silently not apply to the
-  // handful of fields a layer also draws would read as the control being broken.
-  const chosen = chosenPointRamp.value
-  const stops = chosen || (palette?.kind === 'ramp' ? palette.stops : RAMP)
-  // The layer's stretch only applies while its palette does.
-  const [min, max] = (!chosen && palette?.domain) || [dataMin, dataMax]
-
-  return {
-    type: 'sequential', title: title + unitSuffix, min, max, stops,
-    match: !chosen && palette ? matchNote(palette) : '',
-    colorFn: (p) => {
-      const raw = p[key]
-      if (!hasValue(raw)) return UNCLUSTERED
-      return rampColor(stops, fraction(conv(Number(raw)), [min, max]))
-    },
-  }
-})
-
-// The RAW category values on screen, most common first — what the appearance
-// panel keys its per-value overrides on. Deliberately not taken from the legend,
-// whose labels are display text ("Cluster 3") rather than the value itself.
-const legendValues = computed(() => {
-  if (coloring.value?.type !== 'categorical') return []
-  const key = colorBy.value
-  const counts = new Map()
-  for (const f of filteredData.value?.features || []) {
-    const v = key === 'live_cluster' ? live.labelFor(f.properties) : f.properties[key]
-    if (hasValue(v)) counts.set(v, (counts.get(v) || 0) + 1)
-  }
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
-})
-
-// Size points by a numeric field (radius), or a uniform size when "none".
-const sizeScale = computed(() => {
-  if (!sizeBy.value) return null
-  const feats = filteredData.value?.features || []
-  const vals = feats.map((f) => f.properties[sizeBy.value]).filter(hasValue).map(Number)
-  if (!vals.length) return null
-  return { lo: Math.min(...vals), hi: Math.max(...vals) }
-})
-function radiusFor(props) {
-  // The configured point size sets the baseline; a "Size by" field then scales
-  // marks around it, so both controls compose instead of fighting.
-  const base = pointRadius.value
-  const s = sizeScale.value
-  if (!s) return base * 1.5
-  const v = props[sizeBy.value]
-  if (!hasValue(v)) return base * 0.75
-  return base + base * 2.25 * ((Number(v) - s.lo) / ((s.hi - s.lo) || 1))
-}
-
-/**
- * How one observation is drawn. Every place that styles a marker goes through
- * here, so creation and re-styling cannot disagree.
- *
- * The outline follows the opacity slider rather than staying at full strength:
- * fading the dots while their rings stayed solid turned a dense area into a gray
- * mesh — the opposite of what turning the dots down is for.
- */
-function markerStyle(props) {
-  // While a legend row is hovered, everything it does not stand for fades back
-  // rather than disappearing — the surrounding marks are the context that makes
-  // the highlighted ones mean something.
-  const c = coloring.value
-  const faded = hoverValue.value !== null && typeof c.labelOf === 'function'
-    && c.labelOf(props) !== hoverValue.value
-  const fill = faded ? pointOpacity.value * 0.12 : pointOpacity.value
-  return {
-    radius: radiusFor(props),
-    fillColor: c.colorFn(props),
-    fillOpacity: fill,
-    stroke: pointOutline.value && !faded,
-    weight: pointOutline.value && !faded ? 1 : 0,
-    color: '#222',
-    opacity: pointOutline.value && !faded ? fill : 0,
-  }
-}
 
 // Coloring, sizing, palette, per-value overrides and point styling all restyle
 // the existing layer in place — no need to rebuild it, which would refit the
