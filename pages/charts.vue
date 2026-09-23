@@ -218,7 +218,8 @@
 </template>
 
 <script setup>
-import { PALETTE, UNCLUSTERED, categoryColor, colorFor, hasValue, useObservations } from '~/composables/useObservations'
+import { hasValue, useObservations } from '~/composables/useObservations'
+import { PALETTE, UNCLUSTERED, categoryColor, colorFor } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
 import { useSavedCharts } from '~/composables/useSavedCharts'
 import { describeChart, encodeChartConfig } from '~/composables/chartConfig'

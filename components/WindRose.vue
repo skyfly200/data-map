@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { SERIES_1 } from '~/composables/useObservations'
+import { SERIES_1 } from '~/composables/useAppearance'
 
 const props = defineProps({
   title: { type: String, default: '' },

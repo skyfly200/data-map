@@ -26,10 +26,6 @@
 import { EE_TILE_LAYERS } from '../netlify/lib/ee-tile-layers.mjs'
 import { mix, rampColor } from './ramps.js'
 
-// Re-exported so a caller that colours by field does not have to know which
-// module the interpolation lives in.
-export { mix, rampColor }
-
 /**
  * Observation field → the layer that draws the same thing.
  *
