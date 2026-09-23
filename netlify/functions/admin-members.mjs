@@ -169,7 +169,7 @@ export default async function handler(request) {
       const patch = cleanLimits(body)
 
       if (body.tier !== undefined) {
-        if (!TIERS.includes(body.tier)) throw new Error(`Unknown tier “${body.tier}”.`)
+        if (!TIERS.includes(body.tier)) throw new Error(`Unknown tier "${body.tier}".`)
         // An admin removing their own admin tier locks FRMS out of this
         // screen entirely, and the only way back is the SQL editor.
         if (body.user_id === auth.user?.id && body.tier !== 'admin') {
@@ -244,7 +244,7 @@ export default async function handler(request) {
         // A duplicate slug is the common mistake and its raw message is
         // Postgres talking about a unique constraint.
         throw new Error(/duplicate key|unique/i.test(error.message)
-          ? `A layer with the short name “${layer.slug}” already exists.`
+          ? `A layer with the short name "${layer.slug}" already exists.`
           : error.message)
       }
       return json({ ok: true, layer: data })
@@ -257,7 +257,7 @@ export default async function handler(request) {
       return json({ ok: true, deleted: body.id })
     }
 
-    throw new Error(`Unknown action “${body.action}”.`)
+    throw new Error(`Unknown action "${body.action}".`)
   } catch (err) {
     // A CustomLayerError is the administrator's form being wrong and its
     // message is written for them.

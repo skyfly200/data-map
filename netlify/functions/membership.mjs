@@ -230,7 +230,7 @@ export default async function handler(request) {
       default:
         return json({
           ok: false,
-          error: `Unknown action “${body.action ?? ''}”.`,
+          error: `Unknown action "${body.action ?? ''}".`,
           actions: ['grant', 'revoke', 'lookup'],
         }, 400)
     }

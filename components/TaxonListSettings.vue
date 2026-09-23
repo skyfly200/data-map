@@ -53,7 +53,7 @@
       <summary>For the pipeline</summary>
       <p class="tx-note">
         The browser fetches one taxon at a time. To collect this list properly,
-        put the line below in the pipeline’s <code>.env</code> and run it.
+        put the line below in the pipeline's <code>.env</code> and run it.
       </p>
       <div class="tx-env-row">
         <code>{{ envLine }}</code>
@@ -93,7 +93,7 @@ function add() {
   if (!isTaxonName(name)) {
     // Said rather than swallowed. A name silently refused looks like a broken
     // button, and the usual cause is a stray character nobody can see.
-    addError.value = `“${name}” does not look like a taxon name. Letters, spaces and hyphens only.`
+    addError.value = `"${name}" does not look like a taxon name. Letters, spaces and hyphens only.`
     return
   }
   if (!addTaxon(name)) {

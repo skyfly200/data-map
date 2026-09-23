@@ -257,7 +257,9 @@ async function runTerrain(points, columns, tick, skipped) {
 }
 
 async function runLandcover(points, columns, tick, skipped) {
-  const image = ee.Image(WORLDCOVER).select('Map').rename('land_cover')
+  // WorldCover v200 is an ImageCollection, not a single Image; mosaic() collapses
+  // it to one continuous image the same way the tile layer does.
+  const image = ee.ImageCollection(WORLDCOVER).mosaic().select('Map').rename('land_cover')
   const groups = chunk(points)
   for (let g = 0; g < groups.length; g += 1) {
     const rows = await sampleChunk(image, groups[g], STAGES.landcover.scale, ee.Reducer.mode(), skipped)
@@ -487,7 +489,7 @@ async function runFire(points, columns, tick, skipped) {
 async function runForest(points, columns, tick, skipped) {
   const gap = ee.Image(GAP_LANDCOVER).select('landcover')
     .remap(GAP_REMAP.from, GAP_REMAP.to, 0).rename('forest')
-  const canopy = treeMap('CANOPY_PCT').rename('canopy')
+  const canopy = treeMap('CANOPYPCT').rename('canopy')
   const height = treeMap('STANDHT').rename('height')
   const image = ee.Image.cat([gap, canopy, height])
 

@@ -22,7 +22,9 @@
       <button title="Move later" :disabled="isLast" @click="layout.move(id, 1)">›</button>
       <button title="Hide this chart" class="hide" @click="layout.hide(id)">✕</button>
     </div>
-    <slot />
+    <LazyVisible min-height="260px">
+      <slot />
+    </LazyVisible>
   </ChartCard>
 </template>
 

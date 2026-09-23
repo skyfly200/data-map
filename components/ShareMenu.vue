@@ -1,8 +1,8 @@
 <template>
   <div class="share">
     <button class="sh-btn" :class="{ on: open, compact, 'icon-only': iconOnly }"
-            :title="compact ? `Share “${title}”` : 'Share this view'"
-            :aria-label="compact || iconOnly ? `Share “${title}”` : null" @click="toggle">
+            :title="compact ? `Share '${title}'` : 'Share this view'"
+            :aria-label="compact || iconOnly ? `Share '${title}'` : null" @click="toggle">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
         <path fill="currentColor" d="M18 16.1a3 3 0 0 0-2 .8l-7.1-4.2a3 3 0 0 0 0-1.4L16 7.1a3 3 0 1 0-1-2.1l-7.1 4.2a3 3 0 1 0 0 5.6L15 19a3 3 0 1 0 3-2.9z" />
       </svg>

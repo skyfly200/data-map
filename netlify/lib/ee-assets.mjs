@@ -59,9 +59,10 @@ export async function loadEeAsset(assetPath) {
         throw new Error(`The asset ${normalizedPath} is an empty collection.`)
       }
 
-      // Use getRegion to fetch as a list of features
-      const region = await fc.toList(fc.size()).getRegion()
-      geojson = ee.Geometry(region).toGeoJSON()
+      // getInfo() on a FeatureCollection returns a GeoJSON FeatureCollection
+      // directly. The previous fc.toList().getRegion() was wrong: getRegion() is
+      // an ee.Image method and throws on an EE List.
+      geojson = await fc.getInfo()
     } else if (assetInfo.type === 'IMAGE') {
       // For images, we can't directly convert to points
       // Return a placeholder with metadata

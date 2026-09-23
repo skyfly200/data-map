@@ -37,14 +37,14 @@
                               :style="run.running ? { width: `${Math.round((run.done / run.total) * 100)}%` } : null"></span></div>
       <span class="ptext">
         <template v-if="run.running">
-          {{ run.done }} of {{ run.total }} — fetching “{{ fetchingName }}”…
+          {{ run.done }} of {{ run.total }} — fetching "{{ fetchingName }}"…
           {{ run.loaded.toLocaleString() }} so far, {{ elapsed }}s
           <button class="linkish" @click="run.stop = true">
             {{ run.stop ? 'Stopping after this one…' : 'Stop' }}
           </button>
         </template>
         <template v-else>
-          Fetching &amp; clustering “{{ fetchingName }}”… {{ elapsed }}s
+          Fetching &amp; clustering "{{ fetchingName }}"… {{ elapsed }}s
           <em>(a genus or family can take a minute or more)</em>
         </template>
       </span>
@@ -135,19 +135,19 @@ async function fetchOne(q) {
   try {
     res = await fetch(`/.netlify/functions/fetch-species?${scope.toString()}`, { headers })
   } catch {
-    throw new Error('couldn’t reach the fetch function, it only runs on the deployed site.')
+    throw new Error("couldn't reach the fetch function, it only runs on the deployed site.")
   }
 
   if (res.status === 401) {
     let detail = ''
     try { detail = (await res.json())?.error || '' } catch { /* ignore */ }
     if (!token) {
-      throw new Error('the server requires sign-in, but the app couldn’t read your session. '
+      throw new Error("the server requires sign-in, but the app couldn't read your session. "
         + 'Make sure NUXT_PUBLIC_SUPABASE_URL and NUXT_PUBLIC_SUPABASE_ANON_KEY are set (and redeploy), then sign in again.')
     }
-    throw new Error('you’re signed in, but the server rejected the session. '
-      + 'This usually means the function’s SUPABASE_URL / SUPABASE_ANON_KEY point at a different project (or wrong key) '
-      + 'than the app’s NUXT_PUBLIC_SUPABASE_*, line those up and redeploy. '
+    throw new Error("you're signed in, but the server rejected the session. "
+      + "This usually means the function's SUPABASE_URL / SUPABASE_ANON_KEY point at a different project (or wrong key) "
+      + "than the app's NUXT_PUBLIC_SUPABASE_*, line those up and redeploy. "
       + (detail ? `(server: ${detail})` : ''))
   }
   if (!res.ok) throw new Error(`server returned ${res.status}.`)
@@ -216,7 +216,7 @@ async function fetchNew() {
     const data = await fetchOne(q)
     if (!data.count) {
       fetchOk.value = false
-      fetchMsg.value = `No research-grade observations found for “${q}”.`
+      fetchMsg.value = `No research-grade observations found for "${q}".`
       return
     }
     fetchOk.value = true
@@ -225,7 +225,7 @@ async function fetchNew() {
     newSpecies.value = ''
   } catch (e) {
     fetchOk.value = false
-    fetchMsg.value = `Couldn’t fetch, ${e.message}`
+    fetchMsg.value = `Couldn't fetch, ${e.message}`
   } finally {
     stopTimer()
     fetching.value = false

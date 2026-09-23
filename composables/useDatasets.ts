@@ -141,9 +141,38 @@ export function useDatasets() {
     return data.dataset
   }
 
+  const activeDataset = useState<Dataset | null>('active-dataset', () => null)
+  const activeGeojson = useState<any | null>('active-geojson', () => null)
+
+  async function activate(slug: string): Promise<Dataset | null> {
+    let ds = datasets.value.find((d) => d.slug === slug)
+      || available.value.find((d) => d.slug === slug)
+    if (!ds) {
+      await refresh()
+      ds = datasets.value.find((d) => d.slug === slug)
+    }
+    if (!ds) return null
+    if (activeDataset.value?.slug !== slug) {
+      activeDataset.value = ds
+      activeGeojson.value = null
+    }
+    return ds
+  }
+
+  async function loadActiveGeojson(): Promise<any | null> {
+    const ds = activeDataset.value
+    if (!ds) return null
+    if (activeGeojson.value) return activeGeojson.value
+    const geojson = await fetchGeojson(ds.slug)
+    activeGeojson.value = geojson
+    return geojson
+  }
+
   return {
     datasets, available, loading, error,
+    activeDataset, activeGeojson,
     visibilities: MEMBER_VISIBILITIES,
     refresh, refreshAvailable, saveJob, update, remove, fetchGeojson, importAsset,
+    activate, loadActiveGeojson,
   }
 }

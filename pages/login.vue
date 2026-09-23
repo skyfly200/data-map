@@ -13,7 +13,7 @@
       <p v-if="urlError" class="notice err-notice">{{ urlError }}</p>
 
       <p v-if="!configured" class="notice">
-        Auth isn’t configured for this deployment. Set <code>NUXT_PUBLIC_SUPABASE_URL</code> and
+        Auth isn't configured for this deployment. Set <code>NUXT_PUBLIC_SUPABASE_URL</code> and
         <code>NUXT_PUBLIC_SUPABASE_ANON_KEY</code> to enable sign-in. Fetching runs unauthenticated until then.
       </p>
 
@@ -168,7 +168,7 @@ async function addPasskey() {
   try {
     await registerPasskey()
     ok.value = true
-    msg.value = 'Passkey added, use “Sign in with a passkey” next time.'
+    msg.value = 'Passkey added, use "Sign in with a passkey" next time.'
   } catch (e) {
     ok.value = false
     msg.value = e.message || String(e)

@@ -287,6 +287,10 @@
                           :disabled="opening === job.id" @click="openOnMap(job)">
                     {{ opening === job.id ? 'Loading…' : 'Open on map' }}
                   </button>
+                  <button class="btn small"
+                          :disabled="opening === job.id" @click="openOnCharts(job)">
+                    Open on charts
+                  </button>
                   <button v-if="!savedFrom(job)" class="btn small" @click="startSave(job)">
                     Save as dataset
                   </button>
@@ -365,6 +369,7 @@
                   </option>
                 </select>
                 <button class="btn small" @click="useAsSource(d)">Run a job on it</button>
+                <button class="btn small" @click="openDatasetOnCharts(d)">Open on charts</button>
                 <!-- Read through the datasets function rather than from
                      storage, so a dataset shared with this member exports the
                      same way one of their own does. -->
@@ -404,7 +409,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, onMounted } from 'vue'
+import { computed, reactive, ref, watch, onMounted } from 'vue'
 import { STAGES, DEFAULT_STAGES } from '~/netlify/lib/ee-pipeline.mjs'
 import {
   MAXENT_PREDICTORS, PREDICTOR_KEYS, DEFAULT_PREDICTORS, MIN_PREDICTORS,
@@ -495,7 +500,7 @@ const taxonUnknown = computed(() => Boolean(form.taxon.trim()) && !taxonCount.va
 const taxonNote = computed(() => {
   if (!form.taxon.trim()) return ''
   if (taxonUnknown.value) {
-    return `Nothing in the loaded dataset matches “${form.taxon.trim()}”, so this job would `
+    return `Nothing in the loaded dataset matches "${form.taxon.trim()}", so this job would `
       + 'select no observations. Pick a name from the list, or clear it to enrich the whole area.'
   }
   return `${taxonCount.value.toLocaleString()} observations in the dataset carry that name, `
@@ -779,7 +784,7 @@ async function setVisibility(dataset, visibility) {
 }
 
 async function removeDataset(dataset) {
-  if (!confirm(`Delete “${dataset.title}”? The job result itself is kept.`)) return
+  if (!confirm(`Delete "${dataset.title}"? The job result itself is kept.`)) return
   try {
     await datasetsApi.remove(dataset.id)
     await datasetsApi.refreshAvailable()
@@ -794,6 +799,53 @@ function useAsSource(dataset) {
   form.sourceType = 'dataset'
   form.datasetSlug = dataset.slug
   if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// When a named enrich job transitions to succeeded, save it as a Dataset
+// automatically — the member named it at submission, so no extra step needed.
+watch(jobsApi.jobs, (curr, prev) => {
+  for (const job of curr) {
+    if (job.status !== 'succeeded' || isModel(job) || !job.title?.trim()) continue
+    if (savedFrom(job)) continue
+    const was = prev?.find((j) => j.id === job.id)
+    if (was && was.status !== 'succeeded') {
+      datasetsApi.saveJob(job, { title: job.title.trim() }).catch(() => {})
+    }
+  }
+})
+
+async function openOnCharts(job) {
+  opening.value = job.id
+  submitError.value = ''
+  try {
+    const geojson = await jobsApi.fetchResult(job)
+    const count = geojson?.features?.length || 0
+    addInlineDataset({
+      id: `job-${job.id}`,
+      label: `${job.title || 'Pipeline job'} (${count})`,
+      path: `mem:job-${job.id}`,
+    }, geojson)
+    router.push('/charts')
+  } catch (e) {
+    submitError.value = e.message
+  } finally {
+    opening.value = ''
+  }
+}
+
+async function openDatasetOnCharts(dataset) {
+  try {
+    const geojson = await datasetsApi.fetchGeojson(dataset.slug)
+    const count = geojson?.features?.length || 0
+    addInlineDataset({
+      id: `dataset-${dataset.id}`,
+      label: `${dataset.title} (${count})`,
+      path: `mem:dataset-${dataset.id}`,
+    }, geojson)
+    router.push(`/charts?dataset=${encodeURIComponent(dataset.slug)}`)
+  } catch (e) {
+    datasetsApi.error.value = e.message
+  }
 }
 
 onMounted(() => {
