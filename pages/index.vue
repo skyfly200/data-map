@@ -17,11 +17,11 @@
       <div class="parallax layer-back">
         <AppLogo class="hero-logo" :size="132" />
       </div>
-      <p class="eyebrow"><span class="tick" aria-hidden="true"></span>Ecosystem modeling platform · Beta</p>
-      <h1>Find where species thrive.</h1>
+      <p class="eyebrow"><span class="tick" aria-hidden="true"></span>Species distribution · Beta</p>
+      <h1>Map where species occur.</h1>
       <h3>
-        Turn your observations into habitat maps. Nexstrata connects your data to environmental
-        factors like terrain, climate, and vegetation—then predicts where else species might live.
+        Bind your observations to terrain, climate, and vegetation data, then model where else a
+        species is likely to be found.
       </h3>
 
       <div class="cta">
@@ -66,8 +66,8 @@
             <span class="etym-def">the binding of the layers at a point.</span>
           </p>
           <p>
-            Every record is one coordinate and one date. Each layer is sampled right there,
-            right then, not from a regional mean or today's ground, so a 2019 find carries
+            Every record is one coordinate and one date. Each layer is sampled at that point
+            and that moment, not from a regional mean, so a historical find carries
             the conditions that preceded it.
           </p>
           <p class="more-links">
@@ -201,16 +201,15 @@
       <div class="sec-tag">Modeling <em class="road">Roadmap</em></div>
       <h2>From points to surfaces</h2>
       <p class="model-lede">
-        Turn your observations into predictions. The model finds patterns in your data and
-        creates a complete map showing where species are likely to live—even where nobody has looked.
+        Train a model on your enriched observations and get a suitability map across the
+        whole landscape—including places with no recorded finds.
       </p>
       <div class="model-grid">
         <div class="model-card">
           <h3>Maximum entropy (MaxEnt)</h3>
           <p>
-            Works with presence-only data: where species were found, not where they weren't.
-            MaxEnt learns from environmental conditions at sighting locations to predict habitat
-            suitability everywhere, scored from 0 to 1.
+            Works with presence-only data. MaxEnt learns the environmental conditions at known
+            locations and scores habitat suitability from 0 to 1 across the map.
           </p>
         </div>
         <div class="model-card">
@@ -223,8 +222,8 @@
         <div class="model-card">
           <h3>Honest about bias</h3>
           <p>
-            Accounts for where people look. Nexstrata weights background data by observer
-            effort and clearly labels uncertainties in every prediction.
+            Weights background data by observer effort and labels uncertainties
+            at the point of use, not buried in documentation.
           </p>
         </div>
       </div>
@@ -292,18 +291,16 @@
     <section class="caveat">
       <div class="sec-tag">Known limitations</div>
       <p>
-        The reference dataset is <strong>presence-only, opportunistically collected</strong>.
-        Record density tracks observer effort and site access as much as it tracks
-        occurrence, and absence of records is not evidence of absence. Enrichment adds
-        environmental context to each record; it does not correct the sampling bias in which
-        records exist, and neither does a model trained on them without care.
+        The reference dataset is <strong>presence-only and opportunistically collected</strong>.
+        Record density reflects observer effort and site access as much as actual occurrence.
+        Absence of records is not evidence of absence.
       </p>
       <p>
-        Each view therefore states its own confounds at the point of use rather than in
-        documentation. The seasonal heatmaps normalise within each cell, which cancels most of
-        the effort bias; the density heatmaps cannot, and say so.
+        Enrichment adds environmental context to each record; it does not correct for sampling
+        bias. The seasonal heatmaps normalise within each cell, which reduces most effort bias;
+        the density heatmaps cannot, and say so.
         <NuxtLink to="/guide/reference">Every control has a reference entry</NuxtLink>
-        covering its behaviour and its failure modes.
+        covering its behaviour and limitations.
       </p>
     </section>
 
@@ -315,7 +312,7 @@
             <button class="btn small ghost" @click="signOut">Sign out</button>
           </template>
           <template v-else>
-            <span class="hint">Read access is unauthenticated. Use the account menu above to sign in and persist saved views or submit jobs.</span>
+            <span class="hint">Map, table, and charts are open to everyone. Sign in to save views and submit jobs.</span>
           </template>
         </div>
       </ClientOnly>
@@ -357,10 +354,10 @@ const eeLayerCount = EE_LAYER_KEYS.length
 // real place in the app except the model stage, which the section below marks as
 // roadmap rather than claiming it ships today.
 const PIPELINE = [
-  { k: '01', title: 'Observe', body: 'Your species sightings from iNaturalist or uploads.' },
-  { k: '02', title: 'Enrich', body: 'Add environmental data like terrain, weather, and soil to each point.' },
-  { k: '03', title: 'Model', body: 'Find patterns in where species occur based on their environment.' },
-  { k: '04', title: 'Predict', body: 'See likely habitat across the entire map.' },
+  { k: '01', title: 'Observe', body: 'Species records from iNaturalist, GBIF, or your own uploads.' },
+  { k: '02', title: 'Enrich', body: 'Add terrain, weather, soil, and canopy data to each point.' },
+  { k: '03', title: 'Model', body: 'Learn which environmental conditions predict occurrence.' },
+  { k: '04', title: 'Predict', body: 'Score habitat suitability across the full map extent.' },
 ]
 
 // The layers named, coarse to fine, each with a CSS gradient that echoes how the
@@ -539,12 +536,11 @@ onBeforeUnmount(() => {
 })
 
 useHead({
-  title: 'Nexstrata · Ecosystem modeling on Google Earth Engine',
+  title: 'Nexstrata · Species distribution on Google Earth Engine',
   meta: [{
     name: 'description',
-    content: 'An ecosystem-modeling platform: bind Earth Engine environmental layers to point '
-      + 'observations, then model habitat suitability across the landscape. Reference dataset: '
-      + 'iNaturalist fungal observations enriched at each coordinate and date.',
+    content: 'Bind Earth Engine environmental layers to species observations, then model '
+      + 'habitat suitability across the landscape. Works with any presence-point data.',
   }],
 })
 </script>

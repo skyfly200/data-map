@@ -3,7 +3,7 @@
     <div class="card">
       <AppLogo class="card-logo" :size="76" wordmark />
       <h2>Sign in</h2>
-      <p class="sub">A quick sign-in keeps the live data-fetching endpoints from being abused. Browsing the map, table, and charts stays open to everyone.</p>
+      <p class="sub">Map, table, and charts are open to everyone. Sign in to save views and submit enrichment jobs.</p>
 
       <ClientOnly>
         <template #fallback>
