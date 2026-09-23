@@ -14,7 +14,7 @@
          on is a question you answer by looking at the map. -->
     <LayerManager
       :open="showLayers" :groups="overlayGroups" :active="activeOverlays"
-      :order="overlayOrder" :opacity="layerOpacity"
+      :order="overlayOrder" :opacity="layerOpacity" :ee-loading="eeLoading"
       :blend="layerBlend" :stack-blend="stackBlend" :solo="soloKey"
       @blend="setLayerBlend" @solo="setSolo"
       @toggle="toggleOverlayByKey" @opacity="setLayerOpacity" @move="moveOverlay"
