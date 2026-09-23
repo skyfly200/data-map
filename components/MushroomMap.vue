@@ -313,50 +313,6 @@
          is too tight, or the feature is broken is what made this read as
          broken — the answer is usually that the column is simply not in the
          data yet. -->
-    <!-- A model's suitability surface, handed over from the jobs page. Drawn as
-         a tile overlay; this is its key, plus how old it is and whether its
-         (expiring) tiles have started to fail. -->
-    <div v-if="modelOverlay" class="legend overlay-legend">
-      <div class="legend-title">{{ modelOverlay.label }} · suitability</div>
-      <div class="gradient" :style="{ background: gradientCss(modelOverlay.legend.stops) }"></div>
-      <div class="gradient-scale">
-        <span>{{ modelOverlay.legend.min || '0' }} low</span>
-        <span>high {{ modelOverlay.legend.max || '1' }}</span>
-      </div>
-      <div class="legend-note">
-        Modelled habitat suitability, not observations.
-        <template v-if="modelOverlay.age"> Fitted {{ modelOverlay.age }}.</template>
-      </div>
-      <div class="legend-note">
-        <template v-if="modelOverlay.cv">
-          <strong><GlossaryTooltip term="AUC" :definition="g('AUC')">AUC {{ modelOverlay.cv.auc.toFixed(2) }}</GlossaryTooltip></strong> ({{ modelOverlay.cv.grade }}) ·
-          {{ modelOverlay.cv.folds }}-fold spatial CV, ±{{ modelOverlay.cv.sd.toFixed(2) }}
-        </template>
-        <template v-else>Not cross-validated — too few observations to score.</template>
-      </div>
-      <!-- Observer-effort bias is always present in presence-only models: the
-           surface reflects where recorders went as much as where the species
-           lives. Effort-weighted background (target-group background) reduces
-           this by sampling the contrast against where recording happened, rather
-           than against a uniform random background, but it does not remove it. -->
-      <div class="legend-note">
-        <template v-if="modelOverlay.effortWeighted">
-          Background effort-weighted · observer-effort bias reduced but not removed — people record where people go.
-        </template>
-        <template v-else>
-          Uniform background · observer-effort bias: where few records exist may look unsuitable regardless of habitat.
-        </template>
-      </div>
-      <div v-if="modelOverlay.stale" class="legend-note warn">
-        These tiles have stopped loading — the fitted surface expires.
-        <button v-if="modelOverlay.jobId" class="linkish" :disabled="modelOverlay.refreshing"
-                @click="refreshModelOverlay">
-          {{ modelOverlay.refreshing ? 'Refreshing…' : 'Refresh from the saved model' }}
-        </button>
-      </div>
-      <button class="linkish" @click="removeModelOverlay">Remove this surface</button>
-    </div>
-
     <div v-if="!heatmapLegend && heatmapMode && loaded" class="legend overlay-legend">
       <div class="legend-title">{{ heatmapMeta.label }}</div>
       <div class="legend-note">{{ emptyHeatmapReason }}</div>
@@ -449,7 +405,7 @@ import { useMapPointStyle, FIELD_LABEL, fmtNum } from '~/composables/useMapPoint
 import { useMapPin } from '~/composables/useMapPin'
 import { useMapLayerManager } from '~/composables/useMapLayerManager'
 import { useMapTileDate, MAP_MAX_ZOOM } from '~/composables/useMapTileDate'
-import { useMapModelOverlay } from '~/composables/useMapModelOverlay'
+import { useModelOverlay } from '~/composables/useModelOverlay'
 import { useMapHeatmapRenderer } from '~/composables/useMapHeatmapRenderer'
 import { useMapSelection } from '~/composables/useMapSelection'
 import { useMapLocate } from '~/composables/useMapLocate'
@@ -735,22 +691,6 @@ function toggleOverlay(entry) { _toggleOverlay(entry); syncActiveTemplates() }
 function toggleOverlayByKey(key) { _toggleOverlayByKey(key); syncActiveTemplates() }
 async function refreshEeLayer(spec) { await _refreshEeLayer(spec); syncActiveTemplates() }
 
-// ─── Suitability surface (model overlay) ─────────────────────────────────────
-const { modelOverlay, applyModelOverlay, refreshModelOverlay, removeModelOverlay, loadModelById } =
-  useMapModelOverlay({ mapRef, LRef, accessToken })
-
-// Load tiles when a MaxEnt model is selected; remove when deselected.
-watch(() => heatmaps.maxentModelId.value, (id) => {
-  if (heatmaps.mode.value === 'maxent' && id) loadModelById(id)
-  else if (!id) removeModelOverlay()
-})
-// Entering maxent mode with a model already chosen should load it immediately.
-// Switching away should remove the overlay so a stale surface is not left on.
-watch(() => heatmaps.mode.value, (m, prev) => {
-  if (m === 'maxent' && heatmaps.maxentModelId.value) loadModelById(heatmaps.maxentModelId.value)
-  else if (prev === 'maxent' && m !== 'maxent') removeModelOverlay()
-})
-
 async function addEeLayers() {
   const layers = await eeTiles.loadCatalogue()
   if (!layers.length || !map || !L) return
@@ -810,6 +750,103 @@ async function addEeLayers() {
     restoreEeLayer(spec.key, layer)
   }
 }
+
+// ─── MaxEnt suitability layers ────────────────────────────────────────────────
+// Each saved model config becomes a real Layer Manager entry. The tile template
+// is minted lazily (model-tiles?model=configId) when the layer is first toggled
+// on, so inactive models cost nothing.
+
+function addMaxEntLayers(specs) {
+  const map = mapRef.value
+  const L = LRef.value
+  if (!map || !L || !specs?.length) return
+
+  for (const spec of specs) {
+    if (eeLayers.has(spec.key)) continue  // already wired
+
+    const layer = L.tileLayer('', {
+      opacity: 0.7,
+      maxZoom: MAP_MAX_ZOOM,
+      updateWhenIdle: false,
+      updateWhenZooming: true,
+      className: 'model-suitability',
+    })
+    layer._baseOpacity = 0.7
+    layer._spec = { key: spec.key, name: spec.name, maxent: true }
+    eeLayers.set(spec.key, layer)
+    tileLayers.push(layer)
+
+    const configId = spec.key.replace('maxent:', '')
+    layer.on('add', () => {
+      if (!activeTileNotes.value.some((n) => n.name === spec.name)) {
+        activeTileNotes.value = [...activeTileNotes.value, {
+          name: spec.name,
+          note: spec.note || 'MaxEnt habitat suitability surface.',
+          legend: { type: 'ramp', min: '0', max: '1', stops: ['#2c2f6b', '#4a7db5', '#a1d99b', '#c6301f'] },
+          slug: spec.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        }]
+      }
+      loadMaxEntTileUrl(spec.key, configId, layer)
+    })
+    layer.on('remove', () => {
+      activeTileNotes.value = activeTileNotes.value.filter((n) => n.name !== spec.name)
+      eeErrors.value = eeErrors.value.filter((e) => e.key !== spec.key)
+    })
+
+    // Update the Layer Manager entry to hold the real Leaflet layer.
+    overlayLayers.value = overlayLayers.value.map((o) =>
+      o.key === spec.key ? { ...o, layer } : o
+    )
+    restoreEeLayer(spec.key, layer)
+  }
+}
+
+async function loadMaxEntTileUrl(key, configId, layer) {
+  const map = mapRef.value
+  if (!layer || !map?.hasLayer(layer)) return
+  eeErrors.value = eeErrors.value.filter((e) => e.key !== key)
+  const loadingNext = new Map(eeLoading.value)
+  loadingNext.set(key, key.replace('maxent:', ''))
+  eeLoading.value = loadingNext
+  try {
+    const token = await accessToken()
+    const res = await fetch(`/.netlify/functions/model-tiles?model=${encodeURIComponent(configId)}`, {
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    })
+    const body = await res.json()
+    if (!res.ok || !body.ok || !body.template) throw new Error(body.error || 'Could not load model tiles.')
+    layer.setUrl(body.template)
+  } catch (err) {
+    eeErrors.value = [...eeErrors.value, { key, name: key.replace('maxent:', ''), message: err.message }]
+  } finally {
+    const loadingDone = new Map(eeLoading.value)
+    loadingDone.delete(key)
+    eeLoading.value = loadingDone
+  }
+}
+
+// When new model configs arrive (after a training job succeeds), wire their layers.
+watch(() => maxEnt.maxentLayerSpecs.value, (specs) => {
+  if (mapRef.value && LRef.value) addMaxEntLayers(specs)
+})
+
+// Open a model requested from /jobs or /modeling/maxent by enabling its Layer
+// Manager entry. The layer mints its tile template lazily on first toggle.
+const openModel = useModelOverlay()
+
+function tryOpenPendingModel() {
+  const p = openModel.pending.value
+  if (!p || !mapRef.value) return
+  const key = `maxent:${p.configId}`
+  if (!activeOverlays.value.has(key) && overlayLayers.value.some((o) => o.key === key && o.layer)) {
+    toggleOverlayByKey(key)
+    openModel.clear()
+  }
+}
+
+watch(() => openModel.pending.value, (p) => {
+  if (p && mapRef.value) tryOpenPendingModel()
+})
 
 // ─── Dropped point ───────────────────────────────────────────────────────────
 const {
@@ -951,6 +988,14 @@ onMounted(async () => {
     // list rather than being in it from the start.
     addEeLayers()
 
+    // MaxEnt suitability layers — wire any models already in shared state, then
+    // fetch so newly trained models are present and a pending overlay can open.
+    addMaxEntLayers(maxEnt.maxentLayerSpecs.value)
+    maxEnt.fetchModels().then(() => {
+      addMaxEntLayers(maxEnt.maxentLayerSpecs.value)
+      tryOpenPendingModel()
+    })
+
     // Right-click, or a long press on a touch screen. A plain click already
     // opens an observation, and a mode button for something used this rarely was
     // a permanent icon paying for an occasional action.
@@ -1012,11 +1057,6 @@ onMounted(async () => {
 
     heatmaps.loadFromStorage()
     appearance.loadFromStorage()
-
-    // A suitability surface waiting from the jobs page, if the member pressed
-    // "View suitability on map". Drawn after the base layers exist so it sits
-    // above them.
-    applyModelOverlay()
 
     // A shared link wins over stored preferences: the point of opening one is to
     // see what the sender saw, not what you last had configured.

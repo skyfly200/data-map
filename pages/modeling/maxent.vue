@@ -261,7 +261,7 @@ async function confirmDelete(model) {
 }
 
 function openModelOnMap(model) {
-  modelOverlay.setModel(model)
+  modelOverlay.open({ configId: model.id, label: model.title || 'Suitability' })
   router.push('/map')
 }
 

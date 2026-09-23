@@ -137,7 +137,7 @@ const latestModel = computed(() => {
 // Always link to map; activate the latest model layer when one has an asset.
 const mapLink = computed(() => {
   const m = latestModel.value
-  return m?.suitability_asset_path ? `/map?layer=maxent:${m.id}` : '/map'
+  return m ? `/map?layer=maxent:${m.id}` : '/map'
 })
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

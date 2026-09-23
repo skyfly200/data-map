@@ -28,11 +28,30 @@ export default async function handler(request) {
   const auth = await requireUser(request)
   if (!auth.ok) return auth.response
 
-  const jobId = new URL(request.url).searchParams.get('job')
-  if (!jobId) return json({ ok: false, error: 'Name a model job.' }, 400)
+  const reqUrl = new URL(request.url)
+  const explicitJobId = reqUrl.searchParams.get('job')
+  const configId = reqUrl.searchParams.get('model')
+
+  if (!explicitJobId && !configId) return json({ ok: false, error: 'Name a model job or config.' }, 400)
 
   const client = adminClient()
   if (!client) return json({ ok: false, error: 'Supabase is not configured.' }, 503)
+
+  // ?model=configId resolves to the latest succeeded job for that config.
+  let jobId = explicitJobId
+  if (!jobId && configId) {
+    const { data: run, error: runErr } = await client
+      .from('model_runs')
+      .select('job_id')
+      .eq('config_id', configId)
+      .eq('status', 'succeeded')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (runErr) return json({ ok: false, error: runErr.message }, 500)
+    if (!run?.job_id) return json({ ok: false, error: 'No succeeded run for that model config.' }, 404)
+    jobId = run.job_id
+  }
 
   const { data: job, error } = await client
     .from('ee_jobs')

@@ -42,7 +42,7 @@ const latestModel = computed(() =>
 
 const mapLink = computed(() => {
   const m = latestModel.value
-  return m?.suitability_asset_path ? `/map?layer=maxent:${m.id}` : '/map'
+  return m ? `/map?layer=maxent:${m.id}` : '/map'
 })
 
 const caption = computed(() => {

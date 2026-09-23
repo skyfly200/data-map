@@ -707,38 +707,14 @@ async function openOnMap(job) {
 /**
  * Hand a finished model's suitability surface to the map.
  *
- * A model job has no feature collection to load — its result is a tile template.
- * It goes into the shared overlay state the map reads on mount, which draws it
- * with its legend and fits to the region it was projected over.
+ * Navigate to the map with this model's suitability surface enabled.
+ * The map's Layer Manager entry for this model config mints the tile URL lazily.
  */
-async function openModelOnMap(job) {
-  const stored = job.result_meta || {}
-  opening.value = job.id
-  submitError.value = ''
-  try {
-    // Re-mint from the stored model so the map never draws an expired template.
-    // Falls back to whatever the job saved if the re-mint is unavailable.
-    let meta = stored
-    let template = stored.template
-    try {
-      const fresh = await jobsApi.modelTiles(job)
-      if (fresh?.template) { template = fresh.template; meta = { ...stored, ...fresh.meta } }
-    } catch { /* fall back to the stored template */ }
-    if (!template) { submitError.value = 'That model has no surface to draw.'; return }
-    modelOverlay.show({
-      jobId: job.id,
-      label: job.title || 'Suitability',
-      template,
-      legend: meta.legend || { type: 'ramp', min: '0', max: '1', stops: ['#2c2f6b', '#c6301f'] },
-      region: meta.region || null,
-      mintedAt: meta.mintedAt || null,
-      cv: meta.cv ?? stored.cv ?? null,
-      effortWeighted: meta.effortWeighted ?? stored.effortWeighted ?? null,
-    })
-    router.push('/map')
-  } finally {
-    opening.value = ''
-  }
+function openModelOnMap(job) {
+  const configId = job.params?.config_id
+  if (!configId) { submitError.value = 'No model config linked to this job.'; return }
+  modelOverlay.open({ configId, label: job.title || 'Suitability' })
+  router.push('/map')
 }
 
 // ── Saving a result as a dataset ─────────────────────────────────────────────

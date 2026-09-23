@@ -110,10 +110,6 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
       soloKey.value = ''
     }
     activeOverlays.value = next
-    if (!wasOn && entry.key.startsWith('maxent:')) {
-      heatmaps.mode.value = 'maxent'
-      heatmaps.maxentModelId.value = entry.key.replace('maxent:', '')
-    }
     applySolo()
   }
 

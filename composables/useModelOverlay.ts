@@ -1,47 +1,21 @@
-// A suitability surface handed from the jobs page to the map.
-//
-// A model job's result is a tile template, not a dataset of points, so it cannot
-// ride the addInlineDataset path the enrichment results use. This is the parallel
-// for a raster: the jobs page drops the minted template here and routes to the
-// map, and the map picks it up on mount, draws it as an overlay with its legend,
-// and fits to the region it was projected over.
-//
-// Nuxt useState rather than a store, for the same reason the inline datasets use
-// it: it survives the client-side navigation from /jobs to /map and is scoped to
-// this browser, nothing more.
+// Active model to open on the map, handed from /jobs or /modeling/maxent.
+// Stores only the model's identity — the map mints the tile surface on demand.
 
-export interface ModelOverlay {
-  jobId: string
+export interface OpenModel {
+  configId: string
   label: string
-  /** The XYZ tile template Earth Engine minted for the fitted surface. */
-  template: string
-  /** A ramp legend, as the map's other layers carry: { type, unit, min, max, stops }. */
-  legend: { type: string; unit?: string; min?: string; max?: string; stops: string[] }
-  /** The bounding box the surface was projected over, so the map can fit to it. */
-  region: { north: number; south: number; east: number; west: number } | null
-  /** When the template was minted — a map id expires, so age is worth showing. */
-  mintedAt: string | null
-  /** The cross-validation score, or null when the model was not scored. */
-  cv: { auc: number; sd: number; folds: number; grade: string } | null
-  /**
-   * Whether the background was sampled with effort weighting (target-group
-   * background), which is the first mitigation for observer-effort bias. Even
-   * when true the surface still inherits the confound — just less so — so the
-   * legend always names it.
-   */
-  effortWeighted?: boolean
 }
 
 export function useModelOverlay() {
-  const pending = useState<ModelOverlay | null>('model-overlay', () => null)
+  const pending = useState<OpenModel | null>('map-open-model', () => null)
 
-  function show(overlay: ModelOverlay) {
-    pending.value = overlay
+  function open(data: OpenModel) {
+    pending.value = data
   }
 
   function clear() {
     pending.value = null
   }
 
-  return { pending, show, clear }
+  return { pending, open, clear }
 }
