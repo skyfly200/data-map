@@ -45,6 +45,7 @@
               <span class="lm-tick" aria-hidden="true">✓</span>
             </button>
             <span class="lm-on-name" :title="item.name">{{ item.name }}</span>
+            <span v-if="eeLoading.has(item.key)" class="lm-ee-spinner" aria-label="Rendering…" title="Rendering layer…"></span>
             <!-- Solo answers "what is this one contributing", which otherwise
                  costs you the stack you built and a minute rebuilding it. The
                  others stay ticked; they are only not drawn. -->
@@ -148,6 +149,7 @@
             <input type="checkbox" :checked="active.has(o.key)" @change="$emit('toggle', o.key)" />
             <span class="lm-row-main">
               <span class="lm-row-name">{{ o.name }}</span>
+              <span v-if="eeLoading.has(o.key)" class="lm-ee-spinner" aria-label="Rendering…" title="Rendering layer…"></span>
               <!-- Listed but marked, rather than hidden: knowing FRMS
                    computes it is part of what membership is for. -->
               <em v-if="o.tier && o.tier !== 'free'" class="lm-tier">{{ o.tier }}</em>
@@ -196,6 +198,8 @@ const props = defineProps({
   stackBlend: { type: String, default: 'normal' },
   // The one layer drawn on its own, or '' for all of them.
   solo: { type: String, default: '' },
+  // EE layers currently fetching their tile template: Map<key, name>
+  eeLoading: { type: Map, default: () => new Map() },
   // Docked against the controls on a wide screen; a bottom sheet on a phone.
   docked: { type: Boolean, default: true },
 })
@@ -659,6 +663,15 @@ onMounted(() => { if (props.open) seedPanels() })
      into an essay. Two lines is enough to know whether to read the rest in the
      key. */
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+@keyframes lm-spin { to { transform: rotate(360deg); } }
+.lm-ee-spinner {
+  display: inline-block; flex: 0 0 auto; width: 12px; height: 12px;
+  border: 2px solid var(--border, #ccc);
+  border-top-color: var(--accent, #2b7a3d);
+  border-radius: 50%;
+  animation: lm-spin 0.7s linear infinite;
 }
 
 /* On a phone a floating window over a map is most of the map. A sheet from the
