@@ -20,6 +20,7 @@ import { explainEmpty, explainSelection, loadSource } from '../lib/job-source.mj
 import { loadBaseline } from '../lib/baseline.mjs'
 import { runModel, runPipeline } from '../lib/ee-runner.mjs'
 import { uploadJson } from '../lib/datasets-store.mjs'
+import { clusterFeatures } from '../lib/cluster.mjs'
 import { notifyJobSettled } from '../lib/notify.mjs'
 import { logCronRun } from '../lib/cron-jobs.mjs'
 
@@ -122,10 +123,24 @@ export default async function handler(request) {
     const result = await runPipeline({ spec, features, plan, onProgress })
     spent = job.estimated_units || 0
 
+    // Re-cluster using enriched columns so spatial groups reflect environmental
+    // similarity rather than just proximity.
+    const enriched = clusterFeatures(result.features)
+
     // Written under the job id, so a result is always traceable to the run that
     // produced it and two jobs cannot overwrite each other.
     const resultPath = `jobs/${job.user_id}/${job.id}.geojson`
-    await uploadJson(resultPath, { type: 'FeatureCollection', features: result.features })
+    await uploadJson(resultPath, { type: 'FeatureCollection', features: enriched })
+
+    // When the source was a saved dataset, write the enriched version back so the
+    // map and any future model job read enriched data rather than the raw import.
+    if (spec.source?.type === 'dataset' && spec.source?.slug) {
+      try {
+        await uploadJson(`species/${spec.source.slug}.geojson`, { type: 'FeatureCollection', features: enriched })
+      } catch (e) {
+        console.warn(`[ee-worker] dataset write-back skipped for ${spec.source.slug}:`, String(e))
+      }
+    }
 
     const meta = {
       features: result.features.length,

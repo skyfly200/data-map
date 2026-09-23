@@ -9,7 +9,11 @@ import { fetchInatFeatures } from '../lib/observations.mjs'
 import { supabaseConfigured, publicUrl } from '../lib/supabase-storage.mjs'
 import { uploadJson, readJson } from '../lib/datasets-store.mjs'
 import { clusterFeatures } from '../lib/cluster.mjs'
-import { requireUser } from '../lib/auth.mjs'
+import { requireUser, loadProfile, adminClient } from '../lib/auth.mjs'
+import { submitJob } from '../lib/job-queue.mjs'
+import { measureSource } from '../lib/job-source.mjs'
+import { viewerFrom } from '../lib/dataset-access.mjs'
+import { earthEngineConfigured } from '../lib/ee-runner.mjs'
 
 export const config = { timeout: 60 }
 
@@ -64,6 +68,30 @@ export default async (request) => {
         await uploadJson('datasets.json', manifest, 'application/json')
       } catch (e) {
         console.warn('Supabase persist skipped:', String(e))
+      }
+    }
+
+    if (auth.user && path && features.length && earthEngineConfigured()) {
+      try {
+        const profile = await loadProfile(auth.user.id)
+        const { job } = await submitJob({
+          user: auth.user,
+          profile,
+          spec: { kind: 'enrich', source: { type: 'dataset', slug }, title: `Enrich ${species.trim()}` },
+          counter: (spec) => measureSource(spec, { client: adminClient(), viewer: viewerFrom(auth) }),
+        })
+        if (job?.id) {
+          const secret = process.env.WORKER_POKE_SECRET
+          if (secret) {
+            const ctrl = new AbortController()
+            const t = setTimeout(() => ctrl.abort(), 500)
+            fetch(new URL('/.netlify/functions/ee-worker', request.url), {
+              method: 'POST', headers: { 'x-worker-secret': secret }, signal: ctrl.signal,
+            }).catch(() => {}).finally(() => clearTimeout(t))
+          }
+        }
+      } catch (e) {
+        console.warn('Auto-enrich skipped:', String(e))
       }
     }
 
