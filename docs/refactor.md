@@ -41,6 +41,14 @@ Technical debt and enhancement tasks. An item here is open work; when closed, de
 - [ ] `V12-COLL-3` **Model Citation Generator**: Auto-generate citations for published models
 - [ ] `V12-COLL-4` **Export to R/Python**: Generate reproducible scripts for external analysis
 
+## Performance
+
+- [ ] `PERF-1` **Charts page: LazyVisible for gallery charts** — 20+ preset charts render eagerly; wrap `GalleryChart` slot in `LazyVisible` to defer below-fold computation. See `tasks/PERF-1.md`.
+- [ ] `PERF-2` **Charts page: O(n×bins) binning in `tempHighLowDist` / `elevationData`** — re-filters per bin; bucket in a single pass as `clusterProfile` and `speciesLandcover` already do. See `tasks/PERF-2.md`.
+- [ ] `PERF-3` **Charts page: `coverageData` does 8 separate array passes** — replace with a single-pass counter over all attributes. See `tasks/PERF-3.md`.
+- [ ] `PERF-4` **Map page: debounce `coloring` watch** — fires a full `eachLayer` restyle (up to 48k markers) on every reactive change; 30–50ms debounce collapses rapid-fire updates. See `tasks/PERF-4.md`.
+- [ ] `PERF-5` **Map page: debounce heatmap rebuild** — `heatmapResult` computed rebuilds the full grid on every `filteredData` change; replace with a debounced `watchEffect` writing to a ref. See `tasks/PERF-5.md`.
+
 ## Documentation
 
 - [ ] `V12-DOC-2` **Video Guides**: Short screencasts for key workflows
