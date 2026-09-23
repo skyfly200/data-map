@@ -3,6 +3,7 @@
 
 import { markRaw } from 'vue'
 import { TAXON_RANKS } from '~/composables/useChartFields'
+import { resetMapChunks } from '~/composables/useMapChunks'
 
 export interface Observation {
   [key: string]: any
@@ -241,6 +242,9 @@ export function useObservations() {
     if (import.meta.client) localStorage.setItem(DATASET_KEY, path)
     data.value = null
     error.value = ''
+    // Clear the chunk cache so stale cells from the previous dataset don't bleed
+    // through when the new dataset uses the same progressive-load infrastructure.
+    resetMapChunks()
     return load()
   }
 
