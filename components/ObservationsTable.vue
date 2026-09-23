@@ -106,7 +106,7 @@ function sortBy(key) {
 
 function display(col, v) {
   if (!hasValue(v)) return ', '
-  if (col.numeric && typeof col.round === 'number') return Number(v).toFixed(col.round)
+  if (col.numeric && typeof col.round === 'number') { const n = Number(v); return Number.isFinite(n) ? n.toFixed(col.round) : '—' }
   return v
 }
 
