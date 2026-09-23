@@ -151,17 +151,98 @@ A secondary benefit: Vercel's edge runtime and image optimisation improve cold-s
 
 Worth doing when there is a concrete reason to deploy on Vercel — a cost comparison, a team preference, or a feature only one platform offers — rather than speculatively.
 
-### `WANT-9` GBIF API direct loading
+### `WANT-9` GBIF and iNat unified import flow
 
-Today GBIF data enters only through a manual CSV export — the user downloads an occurrence archive from gbif.org, uploads the file, and the server parses it. There is no path to querying GBIF from within the app.
+Today GBIF data enters only through a manual CSV export. iNat is fetched live by
+`fetch-species.mjs` (on-demand) and `refresh-observations.mjs` (scheduled). The
+two sources have no coordination and no shared enrichment step.
 
-The GBIF Occurrence API (`https://api.gbif.org/v1/occurrence/search`) is public and requires no authentication for read access. A new Netlify function wrapping it could accept the same filter parameters the app already uses — taxon, bounding box, date range, coordinate uncertainty threshold — and return a GeoJSON FeatureCollection in the same shape `useObservations` expects. A member would search by species name, see a record count, and load directly into their dataset without leaving the app.
+**Routing rule**: prefer GBIF for large or historical pulls (anything beyond a
+few thousand records or older than ~30 days) and iNat for small, recent updates
+(new sightings within the last month). GBIF has deeper historical depth and bulk
+download; iNat has fresher real-time coverage and richer photo/annotation data.
 
-The quota question matters here: GBIF search returns up to 100,000 records per download request (paginated at 300/page). The function should enforce a per-request cap and surface record counts before fetching, so a member does not accidentally queue a 90k-record pull on a slow connection. Coordinate uncertainty filtering should default on (`coordinateUncertaintyInMeters` ≤ some threshold) to match the quality bar the CSV importer already applies.
+What is needed:
 
-`ISSUE-2` (large imports timing out) is a prerequisite to fix or mitigate first: the same timeout risk applies to API-fetched data, and streaming the response into Supabase Storage incrementally rather than building the full GeoJSON in memory is the right fix for both.
+1. **`netlify/functions/gbif-fetch.mjs`** — wraps the GBIF Occurrence API
+   (`https://api.gbif.org/v1/occurrence/search`), accepts the same filter shape
+   the app already uses (taxon, bbox, date range, coordinate uncertainty
+   threshold), paginates at 300/page, streams results into Supabase Storage
+   incrementally rather than building the whole GeoJSON in memory, and surfaces a
+   record count before committing the fetch so a member does not accidentally
+   queue a 90k-record pull on a slow connection.
 
-Worth doing alongside any work to improve the import experience, and before `WANT-2` (member-defined enrichment stages) since GBIF API records are a natural source for those.
+2. **Routing logic in `fetch-species.mjs`** — when a member requests a species,
+   check the estimated record count and date range; route to GBIF if count > 5000
+   or date range > 60 days, otherwise use iNat. Surface the routing decision in
+   the UI so members understand what they are getting.
+
+3. **Shared enrichment step** (see `WANT-10`) — both sources produce raw
+   coordinates and a date; the EE enrichment pipeline runs on both outputs
+   identically. The enrichment queue should be triggered automatically after any
+   import completes, not require a manual follow-up job.
+
+`ISSUE-2` (large imports timing out) is a prerequisite: streaming to Supabase
+Storage rather than buffering in memory is the fix for both sources.
+
+Worth doing before `WANT-2` (member-defined enrichment stages) since both GBIF
+and iNat records are natural sources for those.
+
+### `WANT-10` JS enrichment pipeline (replaces Python)
+
+The Python pipeline (`enrich_with_rasters.py`, `ee_enrich.py`, `run_pipeline.py`,
+`iNat.py`, `cluster.py`, `export_geojson.py`) is obsolete. `netlify/lib/ee-pipeline.mjs`
+and `netlify/lib/ee-runner.mjs` already implement the same EE enrichment in
+Node and run it server-side on every submitted job. The GitHub Action that ran
+the Python pipeline no longer has a reason to exist once the JS pipeline covers
+all the stages.
+
+What the JS pipeline still lacks that the Python pipeline provided:
+
+1. **Automatic enrichment after import** — when `refresh-observations.mjs` or a
+   new GBIF/iNat import writes fresh features, it should enqueue an enrichment
+   job for those features automatically rather than leaving them with
+   `enrichment_level: 'none'` until a member manually submits a job. The queue
+   already exists (`job-queue.mjs`); the missing piece is a call to `submitJob`
+   at the end of every write path.
+
+2. **Enrich endpoint** — a Netlify function (or extension of `ee-jobs.mjs`) that
+   accepts a dataset path and enriches only the features missing one or more
+   enrichment columns, then writes the result back. This covers the incremental
+   re-enrichment case (new columns added to `STAGES`, or records that partially
+   failed).
+
+3. **Clustering** — `netlify/lib/cluster.mjs` already does k-means; it needs to
+   run as a post-enrichment step on the full dataset, writing the `cluster` label
+   back into Supabase Storage. Today it runs only on on-demand `fetch-species`
+   results.
+
+4. **Deprecation of the Python scripts and the GitHub Action** — once the above
+   three are working end-to-end, `iNat.py`, `enrich_with_rasters.py`,
+   `cluster.py`, `export_geojson.py`, `run_pipeline.py`, and the
+   `refresh-data.yml` workflow should be removed. The README section describing
+   them has been updated to mark them as legacy; the deletion waits for the JS
+   path to be verified in production.
+
+Priority: blocking `WANT-9` (both sources need the enrichment step to be
+automatic) and `WANT-4` (coverage page reframe needs per-column counts that the
+enrichment step now owns).
+
+### `WANT-11` Job → dataset linkage in composable state
+
+After a pipeline or model job completes, `pages/jobs.vue` manually calls
+`addInlineDataset()` or `useModelOverlay().show()` and then navigates. If the
+user leaves `/jobs` before the download finishes, the enriched dataset is lost
+and they must re-download from the jobs page.
+
+The fix is to persist job→dataset linkage in `useEeJobs` or a new
+`useJobResults` composable, keyed by job ID, so the result can be recovered
+after a page reload or a missed navigation. The jobs page would call this instead
+of `addInlineDataset` directly, and any page that renders a dataset selector
+would check the composable for results not yet applied.
+
+Worth doing alongside `WANT-10` since the enrichment pipeline will produce more
+frequent job completions that members should not have to babysit.
 
 ### `WANT-6` A dashboard worth landing on
 
