@@ -353,7 +353,7 @@ onMounted(() => { if (props.open) seedPanels() })
 <style scoped>
 .lm {
   position: absolute; z-index: 1200;
-  top: 8px; right: 8px; width: 310px;
+  top: 8px; left: 8px; width: 310px;
   max-height: calc(100% - 16px);
   display: flex; flex-direction: column;
   background: var(--surface, #fff); color: var(--text, #222);
@@ -663,11 +663,9 @@ onMounted(() => { if (props.open) seedPanels() })
    the layer you just ticked did anything. */
 @media (max-width: 720px) {
   .lm {
-    top: auto; right: 6px; left: 6px; bottom: 6px; width: auto;
-    /* A little taller than it was, but not much: this window is meant to be
-       judged against the map behind it, so taking the whole screen would cost
-       the thing it is for. */
-    max-height: 70%;
+    top: auto; left: 0; right: 0; bottom: 0; width: 100%;
+    border-radius: 14px 14px 0 0; border-bottom: none;
+    max-height: 72%;
   }
   .lm-tab-panel { min-height: 0; }
   .lm-body { min-height: 116px; }

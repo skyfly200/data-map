@@ -1404,6 +1404,13 @@ function toggleOverlay(entry) {
     // second layer is asking to see two.
     overlayOrder.value = [entry.key, ...overlayOrder.value]
     soloKey.value = ''
+    // Seed the blend mode from the layer's catalogue suggestion, but only if
+    // the user has not already set one for this key.
+    const suggestedBlend = entry.layer?._spec?.blend
+    if (suggestedBlend && !layerBlend.value[entry.key]) {
+      const next = { ...layerBlend.value, [entry.key]: suggestedBlend }
+      layerBlend.value = next
+    }
   }
   activeOverlays.value = next
   // When a MaxEnt model layer is toggled on, switch the heatmap to MaxEnt
@@ -2538,8 +2545,8 @@ onBeforeUnmount(() => {
 .overlay.error { color: #b00020; }
 
 .controls {
-  position: absolute; top: 12px; left: 12px; z-index: 500; display: flex; gap: 10px; align-items: center;
-  flex-wrap: wrap;
+  position: absolute; top: 12px; right: 12px; z-index: 500; display: flex; gap: 10px; align-items: center;
+  flex-wrap: wrap; justify-content: flex-end;
 }
 /* One look for every button in the bar, wherever its component happens to
    define it. Five components contribute controls here and each had its own
@@ -2951,7 +2958,7 @@ onBeforeUnmount(() => {
 
 /* Mobile: tighten the on-map controls and legend so they don't swallow the map. */
 @media (max-width: 640px) {
-  .controls { top: 8px; left: 8px; right: 8px; gap: 6px; }
+  .controls { top: 8px; left: 8px; right: 8px; gap: 6px; justify-content: flex-start; }
   /* Two dropdowns to a row instead of one. Each pairing is natural — what the
      dots mean beside how big they are, the overlay beside its cell size — and
      it halves the number of rows the bar spends covering the map. */
