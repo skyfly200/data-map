@@ -53,10 +53,12 @@ export function useMaxEnt() {
 
   onScopeDispose(() => { activeJobStop?.(); activeJobStop = null })
 
+  const BASE = '/.netlify/functions/modeling-maxent'
+
   /** Fetch the user's saved model configurations. */
   async function fetchModels() {
     try {
-      const res = await fetch('/.netlify/functions/modeling/maxent/models')
+      const res = await fetch(BASE)
       if (!res.ok) throw new Error(`Failed to fetch models: ${res.statusText}`)
       const data = await res.json()
       if (data.ok) models.value = data.models
@@ -70,7 +72,7 @@ export function useMaxEnt() {
     pending.value = true
     error.value = ''
     try {
-      const res = await fetch('/.netlify/functions/modeling/maxent/train', {
+      const res = await fetch(BASE, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(spec),
@@ -104,7 +106,7 @@ export function useMaxEnt() {
 
     const timer = setInterval(async () => {
       try {
-        const res = await fetch(`/.netlify/functions/modeling/maxent/results/${jobId}`)
+        const res = await fetch(`${BASE}?jobId=${encodeURIComponent(jobId)}`)
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
         consecutiveErrors = 0
@@ -141,7 +143,7 @@ export function useMaxEnt() {
   /** Delete a saved model configuration. */
   async function deleteModel(id: string) {
     try {
-      const res = await fetch('/.netlify/functions/modeling/maxent/models', {
+      const res = await fetch(BASE, {
         method: 'DELETE',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ id }),

@@ -1,11 +1,12 @@
-// MaxEnt Modeling API
+// MaxEnt Modeling API  — /.netlify/functions/modeling-maxent
 //
-//   POST  /.netlify/functions/modeling/maxent/train     - Submit training job
-//   GET   /.netlify/functions/modeling/maxent/results/:id - Fetch results for a job
-//   GET   /.netlify/functions/modeling/maxent/models    - List user's saved models
-//   DELETE /.netlify/functions/modeling/maxent/models/:id - Delete a model
+//   GET    (no params)          - List user's saved models
+//   GET    ?jobId=<id>          - Poll results for a job
+//   GET    ?evaluate=1&jobId=<id> - Niche + response-curve data for a succeeded run
+//   POST                        - Submit a training job (body = spec)
+//   DELETE                      - Delete a model config (body = { id })
 //
-// This function handles the lifecycle of a MaxEnt model: 
+// This function handles the lifecycle of a MaxEnt model:
 // 1. Validating the spec -> 2. Creating DB records -> 3. Triggering EE job.
 
 import { adminClient, requireMemberFresh, requireUser } from '../lib/auth.mjs'
@@ -159,43 +160,38 @@ export default async function handler(request) {
   if (!client) return json({ ok: false, error: 'Supabase not configured.' }, 503)
 
   try {
-    const url = new URL(request.url)
-    const path = url.pathname
+    const { searchParams } = new URL(request.url)
     const method = request.method
+    const jobId = searchParams.get('jobId')
 
-    // Simplified routing for the prototype
-    if (method === 'GET' && path.includes('/modeling/maxent/models')) {
+    if (method === 'GET' && jobId && searchParams.has('evaluate')) {
+      const auth = await requireMemberFresh(request)
+      if (!auth.ok) return auth.response
+      return await evaluate(client, viewerFrom(auth), jobId)
+    }
+
+    if (method === 'GET' && jobId) {
+      const auth = await requireUser(request)
+      if (!auth.ok) return auth.response
+      return await getResults(client, viewerFrom(auth), jobId)
+    }
+
+    if (method === 'GET') {
       const auth = await requireUser(request)
       if (!auth.ok) return auth.response
       return await listModels(client, viewerFrom(auth))
     }
 
-    if (method === 'GET' && path.includes('/modeling/maxent/results')) {
-      const auth = await requireUser(request)
-      if (!auth.ok) return auth.response
-      const jobId = path.split('/').pop()
-      return await getResults(client, viewerFrom(auth), jobId)
-    }
-
-    if (method === 'POST' && path.includes('/modeling/maxent/train')) {
+    if (method === 'POST') {
       const auth = await requireMemberFresh(request)
       if (!auth.ok) return auth.response
       return await train(client, auth, await request.json())
     }
 
-    if (method === 'DELETE' && path.includes('/modeling/maxent/models')) {
+    if (method === 'DELETE') {
       const auth = await requireMemberFresh(request)
       if (!auth.ok) return auth.response
       return await removeModel(client, viewerFrom(auth), await request.json())
-    }
-
-    // GET /.netlify/functions/modeling/maxent/evaluate/:jobId
-    // Returns niche distribution and response-curve data for a completed model run.
-    if (method === 'GET' && path.includes('/modeling/maxent/evaluate')) {
-      const auth = await requireMemberFresh(request)
-      if (!auth.ok) return auth.response
-      const jobId = path.split('/').pop()
-      return await evaluate(client, viewerFrom(auth), jobId)
     }
 
     return json({ ok: false, error: 'Not Found' }, 404)
