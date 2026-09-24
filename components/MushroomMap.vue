@@ -415,6 +415,11 @@ import { useMapLocate } from '~/composables/useMapLocate'
 import { setupReferenceTileLayers } from '~/composables/useMapRefTileLayers'
 import { setupElevBandLayer } from '~/composables/useMapElevBandLayer'
 
+// Slow EE layers (Sentinel-2 composites) time out below this zoom — a single
+// tile covers ~600 km² at zoom 8. Leaflet skips tile requests; the legend notes
+// the threshold so both stay in sync from one place.
+const EE_SLOW_MIN_ZOOM = 8
+
 const { define: g } = useGlossary()
 
 const {
@@ -710,10 +715,7 @@ async function addEeLayers() {
       crossOrigin: 'anonymous',
       // Track the zoom continuously on touch too; see the reference layers.
       updateWhenIdle: false, updateWhenZooming: true,
-      // Slow layers (Sentinel-2 composites) fetch and composite millions of pixels
-      // at low zoom — below 8 a tile covers ~600 km² and EE times out. Leaflet
-      // skips tile requests below minZoom; the legend shows "zoom in" instead.
-      minZoom: spec.slow ? 8 : 0,
+      minZoom: spec.slow ? EE_SLOW_MIN_ZOOM : 0,
     })
     layer._baseOpacity = spec.opacity ?? 1
     layer._spec = { ...spec, ee: true }
@@ -729,7 +731,7 @@ async function addEeLayers() {
           ee: spec.key,
           eeParams: spec.params,
           slow: spec.slow,
-          minZoom: spec.slow ? 8 : undefined,
+          minZoom: spec.slow ? EE_SLOW_MIN_ZOOM : undefined,
           // A layer whose classes are too many to list in a key. The key shows
           // a browser for them instead; see SoilTaxonomyKey.
           classes: spec.classes,
