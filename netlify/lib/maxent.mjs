@@ -15,7 +15,7 @@
 // already does that) or store the result. It turns "these presences, these
 // predictors, this region" into an Earth Engine image and how to paint it.
 
-import { SRTM, S2_SR, ERA5_DAILY, CHIRPS_DAILY, SOLUS100, SpecError, normaliseBounds } from './ee-pipeline.mjs'
+import { SRTM, S2_SR, ERA5_DAILY, CHIRPS_DAILY, SOLUS100, MODIS_BURN, TREEMAP, SpecError, normaliseBounds } from './ee-pipeline.mjs'
 import { CHUNK_SIZE } from './quotas.mjs'
 
 // Additional asset IDs used only by the extended model predictor set.
@@ -190,6 +190,72 @@ export const MAXENT_PREDICTORS = {
       .select('r_0_cm_p')
       .rename('sand_percent'),
   },
+
+  // ── Terrain exposure (matches enrichment stage bands) ─────────────────────
+  solar_exposure: {
+    label: 'Solar exposure (heat load index)',
+    // Folded aspect: McCune & Keon heat load index. North-facing slopes get low
+    // values, south-facing slopes get high. Rescaled to [0, 1].
+    image: (ee) => {
+      const aspect = ee.Terrain.aspect(ee.Image(SRTM).select('elevation'))
+      const slope = ee.Terrain.slope(ee.Image(SRTM).select('elevation'))
+      // HLI = 1 − cos(aspect − 225°) × sin(slope) / 2
+      const radAspect = aspect.subtract(225).multiply(Math.PI / 180)
+      const radSlope = slope.multiply(Math.PI / 180)
+      return ee.Image(1)
+        .subtract(radAspect.cos().multiply(radSlope.sin()).divide(2))
+        .rename('solar_exposure')
+    },
+  },
+  wind_exposure: {
+    label: 'Wind exposure (terrain roughness)',
+    // Focal standard deviation of elevation as a simple proxy for wind exposure:
+    // smooth ridges are exposed, sheltered draws have low variation. The
+    // enrichment stage uses the same proxy.
+    image: (ee) => {
+      const dem = ee.Image(SRTM).select('elevation')
+      return dem.reduceNeighborhood({
+        reducer: ee.Reducer.stdDev(),
+        kernel: ee.Kernel.circle(500, 'meters'),
+      }).divide(200).min(1).rename('wind_exposure')
+    },
+  },
+
+  // ── Fire history ──────────────────────────────────────────────────────────
+  last_burn_year: {
+    label: 'Last burn year (MODIS, since 2001)',
+    // Most recent calendar year any pixel burned, aggregated from MODIS monthly
+    // burn-date bands. Unburned pixels get 0. Useful as a habitat-age proxy.
+    image: (ee) => {
+      const years = []
+      for (let y = 2001; y <= 2023; y++) years.push(y)
+      const burnYear = ee.ImageCollection(years.map((y) => {
+        const burned = ee.ImageCollection(MODIS_BURN)
+          .filterDate(`${y}-01-01`, `${y}-12-31`)
+          .select('BurnDate').max().gt(0)
+        return burned.multiply(y).rename('last_burn_year')
+      })).max()
+      return burnYear.rename('last_burn_year')
+    },
+  },
+
+  // ── Forest structure ──────────────────────────────────────────────────────
+  stand_height_ft: {
+    label: 'Stand height (USFS TreeMap, ft)',
+    image: (ee) => ee.ImageCollection(TREEMAP)
+      .filterDate('2016-01-01', '2016-12-31')
+      .first()
+      .select('STANDHT')
+      .rename('stand_height_ft'),
+  },
+  canopy_pct: {
+    label: 'Canopy cover % (USFS TreeMap)',
+    image: (ee) => ee.ImageCollection(TREEMAP)
+      .filterDate('2016-01-01', '2016-12-31')
+      .first()
+      .select('CANOPYPCT')
+      .rename('canopy_pct'),
+  },
 }
 
 export const PREDICTOR_KEYS = Object.keys(MAXENT_PREDICTORS)
@@ -204,12 +270,12 @@ export const DEFAULT_PREDICTORS = ['elevation', 'slope', 'aspect', 'ndvi', 'soil
  * ones are more likely to stay in.
  */
 export const ALL_PREDICTORS = [
-  'elevation', 'slope', 'northness', 'tpi', 'twi',
-  'ndvi', 'ndmi', 'canopy',
+  'elevation', 'slope', 'northness', 'tpi', 'twi', 'solar_exposure', 'wind_exposure',
+  'ndvi', 'ndmi', 'canopy', 'canopy_pct', 'stand_height_ft',
   'annual_precip', 'annual_temp',
   'precip_normal', 'temp_normal',
   'sand_percent', 'clay_percent', 'soil_depth_cm',
-  'forest_loss', 'soil_moisture',
+  'forest_loss', 'last_burn_year', 'soil_moisture',
 ]
 
 /** Minimum % contribution a predictor must contribute to survive the scout filter. */

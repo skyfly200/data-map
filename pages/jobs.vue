@@ -61,6 +61,10 @@
                 <input v-model="form.jobKind" type="radio" value="model" />
                 <span>Model suitability</span>
               </label>
+              <label class="pick">
+                <input v-model="form.jobKind" type="radio" value="enrich_model" />
+                <span>Enrich + Auto-model</span>
+              </label>
             </div>
           </div>
           <p v-if="form.jobKind === 'model'" class="hint">
@@ -68,6 +72,12 @@
             habitat-suitability surface across their area. A model, not a survey:
             it says where the environment resembles where the species was found,
             which is not the same as where it is.
+          </p>
+          <p v-else-if="form.jobKind === 'enrich_model'" class="hint">
+            Enriches the observations with the selected layers, then automatically
+            trains a MaxEnt suitability model using the enriched values. A scout
+            model runs first to rank predictor importance and prune low-contributing
+            variables before the final fit.
           </p>
 
           <div class="row">
@@ -196,6 +206,34 @@
             </div>
           </div>
 
+          <template v-else-if="form.jobKind === 'enrich_model'">
+            <div class="row">
+              <label>Enrich layers</label>
+              <div class="stages">
+                <label v-for="s in stageList" :key="s.key" class="stage">
+                  <input type="checkbox" :value="s.key" v-model="form.stages" />
+                  <span>
+                    <strong>{{ s.label }}</strong>
+                    <em>{{ s.description }}</em>
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div class="row">
+              <label>Region</label>
+              <div class="bbox">
+                <label class="mini">N <input v-model.number="form.modelNorth" type="number" step="0.1" /></label>
+                <label class="mini">S <input v-model.number="form.modelSouth" type="number" step="0.1" /></label>
+                <label class="mini">W <input v-model.number="form.modelWest" type="number" step="0.1" /></label>
+                <label class="mini">E <input v-model.number="form.modelEast" type="number" step="0.1" /></label>
+              </div>
+            </div>
+            <p class="hint">
+              The model will auto-select the best predictors from the enriched columns
+              via a scout run, then project suitability across this region.
+            </p>
+          </template>
+
           <div v-else class="row">
             <label>Layers</label>
             <div class="stages">
@@ -207,6 +245,14 @@
                 </span>
               </label>
             </div>
+          </div>
+
+          <div v-if="form.jobKind === 'model'" class="row">
+            <label>Options</label>
+            <label class="pick">
+              <input type="checkbox" v-model="form.autoOptimize" />
+              <span>Auto-select predictors (scout model)</span>
+            </label>
           </div>
 
           <p v-if="submitError" class="msg error">{{ submitError }}</p>
@@ -221,6 +267,9 @@
               Pick at least {{ MIN_PREDICTORS }} predictors.
             </span>
             <span v-else-if="form.jobKind !== 'model' && !form.stages.length" class="hint">Pick at least one layer.</span>
+            <span v-if="pendingAutoModel.enrichJobId" class="hint ok">
+              Enrichment queued — model will submit automatically when it completes.
+            </span>
             <span v-else-if="form.sourceType === 'dataset' && !form.datasetSlug" class="hint">
               Choose a dataset.
             </span>
@@ -516,16 +565,23 @@ const form = reactive({
   assetTitle: '',
   assetVisibility: 'private',
   north: 40.5, south: 39.2, west: -106.2, east: -104.8,
+  // Separate region bounds for the model surface in enrich_model mode.
+  modelNorth: 40.5, modelSouth: 39.2, modelWest: -106.2, modelEast: -104.8,
   dateFrom: '', dateTo: '', taxon: '',
   stages: [...DEFAULT_STAGES],
   predictors: [...DEFAULT_PREDICTORS],
+  autoOptimize: false,
 })
+
+// Tracks a pending auto-model submission: after an enrich_model enrich job
+// succeeds, the saved dataset is used as source for a model job with autoOptimize.
+const pendingAutoModel = reactive({ enrichJobId: '', modelSpec: null as Record<string, any> | null })
 
 /** Datasets this member may run a job over: their own, plus anything shared. */
 const sourceChoices = computed(() => datasetsApi.available.value)
 
 const canSubmit = computed(() => {
-  // A model needs its predictors; an enrichment job needs its layers.
+  // A model needs its predictors; enrich and enrich_model need layers.
   if (form.jobKind === 'model') {
     if (form.predictors.length < MIN_PREDICTORS) return false
   } else if (!form.stages.length) {
@@ -652,28 +708,59 @@ async function onSubmit() {
       }
     }
 
-    const spec = form.jobKind === 'model'
-      ? {
+    let spec
+    if (form.jobKind === 'model') {
+      spec = {
         kind: 'model',
         title: form.title,
         predictors: form.predictors,
+        autoOptimize: form.autoOptimize || undefined,
         // For a bbox source the presences' own area is where the surface is
         // drawn; for a dataset it is the extent of its points (the worker
         // derives it), so no region is sent here.
         region: source.type === 'bbox' ? source.bounds : undefined,
         source,
       }
-      : {
+    } else if (form.jobKind === 'enrich_model') {
+      // Phase 1: submit the enrich job. The model job is submitted automatically
+      // in the jobs watcher when enrichment completes and its dataset is saved.
+      spec = {
         kind: 'enrich',
         title: form.title,
         stages: form.stages,
         source,
       }
+      // Store the model spec so the watcher can submit it once the dataset exists.
+      pendingAutoModel.enrichJobId = '__pending__'
+      pendingAutoModel.modelSpec = {
+        kind: 'model',
+        title: `${form.title} — model`,
+        // autoOptimize always on for the auto-model path: the scout pass selects
+        // the best predictors from whatever was enriched.
+        autoOptimize: true,
+        region: { north: form.modelNorth, south: form.modelSouth,
+                  west: form.modelWest, east: form.modelEast },
+      }
+    } else {
+      spec = {
+        kind: 'enrich',
+        title: form.title,
+        stages: form.stages,
+        source,
+      }
+    }
 
     const result = await jobsApi.submit(spec)
-    const what = form.jobKind === 'model' ? 'presences' : 'points'
-    submitNote.value = `Queued: ${result.points.toLocaleString()} ${what}, about `
-      + `${result.estimate} units. ${result.remaining} left this month.`
+    if (form.jobKind === 'enrich_model') {
+      // Now that we have the real job ID, update the pending tracker.
+      pendingAutoModel.enrichJobId = result.job?.id || result.id || ''
+      submitNote.value = `Enrich queued: ${result.points.toLocaleString()} points. `
+        + `Model will submit automatically when it completes.`
+    } else {
+      const what = form.jobKind === 'model' ? 'presences' : 'points'
+      submitNote.value = `Queued: ${result.points.toLocaleString()} ${what}, about `
+        + `${result.estimate} units. ${result.remaining} left this month.`
+    }
   } catch (e) {
     submitError.value = e.message
   }
@@ -788,7 +875,21 @@ watch(jobsApi.jobs, (curr, prev) => {
     const was = prev?.find((j) => j.id === job.id)
     // Save if: job just finished (was pending/running), OR first load (no prev).
     if (!prev || (was && was.status !== 'succeeded')) {
-      datasetsApi.saveJob(job, { title: job.title.trim() }).catch(() => {})
+      const saved = datasetsApi.saveJob(job, { title: job.title.trim() }).catch(() => null)
+      // If this is the enrich phase of an enrich_model workflow, submit the
+      // model job once the dataset has been saved and its slug is known.
+      if (pendingAutoModel.enrichJobId && job.id === pendingAutoModel.enrichJobId
+          && pendingAutoModel.modelSpec) {
+        const modelSpec = { ...pendingAutoModel.modelSpec }
+        pendingAutoModel.enrichJobId = ''
+        pendingAutoModel.modelSpec = null
+        saved.then((dataset) => {
+          if (!dataset?.slug) return
+          jobsApi.submit({ ...modelSpec, source: { type: 'dataset', slug: dataset.slug } })
+            .then(() => { submitNote.value = 'Model job queued from enriched dataset.' })
+            .catch((e) => { submitError.value = `Auto-model failed: ${e.message}` })
+        })
+      }
     }
   }
 })
