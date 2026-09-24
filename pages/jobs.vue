@@ -457,7 +457,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, reactive, ref, watch, onMounted } from 'vue'
 import { STAGES, DEFAULT_STAGES } from '~/netlify/lib/ee-pipeline.mjs'
 import {
@@ -575,7 +575,7 @@ const form = reactive({
 
 // Tracks a pending auto-model submission: after an enrich_model enrich job
 // succeeds, the saved dataset is used as source for a model job with autoOptimize.
-const pendingAutoModel = reactive({ enrichJobId: '', modelSpec: null as Record<string, any> | null })
+const pendingAutoModel = reactive<{ enrichJobId: string; modelSpec: Record<string, any> | null }>({ enrichJobId: '', modelSpec: null })
 
 /** Datasets this member may run a job over: their own, plus anything shared. */
 const sourceChoices = computed(() => datasetsApi.available.value)
