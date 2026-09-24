@@ -15,13 +15,20 @@
 // already does that) or store the result. It turns "these presences, these
 // predictors, this region" into an Earth Engine image and how to paint it.
 
-import { SRTM, S2_SR, ERA5_DAILY, CHIRPS_DAILY, SOLUS100, SpecError, normaliseBounds } from './ee-pipeline.mjs'
+import { SRTM, S2_SR, ERA5_DAILY, CHIRPS_DAILY, SOLUS100, MODIS_BURN, TREEMAP, SpecError, normaliseBounds } from './ee-pipeline.mjs'
+import { ASSETS } from './ee-tile-layers.mjs'
 import { CHUNK_SIZE } from './quotas.mjs'
 
 // Additional asset IDs used only by the extended model predictor set.
+// Reference ASSETS where possible to stay in sync with the map layer definitions.
 const WORLDCLIM_BIO = 'WORLDCLIM/V1/BIO'
 const NLCD_TCC = 'USGS/NLCD_RELEASES/2021_REL/TCC/v2021-4'
 const HANSEN_GFC = 'UMD/hansen/global_forest_change_2023_v1_11'
+const {
+  CSP_SRTM_MTPI, CSP_SRTM_CHILI, CSP_HM,
+  MERIT_HYDRO, GHSL_POP,
+  OPENLANDMAP_WATER_33KPA,
+} = ASSETS
 
 /**
  * The predictors a suitability model may use.
@@ -190,6 +197,138 @@ export const MAXENT_PREDICTORS = {
       .select('r_0_cm_p')
       .rename('sand_percent'),
   },
+
+  // ── Terrain exposure (matches enrichment stage bands) ─────────────────────
+  solar_exposure: {
+    label: 'Solar exposure (heat load index)',
+    // Folded aspect: McCune & Keon heat load index. North-facing slopes get low
+    // values, south-facing slopes get high. Rescaled to [0, 1].
+    image: (ee) => {
+      const aspect = ee.Terrain.aspect(ee.Image(SRTM).select('elevation'))
+      const slope = ee.Terrain.slope(ee.Image(SRTM).select('elevation'))
+      // HLI = 1 − cos(aspect − 225°) × sin(slope) / 2
+      const radAspect = aspect.subtract(225).multiply(Math.PI / 180)
+      const radSlope = slope.multiply(Math.PI / 180)
+      return ee.Image(1)
+        .subtract(radAspect.cos().multiply(radSlope.sin()).divide(2))
+        .rename('solar_exposure')
+    },
+  },
+  wind_exposure: {
+    label: 'Wind exposure (terrain roughness)',
+    // Focal standard deviation of elevation as a simple proxy for wind exposure:
+    // smooth ridges are exposed, sheltered draws have low variation. The
+    // enrichment stage uses the same proxy.
+    image: (ee) => {
+      const dem = ee.Image(SRTM).select('elevation')
+      return dem.reduceNeighborhood({
+        reducer: ee.Reducer.stdDev(),
+        kernel: ee.Kernel.circle(500, 'meters'),
+      }).divide(200).min(1).rename('wind_exposure')
+    },
+  },
+
+  // ── Fire history ──────────────────────────────────────────────────────────
+  last_burn_year: {
+    label: 'Last burn year (MODIS, since 2001)',
+    // Most recent calendar year any pixel burned, aggregated from MODIS monthly
+    // burn-date bands. Unburned pixels get 0. Useful as a habitat-age proxy.
+    image: (ee) => {
+      const years = []
+      for (let y = 2001; y <= 2023; y++) years.push(y)
+      const burnYear = ee.ImageCollection(years.map((y) => {
+        const burned = ee.ImageCollection(MODIS_BURN)
+          .filterDate(`${y}-01-01`, `${y}-12-31`)
+          .select('BurnDate').max().gt(0)
+        return burned.multiply(y).rename('last_burn_year')
+      })).max()
+      return burnYear.rename('last_burn_year')
+    },
+  },
+
+  // ── Forest structure ──────────────────────────────────────────────────────
+  stand_height_ft: {
+    label: 'Stand height (USFS TreeMap, ft)',
+    image: (ee) => ee.ImageCollection(TREEMAP)
+      .filterDate('2016-01-01', '2016-12-31')
+      .first()
+      .select('STANDHT')
+      .rename('stand_height_ft'),
+  },
+  canopy_pct: {
+    label: 'Canopy cover % (USFS TreeMap)',
+    image: (ee) => ee.ImageCollection(TREEMAP)
+      .filterDate('2016-01-01', '2016-12-31')
+      .first()
+      .select('CANOPYPCT')
+      .rename('canopy_pct'),
+  },
+
+  // ── Topographic indices (CSP/ERGo) ────────────────────────────────────────
+  mtpi: {
+    label: 'Multi-scale topographic position (mTPI)',
+    // CSP/ERGo SRTM mTPI: positive = ridge, negative = valley. Better than a
+    // single-radius TPI because it integrates multiple neighbourhood scales.
+    image: (ee) => ee.Image(CSP_SRTM_MTPI).select('constant').rename('mtpi'),
+  },
+  chili: {
+    label: 'Heat-insolation load (CHILI)',
+    // Continuous Heat-Insolation Load Index: south + west-facing slopes score
+    // high, north-facing valleys score low. Tighter than the HLI proxy.
+    image: (ee) => ee.Image(CSP_SRTM_CHILI).select('constant').rename('chili'),
+  },
+
+  // ── Hydrology (MERIT) ─────────────────────────────────────────────────────
+  hand: {
+    label: 'Height above nearest drainage (HAND)',
+    // MERIT Hydro hnd band: metres above the nearest river channel. Low values
+    // mean riparian / flood-prone ground; high values mean dry upland.
+    image: (ee) => ee.Image(MERIT_HYDRO).select('hnd')
+      .updateMask(ee.Image(MERIT_HYDRO).select('hnd').gte(0))
+      .rename('hand'),
+  },
+
+  // ── Soil hydraulics ───────────────────────────────────────────────────────
+  field_capacity: {
+    label: 'Soil field capacity (water-holding, 0 cm)',
+    // OpenLandMap volumetric water content at 33 kPa tension, surface layer.
+    // High = clay-rich soils that hold moisture; low = sandy, freely draining.
+    image: (ee) => ee.Image(OPENLANDMAP_WATER_33KPA).select('b0').rename('field_capacity'),
+  },
+
+  // ── Climate normals (ERA5) ────────────────────────────────────────────────
+  soil_temp_normal: {
+    label: 'Soil temperature, normal (ERA5-Land)',
+    // Long-run mean of ERA5-Land layer-1 soil temperature, converted to °C.
+    image: (ee) => ee.ImageCollection(ERA5_DAILY)
+      .select('soil_temperature_level_1')
+      .mean()
+      .subtract(273.15)
+      .rename('soil_temp_normal'),
+  },
+
+  // ── Anthropogenic ─────────────────────────────────────────────────────────
+  human_modification: {
+    label: 'Human modification index',
+    // CSP Global Human Modification: 0 = pristine, 1 = heavily modified.
+    // Useful for separating habitat quality from raw environmental suitability,
+    // and for capturing observation-effort bias correction.
+    image: (ee) => {
+      const img = ee.Image(CSP_HM).select('gHM')
+      return img.updateMask(img.gte(0)).rename('human_modification')
+    },
+  },
+  population_density: {
+    label: 'Population density, log (GHSL 2020)',
+    // log1p of GHSL population count; zero stays zero, dense cities compress.
+    // Proxy for observation effort — high-density areas are over-sampled.
+    image: (ee) => {
+      const pop = ee.ImageCollection(GHSL_POP)
+        .filterDate('2020-01-01', '2021-01-01').first()
+        .select('population_count')
+      return pop.log1p().updateMask(pop.gt(0)).rename('population_density')
+    },
+  },
 }
 
 export const PREDICTOR_KEYS = Object.keys(MAXENT_PREDICTORS)
@@ -204,12 +343,21 @@ export const DEFAULT_PREDICTORS = ['elevation', 'slope', 'aspect', 'ndvi', 'soil
  * ones are more likely to stay in.
  */
 export const ALL_PREDICTORS = [
-  'elevation', 'slope', 'northness', 'tpi', 'twi',
-  'ndvi', 'ndmi', 'canopy',
-  'annual_precip', 'annual_temp',
-  'precip_normal', 'temp_normal',
-  'sand_percent', 'clay_percent', 'soil_depth_cm',
-  'forest_loss', 'soil_moisture',
+  // Terrain
+  'elevation', 'slope', 'aspect', 'northness', 'tpi', 'twi',
+  'mtpi', 'chili', 'solar_exposure', 'wind_exposure',
+  // Hydrology
+  'hand',
+  // Vegetation
+  'ndvi', 'ndmi', 'canopy', 'canopy_pct', 'stand_height_ft',
+  // Climate normals
+  'annual_precip', 'annual_temp', 'precip_normal', 'temp_normal', 'soil_temp_normal',
+  // Soil
+  'soil_moisture', 'field_capacity', 'sand_percent', 'clay_percent', 'soil_depth_cm',
+  // Disturbance
+  'forest_loss', 'last_burn_year',
+  // Anthropogenic
+  'human_modification', 'population_density',
 ]
 
 /** Minimum % contribution a predictor must contribute to survive the scout filter. */

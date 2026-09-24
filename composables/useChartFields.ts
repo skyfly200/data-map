@@ -32,6 +32,12 @@ export const ALL_NUMERIC: NumericField[] = [
   { key: 'water_retention', label: 'Wetness index (TWI)', bounds: [0, 1] },
   { key: 'slope', label: 'Slope (°)', bounds: [0, 90] },
   { key: 'aspect', label: 'Aspect (°)', bounds: [0, 360] },
+  { key: 'soil_sand_pct', label: 'Soil sand %', bounds: [0, 100] },
+  { key: 'soil_depth_cm', label: 'Soil depth (cm)', bounds: [0, null] },
+  { key: 'last_burn_year', label: 'Last burn year', bounds: [2001, null] },
+  { key: 'years_since_fire', label: 'Years since fire', bounds: [0, null] },
+  { key: 'canopy_pct', label: 'Canopy cover %', bounds: [0, 100] },
+  { key: 'stand_height_ft', label: 'Stand height (ft)', bounds: [0, null] },
 ]
 
 const BOUNDS = new Map<string, [number | null, number | null]>(
@@ -104,6 +110,10 @@ export const ALL_CATEGORY: CategoryField[] = [
   { key: 'year', label: 'Year' },
   { key: 'month_name', label: 'Month' },
   { key: 'enrichment_level', label: 'Enrichment level' },
+  { key: 'soil_texture', label: 'Soil texture' },
+  { key: 'soil_great_group', label: 'Soil great group' },
+  { key: 'soil_order', label: 'Soil order' },
+  { key: 'forest_type', label: 'Forest type' },
 ]
 
 

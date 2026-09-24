@@ -89,6 +89,21 @@ export const FIELD_MODES: FieldMode[] = [
     note: 'Moisture in the vegetation canopy from satellite imagery. High is a wet canopy.' },
   { key: 'elevation', group: 'Terrain', ramp: ['#f0f4c3', '#3e2723'],
     note: 'Mean elevation of the finds in this cell.' },
+  // Soil stage
+  { key: 'soil_sand_pct', group: 'Ground', ramp: ['#fff8e1', '#795548'],
+    note: 'Percent sand in the top soil horizon. High values are sandy, low are clay-heavy.' },
+  { key: 'soil_depth_cm', group: 'Ground', ramp: ['#fce4ec', '#4a148c'],
+    note: 'Depth to bedrock in centimetres. Deeper soils hold more moisture and support larger root systems.' },
+  // Fire stage
+  { key: 'last_burn_year', group: 'Fire', ramp: ['#fff8e1', '#bf360c'],
+    note: 'Most recent year each point burned, from MODIS (since 2001). Higher means a more recent burn.' },
+  { key: 'years_since_fire', group: 'Fire', ramp: ['#e8f5e9', '#bf360c'],
+    note: 'Years between the last burn and the observation date. Zero means the point burned the same year.' },
+  // Forest stage
+  { key: 'canopy_pct', group: 'Vegetation', ramp: ['#f9fbe7', '#1b5e20'],
+    note: 'Tree canopy cover percent from USFS TreeMap. High values are dense closed-canopy forest.' },
+  { key: 'stand_height_ft', group: 'Vegetation', ramp: ['#f1f8e9', '#33691e'],
+    note: 'Estimated stand height in feet from USFS TreeMap. Taller means older or more productive forest.' },
 ]
 
 const FIELD_LABELS: Record<string, string> = Object.fromEntries(ALL_NUMERIC.map((f) => [f.key, f.label]))
