@@ -180,8 +180,15 @@ function isoDate(value, name) {
   return s
 }
 
-/** A bounding box, validated and ordered. */
-export function normaliseBounds(input) {
+/**
+ * A bounding box, validated and ordered.
+ *
+ * Pass `skipSizeCheck: true` for model-job source bounds: a model's source
+ * only filters which observations are used as presences, and observations can
+ * span any area. The size limit still applies to rendering regions (where EE
+ * projects a surface — large projections time out).
+ */
+export function normaliseBounds(input, { skipSizeCheck = false } = {}) {
   if (!input || typeof input !== 'object') throw new SpecError('An area is required.')
   const north = num(input.north, 'north')
   const south = num(input.south, 'south')
@@ -200,7 +207,7 @@ export function normaliseBounds(input) {
   // nearly the whole globe and refuse a perfectly small box.
   if (west > east) east += 360
 
-  if (north - south > MAX_BBOX_DEGREES || east - west > MAX_BBOX_DEGREES) {
+  if (!skipSizeCheck && (north - south > MAX_BBOX_DEGREES || east - west > MAX_BBOX_DEGREES)) {
     throw new SpecError(`That area is larger than ${MAX_BBOX_DEGREES} degrees across. `
       + 'Earth Engine can do it, but not inside a request; narrow the area.')
   }
@@ -221,7 +228,7 @@ export function normaliseBounds(input) {
  * source shapes — a saved dataset, or a bounding box and filters — so the
  * checking lives here once and each kind wraps its own fields around it.
  */
-export function normaliseSource(rawSource) {
+export function normaliseSource(rawSource, { skipSizeCheck = false } = {}) {
   const source = rawSource && typeof rawSource === 'object' ? rawSource : {}
   const type = String(source.type || 'bbox')
 
@@ -233,7 +240,7 @@ export function normaliseSource(rawSource) {
     return { type: 'dataset', slug }
   }
   if (type === 'bbox') {
-    const bounds = normaliseBounds(source.bounds)
+    const bounds = normaliseBounds(source.bounds, { skipSizeCheck })
     const from = isoDate(source.dateFrom, 'dateFrom')
     const to = isoDate(source.dateTo, 'dateTo')
     if (from && to && from > to) throw new SpecError('The start date is after the end date.')
@@ -253,7 +260,12 @@ export function normaliseSpec(input = {}) {
   // A model job is a different shape — predictors and a region rather than
   // stages — so it has its own normaliser, given the same source checker so its
   // presences come from the same two sources an enrichment job's do.
-  if (kind === 'model') return normaliseModelSpec(input, { normaliseSource })
+  // Model source is a presence filter — it can span any area. The projection
+  // region (where the surface is drawn) keeps its limit, but we omit it entirely
+  // and let the runner derive it from the presence extent (boundsOfPoints).
+  if (kind === 'model') return normaliseModelSpec(input, {
+    normaliseSource: (s) => normaliseSource(s, { skipSizeCheck: true }),
+  })
   if (kind !== 'enrich') throw new SpecError(`Unknown job kind "${kind}".`)
 
   const requested = Array.isArray(input.stages) && input.stages.length
