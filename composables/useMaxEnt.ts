@@ -146,6 +146,31 @@ export function useMaxEnt() {
     return () => clearInterval(timer)
   }
 
+  /**
+   * Register a pre-computed EE suitability asset as a completed model, bypassing
+   * the data-ingest and training pipeline.
+   */
+  async function registerAsset(spec: { title: string; description?: string; asset_path: string; visibility?: string }) {
+    pending.value = true
+    error.value = ''
+    try {
+      const res = await fetch(BASE, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', ...await authHeaders() },
+        body: JSON.stringify({ action: 'register', ...spec }),
+      })
+      const data = await res.json()
+      if (!data.ok) throw new Error(data.error || 'Registration failed')
+      await fetchModels()
+      return { ok: true }
+    } catch (e: any) {
+      error.value = e.message
+      return { ok: false, error: e.message }
+    } finally {
+      pending.value = false
+    }
+  }
+
   /** Delete a saved model configuration. */
   async function deleteModel(id: string) {
     try {
@@ -180,7 +205,7 @@ export function useMaxEnt() {
 
   return {
     models, activeJob, pending, error,
-    fetchModels, trainModel, deleteModel,
+    fetchModels, trainModel, deleteModel, registerAsset,
     maxentLayerSpecs,
   }
 }

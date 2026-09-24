@@ -15,7 +15,7 @@
 import { adminClient, requireUser } from '../lib/auth.mjs'
 import { ownerViewer } from '../lib/job-queue.mjs'
 import { loadSource } from '../lib/job-source.mjs'
-import { earthEngineConfigured, remintSuitability } from '../lib/ee-runner.mjs'
+import { earthEngineConfigured, remintSuitability, mintFromAssetPath } from '../lib/ee-runner.mjs'
 import { effectiveTier } from '../lib/tiers.mjs'
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
@@ -39,10 +39,12 @@ export default async function handler(request) {
 
   // ?model=configId resolves to the latest succeeded job for that config.
   let jobId = explicitJobId
+  let registeredAssetPath = null
+
   if (!jobId && configId) {
     const { data: run, error: runErr } = await client
       .from('model_runs')
-      .select('job_id')
+      .select('job_id, run_meta')
       .eq('config_id', configId)
       .eq('status', 'succeeded')
       .order('created_at', { ascending: false })
@@ -51,6 +53,33 @@ export default async function handler(request) {
     if (runErr) return json({ ok: false, error: runErr.message }, 500)
     if (!run?.job_id) return json({ ok: false, error: 'No succeeded run for that model config.' }, 404)
     jobId = run.job_id
+
+    // Registered (pre-computed) assets have no ee_jobs row — fast path below.
+    if (run.run_meta?.registered === true) {
+      const { data: result, error: resErr } = await client
+        .from('model_results')
+        .select('suitability_asset_path')
+        .eq('config_id', configId)
+        .maybeSingle()
+      if (resErr) return json({ ok: false, error: resErr.message }, 500)
+      if (!result?.suitability_asset_path) {
+        return json({ ok: false, error: 'No asset path stored for this registered model.' }, 404)
+      }
+      registeredAssetPath = result.suitability_asset_path
+    }
+  }
+
+  // Registered asset: mint tiles directly from the stored EE asset path.
+  if (registeredAssetPath) {
+    if (!earthEngineConfigured()) {
+      return json({ ok: false, error: 'Earth Engine is not configured on this deployment.' }, 503)
+    }
+    try {
+      const template = await mintFromAssetPath(registeredAssetPath)
+      return json({ ok: true, template, meta: { kind: 'registered', assetPath: registeredAssetPath, mintedAt: new Date().toISOString() } })
+    } catch (err) {
+      return json({ ok: false, error: String(err?.message || err).slice(0, 300) }, 502)
+    }
   }
 
   const { data: job, error } = await client

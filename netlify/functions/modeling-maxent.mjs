@@ -1,10 +1,11 @@
 // MaxEnt Modeling API  — /.netlify/functions/modeling-maxent
 //
-//   GET    (no params)          - List user's saved models
-//   GET    ?jobId=<id>          - Poll results for a job
-//   GET    ?evaluate=1&jobId=<id> - Niche + response-curve data for a succeeded run
-//   POST                        - Submit a training job (body = spec)
-//   DELETE                      - Delete a model config (body = { id })
+//   GET    (no params)               - List user's saved models
+//   GET    ?jobId=<id>               - Poll results for a job
+//   GET    ?evaluate=1&jobId=<id>    - Niche + response-curve data for a succeeded run
+//   POST   { action: 'register' }    - Register a pre-computed EE asset as a model
+//   POST   (no action)               - Submit a training job (body = spec)
+//   DELETE                           - Delete a model config (body = { id })
 //
 // This function handles the lifecycle of a MaxEnt model:
 // 1. Validating the spec -> 2. Creating DB records -> 3. Triggering EE job.
@@ -96,7 +97,59 @@ async function listModels(client, viewer) {
     .eq('owner_id', viewer.userId).order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
-  return json({ ok: true, models: data || [] })
+  // Normalize: expose model_results as `results` and hoist the asset path to
+  // the top level so composable/template code doesn't have to drill in.
+  const models = (data || []).map(m => ({
+    ...m,
+    results: m.model_results || [],
+    suitability_asset_path: m.model_results?.[0]?.suitability_asset_path ?? null,
+  }))
+  return json({ ok: true, models })
+}
+
+/**
+ * Register a pre-computed EE suitability asset as a completed model record.
+ * Skips the data-ingest and training steps — useful when the user has already
+ * run MaxEnt externally and just wants the result surfaced in the app.
+ */
+async function registerAsset(client, auth, body) {
+  const viewer = viewerFrom(auth)
+  const { title, description, asset_path, visibility } = body
+
+  if (!title?.trim()) throw Object.assign(new Error('Title is required.'), { status: 400 })
+  if (!asset_path?.trim()) throw Object.assign(new Error('EE asset path is required.'), { status: 400 })
+
+  const visChecked = checkVisibility(visibility, viewer)
+
+  const { data: config, error: configErr } = await client.from('model_configs').insert({
+    owner_id: viewer.userId,
+    title: title.trim(),
+    description: description || null,
+    predictors: [],
+    background_count: 0,
+    effort_weighted: false,
+    visibility: visChecked,
+  }).select().single()
+  if (configErr) throw new Error(configErr.message)
+
+  // Stub run so model_results FK constraints are satisfied.
+  const { data: run, error: runErr } = await client.from('model_runs').insert({
+    config_id: config.id,
+    job_id: `manual-${crypto.randomUUID()}`,
+    status: 'succeeded',
+    finished_at: new Date().toISOString(),
+    run_meta: { registered: true },
+  }).select().single()
+  if (runErr) throw new Error(runErr.message)
+
+  const { error: resultErr } = await client.from('model_results').insert({
+    run_id: run.id,
+    config_id: config.id,
+    suitability_asset_path: asset_path.trim(),
+  })
+  if (resultErr) throw new Error(resultErr.message)
+
+  return json({ ok: true, config })
 }
 
 /**
@@ -185,7 +238,9 @@ export default async function handler(request) {
     if (method === 'POST') {
       const auth = await requireMemberFresh(request)
       if (!auth.ok) return auth.response
-      return await train(client, auth, await request.json())
+      const body = await request.json()
+      if (body.action === 'register') return await registerAsset(client, auth, body)
+      return await train(client, auth, body)
     }
 
     if (method === 'DELETE') {

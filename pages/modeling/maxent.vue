@@ -52,12 +52,16 @@
 
           <div class="row">
             <label>Source Dataset</label>
-            <select v-model="form.sourceDatasetId">
-              <option value="" disabled>Choose a dataset…</option>
+            <select v-model="form.sourceDatasetId" :disabled="!availableDatasets.length">
+              <option value="" disabled>{{ availableDatasets.length ? 'Choose a dataset…' : 'No datasets available' }}</option>
               <option v-for="d in availableDatasets" :key="d.id" :value="d.id">
                 {{ d.title }}{{ d.feature_count ? ` · ${d.feature_count.toLocaleString()} points` : '' }}
               </option>
             </select>
+            <span v-if="!availableDatasets.length" class="field-note">
+              No datasets yet. If you have an existing suitability surface, use
+              <button class="linkish" @click="showRegister = true">Register an existing EE asset</button> below.
+            </span>
           </div>
 
           <div class="row">
@@ -109,6 +113,50 @@
           
           <p v-if="error" class="msg error">{{ error }}</p>
           <p v-if="submitNote" class="msg ok">{{ submitNote }}</p>
+        </section>
+
+        <!-- ─── Register Existing Asset ───────────────────────────────────── -->
+        <section class="panel register-panel">
+          <button class="register-toggle" @click="showRegister = !showRegister">
+            <span>{{ showRegister ? '▾' : '▸' }} Register an existing EE asset</span>
+            <span class="register-hint">Skip data ingest — use a suitability surface you've already computed</span>
+          </button>
+
+          <template v-if="showRegister">
+            <div class="row" style="margin-top:16px">
+              <label for="reg-title">Model Name</label>
+              <input id="reg-title" v-model="registerForm.title" type="text" placeholder="Example: Red-belted Conk — 2024 run" />
+            </div>
+
+            <div class="row">
+              <label for="reg-asset">
+                Earth Engine Asset Path
+                <span class="field-hint">e.g. projects/my-project/assets/redbelted_suitability</span>
+              </label>
+              <input id="reg-asset" v-model="registerForm.asset_path" type="text" placeholder="projects/…/assets/…" />
+            </div>
+
+            <div class="row">
+              <label for="reg-desc">Description (optional)</label>
+              <textarea id="reg-desc" v-model="registerForm.description" placeholder="Notes about this run…"></textarea>
+            </div>
+
+            <div class="row">
+              <label>Visibility</label>
+              <select v-model="registerForm.visibility">
+                <option v-for="v in visibilities" :key="v" :value="v">{{ VISIBILITY_LABELS[v] }}</option>
+              </select>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary" :disabled="pending || !registerForm.title.trim() || !registerForm.asset_path.trim()" @click="onRegister">
+                {{ pending ? 'Registering…' : 'Register Asset' }}
+              </button>
+            </div>
+
+            <p v-if="registerError" class="msg error">{{ registerError }}</p>
+            <p v-if="registerNote" class="msg ok">{{ registerNote }}</p>
+          </template>
         </section>
 
         <!-- ─── Active Job ──────────────────────────────────────────────────── -->
@@ -168,10 +216,23 @@
                 <span class="when">{{ fmtWhen(m.created_at) }}</span>
               </div>
               <p class="model-meta">
-                {{ m.predictors.length }} predictors · {{ m.background_count }} background points
-                <template v-if="m.results">
-                  · <span class="cv-score">{{ m.results[0]?.auc }} <GlossaryTooltip term="AUC" :definition="g('AUC')">AUC</GlossaryTooltip></span>
+                <template v-if="m.predictors && m.predictors.length > 0">
+                  {{ m.predictors.length }} predictors · {{ m.background_count }} background points
                 </template>
+                <template v-else>
+                  <span class="registered-badge">Registered EE asset</span>
+                </template>
+                <template v-if="m.results && m.results.length > 0">
+                  <template v-if="m.results[0]?.auc != null">
+                    · <span class="cv-score">{{ m.results[0].auc.toFixed(3) }} <GlossaryTooltip term="AUC" :definition="g('AUC')">AUC</GlossaryTooltip></span>
+                  </template>
+                  <template v-if="m.results[0]?.grade">
+                    · <span class="grade-badge" :class="m.results[0].grade">{{ m.results[0].grade }}</span>
+                  </template>
+                </template>
+              </p>
+              <p v-if="m.results?.[0]?.suitability_asset_path && (!m.predictors || !m.predictors.length)" class="asset-path">
+                {{ m.results[0].suitability_asset_path }}
               </p>
               <div class="model-actions">
                 <button class="btn small primary" @click="openModelOnMap(m)">
@@ -209,13 +270,34 @@ const PREDICTOR_DESCRIPTIONS = {
 import { VISIBILITY_LABELS } from '~/composables/useDatasets'
 import ModelComparison from '~/components/ModelComparison.vue'
 
-const { models, activeJob, pending, error, fetchModels, trainModel, deleteModel } = useMaxEnt()
+const { models, activeJob, pending, error, fetchModels, trainModel, deleteModel, registerAsset } = useMaxEnt()
 const { available: availableDatasets, refreshAvailable } = useDatasets()
 const membership = useMembership()
 const modelOverlay = useModelOverlay()
 const router = useRouter()
 const loading = ref(false)
 const submitNote = ref('')
+
+// Register existing EE asset
+const showRegister = ref(false)
+const registerForm = reactive({ title: '', description: '', asset_path: '', visibility: 'private' })
+const registerNote = ref('')
+const registerError = ref('')
+
+async function onRegister() {
+  registerNote.value = ''
+  registerError.value = ''
+  const result = await registerAsset({ ...registerForm })
+  if (result.ok) {
+    registerNote.value = 'Asset registered successfully!'
+    registerForm.title = ''
+    registerForm.description = ''
+    registerForm.asset_path = ''
+    showRegister.value = false
+  } else {
+    registerError.value = result.error || 'Registration failed.'
+  }
+}
 
 const visibilities = ['private', 'members', 'public']
 
@@ -377,6 +459,33 @@ textarea { min-height: 60px; resize: vertical; }
   text-transform: uppercase; font-weight: 600;
 }
 .model-actions { display: flex; gap: 8px; margin-top: 8px; }
+
+.registered-badge {
+  font-size: 0.72rem; padding: 2px 6px; border-radius: 4px;
+  background: var(--accent-soft); color: var(--accent); font-weight: 600;
+}
+.grade-badge {
+  font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;
+  text-transform: capitalize; background: var(--border);
+}
+.grade-badge.excellent { background: #d4f5e0; color: #1a7a40; }
+.grade-badge.good      { background: #dceeff; color: #1a5ca0; }
+.grade-badge.fair      { background: #fff3cd; color: #856404; }
+.grade-badge.weak      { background: #fde8e8; color: #9b1c1c; }
+.asset-path { font-size: 0.74rem; color: var(--muted); font-family: monospace; margin-top: 2px; word-break: break-all; }
+.cv-score { font-size: 0.82rem; }
+
+.linkish { background: none; border: none; color: var(--accent); font: inherit; cursor: pointer; padding: 0; text-decoration: underline; }
+.linkish:hover { opacity: 0.8; }
+
+.register-panel { padding: 14px 20px; }
+.register-toggle {
+  display: flex; flex-direction: column; gap: 2px; width: 100%;
+  background: none; border: none; padding: 0; cursor: pointer; text-align: left;
+  color: var(--accent); font-size: 0.86rem; font-weight: 600;
+}
+.register-toggle:hover { opacity: 0.8; }
+.register-hint { font-size: 0.76rem; color: var(--muted); font-weight: 400; }
 
 .gate {
   padding: 40px; text-align: center; background: var(--surface);

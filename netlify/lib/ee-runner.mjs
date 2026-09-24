@@ -613,6 +613,13 @@ function boundsOfPoints(points) {
   }
 }
 
+// Default vis for a 0–1 suitability surface from a pre-computed EE asset.
+const REGISTERED_SUITABILITY_VIS = {
+  palette: ['2c2f6b', '4a7db5', 'a1d99b', 'c6301f'],
+  min: '0',
+  max: '1',
+}
+
 /** Ask Earth Engine for a tile template for one image. getMapId is callback-shaped. */
 function mintTemplate(image, vis) {
   return new Promise((resolve, reject) => {
@@ -834,6 +841,18 @@ export async function remintSuitability({ spec, features }) {
     try { await blobs.setJSON(cacheId, { template, meta, expires: Date.now() + MODEL_TTL_MS }) } catch { /* not fatal */ }
   }
   return { template, meta }
+}
+
+/**
+ * Mint a tile template for a pre-computed EE Image asset, bypassing model fitting.
+ *
+ * Used for models registered via the "Register Existing Asset" flow, where the
+ * user already has a suitability surface stored in their EE project.
+ */
+export async function mintFromAssetPath(assetPath) {
+  await initEarthEngine()
+  const image = ee.Image(assetPath)
+  return withRetry(() => mintTemplate(image, REGISTERED_SUITABILITY_VIS), { label: `mint asset ${assetPath}` })
 }
 
 /**
