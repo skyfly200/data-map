@@ -35,7 +35,7 @@ export interface EeJob {
 }
 
 function messageFrom(data: any, status: number): string {
-  return data?.message || `Earth Engine jobs error (${status})`
+  return data?.error || data?.message || `Earth Engine jobs error (${status})`
 }
 
 export function useEeJobs() {
@@ -99,9 +99,8 @@ export function useEeJobs() {
       await refresh()
       return data
     } catch (e: any) {
-      // The function's messages are written for the member — a quota that ran
-      // out, an area with nothing in it — so they are shown as they arrive.
-      error.value = e.message || 'Could not submit that job.'
+      // Don't set shared error.value here — that state drives the "Your jobs"
+      // section. The caller (jobs.vue) handles submit errors with its own ref.
       throw e
     } finally {
       submitting.value = false

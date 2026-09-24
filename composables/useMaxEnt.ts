@@ -45,7 +45,7 @@ export interface MaxEntRun {
 // scope is recreated (e.g. hot reload), and so onScopeDispose can reach it.
 let activeJobStop: (() => void) | null = null
 
-const BASE = '/.netlify/functions/modeling/maxent'
+const BASE = '/.netlify/functions/modeling-maxent'
 
 export function useMaxEnt() {
   const models = useState<MaxEntConfig[]>('maxent-models', () => [])
@@ -64,7 +64,7 @@ export function useMaxEnt() {
   /** Fetch the user's saved model configurations. */
   async function fetchModels() {
     try {
-      const res = await fetch(`${BASE}?action=models`, { headers: await authHeaders() })
+      const res = await fetch(BASE, { headers: await authHeaders() })
       if (!res.ok) throw new Error(`Failed to fetch models: ${res.statusText}`)
       const data = await res.json()
       if (data.ok) models.value = data.models
@@ -78,14 +78,14 @@ export function useMaxEnt() {
     pending.value = true
     error.value = ''
     try {
-      const res = await fetch(`${BASE}?action=train`, {
+      const res = await fetch(BASE, {
         method: 'POST',
         headers: { 'content-type': 'application/json', ...await authHeaders() },
         body: JSON.stringify(spec),
       })
       const data = await res.json()
       if (!data.ok) throw new Error(data.error || 'Training submission failed')
-      
+
       activeJob.value = {
         id: data.config.id,
         job_id: data.jobId,
@@ -112,7 +112,7 @@ export function useMaxEnt() {
 
     const timer = setInterval(async () => {
       try {
-        const res = await fetch(`${BASE}?action=results&job_id=${encodeURIComponent(jobId)}`, { headers: await authHeaders() })
+        const res = await fetch(`${BASE}?jobId=${encodeURIComponent(jobId)}`, { headers: await authHeaders() })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
         consecutiveErrors = 0
@@ -149,7 +149,7 @@ export function useMaxEnt() {
   /** Delete a saved model configuration. */
   async function deleteModel(id: string) {
     try {
-      const res = await fetch(`${BASE}?action=models`, {
+      const res = await fetch(BASE, {
         method: 'DELETE',
         headers: { 'content-type': 'application/json', ...await authHeaders() },
         body: JSON.stringify({ id }),
