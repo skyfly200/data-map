@@ -174,7 +174,7 @@ export default async function handler(request) {
       const auth = await requireUser(request)
       if (!auth.ok) return auth.response
       const jobId = path.split('/').pop()
-      return await getResults(client, auth.viewer, jobId)
+      return await getResults(client, viewerFrom(auth), jobId)
     }
 
     if (method === 'POST' && path.includes('/modeling/maxent/train')) {
