@@ -777,12 +777,15 @@ function useAsSource(dataset) {
 
 // When a named enrich job transitions to succeeded, save it as a Dataset
 // automatically — the member named it at submission, so no extra step needed.
+// Also runs on first load (prev is undefined) to catch jobs that completed
+// before this page was opened.
 watch(jobsApi.jobs, (curr, prev) => {
   for (const job of curr) {
     if (job.status !== 'succeeded' || isModel(job) || !job.title?.trim()) continue
     if (savedFrom(job)) continue
     const was = prev?.find((j) => j.id === job.id)
-    if (was && was.status !== 'succeeded') {
+    // Save if: job just finished (was pending/running), OR first load (no prev).
+    if (!prev || (was && was.status !== 'succeeded')) {
       datasetsApi.saveJob(job, { title: job.title.trim() }).catch(() => {})
     }
   }
