@@ -207,6 +207,12 @@ export function categoryColor(field: string, value: any): string {
     const n = Number(String(value).replace(/^[CK]/, ''))
     return Number.isFinite(n) ? colorFor(n) : UNCLUSTERED
   }
+  if (field === 'location_precision') {
+    const PRECISION_COLORS: Record<string, string> = {
+      precise: '#4caf50', coarse: '#ff9800', obscured: '#f44336', unknown: '#9e9e9e',
+    }
+    return PRECISION_COLORS[value] || UNCLUSTERED
+  }
   return stableColor(value)
 }
 

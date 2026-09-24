@@ -43,6 +43,7 @@ async function train(client, auth, body) {
     effort_weighted: true,
     projection_region: spec.region,
     source_dataset_id: body.source_dataset_id,
+    precise_only: spec.preciseOnly,
     visibility,
   }).select().single()
 
@@ -182,7 +183,10 @@ async function evaluate(client, viewer, jobId) {
     : null
   if (!source) return json({ ok: false, error: 'This model has no linked source dataset.' }, 400)
   const spec = { predictors: config.predictors, background: config.background_count, region: config.projection_region }
-  const features = await loadSource(source, { client, viewer })
+  const allFeatures = await loadSource(source, { client, viewer })
+  const features = config.precise_only
+    ? allFeatures.filter((f) => f.properties?.location_precision === 'precise')
+    : allFeatures
   if (!features.length) throw new Error('That model has no usable observations.')
 
   const result = await runEvaluation({ spec, features })

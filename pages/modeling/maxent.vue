@@ -123,12 +123,30 @@
             </div>
           </div>
 
+          <div class="row">
+            <label class="check-row">
+              <input type="checkbox" v-model="form.preciseOnly" />
+              <span>
+                Precise coordinates only
+                <span class="field-hint">
+                  Recommended for training. iNaturalist randomises obscured locations
+                  inside a ~20&nbsp;km cell, so the sampled environment may not match
+                  where the species was actually found.
+                </span>
+              </span>
+            </label>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" :disabled="pending || !canSubmit" @click="onSubmit">
+              {{ pending ? 'Submitting…' : 'Queue Model' }}
+            </button>
+          </div>
+
           <!-- Add model trigger (when models exist) -->
           <div v-if="models.length" class="add-row">
             <button class="btn ghost small" @click="toggleAddModel">
               {{ showAddModel ? '▾ Close' : '+ Add model' }}
-            </button>
-          </div>
         </section>
 
         <!-- ─── Add Model Panel ─────────────────────────────────────────────── -->
@@ -447,6 +465,7 @@ const form = reactive({
   predictors: [...DEFAULT_PREDICTORS],
   backgroundCount: 1000,
   visibility: 'private',
+  preciseOnly: true,
 })
 
 const predictorList = PREDICTOR_KEYS.map((key) => ({ key, label: MAXENT_PREDICTORS[key].label }))
@@ -464,6 +483,7 @@ async function onSubmit() {
     predictors: form.predictors,
     background: form.backgroundCount,
     visibility: form.visibility,
+    precise_only: form.preciseOnly,
   }
   const result = await trainModel(spec)
   if (result.ok) {
@@ -818,6 +838,12 @@ input:focus, select:focus, textarea:focus {
 
 .form-actions { display: flex; align-items: center; gap: 10px; padding-top: 4px; }
 .form-hint { font-size: 0.76rem; color: var(--muted); }
+.field-hint { font-weight: 400; color: var(--muted); font-size: 0.76rem; margin-left: 4px; }
+.field-note { font-size: 0.76rem; color: var(--muted); line-height: 1.4; margin-top: 4px; }
+.check-row { display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; font-weight: 600;
+  color: var(--text); cursor: pointer; }
+.check-row input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
+.check-row .field-hint { display: block; margin: 2px 0 0; }
 
 .form-msg { margin: 10px 0 0; font-size: 0.8rem; }
 .form-msg.error { color: #b3492f; }

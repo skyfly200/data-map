@@ -83,7 +83,16 @@ export default async function handler(request) {
       client: adminClient(),
       viewer: await ownerViewer(job),
     })
-    if (!features.length) {
+    const allFeatures = features
+    const filteredFeatures = spec.preciseOnly
+      ? features.filter((f) => f.properties?.location_precision === 'precise')
+      : features
+    if (spec.preciseOnly && filteredFeatures.length < allFeatures.length) {
+      console.log(`[ee-worker] precise_only: kept ${filteredFeatures.length}/${allFeatures.length} features`)
+    }
+    const usedFeatures = filteredFeatures.length ? filteredFeatures : features
+
+    if (!usedFeatures.length) {
       let msg
       if (spec.source?.type === 'dataset') {
         msg = `Dataset "${spec.source.slug}" exists but contains no observations.`
@@ -109,7 +118,7 @@ export default async function handler(request) {
     // of sampled points. Its result is a tile template stored in result_meta;
     // there is no GeoJSON file to write.
     if (spec.kind === 'model') {
-      const { template, meta } = await runModel({ spec, features, onProgress })
+      const { template, meta } = await runModel({ spec, features: usedFeatures, onProgress })
       spent = job.estimated_units || 0
       await finishJob(job.id, { resultPath: null, costUnits: spent, meta: { ...meta, template } })
       // The member has almost certainly left the page by now; let them know.
