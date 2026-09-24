@@ -4,8 +4,9 @@
 
     <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
       <p class="text-sm text-blue-800">
-        <strong>How it works:</strong> Upload your GBIF CSV export file. We'll validate the coordinates,
-        convert it to GeoJSON, and save it directly to your datasets for use in pipeline jobs.
+        <strong>How it works:</strong> Upload a GBIF <strong>Darwin Core Archive (.zip)</strong> for full
+        data including image links and DNA sequences, or a simple CSV export for coordinates only.
+        We'll validate the coordinates, convert to GeoJSON, and save it to your datasets.
       </p>
     </div>
 
@@ -20,14 +21,14 @@
       <input
         ref="fileInput"
         type="file"
-        accept=".csv"
+        accept=".csv,.zip"
         class="hidden"
         @change="handleFileSelect"
       />
 
       <div v-if="!selectedFile" class="space-y-3">
         <div class="text-4xl">📊</div>
-        <p class="text-gray-600">Drag & drop your GBIF CSV file here</p>
+        <p class="text-gray-600">Drag & drop a GBIF Darwin Core Archive or CSV here</p>
         <p class="text-sm text-gray-500">or</p>
         <button
           @click="$refs.fileInput.click()"
@@ -37,6 +38,7 @@
         </button>
         <p class="text-xs text-gray-400">
           Download from <a href="https://www.gbif.org/occurrence/download" target="_blank" class="text-green-600 underline">GBIF.org</a>
+          — choose <strong>Darwin Core Archive</strong> for images &amp; DNA
         </p>
       </div>
 
@@ -82,7 +84,7 @@
         </div>
 
         <!-- Statistics -->
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-3 gap-3">
           <div class="text-center p-3 bg-gray-50 rounded">
             <p class="text-2xl font-bold text-gray-800">{{ result.stats.totalRecords }}</p>
             <p class="text-xs text-gray-600">Total Records</p>
@@ -94,6 +96,14 @@
           <div class="text-center p-3 bg-red-50 rounded">
             <p class="text-2xl font-bold text-red-600">{{ result.stats.skippedRecords }}</p>
             <p class="text-xs text-gray-600">Skipped</p>
+          </div>
+          <div v-if="result.stats.mediaRecords" class="text-center p-3 bg-purple-50 rounded">
+            <p class="text-2xl font-bold text-purple-600">{{ result.stats.mediaRecords }}</p>
+            <p class="text-xs text-gray-600">Media Links</p>
+          </div>
+          <div v-if="result.stats.dnaRecords" class="text-center p-3 bg-blue-50 rounded">
+            <p class="text-2xl font-bold text-blue-600">{{ result.stats.dnaRecords }}</p>
+            <p class="text-xs text-gray-600">DNA Records</p>
           </div>
         </div>
 
@@ -155,20 +165,21 @@
     <div class="mt-6 pt-4 border-t border-gray-200">
       <details class="text-sm">
         <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-medium">
-          ℹ️ What fields does GBIF export need?
+          ℹ️ Supported formats &amp; fields
         </summary>
         <div class="mt-2 text-gray-600 space-y-2">
-          <p><strong>Required:</strong></p>
+          <p><strong>Darwin Core Archive (.zip) — recommended</strong></p>
+          <p class="text-xs">Download from GBIF → <em>Darwin Core Archive</em> format. Includes:</p>
           <ul class="list-disc list-inside space-y-1 text-xs">
-            <li><code>decimalLatitude</code> or <code>lat</code></li>
-            <li><code>decimalLongitude</code> or <code>lon</code></li>
+            <li><code>occurrence.txt</code> — full occurrence data with taxonomy, collector, habitat…</li>
+            <li><code>multimedia.txt</code> — image/sound URLs with license &amp; attribution</li>
+            <li><code>dna-derived_data.txt</code> or amplification extension — DNA sequences &amp; accession numbers</li>
           </ul>
-          <p class="mt-2"><strong>Recommended (optional):</strong></p>
+          <p class="mt-2"><strong>Simple CSV — coordinates only</strong></p>
           <ul class="list-disc list-inside space-y-1 text-xs">
+            <li><code>decimalLatitude</code> / <code>decimalLongitude</code> (required)</li>
             <li><code>species</code> or <code>scientificName</code></li>
-            <li><code>eventDate</code> or <code>year</code></li>
-            <li><code>gbifID</code></li>
-            <li><code>coordinateUncertaintyInMeters</code></li>
+            <li><code>eventDate</code>, <code>gbifID</code>, <code>coordinateUncertaintyInMeters</code></li>
           </ul>
         </div>
       </details>
@@ -198,10 +209,10 @@ const formatFileSize = (bytes) => {
 const handleDrop = (e) => {
   dragOver.value = false
   const files = e.dataTransfer.files
-  if (files.length > 0 && files[0].name.endsWith('.csv')) {
+  if (files.length > 0 && (files[0].name.endsWith('.csv') || files[0].name.endsWith('.zip'))) {
     selectedFile.value = files[0]
   } else {
-    error.value = 'Please upload a CSV file'
+    error.value = 'Please upload a Darwin Core Archive (.zip) or CSV file'
   }
 }
 

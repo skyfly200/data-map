@@ -9,12 +9,26 @@
       <template v-else>
         <!-- Any rank: iNaturalist / GBIF match a taxon name at whatever level it
              sits, so "Amanitaceae" imports the family and "Fungi" the kingdom. -->
-        <input v-model="newSpecies" type="text" list="taxon-suggestions"
-               placeholder="e.g. Amanita muscaria, Amanitaceae, Fungi"
-               :disabled="fetching" @keyup.enter="fetchNew" />
-        <datalist id="taxon-suggestions">
-          <option v-for="t in taxa" :key="t" :value="t"></option>
-        </datalist>
+        <div class="ac-wrap" ref="acWrap">
+          <input v-model="newSpecies" type="text" autocomplete="off"
+                 placeholder="e.g. Amanita muscaria, Amanitaceae, Fungi"
+                 :disabled="fetching"
+                 @focus="showDropdown = true"
+                 @keydown="onKey"
+                 @keyup.enter="onEnter" />
+          <ul v-if="showDropdown && acSuggestions.length" class="ac-list" role="listbox">
+            <li v-for="(s, i) in acSuggestions" :key="s.name"
+                class="ac-item" :class="{ active: i === acIndex }"
+                role="option" :aria-selected="i === acIndex"
+                @mousedown.prevent="pickSuggestion(s)"
+                @mousemove="acIndex = i">
+              <span class="ac-sci">{{ s.name }}</span>
+              <span v-if="s.common" class="ac-common">{{ s.common }}</span>
+              <span v-if="s.rank" class="ac-rank">{{ s.rank }}</span>
+            </li>
+          </ul>
+          <span v-if="acLoading" class="ac-spinner" aria-hidden="true"></span>
+        </div>
 
         <!-- Source picker: GBIF for large / historical queries, iNat otherwise. -->
         <div class="source-row">
@@ -74,12 +88,102 @@ const { addInlineDataset } = useObservations()
 const { isAuthed, configured, accessToken } = useAuth()
 const { filters } = useFilters()
 
+const newSpecies = ref('')
+const source = ref('auto')
+
+// ── Live taxon autocomplete ─────────────────────────────────────────────────
+
+const acWrap = ref(null)
+const acSuggestions = ref([])
+const acLoading = ref(false)
+const acIndex = ref(-1)
+const showDropdown = ref(false)
+let acTimer = null
+
+async function fetchSuggestions(q) {
+  if (q.length < 2) { acSuggestions.value = []; return }
+  acLoading.value = true
+  try {
+    // Prefer iNat for autocomplete; fall back to GBIF when source is explicitly gbif.
+    const useGbif = source.value === 'gbif'
+    if (useGbif) {
+      const res = await fetch(`https://api.gbif.org/v1/species/suggest?q=${encodeURIComponent(q)}&limit=8`)
+      if (!res.ok) return
+      const data = await res.json()
+      acSuggestions.value = data.map((r) => ({
+        name: r.canonicalName || r.scientificName,
+        common: r.vernacularName || '',
+        rank: r.rank ? r.rank.toLowerCase() : '',
+      })).filter((r) => r.name)
+    } else {
+      const res = await fetch(`https://api.inaturalist.org/v1/taxa/autocomplete?q=${encodeURIComponent(q)}&per_page=8`)
+      if (!res.ok) return
+      const data = await res.json()
+      acSuggestions.value = (data.results || []).map((r) => ({
+        name: r.name,
+        common: r.preferred_common_name || '',
+        rank: r.rank || '',
+      }))
+    }
+    acIndex.value = -1
+    showDropdown.value = true
+  } catch { /* silently ignore network errors */ }
+  finally { acLoading.value = false }
+}
+
+watch(newSpecies, (val) => {
+  clearTimeout(acTimer)
+  if (!val.trim()) { acSuggestions.value = []; return }
+  acTimer = setTimeout(() => fetchSuggestions(val.trim()), 250)
+})
+
+watch(source, () => {
+  // Re-query when the user switches source tab while typing.
+  if (newSpecies.value.trim().length >= 2) fetchSuggestions(newSpecies.value.trim())
+})
+
+function pickSuggestion(s) {
+  newSpecies.value = s.name
+  acSuggestions.value = []
+  showDropdown.value = false
+  acIndex.value = -1
+}
+
+function onKey(e) {
+  if (!acSuggestions.value.length) return
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    acIndex.value = Math.min(acIndex.value + 1, acSuggestions.value.length - 1)
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    acIndex.value = Math.max(acIndex.value - 1, -1)
+  } else if (e.key === 'Escape') {
+    showDropdown.value = false
+  }
+}
+
+function onEnter() {
+  if (acIndex.value >= 0 && acSuggestions.value[acIndex.value]) {
+    pickSuggestion(acSuggestions.value[acIndex.value])
+  } else {
+    fetchNew()
+  }
+}
+
+// Close dropdown on outside click.
+function onOutsideClick(e) {
+  if (acWrap.value && !acWrap.value.contains(e.target)) showDropdown.value = false
+}
+onMounted(() => document.addEventListener('mousedown', onOutsideClick))
+onBeforeUnmount(() => { document.removeEventListener('mousedown', onOutsideClick); clearTimeout(acTimer) })
+
+// ── Source picker ───────────────────────────────────────────────────────────
+
 const SOURCES = [
   { key: 'auto', label: 'Auto', hint: 'iNaturalist for recent/small pulls; GBIF for historical or large (> 5 000 records / > 60-day span).' },
   { key: 'inat', label: 'iNaturalist', hint: 'Research-grade observations from iNaturalist. Best for recent, region-scoped queries.' },
   { key: 'gbif', label: 'GBIF', hint: 'Global occurrence records from GBIF. Better for large historical datasets.' },
 ]
-const source = ref('auto')
 const activeSource = computed(() => SOURCES.find((s) => s.key === source.value) || SOURCES[0])
 
 // Decide which backend to use for a given query.
@@ -114,7 +218,6 @@ function fetchScopeParams() {
   return p
 }
 
-const newSpecies = ref('')
 const fetching = ref(false)
 const fetchMsg = ref('')
 const fetchOk = ref(false)
@@ -260,6 +363,35 @@ async function fetchNew() {
 }
 .fetch-new label { font-size: 0.85rem; font-weight: 600; color: var(--text); }
 .fetch-new input { flex: 0 1 260px; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 0.88rem; background: var(--input-bg); color: var(--text); }
+
+/* autocomplete wrapper */
+.ac-wrap { position: relative; flex: 0 1 260px; }
+.ac-wrap input { width: 100%; box-sizing: border-box; }
+.ac-list {
+  position: absolute; top: calc(100% + 3px); left: 0; right: 0; z-index: 200;
+  margin: 0; padding: 4px 0; list-style: none;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 7px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  max-height: 260px; overflow-y: auto;
+}
+.ac-item {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 6px 11px; cursor: pointer; font-size: 0.85rem;
+}
+.ac-item:hover, .ac-item.active { background: var(--surface-2); }
+.ac-sci { font-style: italic; color: var(--text); flex-shrink: 0; }
+.ac-common { color: var(--muted); font-size: 0.78rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ac-rank {
+  font-size: 0.72rem; color: var(--muted); background: var(--surface-2);
+  border: 1px solid var(--border-soft, var(--border)); border-radius: 4px;
+  padding: 1px 5px; flex-shrink: 0; text-transform: capitalize;
+}
+.ac-spinner {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 12px; height: 12px; border: 2px solid var(--border); border-top-color: var(--accent, #2b7a3d);
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
 
 .source-row { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 .src-label { font-size: 0.82rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
