@@ -61,6 +61,7 @@
            this is only about what is worth showing. -->
       <NuxtLink v-if="signedIn" to="/dashboard" class="acct-item" @click="open = false">📊 Dashboard</NuxtLink>
       <NuxtLink v-if="isMember" to="/jobs" class="acct-item" @click="open = false">▶ Pipeline jobs</NuxtLink>
+      <NuxtLink v-if="isMember" to="/layers" class="acct-item" @click="open = false">🗺 Custom layers</NuxtLink>
       <NuxtLink v-if="isAdmin" to="/admin" class="acct-item" @click="open = false">🛡 Admin portal</NuxtLink>
       <NuxtLink to="/offline" class="acct-item" @click="open = false">⬇ Offline</NuxtLink>
       <NuxtLink to="/options" class="acct-item" @click="open = false">⚙ Options</NuxtLink>
