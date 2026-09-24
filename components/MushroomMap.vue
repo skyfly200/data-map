@@ -292,6 +292,9 @@
                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
                  @change="setEeParam(n.ee, name, Number($event.target.value))" />
         </div>
+        <div v-if="n.minZoom && mapView?.zoom < n.minZoom" class="legend-note zoom-in">
+          Zoom in to level {{ n.minZoom }} to see this layer.
+        </div>
         <div v-if="n.slow" class="legend-note">
           Computed as you look at it, so tiles arrive slowly the first time.
         </div>
@@ -411,6 +414,11 @@ import { useMapSelection } from '~/composables/useMapSelection'
 import { useMapLocate } from '~/composables/useMapLocate'
 import { setupReferenceTileLayers } from '~/composables/useMapRefTileLayers'
 import { setupElevBandLayer } from '~/composables/useMapElevBandLayer'
+
+// Slow EE layers (Sentinel-2 composites) time out below this zoom — a single
+// tile covers ~600 km² at zoom 8. Leaflet skips tile requests; the legend notes
+// the threshold so both stay in sync from one place.
+const EE_SLOW_MIN_ZOOM = 8
 
 const { define: g } = useGlossary()
 
@@ -707,6 +715,7 @@ async function addEeLayers() {
       crossOrigin: 'anonymous',
       // Track the zoom continuously on touch too; see the reference layers.
       updateWhenIdle: false, updateWhenZooming: true,
+      minZoom: spec.slow ? EE_SLOW_MIN_ZOOM : 0,
     })
     layer._baseOpacity = spec.opacity ?? 1
     layer._spec = { ...spec, ee: true }
@@ -722,6 +731,7 @@ async function addEeLayers() {
           ee: spec.key,
           eeParams: spec.params,
           slow: spec.slow,
+          minZoom: spec.slow ? EE_SLOW_MIN_ZOOM : undefined,
           // A layer whose classes are too many to list in a key. The key shows
           // a browser for them instead; see SoilTaxonomyKey.
           classes: spec.classes,
@@ -1478,6 +1488,7 @@ onBeforeUnmount(() => {
 /* A caveat about the data being stretched should read as a caveat. */
 .legend-note.upscaled { color: #8a5a1f; }
 .legend-note.warn { color: #b3492f; }
+.legend-note.zoom-in { color: #3d6b8b; }
 /* The one link inside a legend card (remove a model surface). */
 .overlay-legend .linkish {
   margin-top: 6px; background: none; border: 0; padding: 0;

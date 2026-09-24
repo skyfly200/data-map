@@ -715,10 +715,8 @@ async function onSubmit() {
         title: form.title,
         predictors: form.predictors,
         autoOptimize: form.autoOptimize || undefined,
-        // For a bbox source the presences' own area is where the surface is
-        // drawn; for a dataset it is the extent of its points (the worker
-        // derives it), so no region is sent here.
-        region: source.type === 'bbox' ? source.bounds : undefined,
+        // No region: the worker derives the projection area from the presence
+        // extent (boundsOfPoints), so training and rendering are independent.
         source,
       }
     } else if (form.jobKind === 'enrich_model') {
