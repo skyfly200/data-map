@@ -210,7 +210,7 @@ import { VISIBILITY_LABELS } from '~/composables/useDatasets'
 import ModelComparison from '~/components/ModelComparison.vue'
 
 const { models, activeJob, pending, error, fetchModels, trainModel, deleteModel } = useMaxEnt()
-const { availableDatasets } = useDatasets()
+const { available: availableDatasets, refreshAvailable } = useDatasets()
 const membership = useMembership()
 const modelOverlay = useModelOverlay()
 const router = useRouter()
@@ -282,7 +282,7 @@ function fmtWhen(dateStr) {
 const showComparison = ref(false)
 const selectedModels = computed(() => models.value.filter(m => m.selected))
 
-onMounted(fetchModels)
+onMounted(() => { fetchModels(); refreshAvailable() })
 </script>
 
 <style scoped>

@@ -19,13 +19,15 @@
              scrolls sideways hides the ones nobody scrolls to. Below the
              breakpoint this is a menu; above it, the links themselves. -->
         <nav class="app-nav">
-          <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-link" :title="l.title" :aria-label="l.title">{{ l.label }}</NuxtLink>
+          <NuxtLink v-for="l in mainNav" :key="l.to" :to="l.to" class="nav-link" :title="l.title" :aria-label="l.title">{{ l.label }}</NuxtLink>
           <!-- Members only, and client-side only. The tier comes out of the
                access token, which the server render does not have, so a link
                drawn from it on the server hydrates into a different DOM. -->
           <ClientOnly>
             <NuxtLink v-if="isMember" to="/modeling/maxent" class="nav-link">Modeling</NuxtLink>
           </ClientOnly>
+          <!-- Guide is always rightmost so it reads as a meta-nav item. -->
+          <NuxtLink :to="guideLink.to" class="nav-link" :title="guideLink.title" :aria-label="guideLink.title">{{ guideLink.label }}</NuxtLink>
         </nav>
         <PopoverMenu class="nav-pop" icon="☰" title="Go to" align="right" btn-class="hdr-btn">
           <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-item">{{ l.title || l.label }}</NuxtLink>
@@ -121,6 +123,11 @@ const NAV = [
   { to: '/data', label: 'Data' },
   { to: '/guide', label: '📖', title: 'Guide' },
 ]
+
+// Guide is always the rightmost nav item; Modeling (members-only) slots in
+// before it so Guide remains the anchor at the end.
+const guideLink = NAV.find(l => l.to === '/guide')
+const mainNav = NAV.filter(l => l.to !== '/guide')
 
 // Shown beside NAV when the viewer is a member. Not part of NAV itself, because
 // NAV renders on the server where no tier is known.
