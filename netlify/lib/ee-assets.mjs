@@ -18,10 +18,14 @@ export async function loadEeAsset(assetPath) {
     throw new Error('Invalid asset path')
   }
 
-  // Basic validation: should contain at least one slash and not start with special chars
+  // Accepts legacy EE paths (users/username/…) and modern project paths
+  // (projects/project-id/assets/…) — anything with at least one internal slash.
   const normalizedPath = assetPath.trim()
   if (!normalizedPath.includes('/') || normalizedPath.startsWith('/') || normalizedPath.endsWith('/')) {
-    throw new Error('Invalid asset path format. Expected format: users/username/project/dataset')
+    throw new Error(
+      'Invalid asset path. Expected a path like "users/username/asset-name" '
+      + 'or "projects/my-project/assets/my-collection".',
+    )
   }
 
   // Check if we have Earth Engine credentials

@@ -218,12 +218,18 @@ async function importAsset(client, viewer, body) {
       { status: 409, code: 'too_many' })
   }
 
-  // Load the asset from Earth Engine
+  // Load the asset from Earth Engine. Server-side failures (missing credentials,
+  // EE not configured) are 503; a bad path or a missing asset is the member's 400.
   let geojson
   try {
     geojson = await loadEeAsset(assetPath)
   } catch (err) {
-    throw new DatasetAccessError(err.message, { status: 400, code: 'ee_error' })
+    const serverSide = err.message?.includes('not configured')
+      || err.message?.includes('SDK not installed')
+    throw new DatasetAccessError(err.message, {
+      status: serverSide ? 503 : 400,
+      code: 'ee_error',
+    })
   }
 
   // Validate we got features
