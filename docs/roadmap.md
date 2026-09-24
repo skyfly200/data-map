@@ -15,3 +15,6 @@ See also: `@docs/refactor.md` for technical debt, `@docs/bugs.md` for known issu
 - `WANT-7` **MaxEnt observation bias correction** — bias grid or target-group background strategy. See `tasks/WANT-7.md`.
 - `WANT-3` **Member-supplied EE credentials** — members run jobs under their own EE project/budget. See `tasks/WANT-3.md`.
 - `WANT-8` **Vercel/Netlify cross-compatibility** — adapter layer so the backend deploys on either platform. See `tasks/WANT-8.md`.
+- `WANT-13` **Custom 404 Page** — add our own 404 that branded with out site not just falling back on the one from netlify
+- `WANT-14` **** — 
+
