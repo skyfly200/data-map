@@ -12,7 +12,7 @@ import { adminClient, requireMemberFresh, requireUser } from '../lib/auth.mjs'
 import { QueueError, listJobs, submitJob } from '../lib/job-queue.mjs'
 import { SpecError } from '../lib/ee-pipeline.mjs'
 import { DatasetAccessError, viewerFrom } from '../lib/dataset-access.mjs'
-import { measureSource } from '../lib/job-source.mjs'
+import { BaselineError, measureSource } from '../lib/job-source.mjs'
 import { earthEngineConfigured } from '../lib/ee-runner.mjs'
 import { atLeast } from '../lib/tiers.mjs'
 
@@ -104,6 +104,8 @@ export default async function handler(request) {
     // A SpecError is the member's spec being wrong and its message is written
     // for them; a QueueError carries its own status; anything else is ours.
     if (err instanceof SpecError) return json({ ok: false, error: err.message }, 400)
+    // Baseline missing — server misconfiguration, not a bad request.
+    if (err instanceof BaselineError) return json({ ok: false, error: err.message, code: err.code }, 503)
     // Naming a dataset they may not read. Reported as written — the message is
     // deliberately the same one an absent dataset gets.
     if (err instanceof DatasetAccessError) {

@@ -16,6 +16,19 @@ import { loadBaseline } from './baseline.mjs'
 import { readJson } from './datasets-store.mjs'
 import { DatasetAccessError, resolveDataset } from './dataset-access.mjs'
 
+// Thrown when the baseline dataset is absent — server misconfiguration, not a
+// bad request, so callers should surface it as 503 rather than 400.
+export class BaselineError extends Error {
+  constructor() {
+    super(
+      'The observation dataset could not be read, so there is nothing to match that area '
+      + 'against. That is a fault on our side rather than in what you asked for.',
+    )
+    this.status = 503
+    this.code = 'no_baseline'
+  }
+}
+
 /** Is a feature inside the box? Handles a box that wraps the antimeridian. */
 export function withinBounds(feature, bounds) {
   const co = feature?.geometry?.coordinates
@@ -105,7 +118,8 @@ export async function loadSource(source, { client = null, viewer = null, read = 
     return data.features || []
   }
   const baseline = await loadBaseline()
-  return selectFeatures(baseline?.features || [], source)
+  if (!baseline) throw new BaselineError()
+  return selectFeatures(baseline.features || [], source)
 }
 
 /** Points and dates a spec covers, for pricing it before it runs. */
@@ -117,7 +131,8 @@ export async function measureSource(spec, access = {}) {
   // A bbox, which is the case that can come back empty for three unrelated
   // reasons. Carry the breakdown so the refusal can say which one.
   const baseline = await loadBaseline()
-  const seen = explainSelection(baseline?.features || [], spec.source)
+  if (!baseline) throw new BaselineError()
+  const seen = explainSelection(baseline.features || [], spec.source)
   return {
     points: seen.selected.length,
     dates: countDates(seen.selected),
@@ -134,13 +149,7 @@ export async function measureSource(spec, access = {}) {
  */
 export function explainEmpty(source = {}, breakdown = null) {
   const n = (v) => Number(v || 0).toLocaleString()
-  if (!breakdown) return 'That area and date range contain no observations to enrich.'
-  if (!breakdown.total) {
-    // Not the member's fault: the dataset the box is matched against is the one
-    // bundled with the deployment, and it did not load.
-    return 'The observation dataset could not be read, so there is nothing to match that area '
-      + 'against. That is a fault on our side rather than in what you asked for.'
-  }
+  if (!breakdown || !breakdown.total) return 'That area and date range contain no observations to enrich.'
   if (!breakdown.inBounds) {
     return 'No observations fall inside that area. Try "Use the current map view" with the map '
       + 'over somewhere the points are.'
