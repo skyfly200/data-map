@@ -202,6 +202,133 @@ async function remove(client, viewer, body) {
   return json({ ok: true, deleted: id })
 }
 
+// ── CSV helpers ──────────────────────────────────────────────────────────────
+
+/** Parse a CSV string into { headers, rows }. Handles quoted fields. */
+function parseCsv(text) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+  if (lines.length < 2) return { headers: [], rows: [] }
+  function parseRow(line) {
+    const cells = []
+    let cur = '', inQuote = false
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i], next = line[i + 1]
+      if (c === '"' && inQuote && next === '"') { cur += '"'; i++; continue }
+      if (c === '"') { inQuote = !inQuote; continue }
+      if (c === ',' && !inQuote) { cells.push(cur); cur = ''; continue }
+      cur += c
+    }
+    cells.push(cur)
+    return cells
+  }
+  const headers = parseRow(lines[0]).map(h => h.trim().toLowerCase())
+  const rows = []
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (!line) continue
+    const cells = parseRow(lines[i])
+    const row = {}
+    headers.forEach((h, j) => { row[h] = (cells[j] || '').trim() })
+    rows.push(row)
+  }
+  return { headers, rows }
+}
+
+function detectCol(headers, candidates) {
+  return candidates.find(c => headers.includes(c)) || null
+}
+
+/** Import a CSV of species observations as a new dataset. */
+async function importCsv(client, viewer, body) {
+  const csv = String(body.csv || '').trim()
+  if (!csv) throw new DatasetAccessError('No CSV data provided.', { status: 400, code: 'no_csv' })
+  if (csv.length > 3 * 1024 * 1024) {
+    throw new DatasetAccessError(
+      'CSV is larger than 3 MB. Thin the observations to the most relevant records — MaxEnt works well with 100–2,000 presence points.',
+      { status: 400, code: 'too_large' })
+  }
+
+  const { headers, rows } = parseCsv(csv)
+  if (!headers.length) throw new DatasetAccessError('Could not parse CSV headers.', { status: 400, code: 'bad_csv' })
+
+  // Column auto-detection (iNat, GBIF DWC-A, and generic formats).
+  const latCol = String(body.lat_col || detectCol(headers, ['latitude', 'lat', 'decimallatitude', 'decimal_latitude', 'y']) || '').toLowerCase()
+  const lonCol = String(body.lon_col || detectCol(headers, ['longitude', 'lon', 'lng', 'decimallongitude', 'decimal_longitude', 'x']) || '').toLowerCase()
+  if (!latCol || !headers.includes(latCol)) {
+    throw new DatasetAccessError(
+      `Could not find a latitude column. Detected headers: ${headers.slice(0, 10).join(', ')}. Pass lat_col to specify one.`,
+      { status: 400, code: 'no_lat_col' })
+  }
+  if (!lonCol || !headers.includes(lonCol)) {
+    throw new DatasetAccessError(
+      `Could not find a longitude column. Pass lon_col to specify one.`,
+      { status: 400, code: 'no_lon_col' })
+  }
+
+  const dateCol = String(body.date_col || detectCol(headers, ['observed_on', 'date', 'eventdate', 'event_date', 'observedon', 'dateidentified', 'date_observed']) || '').toLowerCase()
+  const speciesCol = String(body.species_col || detectCol(headers, ['scientific_name', 'scientificname', 'taxon_name', 'species', 'taxon', 'name', 'taxon_species_name', 'verbatimscientificname']) || '').toLowerCase()
+
+  // Convert rows to GeoJSON features.
+  const features = []
+  let skipped = 0
+  for (const row of rows) {
+    const lat = parseFloat(row[latCol])
+    const lon = parseFloat(row[lonCol])
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) { skipped++; continue }
+    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) { skipped++; continue }
+    const props = {}
+    if (dateCol && row[dateCol]) props.date = row[dateCol].slice(0, 10)
+    if (speciesCol && row[speciesCol]) props.species = row[speciesCol]
+    if (row['quality_grade']) props.quality_grade = row['quality_grade']
+    if (row['id']) props.source_id = row['id']
+    features.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [lon, lat] }, properties: props })
+  }
+
+  if (!features.length) {
+    throw new DatasetAccessError(
+      `No valid coordinate pairs found${skipped ? ` (${skipped} rows skipped for bad or missing coordinates)` : ''}. `
+      + `Check that lat_col="${latCol}" and lon_col="${lonCol}" are correct.`,
+      { status: 400, code: 'no_features' })
+  }
+
+  const { count, error: countErr } = await client.from('saved_datasets')
+    .select('id', { count: 'exact', head: true }).eq('owner_id', viewer.userId)
+  if (countErr) throw new Error(countErr.message)
+  if ((count || 0) >= MAX_DATASETS_PER_MEMBER) {
+    throw new DatasetAccessError(
+      `You have ${count} saved datasets, which is the limit. Delete one to save another.`,
+      { status: 409, code: 'too_many' })
+  }
+
+  const geojson = { type: 'FeatureCollection', features }
+  const title = String(body.title || 'Imported observations').trim().slice(0, 200)
+  const visibility = checkVisibility(body.visibility, viewer)
+
+  const base = slugify(title)
+  const { data: clashes } = await client.from('saved_datasets').select('slug').like('slug', `${base}%`)
+  const slug = nextFreeSlug(base, (clashes || []).map(r => r.slug))
+
+  const path = `datasets/${viewer.userId}/${slug}-${Date.now()}.geojson`
+  await uploadJson(path, geojson)
+
+  const { data, error } = await client.from('saved_datasets').insert({
+    owner_id: viewer.userId,
+    job_id: null,
+    slug,
+    title,
+    description: String(body.description || '').slice(0, 2000)
+      || `Imported from CSV — ${features.length.toLocaleString()} observations${speciesCol ? `, field: ${speciesCol}` : ''}.`,
+    path,
+    visibility,
+    feature_count: features.length,
+    bytes: JSON.stringify(geojson).length,
+  }).select(FIELDS).single()
+  if (error) throw new Error(error.message)
+
+  return json({ ok: true, dataset: data, status: 'imported', skipped,
+    detectedCols: { latCol, lonCol, dateCol: dateCol || null, speciesCol: speciesCol || null } })
+}
+
 /** Import an Earth Engine asset as a dataset. */
 async function importAsset(client, viewer, body) {
   const assetPath = String(body.asset_path || '').trim()
@@ -318,6 +445,7 @@ export default async function handler(request) {
       case 'save': return await save(client, viewer, body)
       case 'update': return await update(client, viewer, body)
       case 'delete': return await remove(client, viewer, body)
+      case 'import_csv': return await importCsv(client, viewer, body)
       case 'import_asset': return await importAsset(client, viewer, body)
       default:
         return json({

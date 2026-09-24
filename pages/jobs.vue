@@ -283,7 +283,12 @@
         <section class="panel">
           <div class="panel-head">
             <h3>Your jobs</h3>
-            <button class="linkish" :disabled="jobsApi.loading.value" @click="jobsApi.refresh()">Refresh</button>
+            <div class="head-actions">
+              <button class="linkish" :disabled="jobsApi.loading.value" @click="jobsApi.refresh()">Refresh</button>
+              <button v-if="archivableJobs.length" class="linkish muted" :disabled="archiving" @click="onArchiveAll">
+                {{ archiving ? 'Archiving…' : `Archive all (${archivableJobs.length})` }}
+              </button>
+            </div>
           </div>
 
           <p v-if="jobsApi.error.value" class="msg error">{{ jobsApi.error.value }}</p>
@@ -354,6 +359,7 @@
                   </span>
                 </template>
                 <button v-if="running(job)" class="btn small" @click="jobsApi.cancel(job.id)">Cancel</button>
+                <button v-if="!running(job)" class="btn small muted" @click="onArchiveJob(job)">Archive</button>
               </div>
 
               <!-- Naming it is the whole step, so it is one field and a button
@@ -384,6 +390,41 @@
               </div>
             </li>
           </ul>
+        </section>
+
+        <!-- ── Archive ───────────────────────────────────────────────── -->
+        <section class="panel archive-panel">
+          <button class="archive-toggle" @click="toggleArchive">
+            <span class="toggle-icon">{{ showArchive ? '▾' : '▸' }}</span>
+            Archive
+            <span v-if="archivedJobs.length" class="archive-count">{{ archivedJobs.length }}</span>
+          </button>
+          <div v-if="showArchive" class="archive-body">
+            <p v-if="archiveLoading" class="msg">Loading…</p>
+            <p v-else-if="!archivedJobs.length" class="msg muted">No archived jobs yet.</p>
+            <ul v-else class="job-list">
+              <li v-for="job in archivedJobs" :key="job.id" class="job archived">
+                <div class="job-top">
+                  <span class="status" :class="job.status">{{ statusLabel(job) }}</span>
+                  <strong class="job-name">{{ job.title || describe(job) }}</strong>
+                  <span class="when">{{ fmtWhen(job.created_at) }}</span>
+                </div>
+                <p v-if="isModel(job)" class="job-meta">
+                  {{ (job.result_meta?.presences || job.params?.points || 0).toLocaleString() }} presences ·
+                  {{ (job.params?.predictors || []).length }} predictors ·
+                  {{ job.cost_units || job.estimated_units || 0 }} units
+                </p>
+                <p v-else class="job-meta">
+                  {{ (job.params?.points || 0).toLocaleString() }} points ·
+                  {{ (job.params?.stages || []).length }} layers ·
+                  {{ job.cost_units || job.estimated_units || 0 }} units
+                </p>
+                <div class="job-actions">
+                  <button class="btn small" @click="onUnarchive(job)">Restore</button>
+                </div>
+              </li>
+            </ul>
+          </div>
         </section>
 
         <!-- ── Saved datasets ─────────────────────────────────────────── -->
@@ -926,6 +967,42 @@ async function openDatasetOnCharts(dataset) {
   }
 }
 
+// ─── Archive ─────────────────────────────────────────────────────────────────
+const SETTLED_STATUSES = new Set(['succeeded', 'failed', 'cancelled'])
+const archivableJobs = computed(() => jobsApi.jobs.value.filter(j => SETTLED_STATUSES.has(j.status)))
+const archiving = ref(false)
+const showArchive = ref(false)
+const archiveLoading = ref(false)
+const archivedJobs = ref<any[]>([])
+
+async function onArchiveJob(job: any) {
+  await jobsApi.archive(job.id)
+}
+
+async function onArchiveAll() {
+  archiving.value = true
+  try {
+    await jobsApi.archiveAll()
+  } finally {
+    archiving.value = false
+  }
+}
+
+async function toggleArchive() {
+  showArchive.value = !showArchive.value
+  if (showArchive.value && !archivedJobs.value.length) {
+    archiveLoading.value = true
+    try { archivedJobs.value = await jobsApi.refreshArchive() }
+    finally { archiveLoading.value = false }
+  }
+}
+
+async function onUnarchive(job: any) {
+  await jobsApi.unarchive(job.id)
+  archivedJobs.value = archivedJobs.value.filter(j => j.id !== job.id)
+  await jobsApi.refresh()
+}
+
 onMounted(() => {
   membership.loadProfile()
   jobsApi.refresh()
@@ -956,6 +1033,24 @@ onMounted(() => {
 .panel h3 { margin: 0 0 12px; font-size: 0.95rem; }
 .panel-head { display: flex; align-items: baseline; justify-content: space-between; }
 .panel-head h3 { margin-bottom: 12px; }
+.head-actions { display: flex; align-items: baseline; gap: 10px; }
+
+.archive-panel { padding: 0; }
+.archive-toggle {
+  width: 100%; text-align: left; background: none; border: none; padding: 12px 16px;
+  font: inherit; font-size: 0.84rem; color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+}
+.archive-toggle:hover { color: var(--text); }
+.toggle-icon { font-size: 0.7rem; }
+.archive-count {
+  margin-left: auto; font-size: 0.72rem; padding: 1px 7px; border-radius: 999px;
+  background: var(--surface-2, var(--border)); color: var(--muted);
+}
+.archive-body { border-top: 1px solid var(--border); padding: 10px 16px 14px; }
+.job.archived { opacity: 0.65; }
+.linkish.muted { color: var(--muted); }
+.msg.muted { color: var(--muted); }
 
 .row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .row > label:first-child { flex: 0 0 70px; font-size: 0.82rem; color: var(--muted); }

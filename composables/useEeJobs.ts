@@ -32,6 +32,7 @@ export interface EeJob {
   created_at: string
   started_at: string | null
   finished_at: string | null
+  archived_at: string | null
 }
 
 function messageFrom(data: any, status: number): string {
@@ -49,19 +50,20 @@ export function useEeJobs() {
 
   const active = computed(() => jobs.value.filter((j) => !SETTLED.has(j.status)))
 
+  const FIELDS = 'id, user_id, kind, title, params, status, progress, stage, message, '
+    + 'estimated_units, cost_units, result_path, result_meta, error, '
+    + 'created_at, started_at, finished_at, archived_at'
+
   async function refresh({ all = false } = {}): Promise<EeJob[]> {
     if (!$supabase) return []
     loading.value = true
     error.value = ''
     try {
       let query = $supabase.from('ee_jobs')
-        .select('id, user_id, kind, title, params, status, progress, stage, message, '
-          + 'estimated_units, cost_units, result_path, result_meta, error, '
-          + 'created_at, started_at, finished_at')
+        .select(FIELDS)
+        .is('archived_at', null)
         .order('created_at', { ascending: false })
         .limit(50)
-      // RLS already narrows this to the caller's rows unless they are an admin,
-      // so `all` is about what an admin asks for rather than about permission.
       if (!all) {
         const { data: session } = await $supabase.auth.getSession()
         const uid = session.session?.user?.id
@@ -79,6 +81,20 @@ export function useEeJobs() {
     } finally {
       loading.value = false
     }
+  }
+
+  async function refreshArchive(): Promise<EeJob[]> {
+    if (!$supabase) return []
+    const { data: session } = await $supabase.auth.getSession()
+    const uid = session.session?.user?.id
+    if (!uid) return []
+    const { data } = await $supabase.from('ee_jobs')
+      .select(FIELDS)
+      .not('archived_at', 'is', null)
+      .eq('user_id', uid)
+      .order('archived_at', { ascending: false })
+      .limit(100)
+    return data || []
   }
 
   async function submit(spec: any) {
@@ -156,6 +172,32 @@ export function useEeJobs() {
     return { template: body.template, meta: body.meta }
   }
 
+  async function patch(body: Record<string, unknown>) {
+    const token = await accessToken()
+    const res = await fetch('/.netlify/functions/ee-jobs', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json', ...(token ? { authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify(body),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok || !data.ok) throw new Error(data.error || `Archive action failed (${res.status})`)
+    return data
+  }
+
+  async function archive(id: string) {
+    await patch({ action: 'archive', id })
+    jobs.value = jobs.value.filter(j => j.id !== id)
+  }
+
+  async function unarchive(id: string) {
+    await patch({ action: 'unarchive', id })
+  }
+
+  async function archiveAll() {
+    await patch({ action: 'archive_all' })
+    jobs.value = jobs.value.filter(j => j.status === 'queued' || j.status === 'running')
+  }
+
   // Poll only while something is actually moving.
   let timer: ReturnType<typeof setInterval> | null = null
   function stopPolling() { if (timer) { clearInterval(timer); timer = null } }
@@ -177,6 +219,8 @@ export function useEeJobs() {
 
   return {
     jobs, active, loading, error, submitting,
-    refresh, submit, cancel, fetchResult, modelTiles, startPolling, stopPolling,
+    refresh, refreshArchive, submit, cancel, fetchResult, modelTiles,
+    archive, unarchive, archiveAll,
+    startPolling, stopPolling,
   }
 }

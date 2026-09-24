@@ -223,14 +223,19 @@ export async function ownerViewer(job) {
 }
 
 /** A member's jobs, newest first. */
-export async function listJobs(userId, { limit = 50, all = false } = {}) {
+export async function listJobs(userId, { limit = 50, all = false, archived = false } = {}) {
   const client = db()
   let query = client.from('ee_jobs')
     .select('id, user_id, kind, title, params, status, progress, stage, message, '
-      + 'estimated_units, cost_units, result_path, result_meta, error, created_at, started_at, finished_at')
+      + 'estimated_units, cost_units, result_path, result_meta, error, created_at, started_at, finished_at, archived_at')
     .order('created_at', { ascending: false })
     .limit(Math.min(200, Math.max(1, limit)))
   if (!all) query = query.eq('user_id', userId)
+  if (archived) {
+    query = query.not('archived_at', 'is', null)
+  } else {
+    query = query.is('archived_at', null)
+  }
   const { data, error } = await query
   if (error) throw new QueueError(error.message, { status: 500 })
   return data || []

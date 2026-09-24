@@ -49,19 +49,71 @@ export default async function handler(request) {
   if (request.method === 'GET') {
     const auth = await requireUser(request)
     if (!auth.ok) return auth.response
-    const all = new URL(request.url).searchParams.get('all') === '1'
+    const params = new URL(request.url).searchParams
+    const all = params.get('all') === '1'
+    const archived = params.get('archived') === '1'
     if (all && !atLeast(auth.tier, 'admin')) {
       return json({ ok: false, error: 'That is an administrator action.' }, 403)
     }
     try {
-      const jobs = await listJobs(auth.user?.id, { all })
+      const jobs = await listJobs(auth.user?.id, { all, archived })
       return json({ ok: true, jobs, tier: auth.tier })
     } catch (err) {
       return json({ ok: false, error: err.message }, err.status || 500)
     }
   }
 
-  if (request.method !== 'POST') return json({ ok: false, error: 'Use GET or POST.' }, 405)
+  if (request.method === 'PATCH') {
+    const auth = await requireUser(request)
+    if (!auth.ok) return auth.response
+    let body
+    try { body = await request.json() } catch { return json({ ok: false, error: 'Send JSON.' }, 400) }
+    const client = adminClient()
+    if (!client) return json({ ok: false, error: 'Supabase is not configured.' }, 503)
+    const userId = auth.user?.id
+
+    if (body.action === 'archive') {
+      const id = String(body.id || '').trim()
+      if (!id) return json({ ok: false, error: 'Provide a job id.' }, 400)
+      const { data: job } = await client.from('ee_jobs').select('id, user_id, status').eq('id', id).maybeSingle()
+      if (!job || (job.user_id !== userId && !atLeast(auth.tier, 'admin'))) {
+        return json({ ok: false, error: 'No such job.' }, 404)
+      }
+      if (job.status === 'queued' || job.status === 'running') {
+        return json({ ok: false, error: 'Cannot archive a job that is still running.' }, 409)
+      }
+      const { error } = await client.from('ee_jobs').update({ archived_at: new Date().toISOString() }).eq('id', id)
+      if (error) return json({ ok: false, error: error.message }, 500)
+      return json({ ok: true, archived: id })
+    }
+
+    if (body.action === 'unarchive') {
+      const id = String(body.id || '').trim()
+      if (!id) return json({ ok: false, error: 'Provide a job id.' }, 400)
+      const { data: job } = await client.from('ee_jobs').select('id, user_id').eq('id', id).maybeSingle()
+      if (!job || (job.user_id !== userId && !atLeast(auth.tier, 'admin'))) {
+        return json({ ok: false, error: 'No such job.' }, 404)
+      }
+      const { error } = await client.from('ee_jobs').update({ archived_at: null }).eq('id', id)
+      if (error) return json({ ok: false, error: error.message }, 500)
+      return json({ ok: true, unarchived: id })
+    }
+
+    // Archive all of a user's completed or failed jobs in one shot.
+    if (body.action === 'archive_all') {
+      const { error, count } = await client.from('ee_jobs')
+        .update({ archived_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .is('archived_at', null)
+        .in('status', ['succeeded', 'failed', 'cancelled'])
+      if (error) return json({ ok: false, error: error.message }, 500)
+      return json({ ok: true, archived: count ?? 0 })
+    }
+
+    return json({ ok: false, error: 'Unknown action. Use archive, unarchive, or archive_all.' }, 400)
+  }
+
+  if (request.method !== 'POST') return json({ ok: false, error: 'Use GET, PATCH or POST.' }, 405)
 
   const auth = await requireMemberFresh(request)
   if (!auth.ok) return auth.response
