@@ -570,7 +570,7 @@ const form = reactive({
   dateFrom: '', dateTo: '', taxon: '',
   stages: [...DEFAULT_STAGES],
   predictors: [...DEFAULT_PREDICTORS],
-  autoOptimize: false,
+  autoOptimize: true,
 })
 
 // Tracks a pending auto-model submission: after an enrich_model enrich job
