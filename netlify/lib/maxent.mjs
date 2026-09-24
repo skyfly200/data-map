@@ -16,12 +16,19 @@
 // predictors, this region" into an Earth Engine image and how to paint it.
 
 import { SRTM, S2_SR, ERA5_DAILY, CHIRPS_DAILY, SOLUS100, MODIS_BURN, TREEMAP, SpecError, normaliseBounds } from './ee-pipeline.mjs'
+import { ASSETS } from './ee-tile-layers.mjs'
 import { CHUNK_SIZE } from './quotas.mjs'
 
 // Additional asset IDs used only by the extended model predictor set.
+// Reference ASSETS where possible to stay in sync with the map layer definitions.
 const WORLDCLIM_BIO = 'WORLDCLIM/V1/BIO'
 const NLCD_TCC = 'USGS/NLCD_RELEASES/2021_REL/TCC/v2021-4'
 const HANSEN_GFC = 'UMD/hansen/global_forest_change_2023_v1_11'
+const {
+  CSP_SRTM_MTPI, CSP_SRTM_CHILI, CSP_HM,
+  MERIT_HYDRO, GHSL_POP,
+  OPENLANDMAP_WATER_33KPA,
+} = ASSETS
 
 /**
  * The predictors a suitability model may use.
@@ -256,6 +263,72 @@ export const MAXENT_PREDICTORS = {
       .select('CANOPYPCT')
       .rename('canopy_pct'),
   },
+
+  // ── Topographic indices (CSP/ERGo) ────────────────────────────────────────
+  mtpi: {
+    label: 'Multi-scale topographic position (mTPI)',
+    // CSP/ERGo SRTM mTPI: positive = ridge, negative = valley. Better than a
+    // single-radius TPI because it integrates multiple neighbourhood scales.
+    image: (ee) => ee.Image(CSP_SRTM_MTPI).select('constant').rename('mtpi'),
+  },
+  chili: {
+    label: 'Heat-insolation load (CHILI)',
+    // Continuous Heat-Insolation Load Index: south + west-facing slopes score
+    // high, north-facing valleys score low. Tighter than the HLI proxy.
+    image: (ee) => ee.Image(CSP_SRTM_CHILI).select('constant').rename('chili'),
+  },
+
+  // ── Hydrology (MERIT) ─────────────────────────────────────────────────────
+  hand: {
+    label: 'Height above nearest drainage (HAND)',
+    // MERIT Hydro hnd band: metres above the nearest river channel. Low values
+    // mean riparian / flood-prone ground; high values mean dry upland.
+    image: (ee) => ee.Image(MERIT_HYDRO).select('hnd')
+      .updateMask(ee.Image(MERIT_HYDRO).select('hnd').gte(0))
+      .rename('hand'),
+  },
+
+  // ── Soil hydraulics ───────────────────────────────────────────────────────
+  field_capacity: {
+    label: 'Soil field capacity (water-holding, 0 cm)',
+    // OpenLandMap volumetric water content at 33 kPa tension, surface layer.
+    // High = clay-rich soils that hold moisture; low = sandy, freely draining.
+    image: (ee) => ee.Image(OPENLANDMAP_WATER_33KPA).select('b0').rename('field_capacity'),
+  },
+
+  // ── Climate normals (ERA5) ────────────────────────────────────────────────
+  soil_temp_normal: {
+    label: 'Soil temperature, normal (ERA5-Land)',
+    // Long-run mean of ERA5-Land layer-1 soil temperature, converted to °C.
+    image: (ee) => ee.ImageCollection(ERA5_DAILY)
+      .select('soil_temperature_level_1')
+      .mean()
+      .subtract(273.15)
+      .rename('soil_temp_normal'),
+  },
+
+  // ── Anthropogenic ─────────────────────────────────────────────────────────
+  human_modification: {
+    label: 'Human modification index',
+    // CSP Global Human Modification: 0 = pristine, 1 = heavily modified.
+    // Useful for separating habitat quality from raw environmental suitability,
+    // and for capturing observation-effort bias correction.
+    image: (ee) => {
+      const img = ee.Image(CSP_HM).select('gHM')
+      return img.updateMask(img.gte(0)).rename('human_modification')
+    },
+  },
+  population_density: {
+    label: 'Population density, log (GHSL 2020)',
+    // log1p of GHSL population count; zero stays zero, dense cities compress.
+    // Proxy for observation effort — high-density areas are over-sampled.
+    image: (ee) => {
+      const pop = ee.ImageCollection(GHSL_POP)
+        .filterDate('2020-01-01', '2021-01-01').first()
+        .select('population_count')
+      return pop.log1p().updateMask(pop.gt(0)).rename('population_density')
+    },
+  },
 }
 
 export const PREDICTOR_KEYS = Object.keys(MAXENT_PREDICTORS)
@@ -270,12 +343,21 @@ export const DEFAULT_PREDICTORS = ['elevation', 'slope', 'aspect', 'ndvi', 'soil
  * ones are more likely to stay in.
  */
 export const ALL_PREDICTORS = [
-  'elevation', 'slope', 'northness', 'tpi', 'twi', 'solar_exposure', 'wind_exposure',
+  // Terrain
+  'elevation', 'slope', 'aspect', 'northness', 'tpi', 'twi',
+  'mtpi', 'chili', 'solar_exposure', 'wind_exposure',
+  // Hydrology
+  'hand',
+  // Vegetation
   'ndvi', 'ndmi', 'canopy', 'canopy_pct', 'stand_height_ft',
-  'annual_precip', 'annual_temp',
-  'precip_normal', 'temp_normal',
-  'sand_percent', 'clay_percent', 'soil_depth_cm',
-  'forest_loss', 'last_burn_year', 'soil_moisture',
+  // Climate normals
+  'annual_precip', 'annual_temp', 'precip_normal', 'temp_normal', 'soil_temp_normal',
+  // Soil
+  'soil_moisture', 'field_capacity', 'sand_percent', 'clay_percent', 'soil_depth_cm',
+  // Disturbance
+  'forest_loss', 'last_burn_year',
+  // Anthropogenic
+  'human_modification', 'population_density',
 ]
 
 /** Minimum % contribution a predictor must contribute to survive the scout filter. */
