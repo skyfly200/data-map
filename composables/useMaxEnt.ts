@@ -45,18 +45,26 @@ export interface MaxEntRun {
 // scope is recreated (e.g. hot reload), and so onScopeDispose can reach it.
 let activeJobStop: (() => void) | null = null
 
+const BASE = '/.netlify/functions/modeling/maxent'
+
 export function useMaxEnt() {
   const models = useState<MaxEntConfig[]>('maxent-models', () => [])
   const activeJob = useState<MaxEntRun | null>('maxent-active-job', () => null)
   const pending = useState<boolean>('maxent-pending', () => false)
   const error = useState<string>('maxent-error', () => '')
+  const { accessToken } = useAuth()
 
   onScopeDispose(() => { activeJobStop?.(); activeJobStop = null })
+
+  async function authHeaders(): Promise<Record<string, string>> {
+    const token = await accessToken()
+    return token ? { authorization: `Bearer ${token}` } : {}
+  }
 
   /** Fetch the user's saved model configurations. */
   async function fetchModels() {
     try {
-      const res = await fetch('/.netlify/functions/modeling/maxent/models')
+      const res = await fetch(`${BASE}?action=models`, { headers: await authHeaders() })
       if (!res.ok) throw new Error(`Failed to fetch models: ${res.statusText}`)
       const data = await res.json()
       if (data.ok) models.value = data.models
@@ -70,9 +78,9 @@ export function useMaxEnt() {
     pending.value = true
     error.value = ''
     try {
-      const res = await fetch('/.netlify/functions/modeling/maxent/train', {
+      const res = await fetch(`${BASE}?action=train`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...await authHeaders() },
         body: JSON.stringify(spec),
       })
       const data = await res.json()
@@ -104,7 +112,7 @@ export function useMaxEnt() {
 
     const timer = setInterval(async () => {
       try {
-        const res = await fetch(`/.netlify/functions/modeling/maxent/results/${jobId}`)
+        const res = await fetch(`${BASE}?action=results&job_id=${encodeURIComponent(jobId)}`, { headers: await authHeaders() })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
         consecutiveErrors = 0
@@ -141,9 +149,9 @@ export function useMaxEnt() {
   /** Delete a saved model configuration. */
   async function deleteModel(id: string) {
     try {
-      const res = await fetch('/.netlify/functions/modeling/maxent/models', {
+      const res = await fetch(`${BASE}?action=models`, {
         method: 'DELETE',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...await authHeaders() },
         body: JSON.stringify({ id }),
       })
       const data = await res.json()

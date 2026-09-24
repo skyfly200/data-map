@@ -163,42 +163,45 @@ export default async function handler(request) {
     const path = url.pathname
     const method = request.method
 
-    // Simplified routing for the prototype
-    if (method === 'GET' && path.includes('/modeling/maxent/models')) {
+    // Route by ?action= query parameter so subroutes are not needed.
+    // Netlify only maps the function file name to a path; further path segments
+    // are not forwarded, so we use ?action= instead of /train, /models, etc.
+    const action = url.searchParams.get('action') ?? ''
+    const jobId = url.searchParams.get('job_id') ?? ''
+
+    if (method === 'GET' && action === 'models') {
       const auth = await requireUser(request)
       if (!auth.ok) return auth.response
       return await listModels(client, viewerFrom(auth))
     }
 
-    if (method === 'GET' && path.includes('/modeling/maxent/results')) {
+    if (method === 'GET' && action === 'results') {
       const auth = await requireUser(request)
       if (!auth.ok) return auth.response
-      const jobId = path.split('/').pop()
       return await getResults(client, viewerFrom(auth), jobId)
     }
 
-    if (method === 'POST' && path.includes('/modeling/maxent/train')) {
+    if (method === 'POST' && action === 'train') {
       const auth = await requireMemberFresh(request)
       if (!auth.ok) return auth.response
       return await train(client, auth, await request.json())
     }
 
-    if (method === 'DELETE' && path.includes('/modeling/maxent/models')) {
+    if (method === 'DELETE' && action === 'models') {
       const auth = await requireMemberFresh(request)
       if (!auth.ok) return auth.response
       return await removeModel(client, viewerFrom(auth), await request.json())
     }
 
-    // GET /.netlify/functions/modeling/maxent/evaluate/:jobId
+    // GET ?action=evaluate&job_id=<id>
     // Returns niche distribution and response-curve data for a completed model run.
-    if (method === 'GET' && path.includes('/modeling/maxent/evaluate')) {
+    if (method === 'GET' && action === 'evaluate') {
       const auth = await requireMemberFresh(request)
       if (!auth.ok) return auth.response
-      const jobId = path.split('/').pop()
       return await evaluate(client, viewerFrom(auth), jobId)
     }
 
-    return json({ ok: false, error: 'Not Found' }, 404)
+    return json({ ok: false, error: 'Not Found. Use ?action=models|results|train|evaluate.' }, 404)
   } catch (err) {
     return fail(err)
   }
