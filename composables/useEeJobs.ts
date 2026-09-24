@@ -35,7 +35,7 @@ export interface EeJob {
 }
 
 function messageFrom(data: any, status: number): string {
-  return data?.message || `Earth Engine jobs error (${status})`
+  return data?.error || data?.message || `Earth Engine jobs error (${status})`
 }
 
 export function useEeJobs() {
