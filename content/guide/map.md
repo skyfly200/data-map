@@ -360,13 +360,14 @@ tiles. It does not resolve them more finely. The key says so.
 A layer that the app cannot reach says so. It does not draw nothing. An empty
 ownership layer would otherwise read as "no public land here".
 
-### Layers are not heatmaps
+### Map layers show current conditions; heatmaps show historical ones
 
-> **Caution** A layer is a raster from somebody else. It is drawn everywhere,
-> because they measured it everywhere. It shows current or recent conditions
-> over historical finds, so it cannot explain those finds. The rainfall,
-> temperature, soil-moisture and NDVI **heatmaps** use what the pipeline sampled
-> at the date of each observation. Those can.
+Map layers are rasters drawn from external sources. They reflect current or
+recent measurements, not conditions at the time of each observation.
+
+The rainfall, temperature, soil-moisture and NDVI **heatmaps** are different.
+They use values the pipeline sampled at the date of each find. Only those can
+help explain where and when a species was recorded.
 
 ## Other map controls
 

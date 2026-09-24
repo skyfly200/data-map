@@ -425,7 +425,9 @@ export function normaliseModelSpec(input = {}, { normaliseSource } = {}) {
   const contributionThreshold = Number.isFinite(rawThreshold) && rawThreshold >= 0
     ? rawThreshold : DEFAULT_CONTRIBUTION_THRESHOLD
 
-  return { kind: 'model', predictors, background, region, source, title, autoOptimize, contributionThreshold }
+  const preciseOnly = input.precise_only !== false
+
+  return { kind: 'model', predictors, background, region, source, title, autoOptimize, contributionThreshold, preciseOnly }
 }
 
 /**

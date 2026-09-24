@@ -114,6 +114,7 @@ export const ALL_CATEGORY: CategoryField[] = [
   { key: 'soil_great_group', label: 'Soil great group' },
   { key: 'soil_order', label: 'Soil order' },
   { key: 'forest_type', label: 'Forest type' },
+  { key: 'location_precision', label: 'Location precision' },
 ]
 
 

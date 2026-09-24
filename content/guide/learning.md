@@ -1,10 +1,8 @@
 # Learning
 
-This page is for the step after you read the map. It covers the three subjects
-that this app sits on: GIS, Earth Engine and machine learning.
-
-Each section gives you the smallest set of ideas that makes the next document
-readable. Each one then links to the documents themselves.
+This page covers the three subjects this app sits on: GIS, Earth Engine and
+machine learning. Each section gives you the smallest set of ideas that makes
+the next document readable, then links to the documents themselves.
 
 > **Note** These links go to other organisations. They are not part of
 > Nexstrata, and FRMS does not control them.
@@ -15,7 +13,7 @@ GIS is the handling of data that has a position on the Earth.
 
 ### Vector and raster
 
-There are two kinds of spatial data, and almost everything is one of them.
+Spatial data comes in two kinds.
 
 - **Vector** data is points, lines and polygons. Each shape carries attributes.
   An observation is a point. A county boundary is a polygon. The observations in
@@ -41,10 +39,10 @@ the usual example.
 The **resolution** of a raster is the ground size of one cell. Sentinel-2 is
 10 m. SRTM is 30 m. CHIRPS rainfall is approximately 5 km.
 
-A value that you read at a point describes the whole cell. At 5 km, "the
-rainfall at this log" is the rainfall across an area larger than most towns.
+A value read at a point describes the whole cell. At 5 km, "the rainfall at
+this log" is the rainfall across an area larger than most towns.
 
-Zoom does not add resolution. When you zoom in past the native resolution of a
+Zoom does not add resolution. When you zoom past the native resolution of a
 layer, the app stretches the tiles. Read [Layer keys and
 dates](/guide/map#layer-keys-and-dates).
 
@@ -77,9 +75,9 @@ Almost every script uses four types:
 - **`ee.Reducer`** — how to combine many values into fewer. A mean, a median, a
   maximum, a histogram.
 
-A typical script filters a collection by date and by area, reduces it to one
-image, and then samples that image at a set of points. That is what the
-enrichment pipeline of this app does.
+A typical script filters a collection by date and area, reduces it to one image,
+and samples that image at a set of points. That is what the enrichment pipeline
+does.
 
 ### The one idea that confuses everyone
 
@@ -99,7 +97,7 @@ project has a quota.
 
 Two habits keep the cost low:
 
-- Filter first. Filter by date and by area before you do anything else.
+- Filter first. Filter by date and area before you do anything else.
 - Export once. When a result does not change, write it to an asset and read the
   asset. Read [Your own layers](/guide/layers).
 
@@ -115,15 +113,15 @@ Two habits keep the cost low:
   scripts in the browser.
 - [Google Earth Engine 101: An Introduction for Complete
   Beginners](https://www.youtube.com/watch?v=oAElakLgCdA) — video. Start here if
-  it is easier to watch somebody work than to read a page of documentation.
+  watching somebody work is easier than reading documentation.
 - [*Cloud-Based Remote Sensing with Google Earth
   Engine*](https://www.eefabook.org/) — a free book of tutorials, from first
   script to applied work.
 - [geemap](https://geemap.org/) — Earth Engine from Python, with maps in a
   notebook.
 - [The Awesome GEE Community
-  Catalog](https://gee-community-catalog.org/) — datasets that the official
-  catalogue does not hold.
+  Catalog](https://gee-community-catalog.org/) — datasets not in the official
+  catalogue.
 
 ## Machine learning basics
 
@@ -133,8 +131,7 @@ produces a rule that maps one to the other.
 ### The words
 
 - A **feature** is one input column. Elevation, slope and NDVI are features.
-- A **label** is the answer that you want. "This species fruits here" is a
-  label.
+- A **label** is the answer you want. "This species fruits here" is a label.
 - **Supervised** learning has labels. **Unsupervised** learning does not. The
   live clustering on the map is unsupervised: it groups the points without being
   told what the groups are.
@@ -143,21 +140,21 @@ produces a rule that maps one to the other.
 ### The three mistakes
 
 **Overfitting.** A model can memorise the examples instead of learning the
-pattern. It then performs well on the data that it saw and badly on new data.
+pattern. It performs well on the data it saw and badly on new data.
 
-Always hold data back. Fit the model on one part. Test it on the other part. A
-score on the data that the model was fitted to is not a result.
+Always hold data back. Fit the model on one part. Test it on the other. A score
+on the training data is not a result.
 
 **Leakage.** Nearby points are not independent. Two finds 50 m apart share their
-elevation, their slope and their weather. A random split therefore puts almost
-the same record in both the training set and the test set, and the score comes
-out too high.
+elevation, slope and weather. A random split therefore puts nearly the same
+record in both the training set and the test set, and the score comes out too
+high.
 
 Split by block or by region instead. This is spatial cross-validation.
 
-**Bias in the examples.** A model learns the data that you gave it, including
-its collection bias. A model fitted on iNaturalist records learns where people
-walk as well as where mushrooms fruit.
+**Bias in the examples.** A model learns the data you gave it, including its
+collection bias. A model fitted on iNaturalist records learns where people walk
+as well as where mushrooms fruit.
 
 ### Machine learning: where to read more
 
@@ -168,13 +165,13 @@ walk as well as where mushrooms fruit.
   Course](https://developers.google.com/machine-learning/crash-course) — free,
   and it covers the three mistakes above properly.
 - [*An Introduction to Statistical
-  Learning*](https://www.statlearning.com/) — a free textbook. It is the one to
-  read when the crash course leaves you with questions.
+  Learning*](https://www.statlearning.com/) — a free textbook. Read this when
+  the crash course leaves you with questions.
 
 ## Species distribution models
 
 A species distribution model (SDM) fits the environment where a species was
-found, and then maps where similar environments are.
+found, then maps where similar environments are.
 
 This is the natural next step for the data in this app. The observations carry
 the coordinates. The enrichment carries the environment at those coordinates.
@@ -187,44 +184,43 @@ found and never where it **was not**.
 An absence of records means one of two things. The species is not there, or
 nobody looked. An iNaturalist dataset has a great deal of the second.
 
-A presence-only method therefore compares the presences against **background**
-points. Background points describe the range of environments that are available,
-and not the places where the species is absent.
+A presence-only method compares the presences against **background** points.
+Background points describe the range of available environments, not the places
+where the species is absent.
 
 ### MaxEnt
 
 MaxEnt is the most used presence-only method. It finds the distribution that
-matches the environment of the presence points, and is otherwise as close to the
+matches the environment of the presence points and is otherwise as close to the
 background as possible. "Maximum entropy" is that last clause: assume nothing
 that the data does not say.
 
 In practice MaxEnt is a form of penalised regression. The penalty, called
-regularisation, is what stops it from fitting noise.
+regularisation, stops it from fitting noise.
 
 ### How to begin with the data in this app
 
 1. **Choose one species.** Start with a species that has several hundred
-   records. Fewer than approximately 30 presences is not enough for a model that
-   you can test.
+   records. Fewer than approximately 30 presences is not enough for a testable
+   model.
 2. **Run an enrichment job** over those records, with the terrain, soil and
    vegetation layers switched on. Read [Pipeline jobs](/guide/jobs).
 3. **Export the result** as CSV or GeoJSON. Read [Export](/guide/data#export).
 4. **Remove the obscured records.** iNaturalist obscures the location of
    sensitive taxa. The environment at an obscured point describes a place where
-   the observation was not. The export carries the accuracy and the precision
-   columns, so you can filter on them.
-5. **Thin the records.** Keep one record for each cell of approximately 1 km.
-   This reduces the effect of one well-visited trailhead.
+   the observation was not. The export carries the accuracy and precision columns
+   so you can filter on them.
+5. **Thin the records.** Keep one record per cell of approximately 1 km. This
+   reduces the effect of one well-visited trailhead.
 6. **Choose the background.** Use the other records in the dataset as the
-   background, and not a random sample of the map. Those records are the places
-   where people looked and found something else. This is the target-group
-   background method, and it is the most effective correction for the bias in
-   opportunistic data.
-7. **Fit and test the model.** Use spatial blocks for the test split, and not a
+   background, not a random sample of the map. Those records are the places where
+   people looked and found something else. This is the target-group background
+   method, and it is the most effective correction for bias in opportunistic data.
+7. **Fit and test the model.** Use spatial blocks for the test split, not a
    random split.
 8. **Read the response curves before the map.** A response curve shows what the
-   model learned about one variable. A curve that rises with the distance from a
-   road tells you that the model learned the effort and not the species.
+   model learned about one variable. A curve that rises with distance from a road
+   tells you the model learned the effort, not the species.
 
 ### Which software
 
@@ -247,10 +243,10 @@ regularisation, is what stops it from fitting noise.
   models](https://doi.org/10.1890/07-2153.1) — the target-group background
   method in step 6 above.
 - Valavi et al., [blockCV](https://doi.org/10.1111/2041-210X.13107) — spatial
-  cross-validation, and why a random split gives you a score that is too high.
+  cross-validation, and why a random split gives a score that is too high.
 - [Species Distribution Modeling with
   MaxEnt](https://www.youtube.com/watch?v=ucTf_c76J90) — video. A walkthrough of
-  fitting a MaxEnt model, if you would rather watch the workflow than read it.
+  fitting a MaxEnt model.
 
 ## Soils
 
@@ -263,8 +259,8 @@ contain](/guide/map#what-the-layer-groups-contain).
 
 The formal classification of soils in the United States is **USDA soil
 taxonomy**. It is a hierarchy of six levels: order, suborder, great group,
-subgroup, family and series. The twelve orders at the top are the level that is
-useful on a map.
+subgroup, family and series. The twelve orders at the top are the level useful
+on a map.
 
 - [USDA soil taxonomy on
   Wikipedia](https://en.wikipedia.org/wiki/USDA_soil_taxonomy) — the twelve
