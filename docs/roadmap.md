@@ -15,6 +15,7 @@ See also: `@docs/refactor.md` for technical debt, `@docs/bugs.md` for known issu
 - `WANT-7` **MaxEnt observation bias correction** — bias grid or target-group background strategy. See `tasks/WANT-7.md`.
 - `WANT-3` **Member-supplied EE credentials** — members run jobs under their own EE project/budget. See `tasks/WANT-3.md`.
 - `WANT-8` **Vercel/Netlify cross-compatibility** — adapter layer so the backend deploys on either platform. See `tasks/WANT-8.md`.
-- `WANT-13` **Custom 404 Page** — add our own 404 that branded with out site not just falling back on the one from netlify
-- `WANT-14` **** — 
+- `WANT-13` **Custom 404 Page** — add our own 404 branded with our site not just falling back on the one from Netlify.
+- `WANT-15` **Pipeline UX overhaul** — guided, step-by-step experience from "pick an area" to "enriched dataset on map"; replaces the current flat form. Wayfinder map: [github.com/skyfly200/data-map/issues/140](https://github.com/skyfly200/data-map/issues/140). Key open decisions: mental model (#141), layout/progressive-disclosure (#142), area picker (#144), post-job navigation (#145).
+- `WANT-16` **User observation data uploads** — let members upload CSV or GeoJSON of their own observations as a source for pipeline jobs. Design decisions tracked in [github.com/skyfly200/data-map/issues/143](https://github.com/skyfly200/data-map/issues/143). Expected entry points: pipeline source picker and datasets page.
 

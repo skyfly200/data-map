@@ -13,9 +13,12 @@ Technical debt and enhancement tasks. An item here is open work; when closed, de
 
 ## UI & UX
 
-- [ ] `V12-UI-1` **Intuitive Navigation**: Streamline path from data import to model training
+- [ ] `V12-UI-1` **Pipeline UX overhaul** (was: Intuitive Navigation): guided experience from area/source pick → enriched dataset on map. Wayfinder map at [#140](https://github.com/skyfly200/data-map/issues/140) holds all open decisions; see also `WANT-15` and `WANT-16` in the roadmap.
+- [ ] `V12-UI-2` **Area picker improvement**: replace raw lat/lng number inputs with a map-draw or geocoder interaction. Decision ticket: [#144](https://github.com/skyfly200/data-map/issues/144).
 - [ ] `V12-UI-3` **Visual Hierarchy**: Improve contrast and layout of side panels
 - [ ] `V12-UI-4` **Interactive Data Previews**: Instant visual summaries on dataset selection
+- [ ] `V12-UI-5` **User observation uploads**: CSV/GeoJSON upload to Supabase Storage as a new dataset source. Decision ticket: [#143](https://github.com/skyfly200/data-map/issues/143).
+- [ ] `V12-UI-6` **Post-job CTA flow**: replace the flat "open on map / open on charts / save" menu with a guided next-step prompt. Depends on WANT-11 (composable state persistence). Decision ticket: [#145](https://github.com/skyfly200/data-map/issues/145).
 - [ ] `V12-UI-7` **Mobile Map Controls Discovery**: Replace compact-mode hidden controls with accessible bottom-sheet or collapsible toolbar
 - [ ] `V12-UI-8` **Fluid Breakpoints**: Supplement binary compact/not-compact with CSS `@media` rules at tablet widths
 

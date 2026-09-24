@@ -110,10 +110,10 @@
             <div class="row">
               <label for="ee-asset-path">Asset path</label>
               <input id="ee-asset-path" v-model="form.assetPath" type="text"
-                     placeholder="users/username/project/dataset" />
+                     placeholder="users/username/my-collection  or  projects/my-project/assets/…" />
             </div>
             <p class="hint">
-              Enter your Earth Engine asset ID. The asset will be imported and used as the source for this job.
+              The asset ID shown in the Earth Engine Code Editor under Assets. Must be a FeatureCollection or Table.
             </p>
             <div class="row two">
               <label class="stack">
