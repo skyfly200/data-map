@@ -108,6 +108,12 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
       next.add(entry.key)
       overlayOrder.value = [entry.key, ...overlayOrder.value]
       soloKey.value = ''
+      // Seed layerOpacity from the layer's spec default so the slider starts at
+      // the actual rendered opacity, not always 100%. Only when no value is
+      // already stored (first-ever toggle; localStorage restore sets it explicitly).
+      if (layerOpacity.value[entry.key] == null && entry.layer?._baseOpacity != null) {
+        layerOpacity.value = { ...layerOpacity.value, [entry.key]: entry.layer._baseOpacity }
+      }
     }
     activeOverlays.value = next
     applySolo()
@@ -128,7 +134,10 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
     const entry = overlayLayers.value.find((o) => o.key === key)
     if (!entry) return
     layerOpacity.value = { ...layerOpacity.value, [key]: value }
-    entry.layer.setOpacity(entry.layer._baseOpacity * value * tileOpacity.value)
+    // layerOpacity is the full opacity (0–1); _baseOpacity is the initial default,
+    // not a persistent multiplier. Once the user drags the slider the value IS
+    // the opacity — tileOpacity is the only remaining multiplier.
+    entry.layer.setOpacity(value * tileOpacity.value)
     heatmaps.persist()
   }
 
@@ -172,7 +181,7 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
       layerOpacity.value = { ...layerOpacity.value, ...Object.fromEntries(opacityEntries) }
       for (const [key, value] of opacityEntries) {
         const entry = overlayLayers.value.find((o) => o.key === key)
-        if (entry?.layer) entry.layer.setOpacity(entry.layer._baseOpacity * value * tileOpacity.value)
+        if (entry?.layer) entry.layer.setOpacity(value * tileOpacity.value)
       }
     }
     applyOverlayOrder()
@@ -187,7 +196,7 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
         const op = saved.opacity?.[key]
         if (op != null) {
           layerOpacity.value = { ...layerOpacity.value, [key]: op }
-          layer.setOpacity(layer._baseOpacity * op * tileOpacity.value)
+          layer.setOpacity(op * tileOpacity.value)
         }
       }
     } catch { /* storage unavailable */ }

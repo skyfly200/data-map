@@ -70,8 +70,9 @@ export function setupReferenceTileLayers({
   // replacing it, so proportional differences between layers survive.
   watch(tileOpacity, (v) => {
     for (const l of tileLayers) {
-      const own = layerOpacity.value[l._spec?.ee ? l._spec.key : l._spec?.name] ?? 1
-      l.setOpacity(l._baseOpacity * own * v)
+      const key = l._spec?.ee ? l._spec.key : l._spec?.name
+      const own = layerOpacity.value[key] ?? l._baseOpacity ?? 1
+      l.setOpacity(own * v)
     }
     heatmaps.persist()
   })
