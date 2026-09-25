@@ -1,6 +1,6 @@
 # Project Overview
 
-This is a NUXT based PWA for running & visualizing outputs of GEE scripts generating enriched species observation data from iNat & GBIF & trainging MaxEnt models
+This is a NUXT based PWA for running & visualizing outputs of GEE scripts generating enriched species observation data from iNat & GBIF & training MaxEnt models
 
 ## Key Instructions
 
@@ -10,11 +10,6 @@ Be terse. Do not restate context. Do not use preamble text.
 
 - `npm run build` - production build
 - `npm test` - run tests
-
-
-## Importiant Caveats
-
--
 
 ## Further Documentation
 
