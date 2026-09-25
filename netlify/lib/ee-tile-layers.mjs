@@ -976,7 +976,7 @@ export const EE_TILE_LAYERS = {
 
   'slope': {
     name: 'Slope',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'NASA SRTM via Google Earth Engine',
     opacity: 0.7,
@@ -993,7 +993,7 @@ export const EE_TILE_LAYERS = {
 
   'aspect': {
     name: 'Aspect (slope direction)',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'NASA SRTM via Google Earth Engine',
     opacity: 0.7,
@@ -1014,7 +1014,7 @@ export const EE_TILE_LAYERS = {
 
   'twi': {
     name: 'Topographic wetness (TWI)',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'NASA SRTM and MERIT Hydro via Google Earth Engine',
     opacity: 0.75,
@@ -1036,7 +1036,7 @@ export const EE_TILE_LAYERS = {
 
   'wind-exposure': {
     name: 'Wind exposure',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'NASA SRTM via Google Earth Engine',
     opacity: 0.75,
@@ -1057,7 +1057,7 @@ export const EE_TILE_LAYERS = {
 
   'solar-exposure': {
     name: 'Solar exposure',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'NASA SRTM via Google Earth Engine',
     opacity: 0.75,
@@ -1114,7 +1114,7 @@ export const EE_TILE_LAYERS = {
 
   'land-cover': {
     name: 'Land cover (ESA)',
-    group: 'Ground',
+    group: 'Vegetation',
     // Free, because it was free before. This layer was served from the
     // publisher's own tile host and open to everyone; moving it to Earth Engine
     // is a fix for that host going down, and a fix should not quietly take a
@@ -1217,7 +1217,7 @@ export const EE_TILE_LAYERS = {
 
   'canopy-density': {
     name: 'Canopy density',
-    group: 'Forest structure',
+    group: 'Vegetation',
     tier: DEFAULT_TIER,
     attribution: 'USFS TreeMap via Google Earth Engine',
     opacity: 0.85,
@@ -1237,7 +1237,7 @@ export const EE_TILE_LAYERS = {
 
   'stand-height': {
     name: 'Stand height',
-    group: 'Forest structure',
+    group: 'Vegetation',
     tier: DEFAULT_TIER,
     attribution: 'USFS TreeMap via Google Earth Engine',
     opacity: 0.85,
@@ -1258,7 +1258,7 @@ export const EE_TILE_LAYERS = {
 
   'stand-size': {
     name: 'Stand-size class',
-    group: 'Forest structure',
+    group: 'Vegetation',
     tier: DEFAULT_TIER,
     attribution: 'USFS TreeMap via Google Earth Engine',
     opacity: 0.85,
@@ -1801,7 +1801,7 @@ export const EE_TILE_LAYERS = {
 
   'srtm-mtpi': {
     name: 'Topographic position (mTPI)',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'CSP ERGo / NASA SRTM via Google Earth Engine',
     opacity: 0.7,
@@ -1827,7 +1827,7 @@ export const EE_TILE_LAYERS = {
 
   'srtm-chili': {
     name: 'Heat-insolation load (CHILI)',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'CSP ERGo / NASA SRTM via Google Earth Engine',
     opacity: 0.7,
