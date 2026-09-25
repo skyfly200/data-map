@@ -264,6 +264,10 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
       next = (p.values || []).includes(String(value)) ? String(value) : (p.default ?? (p.values || [])[0])
     } else if (p?.type === 'codes') {
       try { next = normaliseCodes(value, p.max) } catch { return }
+    } else if (p?.type === 'zones') {
+      const allowed = new Set(p.values || [])
+      const picked = String(value).split(',').map((s) => s.trim()).filter((v) => allowed.has(v))
+      next = picked.length ? picked.join(',') : (p.default || (p.values || [])[0])
     } else if (p?.type === 'text') {
       const text = String(value).trim()
       if (!text) return

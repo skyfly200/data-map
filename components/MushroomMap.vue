@@ -221,64 +221,79 @@
         <template v-if="activeTileNotes.length">
           <div class="key-section-label">Map layers</div>
           <div v-for="n in activeTileNotes" :key="n.name" class="key-section tk">
-            <div class="tk-name">{{ n.name }}</div>
-            <template v-if="n.legend?.type === 'ramp'">
-              <div class="gradient" :style="{ background: gradientCss(n.legend.stops) }"></div>
-              <div v-if="n.legend.ticks" class="gradient-ticks">
-                <span v-for="(t, ti) in n.legend.ticks" :key="ti">{{ t }}</span>
+            <button class="tk-name-toggle" @click="toggleLayerExpanded(n.name)">
+              <span class="tk-name">{{ n.name }}</span>
+              <span class="tk-caret" aria-hidden="true">{{ expandedLayers[n.name] ? '▾' : '▸' }}</span>
+            </button>
+            <template v-if="expandedLayers[n.name]">
+              <template v-if="n.legend?.type === 'ramp'">
+                <div class="gradient" :style="{ background: gradientCss(n.legend.stops) }"></div>
+                <div v-if="n.legend.ticks" class="gradient-ticks">
+                  <span v-for="(t, ti) in n.legend.ticks" :key="ti">{{ t }}</span>
+                </div>
+                <div v-else class="gradient-scale">
+                  <span>{{ n.legend.min }}</span>
+                  <span class="unit">{{ n.legend.unit }}</span>
+                  <span>{{ n.legend.max }}</span>
+                </div>
+              </template>
+              <div v-else-if="n.legend?.type === 'classes' && !n.legendInBrowser" class="class-key">
+                <span v-for="c in n.legend.items" :key="c.label" class="ck">
+                  <span class="swatch" :style="{ background: c.color }"></span>{{ c.label }}
+                </span>
               </div>
-              <div v-else class="gradient-scale">
-                <span>{{ n.legend.min }}</span>
-                <span class="unit">{{ n.legend.unit }}</span>
-                <span>{{ n.legend.max }}</span>
+              <SoilTaxonomyKey v-if="n.classes === 'great-groups'" :layer="n.ee"
+                               :selectable="!!n.eeParams?.codes"
+                               :codes="(eeParams[n.ee] || {}).codes ?? (n.eeParams?.codes?.default || '')"
+                               @update:codes="setEeParam(n.ee, 'codes', $event)" />
+              <template v-for="(p, name) in (n.eeParams || {})" :key="name">
+                <div v-if="p.type === 'zones'" class="layer-zones">
+                  <span class="layer-zones-label">{{ p.label }}</span>
+                  <label v-for="(v, i) in (p.values || [])" :key="v" class="zone-check">
+                    <input type="checkbox"
+                           :checked="((eeParams[n.ee] || {})[name] ?? p.default).toString().split(',').includes(v)"
+                           @change="setEeParam(n.ee, name, toggleZone((eeParams[n.ee] || {})[name] ?? p.default, v, $event.target.checked))" />
+                    {{ (p.labels || p.values)[i] }}
+                  </label>
+                </div>
+                <div v-else-if="p.type !== 'codes'" class="layer-date">
+                  <label :for="`ee-${n.slug}-${name}`">{{ p.label }}</label>
+                  <select v-if="p.type === 'enum'" :id="`ee-${n.slug}-${name}`"
+                          :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                          @change="setEeParam(n.ee, name, $event.target.value)">
+                    <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
+                  </select>
+                  <select v-else-if="p.type === 'yearSelect'" :id="`ee-${n.slug}-${name}`"
+                          :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                          @change="setEeParam(n.ee, name, Number($event.target.value))">
+                    <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
+                  </select>
+                  <input v-else-if="p.type === 'text'" :id="`ee-${n.slug}-${name}`" type="search"
+                         :maxlength="p.maxLength || 60" :placeholder="p.default"
+                         :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                         @change="setEeParam(n.ee, name, $event.target.value)" />
+                  <input v-else-if="p.type === 'date'" :id="`ee-${n.slug}-${name}`" type="date"
+                         :min="typeof p.min === 'function' ? p.min() : p.min"
+                         :max="typeof p.max === 'function' ? p.max() : p.max"
+                         :value="(eeParams[n.ee] || {})[name] ?? (typeof p.default === 'function' ? p.default() : p.default)"
+                         @change="setEeParam(n.ee, name, $event.target.value)" />
+                  <input v-else :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
+                         :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                         @change="setEeParam(n.ee, name, Number($event.target.value))" />
+                </div>
+              </template>
+              <div v-if="n.minZoom && mapView?.zoom < n.minZoom" class="legend-note zoom-in no-border">
+                Zoom in to level {{ n.minZoom }} to see this layer.
               </div>
+              <div v-if="n.time" class="layer-date">
+                <label :for="`ld-${n.slug}`">Date</label>
+                <input :id="`ld-${n.slug}`" v-model="tileDate" type="date" :max="maxTileDate"
+                       :title="`Which day of ${n.name} to draw. Satellite products lag by days, so recent dates can be blank.`" />
+              </div>
+              <div v-if="upscaleNote(n)" class="legend-note">{{ upscaleNote(n) }}</div>
+              <div v-if="n.slow" class="legend-note">Tiles arrive slowly first time.</div>
+              <div v-if="n.note" class="legend-note">{{ n.note }}</div>
             </template>
-            <div v-else-if="n.legend?.type === 'classes' && !n.legendInBrowser" class="class-key">
-              <span v-for="c in n.legend.items" :key="c.label" class="ck">
-                <span class="swatch" :style="{ background: c.color }"></span>{{ c.label }}
-              </span>
-            </div>
-            <SoilTaxonomyKey v-if="n.classes === 'great-groups'" :layer="n.ee"
-                             :selectable="!!n.eeParams?.codes"
-                             :codes="(eeParams[n.ee] || {}).codes ?? (n.eeParams?.codes?.default || '')"
-                             @update:codes="setEeParam(n.ee, 'codes', $event)" />
-            <div v-for="(p, name) in (n.eeParams || {})" :key="name" class="layer-date"
-                 v-show="p.type !== 'codes'">
-              <label :for="`ee-${n.slug}-${name}`">{{ p.label }}</label>
-              <select v-if="p.type === 'enum'" :id="`ee-${n.slug}-${name}`"
-                      :value="(eeParams[n.ee] || {})[name] ?? p.default"
-                      @change="setEeParam(n.ee, name, $event.target.value)">
-                <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
-              </select>
-              <select v-else-if="p.type === 'yearSelect'" :id="`ee-${n.slug}-${name}`"
-                      :value="(eeParams[n.ee] || {})[name] ?? p.default"
-                      @change="setEeParam(n.ee, name, Number($event.target.value))">
-                <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
-              </select>
-              <input v-else-if="p.type === 'text'" :id="`ee-${n.slug}-${name}`" type="search"
-                     :maxlength="p.maxLength || 60" :placeholder="p.default"
-                     :value="(eeParams[n.ee] || {})[name] ?? p.default"
-                     @change="setEeParam(n.ee, name, $event.target.value)" />
-              <input v-else-if="p.type === 'date'" :id="`ee-${n.slug}-${name}`" type="date"
-                     :min="typeof p.min === 'function' ? p.min() : p.min"
-                     :max="typeof p.max === 'function' ? p.max() : p.max"
-                     :value="(eeParams[n.ee] || {})[name] ?? (typeof p.default === 'function' ? p.default() : p.default)"
-                     @change="setEeParam(n.ee, name, $event.target.value)" />
-              <input v-else :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
-                     :value="(eeParams[n.ee] || {})[name] ?? p.default"
-                     @change="setEeParam(n.ee, name, Number($event.target.value))" />
-            </div>
-            <div v-if="n.minZoom && mapView?.zoom < n.minZoom" class="legend-note zoom-in no-border">
-              Zoom in to level {{ n.minZoom }} to see this layer.
-            </div>
-            <div v-if="n.time" class="layer-date">
-              <label :for="`ld-${n.slug}`">Date</label>
-              <input :id="`ld-${n.slug}`" v-model="tileDate" type="date" :max="maxTileDate"
-                     :title="`Which day of ${n.name} to draw. Satellite products lag by days, so recent dates can be blank.`" />
-            </div>
-            <div v-if="upscaleNote(n)" class="legend-note tk-hover-note">{{ upscaleNote(n) }}</div>
-            <div v-if="n.slow" class="legend-note tk-hover-note">Tiles arrive slowly first time.</div>
-            <div v-if="n.note" class="legend-note tk-hover-note">{{ n.note }}</div>
           </div>
         </template>
 
@@ -361,7 +376,7 @@
 
 <script setup>
 // Leaflet CSS is loaded dynamically on mount so it does not bloat non-map routes.
-import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import { hasValue, useObservations } from '~/composables/useObservations'
 import { gradientCss } from '~/composables/ramps'
 import { useAppearance } from '~/composables/useAppearance'
@@ -661,6 +676,18 @@ function restoreBase() { _restoreBase(); syncActiveTemplates() }
 function toggleOverlay(entry) { _toggleOverlay(entry); syncActiveTemplates() }
 function toggleOverlayByKey(key) { _toggleOverlayByKey(key); syncActiveTemplates() }
 async function refreshEeLayer(spec) { await _refreshEeLayer(spec); syncActiveTemplates() }
+
+const expandedLayers = reactive({})
+function toggleLayerExpanded(name) {
+  expandedLayers[name] = !expandedLayers[name]
+}
+
+function toggleZone(current, zone, checked) {
+  const set = new Set(String(current || '').split(',').filter(Boolean))
+  checked ? set.add(zone) : set.delete(zone)
+  return set.size ? [...set].sort().join(',') : zone
+}
+
 
 async function addEeLayers() {
   const layers = await eeTiles.loadCatalogue()
@@ -1322,6 +1349,16 @@ onBeforeUnmount(() => {
   flex: 1 1 auto; min-width: 0; background: var(--input-bg); color: var(--text);
   border: 1px solid var(--border); border-radius: 4px; padding: 2px 5px; font-size: 0.72rem;
 }
+.tk-name-toggle {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  background: none; border: none; padding: 0; cursor: pointer;
+  text-align: left; color: inherit;
+}
+.tk-caret { font-size: 0.65rem; color: var(--muted); flex-shrink: 0; margin-left: 4px; }
+.layer-zones { margin: 5px 0 2px; font-size: 0.72rem; }
+.layer-zones-label { color: var(--muted); font-weight: 600; display: block; margin-bottom: 3px; }
+.zone-check { display: flex; align-items: center; gap: 4px; margin: 2px 0; cursor: pointer; }
+.zone-check input { cursor: pointer; margin: 0; }
 
 /* The chunk indicator: bottom-left, above Leaflet's zoom control, and quiet
    enough to ignore while still being legible over imagery. */

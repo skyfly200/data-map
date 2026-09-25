@@ -464,6 +464,13 @@ function readParams(schema, input = {}) {
       out[key] = String(raw)
     } else if (spec.type === 'codes') {
       out[key] = normaliseCodes(raw, spec.max)
+    } else if (spec.type === 'zones') {
+      // Comma-separated subset of the allowed zone numbers, e.g. "1,2".
+      const allowed = new Set(spec.values || [])
+      const picked = String(raw).split(',').map((s) => s.trim()).filter(Boolean)
+      const invalid = picked.filter((v) => !allowed.has(v))
+      if (invalid.length) throw new LayerError(`${spec.label}: invalid zones ${invalid.join(', ')}.`)
+      out[key] = picked.length ? picked.join(',') : (spec.default || spec.values[0])
     } else if (spec.type === 'text') {
       // A free typed value — a taxon name to search for. Constrained to the
       // characters a scientific name uses (letters, spaces, hyphen, period,
@@ -1644,19 +1651,21 @@ export const EE_TILE_LAYERS = {
   'soil-moisture-column': {
     name: 'Soil moisture, root zone (ERA5-Land)',
     group: 'Soil',
-    // Free, like SMAP: a cheap mean of a coarse published reanalysis, global,
-    // and the same question a forager asks after rain — but of the 0–7 cm layer
-    // a reanalysis models rather than the top 5 cm a satellite retrieves.
     tier: 'free',
     attribution: 'Copernicus ECMWF ERA5-Land via Google Earth Engine',
     opacity: 0.7,
     sourceMasked: true,
-    note: 'Modelled volumetric water in the top 0–7 cm of soil from ERA5-Land, ~11 km, global, averaged '
-      + 'over the chosen recent days. A reanalysis, not a measurement, and coarse: a cell is larger than '
-      + 'most places on this map. Blue is wet. It lags real time by about five days, so a short window '
-      + 'near today can come back empty.',
+    note: 'Modelled volumetric water content from ERA5-Land, ~11 km, global, averaged over the chosen '
+      + 'days. Zones: 1 = 0–7 cm, 2 = 7–28 cm, 3 = 28–100 cm, 4 = 100–289 cm. Multiple zones are '
+      + 'averaged together. Blue is wet. Lags real time by ~5 days.',
     params: {
       days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 60 },
+      zones: {
+        type: 'zones', label: 'Depth zones',
+        default: '1',
+        values: ['1', '2', '3', '4'],
+        labels: ['0–7 cm', '7–28 cm', '28–100 cm', '100–289 cm'],
+      },
     },
     legend: {
       type: 'ramp', unit: 'm³/m³', min: '0.1', max: '0.4',
@@ -1668,13 +1677,16 @@ export const EE_TILE_LAYERS = {
       return ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
         .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
     },
-    build(ee, { days }) {
+    build(ee, { days, zones }) {
       const end = new Date()
       const start = new Date(end.getTime() - days * 86400000)
-      const image = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+      const zoneList = String(zones || '1').split(',').filter(Boolean)
+      const bands = zoneList.map((z) => `volumetric_soil_water_layer_${z}`)
+      const col = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
         .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
-        .select('volumetric_soil_water_layer_1')
-        .mean()
+      const image = bands.length === 1
+        ? col.select(bands[0]).mean()
+        : col.select(bands).mean().reduce(ee.Reducer.mean())
       return { image, vis: { min: 0.1, max: 0.4, palette: ['#ffffd9', '#c7e9b4', '#41b6c4', '#225ea8', '#081d58'] } }
     },
   },
@@ -1682,18 +1694,21 @@ export const EE_TILE_LAYERS = {
   'soil-temperature': {
     name: 'Soil temperature (ERA5-Land)',
     group: 'Weather',
-    // Free: the same cheap ERA5-Land mean, one band over. Soil temperature is
-    // the other half of whether the ground is ready to fruit, and no satellite
-    // layer here carries it.
     tier: 'free',
     attribution: 'Copernicus ECMWF ERA5-Land via Google Earth Engine',
     opacity: 0.7,
     sourceMasked: true,
-    note: 'Modelled temperature of the top 0–7 cm of soil from ERA5-Land, ~11 km, global, averaged over '
-      + 'the chosen recent days and shown in °C. A reanalysis, not a probe in your patch, and coarse. '
-      + 'Warm is red, cold is blue. It lags real time by about five days.',
+    note: 'Modelled soil temperature from ERA5-Land, ~11 km, global, averaged over the chosen days, '
+      + 'in °C. Zones: 1 = 0–7 cm, 2 = 7–28 cm, 3 = 28–100 cm, 4 = 100–289 cm. Multiple zones are '
+      + 'averaged together. Warm is red, cold is blue. Lags real time by ~5 days.',
     params: {
       days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 60 },
+      zones: {
+        type: 'zones', label: 'Depth zones',
+        default: '1',
+        values: ['1', '2', '3', '4'],
+        labels: ['0–7 cm', '7–28 cm', '28–100 cm', '100–289 cm'],
+      },
     },
     legend: {
       type: 'ramp', unit: '°C', min: '0', max: '15',
@@ -1705,15 +1720,17 @@ export const EE_TILE_LAYERS = {
       return ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
         .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
     },
-    build(ee, { days }) {
+    build(ee, { days, zones }) {
       const end = new Date()
       const start = new Date(end.getTime() - days * 86400000)
-      // ERA5-Land carries soil temperature in kelvin; °C is what a reader can use.
-      const image = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+      const zoneList = String(zones || '1').split(',').filter(Boolean)
+      const bands = zoneList.map((z) => `soil_temperature_level_${z}`)
+      const col = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
         .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
-        .select('soil_temperature_level_1')
-        .mean()
-        .subtract(273.15)
+      // ERA5-Land carries soil temperature in kelvin; subtract 273.15 after averaging.
+      const image = bands.length === 1
+        ? col.select(bands[0]).mean().subtract(273.15)
+        : col.select(bands).mean().reduce(ee.Reducer.mean()).subtract(273.15)
       return { image, vis: { min: 0, max: 15, palette: ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'] } }
     },
   },
