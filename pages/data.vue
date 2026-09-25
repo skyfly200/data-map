@@ -3,11 +3,19 @@
     <nav class="tabs">
       <button :class="{ on: tab === 'species' }" @click="tab = 'species'">Species</button>
       <button :class="{ on: tab === 'table' }" @click="tab = 'table'">Table</button>
-      <button :class="{ on: tab === 'fetch' }" @click="tab = 'fetch'">Fetch new</button>
+      <button :class="{ on: tab === 'fetch' }" @click="tab = 'fetch'">Import observations</button>
     </nav>
 
+    <div class="workflow-hint">
+      <span class="step active">1. Add observations</span>
+      <span class="step-arrow">→</span>
+      <NuxtLink to="/jobs" class="step">2. Enrich with environment data</NuxtLink>
+      <span class="step-arrow">→</span>
+      <NuxtLink to="/modeling/maxent" class="step">3. Train habitat model</NuxtLink>
+    </div>
+
     <div class="dataset-bar">
-      <label for="dataset-select">Dataset</label>
+      <label for="dataset-select">Active dataset</label>
       <select id="dataset-select" :value="selectedDataset" @change="setDataset($event.target.value)">
         <option v-for="d in availableDatasets" :key="d.id" :value="d.path">{{ d.label }}</option>
       </select>
@@ -77,8 +85,8 @@
             </table>
           </div>
           <ClientOnly>
-            <NuxtLink v-if="isMember" to="/modeling/maxent" class="model-cta">
-              Train a model with this data →
+            <NuxtLink v-if="isMember" to="/jobs" class="model-cta">
+              Enrich this data with terrain &amp; climate →
             </NuxtLink>
           </ClientOnly>
         </template>
@@ -200,6 +208,14 @@ function barWidth(n) { return `${(n / maxCount.value) * 100}%` }
 
 <style scoped>
 .data-page { padding: 16px 18px; max-width: 1200px; margin: 0 auto; }
+.workflow-hint {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 14px; font-size: 0.8rem;
+}
+.workflow-hint .step { color: var(--muted); text-decoration: none; }
+.workflow-hint .step:hover { color: var(--text); text-decoration: underline; }
+.workflow-hint .step.active { color: var(--accent); font-weight: 600; }
+.workflow-hint .step-arrow { color: var(--border); }
 .tabs { display: flex; gap: 4px; margin: -4px 0 14px; border-bottom: 1px solid var(--border); }
 .tabs button {
   border: 0; background: transparent; color: var(--muted); cursor: pointer;
