@@ -4,11 +4,13 @@
 
     <div class="head">
       <div class="head-text">
-        <h2>MaxEnt Modeling</h2>
+        <h2>Habitat Suitability Models</h2>
         <p class="sub">
-          Predict <GlossaryTooltip term="habitat suitability" :definition="g('habitat suitability')">habitat suitability</GlossaryTooltip>
-          by learning from environmental conditions at sighting locations.
-          A model says where the environment resembles where the species was found — not where it is.
+          Train a <GlossaryTooltip term="habitat suitability" :definition="g('habitat suitability')">habitat suitability</GlossaryTooltip>
+          model from your enriched observations. The model learns which environmental conditions
+          match where a species was recorded, then predicts where similar conditions exist.
+          Requires an enriched dataset — run the
+          <NuxtLink to="/jobs">Enrich &amp; Model</NuxtLink> step first if you haven't.
         </p>
       </div>
       <div class="head-actions">
@@ -17,6 +19,14 @@
           Compare ({{ selectedModels.length }})
         </button>
       </div>
+    </div>
+
+    <div class="workflow-hint">
+      <NuxtLink to="/data" class="step">1. Add observations</NuxtLink>
+      <span class="step-arrow">→</span>
+      <NuxtLink to="/jobs" class="step">2. Enrich with environment data</NuxtLink>
+      <span class="step-arrow">→</span>
+      <span class="step active">3. Train habitat model</span>
     </div>
 
     <ClientOnly>
@@ -63,17 +73,17 @@
             <p class="empty-title">No models yet</p>
             <p class="empty-sub">Register a surface you've already computed, or train a new model from an enriched dataset.</p>
             <div class="empty-paths">
-              <button class="path-card primary" @click="openAddModel('register')">
-                <span class="path-head">Register existing asset</span>
-                <span class="path-desc">Have a suitability surface already in Earth Engine? Add it here — no data ingest needed.</span>
-                <span class="path-cta">Get started →</span>
-              </button>
-              <button class="path-card" :disabled="!availableDatasets.length" @click="openAddModel('train')">
-                <span class="path-head">Train from dataset</span>
-                <span class="path-desc">{{ availableDatasets.length ? 'Fit a new MaxEnt model from presence points in an enriched dataset.' : 'Requires an enriched dataset from the Jobs page.' }}</span>
+              <button class="path-card primary" :disabled="!availableDatasets.length" @click="openAddModel('train')">
+                <span class="path-head">Train a new model</span>
+                <span class="path-desc">{{ availableDatasets.length ? 'Fit a MaxEnt model from an enriched dataset of observation points.' : 'You need an enriched dataset first. Go to Enrich & Model to create one.' }}</span>
                 <span class="path-cta" :class="{ muted: !availableDatasets.length }">
-                  {{ availableDatasets.length ? 'Configure model →' : 'No datasets yet' }}
+                  {{ availableDatasets.length ? 'Configure & train →' : 'No enriched datasets yet' }}
                 </span>
+              </button>
+              <button class="path-card" @click="openAddModel('register')">
+                <span class="path-head">Link a pre-computed model</span>
+                <span class="path-desc">Already have a suitability surface in Earth Engine? Add it here by asset path — no retraining needed.</span>
+                <span class="path-cta">Add asset →</span>
               </button>
             </div>
           </div>
@@ -123,30 +133,10 @@
             </div>
           </div>
 
-          <div class="row">
-            <label class="check-row">
-              <input type="checkbox" v-model="form.preciseOnly" />
-              <span>
-                Precise coordinates only
-                <span class="field-hint">
-                  Recommended for training. iNaturalist randomises obscured locations
-                  inside a ~20&nbsp;km cell, so the sampled environment may not match
-                  where the species was actually found.
-                </span>
-              </span>
-            </label>
-          </div>
-
-          <div class="actions">
-            <button class="btn primary" :disabled="pending || !canSubmit" @click="onSubmit">
-              {{ pending ? 'Submitting…' : 'Queue Model' }}
-            </button>
-          </div>
-
           <!-- Add model trigger (when models exist) -->
           <div v-if="models.length" class="add-row">
             <button class="btn ghost small" @click="toggleAddModel">
-              {{ showAddModel ? '▾ Close' : '+ Add model' }}
+              {{ showAddModel ? '▾ Close' : '+ Train new model' }}
             </button>
           </div>
         </section>
@@ -154,13 +144,13 @@
         <!-- ─── Add Model Panel ─────────────────────────────────────────────── -->
         <section v-if="showAddModel" class="panel add-panel">
           <div class="tabs" role="tablist">
-            <button role="tab" class="tab" :class="{ active: activeTab === 'register' }"
-                    @click="activeTab = 'register'">
-              Register existing asset
-            </button>
             <button role="tab" class="tab" :class="{ active: activeTab === 'train' }"
                     @click="activeTab = 'train'">
-              Train from dataset
+              Train a new model
+            </button>
+            <button role="tab" class="tab" :class="{ active: activeTab === 'register' }"
+                    @click="activeTab = 'register'">
+              Link pre-computed model
             </button>
           </div>
 
@@ -212,7 +202,7 @@
             <div class="csv-section" :class="{ open: showCsvImport }">
               <button class="csv-toggle" @click="showCsvImport = !showCsvImport">
                 <span class="toggle-caret">{{ showCsvImport ? '▾' : '▸' }}</span>
-                Import observations from a CSV file
+                Import a CSV dataset
                 <span v-if="csvImport.rows" class="csv-badge">{{ csvImport.rows.toLocaleString() }} rows</span>
               </button>
 
@@ -305,12 +295,14 @@
 
             <div v-if="!availableDatasets.length && !showCsvImport" class="no-datasets">
               <p>
-                No datasets available yet. Import a CSV above, or create one by running an enrichment job on the
-                <NuxtLink to="/jobs">Jobs page</NuxtLink>.
+                No enriched datasets yet. Go to
+                <NuxtLink to="/jobs">Enrich &amp; Model</NuxtLink> to add environment
+                data to your observations, then come back here to train a model.
+                Or import a CSV dataset below.
               </p>
             </div>
             <template v-if="availableDatasets.length">
-              <div class="form-divider">Train from an existing dataset</div>
+              <div class="form-divider">Choose a dataset &amp; configure your model</div>
               <div class="form-row">
                 <label for="model-title">Model name</label>
                 <input id="model-title" v-model="form.title" type="text"
@@ -365,7 +357,7 @@
               </div>
               <div class="form-actions">
                 <button class="btn primary" :disabled="pending || !canSubmit" @click="onSubmit">
-                  {{ pending ? 'Submitting…' : 'Queue model' }}
+                  {{ pending ? 'Submitting…' : 'Train model' }}
                 </button>
                 <span v-if="form.predictors.length < MIN_PREDICTORS" class="form-hint">
                   Pick at least {{ MIN_PREDICTORS }} predictors.
@@ -648,6 +640,16 @@ onMounted(async () => {
 
 /* ── Page ────────────────────────────────────────────────────────────────── */
 .modeling { padding: 18px 20px; max-width: 1100px; margin: 0 auto; }
+.workflow-hint {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 18px; font-size: 0.8rem;
+}
+.workflow-hint .step { color: var(--muted); text-decoration: none; }
+.workflow-hint .step:hover { color: var(--text); text-decoration: underline; }
+.workflow-hint .step.active { color: var(--accent, #34c46a); font-weight: 600; }
+.workflow-hint .step-arrow { color: var(--border); }
+.head-text .sub a { color: var(--accent, #34c46a); text-decoration: none; }
+.head-text .sub a:hover { text-decoration: underline; }
 
 .head {
   display: flex; justify-content: space-between; align-items: flex-start;

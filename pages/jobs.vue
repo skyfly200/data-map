@@ -2,10 +2,11 @@
   <div class="jobs">
     <div class="head">
       <div>
-        <h2>Pipeline jobs</h2>
+        <h2>Enrich &amp; Model</h2>
         <p class="sub">
-          Enrich a set of observations with terrain, weather and vegetation sampled from
-          Earth Engine. A job runs on the server; you can leave this page.
+          Add terrain, climate, and vegetation data to your observations (enrichment), then
+          optionally train a habitat suitability model. Jobs run on the server — you can leave
+          this page and come back.
         </p>
       </div>
       <!-- Inside ClientOnly with everything else that depends on the session:
@@ -45,39 +46,45 @@
       <template v-else>
         <!-- ── Submit ─────────────────────────────────────────────────── -->
         <section class="panel">
+          <div class="workflow-hint">
+            <NuxtLink to="/data" class="step">1. Add observations</NuxtLink>
+            <span class="step-arrow">→</span>
+            <span class="step active">2. Enrich with environment data</span>
+            <span class="step-arrow">→</span>
+            <NuxtLink to="/modeling/maxent" class="step">3. Train habitat model</NuxtLink>
+          </div>
+
           <h3>New job</h3>
 
-          <!-- Enrich samples the layers at each point; model fits a suitability
-               surface from those points. Two different outputs — a table vs a
-               raster — so it is the first choice, not a checkbox further down. -->
           <div class="row">
-            <label>Job</label>
+            <label>What to do</label>
             <div class="sources">
               <label class="pick">
                 <input v-model="form.jobKind" type="radio" value="enrich" />
-                <span>Enrich points</span>
+                <span>Add environment data to observations</span>
               </label>
               <label class="pick">
                 <input v-model="form.jobKind" type="radio" value="model" />
-                <span>Model suitability</span>
+                <span>Train a suitability model</span>
               </label>
               <label class="pick">
                 <input v-model="form.jobKind" type="radio" value="enrich_model" />
-                <span>Enrich + Auto-model</span>
+                <span>Add environment data, then model automatically</span>
               </label>
             </div>
           </div>
+          <p v-if="form.jobKind === 'enrich'" class="hint">
+            Samples terrain, climate, and vegetation values at each observation point.
+            The result is a richer dataset you can analyze or use to train a habitat model.
+          </p>
           <p v-if="form.jobKind === 'model'" class="hint">
-            Fits a MaxEnt model from the observations you choose and draws a
-            habitat-suitability surface across their area. A model, not a survey:
-            it says where the environment resembles where the species was found,
-            which is not the same as where it is.
+            Trains a MaxEnt habitat suitability model from an already-enriched dataset and
+            draws a suitability surface across the region. Requires a dataset that has
+            already been enriched — use "Add environment data" first if you haven't yet.
           </p>
           <p v-else-if="form.jobKind === 'enrich_model'" class="hint">
-            Enriches the observations with the selected layers, then automatically
-            trains a MaxEnt suitability model using the enriched values. A scout
-            model runs first to rank predictor importance and prune low-contributing
-            variables before the final fit.
+            Enriches observations with environment layers, then automatically trains a
+            suitability model. The best predictors are selected automatically.
           </p>
 
           <div class="row">
@@ -88,20 +95,20 @@
           <!-- Running a job over a previous job's output is what makes these
                compose: enrich a set, save it, enrich the result differently. -->
           <div class="row">
-            <label>Run over</label>
+            <label>Observations</label>
             <div class="sources">
               <label class="pick">
                 <input v-model="form.sourceType" type="radio" value="bbox" />
-                <span>Observations in an area</span>
+                <span>Filter by area &amp; date</span>
               </label>
               <label class="pick" :class="{ disabled: !sourceChoices.length }">
                 <input v-model="form.sourceType" type="radio" value="dataset"
                        :disabled="!sourceChoices.length" />
-                <span>A saved dataset</span>
+                <span>Use a saved dataset</span>
               </label>
               <label class="pick">
                 <input v-model="form.sourceType" type="radio" value="ee_asset" />
-                <span>Earth Engine asset</span>
+                <span>Import from Earth Engine</span>
               </label>
             </div>
           </div>
@@ -197,7 +204,7 @@
           </template>
 
           <div v-if="form.jobKind === 'model'" class="row">
-            <label>Predictors</label>
+            <label>Environment variables</label>
             <div class="stages">
               <label v-for="p in predictorList" :key="p.key" class="stage">
                 <input type="checkbox" :value="p.key" v-model="form.predictors" />
@@ -208,7 +215,7 @@
 
           <template v-else-if="form.jobKind === 'enrich_model'">
             <div class="row">
-              <label>Enrich layers</label>
+              <label>Environment layers</label>
               <div class="stages">
                 <label v-for="s in stageList" :key="s.key" class="stage">
                   <input type="checkbox" :value="s.key" v-model="form.stages" />
@@ -235,7 +242,7 @@
           </template>
 
           <div v-else class="row">
-            <label>Layers</label>
+            <label>Environment layers</label>
             <div class="stages">
               <label v-for="s in stageList" :key="s.key" class="stage">
                 <input type="checkbox" :value="s.key" v-model="form.stages" />
@@ -261,12 +268,12 @@
           <div class="actions">
             <button class="btn primary" :disabled="jobsApi.submitting.value || !canSubmit"
                     @click="onSubmit">
-              {{ jobsApi.submitting.value ? 'Submitting…' : 'Queue job' }}
+              {{ jobsApi.submitting.value ? 'Starting…' : (form.jobKind === 'model' ? 'Train model' : form.jobKind === 'enrich_model' ? 'Enrich & model' : 'Start enrichment') }}
             </button>
             <span v-if="form.jobKind === 'model' && form.predictors.length < MIN_PREDICTORS" class="hint">
-              Pick at least {{ MIN_PREDICTORS }} predictors.
+              Pick at least {{ MIN_PREDICTORS }} environment variables.
             </span>
-            <span v-else-if="form.jobKind !== 'model' && !form.stages.length" class="hint">Pick at least one layer.</span>
+            <span v-else-if="form.jobKind !== 'model' && !form.stages.length" class="hint">Pick at least one environment layer.</span>
             <span v-if="pendingAutoModel.enrichJobId" class="hint ok">
               Enrichment queued — model will submit automatically when it completes.
             </span>
@@ -437,8 +444,8 @@
 
           <p v-if="datasetsApi.error.value" class="msg error">{{ datasetsApi.error.value }}</p>
           <p v-else-if="!datasetsApi.datasets.value.length" class="msg">
-            Nothing saved yet. A finished job can be saved as a dataset, and then
-            used as the starting point for another one.
+            No saved datasets yet. When a job finishes, you can save its results as a
+            dataset and re-use it as the starting point for another job.
           </p>
 
           <ul v-else class="ds-list">
@@ -1017,6 +1024,15 @@ onMounted(() => {
 
 <style scoped>
 .jobs { padding: 16px 18px; max-width: 860px; margin: 0 auto; }
+.workflow-hint {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 16px; font-size: 0.8rem; padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.workflow-hint .step { color: var(--muted); text-decoration: none; }
+.workflow-hint .step:hover { color: var(--text); text-decoration: underline; }
+.workflow-hint .step.active { color: var(--accent, #3d8b5f); font-weight: 600; }
+.workflow-hint .step-arrow { color: var(--border); }
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
 .head h2 { margin: 0; font-size: 1.1rem; }
 .sub { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; max-width: 60ch; }

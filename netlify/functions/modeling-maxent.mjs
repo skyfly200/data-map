@@ -50,10 +50,15 @@ async function train(client, auth, body) {
   if (configErr) throw new Error(configErr.message)
 
   // 3. Submit via the standard job queue (same path as ee-jobs.mjs).
+  // Provide a normalised source so normaliseSpec (called inside submitJob) does
+  // not fall back to an empty bbox and throw "An area is required."
+  const jobSource = body.source_dataset_id
+    ? { type: 'dataset', slug: body.source_dataset_id }
+    : spec.source
   const result = await submitJob({
     user: auth.user,
     profile: auth.profile,
-    spec: { type: 'maxent', config_id: config.id, ...spec },
+    spec: { type: 'maxent', config_id: config.id, ...spec, source: jobSource },
     counter: (s) => measureSource(s, { client, viewer }),
   })
   const jobId = result.job?.id
