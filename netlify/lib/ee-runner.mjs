@@ -359,7 +359,16 @@ async function runTemperature(points, columns, tick, skipped) {
 }
 
 async function runNdvi(points, columns, tick, skipped) {
-  const s2 = ee.ImageCollection(S2_SR)
+  // Bound the collection to the job's extent before any date filter so EE never
+  // tries to build a global median composite — that query never returns.
+  const lons = points.map((p) => p.lon)
+  const lats = points.map((p) => p.lat)
+  const pad = 0.5
+  const aoi = ee.Geometry.Rectangle([
+    Math.min(...lons) - pad, Math.min(...lats) - pad,
+    Math.max(...lons) + pad, Math.max(...lats) + pad,
+  ])
+  const s2 = ee.ImageCollection(S2_SR).filterBounds(aoi)
   await runDated(points, columns, tick, { skipped,
     scale: STAGES.ndvi.scale,
     reducer: ee.Reducer.mean(),
