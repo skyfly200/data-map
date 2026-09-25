@@ -24,7 +24,8 @@
                access token, which the server render does not have, so a link
                drawn from it on the server hydrates into a different DOM. -->
           <ClientOnly>
-            <NuxtLink v-if="isMember" to="/modeling/maxent" class="nav-link">Modeling</NuxtLink>
+            <NuxtLink v-if="isMember" to="/pipeline" class="nav-link">Pipeline</NuxtLink>
+            <NuxtLink v-if="isMember" to="/modeling/maxent" class="nav-link">Models</NuxtLink>
           </ClientOnly>
           <!-- Guide is always rightmost so it reads as a meta-nav item. -->
           <NuxtLink :to="guideLink.to" class="nav-link" :title="guideLink.title" :aria-label="guideLink.title">{{ guideLink.label }}</NuxtLink>
@@ -32,7 +33,8 @@
         <PopoverMenu class="nav-pop" icon="☰" title="Go to" align="right" btn-class="hdr-btn">
           <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-item">{{ l.title || l.label }}</NuxtLink>
           <ClientOnly>
-            <NuxtLink v-if="isMember" to="/modeling/maxent" class="nav-item">Modeling</NuxtLink>
+            <NuxtLink v-if="isMember" to="/pipeline" class="nav-item">Pipeline</NuxtLink>
+            <NuxtLink v-if="isMember" to="/modeling/maxent" class="nav-item">Models</NuxtLink>
           </ClientOnly>
         </PopoverMenu>
         <ClientOnly>
