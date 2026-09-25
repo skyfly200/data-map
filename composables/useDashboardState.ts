@@ -135,6 +135,16 @@ export function useDashboardState() {
     sync(); persist()
     return w
   }
+
+  /** Add a new widget and insert it before `beforeId` in the order. */
+  function addBefore(def: { type: string; label?: string; settings?: Record<string, any> }, beforeId: string) {
+    const w = manager.addWidget(def)
+    // addWidget appends; move the new id to just before beforeId.
+    manager.reorder(w.id, beforeId)
+    sync(); persist()
+    return w
+  }
+
   function remove(id: string) { manager.removeWidget(id); sync(); persist() }
   function reorder(movingId: string, targetId: string) { manager.reorder(movingId, targetId); sync(); persist() }
   function reset(config: DashboardConfig) { manager.setConfig(config); sync(); persist() }
@@ -146,5 +156,5 @@ export function useDashboardState() {
     sync(); persist()
   }
 
-  return { widgets, order, orderedWidgets, loaded, load, add, remove, reorder, reset, updateSettings }
+  return { widgets, order, orderedWidgets, loaded, load, add, addBefore, remove, reorder, reset, updateSettings }
 }
