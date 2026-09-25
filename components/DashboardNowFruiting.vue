@@ -3,6 +3,7 @@
     <div class="widget-head">
       <h3 class="widget-title"><span aria-hidden="true">🍄 </span>Now Fruiting</h3>
       <div class="widget-actions">
+        <button v-if="selectedSpecies" class="clear-btn" @click="selectedSpecies = null">✕ {{ selectedSpecies }}</button>
         <NuxtLink :to="mapLink" class="widget-link">Map ›</NuxtLink>
         <NuxtLink to="/modeling/maxent" class="widget-link">Model ›</NuxtLink>
       </div>
@@ -17,9 +18,12 @@
     </p>
 
     <ul v-else class="nf-list">
-      <li v-for="s in topSpecies" :key="s.name" class="nf-item">
+      <li v-for="s in topSpecies" :key="s.name" class="nf-item"
+          :class="{ selected: selectedSpecies === s.name, 'has-model': s.hasModel }"
+          @click="toggleSpecies(s.name)">
         <span class="nf-name">{{ s.name }}</span>
         <span class="nf-meta">
+          <span v-if="s.hasModel" class="nf-model-badge" title="MaxEnt model available">ML</span>
           <span class="nf-peak" :title="`Peak ${s.peakLabel} from today · ${s.iqr}d IQR`">{{ s.peakLabel }}</span>
           <span class="nf-iqr" :title="`Fruiting window width (IQR): ${s.iqr} days`">{{ s.iqr }}d</span>
           <span v-if="s.elevBand" class="nf-elev"
@@ -52,8 +56,8 @@ const { models, fetchModels } = useMaxEnt()
 const { elevLabel } = useUnits()
 
 const loading = ref(true)
+const selectedSpecies = ref(null)
 
-// ±30-day window around today's DOY, year-wrapped.
 const WINDOW = 30
 const TOP_N = 8
 
@@ -65,7 +69,6 @@ function dayOfYear(date) {
   return Math.floor((date - start) / 86400000)
 }
 
-// Circular distance between two DOYs (0–365).
 function doyDist(a, b) {
   const d = Math.abs(a - b)
   return d > 182 ? 365 - d : d
@@ -76,15 +79,23 @@ function obsDoy(r) {
     const d = new Date(r.date)
     if (!isNaN(d)) return dayOfYear(d)
   }
-  // Fall back to month-only: use the 15th as representative.
   const month = r.month ?? null
   if (month) return dayOfYear(new Date(2001, month - 1, 15))
   return null
 }
 
+// Species names that have at least one model
+const modelSpeciesSet = computed(() => {
+  const s = new Set()
+  for (const m of models.value || []) {
+    if (m.species) s.add(m.species)
+    if (m.target_species) s.add(m.target_species)
+  }
+  return s
+})
+
 const topSpecies = computed(() => {
-  // Bucket observations by species, keeping only those inside the window.
-  const buckets = new Map() // name -> { count, doys[], elevs[] }
+  const buckets = new Map()
   for (const r of rows.value || []) {
     if (!r.species) continue
     const doy = obsDoy(r)
@@ -97,10 +108,6 @@ const topSpecies = computed(() => {
     if (Number.isFinite(elev)) b.elevs.push(elev)
   }
 
-  // For each species compute the median DOY and IQR of windowed observations.
-  // Rank by a composite score: peak proximity to today + half the IQR (so a
-  // species peaking right now with a tight season beats one that happens to
-  // have a broad season straddling today). Ties break on count.
   return [...buckets.entries()]
     .map(([name, { count, doys, elevs }]) => {
       const sorted = [...doys].sort((a, b) => a - b)
@@ -111,33 +118,41 @@ const topSpecies = computed(() => {
         : sorted[mid]
       const q1 = sorted[Math.floor(n * 0.25)]
       const q3 = sorted[Math.floor(n * 0.75)]
-      const iqr = q3 - q1  // already within ±WINDOW so no wrap needed
+      const iqr = q3 - q1
       const dist = doyDist(medianDoy, todayDoy)
       const score = dist + iqr * 0.5
       const peakLabel = dist === 0 ? 'today' : `±${dist}d`
-      // Elevation band: IQR of elevations from windowed records (metres stored).
       let elevBand = null
       if (elevs.length >= 3) {
         const es = [...elevs].sort((a, b) => a - b)
-        const elo = es[Math.floor(es.length * 0.25)]
-        const ehi = es[Math.floor(es.length * 0.75)]
-        elevBand = { loM: elo, hiM: ehi }
+        elevBand = { loM: es[Math.floor(es.length * 0.25)], hiM: es[Math.floor(es.length * 0.75)] }
       }
-      return { name, count, dist, iqr, score, peakLabel, elevBand }
+      const hasModel = modelSpeciesSet.value.has(name)
+      return { name, count, dist, iqr, score, peakLabel, elevBand, hasModel }
     })
     .sort((a, b) => a.score - b.score || b.count - a.count)
     .slice(0, TOP_N)
 })
 
+function toggleSpecies(name) {
+  selectedSpecies.value = selectedSpecies.value === name ? null : name
+}
+
 const latestModel = computed(() => {
-  return [...(models.value || [])]
+  const base = (models.value || [])
+  const filtered = selectedSpecies.value
+    ? base.filter((m) => m.species === selectedSpecies.value || m.target_species === selectedSpecies.value)
+    : base
+  return [...filtered]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] || null
 })
 
-// Always link to map; activate the latest model layer when one has an asset.
 const mapLink = computed(() => {
   const m = latestModel.value
-  return m ? `/map?layer=maxent:${m.id}` : '/map'
+  const base = m ? `/map?layer=maxent:${m.id}` : '/map'
+  return selectedSpecies.value
+    ? `${base}${base.includes('?') ? '&' : '?'}species=${encodeURIComponent(selectedSpecies.value)}`
+    : base
 })
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -156,24 +171,41 @@ onMounted(async () => {
 
 <style scoped>
 .now-fruiting { height: 100%; display: flex; flex-direction: column; gap: 0.6rem; }
-.widget-head { display: flex; align-items: baseline; justify-content: space-between; }
+.widget-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem; }
 .widget-title { margin: 0; font-size: 1rem; color: var(--text, #222); }
-.widget-actions { display: flex; gap: 0.6rem; }
+.widget-actions { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
 .widget-link { font-size: 0.8rem; color: var(--accent, #2a78d6); text-decoration: none; }
 .widget-link:hover { text-decoration: underline; }
+.clear-btn {
+  font: inherit; font-size: 0.7rem; border: 1px solid var(--accent, #2a78d6);
+  background: color-mix(in srgb, var(--accent, #2a78d6) 12%, transparent);
+  color: var(--accent, #2a78d6); border-radius: 999px;
+  padding: 0.1rem 0.5rem; cursor: pointer; max-width: 160px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 .season-label { margin: 0; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted, #888); }
 
 .nf-loading, .nf-empty { font-size: 0.85rem; color: var(--muted, #888); }
 
-.nf-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+.nf-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; flex: 1; overflow-y: auto; }
 .nf-item {
   display: flex; justify-content: space-between; align-items: center;
   padding: 0.3rem 0.5rem; background: var(--surface-2, #f5f5f5);
   border: 1px solid var(--border-soft, #eee); border-radius: 6px;
+  cursor: pointer; transition: border-color 0.15s, background 0.15s;
 }
+.nf-item:hover { border-color: var(--accent, #2a78d6); }
+.nf-item.selected { border-color: var(--accent, #2a78d6); background: color-mix(in srgb, var(--accent, #2a78d6) 8%, var(--surface-2, #f5f5f5)); }
+.nf-item.has-model .nf-name { color: var(--accent, #2a78d6); }
+
 .nf-name { font-size: 0.82rem; color: var(--text, #222); font-style: italic; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nf-meta { display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0; }
+.nf-model-badge {
+  font-size: 0.6rem; font-weight: 700; color: #fff;
+  background: var(--accent, #2a78d6); border-radius: 3px; padding: 0 3px;
+  font-style: normal;
+}
 .nf-peak { font-size: 0.7rem; color: var(--accent, #2a78d6); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .nf-iqr { font-size: 0.7rem; color: var(--muted, #888); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .nf-elev { font-size: 0.68rem; color: var(--muted, #888); font-variant-numeric: tabular-nums; white-space: nowrap; opacity: 0.8; }

@@ -22,6 +22,13 @@
         <span class="tile-value small">{{ lastActivity }}</span>
         <span class="tile-label">Last activity</span>
       </div>
+      <div v-if="quotaPct !== null" class="tile tile-quota">
+        <div class="quota-bar-row">
+          <span class="tile-value">{{ quotaPct }}%</span>
+          <span class="tile-label">Monthly quota</span>
+        </div>
+        <div class="mini-bar"><div class="mini-fill" :class="quotaPct >= 90 ? 'fill-danger' : quotaPct >= 60 ? 'fill-warn' : 'fill-ok'" :style="{ width: `${quotaPct}%` }"></div></div>
+      </div>
     </div>
   </div>
 </template>
@@ -30,9 +37,11 @@
 import { computed, onMounted } from 'vue'
 import { useObservations } from '~/composables/useObservations'
 import { useEeJobs } from '~/composables/useEeJobs'
+import { useMembership } from '~/composables/useMembership'
 
 const { rows, load } = useObservations()
 const { jobs, refresh } = useEeJobs()
+const { profile, tier, loadProfile } = useMembership()
 
 const total = computed(() => (rows.value || []).length)
 const speciesCount = computed(() => {
@@ -53,7 +62,17 @@ const lastActivity = computed(() => {
   return `${Math.floor(days / 30)}mo ago`
 })
 
-onMounted(() => { load(); refresh() })
+const now = new Date()
+const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+const jobsThisMonth = computed(() =>
+  (jobs.value || []).filter((j) => j.created_at && new Date(j.created_at) >= startOfMonth).length
+)
+const quotaPct = computed(() => {
+  if (!profile.value?.ee_quota_monthly) return null
+  return Math.min(100, Math.round((jobsThisMonth.value / profile.value.ee_quota_monthly) * 100))
+})
+
+onMounted(() => { load(); refresh(); loadProfile() })
 </script>
 
 <style scoped>
@@ -71,4 +90,11 @@ a.tile:hover { border-color: var(--accent, #2a78d6); }
 .tile-value { font-size: 1.35rem; font-weight: 700; color: var(--text, #111); font-variant-numeric: tabular-nums; }
 .tile-value.small { font-size: 1rem; }
 .tile-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted, #777); }
+.tile-quota { justify-content: space-between; }
+.quota-bar-row { display: flex; justify-content: space-between; align-items: baseline; }
+.mini-bar { height: 6px; background: var(--surface-3, #ddd); border-radius: 3px; overflow: hidden; margin-top: 0.3rem; }
+.mini-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+.fill-ok { background: #27ae60; }
+.fill-warn { background: #e67e22; }
+.fill-danger { background: #e74c3c; }
 </style>
