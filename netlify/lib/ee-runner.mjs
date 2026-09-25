@@ -100,22 +100,25 @@ export async function initEarthEngine() {
 }
 
 /**
- * The per-request deadline, in milliseconds. Zero means none, and zero is the
- * default.
+ * The per-request deadline, in milliseconds.
  *
- * A fixed deadline here loses data rather than protecting anything. The heavy
- * samplers — the WorldCover mosaic, the Sentinel-2 median composite, ERA5 soil
- * moisture — legitimately take much longer than the light ones, so any deadline
- * short enough to unstick a real hang also kills requests that would have
- * succeeded, and the symptom is a column that comes back entirely empty rather
- * than an error. scripts/ee_enrich.py hit exactly this and turned it off; the
- * retry and backoff below is what actually recovers transient failures.
+ * Heavy stages (S2 median, TPI reduceNeighborhood) legitimately take several
+ * minutes, so the deadline must be long enough not to clip real work. But EE
+ * sometimes hangs — the callback never fires — which freezes the job
+ * indefinitely. Ten minutes is the practical ceiling for a single chunk; if EE
+ * has not answered in that time it is not going to, and skipping the chunk is
+ * better than stalling the pipeline forever.
+ *
+ * Override with EE_REQUEST_DEADLINE_MS (milliseconds).
  */
 function requestDeadlineMs() {
   const raw = process.env.EE_REQUEST_DEADLINE_MS ?? process.env.EE_DEADLINE_MS
-  if (raw === undefined || String(raw).trim() === '') return 0
-  const value = Number(raw)
-  return Number.isFinite(value) && value > 0 ? value : 0
+  if (raw !== undefined && String(raw).trim() !== '') {
+    const value = Number(raw)
+    if (Number.isFinite(value) && value > 0) return value
+    if (value === 0) return 0   // explicit zero means no deadline
+  }
+  return 10 * 60 * 1000   // 10 minutes
 }
 
 /** getInfo as a promise. Deadline off unless one is configured; see above. */
@@ -185,7 +188,10 @@ async function sampleChunk(image, points, scale, reducer = ee.Reducer.first(), s
   const fc = ee.FeatureCollection(points.map((p, i) => ee.Feature(
     ee.Geometry.Point([p.lon, p.lat]), { __i: i },
   )))
-  const sampled = image.reduceRegions({ collection: fc, reducer, scale })
+  // tileScale: 4 keeps peak memory inside EE's per-request limit for expensive
+  // images (S2 median composites, TPI reduceNeighborhood). It has no effect on
+  // lightweight static layers and prevents silent hangs on the heavy ones.
+  const sampled = image.reduceRegions({ collection: fc, reducer, scale, tileScale: 4 })
   let info
   try {
     info = await withRetry(() => evaluate(sampled), { label: 'sampling' })
@@ -227,22 +233,36 @@ async function runTerrain(points, columns, tick, skipped) {
       kernel: ee.Kernel.circle(radius, 'meters'),
     })).rename(`tpi_${radius}m`)
   })
-  const upstream = ee.Image(MERIT_HYDRO).select('upa').rename('upstream_area')
-  const image = ee.Image.cat([
-    terrain.select(['elevation', 'slope', 'aspect']), ...tpiBands, upstream,
-  ])
+  // SRTM-derived bands only — no MERIT_HYDRO here. Mixing two datasets in one
+  // image at different scales causes EE to hang rather than timeout gracefully.
+  const terrainImage = ee.Image.cat([terrain.select(['elevation', 'slope', 'aspect']), ...tpiBands])
 
   const groups = chunk(points)
   for (let g = 0; g < groups.length; g += 1) {
-    const rows = await sampleChunk(image, groups[g], STAGES.terrain.scale, ee.Reducer.first(), skipped)
+    const rows = await sampleChunk(terrainImage, groups[g], STAGES.terrain.scale, ee.Reducer.first(), skipped)
     rows.forEach((props, i) => {
       const at = groups[g][i].index
-      for (const band of ['elevation', 'slope', 'aspect', 'tpi_150m', 'tpi_500m', 'tpi_1500m', 'upstream_area']) {
+      for (const band of ['elevation', 'slope', 'aspect', 'tpi_150m', 'tpi_500m', 'tpi_1500m']) {
         columns.get(band)[at] = props?.[band] ?? null
       }
     })
-    tick((g + 1) / groups.length)
+    // First 80% of the tick is terrain; the remaining 20% is MERIT Hydro.
+    tick(0.8 * (g + 1) / groups.length)
   }
+
+  // MERIT Hydro upstream area — sampled separately so a hang here does not
+  // stall the terrain bands already collected above.
+  const upstream = ee.Image(MERIT_HYDRO).select('upa').rename('upstream_area')
+  const meritSkipped = { n: 0 }
+  for (let g = 0; g < groups.length; g += 1) {
+    const rows = await sampleChunk(upstream, groups[g], 90, ee.Reducer.first(), meritSkipped)
+    rows.forEach((props, i) => {
+      const at = groups[g][i].index
+      columns.get('upstream_area')[at] = props?.upstream_area ?? null
+    })
+    tick(0.8 + 0.2 * (g + 1) / groups.length)
+  }
+  if (meritSkipped.n) skipped.n += meritSkipped.n
 
   // The three exposure indices are derived from the sampled columns rather than
   // sampled themselves; see terrain-indices.mjs for why they are point-relative.
