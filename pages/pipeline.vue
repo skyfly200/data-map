@@ -72,46 +72,70 @@
 
           <!-- BBox -->
           <template v-else-if="sourceForm.type === 'bbox'">
-            <div class="row">
-              <label>Bounding box</label>
-              <div class="bbox">
-                <label class="mini">N <input v-model.number="sourceForm.north" type="number" step="0.1" title="Northern latitude boundary (decimal degrees, e.g. 49.0)" /></label>
-                <label class="mini">S <input v-model.number="sourceForm.south" type="number" step="0.1" title="Southern latitude boundary (decimal degrees, e.g. 24.5)" /></label>
-                <label class="mini">W <input v-model.number="sourceForm.west" type="number" step="0.1" title="Western longitude boundary (decimal degrees, e.g. −124.8)" /></label>
-                <label class="mini">E <input v-model.number="sourceForm.east" type="number" step="0.1" title="Eastern longitude boundary (decimal degrees, e.g. −66.9)" /></label>
+            <div class="field-stack">
+              <div class="field-row">
+                <span class="field-label">Region</span>
+                <div class="bbox">
+                  <label class="mini">N <input v-model.number="sourceForm.north" type="number" step="0.1" title="Northern latitude boundary" /></label>
+                  <label class="mini">S <input v-model.number="sourceForm.south" type="number" step="0.1" title="Southern latitude boundary" /></label>
+                  <label class="mini">W <input v-model.number="sourceForm.west" type="number" step="0.1" title="Western longitude boundary" /></label>
+                  <label class="mini">E <input v-model.number="sourceForm.east" type="number" step="0.1" title="Eastern longitude boundary" /></label>
+                </div>
               </div>
-            </div>
-            <div class="row two">
-              <label class="stack"><span>From</span><input v-model="sourceForm.dateFrom" type="date" title="Earliest observation date to include" /></label>
-              <label class="stack"><span>To</span><input v-model="sourceForm.dateTo" type="date" title="Latest observation date to include" /></label>
-            </div>
-            <div class="row">
-              <label for="src-taxon">Taxon (optional)</label>
-              <TaxonAutocomplete id="src-taxon" v-model="sourceForm.taxon" placeholder="e.g. Amanita" source="inat"
-                                 title="Filter results to a specific taxon — genus, family, or species (iNaturalist autocomplete)" />
+              <div class="field-row">
+                <span class="field-label">Date filter</span>
+                <label class="pick pick-inline">
+                  <input v-model="sourceForm.noDateFilter" type="checkbox" />
+                  <span>No date filter (all time)</span>
+                </label>
+              </div>
+              <div v-if="!sourceForm.noDateFilter" class="field-row">
+                <span class="field-label"></span>
+                <div class="date-pair">
+                  <label class="stack"><span>From</span><input v-model="sourceForm.dateFrom" type="date" title="Earliest observation date" /></label>
+                  <label class="stack"><span>To</span><input v-model="sourceForm.dateTo" type="date" title="Latest observation date" /></label>
+                </div>
+              </div>
+              <div class="field-row">
+                <span class="field-label">Taxon</span>
+                <TaxonAutocomplete id="src-taxon" v-model="sourceForm.taxon" placeholder="e.g. Amanita (optional)" source="inat"
+                                   title="Filter results to a specific taxon — genus, family, or species" />
+              </div>
             </div>
           </template>
 
           <!-- Fetch / import inline -->
           <template v-else-if="sourceForm.type === 'fetch'">
-            <div class="row">
-              <label for="fetch-taxon">Taxon</label>
-              <TaxonAutocomplete id="fetch-taxon" v-model="fetchForm.taxon"
-                                 placeholder="e.g. Morchella, Amanitaceae" :disabled="fetchForm.loading"
-                                 :source="fetchForm.source"
-                                 title="Taxon name to search — genus, family, or full species name" />
-            </div>
-            <div class="row">
-              <label>Source</label>
-              <div class="src-tabs">
-                <button v-for="s in FETCH_SOURCES" :key="s.key" class="src-tab"
-                        :class="{ on: fetchForm.source === s.key }"
-                        @click="fetchForm.source = s.key" type="button">{{ s.label }}</button>
+            <div class="field-stack">
+              <div class="field-row">
+                <span class="field-label">Taxon</span>
+                <TaxonAutocomplete id="fetch-taxon" v-model="fetchForm.taxon"
+                                   placeholder="e.g. Morchella, Amanitaceae" :disabled="fetchForm.loading"
+                                   :source="fetchForm.source"
+                                   title="Taxon name to search — genus, family, or full species name" />
               </div>
-            </div>
-            <div class="row two">
-              <label class="stack"><span>From</span><input v-model="fetchForm.dateFrom" type="date" :disabled="fetchForm.loading" title="Earliest observation date to fetch" /></label>
-              <label class="stack"><span>To</span><input v-model="fetchForm.dateTo" type="date" :disabled="fetchForm.loading" title="Latest observation date to fetch" /></label>
+              <div class="field-row">
+                <span class="field-label">Source</span>
+                <div class="src-tabs">
+                  <button v-for="s in FETCH_SOURCES" :key="s.key" class="src-tab"
+                          :class="{ on: fetchForm.source === s.key }"
+                          @click="fetchForm.source = s.key" type="button">{{ s.label }}</button>
+                </div>
+              </div>
+              <div class="field-row">
+                <span class="field-label">Date filter</span>
+                <label class="pick pick-inline">
+                  <input v-model="fetchForm.noDateFilter" type="checkbox" :disabled="fetchForm.loading" />
+                  <span>No date filter (all time)</span>
+                </label>
+              </div>
+              <div v-if="!fetchForm.noDateFilter" class="field-row">
+                <span class="field-label"></span>
+                <div class="date-pair">
+                  <label class="stack"><span>From</span><input v-model="fetchForm.dateFrom" type="date" :disabled="fetchForm.loading" title="Earliest observation date to fetch" /></label>
+                  <label class="stack"><span>To</span><input v-model="fetchForm.dateTo" type="date" :disabled="fetchForm.loading" title="Latest observation date to fetch" /></label>
+                </div>
+              </div>
             </div>
             <div class="actions" style="margin-top:0">
               <button class="btn secondary" :disabled="!fetchForm.taxon.trim() || fetchForm.loading"
@@ -516,11 +540,19 @@ const predictorList = [
 ]
 
 // ── Step 1: Source ────────────────────────────────────────────────────────────
+function defaultDateFrom() {
+  const d = new Date(); d.setFullYear(d.getFullYear() - 2); return d.toISOString().slice(0, 10)
+}
+function defaultDateTo() { return new Date().toISOString().slice(0, 10) }
+
 const sourceForm = reactive({
   type: 'dataset',
   datasetSlug: '',
-  north: 49.0, south: 24.5, east: -66.9, west: -124.8,
-  dateFrom: '', dateTo: '', taxon: '',
+  // Colorado default region
+  north: 41.0, south: 37.0, west: -109.1, east: -102.0,
+  dateFrom: defaultDateFrom(), dateTo: defaultDateTo(),
+  noDateFilter: false,
+  taxon: '',
 })
 
 const canAdvanceSource = computed(() => {
@@ -543,8 +575,8 @@ const FETCH_SOURCES = [
 const fetchForm = reactive({
   taxon: '',
   source: 'auto',
-  dateFrom: '',
-  dateTo: '',
+  dateFrom: defaultDateFrom(), dateTo: defaultDateTo(),
+  noDateFilter: false,
   loading: false,
   error: '',
   result: null,
@@ -560,8 +592,8 @@ async function runFetch() {
     const headers = token ? { authorization: `Bearer ${token}` } : {}
 
     const p = new URLSearchParams({ species: fetchForm.taxon.trim() })
-    if (fetchForm.dateFrom) p.set('d1', fetchForm.dateFrom)
-    if (fetchForm.dateTo) p.set('d2', fetchForm.dateTo)
+    if (!fetchForm.noDateFilter && fetchForm.dateFrom) p.set('d1', fetchForm.dateFrom)
+    if (!fetchForm.noDateFilter && fetchForm.dateTo) p.set('d2', fetchForm.dateTo)
 
     const src = fetchForm.source === 'auto'
       ? (fetchForm.dateFrom || fetchForm.dateTo ? 'inat' : 'inat')
@@ -652,8 +684,8 @@ function buildSource() {
   return {
     type: 'bbox',
     bounds: { north: sourceForm.north, south: sourceForm.south, east: sourceForm.east, west: sourceForm.west },
-    dateFrom: sourceForm.dateFrom || undefined,
-    dateTo: sourceForm.dateTo || undefined,
+    dateFrom: sourceForm.noDateFilter ? undefined : (sourceForm.dateFrom || undefined),
+    dateTo: sourceForm.noDateFilter ? undefined : (sourceForm.dateTo || undefined),
     taxon: sourceForm.taxon || undefined,
   }
 }
@@ -949,11 +981,29 @@ const contributions = computed(() => {
 .sources, .stages { display: flex; flex-direction: column; gap: 6px; }
 .pick { display: flex; align-items: flex-start; gap: 8px; font-size: 0.88rem; cursor: pointer; padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--input-bg); }
 .pick:hover { background: var(--surface-2); }
+.pick-inline { border: none; background: none; padding: 4px 0; }
+.pick-inline:hover { background: none; }
 .pick input { margin-top: 2px; }
 .stage { padding: 7px 10px; }
 .stage span { display: flex; flex-direction: column; }
 .stage em { font-size: 0.78rem; color: var(--muted); font-style: normal; }
+
+/* ── Stacked field layout (bbox / fetch forms) ── */
+.field-stack { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.field-row { display: grid; grid-template-columns: 120px 1fr; gap: 8px 12px; align-items: start; }
+.field-label { padding-top: 6px; font-size: 0.84rem; font-weight: 600; color: var(--muted); }
+.date-pair { display: flex; gap: 10px; }
+.date-pair .stack { flex: 1; }
+@media (max-width: 520px) { .field-row { grid-template-columns: 1fr; } .date-pair { flex-direction: column; } }
 .disabled { opacity: 0.5; pointer-events: none; }
+
+/* ── Source tabs ── */
+.src-tabs { display: flex; gap: 0; }
+.src-tab { border: 1px solid var(--border); background: var(--input-bg); color: var(--muted); padding: 5px 12px; font-size: 0.84rem; cursor: pointer; }
+.src-tabs .src-tab:first-child { border-radius: 6px 0 0 6px; }
+.src-tabs .src-tab:last-child { border-radius: 0 6px 6px 0; }
+.src-tabs .src-tab:not(:first-child) { border-left: none; }
+.src-tab.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); z-index: 1; }
 
 /* ── BBox ── */
 .bbox { display: flex; gap: 8px; flex-wrap: wrap; }
