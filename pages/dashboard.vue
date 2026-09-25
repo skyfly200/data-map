@@ -48,8 +48,10 @@
                     title="2 columns" @click="updateSettings(w.id, { colspan: 2 })">▪▪</button>
             <button :class="{ on: w.settings.colspan === 'full' }"
                     title="Full width" @click="updateSettings(w.id, { colspan: 'full' })">▬</button>
-            <button :class="{ on: w.settings.tall }"
-                    title="Toggle tall" @click="updateSettings(w.id, { tall: !w.settings.tall })">↕</button>
+            <button :class="{ on: w.settings.tall === 1 }"
+                    title="Tall (1.5×)" @click="updateSettings(w.id, { tall: w.settings.tall === 1 ? false : 1 })">↕</button>
+            <button :class="{ on: w.settings.tall === 2 }"
+                    title="Extra tall (2×)" @click="updateSettings(w.id, { tall: w.settings.tall === 2 ? false : 2 })">⤢</button>
           </div>
           <button class="remove" title="Remove" @click="remove(w.id)">×</button>
         </div>
@@ -81,6 +83,10 @@ import DashboardDataQuality from '~/components/DashboardDataQuality.vue'
 import DashboardFavorites from '~/components/DashboardFavorites.vue'
 import DashboardWeather from '~/components/DashboardWeather.vue'
 import DashboardChart from '~/components/DashboardChart.vue'
+import DashboardDatasets from '~/components/DashboardDatasets.vue'
+import DashboardQuota from '~/components/DashboardQuota.vue'
+import DashboardWeatherForecast from '~/components/DashboardWeatherForecast.vue'
+import DashboardRecentRainTemp from '~/components/DashboardRecentRainTemp.vue'
 
 const { isAuthed } = useAuth()
 const { orderedWidgets, load, add, remove, reorder, reset, updateSettings } = useDashboardState()
@@ -90,7 +96,7 @@ const WIDGET_TYPES = [
   { type: 'overview', label: 'Overview', icon: '📌', component: DashboardOverview },
   { type: 'recent-jobs', label: 'Recent jobs', icon: '⚙️', component: DashboardRecentJobs },
   { type: 'species-list', label: 'Top species', icon: '🍄', component: DashboardSpeciesList },
-  { type: 'env-stats', label: 'Environmental stats', icon: '🌡️', component: DashboardEnvStats },
+  { type: 'env-stats', label: 'Data Stats', icon: '📊', component: DashboardEnvStats },
   { type: 'saved-charts', label: 'Saved charts', icon: '📊', component: DashboardSavedCharts },
   { type: 'quick-filters', label: 'Quick filters', icon: '🔍', component: DashboardQuickFilters },
   { type: 'now-fruiting', label: 'Now fruiting', icon: '🍄', component: DashboardNowFruiting },
@@ -101,6 +107,10 @@ const WIDGET_TYPES = [
   { type: 'favorites', label: 'Favorites', icon: '⭐', component: DashboardFavorites },
   { type: 'weather', label: 'Weather correlation', icon: '🌧️', component: DashboardWeather },
   { type: 'chart', label: 'Custom chart', icon: '📊', component: DashboardChart },
+  { type: 'datasets', label: 'Datasets', icon: '🗄️', component: DashboardDatasets },
+  { type: 'quota', label: 'Quota usage', icon: '⚡', component: DashboardQuota },
+  { type: 'weather-forecast', label: 'Weather & radar', icon: '🌤️', component: DashboardWeatherForecast },
+  { type: 'recent-rain-temp', label: 'Recent rain & temps', icon: '🌡️', component: DashboardRecentRainTemp },
 ]
 const COMPONENTS = Object.fromEntries(WIDGET_TYPES.map((w) => [w.type, w.component]))
 function componentFor(type) { return COMPONENTS[type] || DashboardOverview }
@@ -123,11 +133,13 @@ const DEFAULTS = {
 
 function cellClass(w, isEditing) {
   const span = w.settings?.colspan
+  const tall = w.settings?.tall
   return {
     editing:    isEditing,
     'span-2':   span === 2,
     'span-full': span === 'full',
-    tall:       Boolean(w.settings?.tall),
+    tall:       tall === true || tall === 1,
+    'tall-2':   tall === 2,
   }
 }
 
@@ -173,24 +185,33 @@ onMounted(() => { load(DEFAULTS) })
 
 .dash-empty { text-align: center; color: var(--muted, #888); padding: 3rem 1rem; }
 
-/* Grid: 1 column on mobile → 2 on tablet → auto-fill (≥320px) on desktop.
-   Cells span additional columns via .span-2 / .span-full; .tall doubles height. */
+/* Grid layout.
+   - 3 columns on wide screens, 2 on medium, 1 on mobile.
+   - .span-2 spans 2 cols; .span-full spans all.
+   - .tall makes the cell a fixed taller height with inner content stretching to fill.
+   - align-items: stretch so tall cells fill their row height visually. */
 .dash-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   align-items: start;
 }
 .dash-cell {
   position: relative; background: var(--surface, #fff); border: 1px solid var(--border, #e5e5e5);
-  border-radius: 12px; padding: 1rem; min-height: 140px;
+  border-radius: 12px; padding: 1rem; min-height: 160px;
+  display: flex; flex-direction: column;
   transition: box-shadow 0.15s;
 }
+/* LazyVisible and the component inside it should stretch to fill the cell */
+.dash-cell > :deep(*) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.dash-cell > :deep(.dash-widget) { flex: 1; min-height: 0; }
+
 .dash-cell.editing { border-style: dashed; cursor: grab; }
 .dash-cell.editing:hover { box-shadow: 0 0 0 2px var(--accent, #2a78d6); }
 .dash-cell.span-2 { grid-column: span 2; }
 .dash-cell.span-full { grid-column: 1 / -1; }
-.dash-cell.tall { min-height: 480px; }
+.dash-cell.tall { height: 520px; min-height: unset; }
+.dash-cell.tall-2 { height: 760px; min-height: unset; }
 
 .cell-bar { display: flex; justify-content: space-between; align-items: center; margin: -0.3rem -0.3rem 0.4rem; gap: 0.3rem; }
 .drag { color: var(--muted, #aaa); cursor: grab; user-select: none; }
@@ -208,11 +229,16 @@ onMounted(() => { load(DEFAULTS) })
 }
 .remove:hover { color: #b3492f; }
 
-@media (max-width: 680px) {
+@media (max-width: 600px) {
   .dash-grid { grid-template-columns: 1fr; }
   .dash-cell.span-2, .dash-cell.span-full { grid-column: 1; }
 }
-@media (min-width: 681px) and (max-width: 960px) {
+@media (min-width: 601px) and (max-width: 960px) {
+  .dash-grid { grid-template-columns: repeat(2, 1fr); }
+  .dash-cell.span-full { grid-column: 1 / -1; }
+  .dash-cell.span-2 { grid-column: span 2; }
+}
+@media (min-width: 961px) {
   .dash-cell.span-full { grid-column: 1 / -1; }
 }
 </style>
