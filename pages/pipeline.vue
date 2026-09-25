@@ -462,10 +462,16 @@ onMounted(() => {
 
 // ── Predictor / stage metadata ────────────────────────────────────────────────
 const stageList = [
-  { key: 'terrain',      label: 'Terrain',         description: 'Elevation, slope, aspect' },
-  { key: 'vegetation',   label: 'Vegetation',       description: 'NDVI greenness index' },
-  { key: 'soil',         label: 'Soil moisture',    description: 'Surface moisture from satellite' },
-  { key: 'climate',      label: 'Climate normals',  description: '30-year precipitation & temperature' },
+  { key: 'terrain',       label: 'Terrain',                description: 'Elevation, slope, aspect and exposure indices.' },
+  { key: 'landcover',     label: 'Land cover',             description: 'ESA WorldCover class at each point (10 m).' },
+  { key: 'soil_moisture', label: 'Soil moisture',          description: 'ERA5-Land volumetric soil water on the day of the record.' },
+  { key: 'precip',        label: 'Rainfall lead-up',       description: 'CHIRPS daily rainfall for the 7 days up to each record.' },
+  { key: 'temperature',   label: 'Temperature lead-up',    description: 'ERA5-Land daily max/min for the 7 days up to each record.' },
+  { key: 'ndvi',          label: 'Vegetation (NDVI)',      description: 'Sentinel-2 NDVI and moisture index, cloud-screened.' },
+  { key: 'soil',          label: 'Soil properties',        description: 'USDA texture class, percent sand, depth to bedrock.' },
+  { key: 'soil_taxonomy', label: 'Soil taxonomy',          description: 'USDA great group and order at each point.' },
+  { key: 'fire',          label: 'Fire history',           description: 'Most recent burn year and years since fire (MODIS, 2001+).' },
+  { key: 'forest',        label: 'Forest type & structure', description: 'GAP forest type, canopy cover and stand height (CONUS).' },
 ]
 
 const predictorList = [
@@ -513,7 +519,7 @@ function advanceSource() {
 // ── Step 2: Enrich ────────────────────────────────────────────────────────────
 const enrichForm = reactive({
   title: '',
-  stages: ['terrain', 'vegetation', 'soil', 'climate'],
+  stages: ['terrain', 'landcover', 'soil_moisture', 'precip', 'temperature', 'ndvi'],
 })
 const enrichError = ref('')
 const enrichNote = ref('')
