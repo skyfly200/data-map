@@ -12,6 +12,7 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
   const overlayOrder = ref([])
   const layerOpacity = ref({})
   const layerBlend = ref({})
+  const layerChannel = ref({})
   const soloKey = ref('')
   const activeOverlays = ref(new Set())
   const overlayLayers = ref([])
@@ -63,7 +64,67 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
           overrides: layerBlend.value, fallback: stackBlend.value, drawn: drawn.length,
         })
         : 'normal'
+      applyChannelFilter(entry.key, el)
     }
+  }
+
+  // SVG filter element pool: one hidden <svg> per map container, reused across
+  // all layers. A feColorMatrix per-layer scales individual R/G/B/A channels
+  // without re-fetching tiles.
+  let filterSvg = null
+
+  function getFilterSvg() {
+    if (filterSvg && document.contains(filterSvg)) return filterSvg
+    filterSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    filterSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    filterSvg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none'
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
+    filterSvg.appendChild(defs)
+    document.body.appendChild(filterSvg)
+    return filterSvg
+  }
+
+  function channelFilterId(key) {
+    return `lm-ch-${key.replace(/[^a-z0-9]/gi, '-')}`
+  }
+
+  function applyChannelFilter(key, el) {
+    if (!import.meta.client) return
+    const ch = layerChannel.value[key]
+    const id = channelFilterId(key)
+    const isDefault = !ch || (ch.r === 1 && ch.g === 1 && ch.b === 1 && ch.a === 1)
+
+    if (isDefault) {
+      el.style.filter = ''
+      document.getElementById(id)?.remove()
+      return
+    }
+
+    const r = ch.r ?? 1; const g = ch.g ?? 1; const b = ch.b ?? 1; const a = ch.a ?? 1
+    const svg = getFilterSvg()
+    let filter = document.getElementById(id)
+    if (!filter) {
+      filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter')
+      filter.setAttribute('id', id)
+      filter.setAttribute('color-interpolation-filters', 'sRGB')
+      const fe = document.createElementNS('http://www.w3.org/2000/svg', 'feColorMatrix')
+      fe.setAttribute('type', 'matrix')
+      filter.appendChild(fe)
+      svg.querySelector('defs').appendChild(filter)
+    }
+    // feColorMatrix: row = [R,G,B,A,bias] per output channel
+    // Scale each channel independently; off-diagonal = 0 keeps channels separate.
+    filter.querySelector('feColorMatrix').setAttribute('values',
+      `${r} 0 0 0 0  0 ${g} 0 0 0  0 0 ${b} 0 0  0 0 0 ${a} 0`)
+    el.style.filter = `url(#${id})`
+  }
+
+  function setLayerChannel(key, channel, value) {
+    const cur = layerChannel.value[key] || { r: 1, g: 1, b: 1, a: 1 }
+    layerChannel.value = { ...layerChannel.value, [key]: { ...cur, [channel]: value } }
+    const entry = overlayLayers.value.find((o) => o.key === key)
+    const el = entry?.layer?.getContainer?.()
+    if (el) applyChannelFilter(key, el)
   }
 
   // Defers removeLayer until after any in-progress zoom animation to avoid
@@ -316,11 +377,11 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
   }
 
   return {
-    overlayOrder, layerOpacity, layerBlend, soloKey,
+    overlayOrder, layerOpacity, layerBlend, layerChannel, soloKey,
     activeOverlays, overlayLayers, baseLayers, activeBase, activeBaseName,
     overlayGroups, eeParams, eeErrors, eeLoading, eeLayers, activeEeLayers,
     applyOverlayOrder, applyBlendModes, applySolo,
-    setSolo, setLayerBlend, toggleOverlay, toggleOverlayByKey,
+    setSolo, setLayerBlend, setLayerChannel, toggleOverlay, toggleOverlayByKey,
     moveOverlay, setLayerOpacity, clearOverlays,
     paramsFor, refreshEeLayer, debounceEeRefresh, setEeParam,
     setBase, restoreBase, restoreOverlays, restoreEeLayer,

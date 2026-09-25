@@ -16,7 +16,8 @@
       :open="showLayers" :groups="overlayGroups" :active="activeOverlays"
       :order="overlayOrder" :opacity="layerOpacity" :ee-loading="eeLoading"
       :blend="layerBlend" :stack-blend="stackBlend" :solo="soloKey"
-      @blend="setLayerBlend" @solo="setSolo"
+      :channel="layerChannel"
+      @blend="setLayerBlend" @solo="setSolo" @channel="setLayerChannel"
       @toggle="toggleOverlayByKey" @opacity="setLayerOpacity" @move="moveOverlay"
       @clear="clearOverlays" @close="showLayers = false"
     >
@@ -294,6 +295,11 @@
               <div v-if="upscaleNote(n)" class="legend-note">{{ upscaleNote(n) }}</div>
               <div v-if="n.slow" class="legend-note">Tiles arrive slowly first time.</div>
               <div v-if="n.note" class="legend-note">{{ n.note }}</div>
+              <div v-if="n.attribution" class="layer-attrib">
+                <button class="attrib-toggle" :aria-expanded="!!expandedAttrib[n.name]"
+                        @click.stop="toggleAttrib(n.name)">©</button>
+                <span v-if="expandedAttrib[n.name]" class="attrib-text">{{ n.attribution }}</span>
+              </div>
             </template>
           </div>
         </template>
@@ -660,11 +666,11 @@ const { accessToken } = useAuth()
 const offline = useOffline()
 
 const {
-  overlayOrder, layerOpacity, layerBlend, soloKey,
+  overlayOrder, layerOpacity, layerBlend, layerChannel, soloKey,
   activeOverlays, overlayLayers, baseLayers, activeBase, activeBaseName,
   overlayGroups, eeParams, eeErrors, eeLoading, eeLayers, activeEeLayers,
   applyOverlayOrder, applyBlendModes, applySolo,
-  setSolo, setLayerBlend, moveOverlay, setLayerOpacity, clearOverlays,
+  setSolo, setLayerBlend, setLayerChannel, moveOverlay, setLayerOpacity, clearOverlays,
   paramsFor, debounceEeRefresh, setEeParam,
   setBase: _setBase, restoreBase: _restoreBase, restoreOverlays, restoreEeLayer,
   toggleOverlay: _toggleOverlay, toggleOverlayByKey: _toggleOverlayByKey,
@@ -683,6 +689,11 @@ function toggleLayerExpanded(name) {
   expandedLayers[name] = !expandedLayers[name]
 }
 
+const expandedAttrib = reactive({})
+function toggleAttrib(name) {
+  expandedAttrib[name] = !expandedAttrib[name]
+}
+
 function toggleZone(current, zone, checked) {
   const set = new Set(String(current || '').split(',').filter(Boolean))
   checked ? set.add(zone) : set.delete(zone)
@@ -698,7 +709,8 @@ async function addEeLayers() {
     // An empty URL until it is switched on. Leaflet is content with that and
     // simply draws nothing, which is what an unrequested layer should do.
     const layer = L.tileLayer('', {
-      attribution: spec.attribution,
+      // Attribution shown in the key card; not in Leaflet's corner control to
+      // avoid crowding it (basemaps keep their own corner attribution).
       opacity: (spec.opacity ?? 1) * tileOpacity.value,
       maxZoom: MAP_MAX_ZOOM,
       // Earth Engine renders any zoom it is asked for, so there is no native
@@ -727,6 +739,7 @@ async function addEeLayers() {
           // a browser for them instead; see SoilTaxonomyKey.
           classes: spec.classes,
           legendInBrowser: spec.legendInBrowser,
+          attribution: spec.attribution,
           slug: spec.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         }]
       }
@@ -1360,6 +1373,10 @@ onBeforeUnmount(() => {
 .layer-zones-label { color: var(--muted); font-weight: 600; display: block; margin-bottom: 3px; }
 .zone-check { display: flex; align-items: center; gap: 4px; margin: 2px 0; cursor: pointer; }
 .zone-check input { cursor: pointer; margin: 0; }
+.layer-attrib { display: flex; align-items: baseline; gap: 5px; margin-top: 4px; }
+.attrib-toggle { border: none; background: none; cursor: pointer; font-size: 0.65rem; color: var(--muted); padding: 0 2px; line-height: 1; opacity: 0.7; }
+.attrib-toggle:hover { opacity: 1; }
+.attrib-text { font-size: 0.62rem; color: var(--muted); line-height: 1.3; flex: 1; }
 
 /* The chunk indicator: bottom-left, above Leaflet's zoom control, and quiet
    enough to ignore while still being legible over imagery. */
