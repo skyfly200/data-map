@@ -202,9 +202,9 @@ onMounted(() => { load(DEFAULTS) })
   display: flex; flex-direction: column;
   transition: box-shadow 0.15s;
 }
-/* LazyVisible and the component inside it should stretch to fill the cell */
-.dash-cell > :deep(*) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-.dash-cell > :deep(.dash-widget) { flex: 1; min-height: 0; }
+/* LazyVisible wrapper and the .dash-widget inside both stretch to fill the cell */
+.dash-cell :deep(.lazy-visible) { flex: 1; min-height: 0; }
+.dash-cell :deep(.dash-widget) { flex: 1; min-height: 0; }
 
 .dash-cell.editing { border-style: dashed; cursor: grab; }
 .dash-cell.editing:hover { box-shadow: 0 0 0 2px var(--accent, #2a78d6); }
