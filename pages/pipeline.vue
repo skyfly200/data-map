@@ -86,7 +86,7 @@
             </div>
             <div class="row">
               <label for="src-taxon">Taxon (optional)</label>
-              <input id="src-taxon" v-model="sourceForm.taxon" type="text" placeholder="e.g. Amanita" />
+              <TaxonAutocomplete id="src-taxon" v-model="sourceForm.taxon" placeholder="e.g. Amanita" source="inat" />
             </div>
           </template>
 
@@ -94,8 +94,9 @@
           <template v-else-if="sourceForm.type === 'fetch'">
             <div class="row">
               <label for="fetch-taxon">Taxon</label>
-              <input id="fetch-taxon" v-model="fetchForm.taxon" type="text"
-                     placeholder="e.g. Morchella, Amanitaceae" :disabled="fetchForm.loading" />
+              <TaxonAutocomplete id="fetch-taxon" v-model="fetchForm.taxon"
+                                 placeholder="e.g. Morchella, Amanitaceae" :disabled="fetchForm.loading"
+                                 :source="fetchForm.source" />
             </div>
             <div class="row">
               <label>Source</label>
