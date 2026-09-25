@@ -123,6 +123,24 @@ function deriveFields(geojson: ObservationCollection): ObservationCollection {
       const n = ENRICH_COLS.reduce((s, c) => s + (hasValue(p[c]) ? 1 : 0), 0)
       p.enrichment_level = n === 0 ? 'none' : n >= ENRICH_COLS.length ? 'full' : 'partial'
     }
+    if (!hasValue(p.location_precision)) {
+      // iNat-style: geoprivacy/coordinates_obscured take priority; fall back to accuracy radius.
+      if (p.geoprivacy === 'obscured' || p.coordinates_obscured === true || p.coordinates_obscured === 'true') {
+        p.location_precision = 'obscured'
+      } else if (p.geoprivacy === 'private') {
+        p.location_precision = 'obscured'
+      } else {
+        const acc = Number(p.public_positional_accuracy ?? p.positional_accuracy ?? p.accuracy_m ?? p.accuracy)
+        if (Number.isFinite(acc)) {
+          p.location_precision = acc <= 1000 ? 'precise' : 'coarse'
+        } else if (hasValue(p.latitude) || hasValue(p.lat) || (f.geometry?.type === 'Point')) {
+          // Has coordinates but no accuracy info — treat as precise
+          p.location_precision = 'precise'
+        } else {
+          p.location_precision = 'unknown'
+        }
+      }
+    }
   }
   return geojson
 }

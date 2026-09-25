@@ -4,7 +4,8 @@
       <h3 class="widget-title"><span aria-hidden="true">🍄 </span>Now Fruiting</h3>
       <div class="widget-actions">
         <button v-if="selectedSpecies" class="clear-btn" @click="selectedSpecies = null">✕ {{ selectedSpecies }}</button>
-        <NuxtLink :to="mapLink" class="widget-link">Map ›</NuxtLink>
+        <button class="widget-link-btn" @click="goToMap">Map ›</button>
+        <button class="widget-link-btn" @click="goToData">Data ›</button>
         <NuxtLink to="/modeling/maxent" class="widget-link">Model ›</NuxtLink>
       </div>
     </div>
@@ -20,7 +21,8 @@
     <ul v-else class="nf-list">
       <li v-for="s in topSpecies" :key="s.name" class="nf-item"
           :class="{ selected: selectedSpecies === s.name, 'has-model': s.hasModel }"
-          @click="toggleSpecies(s.name)">
+          @click="toggleSpecies(s.name)"
+          :title="selectedSpecies === s.name ? 'Click Map › to filter, or click again to deselect' : 'Click to select, then use Map › to filter'">
         <span class="nf-name">{{ s.name }}</span>
         <span class="nf-meta">
           <span v-if="s.hasModel" class="nf-model-badge" title="MaxEnt model available">ML</span>
@@ -50,10 +52,13 @@ import { computed, onMounted, ref } from 'vue'
 import { useObservations } from '~/composables/useObservations'
 import { useMaxEnt } from '~/composables/useMaxEnt'
 import { useUnits } from '~/composables/useUnits'
+import { useFilters } from '~/composables/useFilters'
 
 const { rows, load } = useObservations()
 const { models, fetchModels } = useMaxEnt()
 const { elevLabel } = useUnits()
+const { setFilter } = useFilters()
+const router = useRouter()
 
 const loading = ref(true)
 const selectedSpecies = ref(null)
@@ -138,6 +143,22 @@ function toggleSpecies(name) {
   selectedSpecies.value = selectedSpecies.value === name ? null : name
 }
 
+function applyFilter() {
+  if (selectedSpecies.value) setFilter('taxon', selectedSpecies.value)
+  else setFilter('taxon', '')
+}
+
+function goToMap() {
+  applyFilter()
+  const m = latestModel.value
+  router.push(m ? `/map?layer=maxent:${m.id}` : '/map')
+}
+
+function goToData() {
+  applyFilter()
+  router.push('/data')
+}
+
 const latestModel = computed(() => {
   const base = (models.value || [])
   const filtered = selectedSpecies.value
@@ -147,13 +168,6 @@ const latestModel = computed(() => {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] || null
 })
 
-const mapLink = computed(() => {
-  const m = latestModel.value
-  const base = m ? `/map?layer=maxent:${m.id}` : '/map'
-  return selectedSpecies.value
-    ? `${base}${base.includes('?') ? '&' : '?'}species=${encodeURIComponent(selectedSpecies.value)}`
-    : base
-})
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -176,6 +190,11 @@ onMounted(async () => {
 .widget-actions { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
 .widget-link { font-size: 0.8rem; color: var(--accent, #2a78d6); text-decoration: none; }
 .widget-link:hover { text-decoration: underline; }
+.widget-link-btn {
+  font: inherit; font-size: 0.8rem; color: var(--accent, #2a78d6); background: none;
+  border: none; padding: 0; cursor: pointer;
+}
+.widget-link-btn:hover { text-decoration: underline; }
 .clear-btn {
   font: inherit; font-size: 0.7rem; border: 1px solid var(--accent, #2a78d6);
   background: color-mix(in srgb, var(--accent, #2a78d6) 12%, transparent);
