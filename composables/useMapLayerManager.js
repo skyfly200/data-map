@@ -66,6 +66,18 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
     }
   }
 
+  // Defers removeLayer until after any in-progress zoom animation to avoid
+  // the Leaflet _updateLevels null-_map crash (rAF already queued when removal fires).
+  function safeRemoveLayer(layer) {
+    const map = mapRef.value
+    if (!map || !map.hasLayer(layer)) return
+    if (map._animatingZoom) {
+      map.once('moveend', () => { if (map.hasLayer(layer)) map.removeLayer(layer) })
+    } else {
+      map.removeLayer(layer)
+    }
+  }
+
   function applySolo() {
     const map = mapRef.value
     if (!map) return
@@ -75,7 +87,7 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
       if (!entry?.layer) continue
       const on = map.hasLayer(entry.layer)
       if (drawn.has(key) && !on) entry.layer.addTo(map)
-      else if (!drawn.has(key) && on) map.removeLayer(entry.layer)
+      else if (!drawn.has(key) && on) safeRemoveLayer(entry.layer)
     }
     applyOverlayOrder()
     applyBlendModes()
@@ -102,7 +114,7 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
     if (wasOn) {
       next.delete(entry.key)
       overlayOrder.value = overlayOrder.value.filter((k) => k !== entry.key)
-      if (entry.layer && map.hasLayer(entry.layer)) map.removeLayer(entry.layer)
+      if (entry.layer && map.hasLayer(entry.layer)) safeRemoveLayer(entry.layer)
       if (soloKey.value === entry.key) soloKey.value = ''
     } else {
       next.add(entry.key)
@@ -284,7 +296,7 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
     const map = mapRef.value
     const next = baseLayers.value.find((b) => b.key === key)
     if (!next || !map) return
-    for (const b of baseLayers.value) if (b.layer !== next.layer) map.removeLayer(b.layer)
+    for (const b of baseLayers.value) if (b.layer !== next.layer) safeRemoveLayer(b.layer)
     if (!map.hasLayer(next.layer)) next.layer.addTo(map)
     next.layer.bringToBack()
     activeBase.value = key
