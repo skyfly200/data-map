@@ -1949,7 +1949,7 @@ export const EE_TILE_LAYERS = {
     params: {
       window: {
         type: 'enum', label: 'Time window', default: 'spi30d',
-        values: ['spi1d', 'spi5d', 'spi10d', 'spi30d', 'spi90d', 'spi180d', 'spi270d', 'spi1y', 'spi2y'],
+        values: ['spi30d', 'spi90d', 'spi180d', 'spi270d', 'spi1y', 'spi2y'],
       },
       days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 90 },
     },
@@ -1991,7 +1991,7 @@ export const EE_TILE_LAYERS = {
     params: {
       window: {
         type: 'enum', label: 'Time window', default: 'eddi30d',
-        values: ['eddi1d', 'eddi5d', 'eddi10d', 'eddi30d', 'eddi90d', 'eddi180d', 'eddi270d', 'eddi1y'],
+        values: ['eddi30d', 'eddi90d', 'eddi180d', 'eddi270d', 'eddi1y'],
       },
       days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 90 },
     },
