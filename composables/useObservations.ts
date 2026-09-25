@@ -229,6 +229,13 @@ export function useObservations() {
       partial.value = false
       error.value = ''
     } catch (e: any) {
+      // If the saved dataset path is not the default and all fetches failed,
+      // clear the stale key so the next load uses the default instead of
+      // re-hitting the same dead path every time.
+      if (import.meta.client && selectedDataset.value !== DEFAULT_DATASET) {
+        try { localStorage.removeItem(DATASET_KEY) } catch { /* private mode */ }
+        selectedDataset.value = DEFAULT_DATASET
+      }
       error.value = e.message
     } finally {
       pending.value = false
