@@ -518,6 +518,7 @@ const enrichForm = reactive({
 const enrichError = ref('')
 const enrichNote = ref('')
 const enrichJobId = ref(null)
+const enrichDatasetSlug = ref(null)
 
 const enrichJob = computed(() => enrichJobId.value
   ? jobsApi.jobs.value.find(j => j.id === enrichJobId.value) : null)
@@ -531,10 +532,20 @@ const enrichStatusLabel = computed(() => {
   return 'Queued…'
 })
 
-watch(enrichJobStatus, (s) => {
+watch(enrichJobStatus, async (s) => {
   if (s === 'succeeded') {
     completedSteps.value = new Set([...completedSteps.value, 'enrich'])
     loadExploreData()
+    // Auto-save the enriched output as a named dataset so training can reference it by slug.
+    try {
+      const saved = await datasetsApi.saveJob(
+        { id: enrichJobId.value, title: enrichForm.title || 'Pipeline enrichment' },
+        { title: enrichForm.title || 'Pipeline enrichment' },
+      )
+      enrichDatasetSlug.value = saved.slug
+    } catch (_) {
+      // Non-fatal — training will fall back to the original source.
+    }
   }
 })
 
@@ -726,7 +737,7 @@ async function submitTrain() {
     autoOptimize: trainForm.autoOptimize,
     preciseOnly: trainForm.preciseOnly,
     region,
-    source_dataset_id: enrichJob.value?.result_path
+    source_dataset_id: enrichDatasetSlug.value
       || (sourceForm.type === 'dataset' ? sourceForm.datasetSlug : undefined),
     source: buildSource(),
   }
