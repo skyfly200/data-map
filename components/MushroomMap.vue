@@ -741,6 +741,15 @@ async function addEeLayers() {
       }
       refreshEeLayer(spec)
     })
+    // A 400 means the tile token has expired. Force a re-mint by clearing the
+    // in-memory cache entry and requesting a fresh template. Debounced so a
+    // screenful of simultaneously-failing tiles collapses into one round trip.
+    layer.on('tileerror', (e) => {
+      if (e.tile?.src?.includes('earthengine.googleapis.com') && !eeLoading.value.has(spec.key)) {
+        eeTiles.evict(spec.key)
+        debounceEeRefresh(spec, 300)
+      }
+    })
     layer.on('remove', () => {
       activeTileNotes.value = activeTileNotes.value.filter((n) => n.name !== spec.name)
       eeErrors.value = eeErrors.value.filter((e) => e.key !== spec.key)
@@ -1144,7 +1153,10 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKeydown)
   controlsResize?.disconnect()
   mapResize?.disconnect()
-  if (map) map.remove()
+  const m = map
+  map = null
+  mapRef.value = null
+  if (m) m.remove()
 })
 </script>
 
