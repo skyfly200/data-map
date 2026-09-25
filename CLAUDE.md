@@ -1,10 +1,10 @@
 # Project Overview
 
-This is a NUXT based PWA for running & visualizing outputs of GEE scripts generating enriched species observation data from iNat & GBIF & training MaxEnt models
+This is a NUXT based PWA for running & visualizing outputs of GEE scripts, enriching iNat / GBIF data, & training MaxEnt models
 
 ## Key Instructions
 
-Be terse. Do not restate context. Do not use preamble text.
+Be terse. Don't restate context. Don't use preamble text.
 
 ## Key Commands
 
@@ -13,7 +13,7 @@ Be terse. Do not restate context. Do not use preamble text.
 
 ## Further Documentation
 
-- **Roadmap**: Read `@docs/roadmap.md` for latest plans
-- **Refactor**: Read `@docs/refactor.md` for technical debt items
-- **Bugs**: Read `@docs/bugs.md` for known issues and verification debt
-- **Database**: Read `@docs/schema.md` when modifying models
+- **Roadmap**: `@docs/roadmap.md` - latest plans
+- **Refactor**: `@docs/refactor.md` - technical debt 
+- **Bugs**: `@docs/bugs.md` - known issues & verification debt
+- **Database**: `@docs/schema.md` - modifying models
