@@ -44,7 +44,7 @@
               </label>
               <label class="pick">
                 <input v-model="sourceForm.type" type="radio" value="bbox" />
-                <span>Filter by area &amp; date</span>
+                <span>Filter by area, date &amp; taxon</span>
               </label>
               <label class="pick">
                 <input v-model="sourceForm.type" type="radio" value="fetch" />
@@ -57,7 +57,8 @@
           <template v-if="sourceForm.type === 'dataset'">
             <div class="row">
               <label for="src-dataset">Dataset</label>
-              <select id="src-dataset" v-model="sourceForm.datasetSlug">
+              <select id="src-dataset" v-model="sourceForm.datasetSlug"
+                      title="Select a previously imported species observation dataset">
                 <option value="" disabled>Choose one…</option>
                 <option v-for="d in datasetsApi.datasets.value" :key="d.id" :value="d.slug">
                   {{ d.title }}
@@ -72,30 +73,55 @@
           <!-- BBox -->
           <template v-else-if="sourceForm.type === 'bbox'">
             <div class="row">
-              <label>Area</label>
+              <label>Bounding box</label>
               <div class="bbox">
-                <label class="mini">N <input v-model.number="sourceForm.north" type="number" step="0.1" /></label>
-                <label class="mini">S <input v-model.number="sourceForm.south" type="number" step="0.1" /></label>
-                <label class="mini">W <input v-model.number="sourceForm.west" type="number" step="0.1" /></label>
-                <label class="mini">E <input v-model.number="sourceForm.east" type="number" step="0.1" /></label>
+                <label class="mini">N <input v-model.number="sourceForm.north" type="number" step="0.1" title="Northern latitude boundary (decimal degrees, e.g. 49.0)" /></label>
+                <label class="mini">S <input v-model.number="sourceForm.south" type="number" step="0.1" title="Southern latitude boundary (decimal degrees, e.g. 24.5)" /></label>
+                <label class="mini">W <input v-model.number="sourceForm.west" type="number" step="0.1" title="Western longitude boundary (decimal degrees, e.g. −124.8)" /></label>
+                <label class="mini">E <input v-model.number="sourceForm.east" type="number" step="0.1" title="Eastern longitude boundary (decimal degrees, e.g. −66.9)" /></label>
               </div>
             </div>
-            <p class="hint"><button class="linkish" @click="useMapView">Use current map view</button></p>
             <div class="row two">
-              <label class="stack"><span>From</span><input v-model="sourceForm.dateFrom" type="date" /></label>
-              <label class="stack"><span>To</span><input v-model="sourceForm.dateTo" type="date" /></label>
+              <label class="stack"><span>From</span><input v-model="sourceForm.dateFrom" type="date" title="Earliest observation date to include" /></label>
+              <label class="stack"><span>To</span><input v-model="sourceForm.dateTo" type="date" title="Latest observation date to include" /></label>
             </div>
             <div class="row">
               <label for="src-taxon">Taxon (optional)</label>
-              <input id="src-taxon" v-model="sourceForm.taxon" type="text" placeholder="e.g. Amanita" />
+              <TaxonAutocomplete id="src-taxon" v-model="sourceForm.taxon" placeholder="e.g. Amanita" source="inat"
+                                 title="Filter results to a specific taxon — genus, family, or species (iNaturalist autocomplete)" />
             </div>
           </template>
 
-          <!-- Fetch / import -->
-          <template v-else>
-            <p class="hint">
-              Go to the <NuxtLink to="/data?tab=fetch">Import observations</NuxtLink> tab to pull in
-              fresh records, then come back and use a saved dataset.
+          <!-- Fetch / import inline -->
+          <template v-else-if="sourceForm.type === 'fetch'">
+            <div class="row">
+              <label for="fetch-taxon">Taxon</label>
+              <TaxonAutocomplete id="fetch-taxon" v-model="fetchForm.taxon"
+                                 placeholder="e.g. Morchella, Amanitaceae" :disabled="fetchForm.loading"
+                                 :source="fetchForm.source"
+                                 title="Taxon name to search — genus, family, or full species name" />
+            </div>
+            <div class="row">
+              <label>Source</label>
+              <div class="src-tabs">
+                <button v-for="s in FETCH_SOURCES" :key="s.key" class="src-tab"
+                        :class="{ on: fetchForm.source === s.key }"
+                        @click="fetchForm.source = s.key" type="button">{{ s.label }}</button>
+              </div>
+            </div>
+            <div class="row two">
+              <label class="stack"><span>From</span><input v-model="fetchForm.dateFrom" type="date" :disabled="fetchForm.loading" title="Earliest observation date to fetch" /></label>
+              <label class="stack"><span>To</span><input v-model="fetchForm.dateTo" type="date" :disabled="fetchForm.loading" title="Latest observation date to fetch" /></label>
+            </div>
+            <div class="actions" style="margin-top:0">
+              <button class="btn secondary" :disabled="!fetchForm.taxon.trim() || fetchForm.loading"
+                      @click="runFetch" type="button">
+                {{ fetchForm.loading ? 'Fetching…' : 'Fetch observations' }}
+              </button>
+            </div>
+            <p v-if="fetchForm.error" class="msg error">{{ fetchForm.error }}</p>
+            <p v-if="fetchForm.result" class="msg ok">
+              {{ fetchForm.result.count }} records fetched as "{{ fetchForm.result.title }}" — ready to continue.
             </p>
           </template>
 
@@ -118,7 +144,8 @@
 
           <div class="row">
             <label>Job name</label>
-            <input v-model="enrichForm.title" type="text" placeholder="Autumn foray enrichment" />
+            <input v-model="enrichForm.title" type="text" placeholder="Autumn foray enrichment"
+                   title="A descriptive name saved with the enriched dataset for later reference" />
           </div>
 
           <div class="row">
@@ -252,7 +279,8 @@
 
           <div class="row">
             <label for="train-title">Model name</label>
-            <input id="train-title" v-model="trainForm.title" type="text" placeholder="Front Range fungi – autumn 2024" />
+            <input id="train-title" v-model="trainForm.title" type="text" placeholder="Front Range fungi – autumn 2024"
+                   title="Human-readable name for this trained model — shown in the model list" />
           </div>
 
           <div class="row">
@@ -267,18 +295,21 @@
 
           <div class="row">
             <label for="bg-count">Background points</label>
-            <input id="bg-count" v-model.number="trainForm.background" type="number" min="100" max="10000" step="100" />
+            <input id="bg-count" v-model.number="trainForm.background" type="number" min="100" max="10000" step="100"
+                   title="Number of random background (pseudo-absence) points sampled within the study region. 1 000–5 000 is typical; more improves stability but increases run time." />
             <p class="hint">Random absence proxies. 1 000–5 000 is typical.</p>
           </div>
 
           <div class="row">
             <label>Options</label>
             <label class="pick">
-              <input type="checkbox" v-model="trainForm.autoOptimize" />
+              <input type="checkbox" v-model="trainForm.autoOptimize"
+                     title="Run a fast scout pass to rank predictors by importance and drop weak ones before the full training run" />
               <span>Auto-select best predictors (scout run)</span>
             </label>
             <label class="pick">
-              <input type="checkbox" v-model="trainForm.preciseOnly" />
+              <input type="checkbox" v-model="trainForm.preciseOnly"
+                     title="Exclude records with coordinate uncertainty > 1 km — reduces noise but may reduce sample size" />
               <span>Precise GPS coordinates only</span>
             </label>
           </div>
@@ -286,10 +317,10 @@
           <div class="row">
             <label>Projection region (optional)</label>
             <div class="bbox">
-              <label class="mini">N <input v-model.number="trainForm.regionNorth" type="number" step="0.1" /></label>
-              <label class="mini">S <input v-model.number="trainForm.regionSouth" type="number" step="0.1" /></label>
-              <label class="mini">W <input v-model.number="trainForm.regionWest" type="number" step="0.1" /></label>
-              <label class="mini">E <input v-model.number="trainForm.regionEast" type="number" step="0.1" /></label>
+              <label class="mini">N <input v-model.number="trainForm.regionNorth" type="number" step="0.1" title="Northern limit of the projection region (decimal degrees)" /></label>
+              <label class="mini">S <input v-model.number="trainForm.regionSouth" type="number" step="0.1" title="Southern limit of the projection region (decimal degrees)" /></label>
+              <label class="mini">W <input v-model.number="trainForm.regionWest" type="number" step="0.1" title="Western limit of the projection region (decimal degrees)" /></label>
+              <label class="mini">E <input v-model.number="trainForm.regionEast" type="number" step="0.1" title="Eastern limit of the projection region (decimal degrees)" /></label>
             </div>
           </div>
 
@@ -447,7 +478,7 @@ const membership = useMembership()
 const jobsApi = useEeJobs()
 const datasetsApi = useDatasets()
 const maxEnt = useMaxEnt()
-const { mapBounds } = useFilters()
+useFilters()
 
 const rechecking = ref(false)
 async function recheck() {
@@ -462,10 +493,16 @@ onMounted(() => {
 
 // ── Predictor / stage metadata ────────────────────────────────────────────────
 const stageList = [
-  { key: 'terrain',      label: 'Terrain',         description: 'Elevation, slope, aspect' },
-  { key: 'vegetation',   label: 'Vegetation',       description: 'NDVI greenness index' },
-  { key: 'soil',         label: 'Soil moisture',    description: 'Surface moisture from satellite' },
-  { key: 'climate',      label: 'Climate normals',  description: '30-year precipitation & temperature' },
+  { key: 'terrain',       label: 'Terrain',                description: 'Elevation, slope, aspect and exposure indices.' },
+  { key: 'landcover',     label: 'Land cover',             description: 'ESA WorldCover class at each point (10 m).' },
+  { key: 'soil_moisture', label: 'Soil moisture',          description: 'ERA5-Land volumetric soil water on the day of the record.' },
+  { key: 'precip',        label: 'Rainfall lead-up',       description: 'CHIRPS daily rainfall for the 7 days up to each record.' },
+  { key: 'temperature',   label: 'Temperature lead-up',    description: 'ERA5-Land daily max/min for the 7 days up to each record.' },
+  { key: 'ndvi',          label: 'Vegetation (NDVI)',      description: 'Sentinel-2 NDVI and moisture index, cloud-screened.' },
+  { key: 'soil',          label: 'Soil properties',        description: 'USDA texture class, percent sand, depth to bedrock.' },
+  { key: 'soil_taxonomy', label: 'Soil taxonomy',          description: 'USDA great group and order at each point.' },
+  { key: 'fire',          label: 'Fire history',           description: 'Most recent burn year and years since fire (MODIS, 2001+).' },
+  { key: 'forest',        label: 'Forest type & structure', description: 'GAP forest type, canopy cover and stand height (CONUS).' },
 ]
 
 const predictorList = [
@@ -482,7 +519,7 @@ const predictorList = [
 const sourceForm = reactive({
   type: 'dataset',
   datasetSlug: '',
-  north: null, south: null, east: null, west: null,
+  north: 49.0, south: 24.5, east: -66.9, west: -124.8,
   dateFrom: '', dateTo: '', taxon: '',
 })
 
@@ -492,16 +529,75 @@ const canAdvanceSource = computed(() => {
     return sourceForm.north != null && sourceForm.south != null
         && sourceForm.east != null && sourceForm.west != null
   }
+  if (sourceForm.type === 'fetch') return !!sourceForm.datasetSlug // set after successful fetch
   return false
 })
 
-function useMapView() {
-  const b = mapBounds?.value
-  if (!b) return
-  sourceForm.north = b.north ?? b._northEast?.lat
-  sourceForm.south = b.south ?? b._southWest?.lat
-  sourceForm.east  = b.east  ?? b._northEast?.lng
-  sourceForm.west  = b.west  ?? b._southWest?.lng
+
+const FETCH_SOURCES = [
+  { key: 'auto', label: 'Auto' },
+  { key: 'inat', label: 'iNaturalist' },
+  { key: 'gbif', label: 'GBIF' },
+]
+
+const fetchForm = reactive({
+  taxon: '',
+  source: 'auto',
+  dateFrom: '',
+  dateTo: '',
+  loading: false,
+  error: '',
+  result: null,
+})
+
+async function runFetch() {
+  fetchForm.error = ''
+  fetchForm.result = null
+  fetchForm.loading = true
+  try {
+    const { accessToken } = useAuth()
+    const token = await accessToken()
+    const headers = token ? { authorization: `Bearer ${token}` } : {}
+
+    const p = new URLSearchParams({ species: fetchForm.taxon.trim() })
+    if (fetchForm.dateFrom) p.set('d1', fetchForm.dateFrom)
+    if (fetchForm.dateTo) p.set('d2', fetchForm.dateTo)
+
+    const src = fetchForm.source === 'auto'
+      ? (fetchForm.dateFrom || fetchForm.dateTo ? 'inat' : 'inat')
+      : fetchForm.source
+    const fn = src === 'gbif' ? 'gbif-fetch' : 'fetch-species'
+
+    const res = await fetch(`/.netlify/functions/${fn}?${p.toString()}`, { headers })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok || !data.ok) throw new Error(data.error || `Fetch failed (${res.status})`)
+    if (!data.count) throw new Error('No records found for that taxon.')
+
+    // Register the uploaded file in saved_datasets so the pipeline can use it.
+    const storagePath = `species/${data.slug}.geojson`
+    const title = `${fetchForm.taxon.trim()} (${src === 'gbif' ? 'GBIF' : 'iNat'}, ${data.count})`
+    const saveRes = await fetch('/.netlify/functions/datasets', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...headers },
+      body: JSON.stringify({
+        action: 'save_fetched',
+        path: storagePath,
+        slug: data.slug,
+        title,
+        feature_count: data.count,
+      }),
+    })
+    const saved = await saveRes.json().catch(() => ({}))
+    if (!saveRes.ok || !saved.ok) throw new Error(saved.error || 'Could not register the fetched dataset.')
+
+    sourceForm.datasetSlug = saved.dataset.slug
+    fetchForm.result = { count: data.count, title }
+    await datasetsApi.refresh()
+  } catch (e) {
+    fetchForm.error = e?.message || 'Fetch failed.'
+  } finally {
+    fetchForm.loading = false
+  }
 }
 
 function advanceSource() {
@@ -513,11 +609,12 @@ function advanceSource() {
 // ── Step 2: Enrich ────────────────────────────────────────────────────────────
 const enrichForm = reactive({
   title: '',
-  stages: ['terrain', 'vegetation', 'soil', 'climate'],
+  stages: ['terrain', 'landcover', 'soil_moisture', 'precip', 'temperature', 'ndvi'],
 })
 const enrichError = ref('')
 const enrichNote = ref('')
 const enrichJobId = ref(null)
+const enrichDatasetSlug = ref(null)
 
 const enrichJob = computed(() => enrichJobId.value
   ? jobsApi.jobs.value.find(j => j.id === enrichJobId.value) : null)
@@ -531,10 +628,20 @@ const enrichStatusLabel = computed(() => {
   return 'Queued…'
 })
 
-watch(enrichJobStatus, (s) => {
+watch(enrichJobStatus, async (s) => {
   if (s === 'succeeded') {
     completedSteps.value = new Set([...completedSteps.value, 'enrich'])
     loadExploreData()
+    // Auto-save the enriched output as a named dataset so training can reference it by slug.
+    try {
+      const saved = await datasetsApi.saveJob(
+        { id: enrichJobId.value, title: enrichForm.title || 'Pipeline enrichment' },
+        { title: enrichForm.title || 'Pipeline enrichment' },
+      )
+      enrichDatasetSlug.value = saved.slug
+    } catch (_) {
+      // Non-fatal — training will fall back to the original source.
+    }
   }
 })
 
@@ -599,21 +706,19 @@ const PREDICTOR_META = {
 }
 
 async function loadExploreData() {
-  // The enriched dataset slug comes from the job result_path or the source dataset
-  const resultSlug = enrichJob.value?.result_path || sourceForm.datasetSlug
-  if (!resultSlug) return
+  const slug = enrichDatasetSlug.value || (sourceForm.type === 'dataset' ? sourceForm.datasetSlug : null)
+  if (!slug) return
 
   try {
     const { accessToken } = useAuth()
     const token = await accessToken()
     const headers = token ? { authorization: `Bearer ${token}` } : {}
-    const res = await fetch(`/.netlify/functions/datasets/${encodeURIComponent(resultSlug)}`, { headers })
+    const res = await fetch(`/.netlify/functions/datasets?slug=${encodeURIComponent(slug)}`, { headers })
     if (!res.ok) return
     const data = await res.json()
-    const features = data.features || data.data?.features || []
+    const features = data.geojson?.features || data.features || []
     if (!features.length) return
     exploreData.value = computeExploreStats(features)
-    // Pre-populate recommended predictors
     const recommended = exploreData.value.coverage
       .filter(v => v.pct >= 80)
       .map(v => v.key)
@@ -726,7 +831,7 @@ async function submitTrain() {
     autoOptimize: trainForm.autoOptimize,
     preciseOnly: trainForm.preciseOnly,
     region,
-    source_dataset_id: enrichJob.value?.result_path
+    source_dataset_id: enrichDatasetSlug.value
       || (sourceForm.type === 'dataset' ? sourceForm.datasetSlug : undefined),
     source: buildSource(),
   }

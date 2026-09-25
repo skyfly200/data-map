@@ -6,11 +6,8 @@
       <div class="head-text">
         <h2>Habitat Suitability Models</h2>
         <p class="sub">
-          Train a <GlossaryTooltip term="habitat suitability" :definition="g('habitat suitability')">habitat suitability</GlossaryTooltip>
-          model from your enriched observations. The model learns which environmental conditions
-          match where a species was recorded, then predicts where similar conditions exist.
-          Requires an enriched dataset — run the
-          <NuxtLink to="/jobs">Enrich &amp; Model</NuxtLink> step first if you haven't.
+          Trained <GlossaryTooltip term="habitat suitability" :definition="g('habitat suitability')">habitat suitability</GlossaryTooltip>
+          models. Use the <NuxtLink to="/pipeline">Pipeline</NuxtLink> to train a new model.
         </p>
       </div>
       <div class="head-actions">
@@ -19,14 +16,6 @@
           Compare ({{ selectedModels.length }})
         </button>
       </div>
-    </div>
-
-    <div class="workflow-hint">
-      <NuxtLink to="/data" class="step">1. Add observations</NuxtLink>
-      <span class="step-arrow">→</span>
-      <NuxtLink to="/jobs" class="step">2. Enrich with environment data</NuxtLink>
-      <span class="step-arrow">→</span>
-      <span class="step active">3. Train habitat model</span>
     </div>
 
     <ClientOnly>
@@ -71,21 +60,7 @@
           <!-- Empty state -->
           <div v-else-if="!models.length" class="empty-state">
             <p class="empty-title">No models yet</p>
-            <p class="empty-sub">Register a surface you've already computed, or train a new model from an enriched dataset.</p>
-            <div class="empty-paths">
-              <button class="path-card primary" :disabled="!availableDatasets.length" @click="openAddModel('train')">
-                <span class="path-head">Train a new model</span>
-                <span class="path-desc">{{ availableDatasets.length ? 'Fit a MaxEnt model from an enriched dataset of observation points.' : 'You need an enriched dataset first. Go to Enrich & Model to create one.' }}</span>
-                <span class="path-cta" :class="{ muted: !availableDatasets.length }">
-                  {{ availableDatasets.length ? 'Configure & train →' : 'No enriched datasets yet' }}
-                </span>
-              </button>
-              <button class="path-card" @click="openAddModel('register')">
-                <span class="path-head">Link a pre-computed model</span>
-                <span class="path-desc">Already have a suitability surface in Earth Engine? Add it here by asset path — no retraining needed.</span>
-                <span class="path-cta">Add asset →</span>
-              </button>
-            </div>
+            <p class="empty-sub">Use the <NuxtLink to="/pipeline">Pipeline</NuxtLink> to train a model, or link a pre-computed EE asset below.</p>
           </div>
 
           <!-- Model cards -->
@@ -133,35 +108,18 @@
             </div>
           </div>
 
-          <!-- Add model trigger (when models exist) -->
-          <div v-if="models.length" class="add-row">
-            <button class="btn ghost small" @click="toggleAddModel">
-              {{ showAddModel ? '▾ Close' : '+ Train new model' }}
-            </button>
-          </div>
         </section>
 
-        <!-- ─── Add Model Panel ─────────────────────────────────────────────── -->
-        <section v-if="showAddModel" class="panel add-panel">
-          <div class="tabs" role="tablist">
-            <button role="tab" class="tab" :class="{ active: activeTab === 'train' }"
-                    @click="activeTab = 'train'">
-              Train a new model
-            </button>
-            <button role="tab" class="tab" :class="{ active: activeTab === 'register' }"
-                    @click="activeTab = 'register'">
-              Link pre-computed model
-            </button>
+        <!-- ─── Link pre-computed asset ──────────────────────────────────────── -->
+        <section class="panel add-panel">
+          <div class="panel-head">
+            <h3>Link a pre-computed model</h3>
           </div>
-
-          <!-- ── Register tab ─────────────────────────────────────────────── -->
-          <div v-if="activeTab === 'register'" class="tab-body">
+          <div class="tab-body">
             <p class="tab-desc">
-              Add a pre-computed suitability surface from your Earth Engine project.
-              The asset path is the full project-scoped ID, e.g.
+              Add a suitability surface already computed in Earth Engine by asset path, e.g.
               <code>projects/my-project/assets/redbelted_suitability</code>.
             </p>
-
             <div class="form-row">
               <label for="reg-title">Model name</label>
               <input id="reg-title" v-model="registerForm.title" type="text"
@@ -183,7 +141,6 @@
                 <option v-for="v in visibilities" :key="v" :value="v">{{ VISIBILITY_LABELS[v] }}</option>
               </select>
             </div>
-
             <div class="form-actions">
               <button class="btn primary"
                       :disabled="pending || !registerForm.title.trim() || !registerForm.asset_path.trim()"
@@ -194,182 +151,6 @@
             <p v-if="registerError" class="form-msg error">{{ registerError }}</p>
             <p v-if="registerNote" class="form-msg ok">{{ registerNote }}</p>
           </div>
-
-          <!-- ── Train tab ────────────────────────────────────────────────── -->
-          <div v-if="activeTab === 'train'" class="tab-body">
-
-            <!-- CSV Import ─────────────────────────────────────────────────── -->
-            <div class="csv-section" :class="{ open: showCsvImport }">
-              <button class="csv-toggle" @click="showCsvImport = !showCsvImport">
-                <span class="toggle-caret">{{ showCsvImport ? '▾' : '▸' }}</span>
-                Import a CSV dataset
-                <span v-if="csvImport.rows" class="csv-badge">{{ csvImport.rows.toLocaleString() }} rows</span>
-              </button>
-
-              <div v-if="showCsvImport" class="csv-body">
-                <p class="tab-desc">
-                  Upload an iNaturalist export, GBIF DWC-A, or any CSV with latitude and longitude columns.
-                  This creates a new dataset that will be available for training immediately.
-                  MaxEnt works best with 50–2,000 presence points — thin large exports first.
-                </p>
-                <div class="form-row">
-                  <label for="csv-file">CSV file</label>
-                  <input id="csv-file" type="file" accept=".csv,text/csv" @change="onCsvFile" />
-                </div>
-
-                <div v-if="csvImport.headers.length" class="csv-detection">
-                  <div class="det-pills">
-                    <span class="det-pill" :class="csvImport.latCol ? 'ok' : 'warn'">
-                      lat → {{ csvImport.latCol || 'not found' }}
-                    </span>
-                    <span class="det-pill" :class="csvImport.lonCol ? 'ok' : 'warn'">
-                      lon → {{ csvImport.lonCol || 'not found' }}
-                    </span>
-                    <span v-if="csvImport.dateCol" class="det-pill ok">date → {{ csvImport.dateCol }}</span>
-                    <span v-if="csvImport.speciesCol" class="det-pill ok">species → {{ csvImport.speciesCol }}</span>
-                    <span class="det-pill rows">{{ csvImport.rows.toLocaleString() }} rows</span>
-                  </div>
-                  <details class="col-overrides">
-                    <summary>Override column mapping</summary>
-                    <div class="override-grid">
-                      <div class="form-row">
-                        <label>Latitude column</label>
-                        <select v-model="csvImport.latCol">
-                          <option value="">— not set —</option>
-                          <option v-for="h in csvImport.headers" :key="h" :value="h">{{ h }}</option>
-                        </select>
-                      </div>
-                      <div class="form-row">
-                        <label>Longitude column</label>
-                        <select v-model="csvImport.lonCol">
-                          <option value="">— not set —</option>
-                          <option v-for="h in csvImport.headers" :key="h" :value="h">{{ h }}</option>
-                        </select>
-                      </div>
-                      <div class="form-row">
-                        <label>Date column <em class="opt-label">optional</em></label>
-                        <select v-model="csvImport.dateCol">
-                          <option value="">— none —</option>
-                          <option v-for="h in csvImport.headers" :key="h" :value="h">{{ h }}</option>
-                        </select>
-                      </div>
-                      <div class="form-row">
-                        <label>Species column <em class="opt-label">optional</em></label>
-                        <select v-model="csvImport.speciesCol">
-                          <option value="">— none —</option>
-                          <option v-for="h in csvImport.headers" :key="h" :value="h">{{ h }}</option>
-                        </select>
-                      </div>
-                    </div>
-                  </details>
-                </div>
-
-                <template v-if="csvImport.rows > 0">
-                  <div class="form-row">
-                    <label for="csv-ds-title">Dataset name</label>
-                    <input id="csv-ds-title" v-model="csvImport.title" type="text"
-                           placeholder="e.g. Red-belted Conk — iNat 2024 export" />
-                  </div>
-                  <div class="form-row narrow">
-                    <label>Visibility</label>
-                    <select v-model="csvImport.visibility">
-                      <option v-for="v in visibilities" :key="v" :value="v">{{ VISIBILITY_LABELS[v] }}</option>
-                    </select>
-                  </div>
-                  <div class="form-actions">
-                    <button class="btn primary"
-                            :disabled="csvImport.pending || !csvImport.latCol || !csvImport.lonCol || !csvImport.title.trim()"
-                            @click="onImportCsv">
-                      {{ csvImport.pending ? 'Importing…' : `Import ${csvImport.rows.toLocaleString()} observations` }}
-                    </button>
-                    <span v-if="!csvImport.latCol || !csvImport.lonCol" class="form-hint">
-                      Override column mapping above to set lat/lon.
-                    </span>
-                  </div>
-                  <p v-if="csvImport.error" class="form-msg error">{{ csvImport.error }}</p>
-                  <p v-if="csvImport.note" class="form-msg ok">{{ csvImport.note }}</p>
-                </template>
-              </div>
-            </div>
-            <!-- ─────────────────────────────────────────────────────────────── -->
-
-            <div v-if="!availableDatasets.length && !showCsvImport" class="no-datasets">
-              <p>
-                No enriched datasets yet. Go to
-                <NuxtLink to="/jobs">Enrich &amp; Model</NuxtLink> to add environment
-                data to your observations, then come back here to train a model.
-                Or import a CSV dataset below.
-              </p>
-            </div>
-            <template v-if="availableDatasets.length">
-              <div class="form-divider">Choose a dataset &amp; configure your model</div>
-              <div class="form-row">
-                <label for="model-title">Model name</label>
-                <input id="model-title" v-model="form.title" type="text"
-                       placeholder="e.g. Red-belted Conk Suitability" />
-              </div>
-              <div class="form-row">
-                <label for="model-desc">Description <em class="opt-label">optional</em></label>
-                <textarea id="model-desc" v-model="form.description"
-                          placeholder="Notes about the specific environment or year…" rows="2"></textarea>
-              </div>
-              <div class="form-row">
-                <label>Source dataset</label>
-                <select v-model="form.sourceDatasetId">
-                  <option value="" disabled>Choose a dataset…</option>
-                  <option v-for="d in availableDatasets" :key="d.id" :value="d.id">
-                    {{ d.title }}{{ d.feature_count ? ` · ${d.feature_count.toLocaleString()} points` : '' }}
-                  </option>
-                </select>
-              </div>
-              <div class="form-row">
-                <label>
-                  <GlossaryTooltip term="predictors" :definition="g('predictors')">Predictors</GlossaryTooltip>
-                  <span class="field-hint">Select at least {{ MIN_PREDICTORS }}</span>
-                </label>
-                <div class="pred-grid">
-                  <label v-for="p in predictorList" :key="p.key" class="pred-item"
-                         :title="PREDICTOR_DESCRIPTIONS[p.key]">
-                    <input type="checkbox" :value="p.key" v-model="form.predictors" />
-                    <span class="pred-text">
-                      <strong>{{ p.label }}</strong>
-                      <em>{{ PREDICTOR_DESCRIPTIONS[p.key] }}</em>
-                    </span>
-                  </label>
-                </div>
-              </div>
-              <div class="form-pair">
-                <div class="form-row">
-                  <label for="bg-count">
-                    <GlossaryTooltip term="background points" :definition="g('background points')">Background points</GlossaryTooltip>
-                    <span class="field-hint">{{ MIN_BACKGROUND }}–{{ MAX_BACKGROUND }}</span>
-                  </label>
-                  <input id="bg-count" v-model.number="form.backgroundCount" type="number"
-                         :min="MIN_BACKGROUND" :max="MAX_BACKGROUND" step="100" />
-                  <span class="field-note">More = slower but more stable. 1,000 is a good start.</span>
-                </div>
-                <div class="form-row">
-                  <label>Visibility</label>
-                  <select v-model="form.visibility">
-                    <option v-for="v in visibilities" :key="v" :value="v">{{ VISIBILITY_LABELS[v] }}</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-actions">
-                <button class="btn primary" :disabled="pending || !canSubmit" @click="onSubmit">
-                  {{ pending ? 'Submitting…' : 'Train model' }}
-                </button>
-                <span v-if="form.predictors.length < MIN_PREDICTORS" class="form-hint">
-                  Pick at least {{ MIN_PREDICTORS }} predictors.
-                </span>
-                <span v-else-if="!form.sourceDatasetId" class="form-hint">
-                  Select a source dataset.
-                </span>
-              </div>
-              <p v-if="error" class="form-msg error">{{ error }}</p>
-              <p v-if="submitNote" class="form-msg ok">{{ submitNote }}</p>
-            </template>
-          </div>
         </section>
       </template>
     </ClientOnly>
@@ -377,8 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, onMounted } from 'vue'
-import { PREDICTOR_KEYS, MAXENT_PREDICTORS, MIN_PREDICTORS, MAX_BACKGROUND, MIN_BACKGROUND, DEFAULT_PREDICTORS } from '~/netlify/lib/maxent.mjs'
+import { computed, reactive, ref, onMounted } from 'vue'
 import { useGlossary } from '~/composables/useGlossary'
 import GlossaryTooltip from '~/components/GlossaryTooltip.vue'
 import MaxEntTutorial from '~/components/MaxEntTutorial.vue'
@@ -388,46 +168,14 @@ import ModelComparison from '~/components/ModelComparison.vue'
 const { define: g } = useGlossary()
 const tutorialRef = ref(null)
 
-const PREDICTOR_DESCRIPTIONS = {
-  elevation: 'Height above sea level (SRTM). Strong driver of temperature, moisture and vegetation zones.',
-  slope: 'Steepness of terrain. Affects drainage, disturbance regime and micro-climate.',
-  aspect: 'Direction a slope faces. Controls sun exposure and moisture retention.',
-  ndvi: 'Vegetation greenness index from Sentinel-2 imagery (multi-year median). Proxy for habitat quality and food availability.',
-  soil_moisture: 'Long-run average top-layer soil wetness from ERA5-Land. Use for moisture-dependent species.',
-  precip_normal: 'Mean daily rainfall from CHIRPS (climate normal). Use for species with strong precipitation limits.',
-  temp_normal: 'Mean daily 2 m air temperature from ERA5-Land (climate normal). Often the strongest climate predictor of range limits.',
-}
 
-const { models, activeJob, pending, error, fetchModels, trainModel, deleteModel, registerAsset } = useMaxEnt()
-const { available: availableDatasets, refreshAvailable } = useDatasets()
+const { models, activeJob, pending, error, fetchModels, deleteModel, registerAsset } = useMaxEnt()
 const membership = useMembership()
 const modelOverlay = useModelOverlay()
 const router = useRouter()
 const loading = ref(false)
-const submitNote = ref('')
 const showComparison = ref(false)
 const selectedModels = computed(() => models.value.filter(m => m.selected))
-
-// ── Add-model panel state ─────────────────────────────────────────────────
-const showAddModel = ref(false)
-const activeTab = ref('register')
-
-function openAddModel(tab) {
-  activeTab.value = tab
-  showAddModel.value = true
-  nextTick(() => {
-    document.querySelector('.add-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  })
-}
-
-function toggleAddModel() {
-  showAddModel.value = !showAddModel.value
-  if (showAddModel.value) {
-    nextTick(() => {
-      document.querySelector('.add-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
-  }
-}
 
 // ── Register form ─────────────────────────────────────────────────────────
 const registerForm = reactive({ title: '', description: '', asset_path: '', visibility: 'private' })
@@ -449,138 +197,7 @@ async function onRegister() {
   }
 }
 
-// ── Training form ─────────────────────────────────────────────────────────
 const visibilities = ['private', 'members', 'public']
-
-const form = reactive({
-  title: '',
-  description: '',
-  sourceDatasetId: '',
-  predictors: [...DEFAULT_PREDICTORS],
-  backgroundCount: 1000,
-  visibility: 'private',
-  preciseOnly: true,
-})
-
-const predictorList = PREDICTOR_KEYS.map((key) => ({ key, label: MAXENT_PREDICTORS[key].label }))
-
-const canSubmit = computed(() =>
-  form.title.trim() && form.sourceDatasetId && form.predictors.length >= MIN_PREDICTORS
-)
-
-async function onSubmit() {
-  submitNote.value = ''
-  const spec = {
-    title: form.title,
-    description: form.description,
-    source_dataset_id: form.sourceDatasetId,
-    predictors: form.predictors,
-    background: form.backgroundCount,
-    visibility: form.visibility,
-    precise_only: form.preciseOnly,
-  }
-  const result = await trainModel(spec)
-  if (result.ok) {
-    submitNote.value = 'Model submitted — it will appear in your list when training finishes.'
-    form.title = ''
-    form.description = ''
-  }
-}
-
-// ── CSV import ────────────────────────────────────────────────────────────
-const { accessToken } = useAuth()
-const showCsvImport = ref(false)
-
-// Column auto-detection (mirrors the backend logic so the UI gives instant feedback).
-const LAT_CANDIDATES = ['latitude', 'lat', 'decimallatitude', 'decimal_latitude', 'y']
-const LON_CANDIDATES = ['longitude', 'lon', 'lng', 'decimallongitude', 'decimal_longitude', 'x']
-const DATE_CANDIDATES = ['observed_on', 'date', 'eventdate', 'event_date', 'observedon', 'dateidentified', 'date_observed']
-const SPECIES_CANDIDATES = ['scientific_name', 'scientificname', 'taxon_name', 'species', 'taxon', 'name', 'taxon_species_name']
-
-function detectHeader(headers, candidates) {
-  return candidates.find(c => headers.includes(c)) || ''
-}
-
-const csvImport = reactive({
-  rawText: '',
-  headers: [] as string[],
-  rows: 0,
-  latCol: '',
-  lonCol: '',
-  dateCol: '',
-  speciesCol: '',
-  title: '',
-  visibility: 'private',
-  pending: false,
-  error: '',
-  note: '',
-})
-
-function onCsvFile(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (!file) return
-  csvImport.error = ''
-  csvImport.note = ''
-  csvImport.rows = 0
-  csvImport.headers = []
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    const text = String(e.target?.result || '')
-    const firstLine = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')[0]
-    if (!firstLine) { csvImport.error = 'Could not read CSV headers.'; return }
-    // Simple header parse (handles quoted headers but not mid-value commas).
-    const headers = firstLine.split(',').map(h => h.replace(/^"|"$/g, '').trim().toLowerCase())
-    const lineCount = text.split('\n').filter(l => l.trim()).length - 1
-    csvImport.rawText = text
-    csvImport.headers = headers
-    csvImport.rows = Math.max(0, lineCount)
-    csvImport.latCol = detectHeader(headers, LAT_CANDIDATES)
-    csvImport.lonCol = detectHeader(headers, LON_CANDIDATES)
-    csvImport.dateCol = detectHeader(headers, DATE_CANDIDATES)
-    csvImport.speciesCol = detectHeader(headers, SPECIES_CANDIDATES)
-    if (!csvImport.title && file.name) csvImport.title = file.name.replace(/\.csv$/i, '')
-  }
-  reader.readAsText(file)
-}
-
-async function onImportCsv() {
-  csvImport.pending = true
-  csvImport.error = ''
-  csvImport.note = ''
-  try {
-    const token = await accessToken()
-    const res = await fetch('/.netlify/functions/datasets', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', ...(token ? { authorization: `Bearer ${token}` } : {}) },
-      body: JSON.stringify({
-        action: 'import_csv',
-        csv: csvImport.rawText,
-        title: csvImport.title,
-        lat_col: csvImport.latCol,
-        lon_col: csvImport.lonCol,
-        date_col: csvImport.dateCol || undefined,
-        species_col: csvImport.speciesCol || undefined,
-        visibility: csvImport.visibility,
-      }),
-    })
-    const data = await res.json()
-    if (!data.ok) throw new Error(data.error || 'Import failed.')
-    const skippedNote = data.skipped ? ` (${data.skipped} rows skipped for bad coordinates)` : ''
-    csvImport.note = `Imported ${data.dataset.feature_count?.toLocaleString()} observations as "${data.dataset.title}"${skippedNote}.`
-    csvImport.rawText = ''
-    csvImport.rows = 0
-    csvImport.headers = []
-    csvImport.title = ''
-    showCsvImport.value = false
-    await refreshAvailable()
-    // Auto-select the new dataset in the training form.
-    form.sourceDatasetId = data.dataset.id
-  } catch (e: any) {
-    csvImport.error = e.message
-  } finally {
-    csvImport.pending = false
-  }
-}
 
 // ── Model actions ─────────────────────────────────────────────────────────
 async function confirmDelete(model) {
@@ -608,12 +225,7 @@ function fmtWhen(dateStr) {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchModels(), refreshAvailable()])
-  // Open the add-model panel by default when the user has no models yet.
-  if (!models.value.length) {
-    showAddModel.value = true
-    activeTab.value = availableDatasets.value.length ? 'train' : 'register'
-  }
+  await fetchModels()
 })
 </script>
 

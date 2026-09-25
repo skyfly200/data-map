@@ -2054,32 +2054,6 @@ export const EE_TILE_LAYERS = {
     },
   },
 
-  'merit-river-width': {
-    name: 'River channel width',
-    group: 'Hydrology',
-    tier: 'free',
-    attribution: 'MERIT Hydro v1.0.1 via Google Earth Engine',
-    opacity: 0.85,
-    note: 'Modelled river channel width from MERIT Hydro at ~90 m, global. Only river-channel pixels '
-      + 'carry a value; everything else is masked. The colour and apparent weight of a line show how '
-      + 'large the watercourse is — wide rivers are deep blue, small creeks are pale. Useful for '
-      + 'reading drainage structure and finding the larger streams a forager would use as landmarks.',
-    legend: {
-      type: 'ramp', unit: 'm wide', min: '10', max: '500+',
-      stops: ['#c6dbef', '#6baed6', '#2171b5', '#084594'],
-    },
-    build(ee) {
-      const wth = ee.Image(ASSETS.MERIT_HYDRO).select('wth')
-      // wth is 0 on non-river pixels and the channel width elsewhere; masking
-      // the zeros leaves only the river network. The upper end is clipped at 500 m
-      // so the Amazon does not compress everything else into the pale end.
-      return {
-        image: wth.updateMask(wth.gt(0)),
-        vis: { min: 10, max: 500, palette: ['#c6dbef', '#6baed6', '#2171b5', '#084594'] },
-      }
-    },
-  },
-
   // ── Watershed boundaries (USGS WBD) ───────────────────────────────────────
   //
   // The USGS Watershed Boundary Dataset published as six nested FeatureCollections,
@@ -2108,9 +2082,8 @@ export const EE_TILE_LAYERS = {
     },
     build(ee, { level }) {
       const fc = ee.FeatureCollection(`${ASSETS.WBD_BASE}/${level}`)
-      // Paint as 2-pixel outlines; mask the background so the base map shows
-      // through the interior of each watershed.
-      const outline = ee.Image().byte().paint({ featureCollection: fc, color: 1, width: 2 })
+      const empty = ee.Image(0).byte()
+      const outline = empty.paint(fc, 1, 2)
       return {
         image: outline.updateMask(outline),
         vis: { min: 0, max: 1, palette: ['#4682b4'] },
