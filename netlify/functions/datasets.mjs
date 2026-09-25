@@ -150,6 +150,54 @@ async function save(client, viewer, body) {
   return json({ ok: true, dataset: data, status: 'saved' })
 }
 
+/**
+ * Register a file already uploaded by fetch-species / gbif-fetch into saved_datasets.
+ * Accepts { path, slug, title, description?, visibility?, feature_count? }.
+ * The path must live under species/ in the datasets bucket (validated server-side).
+ */
+async function saveFetched(client, viewer, body) {
+  const path = String(body.path || '').trim()
+  const incomingSlug = String(body.slug || '').trim()
+  if (!path) throw new DatasetAccessError('path is required.', { status: 400, code: 'no_path' })
+  if (!path.startsWith('species/')) {
+    throw new DatasetAccessError('Only species/ paths may be registered this way.', { status: 400, code: 'bad_path' })
+  }
+
+  const { count, error: countErr } = await client.from('saved_datasets')
+    .select('id', { count: 'exact', head: true }).eq('owner_id', viewer.userId)
+  if (countErr) throw new Error(countErr.message)
+  if ((count || 0) >= MAX_DATASETS_PER_MEMBER) {
+    throw new DatasetAccessError(
+      `You have ${count} saved datasets, which is the limit. Delete one to save another.`,
+      { status: 409, code: 'too_many' })
+  }
+
+  const title = String(body.title || incomingSlug || 'Fetched observations').trim().slice(0, 200)
+  const visibility = checkVisibility(body.visibility, viewer)
+
+  // If this path is already registered for this user, return the existing row.
+  const { data: existing } = await client.from('saved_datasets')
+    .select(FIELDS).eq('owner_id', viewer.userId).eq('path', path).maybeSingle()
+  if (existing) return json({ ok: true, dataset: existing, status: 'existing' })
+
+  const base = incomingSlug || slugify(title)
+  const { data: clashes } = await client.from('saved_datasets')
+    .select('slug').like('slug', `${base}%`)
+  const slug = nextFreeSlug(base, (clashes || []).map((r) => r.slug))
+
+  const { data, error } = await client.from('saved_datasets').insert({
+    owner_id: viewer.userId,
+    slug,
+    title,
+    description: String(body.description || '').slice(0, 2000) || null,
+    path,
+    visibility,
+    feature_count: body.feature_count ?? null,
+  }).select(FIELDS).single()
+  if (error) throw new Error(error.message)
+  return json({ ok: true, dataset: data, status: 'saved' })
+}
+
 async function update(client, viewer, body) {
   const id = String(body.id || '').trim()
   if (!id) throw new DatasetAccessError('Which dataset?', { status: 400, code: 'no_id' })
@@ -443,6 +491,7 @@ export default async function handler(request) {
 
     switch (body.action) {
       case 'save': return await save(client, viewer, body)
+      case 'save_fetched': return await saveFetched(client, viewer, body)
       case 'update': return await update(client, viewer, body)
       case 'delete': return await remove(client, viewer, body)
       case 'import_csv': return await importCsv(client, viewer, body)
@@ -451,7 +500,7 @@ export default async function handler(request) {
         return json({
           ok: false,
           error: `Unknown action "${body.action ?? ''}".`,
-          actions: ['save', 'update', 'delete', 'import_asset'],
+          actions: ['save', 'save_fetched', 'update', 'delete', 'import_asset'],
           note: `Datasets are ${DEFAULT_VISIBILITY} unless you say otherwise.`,
         }, 400)
     }

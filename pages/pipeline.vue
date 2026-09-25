@@ -91,11 +91,34 @@
             </div>
           </template>
 
-          <!-- Fetch / import -->
-          <template v-else>
-            <p class="hint">
-              Go to the <NuxtLink to="/data?tab=fetch">Import observations</NuxtLink> tab to pull in
-              fresh records, then come back and use a saved dataset.
+          <!-- Fetch / import inline -->
+          <template v-else-if="sourceForm.type === 'fetch'">
+            <div class="row">
+              <label for="fetch-taxon">Taxon</label>
+              <input id="fetch-taxon" v-model="fetchForm.taxon" type="text"
+                     placeholder="e.g. Morchella, Amanitaceae" :disabled="fetchForm.loading" />
+            </div>
+            <div class="row">
+              <label>Source</label>
+              <div class="src-tabs">
+                <button v-for="s in FETCH_SOURCES" :key="s.key" class="src-tab"
+                        :class="{ on: fetchForm.source === s.key }"
+                        @click="fetchForm.source = s.key" type="button">{{ s.label }}</button>
+              </div>
+            </div>
+            <div class="row two">
+              <label class="stack"><span>From</span><input v-model="fetchForm.dateFrom" type="date" :disabled="fetchForm.loading" /></label>
+              <label class="stack"><span>To</span><input v-model="fetchForm.dateTo" type="date" :disabled="fetchForm.loading" /></label>
+            </div>
+            <div class="actions" style="margin-top:0">
+              <button class="btn secondary" :disabled="!fetchForm.taxon.trim() || fetchForm.loading"
+                      @click="runFetch" type="button">
+                {{ fetchForm.loading ? 'Fetching…' : 'Fetch observations' }}
+              </button>
+            </div>
+            <p v-if="fetchForm.error" class="msg error">{{ fetchForm.error }}</p>
+            <p v-if="fetchForm.result" class="msg ok">
+              {{ fetchForm.result.count }} records fetched as "{{ fetchForm.result.title }}" — ready to continue.
             </p>
           </template>
 
@@ -498,6 +521,7 @@ const canAdvanceSource = computed(() => {
     return sourceForm.north != null && sourceForm.south != null
         && sourceForm.east != null && sourceForm.west != null
   }
+  if (sourceForm.type === 'fetch') return !!sourceForm.datasetSlug // set after successful fetch
   return false
 })
 
@@ -508,6 +532,72 @@ function useMapView() {
   sourceForm.south = b.south ?? b._southWest?.lat
   sourceForm.east  = b.east  ?? b._northEast?.lng
   sourceForm.west  = b.west  ?? b._southWest?.lng
+}
+
+const FETCH_SOURCES = [
+  { key: 'auto', label: 'Auto' },
+  { key: 'inat', label: 'iNaturalist' },
+  { key: 'gbif', label: 'GBIF' },
+]
+
+const fetchForm = reactive({
+  taxon: '',
+  source: 'auto',
+  dateFrom: '',
+  dateTo: '',
+  loading: false,
+  error: '',
+  result: null,
+})
+
+async function runFetch() {
+  fetchForm.error = ''
+  fetchForm.result = null
+  fetchForm.loading = true
+  try {
+    const { accessToken } = useAuth()
+    const token = await accessToken()
+    const headers = token ? { authorization: `Bearer ${token}` } : {}
+
+    const p = new URLSearchParams({ species: fetchForm.taxon.trim() })
+    if (fetchForm.dateFrom) p.set('d1', fetchForm.dateFrom)
+    if (fetchForm.dateTo) p.set('d2', fetchForm.dateTo)
+
+    const src = fetchForm.source === 'auto'
+      ? (fetchForm.dateFrom || fetchForm.dateTo ? 'inat' : 'inat')
+      : fetchForm.source
+    const fn = src === 'gbif' ? 'gbif-fetch' : 'fetch-species'
+
+    const res = await fetch(`/.netlify/functions/${fn}?${p.toString()}`, { headers })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok || !data.ok) throw new Error(data.error || `Fetch failed (${res.status})`)
+    if (!data.count) throw new Error('No records found for that taxon.')
+
+    // Register the uploaded file in saved_datasets so the pipeline can use it.
+    const storagePath = `species/${data.slug}.geojson`
+    const title = `${fetchForm.taxon.trim()} (${src === 'gbif' ? 'GBIF' : 'iNat'}, ${data.count})`
+    const saveRes = await fetch('/.netlify/functions/datasets', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...headers },
+      body: JSON.stringify({
+        action: 'save_fetched',
+        path: storagePath,
+        slug: data.slug,
+        title,
+        feature_count: data.count,
+      }),
+    })
+    const saved = await saveRes.json().catch(() => ({}))
+    if (!saveRes.ok || !saved.ok) throw new Error(saved.error || 'Could not register the fetched dataset.')
+
+    sourceForm.datasetSlug = saved.dataset.slug
+    fetchForm.result = { count: data.count, title }
+    await datasetsApi.refresh()
+  } catch (e) {
+    fetchForm.error = e?.message || 'Fetch failed.'
+  } finally {
+    fetchForm.loading = false
+  }
 }
 
 function advanceSource() {
@@ -616,21 +706,19 @@ const PREDICTOR_META = {
 }
 
 async function loadExploreData() {
-  // The enriched dataset slug comes from the job result_path or the source dataset
-  const resultSlug = enrichJob.value?.result_path || sourceForm.datasetSlug
-  if (!resultSlug) return
+  const slug = enrichDatasetSlug.value || (sourceForm.type === 'dataset' ? sourceForm.datasetSlug : null)
+  if (!slug) return
 
   try {
     const { accessToken } = useAuth()
     const token = await accessToken()
     const headers = token ? { authorization: `Bearer ${token}` } : {}
-    const res = await fetch(`/.netlify/functions/datasets/${encodeURIComponent(resultSlug)}`, { headers })
+    const res = await fetch(`/.netlify/functions/datasets?slug=${encodeURIComponent(slug)}`, { headers })
     if (!res.ok) return
     const data = await res.json()
-    const features = data.features || data.data?.features || []
+    const features = data.geojson?.features || data.features || []
     if (!features.length) return
     exploreData.value = computeExploreStats(features)
-    // Pre-populate recommended predictors
     const recommended = exploreData.value.coverage
       .filter(v => v.pct >= 80)
       .map(v => v.key)
