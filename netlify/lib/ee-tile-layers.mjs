@@ -464,6 +464,13 @@ function readParams(schema, input = {}) {
       out[key] = String(raw)
     } else if (spec.type === 'codes') {
       out[key] = normaliseCodes(raw, spec.max)
+    } else if (spec.type === 'zones') {
+      // Comma-separated subset of the allowed zone numbers, e.g. "1,2".
+      const allowed = new Set(spec.values || [])
+      const picked = String(raw).split(',').map((s) => s.trim()).filter(Boolean)
+      const invalid = picked.filter((v) => !allowed.has(v))
+      if (invalid.length) throw new LayerError(`${spec.label}: invalid zones ${invalid.join(', ')}.`)
+      out[key] = picked.length ? picked.join(',') : (spec.default || spec.values[0])
     } else if (spec.type === 'text') {
       // A free typed value — a taxon name to search for. Constrained to the
       // characters a scientific name uses (letters, spaces, hyphen, period,
@@ -976,7 +983,7 @@ export const EE_TILE_LAYERS = {
 
   'slope': {
     name: 'Slope',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'NASA SRTM via Google Earth Engine',
     opacity: 0.7,
@@ -993,7 +1000,7 @@ export const EE_TILE_LAYERS = {
 
   'aspect': {
     name: 'Aspect (slope direction)',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'NASA SRTM via Google Earth Engine',
     opacity: 0.7,
@@ -1014,7 +1021,7 @@ export const EE_TILE_LAYERS = {
 
   'twi': {
     name: 'Topographic wetness (TWI)',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'NASA SRTM and MERIT Hydro via Google Earth Engine',
     opacity: 0.75,
@@ -1036,7 +1043,7 @@ export const EE_TILE_LAYERS = {
 
   'wind-exposure': {
     name: 'Wind exposure',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'NASA SRTM via Google Earth Engine',
     opacity: 0.75,
@@ -1057,7 +1064,7 @@ export const EE_TILE_LAYERS = {
 
   'solar-exposure': {
     name: 'Solar exposure',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'NASA SRTM via Google Earth Engine',
     opacity: 0.75,
@@ -1114,7 +1121,7 @@ export const EE_TILE_LAYERS = {
 
   'land-cover': {
     name: 'Land cover (ESA)',
-    group: 'Ground',
+    group: 'Vegetation',
     // Free, because it was free before. This layer was served from the
     // publisher's own tile host and open to everyone; moving it to Earth Engine
     // is a fix for that host going down, and a fix should not quietly take a
@@ -1217,7 +1224,7 @@ export const EE_TILE_LAYERS = {
 
   'canopy-density': {
     name: 'Canopy density',
-    group: 'Forest structure',
+    group: 'Vegetation',
     tier: DEFAULT_TIER,
     attribution: 'USFS TreeMap via Google Earth Engine',
     opacity: 0.85,
@@ -1237,7 +1244,7 @@ export const EE_TILE_LAYERS = {
 
   'stand-height': {
     name: 'Stand height',
-    group: 'Forest structure',
+    group: 'Vegetation',
     tier: DEFAULT_TIER,
     attribution: 'USFS TreeMap via Google Earth Engine',
     opacity: 0.85,
@@ -1258,7 +1265,7 @@ export const EE_TILE_LAYERS = {
 
   'stand-size': {
     name: 'Stand-size class',
-    group: 'Forest structure',
+    group: 'Vegetation',
     tier: DEFAULT_TIER,
     attribution: 'USFS TreeMap via Google Earth Engine',
     opacity: 0.85,
@@ -1359,79 +1366,44 @@ export const EE_TILE_LAYERS = {
   },
 
   'soil-taxonomy': {
-    name: 'Soil taxonomy (USDA orders)',
+    name: 'Soil taxonomy Order/Class',
     group: 'Soil',
     tier: DEFAULT_TIER,
     attribution: 'OpenLandMap USDA soil taxonomy great groups via Google Earth Engine',
     opacity: 0.8,
-    note: 'The USDA soil order at each pixel, predicted globally at 250 m. The source is the '
-      + 'great-group level — about four hundred classes — which is far too many to read as a '
-      + 'key, so the map paints the twelve orders above them and the soil panel names the great '
-      + 'group under your cursor. Orders separate soils by how they formed, so the boundaries '
-      + 'often follow geology and climate rather than anything visible on the surface. A model '
-      + 'prediction, not a soil survey: right about a hillside, unreliable about a square metre.',
-    legend: { type: 'classes', items: SOIL_ORDER_CLASSES },
-    // The class browser draws these twelve as chips you can filter by, so the
-    // flat swatch list would be the same twelve entries again, directly above
-    // them, and not clickable.
-    legendInBrowser: true,
-    // The source masks open water and leaves a real class everywhere else. What
-    // this layer masks is its own doing: see selfMask below.
-    sourceMasked: true,
-    prepare: grtgroupTable,
-    build(ee, params, table) {
-      const values = table?.values || []
-      // The order is the end of the great group's own name. That is what the
-      // taxonomy's naming is for, so there is no lookup table to keep in step
-      // with the raster — see netlify/lib/soil-taxonomy.mjs.
-      const orders = (table?.names || []).map(orderIndex)
-      return {
-        // selfMask, because orderIndex gives 0 to a class that is not a great
-        // group at all. Painted, zero would be a twelfth of the legend claiming
-        // ground it knows nothing about; masked, it is honestly blank.
-        image: grtgroup(ee).remap(values, orders, 0).selfMask(),
-        vis: { min: 1, max: SOIL_ORDERS.length, palette: SOIL_ORDER_PALETTE },
-      }
-    },
-  },
-
-  'soil-taxonomy-select': {
-    name: 'Soil taxonomy: chosen classes',
-    group: 'Soil',
-    tier: DEFAULT_TIER,
-    attribution: 'OpenLandMap USDA soil taxonomy great groups via Google Earth Engine',
-    opacity: 0.8,
-    note: 'Paints only the great groups you choose, and leaves every other pixel blank. Choose '
-      + 'them in the class list below: search by name or by order, tick as many as you want, and '
-      + 'the map redraws. Each chosen class keeps the colour of its order, so a selection that '
-      + 'spans several orders can still be told apart. This is a soil filter and not a '
-      + 'prediction — it says the ground is the kind you asked for, not that anything grows '
-      + 'there, and it knows nothing about the trees that decide whether anything can.',
+    note: 'USDA soil taxonomy at 250 m, global. Orders mode paints all twelve orders; '
+      + 'Classes mode paints only the great groups you choose from the class list. '
+      + 'A model prediction, not a soil survey: right about a hillside, unreliable about a square metre.',
     params: {
+      mode: { type: 'enum', label: 'Show', default: 'orders', values: ['orders', 'classes'] },
       codes: { type: 'codes', label: 'Classes', default: '', max: CODE_LIMIT },
     },
-    // The browser's order chips are the key: each chosen class draws in its own
-    // order's colour, and the chips are that list, clickable.
     legend: { type: 'classes', items: SOIL_ORDER_CLASSES },
     legendInBrowser: true,
     sourceMasked: true,
+    classes: 'great-groups',
     prepare: grtgroupTable,
     build(ee, params, table) {
-      const chosen = new Set(codeList(params?.codes))
       const values = table?.values || []
       const names = table?.names || []
-      const from = []
-      const to = []
-      for (let i = 0; i < values.length; i += 1) {
-        if (!chosen.has(values[i])) continue
-        from.push(values[i])
-        to.push(orderIndex(names[i]))
+      if (params?.mode === 'classes') {
+        const chosen = new Set(codeList(params?.codes))
+        const from = []
+        const to = []
+        for (let i = 0; i < values.length; i += 1) {
+          if (!chosen.has(values[i])) continue
+          from.push(values[i])
+          to.push(orderIndex(names[i]))
+        }
+        return {
+          image: grtgroup(ee).remap(from, to, 0).selfMask(),
+          vis: { min: 1, max: SOIL_ORDERS.length, palette: SOIL_ORDER_PALETTE },
+        }
       }
+      // orders mode (default)
+      const orders = names.map(orderIndex)
       return {
-        // remap with a default of 0 and then selfMask: a class nobody chose is
-        // unpainted rather than painted as "no". Blank here means "not one of
-        // the ones you asked for", which is what it should mean.
-        image: grtgroup(ee).remap(from, to, 0).selfMask(),
+        image: grtgroup(ee).remap(values, orders, 0).selfMask(),
         vis: { min: 1, max: SOIL_ORDERS.length, palette: SOIL_ORDER_PALETTE },
       }
     },
@@ -1644,19 +1616,21 @@ export const EE_TILE_LAYERS = {
   'soil-moisture-column': {
     name: 'Soil moisture, root zone (ERA5-Land)',
     group: 'Soil',
-    // Free, like SMAP: a cheap mean of a coarse published reanalysis, global,
-    // and the same question a forager asks after rain — but of the 0–7 cm layer
-    // a reanalysis models rather than the top 5 cm a satellite retrieves.
     tier: 'free',
     attribution: 'Copernicus ECMWF ERA5-Land via Google Earth Engine',
     opacity: 0.7,
     sourceMasked: true,
-    note: 'Modelled volumetric water in the top 0–7 cm of soil from ERA5-Land, ~11 km, global, averaged '
-      + 'over the chosen recent days. A reanalysis, not a measurement, and coarse: a cell is larger than '
-      + 'most places on this map. Blue is wet. It lags real time by about five days, so a short window '
-      + 'near today can come back empty.',
+    note: 'Modelled volumetric water content from ERA5-Land, ~11 km, global, averaged over the chosen '
+      + 'days. Zones: 1 = 0–7 cm, 2 = 7–28 cm, 3 = 28–100 cm, 4 = 100–289 cm. Multiple zones are '
+      + 'averaged together. Blue is wet. Lags real time by ~5 days.',
     params: {
       days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 60 },
+      zones: {
+        type: 'zones', label: 'Depth zones',
+        default: '1',
+        values: ['1', '2', '3', '4'],
+        labels: ['0–7 cm', '7–28 cm', '28–100 cm', '100–289 cm'],
+      },
     },
     legend: {
       type: 'ramp', unit: 'm³/m³', min: '0.1', max: '0.4',
@@ -1668,13 +1642,16 @@ export const EE_TILE_LAYERS = {
       return ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
         .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
     },
-    build(ee, { days }) {
+    build(ee, { days, zones }) {
       const end = new Date()
       const start = new Date(end.getTime() - days * 86400000)
-      const image = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+      const zoneList = String(zones || '1').split(',').filter(Boolean)
+      const bands = zoneList.map((z) => `volumetric_soil_water_layer_${z}`)
+      const col = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
         .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
-        .select('volumetric_soil_water_layer_1')
-        .mean()
+      const image = bands.length === 1
+        ? col.select(bands[0]).mean()
+        : col.select(bands).mean().reduce(ee.Reducer.mean())
       return { image, vis: { min: 0.1, max: 0.4, palette: ['#ffffd9', '#c7e9b4', '#41b6c4', '#225ea8', '#081d58'] } }
     },
   },
@@ -1682,18 +1659,21 @@ export const EE_TILE_LAYERS = {
   'soil-temperature': {
     name: 'Soil temperature (ERA5-Land)',
     group: 'Weather',
-    // Free: the same cheap ERA5-Land mean, one band over. Soil temperature is
-    // the other half of whether the ground is ready to fruit, and no satellite
-    // layer here carries it.
     tier: 'free',
     attribution: 'Copernicus ECMWF ERA5-Land via Google Earth Engine',
     opacity: 0.7,
     sourceMasked: true,
-    note: 'Modelled temperature of the top 0–7 cm of soil from ERA5-Land, ~11 km, global, averaged over '
-      + 'the chosen recent days and shown in °C. A reanalysis, not a probe in your patch, and coarse. '
-      + 'Warm is red, cold is blue. It lags real time by about five days.',
+    note: 'Modelled soil temperature from ERA5-Land, ~11 km, global, averaged over the chosen days, '
+      + 'in °C. Zones: 1 = 0–7 cm, 2 = 7–28 cm, 3 = 28–100 cm, 4 = 100–289 cm. Multiple zones are '
+      + 'averaged together. Warm is red, cold is blue. Lags real time by ~5 days.',
     params: {
       days: { type: 'int', label: 'Days to average', default: 14, min: 1, max: 60 },
+      zones: {
+        type: 'zones', label: 'Depth zones',
+        default: '1',
+        values: ['1', '2', '3', '4'],
+        labels: ['0–7 cm', '7–28 cm', '28–100 cm', '100–289 cm'],
+      },
     },
     legend: {
       type: 'ramp', unit: '°C', min: '0', max: '15',
@@ -1705,15 +1685,17 @@ export const EE_TILE_LAYERS = {
       return ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
         .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)).size()
     },
-    build(ee, { days }) {
+    build(ee, { days, zones }) {
       const end = new Date()
       const start = new Date(end.getTime() - days * 86400000)
-      // ERA5-Land carries soil temperature in kelvin; °C is what a reader can use.
-      const image = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
+      const zoneList = String(zones || '1').split(',').filter(Boolean)
+      const bands = zoneList.map((z) => `soil_temperature_level_${z}`)
+      const col = ee.ImageCollection(ASSETS.ERA5_LAND_DAILY)
         .filterDate(start.toISOString().slice(0, 10), end.toISOString().slice(0, 10))
-        .select('soil_temperature_level_1')
-        .mean()
-        .subtract(273.15)
+      // ERA5-Land carries soil temperature in kelvin; subtract 273.15 after averaging.
+      const image = bands.length === 1
+        ? col.select(bands[0]).mean().subtract(273.15)
+        : col.select(bands).mean().reduce(ee.Reducer.mean()).subtract(273.15)
       return { image, vis: { min: 0, max: 15, palette: ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'] } }
     },
   },
@@ -1801,7 +1783,7 @@ export const EE_TILE_LAYERS = {
 
   'srtm-mtpi': {
     name: 'Topographic position (mTPI)',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'CSP ERGo / NASA SRTM via Google Earth Engine',
     opacity: 0.7,
@@ -1827,7 +1809,7 @@ export const EE_TILE_LAYERS = {
 
   'srtm-chili': {
     name: 'Heat-insolation load (CHILI)',
-    group: 'Terrain analysis',
+    group: 'Terrain',
     tier: 'free',
     attribution: 'CSP ERGo / NASA SRTM via Google Earth Engine',
     opacity: 0.7,
@@ -2226,6 +2208,7 @@ export function describeLayer(key) {
         min,
         max,
         values,
+        ...(spec.labels ? { labels: spec.labels } : {}),
       }]
     })),
   }

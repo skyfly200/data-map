@@ -16,7 +16,8 @@
       :open="showLayers" :groups="overlayGroups" :active="activeOverlays"
       :order="overlayOrder" :opacity="layerOpacity" :ee-loading="eeLoading"
       :blend="layerBlend" :stack-blend="stackBlend" :solo="soloKey"
-      @blend="setLayerBlend" @solo="setSolo"
+      :channel="layerChannel"
+      @blend="setLayerBlend" @solo="setSolo" @channel="setLayerChannel"
       @toggle="toggleOverlayByKey" @opacity="setLayerOpacity" @move="moveOverlay"
       @clear="clearOverlays" @close="showLayers = false"
     >
@@ -188,204 +189,188 @@
                    :dataset-label="datasetLabel" />
     </div>
 
-    <!-- Both legends share one column, so they cannot overlap each other or the
-         control bar, and neither needs to know how tall the other is. -->
+    <!-- Single key card, bottom-right, behind the control bar. All sections
+         (layers, heatmap, observations) share one surface so they do not crowd
+         each other and the card stays behind the toolbar at z-index 400. -->
     <div v-if="loaded" class="legends" :class="{ collapsed: keyCollapsed }">
-      <!-- The key can be in the way as easily as it can be wanted — it is the
-           tallest thing on the map when several layers are on. This folds it to
-           its header and remembers the choice. -->
       <button class="key-toggle" :aria-expanded="String(!keyCollapsed)"
               :title="keyCollapsed ? 'Show the map key' : 'Hide the map key'"
               @click="setKeyCollapsed(!keyCollapsed)">
         <span class="caret" aria-hidden="true">{{ keyCollapsed ? '▸' : '▾' }}</span>
         Key
       </button>
-    <!-- A reference layer that will not load looks the same as one reporting
-         empty ground, so it says so instead. -->
-    <div v-if="tileErrors.length" class="legend tile-warn">
-      <div class="legend-title">Layer unavailable</div>
-      <div class="legend-note">
-        {{ tileErrors.join(', ') }} could not be reached. Treat it as no data, not as
-        empty ground.
-      </div>
-    </div>
-    <!-- Earth Engine layer fetching a tile template — shown until the URL is
-         ready and tiles start loading. -->
-    <div v-for="name in eeLoading.values()" :key="name" class="legend ee-loading">
-      <span class="ee-spinner" aria-hidden="true"></span>
-      <span class="ee-loading-label">Rendering {{ name }}…</span>
-    </div>
-    <!-- An Earth Engine layer that failed to render says why, by name. Blank
-         ground on a fire map reads as ground that never burned, so a silent
-         failure here would be worse than no layer at all. -->
-    <div v-for="e in eeErrors" :key="e.key" class="legend tile-warn">
-      <div class="legend-title">{{ e.name }} could not be rendered</div>
-      <div class="legend-note">{{ e.message }}</div>
-    </div>
-    <!-- One key for the whole reference stack, a section per layer that is
-         switched on. A raster nobody can read is decoration, so every measured
-         layer carries a key — but as separate cards, three of them squeezed
-         each other and the heatmap key into strips too short to read. They are
-         one stack of layers; they get one panel. -->
-    <div v-if="activeTileNotes.length" class="legend tile-note">
-      <div class="legend-kind">Map layers</div>
-      <div v-for="n in activeTileNotes" :key="n.name" class="tk">
-        <div class="tk-name">{{ n.name }}</div>
-        <template v-if="n.legend?.type === 'ramp'">
-          <div class="gradient" :style="{ background: gradientCss(n.legend.stops) }"></div>
-          <!-- A cyclic ramp (aspect) labels evenly all the way round rather than
-               just at its ends, so east and west are marked, not just north. -->
-          <div v-if="n.legend.ticks" class="gradient-ticks">
-            <span v-for="(t, ti) in n.legend.ticks" :key="ti">{{ t }}</span>
+
+      <div class="key-card" @mouseleave="hoverValue = null">
+
+        <!-- Status: unavailable layers and EE loading/errors -->
+        <div v-if="tileErrors.length" class="key-section">
+          <div class="key-sec-head warn-head">Layer unavailable</div>
+          <div class="legend-note no-border">
+            {{ tileErrors.join(', ') }} could not be reached.
           </div>
-          <div v-else class="gradient-scale">
-            <span>{{ n.legend.min }}</span>
-            <span class="unit">{{ n.legend.unit }}</span>
-            <span>{{ n.legend.max }}</span>
+        </div>
+        <div v-for="name in eeLoading.values()" :key="name" class="key-section ee-loading">
+          <span class="ee-spinner" aria-hidden="true"></span>
+          <span class="ee-loading-label">Rendering {{ name }}…</span>
+        </div>
+        <div v-for="e in eeErrors" :key="e.key" class="key-section">
+          <div class="key-sec-head warn-head">{{ e.name }} failed</div>
+          <div class="legend-note no-border">{{ e.message }}</div>
+        </div>
+
+        <!-- Reference tile layers -->
+        <template v-if="activeTileNotes.length">
+          <div class="key-section-label">Map layers</div>
+          <div v-for="n in activeTileNotes" :key="n.name" class="key-section tk">
+            <button class="tk-name-toggle" @click="toggleLayerExpanded(n.name)">
+              <span class="tk-name">{{ n.name }}</span>
+              <span class="tk-caret" aria-hidden="true">{{ expandedLayers[n.name] ? '▾' : '▸' }}</span>
+            </button>
+            <template v-if="expandedLayers[n.name]">
+              <template v-if="n.legend?.type === 'ramp'">
+                <div class="gradient" :style="{ background: gradientCss(n.legend.stops) }"></div>
+                <div v-if="n.legend.ticks" class="gradient-ticks">
+                  <span v-for="(t, ti) in n.legend.ticks" :key="ti">{{ t }}</span>
+                </div>
+                <div v-else class="gradient-scale">
+                  <span>{{ n.legend.min }}</span>
+                  <span class="unit">{{ n.legend.unit }}</span>
+                  <span>{{ n.legend.max }}</span>
+                </div>
+              </template>
+              <div v-else-if="n.legend?.type === 'classes' && !n.legendInBrowser" class="class-key">
+                <span v-for="c in n.legend.items" :key="c.label" class="ck">
+                  <span class="swatch" :style="{ background: c.color }"></span>{{ c.label }}
+                </span>
+              </div>
+              <SoilTaxonomyKey v-if="n.classes === 'great-groups' && (eeParams[n.ee]?.mode ?? 'orders') === 'classes'"
+                               :layer="n.ee"
+                               :selectable="!!n.eeParams?.codes"
+                               :codes="(eeParams[n.ee] || {}).codes ?? (n.eeParams?.codes?.default || '')"
+                               @update:codes="setEeParam(n.ee, 'codes', $event)" />
+              <template v-for="(p, name) in (n.eeParams || {})" :key="name">
+                <div v-if="p.type === 'zones'" class="layer-zones">
+                  <span class="layer-zones-label">{{ p.label }}</span>
+                  <label v-for="(v, i) in (p.values || [])" :key="v" class="zone-check">
+                    <input type="checkbox"
+                           :checked="((eeParams[n.ee] || {})[name] ?? p.default).toString().split(',').includes(v)"
+                           @change="setEeParam(n.ee, name, toggleZone((eeParams[n.ee] || {})[name] ?? p.default, v, $event.target.checked))" />
+                    {{ (p.labels || p.values)[i] }}
+                  </label>
+                </div>
+                <div v-else-if="p.type !== 'codes'" class="layer-date">
+                  <label :for="`ee-${n.slug}-${name}`">{{ p.label }}</label>
+                  <select v-if="p.type === 'enum'" :id="`ee-${n.slug}-${name}`"
+                          :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                          @change="setEeParam(n.ee, name, $event.target.value)">
+                    <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
+                  </select>
+                  <select v-else-if="p.type === 'yearSelect'" :id="`ee-${n.slug}-${name}`"
+                          :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                          @change="setEeParam(n.ee, name, Number($event.target.value))">
+                    <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
+                  </select>
+                  <input v-else-if="p.type === 'text'" :id="`ee-${n.slug}-${name}`" type="search"
+                         :maxlength="p.maxLength || 60" :placeholder="p.default"
+                         :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                         @change="setEeParam(n.ee, name, $event.target.value)" />
+                  <input v-else-if="p.type === 'date'" :id="`ee-${n.slug}-${name}`" type="date"
+                         :min="typeof p.min === 'function' ? p.min() : p.min"
+                         :max="typeof p.max === 'function' ? p.max() : p.max"
+                         :value="(eeParams[n.ee] || {})[name] ?? (typeof p.default === 'function' ? p.default() : p.default)"
+                         @change="setEeParam(n.ee, name, $event.target.value)" />
+                  <input v-else :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
+                         :value="(eeParams[n.ee] || {})[name] ?? p.default"
+                         @change="setEeParam(n.ee, name, Number($event.target.value))" />
+                </div>
+              </template>
+              <div v-if="n.minZoom && mapView?.zoom < n.minZoom" class="legend-note zoom-in no-border">
+                Zoom in to level {{ n.minZoom }} to see this layer.
+              </div>
+              <div v-if="n.time" class="layer-date">
+                <label :for="`ld-${n.slug}`">Date</label>
+                <input :id="`ld-${n.slug}`" v-model="tileDate" type="date" :max="maxTileDate"
+                       :title="`Which day of ${n.name} to draw. Satellite products lag by days, so recent dates can be blank.`" />
+              </div>
+              <div v-if="upscaleNote(n)" class="legend-note">{{ upscaleNote(n) }}</div>
+              <div v-if="n.slow" class="legend-note">Tiles arrive slowly first time.</div>
+              <div v-if="n.note" class="legend-note">{{ n.note }}</div>
+              <div v-if="n.attribution" class="layer-attrib">
+                <button class="attrib-toggle" :aria-expanded="!!expandedAttrib[n.name]"
+                        @click.stop="toggleAttrib(n.name)">©</button>
+                <span v-if="expandedAttrib[n.name]" class="attrib-text">{{ n.attribution }}</span>
+              </div>
+            </template>
           </div>
         </template>
-        <div v-else-if="n.legend?.type === 'classes' && !n.legendInBrowser" class="class-key">
-          <span v-for="c in n.legend.items" :key="c.label" class="ck">
-            <span class="swatch" :style="{ background: c.color }"></span>{{ c.label }}
-          </span>
-        </div>
-        <!-- A layer with more classes than a key can hold gets a browser for
-             them instead: search, what each one means, and where to read more.
-             Four hundred swatches is not a key, it is a lookup table. -->
-        <SoilTaxonomyKey v-if="n.classes === 'great-groups'" :layer="n.ee"
-                         :selectable="!!n.eeParams?.codes"
-                         :codes="(eeParams[n.ee] || {}).codes ?? (n.eeParams?.codes?.default || '')"
-                         @update:codes="setEeParam(n.ee, 'codes', $event)" />
-        <!-- The date the layer is showing, movable for the ones that vary. Each
-             product has its own latency, so "today" is usually blank tiles. -->
-        <!-- The knobs an Earth Engine layer exposes. Which year, how far back
-             to look: these change what is rendered, so they re-mint the tiles. -->
-        <!-- Every parameter except the ones a dedicated control already owns.
-             A list of class codes is not a number and not a dropdown; the class
-             browser above is its editor, and a second one here would be a text
-             field asking somebody to type four hundred numbers. -->
-        <div v-for="(p, name) in (n.eeParams || {})" :key="name" class="layer-date"
-             v-show="p.type !== 'codes'">
-          <label :for="`ee-${n.slug}-${name}`">{{ p.label }}</label>
-          <!-- A fixed set of choices (a season, say) is a dropdown; anything
-               numeric is a stepper. Both re-mint the tiles on change. -->
-          <select v-if="p.type === 'enum'" :id="`ee-${n.slug}-${name}`"
-                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
-                  @change="setEeParam(n.ee, name, $event.target.value)">
-            <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
-          </select>
-          <select v-else-if="p.type === 'yearSelect'" :id="`ee-${n.slug}-${name}`"
-                  :value="(eeParams[n.ee] || {})[name] ?? p.default"
-                  @change="setEeParam(n.ee, name, Number($event.target.value))">
-            <option v-for="v in (p.values || [])" :key="v" :value="v">{{ v }}</option>
-          </select>
-          <input v-else-if="p.type === 'text'" :id="`ee-${n.slug}-${name}`" type="search"
-                 :maxlength="p.maxLength || 60" :placeholder="p.default"
-                 :value="(eeParams[n.ee] || {})[name] ?? p.default"
-                 @change="setEeParam(n.ee, name, $event.target.value)" />
-          <input v-else-if="p.type === 'date'" :id="`ee-${n.slug}-${name}`" type="date"
-                 :min="typeof p.min === 'function' ? p.min() : p.min"
-                 :max="typeof p.max === 'function' ? p.max() : p.max"
-                 :value="(eeParams[n.ee] || {})[name] ?? (typeof p.default === 'function' ? p.default() : p.default)"
-                 @change="setEeParam(n.ee, name, $event.target.value)" />
-          <input v-else :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
-                 :value="(eeParams[n.ee] || {})[name] ?? p.default"
-                 @change="setEeParam(n.ee, name, Number($event.target.value))" />
-        </div>
-        <div v-if="n.minZoom && mapView?.zoom < n.minZoom" class="legend-note zoom-in">
-          Zoom in to level {{ n.minZoom }} to see this layer.
-        </div>
-        <div v-if="n.slow" class="legend-note">
-          Computed as you look at it, so tiles arrive slowly the first time.
-        </div>
-        <div v-if="n.time" class="layer-date">
-          <label :for="`ld-${n.slug}`">Date</label>
-          <input :id="`ld-${n.slug}`" v-model="tileDate" type="date" :max="maxTileDate"
-                 :title="`Which day of ${n.name} to draw. Satellite products lag by days, so recent dates can be blank.`" />
-        </div>
-        <!-- Past its native level the layer is being stretched, not resolved
-             finer. Rainfall at 10 km does not become 30 m detail by zooming,
-             and a blurry square that looks like data is worse than a caption. -->
-        <div v-if="upscaleNote(n)" class="legend-note upscaled">{{ upscaleNote(n) }}</div>
-        <div v-if="n.note" class="legend-note">{{ n.note }}</div>
-      </div>
-    </div>
-    <!-- Heatmap key, with the caveat that belongs with each metric -->
-    <!-- A heatmap that produced nothing has to say so. Drawing an empty map and
-         leaving the viewer to work out whether the field is missing, the filter
-         is too tight, or the feature is broken is what made this read as
-         broken — the answer is usually that the column is simply not in the
-         data yet. -->
-    <div v-if="!heatmapLegend && heatmapMode && loaded" class="legend overlay-legend">
-      <div class="legend-title">{{ heatmapMeta.label }}</div>
-      <div class="legend-note">{{ emptyHeatmapReason }}</div>
-    </div>
 
-    <div v-if="heatmapLegend" class="legend overlay-legend">
-      <div class="legend-title">{{ heatmapMeta.label }}</div>
-      <template v-if="heatmapLegend.type === 'sequential'">
-        <div class="gradient" :style="{ background: gradientCss(heatmapLegend.ramp) }"></div>
-        <div class="gradient-scale"><span>{{ heatmapLegend.min }}</span><span>{{ heatmapLegend.max }}</span></div>
-        <div class="legend-note">{{ heatmapLegend.cells.toLocaleString() }} cells · {{ heatmapLegend.note }}</div>
-      </template>
-      <template v-else-if="heatmapLegend.type === 'vector'">
-        <div class="gradient" :style="{ background: gradientCss(heatmapLegend.ramp) }"></div>
-        <div class="gradient-scale"><span>{{ heatmapLegend.min }}</span><span>{{ heatmapLegend.max }}</span></div>
-        <div class="legend-note">
-          Source: <strong>{{ heatmapLegend.source }}</strong> · color = {{ heatmapLegend.colorBy }}<br />
-          {{ heatmapLegend.cells.toLocaleString() }} arrows · {{ heatmapLegend.note }}
-        </div>
-      </template>
-      <!-- Direction is circular, so its key is a compass rather than a bar:
-           a low-to-high gradient would put 359° and 1° at opposite ends. -->
-      <template v-else-if="heatmapLegend.type === 'compass'">
-        <div class="compass-key">
-          <span v-for="item in heatmapLegend.items" :key="item.label" class="ck">
-            <span class="swatch" :style="{ background: item.color }"></span>{{ item.label }}
-          </span>
-        </div>
-        <div class="legend-note">{{ heatmapLegend.cells.toLocaleString() }} cells · {{ heatmapLegend.note }}</div>
-      </template>
-      <template v-else>
-        <div v-for="item in heatmapLegend.items" :key="item.label" class="legend-row hoverable"
-             :class="{ dim: hoverValue && hoverValue !== item.label }"
-             @pointerenter="hoverEnter(item.label, $event)" @pointerleave="hoverLeave($event)"
-             @pointerup="pickValue(item.label, $event)">
-          <span class="swatch" :style="{ background: item.color }"></span>
-          <span><em>{{ item.label }}</em> <span class="legend-n">{{ item.n }}</span></span>
-        </div>
-        <div class="legend-note">
-          {{ heatmapLegend.total }} values appear somewhere · {{ heatmapLegend.note }}
-        </div>
-      </template>
-    </div>
+        <!-- Heatmap section -->
+        <template v-if="heatmapMode">
+          <div class="key-section-label">Heatmap</div>
+          <div v-if="!heatmapLegend" class="key-section">
+            <div class="tk-name">{{ heatmapMeta.label }}</div>
+            <div class="legend-note no-border">{{ emptyHeatmapReason }}</div>
+          </div>
+          <div v-else class="key-section">
+            <div class="tk-name">{{ heatmapMeta.label }}</div>
+            <template v-if="heatmapLegend.type === 'sequential'">
+              <div class="gradient" :style="{ background: gradientCss(heatmapLegend.ramp) }"></div>
+              <div class="gradient-scale"><span>{{ heatmapLegend.min }}</span><span>{{ heatmapLegend.max }}</span></div>
+              <div class="legend-note tk-hover-note">{{ heatmapLegend.cells.toLocaleString() }} cells · {{ heatmapLegend.note }}</div>
+            </template>
+            <template v-else-if="heatmapLegend.type === 'vector'">
+              <div class="gradient" :style="{ background: gradientCss(heatmapLegend.ramp) }"></div>
+              <div class="gradient-scale"><span>{{ heatmapLegend.min }}</span><span>{{ heatmapLegend.max }}</span></div>
+              <div class="legend-note tk-hover-note">
+                {{ heatmapLegend.cells.toLocaleString() }} arrows · {{ heatmapLegend.note }}
+              </div>
+            </template>
+            <template v-else-if="heatmapLegend.type === 'compass'">
+              <div class="compass-key">
+                <span v-for="item in heatmapLegend.items" :key="item.label" class="ck">
+                  <span class="swatch" :style="{ background: item.color }"></span>{{ item.label }}
+                </span>
+              </div>
+              <div class="legend-note tk-hover-note">{{ heatmapLegend.cells.toLocaleString() }} cells · {{ heatmapLegend.note }}</div>
+            </template>
+            <template v-else>
+              <div v-for="item in heatmapLegend.items" :key="item.label" class="legend-row hoverable"
+                   :class="{ dim: hoverValue && hoverValue !== item.label }"
+                   @pointerenter="hoverEnter(item.label, $event)" @pointerleave="hoverLeave($event)"
+                   @pointerup="pickValue(item.label, $event)">
+                <span class="swatch" :style="{ background: item.color }"></span>
+                <span><em>{{ item.label }}</em> <span class="legend-n">{{ item.n }}</span></span>
+              </div>
+              <div class="legend-note tk-hover-note">
+                {{ heatmapLegend.total }} values · {{ heatmapLegend.note }}
+              </div>
+            </template>
+          </div>
+        </template>
 
-    <!-- The observation key. Titled "Observations" and drawn with round
-         swatches, because the layer key sits directly above it with square
-         ones: two keys of identical shape, one over the other, left it to the
-         viewer to work out which described the dots and which the ground. -->
-    <div v-if="coloring" class="legend points-legend" @mouseleave="hoverValue = null">
-      <div class="legend-kind">Observations</div>
-      <div class="legend-title">{{ coloring.title }}</div>
-      <template v-if="coloring.type === 'categorical'">
-        <!-- Hovering a row picks out the marks it stands for. A legend of twenty
-             species otherwise leaves you matching hues by eye. -->
-        <div v-for="item in coloring.legend" :key="item.label" class="legend-row hoverable"
-             :class="{ dim: hoverValue && hoverValue !== item.label }"
-             @pointerenter="hoverEnter(item.label, $event)"
-             @pointerup="pickValue(item.label, $event)">
-          <span class="swatch dot" :style="{ background: item.color }"></span>
-          <span>{{ item.label }}</span>
-        </div>
-      </template>
-      <template v-else>
-        <div class="gradient" :style="{ background: gradientCss(coloring.stops) }"></div>
-        <div class="gradient-scale"><span>{{ fmtNum(coloring.min) }}</span><span>{{ fmtNum(coloring.max) }}</span></div>
-      </template>
-      <!-- Says whether these shades mean the same numbers as the layer's or
-           only the same ranking. -->
-      <div v-if="coloring.match" class="legend-note match">{{ coloring.match }}</div>
-    </div>
+        <!-- Observations section -->
+        <template v-if="coloring">
+          <div class="key-section-label">Observations</div>
+          <div class="key-section">
+            <div class="tk-name">{{ coloring.title }}</div>
+            <template v-if="coloring.type === 'categorical'">
+              <div v-for="item in coloring.legend" :key="item.label" class="legend-row hoverable"
+                   :class="{ dim: hoverValue && hoverValue !== item.label }"
+                   @pointerenter="hoverEnter(item.label, $event)"
+                   @pointerup="pickValue(item.label, $event)">
+                <span class="swatch dot" :style="{ background: item.color }"></span>
+                <span>{{ item.label }}</span>
+              </div>
+            </template>
+            <template v-else>
+              <div class="gradient" :style="{ background: gradientCss(coloring.stops) }"></div>
+              <div class="gradient-scale"><span>{{ fmtNum(coloring.min) }}</span><span>{{ fmtNum(coloring.max) }}</span></div>
+            </template>
+            <div v-if="coloring.match" class="legend-note tk-hover-note match">{{ coloring.match }}</div>
+          </div>
+        </template>
+
+      </div><!-- .key-card -->
     </div>
 
     <!-- The same drawer the charts and analysis pages use, so the two cannot
@@ -398,7 +383,7 @@
 
 <script setup>
 // Leaflet CSS is loaded dynamically on mount so it does not bloat non-map routes.
-import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import { hasValue, useObservations } from '~/composables/useObservations'
 import { gradientCss } from '~/composables/ramps'
 import { useAppearance } from '~/composables/useAppearance'
@@ -681,11 +666,11 @@ const { accessToken } = useAuth()
 const offline = useOffline()
 
 const {
-  overlayOrder, layerOpacity, layerBlend, soloKey,
+  overlayOrder, layerOpacity, layerBlend, layerChannel, soloKey,
   activeOverlays, overlayLayers, baseLayers, activeBase, activeBaseName,
   overlayGroups, eeParams, eeErrors, eeLoading, eeLayers, activeEeLayers,
   applyOverlayOrder, applyBlendModes, applySolo,
-  setSolo, setLayerBlend, moveOverlay, setLayerOpacity, clearOverlays,
+  setSolo, setLayerBlend, setLayerChannel, moveOverlay, setLayerOpacity, clearOverlays,
   paramsFor, debounceEeRefresh, setEeParam,
   setBase: _setBase, restoreBase: _restoreBase, restoreOverlays, restoreEeLayer,
   toggleOverlay: _toggleOverlay, toggleOverlayByKey: _toggleOverlayByKey,
@@ -699,6 +684,23 @@ function toggleOverlay(entry) { _toggleOverlay(entry); syncActiveTemplates() }
 function toggleOverlayByKey(key) { _toggleOverlayByKey(key); syncActiveTemplates() }
 async function refreshEeLayer(spec) { await _refreshEeLayer(spec); syncActiveTemplates() }
 
+const expandedLayers = reactive({})
+function toggleLayerExpanded(name) {
+  expandedLayers[name] = !expandedLayers[name]
+}
+
+const expandedAttrib = reactive({})
+function toggleAttrib(name) {
+  expandedAttrib[name] = !expandedAttrib[name]
+}
+
+function toggleZone(current, zone, checked) {
+  const set = new Set(String(current || '').split(',').filter(Boolean))
+  checked ? set.add(zone) : set.delete(zone)
+  return set.size ? [...set].sort().join(',') : zone
+}
+
+
 async function addEeLayers() {
   const layers = await eeTiles.loadCatalogue()
   if (!layers.length || !map || !L) return
@@ -707,7 +709,8 @@ async function addEeLayers() {
     // An empty URL until it is switched on. Leaflet is content with that and
     // simply draws nothing, which is what an unrequested layer should do.
     const layer = L.tileLayer('', {
-      attribution: spec.attribution,
+      // Attribution shown in the key card; not in Leaflet's corner control to
+      // avoid crowding it (basemaps keep their own corner attribution).
       opacity: (spec.opacity ?? 1) * tileOpacity.value,
       maxZoom: MAP_MAX_ZOOM,
       // Earth Engine renders any zoom it is asked for, so there is no native
@@ -736,10 +739,20 @@ async function addEeLayers() {
           // a browser for them instead; see SoilTaxonomyKey.
           classes: spec.classes,
           legendInBrowser: spec.legendInBrowser,
+          attribution: spec.attribution,
           slug: spec.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         }]
       }
       refreshEeLayer(spec)
+    })
+    // A 400 means the tile token has expired. Force a re-mint by clearing the
+    // in-memory cache entry and requesting a fresh template. Debounced so a
+    // screenful of simultaneously-failing tiles collapses into one round trip.
+    layer.on('tileerror', () => {
+      if (!eeLoading.value.has(spec.key)) {
+        eeTiles.evict(spec.key)
+        debounceEeRefresh(spec, 300)
+      }
     })
     layer.on('remove', () => {
       activeTileNotes.value = activeTileNotes.value.filter((n) => n.name !== spec.name)
@@ -947,7 +960,7 @@ onMounted(async () => {
       // map were incidental; here it IS the page, so one finger pans it.
       tap: true, tapTolerance: 20,
       maxZoom: MAP_MAX_ZOOM,
-    }).setView([39.5, -105.7], 7)
+    }).setView([39.5, -105.7], 7)  // Colorado default; overridden below if a saved view exists
     mapRef.value = map
     LRef.value = L
     // Locate first, then zoom: Leaflet stacks a corner's controls in the order
@@ -1068,6 +1081,19 @@ onMounted(async () => {
     heatmaps.loadFromStorage()
     appearance.loadFromStorage()
 
+    // Restore the last saved view so returning users land where they left off.
+    // A shared link or fit-to-data will override this below.
+    try {
+      const saved = JSON.parse(localStorage.getItem('map-last-view') || 'null')
+      if (saved?.bounds && saved?.zoom) {
+        map.setView(
+          [(saved.bounds.north + saved.bounds.south) / 2, (saved.bounds.east + saved.bounds.west) / 2],
+          saved.zoom,
+          { animate: false },
+        )
+      }
+    } catch { /* ignore */ }
+
     // A shared link wins over stored preferences: the point of opening one is to
     // see what the sender saw, not what you last had configured.
     const shared = share.apply(useRoute().query)
@@ -1144,7 +1170,10 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKeydown)
   controlsResize?.disconnect()
   mapResize?.disconnect()
-  if (map) map.remove()
+  const m = map
+  map = null
+  mapRef.value = null
+  if (m) m.remove()
 })
 </script>
 
@@ -1258,36 +1287,21 @@ onBeforeUnmount(() => {
    empty panel half the height of the map.
    Placement now belongs to the container, and the legends only stack inside it,
    so neither has to know how tall the other is. */
+/* Key column: bottom-right, behind the control bar (z-index 400 < controls 500). */
 .legends {
-  position: absolute; bottom: 18px; right: 12px; z-index: 500;
-  /* Slides aside when the drawer opens rather than being buried under it: the
-     key is how you read the colors on the map, and opening a record is exactly
-     when you want to check what a color meant. */
+  position: absolute; bottom: 18px; right: 12px; z-index: 400;
   transition: right 0.22s ease;
-  /* Below the control bar, whose height depends on how many rows it wraps into —
-     picking an overlay adds a "Cell size" dropdown and a second row, which is
-     exactly when the overlay legend appears to collide with it. */
-  top: calc(var(--controls-h, 0px) + 20px);
-  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
-  justify-content: flex-end;
-  /* The column spans the map so the two ends are reachable; only the panels
-     themselves should catch a click. */
-  pointer-events: none; max-width: 46vw; min-height: 0;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+  pointer-events: none; max-width: 220px; min-height: 0;
 }
 .legends > * { pointer-events: auto; }
 
-/* Beside the drawer rather than under it. */
 .map-shell.drawer-open .legends { right: calc(var(--drawer-w) + 12px); }
+.legends.collapsed .key-card { display: none; }
 
-/* Collapsed: the toggle stays, everything it controls goes. */
-.legends.collapsed .legend { display: none; }
-
-/* Where the drawer takes most of the screen there is no "beside" to move to,
-   so the key folds to its header and the viewer opens it when they want it.
-   Sliding it off the left edge instead would just lose it. */
 @media (max-width: 760px) {
   .map-shell.drawer-open .legends { right: 12px; }
-  .map-shell.drawer-open .legends .legend { display: none; }
+  .map-shell.drawer-open .legends .key-card { display: none; }
 }
 
 .key-toggle {
@@ -1302,60 +1316,67 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) { .legends { transition: none; } }
 
-.legend {
-  position: static; z-index: 500;
-  /* Theme tokens, not a hardcoded white card: the child keys (the soil taxonomy
-     browser especially) colour their text with --text, so on a fixed white
-     panel their dark-mode text came out white on white. */
+/* Single consolidated card holding all key sections. */
+.key-card {
   background: var(--surface, rgba(255, 255, 255, 0.95));
   border: 1px solid var(--border, #ddd); border-radius: 8px;
-  padding: 10px 12px; font: 13px/1.4 system-ui, sans-serif;
-  color: var(--text, #222); min-width: 120px;
-  max-width: 100%; max-height: 44vh; overflow-y: auto; overscroll-behavior: contain;
-  /* min-height: 0 — a flex item will not shrink below its content without it,
-     so the panel grew past its max-height instead of scrolling.
-     flex-shrink 1 is what lets a card give way when the column is crowded; the
-     cap above already keeps any one card from taking the whole column, and
-     without the shrink a tall stack pushes the last card off the map. */
-  flex: 0 1 auto; min-height: 0;
+  padding: 8px 10px; font: 12px/1.4 system-ui, sans-serif;
+  color: var(--text, #222); width: 200px; max-width: 200px;
+  max-height: 44vh; overflow-y: auto; overscroll-behavior: contain;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
-.legend-title { font-weight: 600; margin-bottom: 6px; position: sticky; top: 0; }
-.legend-row { display: flex; align-items: center; gap: 8px; }
 
-/* Which of the two keys this is. The layer key and the observation key sit in
-   one column, one above the other, and previously each was headed only by what
-   it described — "Land cover" over "Land cover" — leaving the viewer to work
-   out which explained the ground and which the dots. */
-.legend-kind {
-  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 4px;
+/* Group label above each section (Map layers / Heatmap / Observations). */
+.key-section-label {
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--muted); margin: 6px 0 3px;
 }
-/* Reinforced by shape, for the same reason a legend has text at all: the marks
-   on the map are round and the layers are areas of flat colour, so the key
-   repeats that distinction rather than relying on the heading alone. */
-.points-legend .swatch.dot { border-radius: 50%; }
-.tile-note .swatch { border-radius: 2px; }
+.key-section-label:first-child { margin-top: 0; }
+
+/* One section = one layer or one key block. Rule between sections. */
+.key-section + .key-section { border-top: 1px solid rgba(0, 0, 0, 0.08); margin-top: 6px; padding-top: 6px; }
+.key-section-label + .key-section { margin-top: 0; }
+
+.legend-row { display: flex; align-items: center; gap: 6px; }
+
+.warn-head { font-weight: 600; font-size: 0.75rem; color: #b00020; margin-bottom: 2px; }
+
+.tk-name { font-weight: 600; font-size: 0.78rem; margin-bottom: 3px; }
+
+/* Layer explanation notes: hidden until the section is hovered. */
+.tk-hover-note {
+  display: none;
+}
+.key-section:hover .tk-hover-note { display: block; }
+
+/* Swatch shapes: round for observations, square for layers. */
+.key-section .swatch.dot { border-radius: 50%; }
+.key-section .swatch { border-radius: 2px; }
 .legend-note.match { font-style: italic; }
 
-/* One section per active layer inside the layers key: a ramp with its units in
-   the middle of the scale, or a list of classes. Rules between them, because
-   without one a note and the next layer's name run together. */
-.tk + .tk { border-top: 1px solid rgba(0, 0, 0, 0.1); margin-top: 8px; padding-top: 8px; }
-.tk-name { font-weight: 600; font-size: 0.8rem; margin-bottom: 4px; }
-.tk .legend-note { margin-top: 4px; }
-
-/* Wraps, because eleven land-cover classes will not fit on one line of a
-   260px card. */
-.class-key { display: flex; flex-wrap: wrap; gap: 3px 9px; margin: 3px 0 5px; }
-.class-key .ck { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; }
+.class-key { display: flex; flex-wrap: wrap; gap: 2px 7px; margin: 2px 0 4px; }
+.class-key .ck { display: inline-flex; align-items: center; gap: 3px; font-size: 0.7rem; }
 .gradient-scale .unit { color: var(--muted); }
-.layer-date { display: flex; align-items: center; gap: 6px; margin: 6px 0 2px; font-size: 0.74rem; }
+.layer-date { display: flex; align-items: center; gap: 6px; margin: 5px 0 2px; font-size: 0.72rem; }
 .layer-date label { color: var(--muted); font-weight: 600; }
 .layer-date input {
   flex: 1 1 auto; min-width: 0; background: var(--input-bg); color: var(--text);
-  border: 1px solid var(--border); border-radius: 4px; padding: 2px 5px; font-size: 0.74rem;
+  border: 1px solid var(--border); border-radius: 4px; padding: 2px 5px; font-size: 0.72rem;
 }
+.tk-name-toggle {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  background: none; border: none; padding: 0; cursor: pointer;
+  text-align: left; color: inherit;
+}
+.tk-caret { font-size: 0.65rem; color: var(--muted); flex-shrink: 0; margin-left: 4px; }
+.layer-zones { margin: 5px 0 2px; font-size: 0.72rem; }
+.layer-zones-label { color: var(--muted); font-weight: 600; display: block; margin-bottom: 3px; }
+.zone-check { display: flex; align-items: center; gap: 4px; margin: 2px 0; cursor: pointer; }
+.zone-check input { cursor: pointer; margin: 0; }
+.layer-attrib { display: flex; align-items: baseline; gap: 5px; margin-top: 4px; }
+.attrib-toggle { border: none; background: none; cursor: pointer; font-size: 0.65rem; color: var(--muted); padding: 0 2px; line-height: 1; opacity: 0.7; }
+.attrib-toggle:hover { opacity: 1; }
+.attrib-text { font-size: 0.62rem; color: var(--muted); line-height: 1.3; flex: 1; }
 
 /* The chunk indicator: bottom-left, above Leaflet's zoom control, and quiet
    enough to ignore while still being legible over imagery. */
@@ -1400,19 +1421,11 @@ onBeforeUnmount(() => {
 .compass-key { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 2px 0 4px; }
 .compass-key .ck { display: inline-flex; align-items: center; gap: 4px; font-size: 0.74rem; }
 
-/* The overlay legend sits above the point legend, in the same column. */
-/* Pushed to the top of the column, leaving the coloring legend at the bottom —
-   the arrangement this had before, now expressed as a relationship between the
-   two rather than as two absolute positions that can collide. */
-.overlay-legend { max-width: 280px; }
-/* The layers key sits at the top of the column and the coloring key at the
-   bottom, with the heatmap key between them — a relationship between the three
-   rather than three absolute positions that can collide. */
-.tile-note { margin-bottom: auto; }
-.legends > .overlay-legend:first-child { margin-bottom: auto; }
 .legend-note {
-  margin-top: 6px; font-size: 11px; line-height: 1.35; color: #555;
-  border-top: 1px solid #e6e6e6; padding-top: 5px;
+  margin-top: 4px; font-size: 11px; line-height: 1.35; color: #555;
+}
+.legend-note:not(.no-border) {
+  border-top: 1px solid #e6e6e6; padding-top: 4px;
 }
 .legend-n { color: #777; font-size: 11px; }
 
@@ -1489,8 +1502,8 @@ onBeforeUnmount(() => {
 .legend-note.upscaled { color: #8a5a1f; }
 .legend-note.warn { color: #b3492f; }
 .legend-note.zoom-in { color: #3d6b8b; }
-/* The one link inside a legend card (remove a model surface). */
-.overlay-legend .linkish {
+/* Link inside a key section (e.g. remove a model surface). */
+.key-section .linkish {
   margin-top: 6px; background: none; border: 0; padding: 0;
   font: inherit; font-size: 12px; color: var(--accent); text-decoration: underline; cursor: pointer;
 }
@@ -1505,11 +1518,8 @@ onBeforeUnmount(() => {
 .map-shell :deep(.obs-tip .ot-row) { display: block; white-space: nowrap; }
 .map-shell :deep(.obs-tip .ot-k) { color: var(--muted); margin-right: 6px; }
 .map-shell :deep(.obs-tip::before) { border-top-color: var(--border); }
-.tile-note { max-width: 260px; }
-.tile-warn { max-width: 260px; border-color: #e0b4b4; background: rgba(255, 244, 244, 0.97); }
-.tile-warn .legend-title { color: #b00020; }
-.ee-loading { display: flex; align-items: center; gap: 8px; max-width: 260px; }
-.ee-loading-label { font-size: 0.82em; color: var(--fg-muted, #666); }
+.ee-loading { display: flex; align-items: center; gap: 7px; }
+.ee-loading-label { font-size: 0.78em; color: var(--fg-muted, #666); }
 @keyframes ee-spin { to { transform: rotate(360deg); } }
 .ee-spinner {
   display: inline-block; width: 14px; height: 14px; flex-shrink: 0;
@@ -1597,9 +1607,8 @@ onBeforeUnmount(() => {
     top: auto; bottom: 8px; right: 8px; max-width: 70vw;
     gap: 6px; max-height: 46vh;
   }
-  .overlay-legend { margin-bottom: 0; }
-  .legend {
-    max-height: 22vh; min-height: 0; padding: 8px 10px; font-size: 12px;
+  .key-card {
+    max-height: 38vh; min-height: 0; padding: 7px 9px; font-size: 11px; width: 180px; max-width: 180px;
   }
 }
 
