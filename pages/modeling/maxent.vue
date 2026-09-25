@@ -147,6 +147,8 @@
           <div v-if="models.length" class="add-row">
             <button class="btn ghost small" @click="toggleAddModel">
               {{ showAddModel ? '▾ Close' : '+ Add model' }}
+            </button>
+          </div>
         </section>
 
         <!-- ─── Add Model Panel ─────────────────────────────────────────────── -->
@@ -382,7 +384,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, nextTick, reactive, ref, onMounted } from 'vue'
 import { PREDICTOR_KEYS, MAXENT_PREDICTORS, MIN_PREDICTORS, MAX_BACKGROUND, MIN_BACKGROUND, DEFAULT_PREDICTORS } from '~/netlify/lib/maxent.mjs'
 import { useGlossary } from '~/composables/useGlossary'
