@@ -140,18 +140,26 @@ function componentFor(type) { return COMPONENTS[type] || DashboardOverview }
 
 // The layout a new member lands on. Sizes chosen so the default grid reads well
 // at common viewport widths without wasted space.
+// Default layout: 3-col grid
+// Row 1: overview (1), now-fruiting (1), map-preview (1, tall)
+// Row 2: species-list (1), recent-rain-temp (1), weather-forecast (1)
+// Row 3: phenology (full)
+// Row 4: env-stats (2), recent-jobs (1)
 const DEFAULTS = {
   widgets: [
-    { id: 'def-overview',     type: 'overview',     settings: {},                   order: 0 },
-    { id: 'def-now-fruiting', type: 'now-fruiting',  settings: {},                   order: 1 },
-    { id: 'def-map-preview',  type: 'map-preview',   settings: { colspan: 2, tall: true }, order: 2 },
-    { id: 'def-phenology',    type: 'phenology',     settings: { colspan: 2 },       order: 3 },
-    { id: 'def-recent-jobs',  type: 'recent-jobs',   settings: {},                   order: 4 },
-    { id: 'def-species-list', type: 'species-list',  settings: {},                   order: 5 },
-    { id: 'def-env-stats',    type: 'env-stats',     settings: { colspan: 2 },       order: 6 },
+    { id: 'def-overview',        type: 'overview',          settings: {},                   order: 0 },
+    { id: 'def-now-fruiting',    type: 'now-fruiting',      settings: {},                   order: 1 },
+    { id: 'def-map-preview',     type: 'map-preview',       settings: { tall: 1 },          order: 2 },
+    { id: 'def-species-list',    type: 'species-list',      settings: {},                   order: 3 },
+    { id: 'def-recent-rain',     type: 'recent-rain-temp',  settings: {},                   order: 4 },
+    { id: 'def-weather',         type: 'weather-forecast',  settings: {},                   order: 5 },
+    { id: 'def-phenology',       type: 'phenology',         settings: { colspan: 'full' },  order: 6 },
+    { id: 'def-env-stats',       type: 'env-stats',         settings: { colspan: 2 },       order: 7 },
+    { id: 'def-recent-jobs',     type: 'recent-jobs',       settings: {},                   order: 8 },
   ],
-  order: ['def-overview', 'def-now-fruiting', 'def-map-preview', 'def-phenology',
-          'def-recent-jobs', 'def-species-list', 'def-env-stats'],
+  order: ['def-overview', 'def-now-fruiting', 'def-map-preview',
+          'def-species-list', 'def-recent-rain', 'def-weather',
+          'def-phenology', 'def-env-stats', 'def-recent-jobs'],
 }
 
 function cellClass(w, isEditing) {
