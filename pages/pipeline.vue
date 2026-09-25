@@ -57,7 +57,8 @@
           <template v-if="sourceForm.type === 'dataset'">
             <div class="row">
               <label for="src-dataset">Dataset</label>
-              <select id="src-dataset" v-model="sourceForm.datasetSlug">
+              <select id="src-dataset" v-model="sourceForm.datasetSlug"
+                      title="Select a previously imported species observation dataset">
                 <option value="" disabled>Choose one…</option>
                 <option v-for="d in datasetsApi.datasets.value" :key="d.id" :value="d.slug">
                   {{ d.title }}
@@ -74,19 +75,20 @@
             <div class="row">
               <label>Bounding box</label>
               <div class="bbox">
-                <label class="mini">N <input v-model.number="sourceForm.north" type="number" step="0.1" /></label>
-                <label class="mini">S <input v-model.number="sourceForm.south" type="number" step="0.1" /></label>
-                <label class="mini">W <input v-model.number="sourceForm.west" type="number" step="0.1" /></label>
-                <label class="mini">E <input v-model.number="sourceForm.east" type="number" step="0.1" /></label>
+                <label class="mini">N <input v-model.number="sourceForm.north" type="number" step="0.1" title="Northern latitude boundary (decimal degrees, e.g. 49.0)" /></label>
+                <label class="mini">S <input v-model.number="sourceForm.south" type="number" step="0.1" title="Southern latitude boundary (decimal degrees, e.g. 24.5)" /></label>
+                <label class="mini">W <input v-model.number="sourceForm.west" type="number" step="0.1" title="Western longitude boundary (decimal degrees, e.g. −124.8)" /></label>
+                <label class="mini">E <input v-model.number="sourceForm.east" type="number" step="0.1" title="Eastern longitude boundary (decimal degrees, e.g. −66.9)" /></label>
               </div>
             </div>
             <div class="row two">
-              <label class="stack"><span>From</span><input v-model="sourceForm.dateFrom" type="date" /></label>
-              <label class="stack"><span>To</span><input v-model="sourceForm.dateTo" type="date" /></label>
+              <label class="stack"><span>From</span><input v-model="sourceForm.dateFrom" type="date" title="Earliest observation date to include" /></label>
+              <label class="stack"><span>To</span><input v-model="sourceForm.dateTo" type="date" title="Latest observation date to include" /></label>
             </div>
             <div class="row">
               <label for="src-taxon">Taxon (optional)</label>
-              <TaxonAutocomplete id="src-taxon" v-model="sourceForm.taxon" placeholder="e.g. Amanita" source="inat" />
+              <TaxonAutocomplete id="src-taxon" v-model="sourceForm.taxon" placeholder="e.g. Amanita" source="inat"
+                                 title="Filter results to a specific taxon — genus, family, or species (iNaturalist autocomplete)" />
             </div>
           </template>
 
@@ -96,7 +98,8 @@
               <label for="fetch-taxon">Taxon</label>
               <TaxonAutocomplete id="fetch-taxon" v-model="fetchForm.taxon"
                                  placeholder="e.g. Morchella, Amanitaceae" :disabled="fetchForm.loading"
-                                 :source="fetchForm.source" />
+                                 :source="fetchForm.source"
+                                 title="Taxon name to search — genus, family, or full species name" />
             </div>
             <div class="row">
               <label>Source</label>
@@ -107,8 +110,8 @@
               </div>
             </div>
             <div class="row two">
-              <label class="stack"><span>From</span><input v-model="fetchForm.dateFrom" type="date" :disabled="fetchForm.loading" /></label>
-              <label class="stack"><span>To</span><input v-model="fetchForm.dateTo" type="date" :disabled="fetchForm.loading" /></label>
+              <label class="stack"><span>From</span><input v-model="fetchForm.dateFrom" type="date" :disabled="fetchForm.loading" title="Earliest observation date to fetch" /></label>
+              <label class="stack"><span>To</span><input v-model="fetchForm.dateTo" type="date" :disabled="fetchForm.loading" title="Latest observation date to fetch" /></label>
             </div>
             <div class="actions" style="margin-top:0">
               <button class="btn secondary" :disabled="!fetchForm.taxon.trim() || fetchForm.loading"
@@ -141,7 +144,8 @@
 
           <div class="row">
             <label>Job name</label>
-            <input v-model="enrichForm.title" type="text" placeholder="Autumn foray enrichment" />
+            <input v-model="enrichForm.title" type="text" placeholder="Autumn foray enrichment"
+                   title="A descriptive name saved with the enriched dataset for later reference" />
           </div>
 
           <div class="row">
@@ -275,7 +279,8 @@
 
           <div class="row">
             <label for="train-title">Model name</label>
-            <input id="train-title" v-model="trainForm.title" type="text" placeholder="Front Range fungi – autumn 2024" />
+            <input id="train-title" v-model="trainForm.title" type="text" placeholder="Front Range fungi – autumn 2024"
+                   title="Human-readable name for this trained model — shown in the model list" />
           </div>
 
           <div class="row">
@@ -290,18 +295,21 @@
 
           <div class="row">
             <label for="bg-count">Background points</label>
-            <input id="bg-count" v-model.number="trainForm.background" type="number" min="100" max="10000" step="100" />
+            <input id="bg-count" v-model.number="trainForm.background" type="number" min="100" max="10000" step="100"
+                   title="Number of random background (pseudo-absence) points sampled within the study region. 1 000–5 000 is typical; more improves stability but increases run time." />
             <p class="hint">Random absence proxies. 1 000–5 000 is typical.</p>
           </div>
 
           <div class="row">
             <label>Options</label>
             <label class="pick">
-              <input type="checkbox" v-model="trainForm.autoOptimize" />
+              <input type="checkbox" v-model="trainForm.autoOptimize"
+                     title="Run a fast scout pass to rank predictors by importance and drop weak ones before the full training run" />
               <span>Auto-select best predictors (scout run)</span>
             </label>
             <label class="pick">
-              <input type="checkbox" v-model="trainForm.preciseOnly" />
+              <input type="checkbox" v-model="trainForm.preciseOnly"
+                     title="Exclude records with coordinate uncertainty > 1 km — reduces noise but may reduce sample size" />
               <span>Precise GPS coordinates only</span>
             </label>
           </div>
@@ -309,10 +317,10 @@
           <div class="row">
             <label>Projection region (optional)</label>
             <div class="bbox">
-              <label class="mini">N <input v-model.number="trainForm.regionNorth" type="number" step="0.1" /></label>
-              <label class="mini">S <input v-model.number="trainForm.regionSouth" type="number" step="0.1" /></label>
-              <label class="mini">W <input v-model.number="trainForm.regionWest" type="number" step="0.1" /></label>
-              <label class="mini">E <input v-model.number="trainForm.regionEast" type="number" step="0.1" /></label>
+              <label class="mini">N <input v-model.number="trainForm.regionNorth" type="number" step="0.1" title="Northern limit of the projection region (decimal degrees)" /></label>
+              <label class="mini">S <input v-model.number="trainForm.regionSouth" type="number" step="0.1" title="Southern limit of the projection region (decimal degrees)" /></label>
+              <label class="mini">W <input v-model.number="trainForm.regionWest" type="number" step="0.1" title="Western limit of the projection region (decimal degrees)" /></label>
+              <label class="mini">E <input v-model.number="trainForm.regionEast" type="number" step="0.1" title="Eastern limit of the projection region (decimal degrees)" /></label>
             </div>
           </div>
 
