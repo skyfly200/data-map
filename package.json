@@ -5,6 +5,7 @@
   "scripts": {
     "prebuild": "node scripts/mapChunks.mjs && node scripts/precompress_public.mjs",
     "build": "nuxt build",
+    "deploy": "netlify deploy --prod",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
