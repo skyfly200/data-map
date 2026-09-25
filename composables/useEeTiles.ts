@@ -131,5 +131,12 @@ export function useEeTiles() {
     return data
   }
 
-  return { catalogue, error, loading, loadCatalogue, template, keyFor, classes }
+  /** Remove all cached templates for a layer so the next request re-mints. */
+  function evict(layer: string) {
+    for (const key of minted.keys()) {
+      if (key === layer || key.startsWith(layer + '|')) minted.delete(key)
+    }
+  }
+
+  return { catalogue, error, loading, loadCatalogue, template, keyFor, classes, evict }
 }

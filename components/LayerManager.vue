@@ -92,6 +92,20 @@
                   </option>
                 </select>
               </label>
+              <div class="lm-channels">
+                <span class="lm-ch-head">Channels</span>
+                <label v-for="ch in ['r','g','b','a']" :key="ch" class="lm-ch-row">
+                  <span class="lm-ch-label" :class="`lm-ch-${ch}`">{{ ch.toUpperCase() }}</span>
+                  <input type="range" min="0" max="2" step="0.05"
+                         :value="channelOf(item.key, ch)"
+                         :aria-label="`${ch.toUpperCase()} channel of ${item.name}`"
+                         @input="$emit('channel', item.key, ch, Number($event.target.value))" />
+                  <span class="lm-ch-val">{{ Math.round(channelOf(item.key, ch) * 100) }}%</span>
+                  <button v-if="channelOf(item.key, ch) !== 1" class="lm-ch-reset"
+                          title="Reset to 100%"
+                          @click="$emit('channel', item.key, ch, 1)">↺</button>
+                </label>
+              </div>
             </div>
           </div>
         </li>
@@ -174,10 +188,10 @@ const props = defineProps({
   // Active keys, topmost first. The map owns the stacking; this only shows it.
   order: { type: Array, default: () => [] },
   opacity: { type: Object, default: () => ({}) },
-  // Per-layer blend overrides, key → mode. An absent key inherits the stack
-  // default rather than meaning "normal", so changing the default still moves
-  // every layer nobody has set by hand.
+  // Per-layer blend overrides, key → mode.
   blend: { type: Object, default: () => ({}) },
+  // Per-layer channel multipliers, key → {r,g,b,a}. 1 = unchanged.
+  channel: { type: Object, default: () => ({}) },
   // The stack default, for naming the inherit option — a dropdown whose first
   // entry says "Default" and nothing else makes you go and look it up.
   stackBlend: { type: String, default: 'normal' },
@@ -189,7 +203,7 @@ const props = defineProps({
   docked: { type: Boolean, default: true },
 })
 
-defineEmits(['toggle', 'opacity', 'move', 'blend', 'solo', 'clear', 'close'])
+defineEmits(['toggle', 'opacity', 'move', 'blend', 'channel', 'solo', 'clear', 'close'])
 
 const query = ref('')
 const win = ref(null)
@@ -245,6 +259,7 @@ function toggleAllVisibility() {
 const opacityOf = (key) => props.opacity[key] ?? 1
 const blendOf = (key) => props.blend[key] || ''
 const blendNote = (mode) => BLEND_MODES.find((m) => m.key === mode)?.note || ''
+const channelOf = (key, ch) => props.channel[key]?.[ch] ?? 1
 
 // The default is only the default when there is a stack, so the label says so
 // rather than promising a mode a single layer will not draw with.
@@ -523,6 +538,28 @@ onMounted(() => { if (props.open) seedPanels() })
   border: 1px solid var(--border, #ddd); border-radius: 4px;
   padding: 2px 4px; font: inherit; font-size: 0.72rem;
 }
+.lm-channels { margin-top: 8px; }
+.lm-ch-head {
+  display: block; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted, #777); margin-bottom: 4px;
+}
+.lm-ch-row {
+  display: flex; align-items: center; gap: 5px; margin: 3px 0; cursor: pointer;
+}
+.lm-ch-label {
+  flex: 0 0 14px; font-size: 0.7rem; font-weight: 700; text-align: center;
+}
+.lm-ch-r { color: #e05; }
+.lm-ch-g { color: #1a9; }
+.lm-ch-b { color: #39f; }
+.lm-ch-a { color: var(--muted, #777); }
+.lm-ch-row input[type=range] { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); }
+.lm-ch-val { flex: 0 0 3.2ch; font-size: 0.68rem; text-align: right; color: var(--muted, #777); }
+.lm-ch-reset {
+  border: 0; background: transparent; cursor: pointer; font-size: 0.75rem;
+  color: var(--muted, #777); padding: 0 2px; line-height: 1;
+}
+.lm-ch-reset:hover { color: var(--text); }
 
 /* Global visibility toggle button */
 .lm-icon-btn {
