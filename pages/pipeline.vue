@@ -44,7 +44,7 @@
               </label>
               <label class="pick">
                 <input v-model="sourceForm.type" type="radio" value="bbox" />
-                <span>Filter by area &amp; date</span>
+                <span>Filter by area, date &amp; taxon</span>
               </label>
               <label class="pick">
                 <input v-model="sourceForm.type" type="radio" value="fetch" />
@@ -72,7 +72,7 @@
           <!-- BBox -->
           <template v-else-if="sourceForm.type === 'bbox'">
             <div class="row">
-              <label>Area</label>
+              <label>Bounding box</label>
               <div class="bbox">
                 <label class="mini">N <input v-model.number="sourceForm.north" type="number" step="0.1" /></label>
                 <label class="mini">S <input v-model.number="sourceForm.south" type="number" step="0.1" /></label>
@@ -80,7 +80,6 @@
                 <label class="mini">E <input v-model.number="sourceForm.east" type="number" step="0.1" /></label>
               </div>
             </div>
-            <p class="hint"><button class="linkish" @click="useMapView">Use current map view</button></p>
             <div class="row two">
               <label class="stack"><span>From</span><input v-model="sourceForm.dateFrom" type="date" /></label>
               <label class="stack"><span>To</span><input v-model="sourceForm.dateTo" type="date" /></label>
@@ -470,7 +469,7 @@ const membership = useMembership()
 const jobsApi = useEeJobs()
 const datasetsApi = useDatasets()
 const maxEnt = useMaxEnt()
-const { mapBounds } = useFilters()
+useFilters()
 
 const rechecking = ref(false)
 async function recheck() {
@@ -511,7 +510,7 @@ const predictorList = [
 const sourceForm = reactive({
   type: 'dataset',
   datasetSlug: '',
-  north: null, south: null, east: null, west: null,
+  north: 49.0, south: 24.5, east: -66.9, west: -124.8,
   dateFrom: '', dateTo: '', taxon: '',
 })
 
@@ -525,14 +524,6 @@ const canAdvanceSource = computed(() => {
   return false
 })
 
-function useMapView() {
-  const b = mapBounds?.value
-  if (!b) return
-  sourceForm.north = b.north ?? b._northEast?.lat
-  sourceForm.south = b.south ?? b._southWest?.lat
-  sourceForm.east  = b.east  ?? b._northEast?.lng
-  sourceForm.west  = b.west  ?? b._southWest?.lng
-}
 
 const FETCH_SOURCES = [
   { key: 'auto', label: 'Auto' },
