@@ -1366,79 +1366,44 @@ export const EE_TILE_LAYERS = {
   },
 
   'soil-taxonomy': {
-    name: 'Soil taxonomy (USDA orders)',
+    name: 'Soil taxonomy Order/Class',
     group: 'Soil',
     tier: DEFAULT_TIER,
     attribution: 'OpenLandMap USDA soil taxonomy great groups via Google Earth Engine',
     opacity: 0.8,
-    note: 'The USDA soil order at each pixel, predicted globally at 250 m. The source is the '
-      + 'great-group level — about four hundred classes — which is far too many to read as a '
-      + 'key, so the map paints the twelve orders above them and the soil panel names the great '
-      + 'group under your cursor. Orders separate soils by how they formed, so the boundaries '
-      + 'often follow geology and climate rather than anything visible on the surface. A model '
-      + 'prediction, not a soil survey: right about a hillside, unreliable about a square metre.',
-    legend: { type: 'classes', items: SOIL_ORDER_CLASSES },
-    // The class browser draws these twelve as chips you can filter by, so the
-    // flat swatch list would be the same twelve entries again, directly above
-    // them, and not clickable.
-    legendInBrowser: true,
-    // The source masks open water and leaves a real class everywhere else. What
-    // this layer masks is its own doing: see selfMask below.
-    sourceMasked: true,
-    prepare: grtgroupTable,
-    build(ee, params, table) {
-      const values = table?.values || []
-      // The order is the end of the great group's own name. That is what the
-      // taxonomy's naming is for, so there is no lookup table to keep in step
-      // with the raster — see netlify/lib/soil-taxonomy.mjs.
-      const orders = (table?.names || []).map(orderIndex)
-      return {
-        // selfMask, because orderIndex gives 0 to a class that is not a great
-        // group at all. Painted, zero would be a twelfth of the legend claiming
-        // ground it knows nothing about; masked, it is honestly blank.
-        image: grtgroup(ee).remap(values, orders, 0).selfMask(),
-        vis: { min: 1, max: SOIL_ORDERS.length, palette: SOIL_ORDER_PALETTE },
-      }
-    },
-  },
-
-  'soil-taxonomy-select': {
-    name: 'Soil taxonomy: chosen classes',
-    group: 'Soil',
-    tier: DEFAULT_TIER,
-    attribution: 'OpenLandMap USDA soil taxonomy great groups via Google Earth Engine',
-    opacity: 0.8,
-    note: 'Paints only the great groups you choose, and leaves every other pixel blank. Choose '
-      + 'them in the class list below: search by name or by order, tick as many as you want, and '
-      + 'the map redraws. Each chosen class keeps the colour of its order, so a selection that '
-      + 'spans several orders can still be told apart. This is a soil filter and not a '
-      + 'prediction — it says the ground is the kind you asked for, not that anything grows '
-      + 'there, and it knows nothing about the trees that decide whether anything can.',
+    note: 'USDA soil taxonomy at 250 m, global. Orders mode paints all twelve orders; '
+      + 'Classes mode paints only the great groups you choose from the class list. '
+      + 'A model prediction, not a soil survey: right about a hillside, unreliable about a square metre.',
     params: {
+      mode: { type: 'enum', label: 'Show', default: 'orders', values: ['orders', 'classes'] },
       codes: { type: 'codes', label: 'Classes', default: '', max: CODE_LIMIT },
     },
-    // The browser's order chips are the key: each chosen class draws in its own
-    // order's colour, and the chips are that list, clickable.
     legend: { type: 'classes', items: SOIL_ORDER_CLASSES },
     legendInBrowser: true,
     sourceMasked: true,
+    classes: 'great-groups',
     prepare: grtgroupTable,
     build(ee, params, table) {
-      const chosen = new Set(codeList(params?.codes))
       const values = table?.values || []
       const names = table?.names || []
-      const from = []
-      const to = []
-      for (let i = 0; i < values.length; i += 1) {
-        if (!chosen.has(values[i])) continue
-        from.push(values[i])
-        to.push(orderIndex(names[i]))
+      if (params?.mode === 'classes') {
+        const chosen = new Set(codeList(params?.codes))
+        const from = []
+        const to = []
+        for (let i = 0; i < values.length; i += 1) {
+          if (!chosen.has(values[i])) continue
+          from.push(values[i])
+          to.push(orderIndex(names[i]))
+        }
+        return {
+          image: grtgroup(ee).remap(from, to, 0).selfMask(),
+          vis: { min: 1, max: SOIL_ORDERS.length, palette: SOIL_ORDER_PALETTE },
+        }
       }
+      // orders mode (default)
+      const orders = names.map(orderIndex)
       return {
-        // remap with a default of 0 and then selfMask: a class nobody chose is
-        // unpainted rather than painted as "no". Blank here means "not one of
-        // the ones you asked for", which is what it should mean.
-        image: grtgroup(ee).remap(from, to, 0).selfMask(),
+        image: grtgroup(ee).remap(values, orders, 0).selfMask(),
         vis: { min: 1, max: SOIL_ORDERS.length, palette: SOIL_ORDER_PALETTE },
       }
     },
@@ -2243,6 +2208,7 @@ export function describeLayer(key) {
         min,
         max,
         values,
+        ...(spec.labels ? { labels: spec.labels } : {}),
       }]
     })),
   }

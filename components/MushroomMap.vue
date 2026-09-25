@@ -242,7 +242,8 @@
                   <span class="swatch" :style="{ background: c.color }"></span>{{ c.label }}
                 </span>
               </div>
-              <SoilTaxonomyKey v-if="n.classes === 'great-groups'" :layer="n.ee"
+              <SoilTaxonomyKey v-if="n.classes === 'great-groups' && (eeParams[n.ee]?.mode ?? 'orders') === 'classes'"
+                               :layer="n.ee"
                                :selectable="!!n.eeParams?.codes"
                                :codes="(eeParams[n.ee] || {}).codes ?? (n.eeParams?.codes?.default || '')"
                                @update:codes="setEeParam(n.ee, 'codes', $event)" />
