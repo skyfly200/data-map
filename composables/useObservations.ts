@@ -187,6 +187,10 @@ export function useObservations() {
       if (!Array.isArray(list) || !list.length) return
       availableDatasets.value = list
       const paths = new Set(list.map((d) => d.path))
+      // The hardcoded default is always a valid selection even if the manifest
+      // doesn't list it — never replace it automatically with a manifest canonical
+      // that may not exist yet.
+      paths.add(DEFAULT_DATASET)
       const canonical = list.find((d) => d.id === 'all')?.path || list[0].path
       const saved = import.meta.client ? localStorage.getItem(DATASET_KEY) : null
       const current = selectedDataset.value
