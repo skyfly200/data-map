@@ -72,46 +72,70 @@
 
           <!-- BBox -->
           <template v-else-if="sourceForm.type === 'bbox'">
-            <div class="row">
-              <label>Bounding box</label>
-              <div class="bbox">
-                <label class="mini">N <input v-model.number="sourceForm.north" type="number" step="0.1" title="Northern latitude boundary (decimal degrees, e.g. 49.0)" /></label>
-                <label class="mini">S <input v-model.number="sourceForm.south" type="number" step="0.1" title="Southern latitude boundary (decimal degrees, e.g. 24.5)" /></label>
-                <label class="mini">W <input v-model.number="sourceForm.west" type="number" step="0.1" title="Western longitude boundary (decimal degrees, e.g. −124.8)" /></label>
-                <label class="mini">E <input v-model.number="sourceForm.east" type="number" step="0.1" title="Eastern longitude boundary (decimal degrees, e.g. −66.9)" /></label>
+            <div class="field-stack">
+              <div class="field-row">
+                <span class="field-label">Region</span>
+                <div class="bbox">
+                  <label class="mini">N <input v-model.number="sourceForm.north" type="number" step="0.1" title="Northern latitude boundary" /></label>
+                  <label class="mini">S <input v-model.number="sourceForm.south" type="number" step="0.1" title="Southern latitude boundary" /></label>
+                  <label class="mini">W <input v-model.number="sourceForm.west" type="number" step="0.1" title="Western longitude boundary" /></label>
+                  <label class="mini">E <input v-model.number="sourceForm.east" type="number" step="0.1" title="Eastern longitude boundary" /></label>
+                </div>
               </div>
-            </div>
-            <div class="row two">
-              <label class="stack"><span>From</span><input v-model="sourceForm.dateFrom" type="date" title="Earliest observation date to include" /></label>
-              <label class="stack"><span>To</span><input v-model="sourceForm.dateTo" type="date" title="Latest observation date to include" /></label>
-            </div>
-            <div class="row">
-              <label for="src-taxon">Taxon (optional)</label>
-              <TaxonAutocomplete id="src-taxon" v-model="sourceForm.taxon" placeholder="e.g. Amanita" source="inat"
-                                 title="Filter results to a specific taxon — genus, family, or species (iNaturalist autocomplete)" />
+              <div class="field-row">
+                <span class="field-label">Date filter</span>
+                <label class="pick pick-inline">
+                  <input v-model="sourceForm.noDateFilter" type="checkbox" />
+                  <span>No date filter (all time)</span>
+                </label>
+              </div>
+              <div v-if="!sourceForm.noDateFilter" class="field-row">
+                <span class="field-label"></span>
+                <div class="date-pair">
+                  <label class="stack"><span>From</span><input v-model="sourceForm.dateFrom" type="date" title="Earliest observation date" /></label>
+                  <label class="stack"><span>To</span><input v-model="sourceForm.dateTo" type="date" title="Latest observation date" /></label>
+                </div>
+              </div>
+              <div class="field-row">
+                <span class="field-label">Taxon</span>
+                <TaxonAutocomplete id="src-taxon" v-model="sourceForm.taxon" placeholder="e.g. Amanita (optional)" source="inat"
+                                   title="Filter results to a specific taxon — genus, family, or species" />
+              </div>
             </div>
           </template>
 
           <!-- Fetch / import inline -->
           <template v-else-if="sourceForm.type === 'fetch'">
-            <div class="row">
-              <label for="fetch-taxon">Taxon</label>
-              <TaxonAutocomplete id="fetch-taxon" v-model="fetchForm.taxon"
-                                 placeholder="e.g. Morchella, Amanitaceae" :disabled="fetchForm.loading"
-                                 :source="fetchForm.source"
-                                 title="Taxon name to search — genus, family, or full species name" />
-            </div>
-            <div class="row">
-              <label>Source</label>
-              <div class="src-tabs">
-                <button v-for="s in FETCH_SOURCES" :key="s.key" class="src-tab"
-                        :class="{ on: fetchForm.source === s.key }"
-                        @click="fetchForm.source = s.key" type="button">{{ s.label }}</button>
+            <div class="field-stack">
+              <div class="field-row">
+                <span class="field-label">Taxon</span>
+                <TaxonAutocomplete id="fetch-taxon" v-model="fetchForm.taxon"
+                                   placeholder="e.g. Morchella, Amanitaceae" :disabled="fetchForm.loading"
+                                   :source="fetchForm.source"
+                                   title="Taxon name to search — genus, family, or full species name" />
               </div>
-            </div>
-            <div class="row two">
-              <label class="stack"><span>From</span><input v-model="fetchForm.dateFrom" type="date" :disabled="fetchForm.loading" title="Earliest observation date to fetch" /></label>
-              <label class="stack"><span>To</span><input v-model="fetchForm.dateTo" type="date" :disabled="fetchForm.loading" title="Latest observation date to fetch" /></label>
+              <div class="field-row">
+                <span class="field-label">Source</span>
+                <div class="src-tabs">
+                  <button v-for="s in FETCH_SOURCES" :key="s.key" class="src-tab"
+                          :class="{ on: fetchForm.source === s.key }"
+                          @click="fetchForm.source = s.key" type="button">{{ s.label }}</button>
+                </div>
+              </div>
+              <div class="field-row">
+                <span class="field-label">Date filter</span>
+                <label class="pick pick-inline">
+                  <input v-model="fetchForm.noDateFilter" type="checkbox" :disabled="fetchForm.loading" />
+                  <span>No date filter (all time)</span>
+                </label>
+              </div>
+              <div v-if="!fetchForm.noDateFilter" class="field-row">
+                <span class="field-label"></span>
+                <div class="date-pair">
+                  <label class="stack"><span>From</span><input v-model="fetchForm.dateFrom" type="date" :disabled="fetchForm.loading" title="Earliest observation date to fetch" /></label>
+                  <label class="stack"><span>To</span><input v-model="fetchForm.dateTo" type="date" :disabled="fetchForm.loading" title="Latest observation date to fetch" /></label>
+                </div>
+              </div>
             </div>
             <div class="actions" style="margin-top:0">
               <button class="btn secondary" :disabled="!fetchForm.taxon.trim() || fetchForm.loading"
@@ -195,10 +219,23 @@
             before committing to a full training run.
           </p>
 
-          <template v-if="!exploreData">
-            <p class="msg">Loading enriched dataset…</p>
-          </template>
-          <template v-else>
+          <!-- Dataset picker when not yet loaded -->
+          <div v-if="!exploreData" class="explore-section">
+            <h4>Load a dataset</h4>
+            <p class="hint">Select a previously enriched dataset to analyse, or go back and run enrichment.</p>
+            <div class="field-row" style="gap:0.5rem;align-items:center">
+              <select v-model="exploreSlug" style="flex:1">
+                <option value="" disabled>Choose dataset…</option>
+                <option v-for="d in datasetsApi.datasets.value" :key="d.id" :value="d.slug">{{ d.title }}</option>
+              </select>
+              <button class="btn primary" :disabled="!exploreSlug || exploreLoading" @click="loadExploreData(exploreSlug)">
+                {{ exploreLoading ? 'Loading…' : 'Load' }}
+              </button>
+            </div>
+            <p v-if="exploreError" class="msg error">{{ exploreError }}</p>
+          </div>
+
+          <template v-if="exploreData">
             <!-- Coverage table -->
             <div class="explore-section">
               <h4>Variable coverage</h4>
@@ -224,10 +261,32 @@
               </table>
             </div>
 
-            <!-- Correlation matrix -->
-            <div v-if="exploreData.correlations.length" class="explore-section">
+            <!-- MaxEnt scout pre-train -->
+            <div class="explore-section">
+              <h4>Variable importance <span class="badge-sub">(MaxEnt scout)</span></h4>
+              <p class="hint">Run a quick MaxEnt with 200 background points to get real variable contributions before committing to a full run.</p>
+
+              <div v-if="!scoutContributions.length && !scoutRunning" class="actions" style="padding:0;margin-bottom:0.5rem">
+                <button class="btn secondary" @click="runScout">Run scout analysis</button>
+              </div>
+              <p v-if="scoutRunning" class="msg">Scout running… {{ scoutProgress ? scoutProgress + '%' : '' }}</p>
+              <p v-if="scoutError" class="msg error">{{ scoutError }}</p>
+
+              <div v-if="scoutContributions.length" class="contrib-list">
+                <div v-for="c in scoutContributions" :key="c.variable" class="contrib-row">
+                  <span class="contrib-label">{{ c.variable }}</span>
+                  <span class="contrib-bar-wrap">
+                    <span class="contrib-bar" :style="{ width: c.pct + '%' }"></span>
+                  </span>
+                  <span class="contrib-pct">{{ c.pct.toFixed(1) }}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Correlation matrix (Pearson fallback) -->
+            <div v-if="exploreData.correlations.length && !scoutContributions.length" class="explore-section">
               <h4>Correlation between predictors</h4>
-              <p class="hint">High correlation (|r| &gt; 0.7) between two variables means they carry redundant information — prefer one over the other.</p>
+              <p class="hint">High correlation (|r| &gt; 0.7) means redundant information — prefer one over the other.</p>
               <table class="corr-table">
                 <thead>
                   <tr>
@@ -463,13 +522,26 @@ const completedSteps = ref(new Set())
 function canReach(key) {
   const idx = STEP_ORDER.indexOf(key)
   if (idx === 0) return true
-  // Can navigate to any completed step, or the first incomplete step
   const prev = STEP_ORDER[idx - 1]
-  return completedSteps.value.has(prev)
+  if (completedSteps.value.has(prev)) return true
+  // Allow reaching explore if a dataset already exists
+  if (key === 'explore') {
+    return !!(enrichDatasetSlug.value || sourceForm.datasetSlug)
+  }
+  return false
 }
 
 function goStep(key) {
   if (!canReach(key)) return
+  if (key === 'explore') {
+    const slug = enrichDatasetSlug.value || sourceForm.datasetSlug || ''
+    if (slug && !exploreData.value) {
+      exploreSlug.value = slug
+      loadExploreData(slug)
+    } else if (!exploreSlug.value) {
+      exploreSlug.value = enrichDatasetSlug.value || sourceForm.datasetSlug || ''
+    }
+  }
   step.value = key
 }
 
@@ -516,11 +588,19 @@ const predictorList = [
 ]
 
 // ── Step 1: Source ────────────────────────────────────────────────────────────
+function defaultDateFrom() {
+  const d = new Date(); d.setFullYear(d.getFullYear() - 2); return d.toISOString().slice(0, 10)
+}
+function defaultDateTo() { return new Date().toISOString().slice(0, 10) }
+
 const sourceForm = reactive({
   type: 'dataset',
   datasetSlug: '',
-  north: 49.0, south: 24.5, east: -66.9, west: -124.8,
-  dateFrom: '', dateTo: '', taxon: '',
+  // Colorado default region
+  north: 41.0, south: 37.0, west: -109.1, east: -102.0,
+  dateFrom: defaultDateFrom(), dateTo: defaultDateTo(),
+  noDateFilter: false,
+  taxon: '',
 })
 
 const canAdvanceSource = computed(() => {
@@ -543,8 +623,8 @@ const FETCH_SOURCES = [
 const fetchForm = reactive({
   taxon: '',
   source: 'auto',
-  dateFrom: '',
-  dateTo: '',
+  dateFrom: defaultDateFrom(), dateTo: defaultDateTo(),
+  noDateFilter: false,
   loading: false,
   error: '',
   result: null,
@@ -560,8 +640,8 @@ async function runFetch() {
     const headers = token ? { authorization: `Bearer ${token}` } : {}
 
     const p = new URLSearchParams({ species: fetchForm.taxon.trim() })
-    if (fetchForm.dateFrom) p.set('d1', fetchForm.dateFrom)
-    if (fetchForm.dateTo) p.set('d2', fetchForm.dateTo)
+    if (!fetchForm.noDateFilter && fetchForm.dateFrom) p.set('d1', fetchForm.dateFrom)
+    if (!fetchForm.noDateFilter && fetchForm.dateTo) p.set('d2', fetchForm.dateTo)
 
     const src = fetchForm.source === 'auto'
       ? (fetchForm.dateFrom || fetchForm.dateTo ? 'inat' : 'inat')
@@ -652,8 +732,8 @@ function buildSource() {
   return {
     type: 'bbox',
     bounds: { north: sourceForm.north, south: sourceForm.south, east: sourceForm.east, west: sourceForm.west },
-    dateFrom: sourceForm.dateFrom || undefined,
-    dateTo: sourceForm.dateTo || undefined,
+    dateFrom: sourceForm.noDateFilter ? undefined : (sourceForm.dateFrom || undefined),
+    dateTo: sourceForm.noDateFilter ? undefined : (sourceForm.dateTo || undefined),
     taxon: sourceForm.taxon || undefined,
   }
 }
@@ -694,6 +774,15 @@ onUnmounted(() => { if (enrichPollTimer) clearInterval(enrichPollTimer) })
 
 // ── Step 3: Explore ────────────────────────────────────────────────────────────
 const exploreData = ref(null)
+const exploreSlug = ref('')
+const exploreLoading = ref(false)
+const exploreError = ref('')
+
+const scoutRunning = ref(false)
+const scoutProgress = ref(0)
+const scoutContributions = ref([])
+const scoutError = ref('')
+let scoutPollTimer = null
 
 const PREDICTOR_META = {
   elevation:     { label: 'Elevation',       shortLabel: 'Elev' },
@@ -705,26 +794,95 @@ const PREDICTOR_META = {
   temp_normal:   { label: 'Temperature',     shortLabel: 'Temp' },
 }
 
-async function loadExploreData() {
-  const slug = enrichDatasetSlug.value || (sourceForm.type === 'dataset' ? sourceForm.datasetSlug : null)
+async function loadExploreData(slugOverride) {
+  const slug = slugOverride || enrichDatasetSlug.value || (sourceForm.type === 'dataset' ? sourceForm.datasetSlug : null)
   if (!slug) return
 
+  exploreLoading.value = true
+  exploreError.value = ''
   try {
     const { accessToken } = useAuth()
     const token = await accessToken()
     const headers = token ? { authorization: `Bearer ${token}` } : {}
     const res = await fetch(`/.netlify/functions/datasets?slug=${encodeURIComponent(slug)}`, { headers })
-    if (!res.ok) return
+    if (!res.ok) { exploreError.value = `Failed to load dataset (${res.status})`; return }
     const data = await res.json()
     const features = data.geojson?.features || data.features || []
-    if (!features.length) return
+    if (!features.length) { exploreError.value = 'Dataset is empty or has no features.'; return }
     exploreData.value = computeExploreStats(features)
+    scoutContributions.value = []
     const recommended = exploreData.value.coverage
       .filter(v => v.pct >= 80)
       .map(v => v.key)
     trainForm.predictors = recommended.length >= 2 ? recommended : predictorList.map(p => p.key)
-  } catch { /* non-fatal */ }
+  } catch (e) {
+    exploreError.value = e?.message || 'Failed to load dataset.'
+  } finally {
+    exploreLoading.value = false
+  }
 }
+
+async function runScout() {
+  if (scoutRunning.value) return
+  scoutRunning.value = true
+  scoutError.value = ''
+  scoutProgress.value = 0
+  scoutContributions.value = []
+  if (scoutPollTimer) { clearInterval(scoutPollTimer); scoutPollTimer = null }
+
+  const spec = {
+    kind: 'model',
+    title: 'Scout pre-train',
+    predictors: trainForm.predictors.length >= 2 ? trainForm.predictors : predictorList.map(p => p.key),
+    background: 200,
+    autoOptimize: false,
+    source: enrichDatasetSlug.value
+      ? { type: 'dataset', slug: enrichDatasetSlug.value }
+      : buildSource(),
+  }
+
+  try {
+    const result = await maxEnt.trainModel(spec)
+    if (!result.ok) {
+      scoutError.value = result.error || 'Scout submission failed.'
+      scoutRunning.value = false
+      return
+    }
+
+    // Poll until job completes
+    scoutPollTimer = setInterval(async () => {
+      const job = maxEnt.activeJob.value
+      if (!job) return
+      scoutProgress.value = job.progress || 0
+      if (job.status === 'succeeded') {
+        clearInterval(scoutPollTimer)
+        scoutPollTimer = null
+        scoutRunning.value = false
+        const contribs = job.eval_data?.contributions || job.contributions || []
+        if (contribs.length) {
+          const total = contribs.reduce((s, c) => s + (c.contribution ?? c.pct ?? 0), 0) || 1
+          scoutContributions.value = contribs
+            .map(c => ({
+              variable: c.variable || c.name || c.predictor || '',
+              pct: ((c.contribution ?? c.pct ?? 0) / total) * 100,
+            }))
+            .sort((a, b) => b.pct - a.pct)
+        } else {
+          scoutError.value = 'Scout completed but returned no contributions.'
+        }
+      } else if (job.status === 'failed') {
+        clearInterval(scoutPollTimer)
+        scoutPollTimer = null
+        scoutRunning.value = false
+        scoutError.value = job.error_message || 'Scout run failed.'
+      }
+    }, 5000)
+  } catch (e) {
+    scoutError.value = e?.message || 'Scout run failed.'
+    scoutRunning.value = false
+  }
+}
+onUnmounted(() => { if (scoutPollTimer) clearInterval(scoutPollTimer) })
 
 function computeExploreStats(features) {
   const total = features.length
@@ -949,11 +1107,29 @@ const contributions = computed(() => {
 .sources, .stages { display: flex; flex-direction: column; gap: 6px; }
 .pick { display: flex; align-items: flex-start; gap: 8px; font-size: 0.88rem; cursor: pointer; padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--input-bg); }
 .pick:hover { background: var(--surface-2); }
+.pick-inline { border: none; background: none; padding: 4px 0; }
+.pick-inline:hover { background: none; }
 .pick input { margin-top: 2px; }
 .stage { padding: 7px 10px; }
 .stage span { display: flex; flex-direction: column; }
 .stage em { font-size: 0.78rem; color: var(--muted); font-style: normal; }
+
+/* ── Stacked field layout (bbox / fetch forms) ── */
+.field-stack { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.field-row { display: grid; grid-template-columns: 120px 1fr; gap: 8px 12px; align-items: start; }
+.field-label { padding-top: 6px; font-size: 0.84rem; font-weight: 600; color: var(--muted); }
+.date-pair { display: flex; gap: 10px; }
+.date-pair .stack { flex: 1; }
+@media (max-width: 520px) { .field-row { grid-template-columns: 1fr; } .date-pair { flex-direction: column; } }
 .disabled { opacity: 0.5; pointer-events: none; }
+
+/* ── Source tabs ── */
+.src-tabs { display: flex; gap: 0; }
+.src-tab { border: 1px solid var(--border); background: var(--input-bg); color: var(--muted); padding: 5px 12px; font-size: 0.84rem; cursor: pointer; }
+.src-tabs .src-tab:first-child { border-radius: 6px 0 0 6px; }
+.src-tabs .src-tab:last-child { border-radius: 0 6px 6px 0; }
+.src-tabs .src-tab:not(:first-child) { border-left: none; }
+.src-tab.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); z-index: 1; }
 
 /* ── BBox ── */
 .bbox { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -1020,6 +1196,14 @@ const contributions = computed(() => {
 .msg.error { background: #fee2e2; color: #dc2626; }
 .msg.ok    { background: #dcfce7; color: #16a34a; }
 .linkish { background: none; border: none; color: var(--accent); cursor: pointer; font-size: inherit; padding: 0; text-decoration: underline; }
+/* ── Scout contributions ── */
+.contrib-list { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+.contrib-row { display: flex; align-items: center; gap: 8px; }
+.contrib-label { width: 130px; font-size: 0.8rem; color: var(--text); flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.contrib-bar-wrap { flex: 1; height: 10px; background: var(--border, #e2e8f0); border-radius: 5px; overflow: hidden; }
+.contrib-bar { display: block; height: 100%; background: #2a78d6; border-radius: 5px; }
+.contrib-pct { width: 42px; text-align: right; font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.badge-sub { font-size: 0.7rem; font-weight: normal; color: var(--muted); margin-left: 6px; }
 .gate { padding: 32px; text-align: center; }
 
 /* ── Model card ── */

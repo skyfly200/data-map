@@ -19,6 +19,7 @@
     </div>
 
     <p v-if="loading && !hasAnyData" class="widget-note">Loading…</p>
+    <p v-else-if="fetchError" class="widget-note widget-error">{{ fetchError }}</p>
     <p v-else-if="!hasAnyData" class="widget-note">No rain/temp data in this window.</p>
 
     <div v-else class="chart-body">
@@ -35,7 +36,7 @@
             <g v-if="metric !== 'temp'">
               <rect
                 v-for="(b, i) in bins" :key="`r${i}`"
-                :x="barX(i)" :y="H - barH(b.precipMean)" :width="barW - 1" :height="barH(b.precipMean)"
+                :x="barX(i)" :y="H - barH(b.precipSum)" :width="barW - 1" :height="barH(b.precipSum)"
                 class="rain-bar"
               />
             </g>
@@ -78,81 +79,136 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
-import { useObservations } from '~/composables/useObservations'
+import { computed, ref, watch, onMounted } from 'vue'
 
-const { rows, load, pending: loading } = useObservations()
+const props = defineProps({
+  lat: { type: Number, default: 39.5 },
+  lon: { type: Number, default: -105.7 },
+})
 
 const metric = ref('both')
 const tempUnitLocal = ref('F')
 
-// Responsive range: bins × bin-size covers the full window
 const RANGES = [
-  { key: '7d',   label: 'Past 7 days',   bins: 7,  binDays: 1 },
-  { key: '30d',  label: 'Past 30 days',  bins: 15, binDays: 2 },
-  { key: '90d',  label: 'Past 90 days',  bins: 18, binDays: 5 },
-  { key: '1y',   label: 'Past year',     bins: 24, binDays: 15 },
-  { key: '2y',   label: 'Past 2 years',  bins: 24, binDays: 30 },
+  { key: '7d',  label: 'Past 7 days',  days: 7  },
+  { key: '30d', label: 'Past 30 days', days: 30 },
+  { key: '90d', label: 'Past 90 days', days: 90 },
+  { key: '1y',  label: 'Past year',    days: 365 },
+  { key: '2y',  label: 'Past 2 years', days: 730 },
 ]
 const rangeKey = ref('30d')
 const range = computed(() => RANGES.find((r) => r.key === rangeKey.value) || RANGES[1])
 
+// Target ~15–24 bins regardless of range
+const binDays = computed(() => {
+  const d = range.value.days
+  if (d <= 7) return 1
+  if (d <= 30) return 2
+  if (d <= 90) return 5
+  if (d <= 365) return 15
+  return 30
+})
+const N = computed(() => Math.ceil(range.value.days / binDays.value))
+
 const W = 260
 const H = 90
-const now = Date.now()
+
+// Raw daily data from Open-Meteo: array of { date, tmax, tmin, precip }
+const dailyData = ref([])
+const loading = ref(false)
+const fetchError = ref('')
+
+function isoDate(d) {
+  return d.toISOString().slice(0, 10)
+}
+
+async function fetchWeather() {
+  loading.value = true
+  fetchError.value = ''
+  try {
+    const end = new Date()
+    end.setDate(end.getDate() - 1) // yesterday (today often incomplete)
+    const start = new Date(end)
+    start.setDate(start.getDate() - (range.value.days - 1))
+    const params = new URLSearchParams({
+      latitude: props.lat,
+      longitude: props.lon,
+      daily: 'temperature_2m_max,temperature_2m_min,precipitation_sum',
+      temperature_unit: 'celsius',
+      precipitation_unit: 'mm',
+      start_date: isoDate(start),
+      end_date: isoDate(end),
+      timezone: 'auto',
+    })
+    const res = await fetch(`https://archive-api.open-meteo.com/v1/archive?${params}`)
+    if (!res.ok) throw new Error(`Open-Meteo ${res.status}`)
+    const data = await res.json()
+    const dates = data.daily?.time || []
+    const tmaxArr = data.daily?.temperature_2m_max || []
+    const tminArr = data.daily?.temperature_2m_min || []
+    const precipArr = data.daily?.precipitation_sum || []
+    dailyData.value = dates.map((date, i) => ({
+      date,
+      tmax: tmaxArr[i],
+      tmin: tminArr[i],
+      precip: precipArr[i] ?? 0,
+    }))
+  } catch (e) {
+    fetchError.value = `Weather unavailable: ${e.message}`
+    dailyData.value = []
+  } finally {
+    loading.value = false
+  }
+}
 
 function toDisplay(celsius) {
+  if (celsius == null) return null
   return tempUnitLocal.value === 'F' ? celsius * 9 / 5 + 32 : celsius
 }
 function fmt(v) { return v == null ? '' : Math.round(v) }
 
 const bins = computed(() => {
-  const { bins: N, binDays } = range.value
-  const buckets = Array.from({ length: N }, () => ({ precipSum: 0, precipN: 0, tmaxSum: 0, tminSum: 0, tempN: 0 }))
-  for (const r of rows.value || []) {
-    if (!r.date) continue
+  const n = N.value
+  const bd = binDays.value
+  const buckets = Array.from({ length: n }, () => ({ precipSum: 0, tmaxSum: 0, tminSum: 0, tempN: 0 }))
+  const now = Date.now()
+  for (const r of dailyData.value) {
     const d = new Date(r.date)
     if (isNaN(d)) continue
     const ageDays = (now - d.getTime()) / 86400000
-    if (ageDays < 0 || ageDays > N * binDays) continue
-    const idx = N - 1 - Math.floor(ageDays / binDays)
-    if (idx < 0 || idx >= N) continue
+    if (ageDays < 0 || ageDays > n * bd) continue
+    const idx = n - 1 - Math.floor(ageDays / bd)
+    if (idx < 0 || idx >= n) continue
     const b = buckets[idx]
-    const p = Number(r.prcp_d0)
-    if (Number.isFinite(p)) { b.precipSum += p; b.precipN++ }
-    const tmax = Number(r.tmax_d0)
-    const tmin = Number(r.tmin_d0 ?? r.tmin)
-    if (Number.isFinite(tmax) && Number.isFinite(tmin)) {
-      b.tmaxSum += tmax; b.tminSum += tmin; b.tempN++
+    b.precipSum += r.precip ?? 0
+    if (r.tmax != null && r.tmin != null) {
+      b.tmaxSum += r.tmax; b.tminSum += r.tmin; b.tempN++
     }
   }
   return buckets.map((b) => ({
-    precipMean: b.precipN ? b.precipSum / b.precipN : 0,
+    precipSum: b.precipSum,
     tmaxMean: b.tempN ? toDisplay(b.tmaxSum / b.tempN) : null,
     tminMean: b.tempN ? toDisplay(b.tminSum / b.tempN) : null,
   }))
 })
 
-const hasPrecip = computed(() => bins.value.some((b) => b.precipMean > 0))
+const hasPrecip = computed(() => bins.value.some((b) => b.precipSum > 0))
 const hasTemp = computed(() => bins.value.some((b) => b.tmaxMean !== null))
 const hasAnyData = computed(() => hasPrecip.value || hasTemp.value)
-const totalPrecip = computed(() => bins.value.reduce((s, b) => s + b.precipMean, 0))
+const totalPrecip = computed(() => bins.value.reduce((s, b) => s + b.precipSum, 0))
 
-const precipAxisMax = computed(() => Math.max(0.01, ...bins.value.map((b) => b.precipMean)))
+const precipAxisMax = computed(() => Math.max(0.01, ...bins.value.map((b) => b.precipSum)))
 const tempVals = computed(() => bins.value.flatMap((b) => [b.tmaxMean, b.tminMean]).filter((v) => v !== null))
 const tempAxisMin = computed(() => {
   if (!tempVals.value.length) return 0
-  const mn = Math.min(...tempVals.value)
-  return Math.floor(mn / 5) * 5 - 5
+  return Math.floor(Math.min(...tempVals.value) / 5) * 5 - 5
 })
 const tempAxisMax = computed(() => {
   if (!tempVals.value.length) return 30
-  const mx = Math.max(...tempVals.value)
-  return Math.ceil(mx / 5) * 5 + 5
+  return Math.ceil(Math.max(...tempVals.value) / 5) * 5 + 5
 })
 const tempRange = computed(() => Math.max(0.01, tempAxisMax.value - tempAxisMin.value))
 
-// 0°C / 32°F reference
 const freezeC = computed(() => tempUnitLocal.value === 'F' ? 32 : 0)
 const zeroY = computed(() => {
   if (!hasTemp.value) return null
@@ -161,7 +217,7 @@ const zeroY = computed(() => {
   return H - ((v - tempAxisMin.value) / tempRange.value) * H
 })
 
-const barW = computed(() => W / range.value.bins)
+const barW = computed(() => W / N.value)
 function barX(i) { return i * barW.value }
 function barH(p) { return (p / precipAxisMax.value) * (H * 0.7) }
 function tempY(v) { return H - ((v - tempAxisMin.value) / tempRange.value) * H }
@@ -182,21 +238,20 @@ const tempBandPts = computed(() => {
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 const xLabels = computed(() => {
-  const { bins: N, binDays } = range.value
-  return Array.from({ length: N }, (_, i) => {
-    // Show label every ~4 bins, always show the first and last
-    if (i !== 0 && i !== N - 1 && i % Math.max(1, Math.floor(N / 5)) !== 0) return ''
-    const ageDays = (N - 1 - i) * binDays
+  const n = N.value
+  const bd = binDays.value
+  const now = Date.now()
+  return Array.from({ length: n }, (_, i) => {
+    if (i !== 0 && i !== n - 1 && i % Math.max(1, Math.floor(n / 5)) !== 0) return ''
+    const ageDays = (n - 1 - i) * bd
     const d = new Date(now - ageDays * 86400000)
-    if (binDays <= 2) {
-      // Daily: show "Mon 25" style
-      return `${d.getDate()}`
-    }
-    return MONTHS[d.getMonth()]
+    return bd <= 2 ? `${d.getDate()}` : MONTHS[d.getMonth()]
   })
 })
 
-onMounted(() => { load() })
+watch(rangeKey, fetchWeather)
+watch(() => [props.lat, props.lon], fetchWeather)
+onMounted(fetchWeather)
 </script>
 
 <style scoped>
@@ -222,6 +277,7 @@ onMounted(() => { load() })
 .toggle-btn.active { background: var(--accent, #2a78d6); border-color: var(--accent, #2a78d6); color: #fff; z-index: 1; }
 
 .widget-note { font-size: 0.85rem; color: var(--muted, #888); }
+.widget-error { color: var(--danger, #c00); }
 
 .chart-body { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; min-height: 0; }
 .chart-area { display: flex; align-items: stretch; gap: 0.25rem; flex: 1; min-height: 0; }
