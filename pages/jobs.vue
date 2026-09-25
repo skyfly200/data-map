@@ -546,7 +546,10 @@ onMounted(async () => {
     const res = await fetch('/.netlify/functions/observations?summary=taxa')
     const body = await res.json()
     if (body?.ok) {
-      datasetRanks.value = body.ranks || []
+      datasetRanks.value = (body.ranks || []).map((r) => ({
+        ...r,
+        taxa: [...(r.taxa || [])].sort((a, b) => a.name.localeCompare(b.name)),
+      }))
       datasetTotal.value = body.total || 0
     }
   } catch {

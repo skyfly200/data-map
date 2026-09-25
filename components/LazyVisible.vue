@@ -47,6 +47,6 @@ onBeforeUnmount(() => { observer?.disconnect() })
 </script>
 
 <style scoped>
-.lazy-visible { display: block; }
-.lazy-placeholder { width: 100%; height: 100%; }
+.lazy-visible { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.lazy-placeholder { flex: 1; width: 100%; }
 </style>

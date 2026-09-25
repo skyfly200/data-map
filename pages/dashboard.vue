@@ -21,24 +21,36 @@
     </header>
 
     <!-- The palette of widgets to add, only while editing. -->
-    <div v-if="editing" class="palette">
-      <button v-for="w in WIDGET_TYPES" :key="w.type" class="palette-item"
-              :disabled="hasType(w.type)" @click="add({ type: w.type, label: w.label })">
+    <div v-if="editing" class="palette"
+         @dragover.prevent="onPaletteDragOver" @drop="onPaletteDrop">
+      <div
+        v-for="w in WIDGET_TYPES" :key="w.type"
+        class="palette-item"
+        :class="{ disabled: hasType(w.type) }"
+        :draggable="!hasType(w.type)"
+        @dragstart="onPaletteDragStart(w)"
+        @click="!hasType(w.type) && add({ type: w.type, label: w.label })"
+      >
         <span class="pi-icon">{{ w.icon }}</span>{{ w.label }}
         <span v-if="hasType(w.type)" class="pi-on">on</span>
-      </button>
+      </div>
     </div>
 
-    <p v-if="!orderedWidgets.length" class="dash-empty">
-      Nothing on the dashboard yet. {{ editing ? 'Add a widget above.' : 'Press Customise to add widgets.' }}
+    <p v-if="!orderedWidgets.length" class="dash-empty"
+       :class="{ 'drop-target': editing && dragFromPalette }"
+       @dragover.prevent @drop="onGridEndDrop">
+      Nothing on the dashboard yet. {{ editing ? 'Drag or click a widget above to add it.' : 'Press Customise to add widgets.' }}
     </p>
 
     <div v-else class="dash-grid">
       <section v-for="w in orderedWidgets" :key="w.id"
                class="dash-cell"
-               :class="cellClass(w, editing)"
+               :class="[cellClass(w, editing), { 'drop-before': dropTarget === w.id }]"
                :draggable="editing"
-               @dragstart="onDragStart(w.id)" @dragover.prevent @drop="onDrop(w.id)">
+               @dragstart="onDragStart(w.id)"
+               @dragover.prevent="onCellDragOver(w.id)"
+               @dragleave="onCellDragLeave(w.id)"
+               @drop="onDrop(w.id)">
         <div v-if="editing" class="cell-bar">
           <span class="drag" title="Drag to reorder">⋮⋮</span>
           <div class="size-btns" title="Resize widget">
@@ -55,12 +67,23 @@
           </div>
           <button class="remove" title="Remove" @click="remove(w.id)">×</button>
         </div>
+        <!-- Insert-before drop indicator -->
+        <div v-if="editing && dropTarget === w.id && dragFromPalette" class="drop-before-bar"></div>
         <!-- Widgets below the fold build as they scroll in, so opening the
              dashboard does not fetch and compute every one at once. -->
         <LazyVisible min-height="140px">
           <component :is="componentFor(w.type)" :widget="w" :is-editing="editing" />
         </LazyVisible>
       </section>
+
+      <!-- Trailing drop zone: append after all existing widgets -->
+      <div v-if="editing && dragFromPalette" class="grid-end-drop"
+           :class="{ active: dropTarget === '__end__' }"
+           @dragover.prevent="onCellDragOver('__end__')"
+           @dragleave="onCellDragLeave('__end__')"
+           @drop="onGridEndDrop">
+        <span>Drop here to add at end</span>
+      </div>
     </div>
   </div>
 </template>
@@ -89,7 +112,7 @@ import DashboardWeatherForecast from '~/components/DashboardWeatherForecast.vue'
 import DashboardRecentRainTemp from '~/components/DashboardRecentRainTemp.vue'
 
 const { isAuthed } = useAuth()
-const { orderedWidgets, load, add, remove, reorder, reset, updateSettings } = useDashboardState()
+const { orderedWidgets, load, add, addBefore, remove, reorder, reset, updateSettings } = useDashboardState()
 
 // The widget catalogue: what a member can put on the dashboard, and what draws it.
 const WIDGET_TYPES = [
@@ -117,18 +140,26 @@ function componentFor(type) { return COMPONENTS[type] || DashboardOverview }
 
 // The layout a new member lands on. Sizes chosen so the default grid reads well
 // at common viewport widths without wasted space.
+// Default layout: 3-col grid
+// Row 1: overview (1), now-fruiting (1), map-preview (1, tall)
+// Row 2: species-list (1), recent-rain-temp (1), weather-forecast (1)
+// Row 3: phenology (full)
+// Row 4: env-stats (2), recent-jobs (1)
 const DEFAULTS = {
   widgets: [
-    { id: 'def-overview',     type: 'overview',     settings: {},                   order: 0 },
-    { id: 'def-now-fruiting', type: 'now-fruiting',  settings: {},                   order: 1 },
-    { id: 'def-map-preview',  type: 'map-preview',   settings: { colspan: 2, tall: true }, order: 2 },
-    { id: 'def-phenology',    type: 'phenology',     settings: { colspan: 2 },       order: 3 },
-    { id: 'def-recent-jobs',  type: 'recent-jobs',   settings: {},                   order: 4 },
-    { id: 'def-species-list', type: 'species-list',  settings: {},                   order: 5 },
-    { id: 'def-env-stats',    type: 'env-stats',     settings: { colspan: 2 },       order: 6 },
+    { id: 'def-overview',        type: 'overview',          settings: {},                   order: 0 },
+    { id: 'def-now-fruiting',    type: 'now-fruiting',      settings: {},                   order: 1 },
+    { id: 'def-map-preview',     type: 'map-preview',       settings: { tall: 1 },          order: 2 },
+    { id: 'def-species-list',    type: 'species-list',      settings: {},                   order: 3 },
+    { id: 'def-recent-rain',     type: 'recent-rain-temp',  settings: {},                   order: 4 },
+    { id: 'def-weather',         type: 'weather-forecast',  settings: {},                   order: 5 },
+    { id: 'def-phenology',       type: 'phenology',         settings: { colspan: 'full' },  order: 6 },
+    { id: 'def-env-stats',       type: 'env-stats',         settings: { colspan: 2 },       order: 7 },
+    { id: 'def-recent-jobs',     type: 'recent-jobs',       settings: {},                   order: 8 },
   ],
-  order: ['def-overview', 'def-now-fruiting', 'def-map-preview', 'def-phenology',
-          'def-recent-jobs', 'def-species-list', 'def-env-stats'],
+  order: ['def-overview', 'def-now-fruiting', 'def-map-preview',
+          'def-species-list', 'def-recent-rain', 'def-weather',
+          'def-phenology', 'def-env-stats', 'def-recent-jobs'],
 }
 
 function cellClass(w, isEditing) {
@@ -148,12 +179,57 @@ const editing = ref(false)
 function hasType(type) { return orderedWidgets.value.some((w) => w.type === type) }
 function addDefaults() { reset(structuredClone(DEFAULTS)) }
 
-// Drag to reorder: remember what is picked up, drop it onto a target's slot.
-const dragging = ref('')
-function onDragStart(id) { dragging.value = id }
+// ── Drag state ────────────────────────────────────────────────────────────────
+const dragging = ref('')          // id of an existing widget being reordered
+const dragFromPalette = ref(null) // { type, label } when dragging from palette
+const dropTarget = ref('')        // id of cell showing the drop-before indicator
+
+// Existing widget reorder
+function onDragStart(id) {
+  dragging.value = id
+  dragFromPalette.value = null
+}
+
+// Palette drag
+function onPaletteDragStart(w) {
+  dragFromPalette.value = { type: w.type, label: w.label }
+  dragging.value = ''
+}
+function onPaletteDragOver() { /* allow drop back onto palette to cancel */ }
+function onPaletteDrop() {
+  dragFromPalette.value = null
+  dropTarget.value = ''
+}
+
+// Cell hover while dragging
+function onCellDragOver(id) {
+  if (dragFromPalette.value) dropTarget.value = id
+}
+function onCellDragLeave(id) {
+  if (dropTarget.value === id) dropTarget.value = ''
+}
+
 function onDrop(targetId) {
+  if (dragFromPalette.value) {
+    // Insert the new widget before the target cell.
+    const def = dragFromPalette.value
+    if (!hasType(def.type)) addBefore({ type: def.type, label: def.label }, targetId)
+    dragFromPalette.value = null
+    dropTarget.value = ''
+    return
+  }
   if (dragging.value && dragging.value !== targetId) reorder(dragging.value, targetId)
   dragging.value = ''
+  dropTarget.value = ''
+}
+
+function onGridEndDrop() {
+  if (dragFromPalette.value) {
+    const def = dragFromPalette.value
+    if (!hasType(def.type)) add({ type: def.type, label: def.label })
+    dragFromPalette.value = null
+    dropTarget.value = ''
+  }
 }
 
 onMounted(() => { load(DEFAULTS) })
@@ -176,10 +252,12 @@ onMounted(() => { load(DEFAULTS) })
 .palette { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; padding: 0.8rem; background: var(--surface-2, #f6f6f6); border-radius: 10px; }
 .palette-item {
   display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--border, #ddd);
-  background: var(--surface, #fff); border-radius: 999px; padding: 0.35rem 0.8rem; font: inherit;
-  font-size: 0.82rem; cursor: pointer;
+  background: var(--surface, #fff); border-radius: 999px; padding: 0.35rem 0.8rem;
+  font: inherit; font-size: 0.82rem; cursor: grab; user-select: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
 }
-.palette-item:disabled { opacity: 0.5; cursor: default; }
+.palette-item:not(.disabled):hover { border-color: var(--accent, #2a78d6); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent, #2a78d6) 20%, transparent); }
+.palette-item.disabled { opacity: 0.5; cursor: default; }
 .pi-icon { font-size: 1rem; }
 .pi-on { font-size: 0.62rem; text-transform: uppercase; color: var(--muted, #888); }
 
@@ -202,9 +280,9 @@ onMounted(() => { load(DEFAULTS) })
   display: flex; flex-direction: column;
   transition: box-shadow 0.15s;
 }
-/* LazyVisible and the component inside it should stretch to fill the cell */
-.dash-cell > :deep(*) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-.dash-cell > :deep(.dash-widget) { flex: 1; min-height: 0; }
+/* LazyVisible wrapper and the .dash-widget inside both stretch to fill the cell */
+.dash-cell :deep(.lazy-visible) { flex: 1; min-height: 0; }
+.dash-cell :deep(.dash-widget) { flex: 1; min-height: 0; }
 
 .dash-cell.editing { border-style: dashed; cursor: grab; }
 .dash-cell.editing:hover { box-shadow: 0 0 0 2px var(--accent, #2a78d6); }
@@ -228,6 +306,35 @@ onMounted(() => { load(DEFAULTS) })
   border: 0; background: none; color: var(--muted, #999); font-size: 1.2rem; line-height: 1; cursor: pointer;
 }
 .remove:hover { color: #b3492f; }
+
+/* Drop-before indicator on a cell */
+.dash-cell.drop-before { box-shadow: -4px 0 0 var(--accent, #2a78d6), 0 0 0 2px color-mix(in srgb, var(--accent, #2a78d6) 25%, transparent); }
+.drop-before-bar {
+  position: absolute; top: 0; left: -2px; bottom: 0; width: 4px;
+  background: var(--accent, #2a78d6); border-radius: 2px; z-index: 10;
+  pointer-events: none;
+}
+
+/* End-of-grid drop zone, only visible while dragging from palette */
+.grid-end-drop {
+  min-height: 80px; border: 2px dashed var(--border, #ccc);
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  color: var(--muted, #aaa); font-size: 0.82rem; transition: border-color 0.15s, background 0.15s;
+  grid-column: span 1;
+}
+.grid-end-drop.active {
+  border-color: var(--accent, #2a78d6);
+  background: color-mix(in srgb, var(--accent, #2a78d6) 6%, transparent);
+  color: var(--accent, #2a78d6);
+}
+
+/* Empty-state drop target */
+.dash-empty.drop-target {
+  border: 2px dashed var(--accent, #2a78d6);
+  background: color-mix(in srgb, var(--accent, #2a78d6) 5%, transparent);
+  color: var(--accent, #2a78d6);
+  border-radius: 12px; padding: 2rem;
+}
 
 @media (max-width: 600px) {
   .dash-grid { grid-template-columns: 1fr; }

@@ -78,10 +78,13 @@ async function initMap() {
     tap: false,
   })
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
+    attribution: '© OpenStreetMap contributors',
   }).addTo(map)
 
+  // Default view: Colorado + 5% before observations load
+  map.fitBounds([[36.9, -109.3], [41.1, -101.8]], { padding: [0, 0] })
   markers = L.layerGroup().addTo(map)
   renderDots(L)
 }
@@ -115,7 +118,10 @@ function renderDots(L) {
   }
 
   if (bounds.isValid()) map.fitBounds(bounds, { padding: [10, 10], maxZoom: 10 })
-  else map.setView([40, -100], 3)
+  else {
+    // Default to Colorado + ~5% padding: roughly 36.9–41.1°N, -109.3–-101.8°W
+    map.fitBounds([[36.9, -109.3], [41.1, -101.8]], { padding: [0, 0] })
+  }
 }
 
 onMounted(async () => {
