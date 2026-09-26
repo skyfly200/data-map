@@ -22,6 +22,7 @@ Canonical observation table for iNaturalist sync. One row per iNaturalist record
 | `num_identification_agreements` | `integer` | Agreement count from iNat |
 | `quality_grade` | `text` | e.g. `"research"`, `"needs_id"` |
 | `raw_payload` | `jsonb` | Full raw API response |
+| `accuracy_m` | `double precision` | Coordinate uncertainty radius (metres). `NULL` = unknown, not precise |
 | `created_at` | `timestamptz` | Row creation time (default `now()`) |
 | `updated_at` | `timestamptz` | Auto-updated on every write via trigger |
 
