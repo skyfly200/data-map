@@ -187,10 +187,20 @@ export function useMapSelection({
 
     const bounds = layer.getBounds()
     if (bounds.isValid() && !suppressFit) {
-      try {
-        map.invalidateSize({ animate: false })
-        map.fitBounds(bounds.pad(0.1), { animate: false })
-      } catch { /* container not yet measured — view stays at default */ }
+      const tryFit = () => {
+        const m = mapRef.value
+        if (!m) return
+        try {
+          m.invalidateSize({ animate: false })
+          m.fitBounds(bounds.pad(0.1), { animate: false })
+        } catch { /* container still not measured */ }
+      }
+      const container = map.getContainer()
+      if (container.clientWidth > 0 && container.clientHeight > 0) {
+        tryFit()
+      } else {
+        requestAnimationFrame(tryFit)
+      }
       fittedOnce = true
     }
     suppressFit = false

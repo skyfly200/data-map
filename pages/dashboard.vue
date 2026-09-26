@@ -237,7 +237,7 @@ onMounted(() => { load(DEFAULTS) })
 
 <style scoped>
 .dash-guard { max-width: 420px; margin: 4rem auto; text-align: center; display: grid; gap: 0.8rem; }
-.dashboard { padding: 1rem 1.5rem 3rem; }
+.dashboard { padding: 1rem 1rem 3rem; }
 .dash-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
 .dash-header h1 { margin: 0; font-size: 1.5rem; }
 .sub { margin: 0.2rem 0 0; color: var(--muted, #777); font-size: 0.9rem; }
@@ -277,7 +277,7 @@ onMounted(() => { load(DEFAULTS) })
 .dash-cell {
   position: relative; background: var(--surface, #fff); border: 1px solid var(--border, #e5e5e5);
   border-radius: 12px; padding: 1rem; min-height: 160px;
-  display: flex; flex-direction: column;
+  display: flex; flex-direction: column; min-width: 0; overflow: hidden;
   transition: box-shadow 0.15s;
 }
 /* LazyVisible wrapper and the .dash-widget inside both stretch to fill the cell */
@@ -337,7 +337,8 @@ onMounted(() => { load(DEFAULTS) })
 }
 
 @media (max-width: 600px) {
-  .dash-grid { grid-template-columns: 1fr; }
+  .dashboard { padding: 0.75rem 0.75rem 2rem; }
+  .dash-grid { grid-template-columns: 1fr; gap: 0.75rem; }
   .dash-cell.span-2, .dash-cell.span-full { grid-column: 1; }
 }
 @media (min-width: 601px) and (max-width: 960px) {

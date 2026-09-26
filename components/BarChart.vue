@@ -1,7 +1,7 @@
 <template>
   <figure class="chart">
     <figcaption v-if="title" class="chart-title">{{ title }}</figcaption>
-    <div class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
+    <div ref="chartAreaRef" class="chart-area" @mousemove="onMove" @mouseleave="active = null" @wheel.prevent="onWheel" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointerleave="onPointerUp">
       <div class="chart-viewport" :style="viewportStyle">
         <svg :viewBox="`0 0 ${W} ${H}`" preserveAspectRatio="xMidYMid meet" role="img" :aria-label="title">
           <!-- baseline / axis (recessive) -->
@@ -26,6 +26,7 @@
 </template>
 
 <script setup>
+import { onBeforeUnmount, onMounted } from 'vue'
 import { SERIES_1 } from '~/composables/useAppearance'
 
 const props = defineProps({
@@ -36,11 +37,27 @@ const props = defineProps({
   format: { type: Function, default: (v) => String(v) },
 })
 
+const chartAreaRef = ref(null)
+const containerWidth = ref(640)
+
+let ro = null
+onMounted(() => {
+  if (typeof ResizeObserver === 'undefined') return
+  ro = new ResizeObserver((entries) => {
+    const w = entries[0]?.contentRect?.width
+    if (w > 0) containerWidth.value = Math.floor(w)
+  })
+  if (chartAreaRef.value) ro.observe(chartAreaRef.value)
+})
+onBeforeUnmount(() => ro?.disconnect())
+
 const labelFontSize = computed(() => {
   const n = props.data.length || 1
   return Math.max(8, 11 - Math.max(0, n - 8) * 0.35)
 })
-const W = computed(() => props.horizontal ? Math.max(640, (props.data.length || 1) * 120 + 180) : 640)
+const W = computed(() => props.horizontal
+  ? Math.max(640, (props.data.length || 1) * 120 + 180)
+  : Math.max(200, containerWidth.value))
 const H = computed(() => props.horizontal ? Math.max(120, props.data.length * 30 + 24) : 260)
 const padL = computed(() => props.horizontal ? Math.max(84, 128 - Math.min(36, Math.max(0, (props.data.length || 1) - 6) * 4)) : 34)
 const padR = 44
@@ -51,7 +68,7 @@ const zoom = ref(1)
 const pan = ref({ x: 0, y: 0 })
 const dragStart = ref(null)
 const viewportStyle = computed(() => ({
-  width: `${W.value}px`,
+  width: props.horizontal ? `${W.value}px` : '100%',
   height: `${H.value}px`,
   transform: `translate(${pan.value.x}px, ${pan.value.y}px) scale(${zoom.value})`,
   transformOrigin: '0 0',
