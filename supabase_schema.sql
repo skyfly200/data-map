@@ -20,6 +20,7 @@ create table if not exists public.observations (
   num_identification_agreements integer,
   quality_grade text,
   raw_payload jsonb,
+  accuracy_m double precision,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

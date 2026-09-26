@@ -130,13 +130,14 @@ function deriveFields(geojson: ObservationCollection): ObservationCollection {
       } else if (p.geoprivacy === 'private') {
         p.location_precision = 'obscured'
       } else {
-        const acc = Number(p.public_positional_accuracy ?? p.positional_accuracy ?? p.accuracy_m ?? p.accuracy)
-        if (Number.isFinite(acc)) {
+        const acc = Number(
+          p.public_positional_accuracy ?? p.positional_accuracy ??
+          p.accuracy_m ?? p.coordinateUncertainty ?? p.accuracy
+        )
+        if (Number.isFinite(acc) && acc > 0) {
           p.location_precision = acc <= 1000 ? 'precise' : 'coarse'
-        } else if (hasValue(p.latitude) || hasValue(p.lat) || (f.geometry?.type === 'Point')) {
-          // Has coordinates but no accuracy info — treat as precise
-          p.location_precision = 'precise'
         } else {
+          // Coordinates present but no accuracy info — unknown, not precise
           p.location_precision = 'unknown'
         }
       }
