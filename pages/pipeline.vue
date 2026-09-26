@@ -1,3 +1,6 @@
+<script setup>
+definePageMeta({ middleware: () => navigateTo('/model', { redirectCode: 301 }) })
+</script>
 <template>
   <div class="pipeline-page">
     <div class="page-head">
