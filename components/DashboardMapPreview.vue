@@ -83,9 +83,12 @@ async function initMap() {
     attribution: '© OpenStreetMap contributors',
   }).addTo(map)
 
-  // Default view: Colorado + 5% before observations load
-  map.fitBounds([[36.9, -109.3], [41.1, -101.8]], { padding: [0, 0] })
   markers = L.layerGroup().addTo(map)
+  // Default view: Colorado. Guard against zero-size container on first mount.
+  try {
+    map.invalidateSize({ animate: false })
+    map.fitBounds([[36.9, -109.3], [41.1, -101.8]], { padding: [0, 0] })
+  } catch { map.setView([39.5, -105.7], 6) }
   renderDots(L)
 }
 
@@ -117,11 +120,10 @@ function renderDots(L) {
     }).addTo(markers)
   }
 
-  if (bounds.isValid()) map.fitBounds(bounds, { padding: [10, 10], maxZoom: 10 })
-  else {
-    // Default to Colorado + ~5% padding: roughly 36.9–41.1°N, -109.3–-101.8°W
-    map.fitBounds([[36.9, -109.3], [41.1, -101.8]], { padding: [0, 0] })
-  }
+  try {
+    if (bounds.isValid()) map.fitBounds(bounds, { padding: [10, 10], maxZoom: 10 })
+    else map.fitBounds([[36.9, -109.3], [41.1, -101.8]], { padding: [0, 0] })
+  } catch { /* container not yet measured */ }
 }
 
 onMounted(async () => {
