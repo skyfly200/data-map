@@ -1,6 +1,3 @@
-<script setup>
-definePageMeta({ middleware: () => navigateTo('/model', { redirectCode: 301 }) })
-</script>
 <template>
   <div class="pipeline-page">
     <div class="page-head">
@@ -498,6 +495,7 @@ definePageMeta({ middleware: () => navigateTo('/model', { redirectCode: 301 }) }
 </template>
 
 <script setup>
+definePageMeta({ middleware: () => navigateTo('/model', { redirectCode: 301 }) })
 import { useEeJobs } from '~/composables/useEeJobs'
 import { useDatasets } from '~/composables/useDatasets'
 import { useMaxEnt } from '~/composables/useMaxEnt'
