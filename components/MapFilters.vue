@@ -124,7 +124,7 @@ const elevRange = computed(() => {
     if (e > hi) hi = e
   }
   if (!Number.isFinite(lo)) return null
-  return { min: toShown(lo), max: toShown(hi) }
+  return { min: toShown(Math.max(0, lo)), max: toShown(hi) }
 })
 
 const elevMinShown = computed({

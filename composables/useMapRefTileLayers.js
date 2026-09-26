@@ -1,4 +1,4 @@
-import { watch } from 'vue'
+import { markRaw, watch } from 'vue'
 import { TILE_LAYERS, arcgisExportUrl, layerSource, layerDataType } from '~/composables/mapLayers'
 import { MAP_MAX_ZOOM } from '~/composables/useMapTileDate'
 
@@ -24,9 +24,9 @@ export function setupReferenceTileLayers({
       crossOrigin: 'anonymous',
       updateWhenIdle: false, updateWhenZooming: true,
     }
-    const layer = o.arcgis
+    const layer = markRaw(o.arcgis
       ? new ArcGISLayer('', { ...opts, service: o.arcgis, serviceLayers: o.layers || '' })
-      : L.tileLayer(o.url.replace('{date}', tileDate.value), opts)
+      : L.tileLayer(o.url.replace('{date}', tileDate.value), opts))
     layer._baseOpacity = o.opacity ?? 1
     layer._spec = o
     tileLayers.push(layer)

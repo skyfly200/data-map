@@ -23,7 +23,12 @@
 
     <div class="layout">
       <aside class="side">
-        <FilterPanel />
+        <button class="filter-toggle" :aria-expanded="filtersOpen" @click="filtersOpen = !filtersOpen">
+          Filters {{ filtersOpen ? '▲' : '▼' }}
+        </button>
+        <div v-show="filtersOpen" class="filter-body">
+          <FilterPanel />
+        </div>
       </aside>
       <section class="main">
         <!-- ── Fetch a new species ────────────────────────────────────── -->
@@ -96,7 +101,10 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useObservations } from '~/composables/useObservations'
+
+const filtersOpen = ref(import.meta.client ? window.innerWidth > 900 : true)
 
 const { data, speciesOptions, speciesFilter, setSpeciesFilter, error, pending, load,
   selectedDataset, availableDatasets, setDataset,
@@ -235,8 +243,18 @@ function barWidth(n) { return `${(n / maxCount.value) * 100}%` }
 .side { position: sticky; top: 16px; }
 .main { min-width: 0; }
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; }
-  .side { position: static; }
+  .layout { display: flex; flex-direction: column; }
+  .main { order: 1; }
+  .side { position: static; order: 2; }
+}
+.filter-toggle {
+  display: none; width: 100%; text-align: left;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  border-radius: 8px; padding: 8px 12px; font: inherit; font-size: 0.88rem;
+  cursor: pointer; margin-bottom: 8px;
+}
+@media (max-width: 900px) {
+  .filter-toggle { display: block; }
 }
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
 .head h2 { margin: 0; font-size: 1.1rem; }

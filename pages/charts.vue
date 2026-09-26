@@ -11,7 +11,12 @@
 
     <!-- Lazy: the builder's chunk loads only when the Build tab is opened, not
          on the gallery a reader lands on first (V12-PERF-3). -->
-    <LazyChartBuilder v-if="tab === 'build'" class="build-pane" />
+    <Suspense v-if="tab === 'build'">
+      <LazyChartBuilder class="build-pane" />
+      <template #fallback>
+        <div class="build-loading"><span class="spinner" aria-hidden="true"></span> Loading chart builder…</div>
+      </template>
+    </Suspense>
 
     <!-- ── Analysis pane ────────────────────────────────────────────────── -->
     <template v-else-if="tab === 'analysis'">
@@ -261,7 +266,7 @@
       </GalleryChart>
 
       <GalleryChart id="rain-leadup" v-if="hasRainData">
-        <BarChart title="Avg. rain in the 7 days before an observation" :data="rainLeadUp" :format="mm" />
+        <BarChart title="Avg. rain in the 7 days before an observation" :data="rainLeadUp" :format="mm" xLabel="Days before observation" />
         <p class="note">Mean daily precipitation (mm) across all observations, by days before the find.</p>
       </GalleryChart>
 
@@ -850,6 +855,9 @@ const coverageByYear = computed(() => coverage.value.years.map((y) => {
 .tabs button:hover { color: var(--text); }
 .tabs button.on { color: var(--text); border-bottom-color: var(--accent); }
 .build-pane { height: calc(100vh - 150px); min-height: 440px; }
+.build-loading { display: flex; align-items: center; gap: 10px; padding: 40px 20px; color: var(--muted); font-size: 0.9rem; }
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent, #2a78d6); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .build-pane :deep(.explore) { padding: 0; }
 .grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));

@@ -246,10 +246,10 @@ onMounted(async () => {
 .btn.danger { color: #b3492f; }
 .btn.danger:hover:not(:disabled) { border-color: #b3492f; }
 .btn-text {
-  background: none; border: none; color: var(--muted); font: inherit; font-size: 0.78rem;
+  background: none; border: none; color: var(--accent, #2a78d6); font: inherit; font-size: 0.78rem;
   cursor: pointer; padding: 0; text-decoration: underline; flex-shrink: 0;
 }
-.btn-text:hover { color: var(--text); }
+.btn-text:hover { opacity: 0.8; }
 
 /* ── Page ────────────────────────────────────────────────────────────────── */
 .modeling { padding: 18px 20px; max-width: 1100px; margin: 0 auto; }

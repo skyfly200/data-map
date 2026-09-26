@@ -24,6 +24,7 @@
         <span>{{ cellText(active.v) }}</span>
       </div>
     </div>
+    <p class="pan-hint" aria-hidden="true">Drag to pan · scroll to zoom</p>
   </figure>
 </template>
 
@@ -79,7 +80,7 @@ const labelFontSize = computed(() => {
   const n = Math.max(props.rows.length || 1, sortedCols.value.length || 1)
   return Math.max(8, 10 - Math.max(0, n - 8) * 0.35)
 })
-const W = computed(() => Math.max(640, (props.cols.length || 1) * 90 + 180))
+const W = computed(() => Math.max(480, (props.cols.length || 1) * 90 + 180))
 const padL = computed(() => Math.max(90, 130 - Math.min(28, Math.max(0, (props.rows.length || 1) - 5) * 4)))
 const padR = 12
 const padT = 26
@@ -119,7 +120,7 @@ function textColor(v) {
   const t = (v - lo.value) / ((hi.value - lo.value) || 1)
   return t > 0.55 ? '#fff' : 'var(--text)'
 }
-function cellText(v) { return Number.isFinite(v) ? props.format(v) : ': ' }
+function cellText(v) { return Number.isFinite(v) ? props.format(v) : '—' }
 
 const active = ref(null)
 const ptr = ref({ x: 0, y: 0 })
@@ -147,6 +148,8 @@ function onPointerUp() { dragStart.value = null }
 
 <style scoped>
 .chart { margin: 0; }
+.pan-hint { margin: 4px 0 0; font-size: 0.72rem; color: var(--muted); display: none; }
+@media (max-width: 600px) { .pan-hint { display: block; } }
 .chart-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
 .chart-area {
   position: relative; overflow: auto; max-width: 100%; border-radius: 8px;

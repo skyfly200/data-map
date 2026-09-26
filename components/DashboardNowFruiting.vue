@@ -41,8 +41,8 @@
       <span class="nf-model-label">Latest model:</span>
       <NuxtLink :to="mapLink" class="nf-model-link">{{ latestModel.title }}</NuxtLink>
     </p>
-    <p v-else class="nf-model">
-      <NuxtLink to="/modeling/maxent" class="nf-model-link">No models yet — run one ›</NuxtLink>
+    <p v-else-if="topSpecies.length" class="nf-model">
+      <NuxtLink to="/modeling/maxent" class="nf-model-link">Train a habitat model ›</NuxtLink>
     </p>
   </div>
 </template>
