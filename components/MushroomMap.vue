@@ -3,7 +3,7 @@
     <div ref="mapEl" class="map"></div>
 
     <div v-if="loadError" class="overlay error">{{ loadError }}</div>
-    <div v-else-if="!loaded" class="overlay">Loading observations…</div>
+    <div v-else-if="!loaded" class="overlay">Loading map…</div>
 
     <!-- A first-run tour of the map, shown once the observations are in so it
          introduces a working map rather than a loading one. Self-gates on
@@ -1103,24 +1103,28 @@ onMounted(async () => {
     // Chunks first: the overview paints at once and the cells under the view
     // follow. Only when they were never built does this fall back to fetching
     // all 49.7 MB before drawing anything, which is what it used to do always.
-    const chunked = await loadProgressive(currentView())
-    if (!chunked) await load()
-    if (!data.value) throw new Error('no data')
-    // A link carrying a view sets it explicitly; skip the fit-to-data that would
-    // otherwise throw that view away.
-    if (shared.view) setSuppressFit(true)
-    renderPoints(filteredData.value)
-    if (shared.view) {
-      map.setView(shared.view.center, shared.view.zoom, { animate: false })
-      // The map is now deliberately placed, so the chunks that arrive for this
-      // view must not refit it away.
-      setFittedOnce(true)
+    try {
+      const chunked = await loadProgressive(currentView())
+      if (!chunked) await load()
+      if (!data.value) throw new Error('no data')
+      // A link carrying a view sets it explicitly; skip the fit-to-data that would
+      // otherwise throw that view away.
+      if (shared.view) setSuppressFit(true)
+      renderPoints(filteredData.value)
+      if (shared.view) {
+        map.setView(shared.view.center, shared.view.zoom, { animate: false })
+        // The map is now deliberately placed, so the chunks that arrive for this
+        // view must not refit it away.
+        setFittedOnce(true)
+      }
+      renderHeatmap()
+      // If arriving via "Open on map" from a chart, focus that observation now.
+      if (focusObservation.value) applyFocus(focusObservation.value)
+    } catch (obsErr) {
+      useAppAlerts().error('Could not load observations — ' + obsErr.message)
     }
     syncMapView()
-    renderHeatmap()
     loaded.value = true
-    // If arriving via "Open on map" from a chart, focus that observation now.
-    if (focusObservation.value) applyFocus(focusObservation.value)
   } catch (err) {
     loadError.value = `Could not load map (${err.message}).`
   }
