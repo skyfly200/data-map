@@ -12,6 +12,8 @@
                 @click="toggleAllVisibility">
           <span class="lm-eye-icon" aria-hidden="true">{{ allVisible ? '👁' : '👁‍🗨' }}</span>
         </button>
+        <button v-if="hasChannelOverrides" class="lm-text-btn" title="Reset all channel adjustments"
+                @click="$emit('reset-channels')">Reset channels</button>
         <button v-if="activeList.length" class="lm-text-btn" title="Switch every overlay off"
                 @click="$emit('clear')">Clear</button>
         <button class="lm-close" aria-label="Close the layer manager" @click="$emit('close')">×</button>
@@ -203,7 +205,7 @@ const props = defineProps({
   docked: { type: Boolean, default: true },
 })
 
-defineEmits(['toggle', 'opacity', 'move', 'blend', 'channel', 'solo', 'clear', 'close'])
+defineEmits(['toggle', 'opacity', 'move', 'blend', 'channel', 'solo', 'clear', 'close', 'reset-channels'])
 
 const query = ref('')
 const win = ref(null)
@@ -266,6 +268,14 @@ const channelOf = (key, ch) => props.channel[key]?.[ch] ?? 1
 const inheritLabel = computed(() => (props.stackBlend === 'normal'
   ? 'Default (normal)'
   : `Default (${blendLabel(props.stackBlend).toLowerCase()} when stacked)`))
+
+// Check if any layer has channel overrides (any channel != 1)
+const hasChannelOverrides = computed(() => {
+  for (const [, channels] of Object.entries(props.channel)) {
+    if (channels && Object.values(channels).some((v) => v !== 1)) return true
+  }
+  return false
+})
 
 // How the browse list is carved into sections. Subject is the catalogue's own
 // grouping (Fire, Soil, …); the other two re-cut the same layers by where the
