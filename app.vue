@@ -24,8 +24,11 @@
                access token, which the server render does not have, so a link
                drawn from it on the server hydrates into a different DOM. -->
           <ClientOnly>
-            <NuxtLink v-if="isMember" to="/pipeline" class="nav-link">Pipeline</NuxtLink>
-            <NuxtLink v-if="isMember" to="/modeling/maxent" class="nav-link">Models</NuxtLink>
+            <PopoverMenu v-if="isMember" icon="◈" label="Models" title="Model building and pipeline"
+                         class="nav-pop-inline" btn-class="nav-link-pop">
+              <NuxtLink to="/pipeline" class="nav-item">Pipeline</NuxtLink>
+              <NuxtLink to="/modeling/maxent" class="nav-item">Models</NuxtLink>
+            </PopoverMenu>
           </ClientOnly>
           <!-- Guide is always rightmost so it reads as a meta-nav item. -->
           <NuxtLink :to="guideLink.to" class="nav-link" :title="guideLink.title" :aria-label="guideLink.title">{{ guideLink.label }}</NuxtLink>
@@ -33,8 +36,11 @@
         <PopoverMenu class="nav-pop" icon="☰" title="Go to" align="right" btn-class="hdr-btn">
           <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-item">{{ l.title || l.label }}</NuxtLink>
           <ClientOnly>
-            <NuxtLink v-if="isMember" to="/pipeline" class="nav-item">Pipeline</NuxtLink>
-            <NuxtLink v-if="isMember" to="/modeling/maxent" class="nav-item">Models</NuxtLink>
+            <div v-if="isMember" class="nav-submenu">
+              <span class="nav-submenu-label">Models</span>
+              <NuxtLink to="/pipeline" class="nav-item">Pipeline</NuxtLink>
+              <NuxtLink to="/modeling/maxent" class="nav-item">Models</NuxtLink>
+            </div>
           </ClientOnly>
         </PopoverMenu>
         <ClientOnly>
@@ -343,6 +349,23 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 }
 .nav-link:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 .nav-link.router-link-exact-active { background: #3e4c59; color: #fff; }
+
+/* Models popover dropdown in main nav */
+.nav-pop-inline :deep(.pop-btn.nav-link-pop) {
+  background: transparent; color: #cbd2d9; border: 0; font-size: 0.9rem;
+  font-weight: 500; padding: 6px 12px; border-radius: 6px;
+}
+.nav-pop-inline :deep(.pop-btn.nav-link-pop:hover) { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.nav-pop-inline :deep(.pop-btn.nav-link-pop.on) { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.nav-pop-inline :deep(.pop-btn.nav-link-pop.router-link-active) { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+/* Models section in mobile menu */
+.nav-submenu { padding: 6px 0; border-top: 1px solid #52606d; }
+.nav-submenu-label {
+  display: block; padding: 8px 8px 4px; font-size: 0.75rem; font-weight: 600;
+  color: #9aa4b2; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.nav-submenu .nav-item { padding-left: 16px; }
 
 .filter-flag { background: #2b7a3d; color: #fff; border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .filter-flag:hover { background: #256a34; }
