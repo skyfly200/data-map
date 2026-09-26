@@ -63,6 +63,7 @@
 
 <script setup>
 import { useObservations } from '~/composables/useObservations'
+import { startLogCapture } from '~/composables/useBugReport'
 import { useUnits } from '~/composables/useUnits'
 import { useShareState } from '~/composables/useShareState'
 
@@ -109,7 +110,7 @@ useHead({
 // The dataset picker itself lives on the Data page; the app still loads the
 // manifest here so every view knows what's available from first paint.
 const { selectedDataset, setDataset, loadDatasets } = useObservations()
-onMounted(loadDatasets)
+onMounted(() => { startLogCapture(); loadDatasets() })
 
 const { activeCount: filterCount } = useFilters()
 
