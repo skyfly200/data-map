@@ -734,12 +734,13 @@ const sourceForm = reactive({
 
 function useMapView() {
   try {
-    const stored = JSON.parse(sessionStorage.getItem('mapView') || '{}')
-    if (stored.north != null) {
-      sourceForm.north = parseFloat(stored.north.toFixed(4))
-      sourceForm.south = parseFloat(stored.south.toFixed(4))
-      sourceForm.east  = parseFloat(stored.east.toFixed(4))
-      sourceForm.west  = parseFloat(stored.west.toFixed(4))
+    const stored = JSON.parse(localStorage.getItem('map-last-view') || '{}')
+    const b = stored.bounds || stored
+    if (b.north != null) {
+      sourceForm.north = parseFloat(b.north.toFixed(4))
+      sourceForm.south = parseFloat(b.south.toFixed(4))
+      sourceForm.east  = parseFloat(b.east.toFixed(4))
+      sourceForm.west  = parseFloat(b.west.toFixed(4))
     }
   } catch (_) {}
 }

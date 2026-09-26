@@ -2,6 +2,13 @@ import { shallowRef, watch } from 'vue'
 import { hasValue } from '~/composables/useObservations'
 import { fmtNum, FIELD_LABEL } from '~/composables/useMapPointStyle'
 
+// Below this zoom clusters are shown; at or above this zoom individual points.
+const DETAIL_ZOOM = 8
+
+function clusterRadius(count) {
+  return Math.max(8, Math.min(40, 8 + Math.log2(Math.max(1, count)) * 3))
+}
+
 export function useMapSelection({
   mapRef, LRef, geoLayerRef, filteredData, chunks,
   focusObservation, setFocusObservation,
@@ -15,6 +22,10 @@ export function useMapSelection({
   let fittedOnce = false
   let suppressFit = false
   let seenChunkVersion = 0
+
+  // Geographic cluster state (Supercluster)
+  let scIndex = null
+  const clusterLayerRef = shallowRef(null)
 
   const esc = (v) => String(v)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -72,16 +83,92 @@ export function useMapSelection({
     return co ? { ...base, lon: co[0], lat: co[1] } : base
   }
 
+  // Build / rebuild the Supercluster index from the current feature set.
+  async function buildClusterIndex(geo) {
+    if (!geo?.features?.length) { scIndex = null; return }
+    const { default: Supercluster } = await import('supercluster')
+    const sc = new Supercluster({ radius: 60, maxZoom: DETAIL_ZOOM - 1, minZoom: 0 })
+    sc.load(geo.features.filter((f) => f.geometry?.type === 'Point'))
+    scIndex = sc
+  }
+
+  function renderClusterLayer() {
+    const map = mapRef.value
+    const L = LRef.value
+    if (!map || !L || !scIndex) return
+
+    if (clusterLayerRef.value) { clusterLayerRef.value.remove(); clusterLayerRef.value = null }
+
+    const zoom = map.getZoom()
+    const b = map.getBounds()
+    const bbox = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]
+    const clusters = scIndex.getClusters(bbox, Math.floor(zoom))
+
+    const group = L.layerGroup()
+
+    for (const c of clusters) {
+      const [lng, lat] = c.geometry.coordinates
+      const props = c.properties
+      const isCluster = props.cluster === true
+      const count = props.point_count || 1
+
+      if (isCluster) {
+        const r = clusterRadius(count)
+        L.circleMarker([lat, lng], {
+          radius: r, color: '#fff', weight: 1.5,
+          fillColor: '#2a78d6', fillOpacity: 0.82,
+        }).bindTooltip(String(count), { permanent: true, direction: 'center', className: 'cluster-label' })
+          .on('click', () => {
+            const expansionZoom = Math.min(scIndex.getClusterExpansionZoom(props.cluster_id), DETAIL_ZOOM)
+            map.flyTo([lat, lng], expansionZoom, { duration: 0.4 })
+          })
+          .addTo(group)
+      } else {
+        // Single unclustered point at this zoom — draw like a regular marker but lightweight.
+        L.circleMarker([lat, lng], {
+          radius: 5, ...markerStyle(props),
+        }).bindTooltip(props.species || 'Observation', { direction: 'top', sticky: true, className: 'obs-tip' })
+          .on('click', () => {
+            selected.value = selectFeature({ properties: props, geometry: c.geometry })
+            selectedLatLng.value = [lat, lng]
+          })
+          .addTo(group)
+      }
+    }
+
+    group.addTo(map)
+    clusterLayerRef.value = group
+  }
+
+  function updateView() {
+    const map = mapRef.value
+    if (!map) return
+    const zoom = map.getZoom()
+
+    if (zoom >= DETAIL_ZOOM) {
+      // Individual points mode: remove cluster layer, ensure point layer is shown.
+      if (clusterLayerRef.value) { clusterLayerRef.value.remove(); clusterLayerRef.value = null }
+      if (geoLayerRef.value && showPoints.value && !map.hasLayer(geoLayerRef.value)) {
+        geoLayerRef.value.addTo(map)
+      }
+    } else {
+      // Cluster mode: hide point layer, show clusters.
+      if (geoLayerRef.value && map.hasLayer(geoLayerRef.value)) geoLayerRef.value.remove()
+      renderClusterLayer()
+    }
+  }
+
   function renderPoints(geo) {
     const map = mapRef.value
     const L = LRef.value
     if (!map || !L || !geo) return
     if (geoLayerRef.value) { geoLayerRef.value.remove(); geoLayerRef.value = null }
+    if (clusterLayerRef.value) { clusterLayerRef.value.remove(); clusterLayerRef.value = null }
     if (!suppressFit) selected.value = null
 
     const layer = L.geoJSON(geo, {
       pointToLayer: (feature, latlng) => L.circleMarker(latlng, markerStyle(feature.properties)),
-    }).addTo(map)
+    })
 
     layer.bindTooltip((lyr) => pointTooltip(lyr.feature),
                       { direction: 'top', sticky: true, className: 'obs-tip' })
@@ -93,8 +180,6 @@ export function useMapSelection({
       selectedLatLng.value = co ? [co[1], co[0]] : null
     })
 
-    if (!showPoints.value) layer.remove()
-
     const bounds = layer.getBounds()
     if (bounds.isValid() && !suppressFit) {
       map.fitBounds(bounds.pad(0.1), { animate: false })
@@ -102,6 +187,9 @@ export function useMapSelection({
     }
     suppressFit = false
     geoLayerRef.value = layer
+
+    // Build cluster index, then show the right mode for current zoom.
+    buildClusterIndex(geo).then(() => updateView())
   }
 
   watch(filteredData, (geo) => {
@@ -156,6 +244,7 @@ export function useMapSelection({
   return {
     selected, selectedLatLng,
     selectFeature, renderPoints, applyFocus, pointTooltip,
+    updateClusterView: updateView,
     setSuppressFit: (v) => { suppressFit = v },
     setFittedOnce: (v) => { fittedOnce = v },
   }
