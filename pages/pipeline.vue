@@ -656,7 +656,7 @@ async function runFetch() {
     if (!res.ok || !data.ok) throw new Error(data.error || `Fetch failed (${res.status})`)
     if (!data.count) throw new Error('No records found for that taxon.')
 
-    // Register the uploaded file in saved_datasets so the pipeline can use it.
+    // Register the uploaded file in datasets so the pipeline can use it.
     const storagePath = `species/${data.slug}.geojson`
     const title = `${fetchForm.taxon.trim()} (${src === 'gbif' ? 'GBIF' : 'iNat'}, ${data.count})`
     const saveRes = await fetch('/.netlify/functions/datasets', {

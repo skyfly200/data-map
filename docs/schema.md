@@ -1,65 +1,12 @@
 # Database Schema
 
-Full canonical schema lives in `supabase_schema.sql`. Apply it to a fresh or existing database — the script is idempotent.
+Applied incrementally via `supabase/migrations/`. Run each file in order on a new or existing database.
+
+> **Observation data lives in Supabase Storage** (GeoJSON files), not in Postgres. The old `observations` and `observation_enrichments` tables are dropped by migration 012.
 
 ---
 
 ## Tables
-
-### `public.observations`
-
-Canonical observation table for iNaturalist sync. One row per iNaturalist record, keyed by `inat_id`.
-
-| Column | Type | Notes |
-|---|---|---|
-| `inat_id` | `bigint` | **Primary key** — iNaturalist record ID |
-| `uuid` | `text` | iNaturalist UUID |
-| `species` | `text` | Taxon/species name |
-| `date` | `date` | Observation date |
-| `lat` | `double precision` | Latitude |
-| `lon` | `double precision` | Longitude |
-| `location` | `text` | Human-readable location string |
-| `num_identification_agreements` | `integer` | Agreement count from iNat |
-| `quality_grade` | `text` | e.g. `"research"`, `"needs_id"` |
-| `raw_payload` | `jsonb` | Full raw API response |
-| `created_at` | `timestamptz` | Row creation time (default `now()`) |
-| `updated_at` | `timestamptz` | Auto-updated on every write via trigger |
-
-**Indexes:**
-- `observations_species_idx` — on `species`
-- `observations_date_idx` — on `date`
-- `observations_location_idx` — spatial GiST index on `ST_GeomFromText('POINT(' || lon || ' ' || lat || ')', 4326)`
-
-**Triggers:**
-- `observations_set_updated_at` — sets `updated_at = now()` before every update
-
----
-
-### `public.observation_enrichments`
-
-Optional enrichment table for data appended by the Python/GEE pipeline. One row per observation, 1:1 with `observations`.
-
-| Column | Type | Notes |
-|---|---|---|
-| `inat_id` | `bigint` | **Primary key** — FK → `observations.inat_id` (cascade delete) |
-| `elevation` | `double precision` | Elevation (m) |
-| `tavg` | `double precision` | Average temperature |
-| `tmin` | `double precision` | Minimum temperature |
-| `tmax` | `double precision` | Maximum temperature |
-| `soil_moisture` | `double precision` | Soil moisture index |
-| `ndvi` | `double precision` | NDVI value |
-| `precip_7d` | `double precision` | 7-day precipitation |
-| `cluster` | `integer` | MaxEnt/clustering label |
-| `created_at` | `timestamptz` | Row creation time (default `now()`) |
-| `updated_at` | `timestamptz` | Auto-updated on every write via trigger |
-
-**Indexes:**
-- `observation_enrichments_cluster_idx` — on `cluster`
-
-**Triggers:**
-- `observation_enrichments_set_updated_at` — sets `updated_at = now()` before every update
-
----
 
 ### `public.user_settings`
 
@@ -75,6 +22,27 @@ Per-user display preferences stored as a single JSON blob. Avoids migrations for
 
 **Triggers:**
 - `user_settings_set_updated_at` — sets `updated_at = now()` before every update
+
+---
+
+### `public.datasets`
+
+Named, reusable datasets promoted from job results or uploaded directly. Renamed from `saved_datasets` in migration 011.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `uuid` | **Primary key** — auto-generated |
+| `owner_id` | `uuid` | FK → `auth.users(id)` (cascade delete) |
+| `title` | `text` | Human-readable name |
+| `slug` | `text` | URL-safe identifier, unique |
+| `visibility` | `text` | `'private'` or `'public'` |
+| `path` | `text` | Supabase Storage path to the GeoJSON file |
+| `created_at` | `timestamptz` | Row creation time |
+| `updated_at` | `timestamptz` | Auto-updated on every write via trigger |
+
+**Indexes:** `datasets_visibility_idx`, `datasets_owner_idx`
+
+**RLS:** Enabled. See migration 002 for policies.
 
 ---
 
@@ -148,7 +116,8 @@ on conflict (inat_id) do update set
 auth.users
   └─ user_settings  (1:1, cascade delete)
   └─ saved_charts   (1:many, cascade delete)
+  └─ datasets       (1:many, cascade delete via owner_id)
 
-observations
-  └─ observation_enrichments  (1:1, cascade delete)
+model_configs
+  └─ datasets       (FK source_dataset_id, SET NULL on delete)
 ```

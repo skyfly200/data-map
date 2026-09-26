@@ -47,7 +47,7 @@ function fail(err) {
 
 /** The caller's own datasets, newest first. */
 async function listMine(client, viewer) {
-  const { data, error } = await client.from('saved_datasets')
+  const { data, error } = await client.from('datasets')
     .select(FIELDS).eq('owner_id', viewer.userId).order('created_at', { ascending: false })
   if (error) throw new Error(error.message)
   return json({ ok: true, datasets: data || [], max: MAX_DATASETS_PER_MEMBER })
@@ -62,7 +62,7 @@ async function listMine(client, viewer) {
  * fetching every dataset on the deployment first.
  */
 async function listAvailable(client, viewer) {
-  let query = client.from('saved_datasets').select(FIELDS).order('title')
+  let query = client.from('datasets').select(FIELDS).order('title')
   if (viewer.tier !== 'admin') {
     const clauses = ['visibility.eq.public']
     if (viewer.userId) clauses.push(`owner_id.eq.${viewer.userId}`)
@@ -114,7 +114,7 @@ async function save(client, viewer, body) {
       { status: 409, code: 'not_finished' })
   }
 
-  const { count, error: countErr } = await client.from('saved_datasets')
+  const { count, error: countErr } = await client.from('datasets')
     .select('id', { count: 'exact', head: true }).eq('owner_id', viewer.userId)
   if (countErr) throw new Error(countErr.message)
   if ((count || 0) >= MAX_DATASETS_PER_MEMBER) {
@@ -129,11 +129,11 @@ async function save(client, viewer, body) {
   // Slugs are unique across the table, so a title somebody else has used gets
   // the next free suffix rather than an error naming their dataset.
   const base = slugify(title)
-  const { data: clashes } = await client.from('saved_datasets')
+  const { data: clashes } = await client.from('datasets')
     .select('slug').like('slug', `${base}%`)
   const slug = nextFreeSlug(base, (clashes || []).map((r) => r.slug))
 
-  const { data, error } = await client.from('saved_datasets').insert({
+  const { data, error } = await client.from('datasets').insert({
     owner_id: viewer.userId,
     job_id: job.id,
     slug,
@@ -151,7 +151,7 @@ async function save(client, viewer, body) {
 }
 
 /**
- * Register a file already uploaded by fetch-species / gbif-fetch into saved_datasets.
+ * Register a file already uploaded by fetch-species / gbif-fetch into datasets.
  * Accepts { path, slug, title, description?, visibility?, feature_count? }.
  * The path must live under species/ in the datasets bucket (validated server-side).
  */
@@ -163,7 +163,7 @@ async function saveFetched(client, viewer, body) {
     throw new DatasetAccessError('Only species/ paths may be registered this way.', { status: 400, code: 'bad_path' })
   }
 
-  const { count, error: countErr } = await client.from('saved_datasets')
+  const { count, error: countErr } = await client.from('datasets')
     .select('id', { count: 'exact', head: true }).eq('owner_id', viewer.userId)
   if (countErr) throw new Error(countErr.message)
   if ((count || 0) >= MAX_DATASETS_PER_MEMBER) {
@@ -176,16 +176,16 @@ async function saveFetched(client, viewer, body) {
   const visibility = checkVisibility(body.visibility, viewer)
 
   // If this path is already registered for this user, return the existing row.
-  const { data: existing } = await client.from('saved_datasets')
+  const { data: existing } = await client.from('datasets')
     .select(FIELDS).eq('owner_id', viewer.userId).eq('path', path).maybeSingle()
   if (existing) return json({ ok: true, dataset: existing, status: 'existing' })
 
   const base = incomingSlug || slugify(title)
-  const { data: clashes } = await client.from('saved_datasets')
+  const { data: clashes } = await client.from('datasets')
     .select('slug').like('slug', `${base}%`)
   const slug = nextFreeSlug(base, (clashes || []).map((r) => r.slug))
 
-  const { data, error } = await client.from('saved_datasets').insert({
+  const { data, error } = await client.from('datasets').insert({
     owner_id: viewer.userId,
     slug,
     title,
@@ -203,7 +203,7 @@ async function update(client, viewer, body) {
   if (!id) throw new DatasetAccessError('Which dataset?', { status: 400, code: 'no_id' })
 
   const { data: row, error: readErr } = await client
-    .from('saved_datasets').select(FIELDS).eq('id', id).maybeSingle()
+    .from('datasets').select(FIELDS).eq('id', id).maybeSingle()
   if (readErr) throw new Error(readErr.message)
   if (!canWrite(row, viewer)) {
     throw new DatasetAccessError('No dataset of yours has that id.', { status: 404, code: 'no_dataset' })
@@ -225,7 +225,7 @@ async function update(client, viewer, body) {
 
   // The slug is left alone on purpose: it is how other jobs name this dataset,
   // and renaming it would break a spec that already references it.
-  const { data, error } = await client.from('saved_datasets')
+  const { data, error } = await client.from('datasets')
     .update(patch).eq('id', id).select(FIELDS).single()
   if (error) throw new Error(error.message)
   return json({ ok: true, dataset: data })
@@ -236,7 +236,7 @@ async function remove(client, viewer, body) {
   if (!id) throw new DatasetAccessError('Which dataset?', { status: 400, code: 'no_id' })
 
   const { data: row, error: readErr } = await client
-    .from('saved_datasets').select('id, owner_id, visibility').eq('id', id).maybeSingle()
+    .from('datasets').select('id, owner_id, visibility').eq('id', id).maybeSingle()
   if (readErr) throw new Error(readErr.message)
   if (!canWrite(row, viewer)) {
     throw new DatasetAccessError('No dataset of yours has that id.', { status: 404, code: 'no_dataset' })
@@ -245,7 +245,7 @@ async function remove(client, viewer, body) {
   // The row goes; the file stays. It is still the job's result and the job row
   // still points at it, so deleting the file here would quietly empty a job
   // the member can still see in their history.
-  const { error } = await client.from('saved_datasets').delete().eq('id', id)
+  const { error } = await client.from('datasets').delete().eq('id', id)
   if (error) throw new Error(error.message)
   return json({ ok: true, deleted: id })
 }
@@ -339,7 +339,7 @@ async function importCsv(client, viewer, body) {
       { status: 400, code: 'no_features' })
   }
 
-  const { count, error: countErr } = await client.from('saved_datasets')
+  const { count, error: countErr } = await client.from('datasets')
     .select('id', { count: 'exact', head: true }).eq('owner_id', viewer.userId)
   if (countErr) throw new Error(countErr.message)
   if ((count || 0) >= MAX_DATASETS_PER_MEMBER) {
@@ -353,13 +353,13 @@ async function importCsv(client, viewer, body) {
   const visibility = checkVisibility(body.visibility, viewer)
 
   const base = slugify(title)
-  const { data: clashes } = await client.from('saved_datasets').select('slug').like('slug', `${base}%`)
+  const { data: clashes } = await client.from('datasets').select('slug').like('slug', `${base}%`)
   const slug = nextFreeSlug(base, (clashes || []).map(r => r.slug))
 
   const path = `datasets/${viewer.userId}/${slug}-${Date.now()}.geojson`
   await uploadJson(path, geojson)
 
-  const { data, error } = await client.from('saved_datasets').insert({
+  const { data, error } = await client.from('datasets').insert({
     owner_id: viewer.userId,
     job_id: null,
     slug,
@@ -384,7 +384,7 @@ async function importAsset(client, viewer, body) {
     throw new DatasetAccessError('Provide an asset_path.', { status: 400, code: 'no_asset' })
   }
 
-  const { count, error: countErr } = await client.from('saved_datasets')
+  const { count, error: countErr } = await client.from('datasets')
     .select('id', { count: 'exact', head: true }).eq('owner_id', viewer.userId)
   if (countErr) throw new Error(countErr.message)
   if ((count || 0) >= MAX_DATASETS_PER_MEMBER) {
@@ -419,7 +419,7 @@ async function importAsset(client, viewer, body) {
 
   // Generate slug
   const base = slugify(title)
-  const { data: clashes } = await client.from('saved_datasets')
+  const { data: clashes } = await client.from('datasets')
     .select('slug').like('slug', `${base}%`)
   const slug = nextFreeSlug(base, (clashes || []).map((r) => r.slug))
 
@@ -433,7 +433,7 @@ async function importAsset(client, viewer, body) {
   const bytes = JSON.stringify(geojson).length
 
   // Create the dataset record
-  const { data, error } = await client.from('saved_datasets').insert({
+  const { data, error } = await client.from('datasets').insert({
     owner_id: viewer.userId,
     job_id: null,  // Not from a job
     slug,

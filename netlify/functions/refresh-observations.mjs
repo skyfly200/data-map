@@ -2,16 +2,13 @@
 // runs. Fetches recent iNaturalist sightings, keeps only those NOT already in
 // the current dataset, samples the terrain rasters for them (if the rasters
 // are bundled), and writes the merged result back as a single authoritative
-// observations.geojson in Supabase Storage (or stores only the new features in
-// Netlify Blobs when Supabase is not configured — the serving function overlays
-// them on the committed baseline in that case).
+// observations.geojson in Supabase Storage.
 
-import { getStore } from '@netlify/blobs'
 import { join } from 'node:path'
 import { fetchInatFeatures, newFeatures, overlay } from '../lib/observations.mjs'
 import { openTerrain, enrichFeatureTerrain } from '../lib/terrain.mjs'
 import { loadBaseline } from '../lib/baseline.mjs'
-import { supabaseConfigured, serviceClient } from '../lib/supabase-storage.mjs'
+import { serviceClient } from '../lib/supabase-storage.mjs'
 import { uploadJson, readJson } from '../lib/datasets-store.mjs'
 import { logCronRun } from '../lib/cron-jobs.mjs'
 
@@ -21,9 +18,7 @@ export const config = { schedule: '0 */6 * * *' }
 export default async () => {
   const t0 = Date.now()
   try {
-    let baseline = null
-    if (supabaseConfigured()) baseline = await readJson('observations.geojson')
-    if (!baseline) baseline = await loadBaseline()
+    const baseline = await readJson('observations.geojson') ?? await loadBaseline()
 
     const opts = {
       taxonName: process.env.INAT_TAXON || 'morchella',
@@ -44,22 +39,10 @@ export default async () => {
       }
     }
 
-    let sink = 'netlify-blob'
-    if (supabaseConfigured()) {
-      // Merge new features into the existing dataset and write back a single
-      // authoritative file. The serving function reads this directly with no
-      // overlay needed.
-      const merged = overlay(baseline, news)
-      await uploadJson('observations.geojson', merged)
-      sink = 'supabase'
-    } else {
-      // Non-Supabase path: store only the new features; the serving function
-      // overlays them on the committed baseline at request time.
-      const store = getStore('observations')
-      await store.setJSON('new-observations', { type: 'FeatureCollection', features: news })
-    }
+    const merged = overlay(baseline, news)
+    await uploadJson('observations.geojson', merged)
 
-    const result = { ok: true, sink, baseline: baseline.features?.length ?? 0, new: news.length }
+    const result = { ok: true, sink: 'supabase', baseline: baseline.features?.length ?? 0, new: news.length }
     await logCronRun(serviceClient(), {
       jobId: 'refresh-observations',
       status: 'ok',

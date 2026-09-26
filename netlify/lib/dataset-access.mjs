@@ -115,7 +115,7 @@ export async function resolveDataset({ client, slug, viewer }) {
   if (!clean) refuse()
 
   const { data, error } = await client
-    .from('saved_datasets').select('*').eq('slug', clean).maybeSingle()
+    .from('datasets').select('*').eq('slug', clean).maybeSingle()
   if (error) {
     throw new DatasetAccessError(`Could not look that dataset up: ${error.message}`,
       { status: 500, code: 'lookup_failed' })

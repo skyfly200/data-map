@@ -117,7 +117,7 @@ export default async function handler(request) {
     const what = new URL(request.url).searchParams.get('what') || 'members'
     try {
       if (what === 'datasets') {
-        const { data, error } = await client.from('saved_datasets')
+        const { data, error } = await client.from('datasets')
           .select('*').order('created_at', { ascending: false })
         if (error) throw new Error(error.message)
         return json({ ok: true, datasets: data || [] })
@@ -215,7 +215,7 @@ export default async function handler(request) {
       if (body.description !== undefined) patch.description = String(body.description).slice(0, 2000)
       if (!Object.keys(patch).length) throw new Error('Nothing to change.')
 
-      const { data, error } = await client.from('saved_datasets')
+      const { data, error } = await client.from('datasets')
         .update(patch).eq('id', body.id).select().single()
       if (error) throw new Error(error.message)
       return json({ ok: true, dataset: data })
@@ -225,7 +225,7 @@ export default async function handler(request) {
       if (!body.id) throw new Error('Which dataset?')
       // The row goes; the stored file is left. Deleting both from one click is
       // how a shared dataset gets lost by accident, and storage is cheap.
-      const { error } = await client.from('saved_datasets').delete().eq('id', body.id)
+      const { error } = await client.from('datasets').delete().eq('id', body.id)
       if (error) throw new Error(error.message)
       return json({ ok: true, deleted: body.id })
     }

@@ -229,14 +229,14 @@ export default defineEventHandler(async (event) => {
         : `CSV import — ${validCount} occurrence records, ${skippedCount} skipped.`
 
       const base = slugify(title)
-      const { data: clashes } = await client.from('saved_datasets')
+      const { data: clashes } = await client.from('datasets')
         .select('slug').like('slug', `${base}%`)
       const slug = nextFreeSlug(base, (clashes || []).map((r: any) => r.slug))
       const path = `datasets/${user.id}/${slug}-${Date.now()}.geojson`
       const body = await uploadJson(path, geojson)
       const bytes = body.length
 
-      const { data, error } = await client.from('saved_datasets').insert({
+      const { data, error } = await client.from('datasets').insert({
         owner_id: user.id, job_id: null, slug, title, description, path,
         visibility: DEFAULT_VISIBILITY, feature_count: validCount, bytes,
       }).select(FIELDS).single()
