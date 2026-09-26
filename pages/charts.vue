@@ -255,23 +255,36 @@
       </section>
 
     <div class="grid">
+      <h3 class="grid-group">Observations</h3>
+
       <GalleryChart id="clusters">
         <BarChart title="Observations per environmental cluster" :data="clusterData" :format="int" />
         <p class="note">Colors match the map. "Unclustered" = missing every clustering feature.</p>
       </GalleryChart>
 
-      <GalleryChart id="rain-leadup" v-if="hasRainData">
-        <BarChart title="Avg. rain in the 7 days before an observation" :data="rainLeadUp" :format="mm" />
-        <p class="note">Mean daily precipitation (mm) across all observations, by days before the find.</p>
-      </GalleryChart>
-
-      <GalleryChart id="by-month">
-        <BarChart title="Observations by month" :data="monthData" :format="int" />
-      </GalleryChart>
-
       <GalleryChart id="by-week">
         <BarChart title="Observations by week of year" :data="weekData" :format="int" />
         <p class="note">Seasonal timing across all years (ISO week 1–53), ignoring which year.</p>
+      </GalleryChart>
+
+      <GalleryChart id="top-species">
+        <BarChart title="Top species" :data="speciesData" :format="int" horizontal />
+      </GalleryChart>
+
+      <GalleryChart id="elevation-dist">
+        <BarChart title="Elevation distribution" :data="elevationData" :format="int" />
+        <p class="note">Count of observations per elevation band ({{ unit }}).</p>
+      </GalleryChart>
+
+      <GalleryChart id="land-cover">
+        <BarChart title="Land cover" :data="landCoverData" :format="int" horizontal />
+      </GalleryChart>
+
+      <h3 class="grid-group">Environment</h3>
+
+      <GalleryChart id="rain-leadup" v-if="hasRainData">
+        <BarChart title="Avg. rain in the 7 days before an observation" :data="rainLeadUp" :format="mm" />
+        <p class="note">Mean daily precipitation (mm) across all observations, by days before the find.</p>
       </GalleryChart>
 
       <GalleryChart id="temp-leadup" v-if="hasTempHistory">
@@ -284,49 +297,7 @@
         <p class="note">Count of observations per 2° band, split into low and high day temperatures.</p>
       </GalleryChart>
 
-      <GalleryChart id="elevation-dist">
-        <BarChart title="Elevation distribution" :data="elevationData" :format="int" />
-        <p class="note">Count of observations per elevation band ({{ unit }}).</p>
-      </GalleryChart>
-
-      <GalleryChart id="land-cover">
-        <BarChart title="Land cover" :data="landCoverData" :format="int" horizontal />
-      </GalleryChart>
-
-      <GalleryChart id="top-species">
-        <BarChart title="Top species" :data="speciesData" :format="int" horizontal />
-      </GalleryChart>
-
-      <GalleryChart id="elev-vs-doy" v-if="elevVsDoy.length">
-        <ScatterChart title="Elevation vs. day of year" :data="elevVsDoy" :legend="clusterLegend"
-          xKey="day_of_year" yKey="elevation"
-          xLabel="Day of year" :yLabel="`Elevation (${unit})`"
-          :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v).toLocaleString()"
-          @select="selected = $event" />
-        <p class="note">Each point is one observation, colored by cluster: seasonal timing across elevation.</p>
-      </GalleryChart>
-
-      <GalleryChart id="elev-vs-temp" v-if="elevVsTemp.length">
-        <ScatterChart title="Elevation vs. observation-day high temp" :data="elevVsTemp" :legend="clusterLegend"
-          xKey="tmax" yKey="elevation"
-          :xLabel="`High temp (°${tempUnit})`" :yLabel="`Elevation (${unit})`"
-          :xFormat="(v) => `${Math.round(v)}°`" :yFormat="(v) => Math.round(v).toLocaleString()"
-          @select="selected = $event" />
-        <p class="note">
-          These rise together (ρ +0.43), which is not altitude warming anything: high
-          finds happen in summer and low ones in spring and autumn. Hold the season
-          still and the relationship flattens to about zero.
-        </p>
-      </GalleryChart>
-
-      <GalleryChart id="rain-vs-doy" v-if="rainVsDoy.length">
-        <ScatterChart title="7-day rain total vs. day of year" :data="rainVsDoy" :legend="clusterLegend"
-          xKey="day_of_year" yKey="rain7"
-          xLabel="Day of year" yLabel="Rain total (mm)"
-          :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v)"
-          @select="selected = $event" />
-        <p class="note">Total precipitation in the 7 days before each find.</p>
-      </GalleryChart>
+      <h3 class="grid-group">Species detail</h3>
 
       <GalleryChart id="phenology" v-if="phenologyBySpecies.length">
         <BoxPlot title="Fruiting season by species" :data="phenologyBySpecies" xLabel="Day of year" valueKey="day_of_year"
@@ -339,28 +310,49 @@
           :format="(v) => Math.round(v).toLocaleString()" />
         <p class="note">Elevation band each species prefers (top {{ TOP_SPECIES_BOX }} by count, ≥3 obs each).</p>
       </GalleryChart>
+    </div>
 
-      <GalleryChart id="cluster-profile" v-if="clusterProfile.rows.length">
-        <HeatmapChart title="Environmental cluster profiles" :rows="clusterProfile.rows"
-          :cols="clusterProfile.cols" :matrix="clusterProfile.matrix" :format="(v) => v.toFixed(2)" />
-        <p class="note">Mean of each feature per cluster, scaled 0–1 across clusters: what defines each group.</p>
-      </GalleryChart>
+    <!-- More charts: opt-in, collapsed by default -->
+    <div class="more-charts">
+      <button class="more-toggle" @click="showMore = !showMore">
+        {{ showMore ? '▲ Fewer charts' : '▼ More charts' }}
+      </button>
+      <div v-if="showMore" class="grid more-grid">
+        <GalleryChart id="elev-vs-doy" v-if="elevVsDoy.length">
+          <ScatterChart title="Elevation vs. day of year" :data="elevVsDoy" :legend="clusterLegend"
+            xKey="day_of_year" yKey="elevation"
+            xLabel="Day of year" :yLabel="`Elevation (${unit})`"
+            :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v).toLocaleString()"
+            @select="selected = $event" />
+          <p class="note">Each point is one observation, colored by cluster: seasonal timing across elevation.</p>
+        </GalleryChart>
 
-      <GalleryChart id="species-landcover" v-if="speciesLandcover.rows.length">
-        <HeatmapChart title="Species × land cover" :rows="speciesLandcover.rows"
-          :cols="speciesLandcover.cols" :matrix="speciesLandcover.matrix" :format="(v) => `${Math.round(v)}`" />
-        <p class="note">How many observations of each species fall in each land-cover class.</p>
-      </GalleryChart>
+        <GalleryChart id="rain-vs-doy" v-if="rainVsDoy.length">
+          <ScatterChart title="7-day rain total vs. day of year" :data="rainVsDoy" :legend="clusterLegend"
+            xKey="day_of_year" yKey="rain7"
+            xLabel="Day of year" yLabel="Rain total (mm)"
+            :xFormat="(v) => Math.round(v)" :yFormat="(v) => Math.round(v)"
+            @select="selected = $event" />
+          <p class="note">Total precipitation in the 7 days before each find.</p>
+        </GalleryChart>
 
-      <GalleryChart id="antecedent-rain" v-if="rainBeforeDist.length">
-        <BarChart title="Antecedent rainfall (7-day total before finds)" :data="rainBeforeDist" :format="int" />
-        <p class="note">Distribution of total precipitation (mm) in the week before each observation.</p>
-      </GalleryChart>
+        <GalleryChart id="cluster-profile" v-if="clusterProfile.rows.length">
+          <HeatmapChart title="Environmental cluster profiles" :rows="clusterProfile.rows"
+            :cols="clusterProfile.cols" :matrix="clusterProfile.matrix" :format="(v) => v.toFixed(2)" />
+          <p class="note">Mean of each feature per cluster, scaled 0–1 across clusters: what defines each group.</p>
+        </GalleryChart>
 
-      <GalleryChart id="aspect" v-if="aspectValues.length">
-        <WindRose title="Slope aspect of finds" :values="aspectValues" />
-        <p class="note">Which compass direction the ground faces at each find (from the DEM).</p>
-      </GalleryChart>
+        <GalleryChart id="species-landcover" v-if="speciesLandcover.rows.length">
+          <HeatmapChart title="Species × land cover" :rows="speciesLandcover.rows"
+            :cols="speciesLandcover.cols" :matrix="speciesLandcover.matrix" :format="(v) => `${Math.round(v)}`" />
+          <p class="note">How many observations of each species fall in each land-cover class.</p>
+        </GalleryChart>
+
+        <GalleryChart id="aspect" v-if="aspectValues.length">
+          <WindRose title="Slope aspect of finds" :values="aspectValues" />
+          <p class="note">Which compass direction the ground faces at each find (from the DEM).</p>
+        </GalleryChart>
+      </div>
     </div>
     </template>
 
@@ -522,6 +514,7 @@ const rainVsDoy = computed(() => rows.value
 
 // Click a scatter point to open its observation (iNat link + open on map).
 const selected = ref(null)
+const showMore = ref(false)
 
 // ── Distribution charts (box plots, heatmaps, wind-rose) ─────────────────────
 const MIN_PER_SPECIES = 3
@@ -913,6 +906,20 @@ const coverageByYear = computed(() => coverage.value.years.map((y) => {
 .tbl .muted { color: var(--muted); }
 .barcell { width: 34%; }
 .bar { display: block; height: 8px; border-radius: 4px; }
+
+.grid-group {
+  grid-column: 1 / -1; margin: 16px 0 4px; font-size: 0.78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+  border-bottom: 1px solid var(--border); padding-bottom: 6px;
+}
+.grid-group:first-child { margin-top: 4px; }
+.more-charts { margin-top: 12px; }
+.more-toggle {
+  border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer;
+  border-radius: 6px; padding: 6px 14px; font-size: 0.82rem; font-weight: 600; margin-bottom: 12px;
+}
+.more-toggle:hover { background: var(--surface-2); color: var(--text); }
+.more-grid { margin-top: 0; }
 
 .saved { margin-bottom: 22px; }
 .saved-title { margin: 0 0 10px; font-size: 1rem; color: var(--text); }

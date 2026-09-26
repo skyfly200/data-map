@@ -1,5 +1,9 @@
 <template>
   <section ref="card" class="card">
+    <div v-if="title" class="card-header">
+      <h3 class="card-title">{{ title }}</h3>
+      <p v-if="description" class="card-desc">{{ description }}</p>
+    </div>
     <div class="card-tools">
       <button class="tool" :title="saving ? 'Saving…' : 'Save as PNG (shift-click for SVG)'"
               :disabled="saving" @click="save($event)">
@@ -16,6 +20,11 @@
 </template>
 
 <script setup>
+const props = defineProps({
+  title: { type: String, default: '' },
+  description: { type: String, default: '' },
+})
+const { title, description } = toRefs(props)
 const card = ref(null)
 const isFull = ref(false)
 
@@ -69,6 +78,9 @@ onBeforeUnmount(() => document.removeEventListener('fullscreenchange', onChange)
   height: var(--chart-card-height, 340px);
   display: flex; flex-direction: column;
 }
+.card-header { margin: 0 0 8px; padding-right: 56px; }
+.card-title { margin: 0; font-size: 0.92rem; font-weight: 700; color: var(--text); }
+.card-desc { margin: 2px 0 0; font-size: 0.76rem; color: var(--muted); }
 .card-body {
   flex: 1; min-height: 0; overflow: hidden; position: relative;
 }

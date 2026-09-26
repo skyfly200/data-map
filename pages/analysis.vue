@@ -1,3 +1,7 @@
+<script setup>
+definePageMeta({ middleware: () => navigateTo('/charts?tab=analysis', { redirectCode: 301 }) })
+</script>
+
 <template>
   <div class="analysis">
     <nav class="tabs">
