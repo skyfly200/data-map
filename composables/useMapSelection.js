@@ -152,9 +152,14 @@ export function useMapSelection({
         geoLayerRef.value.addTo(map)
       }
     } else {
-      // Cluster mode: hide point layer, show clusters.
+      // Cluster mode: hide point layer, show clusters (unless points are hidden).
       if (geoLayerRef.value && map.hasLayer(geoLayerRef.value)) geoLayerRef.value.remove()
-      renderClusterLayer()
+      if (showPoints.value) {
+        renderClusterLayer()
+      } else if (clusterLayerRef.value) {
+        clusterLayerRef.value.remove()
+        clusterLayerRef.value = null
+      }
     }
   }
 

@@ -361,9 +361,12 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
     const map = mapRef.value
     const next = baseLayers.value.find((b) => b.key === key)
     if (!next || !map) return
+    const center = map.getCenter()
+    const zoom = map.getZoom()
     for (const b of baseLayers.value) if (b.layer !== next.layer) safeRemoveLayer(b.layer)
     if (!map.hasLayer(next.layer)) next.layer.addTo(map)
     next.layer.bringToBack()
+    map.setView(center, zoom, { animate: false })
     activeBase.value = key
     try { localStorage.setItem(BASE_KEY, key) } catch { /* private mode */ }
   }
