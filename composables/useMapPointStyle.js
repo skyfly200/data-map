@@ -132,7 +132,8 @@ export function useMapPointStyle({ filteredData, live }) {
     const conv = meta.unit === 'elev' ? elevValue : meta.unit === 'temp' ? tempValue : (v) => Number(v)
     const unitSuffix = meta.unit === 'elev' ? ` (${unit.value})` : meta.unit === 'temp' ? ` (°${tempUnit.value})` : ''
     const vals = feats.map((f) => f.properties[key]).filter(hasValue).map((v) => conv(Number(v)))
-    const dataMin = vals.length ? Math.min(...vals) : 0
+    const rawMin = vals.length ? Math.min(...vals) : 0
+    const dataMin = meta.unit === 'elev' ? Math.max(0, rawMin) : rawMin
     const dataMax = vals.length ? Math.max(...vals) : 1
     const palette = paletteFor(key)
     const chosen = chosenPointRamp.value

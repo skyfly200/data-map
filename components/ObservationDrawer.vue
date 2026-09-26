@@ -57,29 +57,29 @@
         </dl>
       </section>
 
-      <dl v-if="hasValue(selected.cluster) || genus" class="meta">
-        <!-- Built here rather than in detailSections because neither depends on
-             the unit formatters, but they take their explanations from the same
-             table so the drawer speaks with one voice. -->
-        <div v-if="genus">
-          <dt><button type="button" class="tip-label" :title="STAT_TIPS.Genus"
-                      :aria-expanded="String(openTips.has('Genus'))"
-                      @click="toggleTip('Genus')">Genus</button></dt>
-          <dd>
-            <em>{{ genus }}</em>
-            <small v-if="openTips.has('Genus')" class="hint tip-body">{{ STAT_TIPS.Genus }}</small>
-          </dd>
-        </div>
-        <div v-if="hasValue(selected.cluster)">
-          <dt><button type="button" class="tip-label" :title="STAT_TIPS.Cluster"
-                      :aria-expanded="String(openTips.has('Cluster'))"
-                      @click="toggleTip('Cluster')">Cluster</button></dt>
-          <dd>
-            <span class="chip" :style="{ background: colorFor(selected.cluster) }">{{ selected.cluster }}</span>
-            <small v-if="openTips.has('Cluster')" class="hint tip-body">{{ STAT_TIPS.Cluster }}</small>
-          </dd>
-        </div>
-      </dl>
+      <section v-if="hasValue(selected.cluster) || genus" class="group">
+        <h4>Classification</h4>
+        <dl class="meta">
+          <div v-if="genus">
+            <dt><button type="button" class="tip-label" :title="STAT_TIPS.Genus"
+                        :aria-expanded="String(openTips.has('Genus'))"
+                        @click="toggleTip('Genus')">Genus</button></dt>
+            <dd>
+              <em>{{ genus }}</em>
+              <small v-if="openTips.has('Genus')" class="hint tip-body">{{ STAT_TIPS.Genus }}</small>
+            </dd>
+          </div>
+          <div v-if="hasValue(selected.cluster)">
+            <dt><button type="button" class="tip-label" :title="STAT_TIPS.Cluster"
+                        :aria-expanded="String(openTips.has('Cluster'))"
+                        @click="toggleTip('Cluster')">Cluster</button></dt>
+            <dd>
+              <span class="chip" :style="{ background: colorFor(selected.cluster) }">{{ selected.cluster }}</span>
+              <small v-if="openTips.has('Cluster')" class="hint tip-body">{{ STAT_TIPS.Cluster }}</small>
+            </dd>
+          </div>
+        </dl>
+      </section>
 
       <!-- Two different absences, and conflating them would be a lie. A thinned
            point carries only the handful of fields the map draws with; its

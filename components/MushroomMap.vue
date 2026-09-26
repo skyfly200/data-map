@@ -1207,7 +1207,13 @@ onBeforeUnmount(() => {
 .controls {
   position: absolute; top: 12px; right: 12px; z-index: 500; display: flex; gap: 10px; align-items: center;
   flex-wrap: wrap; justify-content: flex-end;
+  transition: right 0.22s ease;
 }
+.map-shell.drawer-open .controls { right: calc(var(--drawer-w) + 12px); }
+@media (max-width: 760px) {
+  .map-shell.drawer-open .controls { right: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .controls { transition: none; } }
 /* One look for every button in the bar, wherever its component happens to
    define it. Five components contribute controls here and each had its own
    height, radius, border and background — a light one next to a dark one next

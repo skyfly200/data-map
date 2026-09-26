@@ -182,14 +182,17 @@ export function useMapSelection({
 
     const bounds = layer.getBounds()
     if (bounds.isValid() && !suppressFit) {
-      map.fitBounds(bounds.pad(0.1), { animate: false })
+      try {
+        map.invalidateSize({ animate: false })
+        map.fitBounds(bounds.pad(0.1), { animate: false })
+      } catch { /* container not yet measured — view stays at default */ }
       fittedOnce = true
     }
     suppressFit = false
     geoLayerRef.value = layer
 
     // Build cluster index, then show the right mode for current zoom.
-    buildClusterIndex(geo).then(() => updateView())
+    buildClusterIndex(geo).then(() => { if (mapRef.value) updateView() })
   }
 
   watch(filteredData, (geo) => {
