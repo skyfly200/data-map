@@ -8,6 +8,8 @@ Nexstrata maps where species occur and models where they might. It uses Google E
 
 It works with any presence-point data: iNaturalist, GBIF, or your own uploads.
 
+> **Coverage** The built-in dataset covers the **Colorado Front Range and adjacent foothills** (roughly 36–41 °N, 102–109 °W). Observations outside that area are present but environmental enrichment (NDVI, soil moisture, elevation bands) is only calibrated for Colorado.
+
 ![Source data goes through a job into a dataset. Every view reads the dataset.](figure:data-flow)
 
 > **Note** Observation records are opportunistic, not systematic surveys. Record density reflects observer effort as much as actual occurrence. Each view states whether it corrects for this bias.

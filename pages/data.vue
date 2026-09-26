@@ -243,8 +243,9 @@ function barWidth(n) { return `${(n / maxCount.value) * 100}%` }
 .side { position: sticky; top: 16px; }
 .main { min-width: 0; }
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; }
-  .side { position: static; }
+  .layout { display: flex; flex-direction: column; }
+  .main { order: 1; }
+  .side { position: static; order: 2; }
 }
 .filter-toggle {
   display: none; width: 100%; text-align: left;

@@ -393,13 +393,18 @@ async function fetchNew() {
 }
 @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
 
-.source-row { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.source-row { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; flex-wrap: wrap; }
 .src-label { font-size: 0.82rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
 .src-tabs { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
 .src-tab { border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 4px 10px; font-size: 0.82rem; font-weight: 600; }
 .src-tab:hover { background: var(--surface-3); color: var(--text); }
 .src-tab.on { background: var(--surface-3); color: var(--text); }
 .src-hint { font-size: 0.78rem; color: var(--muted); max-width: 320px; }
+@media (max-width: 600px) {
+  .src-hint { display: none; }
+  .fetch-new { max-width: 100%; box-sizing: border-box; }
+  .ac-wrap { flex: 1 1 100%; }
+}
 .fetch-new button { border: 1px solid #2b7a3d; background: #2b7a3d; color: #fff; border-radius: 6px; padding: 6px 14px; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
 .fetch-new button:disabled { opacity: 0.55; cursor: default; }
 .fmsg { font-size: 0.82rem; }

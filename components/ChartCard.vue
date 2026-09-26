@@ -80,6 +80,8 @@ onBeforeUnmount(() => document.removeEventListener('fullscreenchange', onChange)
   pointer-events: none;
 }
 .card-tools { position: absolute; top: 8px; right: 8px; z-index: 2; display: flex; gap: 2px; }
+/* Reserve space so the chart title doesn't slide under the tool buttons. */
+.card :deep(.chart-title) { padding-right: 56px; }
 .tool {
   border: 0; background: transparent; cursor: pointer; font-size: 0.95rem;
   color: var(--muted); padding: 4px 6px; border-radius: 6px; line-height: 1;
