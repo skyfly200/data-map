@@ -19,3 +19,9 @@ See also: `@docs/refactor.md` for technical debt, `@docs/bugs.md` for known issu
 - `WANT-15` **Pipeline UX overhaul** — guided, step-by-step experience from "pick an area" to "enriched dataset on map"; replaces the current flat form. Wayfinder map: [github.com/skyfly200/data-map/issues/140](https://github.com/skyfly200/data-map/issues/140). Key open decisions: mental model (#141), layout/progressive-disclosure (#142), area picker (#144), post-job navigation (#145).
 - `WANT-16` **User observation data uploads** — let members upload CSV or GeoJSON of their own observations as a source for pipeline jobs. Design decisions tracked in [github.com/skyfly200/data-map/issues/143](https://github.com/skyfly200/data-map/issues/143). Expected entry points: pipeline source picker and datasets page.
 
+- Explore high level project arcetechture
+- Check DB structure for consistency with expectations
+- Check for security vulnerabilities
+- Use FRMS Google for GEE scripts backend and update to nonprofit status
+- Add FRMS users to app atomatically
+- Setup Emails
