@@ -57,7 +57,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { hasValue, inatUrl, useObservations } from '~/composables/useObservations'
 import { colorFor } from '~/composables/useAppearance'
 import { useUnits } from '~/composables/useUnits'
