@@ -2,11 +2,27 @@ import { shallowRef, watch } from 'vue'
 import { hasValue } from '~/composables/useObservations'
 import { fmtNum, FIELD_LABEL } from '~/composables/useMapPointStyle'
 
-// Below this zoom clusters are shown; at or above this zoom individual points.
-const DETAIL_ZOOM = 8
+// Progressive clustering: gradually transition from clusters to individual points
+// instead of a hard switch. At low zooms show large clusters, progressively
+// show more clusters as you zoom in, until individual points become visible.
+const CLUSTER_START_ZOOM = 4  // Start showing clusters below this zoom
+const CLUSTER_END_ZOOM = 13   // Show individual points above this zoom (always as individual points)
+const CLUSTER_TRANSITION_ZOOM = 10  // Zoom where we start showing more individual points
 
 function clusterRadius(count) {
   return Math.max(8, Math.min(40, 8 + Math.log2(Math.max(1, count)) * 3))
+}
+
+// Calculate the appropriate clustering zoom level based on map zoom.
+// Returns the zoom level to query Supercluster at for progressive clustering effect.
+function getClusteringZoom(mapZoom) {
+  if (mapZoom <= CLUSTER_START_ZOOM) return 0
+  if (mapZoom >= CLUSTER_END_ZOOM) return 13  // Show individual points
+
+  // Progressive transition: as you zoom in, request higher Supercluster zoom levels
+  // to see more granular clusters
+  const progress = (mapZoom - CLUSTER_START_ZOOM) / (CLUSTER_END_ZOOM - CLUSTER_START_ZOOM)
+  return Math.floor(progress * 13)
 }
 
 export function useMapSelection({
@@ -87,7 +103,9 @@ export function useMapSelection({
   async function buildClusterIndex(geo) {
     if (!geo?.features?.length) { scIndex = null; return }
     const { default: Supercluster } = await import('supercluster')
-    const sc = new Supercluster({ radius: 60, maxZoom: DETAIL_ZOOM - 1, minZoom: 0 })
+    // Higher maxZoom allows progressive clustering: clusters break apart smoothly as you zoom.
+    // At very high zoom levels, Supercluster returns individual points naturally.
+    const sc = new Supercluster({ radius: 60, maxZoom: 13, minZoom: 0 })
     sc.load(geo.features.filter((f) => f.geometry?.type === 'Point'))
     scIndex = sc
   }
@@ -102,7 +120,9 @@ export function useMapSelection({
     const zoom = map.getZoom()
     const b = map.getBounds()
     const bbox = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]
-    const clusters = scIndex.getClusters(bbox, Math.floor(zoom))
+    // Use progressive clustering zoom: gradually show finer clusters as you zoom
+    const clusteringZoom = getClusteringZoom(zoom)
+    const clusters = scIndex.getClusters(bbox, clusteringZoom)
 
     const group = L.layerGroup()
 
@@ -119,7 +139,7 @@ export function useMapSelection({
           fillColor: '#2a78d6', fillOpacity: 0.82,
         }).bindTooltip(String(count), { permanent: true, direction: 'center', className: 'cluster-label' })
           .on('click', () => {
-            const expansionZoom = Math.min(scIndex.getClusterExpansionZoom(props.cluster_id), DETAIL_ZOOM)
+            const expansionZoom = Math.min(scIndex.getClusterExpansionZoom(props.cluster_id), CLUSTER_END_ZOOM)
             map.flyTo([lat, lng], expansionZoom, { duration: 0.4 })
           })
           .addTo(group)
@@ -145,14 +165,25 @@ export function useMapSelection({
     if (!map) return
     const zoom = map.getZoom()
 
-    if (zoom >= DETAIL_ZOOM) {
-      // Individual points mode: remove cluster layer, ensure point layer is shown.
+    if (zoom >= CLUSTER_END_ZOOM) {
+      // Individual points mode: show individual point layer exclusively.
       if (clusterLayerRef.value) { clusterLayerRef.value.remove(); clusterLayerRef.value = null }
       if (geoLayerRef.value && showPoints.value && !map.hasLayer(geoLayerRef.value)) {
         geoLayerRef.value.addTo(map)
       }
+    } else if (zoom < CLUSTER_START_ZOOM) {
+      // Pure cluster mode at low zoom: hide individual points, show clusters.
+      if (geoLayerRef.value && map.hasLayer(geoLayerRef.value)) geoLayerRef.value.remove()
+      if (showPoints.value) {
+        renderClusterLayer()
+      } else if (clusterLayerRef.value) {
+        clusterLayerRef.value.remove()
+        clusterLayerRef.value = null
+      }
     } else {
-      // Cluster mode: hide point layer, show clusters (unless points are hidden).
+      // Progressive clustering zone: gradually show more points as you zoom.
+      // At this zoom range, Supercluster will return a mix of clusters and individual points,
+      // and as you zoom in, more clusters break into individual points.
       if (geoLayerRef.value && map.hasLayer(geoLayerRef.value)) geoLayerRef.value.remove()
       if (showPoints.value) {
         renderClusterLayer()
