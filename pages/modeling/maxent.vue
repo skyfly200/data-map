@@ -1,3 +1,6 @@
+<script setup>
+definePageMeta({ middleware: () => navigateTo('/model?tab=models', { redirectCode: 301 }) })
+</script>
 <template>
   <div class="modeling">
     <MaxEntTutorial ref="tutorialRef" />

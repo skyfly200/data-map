@@ -540,8 +540,14 @@ if (import.meta.client) {
 }
 watch(showPoints, (v) => {
   if (import.meta.client) localStorage.setItem(POINTS_KEY, v ? '1' : '0')
-  if (!map || !geoLayerRef.value) return
-  if (v) { geoLayerRef.value.addTo(map); geoLayerRef.value.bringToFront() } else geoLayerRef.value.remove()
+  if (!map) return
+  // updateClusterView re-evaluates which layer to show; on hide just remove both.
+  if (v) { updateClusterView() }
+  else {
+    if (geoLayerRef.value && map.hasLayer(geoLayerRef.value)) geoLayerRef.value.remove()
+    // clusterLayerRef lives inside useMapSelection; updateClusterView handles it
+    updateClusterView()
+  }
 })
 
 // ─── Tooltips ───────────────────────────────────────────────────────────────
@@ -882,7 +888,7 @@ const {
 } = useMapPin({ mapRef, LRef, heatmapCellIndex, heatmapMode, heatmapCell, filteredData, activeEeLayers, accessToken, heatmaps })
 
 // ─── Observation selection + point rendering ──────────────────────────────────
-const { selected, selectedLatLng, renderPoints, applyFocus, setSuppressFit, setFittedOnce } = useMapSelection({
+const { selected, selectedLatLng, renderPoints, applyFocus, updateClusterView, setSuppressFit, setFittedOnce } = useMapSelection({
   mapRef, LRef, geoLayerRef, filteredData, chunks,
   focusObservation, setFocusObservation,
   coloring, colorBy, sizeBy,
@@ -1058,6 +1064,7 @@ onMounted(async () => {
 
     map.on('moveend zoomend', syncMapView)
     map.on('moveend zoomend', loadVisible)
+    map.on('moveend zoomend', updateClusterView)
     // Only the layers-control events. `layeradd` and `layerremove` fire once
     // per layer, and every observation marker is a layer: binding a handler
     // that walks map.eachLayer() to them made adding n markers cost n squared
@@ -1652,6 +1659,15 @@ onBeforeUnmount(() => {
 
 
 .photos { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+
+/* Geographic cluster count labels — permanent tooltip on each cluster circle. */
+.map-shell :deep(.cluster-label) {
+  background: none; border: none; box-shadow: none; padding: 0;
+  font: 700 11px/1 system-ui, sans-serif; color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+.map-shell :deep(.cluster-label::before) { display: none; }
 
 
 /* No fixed square: let the photo keep its own aspect ratio up to a height cap,
