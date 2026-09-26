@@ -383,7 +383,7 @@
 
 <script setup>
 // Leaflet CSS is loaded dynamically on mount so it does not bloat non-map routes.
-import { nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
+import { markRaw, nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import { hasValue, useObservations } from '~/composables/useObservations'
 import { gradientCss } from '~/composables/ramps'
 import { useAppearance } from '~/composables/useAppearance'
@@ -535,6 +535,15 @@ const showPoints = ref(true)
 // Whether the layer manager window is up. Not a popover: it stays open while
 // you work the map, because that is how you tell whether a layer was worth it.
 const showLayers = ref(false)
+// Close all popovers when Layers opens; close Layers when any popover opens.
+watch(showLayers, (v) => {
+  if (v && import.meta.client) window.dispatchEvent(new CustomEvent('popover-open', { detail: 'layers-window' }))
+})
+onMounted(() => {
+  const closeOnPopover = (e) => { if (e.detail !== 'layers-window') showLayers.value = false }
+  window.addEventListener('popover-open', closeOnPopover)
+  onBeforeUnmount(() => window.removeEventListener('popover-open', closeOnPopover))
+})
 if (import.meta.client) {
   showPoints.value = localStorage.getItem(POINTS_KEY) !== '0'
 }
@@ -714,7 +723,7 @@ async function addEeLayers() {
   for (const spec of layers) {
     // An empty URL until it is switched on. Leaflet is content with that and
     // simply draws nothing, which is what an unrequested layer should do.
-    const layer = L.tileLayer('', {
+    const layer = markRaw(L.tileLayer('', {
       // Attribution shown in the key card; not in Leaflet's corner control to
       // avoid crowding it (basemaps keep their own corner attribution).
       opacity: (spec.opacity ?? 1) * tileOpacity.value,
@@ -725,7 +734,7 @@ async function addEeLayers() {
       // Track the zoom continuously on touch too; see the reference layers.
       updateWhenIdle: false, updateWhenZooming: true,
       minZoom: spec.slow ? EE_SLOW_MIN_ZOOM : 0,
-    })
+    }))
     layer._baseOpacity = spec.opacity ?? 1
     layer._spec = { ...spec, ee: true }
     tileLayers.push(layer)
@@ -793,13 +802,13 @@ function addMaxEntLayers(specs) {
   for (const spec of specs) {
     if (eeLayers.has(spec.key)) continue  // already wired
 
-    const layer = L.tileLayer('', {
+    const layer = markRaw(L.tileLayer('', {
       opacity: 0.7,
       maxZoom: MAP_MAX_ZOOM,
       updateWhenIdle: false,
       updateWhenZooming: true,
       className: 'model-suitability',
-    })
+    }))
     layer._baseOpacity = 0.7
     layer._spec = { key: spec.key, name: spec.name, maxent: true }
     eeLayers.set(spec.key, layer)
@@ -915,14 +924,14 @@ onMounted(async () => {
     // Getting that wrong cost more than the base map. The default gray canvas
     // stops at 16, and Leaflet takes the map's own zoom ceiling from its
     // layers, so 16 was as far as the whole map would go.
-    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const osm = markRaw(L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
       maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 19, crossOrigin: 'anonymous',
-    })
-    const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    }))
+    const topo = markRaw(L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenTopoMap (CC-BY-SA)',
       maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 17, crossOrigin: 'anonymous',
-    })
+    }))
     // Muted basemaps, and the default. A street or topo map is drawn to be read
     // on its own; the moment 48k colored dots sit on top of it, its own color
     // is competing with the data for the same hues. A gray canvas gives the dots
@@ -933,18 +942,18 @@ onMounted(async () => {
     // answers without one by serving a tile that says so — a 200 response, so
     // nothing downstream can tell it apart from a map. These come from the same
     // host as the satellite and hillshade layers the app already uses.
-    const grey = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    const grey = markRaw(L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Esri, HERE, Garmin, © OpenStreetMap contributors',
       maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 16, crossOrigin: 'anonymous',
-    })
-    const greyDark = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    }))
+    const greyDark = markRaw(L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Esri, HERE, Garmin, © OpenStreetMap contributors',
       maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 16, crossOrigin: 'anonymous',
-    })
-    const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    }))
+    const sat = markRaw(L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Imagery © Esri',
       maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 19, crossOrigin: 'anonymous',
-    })
+    }))
 
     // Zoom control on the bottom-left so it never overlaps the top-left
     // "Color by" control (previously it clipped the label).
@@ -1194,7 +1203,7 @@ onBeforeUnmount(() => {
    which nothing noticed only because nothing read it. */
 .map-shell { --drawer-w: 340px; }
 
-.map-shell { position: relative; width: 100%; height: 100%; }
+.map-shell { position: relative; width: 100%; height: 100%; overflow: hidden; }
 .map { width: 100%; height: 100%; }
 
 .overlay {

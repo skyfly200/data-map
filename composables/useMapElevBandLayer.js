@@ -1,4 +1,4 @@
-import { watch } from 'vue'
+import { markRaw, watch } from 'vue'
 import { MAP_MAX_ZOOM } from '~/composables/useMapTileDate'
 
 export function setupElevBandLayer({ L, map, filters, activeTileNotes, tileLayers }) {
@@ -75,12 +75,12 @@ export function setupElevBandLayer({ L, map, filters, activeTileNotes, tileLayer
     },
   })
 
-  const elevBandLayer = new ElevBandGridLayer({
+  const elevBandLayer = markRaw(new ElevBandGridLayer({
     elevMin: null, elevMax: null,
     tileSize: 256, maxZoom: MAP_MAX_ZOOM, maxNativeZoom: 14,
     opacity: 0.75, attribution: 'Elevation: Tilezen / Amazon Web Services (CC BY)',
     updateWhenIdle: false, updateWhenZooming: true,
-  })
+  }))
   elevBandLayer._baseOpacity = 0.75
   tileLayers.push(elevBandLayer)
 
