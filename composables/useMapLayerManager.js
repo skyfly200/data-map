@@ -127,6 +127,16 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
     if (el) applyChannelFilter(key, el)
   }
 
+  function resetAllChannels() {
+    layerChannel.value = {}
+    // Reapply channel filters for all active layers to clear overrides
+    for (const key of activeOverlays.value) {
+      const entry = overlayLayers.value.find((o) => o.key === key)
+      const el = entry?.layer?.getContainer?.()
+      if (el) applyChannelFilter(key, el)
+    }
+  }
+
   // Defers removeLayer until after any in-progress zoom animation to avoid
   // the Leaflet _updateLevels null-_map crash (rAF already queued when removal fires).
   function safeRemoveLayer(layer) {
@@ -384,7 +394,7 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
     activeOverlays, overlayLayers, baseLayers, activeBase, activeBaseName,
     overlayGroups, eeParams, eeErrors, eeLoading, eeLayers, activeEeLayers,
     applyOverlayOrder, applyBlendModes, applySolo,
-    setSolo, setLayerBlend, setLayerChannel, toggleOverlay, toggleOverlayByKey,
+    setSolo, setLayerBlend, setLayerChannel, resetAllChannels, toggleOverlay, toggleOverlayByKey,
     moveOverlay, setLayerOpacity, clearOverlays,
     paramsFor, refreshEeLayer, debounceEeRefresh, setEeParam,
     setBase, restoreBase, restoreOverlays, restoreEeLayer,

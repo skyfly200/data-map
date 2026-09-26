@@ -19,7 +19,7 @@
       :channel="layerChannel"
       @blend="setLayerBlend" @solo="setSolo" @channel="setLayerChannel"
       @toggle="toggleOverlayByKey" @opacity="setLayerOpacity" @move="moveOverlay"
-      @clear="clearOverlays" @close="showLayers = false"
+      @clear="clearOverlays" @reset-channels="resetAllChannels" @close="showLayers = false"
     >
       <!-- On a phone this window is the whole of "what the map is made of":
            the ground underneath, the layers over it, and the grid over those.
@@ -189,6 +189,12 @@
                    :dataset-label="datasetLabel" />
     </div>
 
+    <!-- Error panel, always visible even when key is collapsed. Shown above the key. -->
+    <div v-if="loaded && tileErrors.length" class="error-panel">
+      <div class="error-section warn-head">Layer unavailable</div>
+      <div class="legend-note no-border">{{ tileErrors.join(', ') }} could not be reached.</div>
+    </div>
+
     <!-- Single key card, bottom-right, behind the control bar. All sections
          (layers, heatmap, observations) share one surface so they do not crowd
          each other and the card stays behind the toolbar at z-index 400. -->
@@ -202,13 +208,7 @@
 
       <div class="key-card" @mouseleave="hoverValue = null">
 
-        <!-- Status: unavailable layers and EE loading/errors -->
-        <div v-if="tileErrors.length" class="key-section">
-          <div class="key-sec-head warn-head">Layer unavailable</div>
-          <div class="legend-note no-border">
-            {{ tileErrors.join(', ') }} could not be reached.
-          </div>
-        </div>
+        <!-- Status: EE loading/errors (tile errors moved outside) -->
         <div v-for="name in eeLoading.values()" :key="name" class="key-section ee-loading">
           <span class="ee-spinner" aria-hidden="true"></span>
           <span class="ee-loading-label">Rendering {{ name }}…</span>
@@ -685,7 +685,7 @@ const {
   activeOverlays, overlayLayers, baseLayers, activeBase, activeBaseName,
   overlayGroups, eeParams, eeErrors, eeLoading, eeLayers, activeEeLayers,
   applyOverlayOrder, applyBlendModes, applySolo,
-  setSolo, setLayerBlend, setLayerChannel, moveOverlay, setLayerOpacity, clearOverlays,
+  setSolo, setLayerBlend, setLayerChannel, resetAllChannels, moveOverlay, setLayerOpacity, clearOverlays,
   paramsFor, debounceEeRefresh, setEeParam,
   setBase: _setBase, restoreBase: _restoreBase, restoreOverlays, restoreEeLayer,
   toggleOverlay: _toggleOverlay, toggleOverlayByKey: _toggleOverlayByKey,
@@ -1313,6 +1313,23 @@ onBeforeUnmount(() => {
    empty panel half the height of the map.
    Placement now belongs to the container, and the legends only stack inside it,
    so neither has to know how tall the other is. */
+
+/* Error panel: always visible, even when key is collapsed. */
+.error-panel {
+  position: absolute; bottom: 18px; right: 12px; z-index: 401;
+  background: var(--surface, rgba(255, 255, 255, 0.95));
+  border: 1px solid var(--border, #ddd); border-radius: 8px;
+  padding: 8px 10px; font: 12px/1.4 system-ui, sans-serif;
+  color: var(--text, #222); width: 200px; max-width: 200px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  transition: right 0.22s ease;
+}
+.map-shell.drawer-open .error-panel { right: calc(var(--drawer-w) + 12px); }
+@media (max-width: 760px) {
+  .map-shell.drawer-open .error-panel { right: 12px; }
+}
+.error-section { font-weight: 600; font-size: 0.85rem; color: #b3261e; }
+
 /* Key column: bottom-right, behind the control bar (z-index 400 < controls 500). */
 .legends {
   position: absolute; bottom: 18px; right: 12px; z-index: 400;
