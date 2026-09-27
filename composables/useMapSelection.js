@@ -6,8 +6,8 @@ import { fmtNum, FIELD_LABEL } from '~/composables/useMapPointStyle'
 // instead of a hard switch. At low zooms show large clusters, progressively
 // show more clusters as you zoom in, until individual points become visible.
 const CLUSTER_START_ZOOM = 4  // Start showing clusters below this zoom
-const CLUSTER_END_ZOOM = 13   // Show individual points above this zoom (always as individual points)
-const CLUSTER_TRANSITION_ZOOM = 10  // Zoom where we start showing more individual points
+const CLUSTER_END_ZOOM = 11   // Show individual points above this zoom (always as individual points)
+const CLUSTER_TRANSITION_ZOOM = 8.5  // Zoom where we start showing more individual points
 
 function clusterRadius(count) {
   return Math.max(8, Math.min(40, 8 + Math.log2(Math.max(1, count)) * 3))
@@ -20,9 +20,9 @@ function getClusteringZoom(mapZoom) {
   if (mapZoom >= CLUSTER_END_ZOOM) return 13  // Show individual points
 
   // Progressive transition: as you zoom in, request higher Supercluster zoom levels
-  // to see more granular clusters
+  // to see more granular clusters. Bias toward showing individual points earlier.
   const progress = (mapZoom - CLUSTER_START_ZOOM) / (CLUSTER_END_ZOOM - CLUSTER_START_ZOOM)
-  return Math.floor(progress * 13)
+  return Math.floor(progress * 10.5)  // Lower max to spread out the progression
 }
 
 export function useMapSelection({
@@ -103,9 +103,9 @@ export function useMapSelection({
   async function buildClusterIndex(geo) {
     if (!geo?.features?.length) { scIndex = null; return }
     const { default: Supercluster } = await import('supercluster')
-    // Higher maxZoom allows progressive clustering: clusters break apart smoothly as you zoom.
-    // At very high zoom levels, Supercluster returns individual points naturally.
-    const sc = new Supercluster({ radius: 60, maxZoom: 13, minZoom: 0 })
+    // Smaller radius for less aggressive clustering, especially at higher zooms.
+    // Clusters still form at low zoom but break apart more readily as you zoom.
+    const sc = new Supercluster({ radius: 45, maxZoom: 13, minZoom: 0 })
     sc.load(geo.features.filter((f) => f.geometry?.type === 'Point'))
     scIndex = sc
   }
