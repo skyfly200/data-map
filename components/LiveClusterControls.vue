@@ -19,18 +19,21 @@
          what it will do. -->
     <div class="lc-body" :class="{ off: !enabled }">
       <label class="row">
+        <span>Clusters (k)</span>
+        <input type="range" min="2" max="16" v-model.number="kLocal" @change="k = kLocal" />
+        <b>{{ kLocal }}</b>
+      </label>
+
+      <details class="lc-adv">
+        <summary>Advanced</summary>
+        <div class="lc-adv-body">
+      <label class="row">
         <span>Cluster by</span>
         <select v-model="mode">
           <option value="features">Features</option>
           <option value="geographic">Location</option>
           <option value="both">Features + location</option>
         </select>
-      </label>
-
-      <label class="row">
-        <span>Clusters (k)</span>
-        <input type="range" min="2" max="16" v-model.number="kLocal" @change="k = kLocal" />
-        <b>{{ kLocal }}</b>
       </label>
 
       <label v-if="mode === 'both'" class="row">
@@ -52,6 +55,8 @@
         </div>
         <p v-else class="empty">No environmental features in this dataset yet, enrich to enable feature clustering.</p>
       </div>
+        </div>
+      </details>
 
       <div v-if="sizes.length" class="sizes">
         <span v-for="s in sizes" :key="s.label" class="sz">
@@ -100,6 +105,9 @@ function setAll(on) { features.value = on ? presentFeatures.value.map((f) => f.k
 .row b { color: var(--text); min-width: 2.4em; text-align: right; }
 .row select { border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; font-size: 0.8rem; background: var(--input-bg); color: var(--text); }
 .row input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+.lc-adv summary { cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.lc-adv-body { display: grid; gap: 8px; margin-top: 8px; }
 
 .feats-head { display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 600; font-size: 0.8rem; }
 .feats-head .mini { margin-left: auto; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 5px; padding: 1px 7px; font-size: 0.72rem; cursor: pointer; }
