@@ -30,7 +30,7 @@
           <BasemapPicker :layers="baseLayers" :active="activeBase" @pick="setBase" />
         </details>
         <details class="lm-extra" :open="!!heatmapMode">
-          <summary>Heatmap <em>{{ heatmapMode ? heatmapMeta.label : 'None' }}</em></summary>
+          <summary>Grid <em>{{ heatmapMode ? heatmapMeta.label : 'None' }}</em></summary>
           <HeatmapControls :tip-text="heatmapTip" />
         </details>
       </template>
@@ -125,7 +125,7 @@
         <span v-if="activeOverlays.size" class="tool-badge">{{ activeOverlays.size }}</span>
       </button>
 
-      <PopoverMenu v-if="!compact" ref="heatmapPop" icon="▦" label="Heatmap"
+      <PopoverMenu v-if="!compact" ref="heatmapPop" icon="▦" label="Grid"
                    title="Grid summary drawn under the points"
                    :active="!!heatmapMode" :badge="heatmapMode ? heatmapMeta.label : ''">
         <HeatmapControls :tip-text="heatmapTip" />
@@ -135,7 +135,7 @@
            side by side were the widest things on the bar and wrapped it to a
            second row on anything narrower than a laptop. The badge keeps the
            current answer visible, so the common case never needs opening. -->
-      <PopoverMenu icon="🎨" label="Points" title="How the points are drawn"
+      <PopoverMenu icon="●" label="Points" title="How the points are drawn"
                    :badge="coloring.title">
         <div class="pop-field">
           <label for="colorby-sel">Color by <HelpLink option="map-color-by" /></label>
@@ -156,20 +156,16 @@
             <option v-for="o in colorOptions.numeric" :key="o.key" :value="o.key">{{ o.label }}</option>
           </select>
         </div>
-        <!-- Clustering is another way of colouring the same dots, so on a phone
-             it belongs with them rather than beside them. -->
-        <template v-if="compact">
-          <div class="pop-sep"></div>
-          <LiveClusterControls inline />
-        </template>
+        <!-- Clustering is another way of colouring the same dots, so it lives
+             with them rather than as a separate button. -->
+        <div class="pop-sep"></div>
+        <LiveClusterControls inline />
       </PopoverMenu>
 
       <!-- Which observations, beside how they are drawn. The full set of
            filters stays on the Data tab; the three you reach for while looking
            at the map are here, writing to the same state. -->
       <MapFilters />
-
-      <LiveClusterControls v-if="!compact" />
 
       <AppearanceControls icon-only :field="colorBy" :field-label="coloring.title"
                           :values="legendValues" />
@@ -187,6 +183,15 @@
            Spread across the bar they covered the map they were controlling. -->
       <MapSettings v-model="showPoints" :bounds="viewBounds" :sources="activeTileTemplates"
                    :dataset-label="datasetLabel" />
+    </div>
+
+    <!-- Active filters stay visible on the map itself, not only in the Filter menu. -->
+    <div v-if="loaded && filterChips.length" class="filter-strip" role="status">
+      <span class="fs-label">Filtering</span>
+      <button v-for="c in filterChips" :key="c.key" class="fs-chip" type="button"
+              :title="`Clear ${c.label}`" @click="c.clear()">
+        {{ c.text }} <span aria-hidden="true">×</span>
+      </button>
     </div>
 
     <!-- Error panel, always visible even when key is collapsed. Shown above the key. -->
@@ -413,7 +418,18 @@ const {
 } = useObservations()
 watch(obsError, (msg) => { if (msg) useAppAlerts().error('Could not load observations — ' + msg) })
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
-const { filters } = useFilters()
+const { filters, setFilter } = useFilters()
+const filterChips = computed(() => {
+  const f = filters.value
+  const chips = []
+  if (f.taxon) chips.push({ key: 'taxon', label: 'species filter', text: f.taxon, clear: () => setFilter('taxon', '') })
+  if (f.search) chips.push({ key: 'search', label: 'search', text: `“${f.search}”`, clear: () => setFilter('search', '') })
+  if (f.elevMin != null || f.elevMax != null) {
+    chips.push({ key: 'elev', label: 'elevation filter', text: `Elevation ${f.elevMin ?? '…'}–${f.elevMax ?? '…'} m`,
+      clear: () => { setFilter('elevMin', null); setFilter('elevMax', null) } })
+  }
+  return chips
+})
 const live = useLiveClusters()
 // On a phone the basemap, the heatmap and the clustering controls move inside
 // the two windows that remain, rather than being three more buttons on a bar
@@ -1704,4 +1720,14 @@ onBeforeUnmount(() => {
 
 /* No fixed square: let the photo keep its own aspect ratio up to a height cap,
    so landscape shots aren't letterboxed into a small square. */
+
+.filter-strip {
+  position: absolute; top: 56px; left: 10px; z-index: 450;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; max-width: calc(100% - 20px);
+  padding: 4px 8px; border-radius: 8px;
+  background: var(--accent); color: #fff; font-size: 0.78rem; box-shadow: 0 1px 6px rgba(0,0,0,.3);
+}
+.fs-label { font-weight: 700; }
+.fs-chip { background: rgba(255,255,255,.2); color: inherit; border: 0; border-radius: 12px; padding: 1px 8px; cursor: pointer; font: inherit; }
+.fs-chip:hover { background: rgba(255,255,255,.35); }
 </style>

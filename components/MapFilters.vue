@@ -1,6 +1,6 @@
 <template>
   <PopoverMenu icon="⌕" label="Filter" title="Narrow what the map draws"
-               :active="!!activeCount" :badge="activeCount ? String(activeCount) : ''">
+               :active="!!activeCount" :badge="activeCount ? (taxon || String(activeCount)) : ''">
     <!-- Search first, because it is the one you reach for before you know what
          you are looking for. -->
     <div class="pop-field">
