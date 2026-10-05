@@ -873,6 +873,35 @@ export async function remintSuitability({ spec, features }) {
 }
 
 /**
+ * Mint a short-lived GeoTIFF download URL for a stored model's suitability
+ * surface (V12-MOD-4). Rebuilds the surface exactly as remintSuitability does,
+ * then asks Earth Engine for a download link at `scale` metres (default 1000).
+ * Unverified against the real EE API.
+ */
+export async function suitabilityDownloadUrl({ spec, features, scale = 1000 }) {
+  const predictors = spec.predictors?.length ? spec.predictors : DEFAULT_PREDICTORS
+  const background = spec.background || DEFAULT_BACKGROUND
+  const points = features
+    .map((f) => f?.geometry?.coordinates || [])
+    .map((co) => [Number(co[0]), Number(co[1])])
+    .filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat))
+  if (!points.length) throw new Error('That model has no usable presences to export.')
+  const region = spec.region || boundsOfPoints(points)
+  await initEarthEngine()
+  const presences = ee.FeatureCollection(
+    points.map(([lon, lat]) => ee.Feature(ee.Geometry.Point([lon, lat]))),
+  )
+  const { image } = buildSuitabilityImage(ee, { presences, predictors, background, region, seed: 1 })
+  const geometry = ee.Geometry.Rectangle([region.west, region.south, region.east, region.north])
+  return new Promise((resolve, reject) => {
+    image.getDownloadURL({ name: 'suitability', format: 'GEO_TIFF', scale, region: geometry, crs: 'EPSG:4326' }, (url, err) => {
+      if (err || !url) return reject(new Error(String(err || 'Earth Engine returned no download URL.')))
+      return resolve(url)
+    })
+  })
+}
+
+/**
  * Mint a tile template for a pre-computed EE Image asset, bypassing model fitting.
  *
  * Used for models registered via the "Register Existing Asset" flow, where the

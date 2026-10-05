@@ -15,7 +15,7 @@
 import { adminClient, requireUser } from '../lib/auth.mjs'
 import { ownerViewer } from '../lib/job-queue.mjs'
 import { loadSource } from '../lib/job-source.mjs'
-import { earthEngineConfigured, remintSuitability, mintFromAssetPath } from '../lib/ee-runner.mjs'
+import { earthEngineConfigured, remintSuitability, suitabilityDownloadUrl, mintFromAssetPath } from '../lib/ee-runner.mjs'
 import { effectiveTier } from '../lib/tiers.mjs'
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
@@ -109,6 +109,11 @@ export default async function handler(request) {
     // dataset source is read under the same rules the job ran under.
     const features = await loadSource(spec.source, { client, viewer: await ownerViewer(job) })
     if (!features.length) return json({ ok: false, error: "That model's source no longer has any observations." }, 404)
+
+    if (reqUrl.searchParams.get('download') === '1') {
+      const scale = Math.max(30, Math.min(10000, Number(reqUrl.searchParams.get('scale')) || 1000))
+      return json({ ok: true, url: await suitabilityDownloadUrl({ spec, features, scale }) })
+    }
 
     const { template, meta } = await remintSuitability({ spec, features })
     // The score is durable on the job; carry it back so the surface still shows it.

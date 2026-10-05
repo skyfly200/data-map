@@ -27,7 +27,7 @@ Technical debt and enhancement tasks. An item here is open work; when closed, de
 - [ ] `V12-MOD-1` **Ensemble Modeling**: Average predictions from multiple model runs
 - [ ] `V12-MOD-2` **Projection Tools**: Project models to future climate scenarios (CMIP6)
 - [ ] `V12-MOD-3` **Batch Processing**: Train models for multiple species simultaneously
-- [ ] `V12-MOD-4` **Model Export**: Download suitability rasters as GeoTIFF
+- [ ] `V12-MOD-4` **Model Export**: Download suitability rasters as GeoTIFF (backend `model-tiles?job=<id>&download=1` returns an EE download URL, unverified against real EE; no UI button yet)
 - [ ] `V12-MOD-5` **Threshold Optimization**: Automatic threshold selection (MaxSSS, 10th percentile)
 
 ## Data Quality & Ethics
