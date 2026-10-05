@@ -19,7 +19,12 @@ export default defineNuxtConfig({
     '/analysis': { redirect: '/charts?tab=analysis' },
   },
   nitro: {
-    preset: 'netlify',
+    // Netlify unless building on Vercel (VERCEL is set by Vercel's builder).
+    // The Vercel path serves netlify/functions/* via server/adapters.
+    preset: process.env.VERCEL ? 'vercel' : 'netlify',
+    handlers: process.env.VERCEL
+      ? [{ route: '/api/fn/:name', handler: '~/server/adapters/vercel-function.ts' }]
+      : [],
     // The observation GeoJSON is ~48 MB of highly repetitive JSON that gzips to
     // under 7 MB. Without this it ships uncompressed: Nitro serves public/
     // assets byte-for-byte, so every visitor downloaded the full 48 MB.

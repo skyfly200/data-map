@@ -1,0 +1,19 @@
+{
+  "buildCommand": "npm run build",
+  "rewrites": [
+    {
+      "source": "/.netlify/functions/:name",
+      "destination": "/api/fn/:name"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/fn/ee-worker",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/fn/refresh-observations",
+      "schedule": "0 */6 * * *"
+    }
+  ]
+}
