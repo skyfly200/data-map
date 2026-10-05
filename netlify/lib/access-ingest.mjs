@@ -50,7 +50,7 @@ export function estimateFee({ managerType: mt, designation }) {
   return { fee_status: 'unknown', fee_source: null }
 }
 
-/** Collecting estimate -> { collecting, collecting_source }. Never 'allowed'. */
+/** Collecting estimate -> { collecting, collecting_source }. Never plain 'allowed'; BLM/USFS open land gets 'likely_allowed'. */
 export function estimateCollecting({ managerType: mt, designation, access }) {
   const des = String(designation || '').toUpperCase()
   if (access === 'closed') return { collecting: 'prohibited', collecting_source: 'estimated' } // closed to the public
@@ -60,6 +60,10 @@ export function estimateCollecting({ managerType: mt, designation, access }) {
     return { collecting: 'restricted', collecting_source: 'estimated' }
   }
   if (access === 'restricted') return { collecting: 'restricted', collecting_source: 'estimated' }
+  // BLM / USFS land that is open and not restricted by designation above.
+  if ((mt === 'blm' || mt === 'usfs') && access === 'open') {
+    return { collecting: 'likely_allowed', collecting_source: 'estimated' }
+  }
   return { collecting: 'unknown', collecting_source: null }
 }
 

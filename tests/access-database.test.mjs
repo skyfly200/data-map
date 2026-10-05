@@ -19,7 +19,11 @@ test('manager type + estimates are conservative and labelled', () => {
   assert.deepEqual(estimateFee({ managerType: 'nps' }), { fee_status: 'fee', fee_source: 'estimated' })
   assert.deepEqual(estimateFee({ managerType: 'local' }), { fee_status: 'unknown', fee_source: null })
   assert.equal(estimateCollecting({ managerType: 'nps', access: 'open' }).collecting, 'restricted')
-  assert.deepEqual(estimateCollecting({ managerType: 'blm', access: 'open' }), { collecting: 'unknown', collecting_source: null })
+  assert.deepEqual(estimateCollecting({ managerType: 'blm', access: 'open' }), { collecting: 'likely_allowed', collecting_source: 'estimated' })
+  assert.equal(estimateCollecting({ managerType: 'usfs', access: 'open' }).collecting, 'likely_allowed')
+  assert.equal(estimateCollecting({ managerType: 'usfs', designation: 'WSA', access: 'open' }).collecting, 'restricted')
+  assert.equal(estimateCollecting({ managerType: 'state', access: 'open' }).collecting, 'unknown')
+  assert.equal(estimateCollecting({ managerType: 'blm', access: 'unknown' }).collecting, 'unknown')
   assert.equal(estimateCollecting({ managerType: 'blm', access: 'closed' }).collecting, 'prohibited')
   for (const m of ['blm', 'usfs', 'nps', 'fws', 'state_park', 'state', 'local', 'private', 'other', 'unknown']) {
     for (const a of ['open', 'restricted', 'closed', 'unknown']) {
@@ -32,7 +36,7 @@ test('manager type + estimates are conservative and labelled', () => {
 test('parsePadUs carries classification columns', () => {
   const [r] = parsePadUs({ features: [padus({ OBJECTID: 1, Unit_Nm: 'X NF', Mang_Name: 'USFS', Pub_Access: 'Open' })] })
   assert.equal(r.public_access, 'open'); assert.equal(r.fee_status, 'free'); assert.equal(r.fee_source, 'estimated')
-  assert.equal(r.collecting, 'unknown'); assert.equal(r.collecting_source, null)
+  assert.equal(r.collecting, 'likely_allowed'); assert.equal(r.collecting_source, 'estimated')
 })
 
 test('RIDB parse + match upgrades fee source; needs name AND proximity', () => {

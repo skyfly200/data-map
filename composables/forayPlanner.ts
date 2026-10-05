@@ -35,11 +35,13 @@ export function bboxInColorado([w, s, e, n]: number[]): boolean {
   return cx >= cw && cx <= ce && cy >= cs && cy <= cn
 }
 
+export const LIKELY_LABEL = 'Likely allowed (estimated)'
+export const LIKELY_DISCLAIMER = 'Likely allowed is an estimate for BLM and US Forest Service land only. Regulations and permits (quantity limits, permits, closures) must be checked with the local district office.'
 export const DISCLAIMER = 'Fee and collecting information is an estimate. Check regulations and permits with the land manager before you go.'
 
 const PUBLIC_ACCESS = ['open', 'restricted', 'closed', 'unknown']
 const FEE = ['free', 'fee', 'unknown']
-const COLLECTING = ['allowed', 'restricted', 'prohibited', 'unknown']
+const COLLECTING = ['allowed', 'likely_allowed', 'restricted', 'prohibited', 'unknown']
 const oneOf = <T extends string>(v: any, set: string[], fallback: T): T => (set.includes(v) ? v : fallback)
 
 function toMulti(g: any) {
@@ -106,7 +108,7 @@ export const ACCESS_STATUS_MESSAGE: Record<AccessStatus, string> = {
 // for each attribute, so an overlap can never make a place look better.
 const PA_RANK: Record<PublicAccess, number> = { open: 0, unknown: 1, restricted: 2, closed: 3 }
 const FEE_RANK: Record<FeeStatus, number> = { free: 0, unknown: 1, fee: 2 }
-const COL_RANK: Record<Collecting, number> = { allowed: 0, unknown: 1, restricted: 2, prohibited: 3 }
+const COL_RANK: Record<Collecting, number> = { allowed: 0, likely_allowed: 0.5, unknown: 1, restricted: 2, prohibited: 3 }
 const worst = <T extends string>(vals: T[], rank: Record<string, number>, fallback: T): T =>
   vals.length ? vals.reduce((a, b) => (rank[b] > rank[a] ? b : a)) : fallback
 
@@ -148,11 +150,13 @@ export interface Switches {
   free: boolean
   public: boolean
   collecting: boolean
+  /** With collecting on, also keep 'likely_allowed' (BLM/USFS, estimated) areas. */
+  includeLikely: boolean
   /** Keep cells whose attribute is unknown. Off by default: unknown is never assumed good. */
   includeUnknown: boolean
 }
 
-export const NO_SWITCHES: Switches = { free: false, public: false, collecting: false, includeUnknown: false }
+export const NO_SWITCHES: Switches = { free: false, public: false, collecting: false, includeLikely: false, includeUnknown: false }
 
 /** Does one cell pass the enabled switches? */
 export function passesSwitches(a: CellAccess, sw: Switches): boolean {
@@ -163,7 +167,7 @@ export function passesSwitches(a: CellAccess, sw: Switches): boolean {
     const priv = String(a.manager_type || '').toLowerCase() === 'private'
     if (priv || !ok(a.public_access === 'open', a.public_access === 'unknown')) return false
   }
-  if (sw.collecting && !ok(a.collecting === 'allowed', a.collecting === 'unknown')) return false
+  if (sw.collecting && !ok(a.collecting === 'allowed' || (sw.includeLikely && a.collecting === 'likely_allowed'), a.collecting === 'unknown')) return false
   return true
 }
 
@@ -217,7 +221,7 @@ export const FORAY_MODES: Record<ForayMode, ModeConfig> = {
   },
   leader: {
     key: 'leader', label: 'Foray leader', blurb: 'Group-ready shortlist with access and collecting status.',
-    switches: { free: true, public: true, collecting: true, includeUnknown: false },
+    switches: { free: true, public: true, collecting: true, includeLikely: true, includeUnknown: false },
     showComponents: false, showSample: true, showCaveats: false, showAccessCols: true, showShortlist: true, listLimit: 12,
   },
 }
@@ -249,6 +253,7 @@ export function feeLabel(a: CellAccess): string {
 
 export function collectingLabel(a: CellAccess): string {
   if (a.collecting === 'unknown') return 'unknown'
+  if (a.collecting === 'likely_allowed') return LIKELY_LABEL
   const s = src(a.collecting_source)
   return s ? `${a.collecting} (${s})` : a.collecting
 }

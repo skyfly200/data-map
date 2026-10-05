@@ -1,6 +1,6 @@
 // Access database read endpoint (WANT-17). Public reference data (PAD-US + OSM).
 //
-//   GET /.netlify/functions/access?bbox=w,s,e,n[&free=1][&public=1][&collecting=allowed|restricted|prohibited|unknown][&lines=1]
+//   GET /.netlify/functions/access?bbox=w,s,e,n[&free=1][&public=1][&collecting=allowed|likely_allowed|restricted|prohibited|unknown][&lines=1]
 //
 // Response (200):
 //   {
@@ -10,7 +10,7 @@
 //       feature.properties = { id, name, manager_type, public_access, fee_status,
 //         fee_source, collecting, collecting_source }
 //       fee_status 'free'|'fee'|'unknown'; fee_source 'estimated'|'ridb'|null
-//       collecting 'allowed'|'restricted'|'prohibited'|'unknown'; collecting_source 'estimated'|null
+//       collecting 'allowed'|'likely_allowed'|'restricted'|'prohibited'|'unknown'; collecting_source 'estimated'|null
 //       public_access 'open'|'restricted'|'closed'|'unknown'
 //       'estimated' values are heuristics from manager type, not regulations: label them as such.
 //     lines: GeoJSON FeatureCollection | null; properties = { id, kind: 'road'|'trail', highway, name }.
@@ -31,7 +31,7 @@ export const MAX_BBOX_DEG = 3
 export const LINES_MAX_BBOX_DEG = 0.5
 export const MAX_AREAS = 400
 export const MAX_LINES = 3000
-const COLLECTING = ['allowed', 'restricted', 'prohibited', 'unknown']
+const COLLECTING = ['allowed', 'likely_allowed', 'restricted', 'prohibited', 'unknown']
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=300' },

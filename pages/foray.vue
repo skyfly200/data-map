@@ -33,6 +33,7 @@
         <label :title="switchTitle"><input v-model="sw.free" type="checkbox"> Only free places</label>
         <label :title="switchTitle"><input v-model="sw.public" type="checkbox"> Only public lands</label>
         <label :title="switchTitle"><input v-model="sw.collecting" type="checkbox"> Collecting allowed only</label>
+        <label :title="switchTitle"><input v-model="sw.includeLikely" type="checkbox" :disabled="!sw.collecting"> Include likely (BLM/USFS, estimated)</label>
         <label v-if="mode !== 'forager'" :title="switchTitle"><input v-model="sw.includeUnknown" type="checkbox"> Keep unknown</label>
       </fieldset>
     </section>
@@ -42,6 +43,7 @@
       Unknown fee, land or collecting status is excluded{{ sw.includeUnknown ? ' (except where you chose to keep it)' : '' }}.
     </p>
     <p class="notice">{{ DISCLAIMER }}</p>
+    <p v-if="sw.includeLikely && sw.collecting" class="notice">{{ LIKELY_DISCLAIMER }}</p>
 
     <p v-if="error" class="notice warn">Could not load observations ({{ error }}).</p>
     <p v-else-if="pending && !features.length" class="notice">Loading observations…</p>
@@ -86,7 +88,8 @@
                 <span v-if="cfg.showAccessCols" class="acc">
                   <span class="chip">{{ c.access.covered ? c.access.public_access : 'access unknown' }}</span>
                   <span class="chip" :class="{ ok: c.access.fee_status === 'free' }">fee: {{ feeLabel(c.access) }}</span>
-                  <span class="chip" :class="{ ok: c.access.collecting === 'allowed' }">collecting: {{ collectingLabel(c.access) }}</span>
+                  <span v-if="c.access.collecting === 'likely_allowed'" class="chip" :title="LIKELY_DISCLAIMER">{{ LIKELY_LABEL }}</span>
+                  <span v-else class="chip" :class="{ ok: c.access.collecting === 'allowed' }">collecting: {{ collectingLabel(c.access) }}</span>
                 </span>
               </template>
             </div>
@@ -148,7 +151,7 @@ import {
   FORAY_MIN_SAMPLE, MONTH_LABELS, normaliseScores, rankCells, resolveTimeSelection, scoreBand,
 } from '~/composables/forayScore'
 import {
-  COLORADO_BBOX, DISCLAIMER, FORAY_MODES, attachAccess, buildShortlist, cellSiteName, collectingLabel,
+  COLORADO_BBOX, DISCLAIMER, LIKELY_DISCLAIMER, LIKELY_LABEL, FORAY_MODES, attachAccess, buildShortlist, cellSiteName, collectingLabel,
   effectiveSwitches, feeLabel, filterByAccess, shortlistToCsv, shortlistToText, UNKNOWN_ACCESS,
 } from '~/composables/forayPlanner'
 

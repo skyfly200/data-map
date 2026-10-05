@@ -80,6 +80,8 @@ test('switches: each filters on its own attribute; unknown excluded by default',
   assert.equal(passesSwitches(A({ collecting: 'allowed' }), col), true)
   assert.equal(passesSwitches(A({ collecting: 'restricted' }), col), false)
   assert.equal(passesSwitches(A({ collecting: 'unknown' }), col), false)
+  assert.equal(passesSwitches(A({ collecting: 'likely_allowed' }), col), false)
+  assert.equal(passesSwitches(A({ collecting: 'likely_allowed' }), { ...col, includeLikely: true }), true)
   assert.equal(passesSwitches(A({}), NO_SWITCHES), true)
 })
 
