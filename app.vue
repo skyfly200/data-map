@@ -24,6 +24,7 @@
                access token, which the server render does not have, so a link
                drawn from it on the server hydrates into a different DOM. -->
           <ClientOnly>
+            <NuxtLink v-if="isMember" to="/areas" class="nav-link" title="My allowed areas" aria-label="My allowed areas">Areas</NuxtLink>
             <PopoverMenu v-if="isMember" icon="◈" label="Models" title="Model building and pipeline"
                          class="nav-pop-inline" btn-class="nav-link-pop">
               <NuxtLink to="/pipeline" class="nav-item">Pipeline</NuxtLink>
@@ -36,6 +37,7 @@
         <PopoverMenu class="nav-pop" icon="☰" title="Go to" align="right" btn-class="hdr-btn">
           <NuxtLink v-for="l in NAV" :key="l.to" :to="l.to" class="nav-item">{{ l.title || l.label }}</NuxtLink>
           <ClientOnly>
+            <NuxtLink v-if="isMember" to="/areas" class="nav-item">My areas</NuxtLink>
             <div v-if="isMember" class="nav-submenu">
               <span class="nav-submenu-label">Models</span>
               <NuxtLink to="/pipeline" class="nav-item">Pipeline</NuxtLink>
