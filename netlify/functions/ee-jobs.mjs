@@ -120,19 +120,20 @@ export default async function handler(request) {
 
   // Refused up front rather than after queueing: a job that can never run
   // should not sit in a queue looking like it might.
-  if (!earthEngineConfigured()) {
-    return json({
-      ok: false,
-      error: 'Earth Engine is not configured on this deployment. '
-        + 'Set EARTHENGINE_SERVICE_ACCOUNT_KEY and EARTHENGINE_PROJECT.',
-    }, 503)
-  }
-
   let body
   try {
     body = await request.json()
   } catch {
     return json({ ok: false, error: 'Send the job spec as JSON.' }, 400)
+  }
+
+  // Region loads (access_ingest) do not use Earth Engine.
+  if (body?.kind !== 'access_ingest' && !earthEngineConfigured()) {
+    return json({
+      ok: false,
+      error: 'Earth Engine is not configured on this deployment. '
+        + 'Set EARTHENGINE_SERVICE_ACCOUNT_KEY and EARTHENGINE_PROJECT.',
+    }, 503)
   }
 
   try {

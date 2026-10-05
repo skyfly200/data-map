@@ -21,3 +21,7 @@ Extend "Now Fruiting" from "what is fruiting" to "where to go look": score areas
 - Start phase (1 is shippable now; 3 needs schema work).
 - Access source: decided — PAD-US + OSM roads and trails (replaces the gHM proxy). Open: ingest path (EE asset vs. preprocessed vector tiles) and OSM refresh cadence.
 - Under-sampled ranking: how to weight promise vs. effort, and the minimum training-envelope check.
+
+## Access data layer (implemented, unverified live)
+
+Migration 013, `netlify/lib/access-ingest.mjs` (estimates + RIDB overlay), `access-regions.mjs` (`access_ingest` job, region skip), `quotas.mjs` (access cost model), `netlify/functions/access.mjs` (read contract in file header), `scripts/load-access-region.mjs` (Colorado). Not run live: Colorado load, RIDB (needs RIDB_API_KEY), Overpass limits, PAD-US layer URL/field names (PADUS_FEATURE_URL default unverified), migration application. Member jobs are capped at 5000 km2 to fit the 300s worker; Colorado uses the script.

@@ -12,7 +12,8 @@
 
 import { adminClient } from './auth.mjs'
 import { hasCredential } from './ee-credentials.mjs'
-import { estimateUnits, summariseUsage, checkQuota } from './quotas.mjs'
+import { estimateUnits, summariseUsage, checkQuota, checkAccessQuota } from './quotas.mjs'
+import { AccessSpecError, findCoveringRegion, listRegions, normaliseAccessSpec } from './access-regions.mjs'
 import { effectiveTier } from './tiers.mjs'
 import { STAGES, normaliseSpec, progressPlan } from './ee-pipeline.mjs'
 import { estimateModelUnits, modelPlan } from './maxent.mjs'
@@ -63,6 +64,7 @@ export async function measureSpec(spec, counter) {
  * this is a path that spends money, and a token can be up to an hour stale.
  */
 export async function submitJob({ user, profile, spec: rawSpec, counter }) {
+  if (rawSpec?.kind === 'access_ingest') return submitAccessJob({ user, profile, spec: rawSpec })
   const spec = normaliseSpec(rawSpec)
   const client = db()
 
@@ -103,6 +105,40 @@ export async function submitJob({ user, profile, spec: rawSpec, counter }) {
 
   if (error) throw new QueueError(`Could not queue that job: ${error.message}`, { status: 500 })
   return { job: data, estimate, points, dates, remaining: verdict.remaining }
+}
+
+/**
+ * Queue a region load (access_ingest). Same queue and checkQuota as other jobs,
+ * plus the access cost model (area cap, monthly region count). Already-loaded
+ * regions are refused unless an admin passes force.
+ */
+export async function submitAccessJob({ user, profile, spec: rawSpec, client = db() }) {
+  let spec
+  try { spec = normaliseAccessSpec(rawSpec) } catch (err) {
+    if (err instanceof AccessSpecError) throw new QueueError(err.message)
+    throw err
+  }
+  const admin = effectiveTier(profile) === 'admin'
+  if (!(admin && spec.force)) {
+    const covering = findCoveringRegion(await listRegions(client), spec.bbox)
+    if (covering) {
+      throw new QueueError(`That area is already loaded (region "${covering.name}").`, { status: 409, code: 'region_loaded' })
+    }
+  }
+  const { data: history } = await client.from('ee_jobs')
+    .select('kind, status, created_at, cost_units, estimated_units')
+    .eq('user_id', user.id)
+    .gte('created_at', new Date(Date.now() - 32 * 86400000).toISOString())
+  const verdict = checkAccessQuota({ profile, history: history || [], bbox: spec.bbox })
+  if (!verdict.ok) throw new QueueError(verdict.message, { status: 403, code: verdict.code })
+  if (!admin) spec.force = false
+
+  const { data, error } = await client.from('ee_jobs').insert({
+    user_id: user.id, kind: 'access_ingest', params: spec, title: spec.title,
+    estimated_units: verdict.estimate, status: 'queued',
+  }).select().single()
+  if (error) throw new QueueError(`Could not queue that job: ${error.message}`, { status: 500 })
+  return { job: data, estimate: verdict.estimate, remaining: verdict.remaining }
 }
 
 /**

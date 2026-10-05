@@ -110,6 +110,13 @@ User-authored saved chart configurations. Each row is one saved chart with an or
 - `access_lines` — OSM roads/trails (`osm_id` unique, `kind` road/trail, `highway`, `name`, `geom` LineString 4326, GiST).
 - RLS: select-all on both; writes via service role only.
 
+### Access database (migration `013_access_database.sql`, WANT-17)
+
+- `access_areas` adds: `manager_type` (blm/usfs/nps/fws/state_park/state/local/federal_other/private/tribal/other/unknown), `public_access` (open/restricted/closed/unknown, from PAD-US `Pub_Access`), `fee_status` (free/fee/unknown) + `fee_source` (`estimated`|`ridb`|null), `collecting` (allowed/restricted/prohibited/unknown) + `collecting_source` (`estimated`|null), `region` (name of the load that wrote the row). **All `estimated` values are heuristics from manager type/designation, not regulations**; `ridb` fee values come from a matching Recreation.gov facility record. Collecting is never estimated as `allowed`.
+- `access_lines.region` added.
+- `access_regions` — `name` unique, `bbox` jsonb `[w,s,e,n]`, `status` queued/loading/loaded/partial/failed, `area_count`, `line_count`, `ridb_matched`, `sources`, `error`, `requested_by`, `loaded_at`. RLS select-all; writes service role only.
+- Functions: `access_upsert_areas/lines(rows jsonb, region)` (service role only; keep RIDB fee data over later estimates), `access_areas_in_bbox`, `access_lines_in_bbox` (simplified GeoJSON, used by `netlify/functions/access.mjs`).
+
 ---
 
 ## Shared Functions

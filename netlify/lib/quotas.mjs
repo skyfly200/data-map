@@ -180,6 +180,59 @@ export function summariseUsage(jobs = [], now = new Date()) {
   }
 }
 
+// ---- access_ingest cost model (WANT-17) ------------------------------------
+// Not Earth Engine work, but it spends shared upstream capacity (Overpass,
+// PAD-US, RIDB) and worker time, so it runs through the same queue and the same
+// checkQuota (concurrency, monthly units, membership), plus an area cap and a
+// per-member monthly job count. Admins bypass the area cap and job count.
+
+/** Tile size in degrees for Overpass requests (~25 km). */
+export const ACCESS_OSM_TILE_DEG = 0.25
+/** Per-job area cap for members, km2 (about 9 OSM tiles; fits one worker run). */
+export const ACCESS_MAX_AREA_KM2 = 5000
+/** Region-load jobs per member per calendar month. */
+export const ACCESS_JOBS_PER_MONTH = 3
+
+export function bboxAreaKm2([w, s, e, n]) {
+  const midLat = ((s + n) / 2) * Math.PI / 180
+  return Math.max(0, (e - w) * 111.32 * Math.cos(midLat)) * Math.max(0, (n - s) * 110.57)
+}
+
+/** Units: one per OSM tile request plus one per 1-degree PAD-US/RIDB tile. */
+export function estimateAccessUnits(bbox) {
+  const [w, s, e, n] = bbox
+  const osm = Math.ceil((e - w) / ACCESS_OSM_TILE_DEG - 1e-9) * Math.ceil((n - s) / ACCESS_OSM_TILE_DEG - 1e-9)
+  const big = Math.ceil(e - w - 1e-9) * Math.ceil(n - s - 1e-9)
+  return Math.max(1, osm + big)
+}
+
+/** Same verdict shape as checkQuota. `history` rows need { kind, status, created_at, cost_units, estimated_units }. */
+export function checkAccessQuota({ profile, history = [], bbox, now = new Date() }) {
+  const estimate = estimateAccessUnits(bbox)
+  const usage = summariseUsage(history, now)
+  const tier = effectiveTier(profile, now)
+  if (tier !== 'admin' && tier !== 'free') {
+    const area = bboxAreaKm2(bbox)
+    if (area > ACCESS_MAX_AREA_KM2) {
+      return {
+        ok: false, code: 'area_too_large',
+        message: `That region is about ${Math.round(area).toLocaleString()} km2 and a job may cover at most `
+          + `${ACCESS_MAX_AREA_KM2.toLocaleString()} km2. Split it into smaller regions.`,
+      }
+    }
+    const monthStart = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
+    const used = history.filter((j) => j.kind === 'access_ingest' && j.status !== 'failed' && j.status !== 'cancelled'
+      && new Date(j.created_at).getTime() >= monthStart).length
+    if (used >= ACCESS_JOBS_PER_MONTH) {
+      return {
+        ok: false, code: 'access_monthly_limit',
+        message: `You have loaded ${used} regions this month, which is the limit of ${ACCESS_JOBS_PER_MONTH}.`,
+      }
+    }
+  }
+  return { ...checkQuota({ profile, usage, running: usage.running, estimate, points: 0, now }), estimate }
+}
+
 /** How close to the monthly quota someone is, as a fraction, capped for display. */
 export function quotaFraction(used = 0, quota = 0) {
   if (!quota || quota <= 0) return 0

@@ -25,6 +25,7 @@ import { clusterFeatures } from '../lib/cluster.mjs'
 import { persistModelContributions } from '../lib/model-persist.mjs'
 import { notifyJobSettled } from '../lib/notify.mjs'
 import { logCronRun } from '../lib/cron-jobs.mjs'
+import { runAccessIngest } from '../lib/access-regions.mjs'
 
 // Every minute, so a job that misses the poke below still starts within a
 // minute rather than up to five. The poke on submit is the fast path; this is
@@ -76,6 +77,20 @@ export default async function handler(request) {
   console.log(`[ee-worker] starting job ${job.id} (kind: ${spec.kind || 'enrich'})`)
 
   try {
+    // Region load: no Earth Engine, no observations source. Stops starting new
+    // tiles ~40s before the 300s cap; re-running continues (upserts are idempotent).
+    if (spec.kind === 'access_ingest') {
+      const onProgress = throttled(job.id)
+      const result = await runAccessIngest({
+        client: adminClient(), spec, userId: job.user_id, onProgress, deadlineMs: _jobStart + 250_000,
+      })
+      spent = job.estimated_units || 0
+      await finishJob(job.id, { resultPath: null, costUnits: spent, meta: result })
+      await notifyJobSettled({ ...job, status: 'succeeded', result_meta: result })
+      await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'ok', durationMs: Date.now() - t0, details: { jobId: job.id, kind: 'access_ingest', ...result } })
+      return json({ ok: true, claimed: job.id, access: result })
+    }
+
     // A job queued on the member's own project must run there. If the credential
     // has since been revoked, fail rather than fall back to the shared account:
     // its quota check skipped the shared monthly cap.
