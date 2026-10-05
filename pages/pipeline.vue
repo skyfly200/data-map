@@ -170,10 +170,12 @@
               </button>
             </div>
             <p v-if="fetchForm.error" class="msg error">{{ fetchForm.error }}</p>
-            <p v-if="fetchForm.result" class="msg ok">
-              {{ fetchForm.result.count }} records fetched as "{{ fetchForm.result.title }}" — ready to continue.
-            </p>
           </template>
+
+          <!-- Stays visible after a fetch flips the source to the saved dataset -->
+          <p v-if="fetchForm.result" class="msg ok">
+            {{ fetchForm.result.count }} records fetched as "{{ fetchForm.result.title }}" — ready to continue.
+          </p>
 
           <div class="actions">
             <button class="btn primary" :disabled="!canAdvanceSource" @click="advanceSource">
@@ -718,6 +720,7 @@ async function runFetch() {
     if (!saveRes.ok || !saved.ok) throw new Error(saved.error || 'Could not register the fetched dataset.')
 
     sourceForm.datasetSlug = saved.dataset.slug
+    sourceForm.type = 'dataset' // WANT-16: jobs must use the fetched dataset, not a bbox
     fetchForm.result = { count: data.count, title }
     await datasetsApi.refresh()
   } catch (e) {
