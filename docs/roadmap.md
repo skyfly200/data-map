@@ -10,7 +10,6 @@ See also: `@docs/refactor.md` for technical debt, `@docs/bugs.md` for known issu
 
 - `WANT-1` **Species distribution modeling** — ships but untested against the real EE API; GeoTIFF export backend added (`model-tiles?download=1`), UI button and live EE verification still open. See `tasks/WANT-1.md`.
 - `WANT-2` **Member-defined enrichment stages** — let members point custom EE layers at enrichment without EE code execution. See `tasks/WANT-2.md`.
-- `WANT-4` **Coverage page, reframed** — replace raster cache inventory with per-column field coverage stats. See `tasks/WANT-4.md`.
 - `WANT-7` **MaxEnt observation bias correction** — bias grid or target-group background strategy. See `tasks/WANT-7.md`.
 - `WANT-3` **Member-supplied EE credentials** — members run jobs under their own EE project/budget. See `tasks/WANT-3.md`.
 - `WANT-8` **Vercel/Netlify cross-compatibility** — adapter layer so the backend deploys on either platform. See `tasks/WANT-8.md`.
