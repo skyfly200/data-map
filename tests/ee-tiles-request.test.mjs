@@ -39,16 +39,16 @@ test('a GET with nothing on it is an empty set of parameters, not an error', asy
 })
 
 test('a POST is read from its body', async () => {
-  const { request, url } = post({ layer: 'soil-taxonomy-select', codes: [18, 213] })
+  const { request, url } = post({ layer: 'soil-taxonomy', codes: [18, 213] })
   const input = await readInput(request, url)
-  assert.equal(input.layer, 'soil-taxonomy-select')
+  assert.equal(input.layer, 'soil-taxonomy')
   assert.deepEqual(input.codes, [18, 213])
 })
 
 test('a POST may still carry a query string, and the body wins', async () => {
-  const { request, url } = post({ codes: [1, 2] }, '?layer=soil-taxonomy-select&codes=99')
+  const { request, url } = post({ codes: [1, 2] }, '?layer=soil-taxonomy&mode=classes&codes=99')
   const input = await readInput(request, url)
-  assert.equal(input.layer, 'soil-taxonomy-select')
+  assert.equal(input.layer, 'soil-taxonomy')
   assert.deepEqual(input.codes, [1, 2])
 })
 
@@ -70,13 +70,13 @@ test('a body that is not JSON is refused by name rather than silently ignored', 
 test('what a POST produces validates exactly as what a GET produces', async () => {
   // The whole point: one validation path, whichever way the parameters arrived.
   const codes = [213, 18, 18]
-  const fromPost = await readInput(...Object.values(post({ layer: 'soil-taxonomy-select', codes })))
-  const fromGet = await readInput(...Object.values(get('?layer=soil-taxonomy-select&codes=213,18,18')))
+  const fromPost = await readInput(...Object.values(post({ layer: 'soil-taxonomy', codes })))
+  const fromGet = await readInput(...Object.values(get('?layer=soil-taxonomy&mode=classes&codes=213,18,18')))
   assert.equal(
-    resolveLayer('soil-taxonomy-select', fromPost).params.codes,
-    resolveLayer('soil-taxonomy-select', fromGet).params.codes,
+    resolveLayer('soil-taxonomy', fromPost).params.codes,
+    resolveLayer('soil-taxonomy', fromGet).params.codes,
   )
-  assert.equal(resolveLayer('soil-taxonomy-select', fromPost).params.codes, '18,213')
+  assert.equal(resolveLayer('soil-taxonomy', fromPost).params.codes, '18,213')
 })
 
 // ── The cache key ────────────────────────────────────────────────────────────
@@ -90,13 +90,13 @@ test('a short key is left alone, so a cache entry still says what it is', () => 
 
 test('a key too long to be a blob name is hashed, and still names its layer', () => {
   const all = Array.from({ length: 430 }, (_, i) => i + 1)
-  const { params } = resolveLayer('soil-taxonomy-select', { codes: all })
-  const long = cacheKey('soil-taxonomy-select', params)
+  const { params } = resolveLayer('soil-taxonomy', { mode: 'classes', codes: all })
+  const long = cacheKey('soil-taxonomy', params)
   assert.ok(long.length > 1000, 'the selection did not produce a long key')
 
   const id = blobId(long)
   assert.ok(id.length <= 120, `the hashed key is still ${id.length} characters`)
-  assert.match(id, /^soil-taxonomy-select/, 'the key no longer says which layer it belongs to')
+  assert.match(id, /^soil-taxonomy/, 'the key no longer says which layer it belongs to')
 })
 
 test('two different selections cannot share a cache entry', () => {
@@ -104,8 +104,8 @@ test('two different selections cannot share a cache entry', () => {
   // between these two, so only the hash separates them.
   const a = Array.from({ length: 430 }, (_, i) => i + 1)
   const b = [...a.slice(0, 429), 999]
-  const keyA = cacheKey('soil-taxonomy-select', resolveLayer('soil-taxonomy-select', { codes: a }).params)
-  const keyB = cacheKey('soil-taxonomy-select', resolveLayer('soil-taxonomy-select', { codes: b }).params)
+  const keyA = cacheKey('soil-taxonomy', resolveLayer('soil-taxonomy', { mode: 'classes', codes: a }).params)
+  const keyB = cacheKey('soil-taxonomy', resolveLayer('soil-taxonomy', { mode: 'classes', codes: b }).params)
   assert.notEqual(keyA, keyB)
   assert.notEqual(blobId(keyA), blobId(keyB))
 })
@@ -113,6 +113,6 @@ test('two different selections cannot share a cache entry', () => {
 test('the same selection always produces the same cache entry', () => {
   const codes = normaliseCodes([5, 3, 1])
   const again = normaliseCodes([1, 3, 5, 5])
-  assert.equal(blobId(cacheKey('soil-taxonomy-select', { codes })),
-    blobId(cacheKey('soil-taxonomy-select', { codes: again })))
+  assert.equal(blobId(cacheKey('soil-taxonomy', { codes })),
+    blobId(cacheKey('soil-taxonomy', { codes: again })))
 })

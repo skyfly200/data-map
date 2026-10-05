@@ -42,12 +42,18 @@ const TABLE = {
 }
 
 const taxonomy = EE_TILE_LAYERS['soil-taxonomy']
-const chosen = EE_TILE_LAYERS['soil-taxonomy-select']
+// Orders and chosen classes are one catalogue entry with a `mode` parameter
+// (merged deliberately in 8fb6b85); `chosen` is that entry in 'classes' mode.
+const chosen = {
+  ...taxonomy,
+  build: (ee, params, table) => taxonomy.build(ee, { ...params, mode: 'classes' }, table),
+}
+const SELECT = { mode: 'classes' }
 
 // ── Shape ────────────────────────────────────────────────────────────────────
 
 test('both layers are in the catalogue, in the Soil group, gated like the rest of it', () => {
-  for (const [key, layer] of [['soil-taxonomy', taxonomy], ['soil-taxonomy-select', chosen]]) {
+  for (const [key, layer] of [['soil-taxonomy', taxonomy]]) {
     assert.ok(layer, `${key} is missing`)
     assert.equal(layer.group, 'Soil')
     assert.equal(tierFor(key), 'member')
@@ -62,9 +68,8 @@ test('a layer whose key IS the order chips hands its key to the browser', () => 
   // The browser draws the twelve orders as chips you can filter by. For the
   // orders layer those chips are the key, so drawing the flat swatch list too
   // is the same twelve entries twice, one set of them not clickable. The
-  // Both layers paint by order, so both hand their key to the browser.
+  // The layer paints by order in both modes, so it hands its key to the browser.
   assert.equal(describeLayer('soil-taxonomy').legendInBrowser, true)
-  assert.equal(describeLayer('soil-taxonomy-select').legendInBrowser, true)
 })
 
 test('the catalogue entry does not carry four hundred classes to every viewer', () => {
@@ -233,21 +238,21 @@ test('a selection of every class is bigger than a URL, which is why it is a body
   // The number this test is really pinning: if a four-hundred-class selection
   // fitted comfortably in a query string, the POST path would be dead weight.
   const all = Array.from({ length: 430 }, (_, i) => i + 1)
-  const query = new URLSearchParams({ layer: 'soil-taxonomy-select', codes: normaliseCodes(all) })
+  const query = new URLSearchParams({ layer: 'soil-taxonomy', mode: 'classes', codes: normaliseCodes(all) })
   assert.ok(query.toString().length > 1800,
     `a full selection is only ${query.toString().length} characters, so it would fit`)
 })
 
 test('the layer reads its selection through the same checks', () => {
-  assert.equal(resolveLayer('soil-taxonomy-select', { codes: '213,18' }).params.codes, '18,213')
-  assert.equal(resolveLayer('soil-taxonomy-select').params.codes, '')
-  assert.throws(() => resolveLayer('soil-taxonomy-select', { codes: 'x' }), LayerError)
+  assert.equal(resolveLayer('soil-taxonomy', { ...SELECT, codes: '213,18' }).params.codes, '18,213')
+  assert.equal(resolveLayer('soil-taxonomy').params.codes, '')
+  assert.throws(() => resolveLayer('soil-taxonomy', { ...SELECT, codes: 'x' }), LayerError)
 })
 
 test('the same selection in a different order is one tile, not two', () => {
-  const a = resolveLayer('soil-taxonomy-select', { codes: '18,213' })
-  const b = resolveLayer('soil-taxonomy-select', { codes: '213,18,18' })
-  assert.equal(cacheKey('soil-taxonomy-select', a.params), cacheKey('soil-taxonomy-select', b.params))
+  const a = resolveLayer('soil-taxonomy', { ...SELECT, codes: '18,213' })
+  const b = resolveLayer('soil-taxonomy', { ...SELECT, codes: '213,18,18' })
+  assert.equal(cacheKey('soil-taxonomy', a.params), cacheKey('soil-taxonomy', b.params))
 })
 
 // ── The class table ──────────────────────────────────────────────────────────

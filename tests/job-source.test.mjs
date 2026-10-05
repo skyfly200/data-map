@@ -10,6 +10,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
+import { BaselineError } from '../netlify/lib/job-source.mjs'
 import { DatasetAccessError } from '../netlify/lib/dataset-access.mjs'
 import {
   countDates, explainEmpty, explainSelection, loadSource, matchesTaxon, measureSource,
@@ -270,16 +271,21 @@ test('the refusal names the taxon, with how many survived the dates', () => {
   const msg = explainEmpty({ taxon: 'Amanita', dateFrom: '2026-07-01', dateTo: '2026-09-17' },
     { total: 48233, inBounds: 10084, inDates: 296 })
   assert.match(msg, /296 observations are in that area and date range/)
-  assert.match(msg, /“Amanita”/)
+  assert.match(msg, /"Amanita"/)
   assert.match(msg, /Clear the taxon/, 'it does not say what to do instead')
   assert.ok(!/date range\./.test(msg.replace(/in that area and date range/, '')),
     'it still blames the dates')
 })
 
 test('a dataset that could not be read is reported as our fault, not theirs', () => {
-  const msg = explainEmpty({}, { total: 0, inBounds: 0, inDates: 0 })
-  assert.match(msg, /could not be read/)
-  assert.match(msg, /our side/)
+  // An unreadable dataset is no longer a breakdown of zeros: loading it throws
+  // BaselineError (503), whose message carries the wording.
+  const err = new BaselineError()
+  assert.match(err.message, /could not be read/)
+  assert.match(err.message, /our side/)
+  assert.equal(err.status, 503)
+  // A dataset that did load but holds nothing is the member's empty result.
+  assert.match(explainEmpty({}, { total: 0, inBounds: 0, inDates: 0 }), /no observations to enrich/)
 })
 
 test('with no breakdown it falls back to the old wording rather than throwing', () => {

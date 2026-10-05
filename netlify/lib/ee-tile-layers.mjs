@@ -792,7 +792,7 @@ export const EE_TILE_LAYERS = {
     params: {
       year: {
         type: 'yearSelect', label: 'Year', default: () => THIS_YEAR() - MODIS_LAG_YEARS,
-        min: MODIS_FIRST_YEAR, max: () => THIS_YEAR() - MODIS_LAG_YEARS,
+        min: MODIS_FIRST_YEAR, max: () => THIS_YEAR(),
       },
     },
     legend: {
@@ -1372,7 +1372,8 @@ export const EE_TILE_LAYERS = {
     attribution: 'OpenLandMap USDA soil taxonomy great groups via Google Earth Engine',
     opacity: 0.8,
     note: 'USDA soil taxonomy at 250 m, global. Orders mode paints all twelve orders; '
-      + 'Classes mode paints only the great groups you choose from the class list. '
+      + 'Classes mode is a soil filter: it paints only the great groups you choose from the class list, '
+      + 'and is not a prediction of where anything grows. '
       + 'A model prediction, not a soil survey: right about a hillside, unreliable about a square metre.',
     params: {
       mode: { type: 'enum', label: 'Show', default: 'orders', values: ['orders', 'classes'] },
@@ -1713,7 +1714,8 @@ export const EE_TILE_LAYERS = {
     tier: 'free',
     attribution: 'TNC Global Human Modification v3 via Google Earth Engine',
     opacity: 0.65,
-    sourceMasked: true,
+    // Masks negative (nodata-valued) pixels itself, so does not rely on the source mask.
+    sourceMasked: false,
     note: 'TNC Global Human Modification index (gHM) at 90 m, a static snapshot. '
       + 'Values range 0 (wilderness) to 1 (fully modified by roads, agriculture, '
       + 'built-up land and similar). Low values (green) are where ecological '
@@ -1738,7 +1740,8 @@ export const EE_TILE_LAYERS = {
     tier: 'free',
     attribution: 'JRC GHSL GHS-POP P2023A via Google Earth Engine',
     opacity: 0.7,
-    sourceMasked: true,
+    // Zero people is a real value in the source, not nodata, so build() masks it.
+    sourceMasked: false,
     note: 'Modelled population count per 100 m cell from the Global Human '
       + 'Settlement Layer, for the chosen epoch (1975–2030 in five-year steps). '
       + 'Shown on a log scale — one pale pixel in a city holds far more people '
@@ -2017,7 +2020,8 @@ export const EE_TILE_LAYERS = {
     tier: 'free',
     attribution: 'MERIT Hydro v1.0.1 via Google Earth Engine',
     opacity: 0.75,
-    sourceMasked: true,
+    // Masks negative (nodata-valued) pixels itself, so does not rely on the source mask.
+    sourceMasked: false,
     note: 'How high each pixel sits above the nearest stream or river, from MERIT Hydro at ~90 m, '
       + 'global. Low values (blue) are valley floors, stream banks and floodplains — the ground that '
       + 'stays wet longest after rain and where cold air drains at night. High values (brown) drain '

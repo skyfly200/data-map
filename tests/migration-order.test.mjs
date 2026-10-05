@@ -24,7 +24,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'supabase_migrations')
+const DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'supabase', 'migrations')
 
 /** Roles hosted Supabase provides and a plain Postgres does not. */
 const HOSTED_ROLES = ['supabase_auth_admin', 'authenticated', 'anon', 'service_role']
