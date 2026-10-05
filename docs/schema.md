@@ -103,6 +103,15 @@ User-authored saved chart configurations. Each row is one saved chart with an or
 
 ---
 
+### Foray planner additions (migration `012_model_contributions_and_access.sql`, WANT-17)
+
+- `model_results.contributions` (`jsonb`, `{predictor: %}`) and `model_results.predictor_ranges` (`jsonb`, `{predictor: {p25,p75,min,max}}`). Written by `ee-worker` via `netlify/lib/model-persist.mjs` when a `model_runs` row exists for the job. Contributions exist only for `autoOptimize` runs; `predictor_ranges` is not yet computed by the runner.
+- `access_areas` — PAD-US units (`source`, `source_id`, `name`, `manager`, `designation`, `access_class` open/restricted/closed/unknown, `geom` MultiPolygon 4326, GiST). Unique `(source, source_id)`.
+- `access_lines` — OSM roads/trails (`osm_id` unique, `kind` road/trail, `highway`, `name`, `geom` LineString 4326, GiST).
+- RLS: select-all on both; writes via service role only.
+
+---
+
 ## Shared Functions
 
 ### `public.set_updated_at()`

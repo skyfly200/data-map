@@ -22,6 +22,7 @@ import { runModel, runPipeline, setActiveCredential } from '../lib/ee-runner.mjs
 import { loadCredential } from '../lib/ee-credentials.mjs'
 import { uploadJson } from '../lib/datasets-store.mjs'
 import { clusterFeatures } from '../lib/cluster.mjs'
+import { persistModelContributions } from '../lib/model-persist.mjs'
 import { notifyJobSettled } from '../lib/notify.mjs'
 import { logCronRun } from '../lib/cron-jobs.mjs'
 
@@ -132,6 +133,7 @@ export default async function handler(request) {
       const { template, meta } = await runModel({ spec, features: usedFeatures, onProgress })
       spent = job.estimated_units || 0
       await finishJob(job.id, { resultPath: null, costUnits: spent, meta: { ...meta, template } })
+      try { await persistModelContributions(adminClient(), job.id, meta) } catch { /* best-effort */ }
       // The member has almost certainly left the page by now; let them know.
       await notifyJobSettled({ ...job, status: 'succeeded', result_meta: { ...meta, template } })
       console.log(`[ee-worker] model job ${job.id} succeeded in ${Date.now() - _jobStart}ms (presences: ${meta.presences})`)

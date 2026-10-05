@@ -1,0 +1,12 @@
+{
+ "padus": {"type":"FeatureCollection","features":[
+  {"type":"Feature","properties":{"OBJECTID":1,"Unit_Nm":"Test NF","Mang_Name":"USFS","Des_Tp":"NF","Pub_Access":"Open"},"geometry":{"type":"Polygon","coordinates":[[[-105.5,40],[-105.0,40],[-105.0,40.5],[-105.5,40.5],[-105.5,40]]]}},
+  {"type":"Feature","properties":{"OBJECTID":2,"Unit_Nm":"Closed Res","Pub_Access":"Closed"},"geometry":{"type":"Polygon","coordinates":[[[-106,40],[-105.6,40],[-105.6,40.5],[-106,40]]]}},
+  {"type":"Feature","properties":{"Unit_Nm":"Pt"},"geometry":{"type":"Point","coordinates":[0,0]}}]},
+ "osm": {"elements":[
+  {"type":"way","id":10,"tags":{"highway":"path","name":"Ridge Trail"},"geometry":[{"lon":-105.3,"lat":40.2},{"lon":-105.3,"lat":40.3}]},
+  {"type":"way","id":11,"tags":{"highway":"service"},"geometry":[{"lon":-105.1,"lat":40.1},{"lon":-105.2,"lat":40.1}]},
+  {"type":"way","id":12,"tags":{"highway":"track","access":"private"},"geometry":[{"lon":-105.1,"lat":40.1},{"lon":-105.2,"lat":40.1}]},
+  {"type":"way","id":13,"tags":{"highway":"motorway"},"geometry":[{"lon":-105.1,"lat":40.1},{"lon":-105.2,"lat":40.1}]},
+  {"type":"node","id":14}]}
+}
