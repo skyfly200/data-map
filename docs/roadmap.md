@@ -9,7 +9,6 @@ See also: `@docs/refactor.md` for technical debt, `@docs/bugs.md` for known issu
 ## Wanted
 
 - `WANT-1` **Species distribution modeling** — ships but untested against the real EE API; GeoTIFF export still open. See `tasks/WANT-1.md`.
-- `WANT-11` **Job → dataset linkage in composable state** — persist job results in `useEeJobs` / `useJobResults` so enriched datasets survive navigation away from `/jobs`. See `tasks/WANT-11.md`.
 - `WANT-2` **Member-defined enrichment stages** — let members point custom EE layers at enrichment without EE code execution. See `tasks/WANT-2.md`.
 - `WANT-4` **Coverage page, reframed** — replace raster cache inventory with per-column field coverage stats. See `tasks/WANT-4.md`.
 - `WANT-7` **MaxEnt observation bias correction** — bias grid or target-group background strategy. See `tasks/WANT-7.md`.
