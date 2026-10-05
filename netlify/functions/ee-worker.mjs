@@ -18,7 +18,8 @@ import {
 } from '../lib/job-queue.mjs'
 import { explainEmpty, explainSelection, loadSource } from '../lib/job-source.mjs'
 import { loadBaseline } from '../lib/baseline.mjs'
-import { runModel, runPipeline } from '../lib/ee-runner.mjs'
+import { runModel, runPipeline, setActiveCredential } from '../lib/ee-runner.mjs'
+import { loadCredential } from '../lib/ee-credentials.mjs'
 import { uploadJson } from '../lib/datasets-store.mjs'
 import { clusterFeatures } from '../lib/cluster.mjs'
 import { notifyJobSettled } from '../lib/notify.mjs'
@@ -74,6 +75,16 @@ export default async function handler(request) {
   console.log(`[ee-worker] starting job ${job.id} (kind: ${spec.kind || 'enrich'})`)
 
   try {
+    // A job queued on the member's own project must run there. If the credential
+    // has since been revoked, fail rather than fall back to the shared account:
+    // its quota check skipped the shared monthly cap.
+    if (spec.own_project) {
+      const credential = await loadCredential(adminClient(), job.user_id)
+      if (!credential) throw new Error('This job was queued on your own Earth Engine project, but that credential is no longer stored. Add it again and resubmit.')
+      setActiveCredential(credential)
+    } else {
+      setActiveCredential(null)
+    }
     // Resolved as the member who submitted it, not as the worker. The worker's
     // client is the service role, which row-level security does not apply to,
     // so a dataset source has to be checked here or not at all — and the check
@@ -171,5 +182,7 @@ export default async function handler(request) {
     await notifyJobSettled({ ...job, status: 'failed', error: String(err?.message || err) })
     await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'error', durationMs: Date.now() - t0, details: { jobId: job.id, error: String(err?.message || err) } })
     return json({ ok: false, claimed: job.id, error: String(err.message || err) }, 200)
+  } finally {
+    setActiveCredential(null)
   }
 }

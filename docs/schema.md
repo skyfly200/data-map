@@ -143,12 +143,28 @@ on conflict (inat_id) do update set
 
 ---
 
+### `public.member_ee_credentials`
+
+Member-supplied Earth Engine service-account key (WANT-3). Migration `011_member_ee_credentials.sql`. RLS on with **no policies**; service role only. The browser only ever sees a summary from `ee-credentials`.
+
+| Column | Type | Notes |
+|---|---|---|
+| `user_id` | `uuid` | **Primary key** — FK → `auth.users` (cascade delete) |
+| `ciphertext` | `text` | AES-256-GCM `v1.iv.tag.data`, key `EE_CREDENTIAL_KEY` (env), owner id bound as AAD |
+| `client_email` | `text` | Service-account email (shown to owner) |
+| `project_id` | `text` | Cloud project the jobs run under |
+| `validated_at` | `timestamptz` | Last successful EE round-trip |
+| `created_at` | `timestamptz` | Default `now()` |
+
+---
+
 ## Entity Relationships
 
 ```
 auth.users
   └─ user_settings  (1:1, cascade delete)
   └─ saved_charts   (1:many, cascade delete)
+  └─ member_ee_credentials  (1:1, cascade delete)
 
 observations
   └─ observation_enrichments  (1:1, cascade delete)

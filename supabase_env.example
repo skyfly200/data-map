@@ -25,3 +25,6 @@ OUTPUT_PREFIX=mushroom_observations
 OUTPUT_DIR=.
 SKIP_EARTH_ENGINE=1
 ENV_FILE=.env
+
+# Member-supplied EE credentials (WANT-3): 32 random bytes, base64. e.g. openssl rand -base64 32
+EE_CREDENTIAL_KEY=

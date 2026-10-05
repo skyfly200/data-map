@@ -67,7 +67,7 @@ export function estimateUnits({ points = 0, stages = [], dates = 1 } = {}, catal
  * written to be shown to the member: someone who has hit a limit needs to know
  * which one and when it lifts, not that a request failed.
  */
-export function checkQuota({ profile, usage = {}, running = 0, estimate = 0, points = 0, now = new Date() } = {}) {
+export function checkQuota({ profile, usage = {}, running = 0, estimate = 0, points = 0, ownProject = false, now = new Date() } = {}) {
   const tier = effectiveTier(profile, now)
   if (tier === 'free') {
     return {
@@ -121,6 +121,10 @@ export function checkQuota({ profile, usage = {}, running = 0, estimate = 0, poi
   const monthlyQuota = tier === 'admin'
     ? Math.max(limits.ee_quota_monthly, ADMIN_QUOTA_MONTHLY)
     : limits.ee_quota_monthly
+
+  // A job on the member's own Earth Engine project is metered by Google against
+  // their budget, not the shared pool; the point and concurrency caps still apply.
+  if (ownProject) return { ok: true, tier, estimate, remaining: null, ownProject: true }
 
   const spent = usage.unitsThisMonth || 0
   if (spent + estimate > monthlyQuota) {

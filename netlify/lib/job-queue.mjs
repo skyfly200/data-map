@@ -11,6 +11,7 @@
 // one job, or FRMS pays twice for the same result. See claimNextJob.
 
 import { adminClient } from './auth.mjs'
+import { hasCredential } from './ee-credentials.mjs'
 import { estimateUnits, summariseUsage, checkQuota } from './quotas.mjs'
 import { effectiveTier } from './tiers.mjs'
 import { STAGES, normaliseSpec, progressPlan } from './ee-pipeline.mjs'
@@ -86,13 +87,15 @@ export async function submitJob({ user, profile, spec: rawSpec, counter }) {
     .gte('created_at', new Date(Date.now() - 32 * 86400000).toISOString())
 
   const usage = summariseUsage(history || [])
-  const verdict = checkQuota({ profile, usage, running: usage.running, estimate, points })
+  const ownProject = await hasCredential(client, user.id)
+  const verdict = checkQuota({ profile, usage, running: usage.running, estimate, points, ownProject })
   if (!verdict.ok) throw new QueueError(verdict.message, { status: 403, code: verdict.code })
 
   const { data, error } = await client.from('ee_jobs').insert({
     user_id: user.id,
     kind: spec.kind,
-    params: { ...spec, points, dates },
+    // A flag only; the credential itself is looked up by the worker from the owner.
+    params: { ...spec, points, dates, ...(ownProject ? { own_project: true } : {}) },
     title: spec.title || null,
     estimated_units: estimate,
     status: 'queued',

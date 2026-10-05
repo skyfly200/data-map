@@ -73,30 +73,74 @@ function serviceAccountKey() {
 }
 
 let session = null
+let sessionOwner = null   // credential id the cached session was opened with; null = shared account
+let activeCredential = null
 
-/** Authenticate and initialise once per process. */
-export async function initEarthEngine() {
-  if (session) return session
-  if (!earthEngineConfigured()) throw new Error('Earth Engine is not configured on this deployment.')
-  const key = serviceAccountKey()
+/**
+ * Run subsequent initEarthEngine() calls under a member's own credential
+ * (`{ key, project, id }`), or back on the shared account with null. The worker
+ * handles one job per invocation, so a process-wide switch is safe there; the
+ * cached session is re-opened whenever the owner changes.
+ */
+export function setActiveCredential(credential) {
+  activeCredential = credential || null
+}
 
-  session = new Promise((resolve, reject) => {
+function openSession(key, project) {
+  return new Promise((resolve, reject) => {
     ee.data.authenticateViaPrivateKey(key, () => {
       ee.initialize(
         null, null,
         () => resolve(ee),
         (err) => reject(new Error(`Earth Engine failed to initialise: ${err}`)),
         null,
-        process.env.EARTHENGINE_PROJECT,
+        project,
       )
     }, (err) => reject(new Error(`Earth Engine rejected the service account: ${err}`)))
-  }).catch((err) => {
+  })
+}
+
+/** Authenticate and initialise once per process (per credential owner). */
+export async function initEarthEngine() {
+  const owner = activeCredential?.id || null
+  if (session && sessionOwner === owner) return session
+  let key, project
+  if (activeCredential) {
+    key = activeCredential.key
+    project = activeCredential.project
+  } else {
+    if (!earthEngineConfigured()) throw new Error('Earth Engine is not configured on this deployment.')
+    key = serviceAccountKey()
+    project = process.env.EARTHENGINE_PROJECT
+  }
+  sessionOwner = owner
+  session = openSession(key, project).catch((err) => {
     // Do not cache a failure: a transient network problem should not poison the
     // process for every job that follows.
     session = null
+    sessionOwner = null
     throw err
   })
   return session
+}
+
+/**
+ * Prove a member's credential works before it is stored. Opens a throwaway
+ * session, makes one trivial request, then drops it so no later job inherits it.
+ * Errors are reduced to a fixed message: Google's text can echo key material.
+ */
+export async function verifyCredential({ key, project }) {
+  try {
+    await openSession(key, project)
+    await evaluate(ee.Number(1), { timeoutMs: 30000 })
+  } catch {
+    throw Object.assign(new Error(
+      'Earth Engine rejected that credential. Check the key, and that the project is registered for Earth Engine and the service account has access.',
+    ), { name: 'CredentialError', status: 400 })
+  } finally {
+    session = null
+    sessionOwner = null
+  }
 }
 
 /**
