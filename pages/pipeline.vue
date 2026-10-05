@@ -50,6 +50,10 @@
                 <input v-model="sourceForm.type" type="radio" value="fetch" />
                 <span>Import from iNaturalist / GBIF</span>
               </label>
+              <label class="pick">
+                <input v-model="sourceForm.type" type="radio" value="upload" />
+                <span>Upload my own CSV / GeoJSON</span>
+              </label>
             </div>
           </div>
 
@@ -102,6 +106,28 @@
                                    title="Filter results to a specific taxon — genus, family, or species" />
               </div>
             </div>
+          </template>
+
+          <!-- Member file upload -->
+          <template v-else-if="sourceForm.type === 'upload'">
+            <div class="field-stack">
+              <div class="field-row">
+                <span class="field-label">File</span>
+                <input type="file" accept=".csv,.json,.geojson,text/csv,application/geo+json,application/json"
+                       :disabled="uploadForm.loading" @change="uploadForm.file = $event.target.files?.[0] || null" />
+              </div>
+              <p class="hint">CSV needs latitude and longitude columns (lat/lon, decimalLatitude/decimalLongitude…); species and date columns are picked up if present. GeoJSON: a FeatureCollection. Max 3 MB. Saved privately as a dataset.</p>
+              <div class="field-row">
+                <span class="field-label">Name</span>
+                <input v-model="uploadForm.title" type="text" placeholder="Defaults to the file name" :disabled="uploadForm.loading" />
+              </div>
+            </div>
+            <div class="actions" style="margin-top:0">
+              <button class="btn secondary" :disabled="!uploadForm.file || uploadForm.loading" @click="runUpload" type="button">
+                {{ uploadForm.loading ? 'Uploading…' : 'Upload observations' }}
+              </button>
+            </div>
+            <p v-if="uploadForm.error" class="msg error">{{ uploadForm.error }}</p>
           </template>
 
           <!-- Fetch / import inline -->
@@ -630,6 +656,26 @@ const fetchForm = reactive({
   error: '',
   result: null,
 })
+
+const uploadForm = reactive({ file: null, title: '', loading: false, error: '' })
+
+async function runUpload() {
+  uploadForm.error = ''
+  uploadForm.loading = true
+  try {
+    const { dataset, skipped } = await datasetsApi.importFile(uploadForm.file, { title: uploadForm.title })
+    // Behaves from here like any saved dataset.
+    sourceForm.datasetSlug = dataset.slug
+    sourceForm.type = 'dataset'
+    uploadForm.file = null
+    uploadForm.title = ''
+    if (skipped) uploadForm.error = `Uploaded; ${skipped} rows without valid coordinates were skipped.`
+  } catch (e) {
+    uploadForm.error = e?.message || 'Upload failed.'
+  } finally {
+    uploadForm.loading = false
+  }
+}
 
 async function runFetch() {
   fetchForm.error = ''

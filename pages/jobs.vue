@@ -442,6 +442,13 @@
                     @click="datasetsApi.refresh()">Refresh</button>
           </div>
 
+          <div class="job-actions">
+            <input type="file" accept=".csv,.json,.geojson,text/csv,application/geo+json,application/json"
+                   :disabled="uploading" @change="onUploadFile" />
+            <span class="when">{{ uploading ? 'Uploading…' : 'Upload your own observations (CSV or GeoJSON, max 3 MB)' }}</span>
+          </div>
+          <p v-if="uploadMsg" class="msg">{{ uploadMsg }}</p>
+
           <p v-if="datasetsApi.error.value" class="msg error">{{ datasetsApi.error.value }}</p>
           <p v-else-if="!datasetsApi.datasets.value.length" class="msg">
             No saved datasets yet. When a job finishes, you can save its results as a
@@ -517,6 +524,25 @@ import { countForTaxon, datasetHasTaxon } from '~/netlify/lib/dataset-taxa.mjs'
 const membership = useMembership()
 const jobsApi = useEeJobs()
 const datasetsApi = useDatasets()
+
+const uploading = ref(false)
+const uploadMsg = ref('')
+async function onUploadFile(ev: Event) {
+  const input = ev.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  uploading.value = true
+  uploadMsg.value = ''
+  try {
+    const { dataset, skipped } = await datasetsApi.importFile(file)
+    uploadMsg.value = `Saved "${dataset.title}" (${(dataset.feature_count || 0).toLocaleString()} points)${skipped ? `; ${skipped} rows skipped` : ''}.`
+  } catch (e: any) {
+    uploadMsg.value = e?.message || 'Upload failed.'
+  } finally {
+    uploading.value = false
+    input.value = ''
+  }
+}
 const { addInlineDataset } = useObservations()
 const modelOverlay = useModelOverlay()
 const notify = usePushNotifications()

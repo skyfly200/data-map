@@ -5,6 +5,7 @@
 // storage path of its file and is therefore created server-side only — see the
 // reasoning in supabase_migrations/005_dataset_storage_access.sql.
 
+import { MAX_UPLOAD_BYTES, guessFormat } from '~/netlify/lib/observation-upload.mjs'
 import { MEMBER_VISIBILITIES } from '~/netlify/lib/dataset-access.mjs'
 
 export interface Dataset {
@@ -141,6 +142,29 @@ export function useDatasets() {
     return data.dataset
   }
 
+  /** Upload a member's own CSV or GeoJSON file as a new dataset. */
+  async function importFile(file: File, { title = '', description = '', visibility = 'private' }: { title?: string, description?: string, visibility?: string } = {}) {
+    error.value = ''
+    if (!file) throw new Error('Choose a file first.')
+    if (file.size > MAX_UPLOAD_BYTES) {
+      throw new Error('File is larger than 3 MB. Thin it to the most relevant records first.')
+    }
+    const content = await file.text()
+    const format = guessFormat(file.name, content)
+    const data = await call<{ dataset: Dataset, skipped?: number }>('', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: format === 'geojson' ? 'import_geojson' : 'import_csv',
+        content,
+        title: title || file.name.replace(/\.[^.]+$/, '') || 'Uploaded observations',
+        description,
+        visibility,
+      }),
+    })
+    await refresh()
+    return data
+  }
+
   const activeDataset = useState<Dataset | null>('active-dataset', () => null)
   const activeGeojson = useState<any | null>('active-geojson', () => null)
 
@@ -172,7 +196,7 @@ export function useDatasets() {
     datasets, available, loading, error,
     activeDataset, activeGeojson,
     visibilities: MEMBER_VISIBILITIES,
-    refresh, refreshAvailable, saveJob, update, remove, fetchGeojson, importAsset,
+    refresh, refreshAvailable, saveJob, update, remove, fetchGeojson, importAsset, importFile,
     activate, loadActiveGeojson,
   }
 }
