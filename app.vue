@@ -327,8 +327,8 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
    on desktop beside the full nav. */
 .app-header .nav-pop { display: none; }
 .nav-item {
-  display: block; padding: 7px 8px; border-radius: 6px;
-  color: var(--text); text-decoration: none; font-size: 0.9rem;
+  display: block; padding: 9px 8px; border-radius: 6px; white-space: nowrap;
+  color: var(--text, #e6e9ee); min-height: 0; text-decoration: none; font-size: 0.9rem;
 }
 .nav-item:hover { background: var(--surface-2, rgba(255, 255, 255, 0.08)); }
 .nav-item.router-link-active { color: var(--accent, #7fd0a0); font-weight: 600; }

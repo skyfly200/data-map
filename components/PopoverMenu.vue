@@ -149,6 +149,8 @@ defineExpose({ close, toggle, show: () => { open.value = true } })
    right, which nothing ever passed; usePanelFit is what actually keeps a panel
    on screen near the right edge. */
 .pop-panel { left: 0; }
+.pop-panel.align-right { left: auto; right: 0; }
+.pop-panel > :deep(*) { flex-shrink: 0; }
 
 .pop-inline { display: grid; gap: 8px; }
 .pop-inline > .pop-head { margin-bottom: 0; }

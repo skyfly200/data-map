@@ -6,11 +6,11 @@ import { fmtNum, FIELD_LABEL } from '~/composables/useMapPointStyle'
 // instead of a hard switch. At low zooms show large clusters, progressively
 // show more clusters as you zoom in, until individual points become visible.
 const CLUSTER_START_ZOOM = 4  // Start showing clusters below this zoom
-const CLUSTER_END_ZOOM = 9    // Show individual points above this zoom (always as individual points)
+const CLUSTER_END_ZOOM = 11   // Show individual points above this zoom (always as individual points)
 const CLUSTER_TRANSITION_ZOOM = 8.5  // Zoom where we start showing more individual points
 
 function clusterRadius(count) {
-  return Math.max(8, Math.min(40, 8 + Math.log2(Math.max(1, count)) * 3))
+  return Math.max(6, Math.min(22, 6 + Math.log2(Math.max(1, count)) * 1.6))
 }
 
 // Calculate the appropriate clustering zoom level based on map zoom.
@@ -105,7 +105,7 @@ export function useMapSelection({
     const { default: Supercluster } = await import('supercluster')
     // Smaller radius for less aggressive clustering, especially at higher zooms.
     // Clusters still form at low zoom but break apart more readily as you zoom.
-    const sc = new Supercluster({ radius: 28, maxZoom: 13, minZoom: 0 })
+    const sc = new Supercluster({ radius: 90, maxZoom: 13, minZoom: 0 })
     sc.load(geo.features.filter((f) => f.geometry?.type === 'Point'))
     scIndex = sc
   }
