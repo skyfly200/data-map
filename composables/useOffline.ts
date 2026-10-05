@@ -268,7 +268,7 @@ export function useOffline() {
    */
   const saveShell = () => run('shell', {
     type: 'save-shell',
-    urls: ['/', '/map', '/charts', '/analysis', '/data', '/options', ...guidePaths()],
+    urls: ['/', '/map', '/foray', '/charts', '/analysis', '/data', '/options', ...guidePaths()],
   })
 
   async function clear(which = 'all') {

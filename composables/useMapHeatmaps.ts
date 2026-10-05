@@ -24,12 +24,32 @@ import { categoryColor } from '~/composables/useAppearance'
 import { cellAt, cellKeyAt, CELL_SHAPES } from '~/composables/gridCells'
 import { ALL_NUMERIC } from '~/composables/useChartFields'
 import { fieldValue } from '~/composables/statistics'
+import { inSeasonSpecies, IN_SEASON_WINDOW } from '~/composables/useInSeason'
+import { modalKey, normaliseScores, scoreCell, seasonWeights } from '~/composables/forayScore'
 import type { ObservationFeature } from '~/composables/useObservations'
 
 // CELL_SHAPES is deliberately not re-exported: Nuxt auto-imports every
 // composables/ export by name, and a second export of the same symbol makes
 // which module wins depend on scan order. It is handed out on the returned
 // object instead, and gridCells is the one place it is declared.
+
+export interface BuildOptions {
+  /** Keep only finds with this land_cover_label. */
+  landCover?: string
+  /** Track per-species in-window counts for these species (foray score). */
+  seasonSpecies?: Set<string>
+}
+
+export interface ForayOptions {
+  day: number
+  window: number
+  landCover?: string
+  size?: number
+  shape?: string
+  /** In-season species considered, centred on `day`. */
+  topN?: number
+  modelSpecies?: Set<string>
+}
 
 export interface CellSize {
   value: number
@@ -140,6 +160,10 @@ export const HEATMAP_MODES: HeatmapMode[] = [
     note: "Share of the cell's own finds that fall in the selected window, effort-neutral, so it shows when an area fruits.",
   },
   {
+    key: 'foray', label: 'Foray score', kind: 'sequential', group: 'Observations',
+    note: "Share of the cell's own finds that are species in season now, weighted by how close each species' fruiting is to the selected day. Effort-neutral; only cells that already have finds are scored, so a blank cell is unsampled, not poor.",
+  },
+  {
     key: 'hotspots', label: 'In-season hotspots', kind: 'sequential', group: 'Observations',
     note: 'Where finds have actually concentrated in this window, weighted by how well-sampled the cell is. A record of past finds, not a forecast.',
   },
@@ -184,6 +208,7 @@ export const DEFAULT_RAMPS: Record<string, string[]> = {
   richness: ['#eef7ec', '#1b5e20'],
   season: ['#fff3e0', '#bf360c'],
   hotspots: ['#f3e9fb', '#4a148c'],
+  foray: ['#fffde7', '#1b5e20'],
   wind: ['#9ecae1', '#08306b'],
   ...Object.fromEntries(FIELD_MODES.filter((f) => f.ramp).map((f) => [`f:${f.key}`, f.ramp!])),
 }
@@ -241,6 +266,8 @@ interface HeatmapCell {
   n: number
   inWindow: number
   species: Map<string, number>
+  /** Foray mode only: in-window finds per in-season species. */
+  speciesWin?: Map<string, number>
   cover: Map<string, number>
   ax: number
   ay: number
@@ -271,6 +298,8 @@ export function useMapHeatmaps() {
   const cellShape = useState('map-overlay-shape', () => 'hex')
   const seasonDay = useState('map-overlay-day', () => todayOfYear())
   const seasonWindow = useState('map-overlay-window', () => 14)
+  // Foray score land-cover filter ('' = all).
+  const forayLandCover = useState('map-foray-landcover', () => '')
   const heatmapOpacity = useState('map-heatmap-opacity', () => 0.55)
   const tileOpacity = useState('map-tile-opacity', () => 1)
 
@@ -344,7 +373,7 @@ export function useMapHeatmaps() {
     } catch { /* keep defaults */ }
   }
 
-  function buildCells(features: ObservationFeature[], size: number, day: number, window: number, shape = cellShape.value, fields: string[] = []) {
+  function buildCells(features: ObservationFeature[], size: number, day: number, window: number, shape = cellShape.value, fields: string[] = [], opts: BuildOptions = {}) {
     const cells = new Map<string, HeatmapCell>()
     const wanted = fields.filter((f) => FIELD_MODE_KEYS.has(f))
     for (const f of features) {
@@ -352,6 +381,8 @@ export function useMapHeatmaps() {
       if (!co) continue
       const lon = Number(co[0]), lat = Number(co[1])
       if (!Number.isFinite(lon) || !Number.isFinite(lat)) continue
+
+      if (opts.landCover && f.properties?.land_cover_label !== opts.landCover) continue
 
       const geom = cellAt(lon, lat, size, shape)
       let cell = cells.get(geom.key)
@@ -373,7 +404,12 @@ export function useMapHeatmaps() {
         cell.cover.set(p.land_cover_label, (cell.cover.get(p.land_cover_label) || 0) + 1)
       }
       const doy = Number(p.day_of_year)
-      if (Number.isFinite(doy) && dayDistance(doy, day) <= window) cell.inWindow += 1
+      const inWin = Number.isFinite(doy) && dayDistance(doy, day) <= window
+      if (inWin) cell.inWindow += 1
+      if (opts.seasonSpecies && inWin && hasValue(p.species) && opts.seasonSpecies.has(p.species)) {
+        if (!cell.speciesWin) cell.speciesWin = new Map()
+        cell.speciesWin.set(p.species, (cell.speciesWin.get(p.species) || 0) + 1)
+      }
 
       const wu = Number(p.wind_u), wv = Number(p.wind_v)
       if (Number.isFinite(wu) && Number.isFinite(wv)) {
@@ -503,9 +539,48 @@ export function useMapHeatmaps() {
     }
   }
 
+  /**
+   * Foray-scored cells (WANT-17 phase 1): only cells that already have finds, and
+   * at least the minimum sample. Scoring lives in forayScore.ts.
+   */
+  function computeForayCells(features: ObservationFeature[], o: ForayOptions) {
+    const species = inSeasonSpecies((features || []).map((f) => f.properties),
+      { day: o.day, window: IN_SEASON_WINDOW, topN: o.topN ?? 25, modelSpecies: o.modelSpecies })
+    const weights = seasonWeights(species)
+    const built = buildCells(features, o.size ?? cellSize.value, o.day, o.window,
+      o.shape ?? cellShape.value, [], { landCover: o.landCover, seasonSpecies: new Set(weights.keys()) })
+    const cells = []
+    for (const c of built) {
+      const sc = scoreCell({ n: c.n, speciesInWindow: c.speciesWin || new Map() }, weights)
+      if (sc.thin) continue
+      cells.push({ ...c, ...sc, landCover: modalKey(c.cover) })
+    }
+    return { cells, species, weights }
+  }
+
+  function forayHeatmap(features: ObservationFeature[], meta: HeatmapMode) {
+    const { cells } = computeForayCells(features, {
+      day: seasonDay.value, window: seasonWindow.value, landCover: forayLandCover.value || undefined,
+    })
+    if (!cells.length) return { cells: [], legend: null }
+    const ramp = RAMPS.foray
+    const shown = normaliseScores(cells).map((c) => ({ ...c, raw: c.score, value: c.score, color: rampColor(ramp, c.t) }))
+    const pct = (v: number) => `${Math.round(v * 100)}%`
+    return {
+      cells: shown,
+      legend: {
+        type: 'sequential', ramp,
+        min: pct(Math.min(...shown.map((c) => c.score))), max: pct(Math.max(...shown.map((c) => c.score))),
+        title: meta.label, note: meta.note, cells: shown.length,
+      },
+    }
+  }
+
   function computeHeatmap(features: ObservationFeature[], m = mode.value) {
     const meta = HEATMAP_MODES.find((x) => x.key === m)
     if (!meta || meta.kind === 'none' || !features?.length) return { cells: [], legend: null }
+
+    if (m === 'foray') return forayHeatmap(features, meta)
 
     const size = m === 'wind' ? Math.max(cellSize.value, MIN_VECTOR_CELL) : cellSize.value
     const cells = buildCells(features, size, seasonDay.value, seasonWindow.value,
@@ -568,6 +643,7 @@ export function useMapHeatmaps() {
     richness: 'map-heatmap-richness',
     season: 'map-heatmap-season',
     hotspots: 'map-heatmap-hotspots',
+    foray: 'map-heatmap',
     common: 'map-heatmap-common',
     land_cover: 'map-heatmap-land-cover',
     wind: 'map-heatmap-wind',
@@ -589,11 +665,11 @@ export function useMapHeatmaps() {
     : HEATMAP_DOCS[mode.value] || 'map-heatmap'))
 
   return {
-    mode, cellSize, cellShape, seasonDay, seasonWindow, activeMode, groupedModes,
+    mode, cellSize, cellShape, seasonDay, seasonWindow, forayLandCover, activeMode, groupedModes,
     heatmapOpacity, tileOpacity, todayOfYear, fieldOf,
     seasonLabel, windowSpan, todayDay, docId,
     HEATMAP_MODES, CELL_SIZES, CELL_SHAPES,
-    computeHeatmap, buildCells, keyAt, persist, loadFromStorage,
+    computeHeatmap, computeForayCells, buildCells, keyAt, persist, loadFromStorage,
     RAMP_PRESETS, DEFAULT_RAMPS, heatmapRampKey, heatmapRampCustom, rampFor,
     maxentVizMode, maxentThreshold, maxentShowCI, maxentModelId,
   }

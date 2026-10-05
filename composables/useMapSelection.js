@@ -78,6 +78,7 @@ export function useMapSelection({
         const value = meta?.kind === 'field'
           ? `${meta.circular ? `${Math.round(cell.value)}°` : fmtNum(cell.value)} (${cell.samples} obs)`
           : m === 'common' || m === 'land_cover' ? (cell.label || ', ')
+            : m === 'foray' ? `${Math.round((cell.score ?? 0) * 100)}% foray score (${cell.n} finds)`
             : m === 'season' || m === 'hotspots'
               ? `${Math.round((cell.n ? cell.inWindow / cell.n : 0) * 100)}% of ${cell.n} finds`
               : m === 'richness' ? `${cell.species.size} species`

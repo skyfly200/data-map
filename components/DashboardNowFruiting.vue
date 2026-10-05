@@ -4,6 +4,7 @@
       <h3 class="widget-title"><span aria-hidden="true">🍄 </span>Now Fruiting</h3>
       <div class="widget-actions">
         <button v-if="selectedSpecies" class="clear-btn" @click="selectedSpecies = null">✕ {{ selectedSpecies }}</button>
+        <NuxtLink to="/foray" class="widget-link foray-link" title="Rank places to look for what is in season">Plan a foray ›</NuxtLink>
         <button class="widget-link-btn" @click="goToMap">Map ›</button>
         <button class="widget-link-btn" @click="goToData">Data ›</button>
         <NuxtLink to="/modeling/maxent" class="widget-link">Model ›</NuxtLink>
@@ -53,6 +54,7 @@ import { useObservations } from '~/composables/useObservations'
 import { useMaxEnt } from '~/composables/useMaxEnt'
 import { useUnits } from '~/composables/useUnits'
 import { useFilters } from '~/composables/useFilters'
+import { inSeasonDayOfYear, useInSeason } from '~/composables/useInSeason'
 
 const { rows, load } = useObservations()
 const { models, fetchModels } = useMaxEnt()
@@ -63,81 +65,10 @@ const router = useRouter()
 const loading = ref(true)
 const selectedSpecies = ref(null)
 
-const WINDOW = 30
-const TOP_N = 8
-
 const today = new Date()
-const todayDoy = dayOfYear(today)
+const todayDoy = inSeasonDayOfYear(today)
 
-function dayOfYear(date) {
-  const start = new Date(date.getFullYear(), 0, 0)
-  return Math.floor((date - start) / 86400000)
-}
-
-function doyDist(a, b) {
-  const d = Math.abs(a - b)
-  return d > 182 ? 365 - d : d
-}
-
-function obsDoy(r) {
-  if (r.date) {
-    const d = new Date(r.date)
-    if (!isNaN(d)) return dayOfYear(d)
-  }
-  const month = r.month ?? null
-  if (month) return dayOfYear(new Date(2001, month - 1, 15))
-  return null
-}
-
-// Species names that have at least one model
-const modelSpeciesSet = computed(() => {
-  const s = new Set()
-  for (const m of models.value || []) {
-    if (m.species) s.add(m.species)
-    if (m.target_species) s.add(m.target_species)
-  }
-  return s
-})
-
-const topSpecies = computed(() => {
-  const buckets = new Map()
-  for (const r of rows.value || []) {
-    if (!r.species) continue
-    const doy = obsDoy(r)
-    if (doy === null || doyDist(doy, todayDoy) > WINDOW) continue
-    if (!buckets.has(r.species)) buckets.set(r.species, { count: 0, doys: [], elevs: [] })
-    const b = buckets.get(r.species)
-    b.count++
-    b.doys.push(doy)
-    const elev = Number(r.elevation)
-    if (Number.isFinite(elev)) b.elevs.push(elev)
-  }
-
-  return [...buckets.entries()]
-    .map(([name, { count, doys, elevs }]) => {
-      const sorted = [...doys].sort((a, b) => a - b)
-      const n = sorted.length
-      const mid = Math.floor(n / 2)
-      const medianDoy = n % 2 === 0
-        ? Math.round((sorted[mid - 1] + sorted[mid]) / 2)
-        : sorted[mid]
-      const q1 = sorted[Math.floor(n * 0.25)]
-      const q3 = sorted[Math.floor(n * 0.75)]
-      const iqr = q3 - q1
-      const dist = doyDist(medianDoy, todayDoy)
-      const score = dist + iqr * 0.5
-      const peakLabel = dist === 0 ? 'today' : `±${dist}d`
-      let elevBand = null
-      if (elevs.length >= 3) {
-        const es = [...elevs].sort((a, b) => a - b)
-        elevBand = { loM: es[Math.floor(es.length * 0.25)], hiM: es[Math.floor(es.length * 0.75)] }
-      }
-      const hasModel = modelSpeciesSet.value.has(name)
-      return { name, count, dist, iqr, score, peakLabel, elevBand, hasModel }
-    })
-    .sort((a, b) => a.score - b.score || b.count - a.count)
-    .slice(0, TOP_N)
-})
+const { species: topSpecies } = useInSeason(rows, models, { day: todayDoy })
 
 function toggleSpecies(name) {
   selectedSpecies.value = selectedSpecies.value === name ? null : name

@@ -128,6 +128,7 @@ const { activeCount: filterCount } = useFilters()
 const NAV = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/map', label: 'Map' },
+  { to: '/foray', label: 'Foray', title: 'Plan a foray' },
   { to: '/charts', label: 'Charts' },
   { to: '/data', label: 'Data' },
   { to: '/guide', label: '📖', title: 'Guide' },

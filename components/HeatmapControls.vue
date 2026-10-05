@@ -53,7 +53,7 @@
 
     <!-- Only the seasonal modes use a date window, so it appears with them
          rather than being a permanent control that does nothing. -->
-    <template v-if="mode === 'season' || mode === 'hotspots'">
+    <template v-if="mode === 'season' || mode === 'hotspots' || mode === 'foray'">
       <div class="pop-field">
         <label :for="`${uid}-day`">
           Date <strong>{{ seasonLabel }}</strong> <HelpLink option="map-season-day" keys="[" />
