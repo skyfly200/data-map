@@ -10,7 +10,7 @@
 // The frontend calls /.netlify/functions/observations and falls back to the
 // static /data/observations.geojson if this function is unavailable.
 
-import { getStore } from '@netlify/blobs'
+import { getStore } from '../lib/storage.mjs'
 import { overlay } from '../lib/observations.mjs'
 import { loadBaseline } from '../lib/baseline.mjs'
 import { supabaseConfigured } from '../lib/supabase-storage.mjs'

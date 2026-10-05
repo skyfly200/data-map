@@ -20,7 +20,7 @@
 // jobs with a message saying so, rather than failing halfway through one.
 
 import ee from '@google/earthengine'
-import { getStore as getModelStore } from '@netlify/blobs'
+import { getStore as getModelStore } from './storage.mjs'
 
 import { CHUNK_SIZE } from './quotas.mjs'
 import {
@@ -44,7 +44,7 @@ import {
 const MODEL_TTL_MS = 6 * 60 * 60 * 1000
 function modelStore() {
   try {
-    // Imported lazily so a deployment without Blobs configured still runs models,
+    // A deployment without storage configured still runs models,
     // just without the cross-member cache.
     return getModelStore('ee-models')
   } catch {

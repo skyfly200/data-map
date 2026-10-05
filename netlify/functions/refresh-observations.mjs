@@ -6,7 +6,7 @@
 // Netlify Blobs when Supabase is not configured — the serving function overlays
 // them on the committed baseline in that case).
 
-import { getStore } from '@netlify/blobs'
+import { getStore } from '../lib/storage.mjs'
 import { join } from 'node:path'
 import { fetchInatFeatures, newFeatures, overlay } from '../lib/observations.mjs'
 import { openTerrain, enrichFeatureTerrain } from '../lib/terrain.mjs'

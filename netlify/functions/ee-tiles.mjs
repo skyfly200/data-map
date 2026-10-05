@@ -28,7 +28,7 @@
 
 import { createHash } from 'node:crypto'
 
-import { getStore } from '@netlify/blobs'
+import { getStore } from '../lib/storage.mjs'
 
 import { requireTier } from '../lib/auth.mjs'
 import {
