@@ -474,6 +474,7 @@
                 </select>
                 <button class="btn small" @click="useAsSource(d)">Run a job on it</button>
                 <button class="btn small" @click="openDatasetOnCharts(d)">Open on charts</button>
+                <button class="btn small" @click="router.push(`/map?dataset=${encodeURIComponent(d.slug)}`)">Open on map</button>
                 <!-- Read through the datasets function rather than from
                      storage, so a dataset shared with this member exports the
                      same way one of their own does. -->
