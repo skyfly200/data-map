@@ -67,9 +67,9 @@ export function normaliseArea(raw: any): AccessArea | null {
   }
 }
 
-export type AccessStatus = 'idle' | 'loading' | 'loaded' | 'not-loaded' | 'no-data' | 'unavailable'
+export type AccessStatus = 'idle' | 'loading' | 'loaded' | 'partial' | 'not-loaded' | 'no-data' | 'unavailable'
 
-export interface ParsedAccess { status: AccessStatus, areas: AccessArea[], region: string | null }
+export interface ParsedAccess { status: AccessStatus, areas: AccessArea[], region: string | null, truncated?: boolean }
 
 /**
  * Endpoint JSON -> status + areas. Accepts {areas|features, region:{loaded,name}}
@@ -78,20 +78,25 @@ export interface ParsedAccess { status: AccessStatus, areas: AccessArea[], regio
  */
 export function parseAccessResponse(json: any): ParsedAccess {
   if (!json || typeof json !== 'object') return { status: 'unavailable', areas: [], region: null }
-  const rawAreas = Array.isArray(json) ? json : (json.areas ?? json.features ?? [])
+  if (json.ok === false) return { status: 'unavailable', areas: [], region: null }
+  // Endpoint contract: `areas` is a GeoJSON FeatureCollection; plain arrays also accepted.
+  const src = Array.isArray(json) ? json : (json.areas ?? json.features ?? [])
+  const rawAreas = Array.isArray(src) ? src : (Array.isArray(src?.features) ? src.features : [])
+  const truncated = json.truncated?.areas === true
   const areas = (Array.isArray(rawAreas) ? rawAreas : []).map(normaliseArea).filter(Boolean) as AccessArea[]
   const flag = json.region?.loaded ?? json.regionLoaded ?? json.region_loaded ?? json.loaded
   const region = json.region?.name ?? (typeof json.region === 'string' ? json.region : null)
   if (flag === false) return { status: 'not-loaded', areas: [], region }
   if (flag === undefined && !areas.length) return { status: 'not-loaded', areas: [], region }
-  if (!areas.length) return { status: 'no-data', areas: [], region }
-  return { status: 'loaded', areas, region }
+  if (!areas.length) return { status: 'no-data', areas: [], region, truncated }
+  return { status: 'loaded', areas, region, truncated }
 }
 
 export const ACCESS_STATUS_MESSAGE: Record<AccessStatus, string> = {
   idle: '',
   loading: 'Loading access data…',
   loaded: '',
+  partial: 'Access data incomplete here: some places have unknown access, so Free, public-land and collecting filters are off.',
   'not-loaded': 'Access data not loaded for this area. Free, public-land and collecting filters are off.',
   'no-data': 'Access data not loaded for this area (no land areas returned). Free, public-land and collecting filters are off.',
   unavailable: 'Access data not loaded for this area (service unavailable). Free, public-land and collecting filters are off.',

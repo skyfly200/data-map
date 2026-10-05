@@ -213,7 +213,7 @@ const switchTitle = computed(() => (access.loaded.value ? '' : 'Needs access dat
 const ramp = DEFAULT_RAMPS.foray
 
 const scored = computed(() => {
-  const withAccess = access.loaded.value
+  const withAccess = access.loaded.value || access.status.value === 'partial'
     ? attachAccess(base.value.cells, access.areas.value)
     : base.value.cells.map((c) => ({ ...c, access: { ...UNKNOWN_ACCESS } }))
   return normaliseScores(filterByAccess(withAccess, effective.value))
