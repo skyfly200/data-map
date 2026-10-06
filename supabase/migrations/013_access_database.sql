@@ -83,10 +83,24 @@ BEGIN
   RETURN n;
 END $$;
 
-REVOKE EXECUTE ON FUNCTION access_upsert_areas(JSONB, TEXT) FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION access_upsert_lines(JSONB, TEXT) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION access_upsert_areas(JSONB, TEXT) TO service_role;
-GRANT EXECUTE ON FUNCTION access_upsert_lines(JSONB, TEXT) TO service_role;
+-- PUBLIC is a keyword, not a role, so it needs no guard; the named roles may not
+-- exist on a plain Postgres, so each is checked first (same pattern as 002).
+REVOKE EXECUTE ON FUNCTION access_upsert_areas(JSONB, TEXT) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION access_upsert_lines(JSONB, TEXT) FROM PUBLIC;
+DO $$
+DECLARE api_role TEXT;
+BEGIN
+  FOREACH api_role IN ARRAY ARRAY['anon', 'authenticated'] LOOP
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = api_role) THEN
+      EXECUTE format('REVOKE EXECUTE ON FUNCTION access_upsert_areas(JSONB, TEXT) FROM %I', api_role);
+      EXECUTE format('REVOKE EXECUTE ON FUNCTION access_upsert_lines(JSONB, TEXT) FROM %I', api_role);
+    END IF;
+  END LOOP;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+    GRANT EXECUTE ON FUNCTION access_upsert_areas(JSONB, TEXT) TO service_role;
+    GRANT EXECUTE ON FUNCTION access_upsert_lines(JSONB, TEXT) TO service_role;
+  END IF;
+END $$;
 
 -- Read helpers for netlify/functions/access.mjs (simplified GeoJSON geometry).
 CREATE OR REPLACE FUNCTION access_areas_in_bbox(

@@ -125,9 +125,22 @@ CREATE OR REPLACE FUNCTION access_set_areas_in_bbox(
   ) x
 $$;
 
-REVOKE EXECUTE ON FUNCTION access_set_area_insert(BIGINT, TEXT, JSONB, TEXT, TEXT, TEXT, UUID) FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION access_set_area_update_geom(BIGINT, JSONB) FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION access_set_areas_in_bbox(UUID, FLOAT8, FLOAT8, FLOAT8, FLOAT8, FLOAT8, INTEGER) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION access_set_area_insert(BIGINT, TEXT, JSONB, TEXT, TEXT, TEXT, UUID) TO service_role;
-GRANT EXECUTE ON FUNCTION access_set_area_update_geom(BIGINT, JSONB) TO service_role;
-GRANT EXECUTE ON FUNCTION access_set_areas_in_bbox(UUID, FLOAT8, FLOAT8, FLOAT8, FLOAT8, FLOAT8, INTEGER) TO service_role;
+-- PUBLIC is a keyword, not a role; anon/authenticated/service_role may not exist on a
+-- plain Postgres, so they are checked first (same pattern as 002).
+REVOKE EXECUTE ON FUNCTION access_set_area_insert(BIGINT, TEXT, JSONB, TEXT, TEXT, TEXT, UUID) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION access_set_area_update_geom(BIGINT, JSONB) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION access_set_areas_in_bbox(UUID, FLOAT8, FLOAT8, FLOAT8, FLOAT8, FLOAT8, INTEGER) FROM PUBLIC;
+DO $$
+DECLARE fn TEXT; api_role TEXT;
+BEGIN
+  FOREACH fn IN ARRAY ARRAY['access_set_area_insert(BIGINT, TEXT, JSONB, TEXT, TEXT, TEXT, UUID)', 'access_set_area_update_geom(BIGINT, JSONB)', 'access_set_areas_in_bbox(UUID, FLOAT8, FLOAT8, FLOAT8, FLOAT8, FLOAT8, INTEGER)'] LOOP
+    FOREACH api_role IN ARRAY ARRAY['anon', 'authenticated'] LOOP
+      IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = api_role) THEN
+        EXECUTE format('REVOKE EXECUTE ON FUNCTION %s FROM %I', fn, api_role);
+      END IF;
+    END LOOP;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+      EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO service_role', fn);
+    END IF;
+  END LOOP;
+END $$;
