@@ -16,23 +16,22 @@
       :open="showLayers" :groups="overlayGroups" :active="activeOverlays"
       :order="overlayOrder" :opacity="layerOpacity" :ee-loading="eeLoading"
       :blend="layerBlend" :stack-blend="stackBlend" :solo="soloKey"
-      :channel="layerChannel"
+      :channel="layerChannel" :compact="compact" :extra-chips="extraChips"
+      :basemap-name="activeBaseName" :heatmap-name="heatmapMode ? heatmapMeta.label : 'None'"
+      :access-name="access.enabled.value ? access.attrLabel.value : ''"
+      @extra-off="offExtra"
       @blend="setLayerBlend" @solo="setSolo" @channel="setLayerChannel"
       @toggle="toggleOverlayByKey" @opacity="setLayerOpacity" @move="moveOverlay"
       @clear="clearOverlays" @reset-channels="resetAllChannels" @close="showLayers = false"
     >
-      <!-- On a phone this window is the whole of "what the map is made of":
-           the ground underneath, the layers over it, and the grid over those.
-           On a wide screen each of those keeps its own button on the bar. -->
-      <template v-if="compact" #top>
-        <details class="lm-extra">
-          <summary>Basemap <em>{{ activeBaseName }}</em></summary>
-          <BasemapPicker :layers="baseLayers" :active="activeBase" @pick="setBase" />
-        </details>
-        <details class="lm-extra" :open="!!heatmapMode">
-          <summary>Grid <em>{{ heatmapMode ? heatmapMeta.label : 'None' }}</em></summary>
-          <HeatmapControls :tip-text="heatmapTip" />
-        </details>
+      <template v-if="compact" #basemap>
+        <BasemapPicker :layers="baseLayers" :active="activeBase" @pick="setBase" />
+      </template>
+      <template v-if="compact" #heatmaps>
+        <HeatmapControls :tip-text="heatmapTip" />
+      </template>
+      <template #access>
+        <AccessLayerPanel :access="access" :signed-in="isAuthed" />
       </template>
     </LayerManager>
 
@@ -116,7 +115,7 @@
       </PopoverMenu>
 
       <!-- A window rather than a dropdown; see components/LayerManager.vue. -->
-      <button class="tool-btn" :class="{ on: showLayers || activeOverlays.size > 0 }"
+      <button class="tool-btn" :class="{ on: showLayers || activeOverlays.size > 0 || access.enabled.value }"
               :aria-expanded="String(showLayers)"
               :title="tip(compact ? 'Basemap, layers and heatmap' : 'Manage the overlay layers', 'shift+L')"
               @click="showLayers = !showLayers">
@@ -403,6 +402,7 @@ import { useMapHeatmapRenderer } from '~/composables/useMapHeatmapRenderer'
 import { useMapSelection } from '~/composables/useMapSelection'
 import { useMapLocate } from '~/composables/useMapLocate'
 import { setupReferenceTileLayers } from '~/composables/useMapRefTileLayers'
+import { useMapAccessLayer } from '~/composables/useMapAccessLayer'
 import { setupElevBandLayer } from '~/composables/useMapElevBandLayer'
 
 // Slow EE layers (Sentinel-2 composites) time out below this zoom — a single
@@ -691,7 +691,7 @@ const eeTiles = useEeTiles()
 const maxEnt = useMaxEnt()
 // For authorising a point-sample of members' layers, the same token the tile
 // path uses.
-const { accessToken } = useAuth()
+const { accessToken, user: authUser, isAuthed } = useAuth()
 // Only for registering minted templates against their layer, so saved Earth
 // Engine tiles survive a token rotation. The saving itself lives in the panel.
 const offline = useOffline()
@@ -714,6 +714,16 @@ function restoreBase() { _restoreBase(); syncActiveTemplates() }
 function toggleOverlay(entry) { _toggleOverlay(entry); syncActiveTemplates() }
 function toggleOverlayByKey(key) { _toggleOverlayByKey(key); syncActiveTemplates() }
 async function refreshEeLayer(spec) { await _refreshEeLayer(spec); syncActiveTemplates() }
+
+const access = useMapAccessLayer({ mapRef, LRef, accessToken, user: authUser })
+const extraChips = computed(() => [
+  ...(heatmapMode.value ? [{ key: 'heatmap', label: `Grid: ${heatmapMeta.value.label}` }] : []),
+  ...(access.enabled.value ? [{ key: 'access', label: `Access: ${access.attrLabel.value}` }] : []),
+])
+function offExtra(key) {
+  if (key === 'access') access.enabled.value = false
+  else if (key === 'heatmap') heatmapMode.value = ''
+}
 
 const expandedLayers = reactive({})
 function toggleLayerExpanded(name) {

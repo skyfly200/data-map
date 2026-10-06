@@ -14,7 +14,14 @@ export const MAX_TILE_DEG = 3
 export const MAX_SPLIT_DEPTH = 3
 export const TILE_CONCURRENCY = 4
 
-interface TileResult { status: AccessStatus, areas: AccessArea[], region: string | null, truncated: boolean }
+interface TileResult { status: AccessStatus, areas: AccessArea[], region: string | null, truncated: boolean, lines: any[] }
+
+export interface FetchAccessOptions {
+  /** Signed-in session token: sends include_sets=1 + Authorization so user/club areas come back. */
+  token?: string | null
+  /** Ask for OSM road/trail lines (the endpoint only returns them for bbox <= 0.5 deg). */
+  lines?: boolean
+}
 const tileCache = new Map<string, TileResult>()
 export function clearAccessCache() { tileCache.clear() }
 
@@ -38,18 +45,26 @@ const quadrants = ([w, s, e, n]: BBox): BBox[] => {
 }
 
 const key = (b: BBox) => b.map((n) => n.toFixed(4)).join(',')
-const FAIL: TileResult = { status: 'unavailable', areas: [], region: null, truncated: false }
+const FAIL: TileResult = { status: 'unavailable', areas: [], region: null, truncated: false, lines: [] }
 
-async function fetchTile(bbox: BBox, fetchFn: typeof fetch): Promise<TileResult> {
+async function fetchTile(bbox: BBox, fetchFn: typeof fetch, opts: FetchAccessOptions = {}): Promise<TileResult> {
   const k = key(bbox)
-  const hit = tileCache.get(k)
+  // Sets are per user, so a signed-in tile is cached apart from the public one.
+  const ck = opts.token ? `${k}|u${opts.token.slice(-12)}${opts.lines ? '|l' : ''}` : `${k}${opts.lines ? '|l' : ''}`
+  const hit = tileCache.get(ck)
   if (hit) return hit
   try {
-    const res = await fetchFn(`${ACCESS_ENDPOINT}?bbox=${k}`)
+    const url = `${ACCESS_ENDPOINT}?bbox=${k}${opts.token ? '&include_sets=1' : ''}${opts.lines ? '&lines=1' : ''}`
+    // Plain URL-only call when there is no token, as before.
+    const res = opts.token
+      ? await fetchFn(url, { headers: { Authorization: `Bearer ${opts.token}` } })
+      : await fetchFn(url)
     if (!res.ok) return FAIL
-    const p = parseAccessResponse(await res.json())
-    const r: TileResult = { status: p.status, areas: p.areas, region: p.region, truncated: p.truncated === true }
-    if (r.status !== 'unavailable') tileCache.set(k, r)
+    const body = await res.json()
+    const p = parseAccessResponse(body)
+    const lines = Array.isArray(body?.lines?.features) ? body.lines.features : []
+    const r: TileResult = { status: p.status, areas: p.areas, region: p.region, truncated: p.truncated === true, lines }
+    if (r.status !== 'unavailable') tileCache.set(ck, r)
     return r
   } catch {
     return FAIL
@@ -57,11 +72,11 @@ async function fetchTile(bbox: BBox, fetchFn: typeof fetch): Promise<TileResult>
 }
 
 /** One tile; if the server truncated it, subdivide. A tile still truncated at max depth is "incomplete". */
-async function resolveTile(bbox: BBox, fetchFn: typeof fetch, depth: number): Promise<{ results: TileResult[], incomplete: boolean }> {
-  const r = await fetchTile(bbox, fetchFn)
+async function resolveTile(bbox: BBox, fetchFn: typeof fetch, depth: number, opts: FetchAccessOptions = {}): Promise<{ results: TileResult[], incomplete: boolean }> {
+  const r = await fetchTile(bbox, fetchFn, opts)
   if (!r.truncated) return { results: [r], incomplete: false }
   if (depth >= MAX_SPLIT_DEPTH) return { results: [r], incomplete: true }
-  const subs = await Promise.all(quadrants(bbox).map((q) => resolveTile(q, fetchFn, depth + 1)))
+  const subs = await Promise.all(quadrants(bbox).map((q) => resolveTile(q, fetchFn, depth + 1, opts)))
   return { results: subs.flatMap((x) => x.results), incomplete: subs.some((x) => x.incomplete) }
 }
 
@@ -82,9 +97,10 @@ async function pool<T, R>(items: T[], limit: number, fn: (t: T) => Promise<R>): 
 export async function fetchAccess(
   bbox: BBox,
   fetchFn: typeof fetch = fetch,
-): Promise<{ status: AccessStatus, areas: AccessArea[], region: string | null }> {
-  if (!bboxInColorado(bbox)) return { status: 'not-loaded', areas: [], region: null }
-  const tiles = await pool(tileBbox(bbox), TILE_CONCURRENCY, (t) => resolveTile(t, fetchFn, 0))
+  opts: FetchAccessOptions = {},
+): Promise<{ status: AccessStatus, areas: AccessArea[], region: string | null, lines: any[] }> {
+  if (!bboxInColorado(bbox)) return { status: 'not-loaded', areas: [], region: null, lines: [] }
+  const tiles = await pool(tileBbox(bbox), TILE_CONCURRENCY, (t) => resolveTile(t, fetchFn, 0, opts))
   const results = tiles.flatMap((t) => t.results)
   const incomplete = tiles.some((t) => t.incomplete)
   const byId = new Map<string, AccessArea>()
@@ -92,13 +108,16 @@ export async function fetchAccess(
   for (const r of results) for (const a of r.areas) byId.set(a.id || `anon-${n++}`, a)
   const areas = [...byId.values()]
   const ok = results.filter((r) => r.status === 'loaded' || r.status === 'no-data')
+  const lineById = new Map<string, any>()
+  for (const r of results) for (const f of r.lines) lineById.set(String(f?.properties?.id ?? lineById.size), f)
+  const lines = [...lineById.values()]
   const region = results.find((r) => r.region)?.region ?? null
   if (!ok.length) {
     const unavailable = results.some((r) => r.status === 'unavailable')
-    return { status: unavailable ? 'unavailable' : 'not-loaded', areas: [], region }
+    return { status: unavailable ? 'unavailable' : 'not-loaded', areas: [], region, lines: [] }
   }
-  if (ok.length < results.length || incomplete) return { status: 'partial', areas, region }
-  return { status: areas.length ? 'loaded' : 'no-data', areas, region }
+  if (ok.length < results.length || incomplete) return { status: 'partial', areas, region, lines }
+  return { status: areas.length ? 'loaded' : 'no-data', areas, region, lines }
 }
 
 export function useAccess() {

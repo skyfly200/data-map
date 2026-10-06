@@ -23,6 +23,11 @@ export interface AccessArea {
   fee_source: 'estimated' | 'ridb' | null
   collecting: Collecting
   collecting_source: 'estimated' | null
+  /** Optional (backend may not send them yet): where the area came from. Absent = PAD-US. */
+  source?: 'padus' | 'user' | 'club'
+  set_id?: string | null
+  set_name?: string | null
+  owner_asserted?: boolean
   geom: { type: 'MultiPolygon', coordinates: number[][][][] }
 }
 
@@ -65,6 +70,10 @@ export function normaliseArea(raw: any): AccessArea | null {
     fee_source: p.fee_source === 'ridb' || p.fee_source === 'estimated' ? p.fee_source : null,
     collecting: oneOf(p.collecting, COLLECTING, 'unknown'),
     collecting_source: p.collecting_source === 'estimated' ? 'estimated' : null,
+    ...(p.source === 'user' || p.source === 'club' || p.source === 'padus' ? { source: p.source } : {}),
+    ...(p.set_id != null ? { set_id: String(p.set_id) } : {}),
+    ...(p.set_name != null ? { set_name: String(p.set_name) } : {}),
+    ...(typeof p.owner_asserted === 'boolean' ? { owner_asserted: p.owner_asserted } : {}),
     geom,
   }
 }

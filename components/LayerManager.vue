@@ -1,5 +1,15 @@
 <template>
-  <div v-if="open" ref="win" class="lm" :class="{ docked }" role="dialog" aria-label="Layer manager">
+  <!-- Phone: a transparent catcher over the map so a tap outside dismisses the
+       sheet. Absent while the sheet is peeked, so the map is fully usable then. -->
+  <div v-if="open && compact && !peek" class="lm-backdrop" aria-hidden="true" @click="$emit('close')"></div>
+  <div v-if="open" ref="win" class="lm" :class="{ docked, compact, peek, dragging: drag.active }"
+       role="dialog" aria-label="Layer manager" :style="sheetStyle">
+    <div v-if="compact" class="lm-grab" role="button" tabindex="0"
+         :aria-label="peek ? 'Expand layers sheet' : 'Collapse layers sheet'"
+         @pointerdown="dragStart" @pointermove="dragMove" @pointerup="dragEnd" @pointercancel="dragEnd"
+         @keydown.enter.prevent="peek = !peek" @keydown.space.prevent="peek = !peek">
+      <span class="lm-grab-bar" aria-hidden="true"></span>
+    </div>
     <header class="lm-head">
       <div class="lm-title">
         <strong>Layers</strong>
@@ -20,10 +30,28 @@
       </div>
     </header>
 
-    <!-- Anything the host wants above the stack. On a phone the map's basemap
-         and heatmap controls render here, because three more buttons did not
-         fit on the bar beside them. -->
-    <div v-if="$slots.top" class="lm-top"><slot name="top" /></div>
+    <!-- What is on, always visible, including while the sheet is peeked. -->
+    <ul v-if="chips.length" class="lm-chips" aria-label="Active layers">
+      <li v-for="c in chips" :key="c.key">
+        <button type="button" class="lm-chip" :title="`Hide ${c.label}`" :aria-label="`Hide ${c.label}`"
+                @click="c.extra ? $emit('extra-off', c.key) : $emit('toggle', c.key)">
+          <span class="lm-chip-name">{{ c.label }}</span><span class="lm-chip-x" aria-hidden="true">×</span>
+        </button>
+      </li>
+    </ul>
+
+    <div v-show="!(compact && peek)" class="lm-scroll">
+    <!-- On a phone the map's basemap and heatmap controls render here as
+         collapsible groups, because they did not fit on the bar. -->
+    <section v-if="$slots.basemap" class="lm-sec">
+      <button type="button" class="lm-sec-btn" :aria-expanded="secOpen.basemap" @click="toggleSec('basemap')">
+        <span class="lm-caret" :class="{ open: secOpen.basemap }" aria-hidden="true">▸</span>
+        <span class="lm-sec-title">Basemap</span><em class="lm-sec-meta">{{ basemapName }}</em>
+      </button>
+      <div v-show="secOpen.basemap" class="lm-sec-body"><slot name="basemap" /></div>
+    </section>
+
+    <h3 v-if="compact" class="lm-sec-h">Overlays</h3>
 
     <!-- Tab bar: Active layers vs Browse catalogue -->
     <div class="lm-tabs" role="tablist">
@@ -161,11 +189,28 @@
       </section>
     </div>
   </section>
+
+    <section v-if="$slots.heatmaps" class="lm-sec">
+      <button type="button" class="lm-sec-btn" :aria-expanded="secOpen.heatmaps" @click="toggleSec('heatmaps')">
+        <span class="lm-caret" :class="{ open: secOpen.heatmaps }" aria-hidden="true">▸</span>
+        <span class="lm-sec-title">Heatmaps</span><em class="lm-sec-meta">{{ heatmapName }}</em>
+      </button>
+      <div v-show="secOpen.heatmaps" class="lm-sec-body"><slot name="heatmaps" /></div>
+    </section>
+
+    <section v-if="$slots.access" class="lm-sec">
+      <button type="button" class="lm-sec-btn" :aria-expanded="secOpen.access" @click="toggleSec('access')">
+        <span class="lm-caret" :class="{ open: secOpen.access }" aria-hidden="true">▸</span>
+        <span class="lm-sec-title">Access</span><em class="lm-sec-meta">{{ accessName }}</em>
+      </button>
+      <div v-show="secOpen.access" class="lm-sec-body"><slot name="access" /></div>
+    </section>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { filterLayerGroups } from '~/composables/mapLayers'
 import { BLEND_MODES, blendLabel } from '~/composables/blendModes'
 
@@ -203,9 +248,47 @@ const props = defineProps({
   eeLoading: { type: Map, default: () => new Map() },
   // Docked against the controls on a wide screen; a bottom sheet on a phone.
   docked: { type: Boolean, default: true },
+  // Phone layout: a bottom sheet with a drag handle and collapsible groups.
+  compact: { type: Boolean, default: false },
+  // Non-catalogue things that are on (heatmap, access): [{ key, label }], shown
+  // as chips next to the drawn layers. Removing one emits 'extra-off'.
+  extraChips: { type: Array, default: () => [] },
+  basemapName: { type: String, default: '' },
+  heatmapName: { type: String, default: '' },
+  accessName: { type: String, default: '' },
 })
 
-defineEmits(['toggle', 'opacity', 'move', 'blend', 'channel', 'solo', 'clear', 'close', 'reset-channels'])
+const emit = defineEmits(['toggle', 'opacity', 'move', 'blend', 'channel', 'solo', 'clear', 'close', 'reset-channels', 'extra-off'])
+
+// ── Sheet behaviour (phone) ────────────────────────────────────────────────
+// Peek keeps only the handle, header and chips, so the sheet never has to
+// cover the map to stay useful. Swipe down once to peek, again to dismiss.
+const peek = ref(false)
+const drag = reactive({ active: false, y0: 0, dy: 0 })
+const sheetStyle = computed(() => (drag.active && drag.dy > 0 ? { transform: `translateY(${drag.dy}px)` } : null))
+function dragStart(e) {
+  drag.active = true; drag.y0 = e.clientY; drag.dy = 0
+  e.currentTarget.setPointerCapture?.(e.pointerId)
+}
+function dragMove(e) { if (drag.active) drag.dy = e.clientY - drag.y0 }
+function dragEnd(e) {
+  if (!drag.active) return
+  const dy = e.clientY - drag.y0
+  drag.active = false; drag.dy = 0
+  if (Math.abs(dy) < 6) peek.value = !peek.value // a tap
+  else if (dy > 120 || (dy > 50 && peek.value)) emit('close')
+  else if (dy > 50) peek.value = true
+  else if (dy < -50) peek.value = false
+}
+const secOpen = reactive({ basemap: false, heatmaps: false, access: false })
+const toggleSec = (k) => { secOpen[k] = !secOpen[k] }
+// A feature that is on is worth showing open the first time.
+watch(() => props.accessName, (v, o) => { if (v && !o) secOpen.access = true })
+
+function onKey(e) { if (e.key === 'Escape' && props.open) emit('close') }
+onMounted(() => window.addEventListener('keydown', onKey))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
+watch(() => props.open, (v) => { if (v) peek.value = false })
 
 const query = ref('')
 const win = ref(null)
@@ -355,6 +438,11 @@ const byKey = computed(() => {
 const activeList = computed(() =>
   props.order.map((key) => byKey.value.get(key)).filter(Boolean))
 
+const chips = computed(() => [
+  ...activeList.value.map((o) => ({ key: o.key, label: o.name, extra: false })),
+  ...props.extraChips.map((c) => ({ ...c, extra: true })),
+])
+
 // A group matches as a prefix, a layer anywhere. See filterLayerGroups: the
 // obvious version of this returned the whole Terrain group for "rain".
 const filtered = computed(() => filterLayerGroups(displayGroups.value, query.value))
@@ -429,22 +517,6 @@ onMounted(() => { if (props.open) seedPanels() })
  * to, and no way to reach another layer without switching one off.
  *
  * So: shrinkable, and capped in units that always resolve. */
-.lm-top {
-  flex: 0 0 auto; padding: 8px 12px;
-  border-bottom: 1px solid var(--border-soft, #eee);
-}
-.lm-top :deep(.lm-extra) { font-size: 0.78rem; }
-.lm-top :deep(.lm-extra + .lm-extra) { margin-top: 6px; }
-.lm-top :deep(.lm-extra > summary) {
-  cursor: pointer; font-weight: 600; color: var(--text);
-  display: flex; align-items: baseline; gap: 6px; padding: 3px 0;
-}
-.lm-top :deep(.lm-extra > summary em) {
-  font-style: normal; color: var(--muted); font-weight: 400;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.lm-top :deep(.lm-extra[open] > summary) { margin-bottom: 4px; }
-
 /* Tab bar */
 .lm-tabs {
   display: flex; flex: 0 0 auto;
@@ -705,31 +777,123 @@ onMounted(() => { if (props.open) seedPanels() })
   animation: lm-spin 0.7s linear infinite;
 }
 
-/* On a phone a floating window over a map is most of the map. A sheet from the
-   bottom leaves the top half visible, which is where you look to judge whether
-   the layer you just ticked did anything. */
-@media (max-width: 720px) {
-  .lm {
-    top: auto; left: 0; right: 0; bottom: 0; width: 100%;
-    border-radius: 14px 14px 0 0; border-bottom: none;
-    max-height: 72%;
-  }
-  .lm-tab-panel { min-height: 0; }
-  .lm-body { min-height: 116px; }
+/* Desktop: the scroll wrapper is transparent to layout, so the panel keeps
+   its original flex column. */
+.lm-scroll { display: contents; }
+.lm-chips {
+  list-style: none; margin: 0; padding: 6px 12px; display: flex; gap: 6px; flex: 0 0 auto;
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+  border-bottom: 1px solid var(--border-soft, #eee);
+}
+.lm-chips::-webkit-scrollbar { display: none; }
+.lm-chip {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; cursor: pointer;
+  border: 1px solid var(--accent, #2b7a3d); background: var(--surface-2, #f4f4f4); color: var(--text, #222);
+  border-radius: 999px; padding: 3px 6px 3px 10px; font: inherit; font-size: 0.72rem;
+}
+.lm-chip-name { max-width: 16ch; overflow: hidden; text-overflow: ellipsis; }
+.lm-chip-x { color: var(--muted, #777); font-size: 1rem; line-height: 1; }
+.lm-chip:hover .lm-chip-x { color: var(--text); }
 
-  /* A drawn layer was three stacked rows — name, opacity, blend — so four
-     layers filled the sheet and you scrolled a list one item at a time.
-     Opacity and blend share a row here; both are still full-width targets. */
-  .lm-on {
-    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 4px 10px; align-items: center;
-  }
-  .lm-on-top { grid-column: 1 / -1; }
-  .lm-op, .lm-blend { padding-left: 0; margin-top: 0; }
-  .lm-stack { gap: 12px; }
+.lm-sec { border-bottom: 1px solid var(--border-soft, #eee); flex: 0 0 auto; }
+.lm-sec-btn {
+  display: flex; align-items: center; gap: 7px; width: 100%; text-align: left; cursor: pointer;
+  border: 0; background: transparent; color: var(--text, #222); font: inherit; padding: 8px 12px;
+}
+.lm-sec-title {
+  font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700;
+  color: var(--muted, #777);
+}
+.lm-sec-meta {
+  font-style: normal; color: var(--muted, #777); font-size: 0.74rem; margin-left: auto;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+}
+.lm-sec-body { padding: 2px 12px 12px; }
+.lm-sec-h { display: none; }
+.lm-grab { display: none; }
 
-  /* Touch targets, which the desktop sizes are slightly under. */
-  .lm-order button, .lm-solo { width: 28px; height: 28px; font-size: 0.72rem; }
-  .lm-blend select { padding: 4px 4px; }
+/* Phone: a bottom sheet. The map's top half stays visible for judging what a
+   layer did; peeking collapses it to handle + header + chips; a tap outside,
+   swipe down, Escape or the close button dismisses it. */
+.lm-backdrop { position: absolute; inset: 0; z-index: 1190; background: transparent; }
+.lm.compact {
+  top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-width: 100%; box-sizing: border-box;
+  border-radius: 16px 16px 0 0; border-bottom: none;
+  max-height: min(78%, calc(100% - 64px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  transition: transform 0.18s ease;
+}
+.lm.compact.dragging { transition: none; }
+.lm.compact .lm-scroll {
+  display: block; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.lm.compact .lm-grab {
+  display: flex; justify-content: center; align-items: center; flex: 0 0 auto;
+  height: 28px; cursor: grab; touch-action: none;
+}
+.lm-grab:focus-visible { outline: 2px solid var(--accent, #2b7a3d); outline-offset: -2px; }
+.lm-grab-bar { width: 44px; height: 5px; border-radius: 3px; background: var(--border, #ccc); }
+.lm.compact .lm-head { padding: 0 6px 4px 14px; border-bottom: 0; }
+.lm.compact .lm-head-acts { flex-wrap: wrap; justify-content: flex-end; }
+.lm.compact .lm-text-btn, .lm.compact .lm-close {
+  min-height: 44px; min-width: 44px; font-size: 0.82rem; padding: 0 10px;
+}
+.lm.compact .lm-close { font-size: 1.6rem; }
+.lm.compact .lm-chips { padding: 4px 14px 8px; }
+.lm.compact .lm-chip { min-height: 44px; padding: 0 8px 0 14px; font-size: 0.82rem; }
+.lm.compact .lm-chip-x { font-size: 1.3rem; min-width: 24px; text-align: center; }
+.lm.compact .lm-sec-btn { min-height: 48px; padding: 0 14px; }
+.lm.compact .lm-sec-title { font-size: 0.74rem; }
+.lm.compact .lm-sec-body { padding: 4px 14px 14px; }
+.lm.compact .lm-sec-h {
+  display: block; margin: 0; padding: 10px 14px 0; font-size: 0.74rem; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--muted, #777);
+}
+.lm.compact .lm-tab-panel { display: block; min-height: 0; }
+.lm.compact .lm-active, .lm.compact .lm-body { overflow: visible; max-height: none; padding-left: 14px; padding-right: 14px; }
+.lm.compact .lm-search { padding: 10px 14px 0; }
+.lm.compact .lm-search input { min-height: 44px; font-size: 1rem; padding: 0 12px; }
+.lm.compact .lm-groupby { padding: 8px 14px 0; }
+.lm.compact .lm-seg-btn, .lm.compact .lm-tab { min-height: 44px; font-size: 0.82rem; }
+.lm.compact .lm-group-head { min-height: 48px; margin: 0; padding: 0 4px; }
+.lm.compact .lm-group-label { font-size: 0.74rem; }
+.lm.compact .lm-row { min-height: 44px; align-items: center; margin: 0; padding: 4px; }
+.lm.compact .lm-row input { width: 22px; height: 22px; margin: 0; }
+.lm.compact .lm-row-name { font-size: 0.9rem; }
+.lm.compact .lm-advanced-toggle { min-height: 44px; padding: 0 8px; font-size: 0.8rem; }
+
+/* A drawn layer: name row, order row, then a full-width thumb-sized opacity slider. */
+.lm.compact .lm-stack { gap: 14px; }
+.lm.compact .lm-on { display: grid; gap: 4px; }
+.lm.compact .lm-on-top { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.lm.compact .lm-swatch {
+  width: 44px; height: 44px; background: transparent; border: 0; border-radius: 8px;
+}
+.lm.compact .lm-tick {
+  width: 26px; height: 26px; border-radius: 6px; background: var(--accent, #2b7a3d);
+  display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;
+}
+.lm.compact .lm-on-name { font-size: 0.92rem; }
+.lm.compact .lm-solo { width: 44px; height: 44px; font-size: 0.85rem; border-radius: 8px; }
+.lm.compact .lm-order { flex: 1 0 100%; gap: 6px; }
+.lm.compact .lm-order button { flex: 1 1 0; width: auto; height: 44px; font-size: 0.9rem; border-radius: 8px; }
+.lm.compact .lm-op { padding-left: 0; gap: 10px; }
+.lm.compact .lm-op-label { width: 4.5ch; font-size: 0.85rem; }
+.lm.compact .lm-blend-wrapper { padding-left: 0; }
+.lm.compact .lm-blend select, .lm.compact .lm-ch-row input[type=range] { min-height: 44px; font-size: 0.9rem; }
+.lm.compact .lm-ch-row { min-height: 44px; }
+.lm.compact .lm-ch-reset { min-width: 44px; min-height: 44px; font-size: 1rem; }
+/* Thumb-sized range controls. */
+.lm.compact input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; height: 44px; margin: 0; touch-action: pan-y; }
+.lm.compact input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: var(--border, #ccc); }
+.lm.compact input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 28px; height: 28px; margin-top: -11px; border-radius: 50%;
+  background: var(--accent, #2b7a3d); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+.lm.compact input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--border, #ccc); }
+.lm.compact input[type=range]::-moz-range-thumb {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--accent, #2b7a3d);
+  border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 </style>
