@@ -125,15 +125,26 @@ CREATE OR REPLACE FUNCTION access_set_areas_in_bbox(
   ) x
 $$;
 
+-- All areas of ONE set as GeoJSON (service role; the endpoint authorizes the set first).
+CREATE OR REPLACE FUNCTION access_set_areas_geojson(p_set_id BIGINT) RETURNS JSONB
+LANGUAGE sql STABLE AS $$
+  SELECT COALESCE(jsonb_agg(x ORDER BY x.id), '[]'::jsonb) FROM (
+    SELECT a.id, a.name, a.fee_status, a.collecting, a.notes, a.created_by,
+      ST_AsGeoJSON(a.geom, 6)::jsonb AS geometry
+    FROM access_set_areas a WHERE a.set_id = p_set_id
+  ) x
+$$;
+
 -- PUBLIC is a keyword, not a role; anon/authenticated/service_role may not exist on a
 -- plain Postgres, so they are checked first (same pattern as 002).
 REVOKE EXECUTE ON FUNCTION access_set_area_insert(BIGINT, TEXT, JSONB, TEXT, TEXT, TEXT, UUID) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION access_set_area_update_geom(BIGINT, JSONB) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION access_set_areas_in_bbox(UUID, FLOAT8, FLOAT8, FLOAT8, FLOAT8, FLOAT8, INTEGER) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION access_set_areas_geojson(BIGINT) FROM PUBLIC;
 DO $$
 DECLARE fn TEXT; api_role TEXT;
 BEGIN
-  FOREACH fn IN ARRAY ARRAY['access_set_area_insert(BIGINT, TEXT, JSONB, TEXT, TEXT, TEXT, UUID)', 'access_set_area_update_geom(BIGINT, JSONB)', 'access_set_areas_in_bbox(UUID, FLOAT8, FLOAT8, FLOAT8, FLOAT8, FLOAT8, INTEGER)'] LOOP
+  FOREACH fn IN ARRAY ARRAY['access_set_area_insert(BIGINT, TEXT, JSONB, TEXT, TEXT, TEXT, UUID)', 'access_set_area_update_geom(BIGINT, JSONB)', 'access_set_areas_in_bbox(UUID, FLOAT8, FLOAT8, FLOAT8, FLOAT8, FLOAT8, INTEGER)', 'access_set_areas_geojson(BIGINT)'] LOOP
     FOREACH api_role IN ARRAY ARRAY['anon', 'authenticated'] LOOP
       IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = api_role) THEN
         EXECUTE format('REVOKE EXECUTE ON FUNCTION %s FROM %I', fn, api_role);

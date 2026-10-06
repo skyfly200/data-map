@@ -19,7 +19,7 @@ import { markRaw, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
   areas: { type: Array, default: () => [] },
-  selectedId: { type: String, default: '' },
+  selectedId: { type: Number, default: 0 },
   drawing: { type: Boolean, default: false },
   label: { type: String, default: 'Your area' },
 })

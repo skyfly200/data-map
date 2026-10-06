@@ -61,7 +61,7 @@
           </form>
           <form v-if="manageableClubs.length" class="row" @submit.prevent="onAddMember">
             <label for="mem-club">Add member to</label>
-            <select id="mem-club" v-model="member.clubId" required>
+            <select id="mem-club" v-model="member.clubId" required @change="onPickClub">
               <option value="" disabled>Choose club</option>
               <option v-for="c in manageableClubs" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
@@ -73,7 +73,7 @@
           <ul v-if="members.length" class="members" aria-label="Club members">
             <li v-for="m in members" :key="m.user_id">
               {{ m.email || m.display_name || m.user_id }} <span class="badge role">{{ m.role }}</span>
-              <button v-if="canManage(set?.role) && m.role !== 'owner'" type="button" class="link danger"
+              <button v-if="m.role !== 'owner'" type="button" class="link danger"
                       :aria-label="`Remove ${m.email || m.user_id}`" @click="onRemoveMember(m)">Remove</button>
             </li>
           </ul>
@@ -105,29 +105,29 @@
             </label>
           </div>
           <p v-if="formError && !form" class="msg error" role="alert">{{ formError }}</p>
-          <p v-if="importMsg"class="msg" :class="importMsg.kind" :role="importMsg.kind === 'error' ? 'alert' : 'status'">{{ importMsg.text }}</p>
+          <p v-if="importMsg" class="msg" :class="importMsg.kind" :role="importMsg.kind === 'error' ? 'alert' : 'status'">{{ importMsg.text }}</p>
 
           <!-- Editor: a new drawn polygon, or an existing area. -->
           <form v-if="form" class="editor" aria-labelledby="ed-h" @submit.prevent="onSaveArea">
             <h4 id="ed-h">{{ form.id ? 'Edit area' : 'New area' }}</h4>
             <label for="a-name">Name</label>
-            <input id="a-name" v-model="form.name" maxlength="120" required :disabled="!writable">
+            <input id="a-name" v-model="form.name" maxlength="120" required :disabled="!areaWritable">
             <label for="a-fee">Fee</label>
-            <select id="a-fee" v-model="form.fee_status" :disabled="!writable">
+            <select id="a-fee" v-model="form.fee_status" :disabled="!areaWritable">
               <option v-for="f in FEE_STATUSES" :key="f" :value="f">{{ FEE_LABELS[f] }}</option>
             </select>
             <label for="a-col">Collecting</label>
-            <select id="a-col" v-model="form.collecting" :disabled="!writable">
+            <select id="a-col" v-model="form.collecting" :disabled="!areaWritable">
               <option v-for="c in COLLECTING_STATUSES" :key="c" :value="c">{{ COLLECTING_LABELS[c] }}</option>
             </select>
             <label for="a-notes">Notes</label>
-            <textarea id="a-notes" v-model="form.notes" rows="3" maxlength="2000" :disabled="!writable"></textarea>
+            <textarea id="a-notes" v-model="form.notes" rows="3" maxlength="2000" :disabled="!areaWritable"></textarea>
             <p class="muted assert">
               You assert this information. It is shown on your map as “{{ scopeLabel(set.scope) }}”
               and is not checked against land-manager records.
             </p>
             <p v-if="formError" class="msg error" role="alert">{{ formError }}</p>
-            <div v-if="writable" class="row">
+            <div v-if="areaWritable" class="row">
               <button class="btn primary" :disabled="busy">{{ form.id ? 'Save changes' : 'Add area' }}</button>
               <button v-if="form.id" type="button" class="btn danger" :disabled="busy" @click="onDeleteArea">Delete area</button>
               <button type="button" class="btn" @click="form = null">Close</button>
@@ -165,26 +165,25 @@ const membership = useMembership()
 const api = useAccessSets()
 
 const set = computed(() => api.current.value)
-const activeId = computed(() => set.value?.id || '')
-const writable = computed(() => !!set.value && (set.value.scope === 'user' || canManage(set.value.role) || set.value.role === 'editor'))
-const members = computed<any[]>(() => (set.value as any)?.members || [])
+const activeId = computed(() => set.value?.id ?? 0)
+// Set-level edit right comes from the server (user set, club owner/admin, or the club set's creator).
+const writable = computed(() => !!set.value && set.value.can_edit)
+// Editing one area: set-level right, or the caller created that area in a club set.
+const areaWritable = computed(() => writable.value || !!form.value?.can_edit)
+const members = computed(() => api.members.value)
 
-// Clubs the viewer belongs to, derived from their club-scoped sets.
-const clubs = computed(() => {
-  const m = new Map<string, { id: string, name: string, role: string }>()
-  for (const s of api.sets.value) if (s.club_id) m.set(s.club_id, { id: s.club_id, name: s.club_name || 'Club', role: s.role })
-  return [...m.values()]
-})
+// Every club the viewer belongs to (including clubs with no sets yet).
+const clubs = computed(() => api.clubs.value)
 const manageableClubs = computed(() => clubs.value.filter((c) => canManage(c.role)))
 
 const busy = ref(false)
 const notice = ref('')
-const newSet = reactive({ name: '', clubId: '' })
+const newSet = reactive<{ name: string, clubId: number | '' }>({ name: '', clubId: '' })
 const newClub = ref('')
-const member = reactive({ clubId: '', email: '' })
+const member = reactive<{ clubId: number | '', email: string }>({ clubId: '', email: '' })
 const renameTo = ref('')
 const drawing = ref(false)
-const selectedId = ref('')
+const selectedId = ref(0)
 const form = ref<any>(null)
 const formError = ref('')
 const importMsg = ref<{ kind: string, text: string } | null>(null)
@@ -195,8 +194,8 @@ async function run(fn: () => Promise<any>, ok = '') {
   try { const r = await fn(); notice.value = ok; return r } catch { return undefined } finally { busy.value = false }
 }
 
-async function openSet(id: string) {
-  form.value = null; selectedId.value = ''; drawing.value = false; importMsg.value = null
+async function openSet(id: number) {
+  form.value = null; selectedId.value = 0; drawing.value = false; importMsg.value = null
   await run(() => api.open(id))
   renameTo.value = set.value?.name || ''
 }
@@ -206,23 +205,24 @@ async function onCreateSet() {
   const r = await run(() => api.createSet(newSet.name, clubId ? 'club' : 'user', clubId || undefined), 'Set created.')
   if (r) {
     newSet.name = ''
-    const created = r.set?.id ? r.set.id : api.sets.value.find((s) => s.name === r.set?.name)?.id
-    if (created) await openSet(created)
+    if (r.set?.id) await openSet(r.set.id)
   }
 }
 async function onCreateClub() {
-  if (await run(() => api.createClub(newClub.value), 'Club created.')) newClub.value = ''
+  const r = await run(() => api.createClub(newClub.value), 'Club created.')
+  if (r) { newClub.value = ''; member.clubId = r.club.id; await run(() => api.loadMembers(r.club.id), 'Club created.') }
 }
 async function onAddMember() {
-  if (await run(() => api.addMember(member.clubId, member.email), 'Member added.')) {
-    member.email = ''
-    if (set.value) await api.open(set.value.id).catch(() => {})
-  }
+  if (member.clubId === '') return
+  if (await run(() => api.addMember(member.clubId as number, member.email), 'Member added.')) member.email = ''
+}
+async function onPickClub() {
+  if (member.clubId === '') { api.members.value = []; return }
+  await run(() => api.loadMembers(member.clubId as number))
 }
 async function onRemoveMember(m: any) {
-  if (!set.value?.club_id || !confirm(`Remove ${m.email || 'this member'} from the club?`)) return
-  await run(() => api.removeMember(set.value!.club_id!, m.user_id), 'Member removed.')
-  await api.open(set.value!.id).catch(() => {})
+  if (member.clubId === '' || !confirm(`Remove ${m.email || 'this member'} from the club?`)) return
+  await run(() => api.removeMember(member.clubId as number, m.user_id), 'Member removed.')
 }
 async function onRename() { await run(() => api.renameSet(set.value!.id, renameTo.value), 'Renamed.'); await api.open(set.value!.id).catch(() => {}) }
 async function onDeleteSet() {
@@ -230,20 +230,20 @@ async function onDeleteSet() {
   if (await run(() => api.deleteSet(set.value!.id))) { api.current.value = null; api.areas.value = []; form.value = null }
 }
 
-function startDraw() { form.value = null; selectedId.value = ''; formError.value = ''; drawing.value = true }
+function startDraw() { form.value = null; selectedId.value = 0; formError.value = ''; drawing.value = true }
 function onDrawn(ring: Array<[number, number]>) {
   drawing.value = false
   try {
-    form.value = { id: '', name: '', fee_status: 'unknown', collecting: 'unknown', notes: '', geometry: ringToPolygon(ring) }
+    form.value = { id: 0, name: '', fee_status: 'unknown', collecting: 'unknown', notes: '', geometry: ringToPolygon(ring) }
     formError.value = ''
   } catch (e: any) { formError.value = e.message }
 }
-function selectArea(id: string) {
+function selectArea(id: number) {
   const a = api.areas.value.find((x) => x.properties.id === id)
   if (!a) return
   selectedId.value = id
   formError.value = ''
-  form.value = { id, ...a.properties, geometry: a.geometry }
+  form.value = { ...a.properties, geometry: a.geometry }
 }
 async function onSaveArea() {
   formError.value = ''
@@ -256,7 +256,7 @@ async function onSaveArea() {
 }
 async function onDeleteArea() {
   if (!confirm(`Delete area “${form.value.name}”?`)) return
-  if (await run(() => api.deleteArea(set.value!.id, form.value.id))) { form.value = null; selectedId.value = '' }
+  if (await run(() => api.deleteArea(set.value!.id, form.value.id))) { form.value = null; selectedId.value = 0 }
 }
 
 async function onFile(ev: Event) {

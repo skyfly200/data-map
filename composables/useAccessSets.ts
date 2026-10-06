@@ -4,20 +4,25 @@
 
 import { parseAreaGeoJSON, validateAreaInput, type AreaInput } from './areaGeometry'
 
+export interface ClubMember { user_id: string, email: string | null, role: 'owner' | 'admin' | 'member' }
+export interface Club { id: number, name: string, role: 'owner' | 'admin' | 'member' }
+// Ids are the backend's bigint ids (numbers). role: 'owner' for own user sets, else the club role.
 export interface AccessSet {
-  id: string
+  id: number
   name: string
   scope: 'user' | 'club'
-  club_id: string | null
+  club_id: number | null
   club_name: string | null
   area_count: number
   role: string
+  can_edit: boolean
+  members?: ClubMember[]
 }
 export interface AreaFeature {
   type: 'Feature'
-  id?: string
+  id?: number
   geometry: any
-  properties: { id: string, name: string, fee_status: string, collecting: string, notes: string }
+  properties: { id: number, name: string, fee_status: string, collecting: string, notes: string, can_edit: boolean }
 }
 
 /** The one place that knows the shape of a set-detail response. */
@@ -28,8 +33,9 @@ export function parseSetDetail(data: any): { set: AccessSet | null, areas: AreaF
     return {
       type: 'Feature', id: f.id ?? p.id, geometry: f.geometry,
       properties: {
-        id: String(p.id ?? f.id ?? ''), name: p.name || 'Unnamed area',
+        id: p.id ?? f.id, name: p.name || 'Unnamed area',
         fee_status: p.fee_status || 'unknown', collecting: p.collecting || 'unknown', notes: p.notes || '',
+        can_edit: !!p.can_edit,
       },
     }
   })
@@ -40,6 +46,8 @@ export function useAccessSets() {
   const { accessToken } = useAuth()
   const sets = useState<AccessSet[]>('access-sets', () => [])
   const areas = useState<AreaFeature[]>('access-set-areas', () => [])
+  const clubs = useState<Club[]>('access-set-clubs', () => [])
+  const members = useState<ClubMember[]>('access-club-members', () => [])
   const current = useState<AccessSet | null>('access-set-current', () => null)
   const loading = useState<boolean>('access-sets-loading', () => false)
   const error = useState<string>('access-sets-error', () => '')
@@ -72,17 +80,30 @@ export function useAccessSets() {
   async function refresh(): Promise<AccessSet[]> {
     loading.value = true
     error.value = ''
-    try { sets.value = (await call<{ sets: AccessSet[] }>()).sets || [] }
-    catch (e: any) { if (!unavailable.value) error.value = e.message; sets.value = [] }
+    try {
+      const d = await call<{ sets: AccessSet[], clubs: Club[] }>()
+      sets.value = d.sets || []
+      clubs.value = d.clubs || []
+    } catch (e: any) { if (!unavailable.value) error.value = e.message; sets.value = []; clubs.value = [] }
     finally { loading.value = false }
     return sets.value
   }
 
-  async function open(setId: string) {
+  async function open(setId: number) {
     return guarded(async () => {
       const d = parseSetDetail(await call(`?set_id=${encodeURIComponent(setId)}`))
       areas.value = d.areas
       current.value = d.set || sets.value.find((s) => s.id === setId) || null
+      return d
+    })
+  }
+
+  /** Club members (owner/admin only; others get a 403 error). */
+  async function loadMembers(clubId: number) {
+    return guarded(async () => {
+      members.value = []
+      const d = await call<{ club: Club, members: ClubMember[] }>(`?club_id=${encodeURIComponent(String(clubId))}`)
+      members.value = d.members || []
       return d
     })
   }
@@ -94,21 +115,21 @@ export function useAccessSets() {
     return d
   })
 
-  const createSet = (name: string, scope: 'user' | 'club', clubId?: string) => {
+  const createSet = (name: string, scope: 'user' | 'club', clubId?: number) => {
     const n = name.trim()
     if (!n) return Promise.reject(new Error('Give the set a name.'))
     if (scope === 'club' && !clubId) return Promise.reject(new Error('Choose a club.'))
     return mutate({ action: 'create_set', name: n, scope, ...(scope === 'club' ? { club_id: clubId } : {}) })
   }
-  const renameSet = (id: string, name: string) => mutate({ action: 'update_set', set_id: id, id, name: name.trim() })
-  const deleteSet = (id: string) => mutate({ action: 'delete_set', set_id: id, id })
-  const addArea = (setId: string, a: Partial<AreaInput>) =>
+  const renameSet = (setId: number, name: string) => mutate({ action: 'update_set', set_id: setId, name: name.trim() })
+  const deleteSet = (setId: number) => mutate({ action: 'delete_set', set_id: setId })
+  const addArea = (setId: number, a: Partial<AreaInput>) =>
     guarded(async () => mutate({ action: 'add_area', set_id: setId, ...validateAreaInput(a) }, setId))
-  const updateArea = (setId: string, areaId: string, a: Partial<AreaInput>) =>
-    guarded(async () => mutate({ action: 'update_area', set_id: setId, area_id: areaId, id: areaId, ...validateAreaInput(a) }, setId))
-  const deleteArea = (setId: string, areaId: string) =>
-    mutate({ action: 'delete_area', set_id: setId, area_id: areaId, id: areaId }, setId)
-  const importGeojson = (setId: string, text: string) => guarded(async () => {
+  const updateArea = (setId: number, areaId: number, a: Partial<AreaInput>) =>
+    guarded(async () => mutate({ action: 'update_area', area_id: areaId, ...validateAreaInput(a) }, setId))
+  const deleteArea = (setId: number, areaId: number) =>
+    mutate({ action: 'delete_area', area_id: areaId }, setId)
+  const importGeojson = (setId: number, text: string) => guarded(async () => {
     const parsed = parseAreaGeoJSON(text) // throws AreaError before any request
     return mutate({
       action: 'import_geojson', set_id: setId,
@@ -116,12 +137,14 @@ export function useAccessSets() {
     }, setId).then((d: any) => ({ ...d, skipped: parsed.skipped, count: parsed.areas.length }))
   })
   const createClub = (name: string) => mutate({ action: 'create_club', name: name.trim() })
-  const addMember = (clubId: string, email: string) => mutate({ action: 'add_member', club_id: clubId, email: email.trim() })
-  const removeMember = (clubId: string, userId: string) => mutate({ action: 'remove_member', club_id: clubId, user_id: userId })
+  const addMember = (clubId: number, email: string) =>
+    guarded(async () => { const d = await call('', { action: 'add_club_member', club_id: clubId, email: email.trim() }); await refresh(); await loadMembers(clubId); return d })
+  const removeMember = (clubId: number, userId: string) =>
+    guarded(async () => { const d = await call('', { action: 'remove_club_member', club_id: clubId, user_id: userId }); await refresh(); await loadMembers(clubId); return d })
 
   return {
-    sets, areas, current, loading, error, unavailable,
-    refresh, open, createSet, renameSet, deleteSet, addArea, updateArea, deleteArea,
+    sets, clubs, members, areas, current, loading, error, unavailable,
+    refresh, open, loadMembers, createSet, renameSet, deleteSet, addArea, updateArea, deleteArea,
     importGeojson, createClub, addMember, removeMember,
   }
 }

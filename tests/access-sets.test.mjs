@@ -43,6 +43,10 @@ function fake({ users = [] } = {}) {
           collecting: args.p_collecting, notes: args.p_notes, created_by: args.p_user })
         return { data: id, error: null }
       }
+      if (name === 'access_set_areas_geojson') {
+        return { data: t.access_set_areas.filter((a) => a.set_id === args.p_set_id)
+          .map((a) => ({ ...a, geometry: sq() })), error: null }
+      }
       if (name === 'access_set_areas_in_bbox') return { data: client.setRows?.[args.p_user] || [], error: null }
       if (name === 'access_areas_in_bbox') return { data: client.padus || [], error: null }
       return { data: null, error: null }
@@ -55,7 +59,7 @@ const as = (id) => ({ ok: true, user: { id } })
 const sq = (x = 0, y = 0, d = 1) => ({ type: 'Polygon', coordinates: [[[x, y], [x + d, y], [x + d, y + d], [x, y + d], [x, y]]] })
 const post = (client, auth, body) => handleAccessSets(new Request('http://x/a', { method: 'POST', body: JSON.stringify(body) }), client, auth)
   .then(async (r) => ({ status: r.status, ...(await r.json()) }))
-const get = (client, auth) => handleAccessSets(new Request('http://x/a'), client, auth).then(async (r) => ({ status: r.status, ...(await r.json()) }))
+const get = (client, auth, qs = '') => handleAccessSets(new Request('http://x/a' + qs), client, auth).then(async (r) => ({ status: r.status, ...(await r.json()) }))
 
 test('requires auth', async () => {
   const r = await handleAccessSets(new Request('http://x/a'), fake(), { ok: false, response: new Response('{}', { status: 401 }) })
@@ -85,7 +89,7 @@ test('create/add/list/update/delete round trip for a user set', async () => {
   assert.equal(a.status, 200)
   assert.equal(c.t.access_set_areas[0].collecting, 'allowed')
   const l = await get(c, as('u1'))
-  assert.deepEqual(l.sets, [{ id: s.set.id, name: 'Mine', scope: 'user', club_id: null, club_name: null, area_count: 1, role: 'owner' }])
+  assert.deepEqual(l.sets, [{ id: s.set.id, name: 'Mine', scope: 'user', club_id: null, club_name: null, area_count: 1, role: 'owner', can_edit: true }])
   assert.equal((await post(c, as('u1'), { action: 'update_area', area_id: a.area.id, name: 'W2' })).status, 200)
   assert.equal(c.t.access_set_areas[0].name, 'W2')
   assert.equal((await post(c, as('u1'), { action: 'update_area', area_id: a.area.id, geometry: sq(2, 2) })).status, 200)
@@ -158,6 +162,48 @@ test('clubs: owner creates, adds by email; members read but cannot write; outsid
   assert.equal((await post(c, as('a1'), { action: 'remove_club_member', club_id: club.id, email: 'mem@x.org' })).status, 200)
   assert.deepEqual((await get(c, as('m1'))).sets, [])
   assert.equal((await post(c, as('m1'), { action: 'delete_area', area_id: area.id })).status, 404)
+})
+
+test('GET set detail and club members: visibility, can_edit, member list rules', async () => {
+  const c = fake({ users: [{ id: 'own', email: 'own@x.org' }, { id: 'm1', email: 'm1@x.org' }, { id: 'm2', email: 'm2@x.org' }, { id: 'out', email: 'o@x.org' }] })
+  const club = (await post(c, as('own'), { action: 'create_club', name: 'FRMS' })).club
+  const lone = (await post(c, as('own'), { action: 'create_club', name: 'Empty' })).club
+  for (const u of ['m1', 'm2']) await post(c, as('own'), { action: 'add_club_member', club_id: club.id, user_id: u })
+  const set = (await post(c, as('own'), { action: 'create_set', name: 'Club land', scope: 'club', club_id: club.id })).set
+  const mine = (await post(c, as('m1'), { action: 'create_set', name: 'Priv', scope: 'user' })).set
+  const a1 = (await post(c, as('own'), { action: 'add_area', set_id: set.id, name: 'A', geometry: sq(), collecting: 'allowed', notes: 'n' })).area
+  const a2 = (await post(c, as('m1'), { action: 'add_area', set_id: mine.id, name: 'P', geometry: sq() })).area
+  c.t.access_set_areas.find((a) => a.id === a1.id).created_by = 'm1' // m1 created it
+
+  const list = await get(c, as('own'))
+  assert.deepEqual(list.clubs.map((x) => [x.name, x.role]).sort(), [['Empty', 'owner'], ['FRMS', 'owner']]) // sets-less club listed
+  assert.equal(list.sets[0].can_edit, true)
+
+  const d = await get(c, as('own'), `?set_id=${set.id}`)
+  assert.equal(d.status, 200)
+  assert.equal(d.set.id, set.id); assert.equal(d.set.club_name, 'FRMS'); assert.equal(d.set.role, 'owner')
+  assert.equal(d.areas.type, 'FeatureCollection')
+  assert.deepEqual(d.areas.features[0].properties, { id: a1.id, name: 'A', fee_status: 'unknown', collecting: 'allowed', notes: 'n', can_edit: true })
+  assert.equal(d.areas.features[0].id, a1.id); assert.equal(d.areas.features[0].geometry.type, 'Polygon')
+  assert.deepEqual(d.set.members.map((m) => [m.email, m.role]), [['own@x.org', 'owner'], ['m1@x.org', 'member'], ['m2@x.org', 'member']])
+
+  const m1 = await get(c, as('m1'), `?set_id=${set.id}`) // creator of the area, plain member
+  assert.equal(m1.set.can_edit, false); assert.equal(m1.set.members, undefined)
+  assert.equal(m1.areas.features[0].properties.can_edit, true)
+  assert.equal((await get(c, as('m2'), `?set_id=${set.id}`)).areas.features[0].properties.can_edit, false)
+
+  assert.equal((await get(c, as('out'), `?set_id=${set.id}`)).status, 404)
+  assert.equal((await get(c, as('out'), `?set_id=${mine.id}`)).status, 404)
+  assert.equal((await get(c, as('own'), `?set_id=${mine.id}`)).status, 404)
+  assert.equal((await get(c, as('own'), '?set_id=999')).status, 404)
+  assert.equal((await get(c, as('own'), '?set_id=abc')).status, 400)
+  const pd = await get(c, as('m1'), `?set_id=${mine.id}`)
+  assert.equal(pd.set.role, 'owner'); assert.equal(pd.set.can_edit, true); assert.equal(pd.areas.features[0].properties.id, a2.id)
+
+  const cm = await get(c, as('own'), `?club_id=${lone.id}`)
+  assert.deepEqual([cm.club, cm.members], [{ id: lone.id, name: 'Empty', role: 'owner' }, [{ user_id: 'own', email: 'own@x.org', role: 'owner' }]])
+  assert.equal((await get(c, as('m1'), `?club_id=${club.id}`)).status, 403)
+  assert.equal((await get(c, as('out'), `?club_id=${club.id}`)).status, 404)
 })
 
 test('removed club set creator loses access', async () => {

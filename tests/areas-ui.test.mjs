@@ -51,6 +51,7 @@ test('parseSetDetail tolerates missing fields', () => {
   const d = parseSetDetail({ set: { id: 's' }, areas: { features: [{ id: 'a1', geometry: SQ, properties: { name: 'X' } }, { geometry: SQ }] } })
   assert.equal(d.areas[0].properties.id, 'a1')
   assert.equal(d.areas[1].properties.name, 'Unnamed area')
+  assert.equal(d.areas[1].properties.can_edit, false)
   assert.deepEqual(parseSetDetail(null).areas, [])
 })
 
@@ -69,8 +70,9 @@ function setup(handler) {
 }
 
 test('refresh sends bearer auth and stores sets', async () => {
-  const { api, calls } = setup(() => ({ body: { ok: true, sets: [{ id: '1', name: 'S', scope: 'user', area_count: 0, role: 'owner' }] } }))
+  const { api, calls } = setup(() => ({ body: { ok: true, sets: [{ id: 1, name: 'S', scope: 'user', area_count: 0, role: 'owner', can_edit: true }], clubs: [{ id: 7, name: 'C', role: 'member' }] } }))
   await api.refresh()
+  assert.deepEqual(api.clubs.value, [{ id: 7, name: 'C', role: 'member' }])
   assert.equal(calls[0].headers.authorization, 'Bearer tok')
   assert.equal(calls[0].method, 'GET')
   assert.equal(api.sets.value.length, 1)
@@ -87,14 +89,14 @@ test('404 marks the endpoint unavailable without an error banner', async () => {
 test('addArea validates first, posts, then reloads set and detail', async () => {
   const { api, calls } = setup((url, opts) => {
     if (opts.method === 'POST') return { body: { ok: true } }
-    if (url.includes('set_id=s1')) return { body: { ok: true, set: { id: 's1', name: 'S' }, areas: fc(SQ) } }
+    if (url.includes('set_id=5')) return { body: { ok: true, set: { id: 5, name: 'S' }, areas: fc(SQ) } }
     return { body: { ok: true, sets: [] } }
   })
-  await assert.rejects(api.addArea('s1', { name: '', geometry: SQ }), /name/)
+  await assert.rejects(api.addArea(5, { name: '', geometry: SQ }), /name/)
   assert.equal(calls.length, 0)
-  await api.addArea('s1', { name: 'Spot', geometry: SQ, collecting: 'allowed' })
+  await api.addArea(5, { name: 'Spot', geometry: SQ, collecting: 'allowed' })
   assert.equal(calls[0].body.action, 'add_area')
-  assert.equal(calls[0].body.set_id, 's1')
+  assert.equal(calls[0].body.set_id, 5)
   assert.equal(calls[0].body.collecting, 'allowed')
   assert.equal(api.areas.value.length, 1)
 })
@@ -109,20 +111,36 @@ test('createSet requires a club for club scope; server errors surface', async ()
 
 test('importGeojson rejects bad files before any request and sends polygons only', async () => {
   const { api, calls } = setup(() => ({ body: { ok: true, sets: [] } }))
-  await assert.rejects(async () => api.importGeojson('s', JSON.stringify(PT)), AreaError)
+  await assert.rejects(async () => api.importGeojson(3, JSON.stringify(PT)), AreaError)
   assert.equal(calls.length, 0)
-  const r = await api.importGeojson('s', JSON.stringify(fc(SQ, PT)))
+  const r = await api.importGeojson(3, JSON.stringify(fc(SQ, PT)))
   assert.equal(calls[0].body.action, 'import_geojson')
   assert.equal(calls[0].body.geojson.features.length, 1)
   assert.equal(r.skipped, 1)
 })
 
-test('club actions use the contract field names', async () => {
-  const { api, calls } = setup(() => ({ body: { ok: true, sets: [] } }))
-  await api.addMember('c1', ' a@b.org ')
-  await api.removeMember('c1', 'u1')
-  assert.deepEqual(calls.filter((c) => c.method === 'POST').map((c) => c.body), [
-    { action: 'add_member', club_id: 'c1', email: 'a@b.org' },
-    { action: 'remove_member', club_id: 'c1', user_id: 'u1' },
+test('club and set actions use exactly the backend contract field names', async () => {
+  const { api, calls } = setup((url, opts) => {
+    if (opts.method === 'POST') return { body: { ok: true } }
+    if (url.includes('club_id=')) return { body: { ok: true, club: { id: 2, name: 'C', role: 'owner' }, members: [{ user_id: 'u1', email: 'a@b.org', role: 'member' }] } }
+    if (url.includes('set_id=')) return { body: { ok: true, set: { id: 4, name: 'S', scope: 'user', can_edit: true }, areas: fc(SQ) } }
+    return { body: { ok: true, sets: [], clubs: [] } }
+  })
+  await api.addMember(2, ' a@b.org ')
+  await api.removeMember(2, 'u1')
+  await api.renameSet(4, ' N ')
+  await api.deleteSet(4)
+  await api.updateArea(4, 9, { name: 'A', geometry: SQ })
+  await api.deleteArea(4, 9)
+  const posts = calls.filter((c) => c.method === 'POST').map((c) => c.body)
+  assert.deepEqual(posts.slice(0, 4), [
+    { action: 'add_club_member', club_id: 2, email: 'a@b.org' },
+    { action: 'remove_club_member', club_id: 2, user_id: 'u1' },
+    { action: 'update_set', set_id: 4, name: 'N' },
+    { action: 'delete_set', set_id: 4 },
   ])
+  assert.deepEqual(Object.keys(posts[4]).sort(), ['action', 'area_id', 'collecting', 'fee_status', 'geometry', 'name', 'notes'])
+  assert.deepEqual(posts[5], { action: 'delete_area', area_id: 9 })
+  assert.equal(api.members.value[0].email, 'a@b.org')
+  assert.ok(calls.some((c) => c.url.endsWith('?club_id=2')))
 })

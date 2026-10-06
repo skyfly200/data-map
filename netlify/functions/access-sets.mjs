@@ -2,17 +2,26 @@
 // Auth required: Bearer token, member tier re-checked against the database (requireMemberFresh).
 // Everything is scoped to the caller; a set the caller cannot see answers 404 (never 403, no leak).
 //
+//   All ids are numbers (bigint). GET variants:
 //   GET  /.netlify/functions/access-sets
 //     -> { ok:true,
-//          sets:[{ id, name, scope:'user'|'club', club_id|null, club_name|null, area_count, role }],
-//          clubs:[{ id, name, role }] }
+//          sets:[{ id, name, scope:'user'|'club', club_id|null, club_name|null, area_count, role, can_edit }],
+//          clubs:[{ id, name, role }] }       clubs = every club the caller belongs to (with or without sets)
 //        role = 'owner' for the caller's own user-scope sets, else the caller's club role
-//        ('owner'|'admin'|'member'). Writable when scope='user', or role is owner/admin
-//        (a club set's creator may also keep editing while still a member).
+//        ('owner'|'admin'|'member'). can_edit (set-level: rename/delete/add/import) is true when
+//        scope='user', or role is owner/admin, or the caller created the club set and is still a member.
+//   GET  ...?set_id=<id>   (visible set, else 404)
+//     -> { ok:true, set:{ ...set row fields above, members? }, areas: FeatureCollection }
+//        feature.id = properties.id = area id; properties { id, name, fee_status, collecting, notes, can_edit }
+//        (area can_edit = set can_edit, or the caller created that area in a club set while a member).
+//        set.members:[{ user_id, email, role }] only for club sets and only when role is owner/admin.
+//   GET  ...?club_id=<id>  (member of the club, else 404)
+//     -> { ok:true, club:{ id, name, role }, members:[{ user_id, email, role }] }
+//        members are listed to club owner/admin only; a plain member gets 403.
 //
 //   POST application/json { action, ... }  -> { ok:true, ... } | { ok:false, error } (400 bad input,
 //        401 no auth, 403 visible but not permitted, 404 not found/not visible, 503 no database)
-//     create_set    { name, scope:'user'|'club', club_id? }        club scope: club owner/admin only -> { set }
+//     create_set    { name, scope:'user'|'club', club_id? }        club scope: club owner/admin only -> { set:{id,...} }
 //     update_set    { set_id, name }                               -> { set }
 //     delete_set    { set_id }                                     deletes its areas too
 //     add_area      { set_id, name, geometry, fee_status?, collecting?, notes? } -> { area:{id,...} }
@@ -20,7 +29,7 @@
 //     delete_area   { area_id }
 //     import_geojson{ set_id, geojson }  FeatureCollection of Polygon/MultiPolygon features; name/notes
 //                    (and optional fee_status/collecting) from properties -> { imported: n }; all-or-nothing
-//     create_club   { name }                                       caller becomes owner -> { club }
+//     create_club   { name }                                       caller becomes owner -> { club:{id,name,role} }
 //     add_club_member    { club_id, email | user_id, role?:'member'|'admin' }  owner/admin; only owner grants 'admin'
 //     remove_club_member { club_id, email | user_id }               owner/admin; admin cannot remove admin/owner
 //   geometry: GeoJSON Polygon|MultiPolygon, WGS84 lon/lat, closed rings.
@@ -138,6 +147,8 @@ async function visibleSet(client, setId, userId) {
 }
 const canWriteSet = (set, role, userId) =>
   set.scope === 'user' ? role === 'owner' : isAdminRole(role) || set.owner_id === userId
+const canWriteArea = (set, role, userId, area) =>
+  canWriteSet(set, role, userId) || (set.scope === 'club' && area.created_by === userId)
 const writableSet = async (client, setId, userId) => {
   const v = await visibleSet(client, setId, userId)
   if (!canWriteSet(v.set, v.role, userId)) throw new HttpError(403, 'You cannot edit this set.')
@@ -148,7 +159,7 @@ async function writableArea(client, areaId, userId) {
   dbCheck({ error })
   if (!area) throw new HttpError(404, 'Area not found.')
   const { set, role } = await visibleSet(client, area.set_id, userId)
-  const ok = canWriteSet(set, role, userId) || (set.scope === 'club' && area.created_by === userId)
+  const ok = canWriteArea(set, role, userId, area)
   if (!ok) throw new HttpError(403, 'You cannot edit this area.')
   return { area, set }
 }
@@ -215,8 +226,66 @@ async function listSets(client, userId) {
       id: s.id, name: s.name, scope: s.scope, club_id: s.club_id ?? null,
       club_name: s.club_id != null ? clubName.get(s.club_id) ?? null : null,
       area_count: counts.get(s.id) || 0, role: s.scope === 'user' ? 'owner' : roles.get(s.club_id),
+      can_edit: canWriteSet(s, s.scope === 'user' ? 'owner' : roles.get(s.club_id), userId),
     })),
     clubs: clubs.map((c) => ({ id: c.id, name: c.name, role: roles.get(c.id) })),
+  }
+}
+
+async function memberList(client, clubId) {
+  const { data, error } = await client.from('club_members').select('user_id, role').eq('club_id', clubId)
+  dbCheck({ error })
+  const rows = data || []
+  const emails = new Map()
+  if (rows.length && client.auth?.admin?.listUsers) {
+    const want = new Set(rows.map((m) => m.user_id))
+    for (let page = 1; page <= 20 && emails.size < want.size; page++) {
+      const r = await client.auth.admin.listUsers({ page, perPage: 1000 })
+      dbCheck(r)
+      const users = r.data?.users || []
+      for (const u of users) if (want.has(u.id)) emails.set(u.id, u.email || null)
+      if (users.length < 1000) break
+    }
+  }
+  const order = { owner: 0, admin: 1, member: 2 }
+  return rows.map((m) => ({ user_id: m.user_id, email: emails.get(m.user_id) ?? null, role: m.role }))
+    .sort((a, b) => (order[a.role] - order[b.role]) || String(a.email).localeCompare(String(b.email)))
+}
+
+async function getClub(client, clubId, userId) {
+  const role = await clubRole(client, clubId, userId)
+  if (!role) throw new HttpError(404, 'Club not found.')
+  const { data, error } = await client.from('clubs').select('id, name').eq('id', clubId).maybeSingle()
+  dbCheck({ error })
+  if (!data) throw new HttpError(404, 'Club not found.')
+  if (!isAdminRole(role)) throw new HttpError(403, 'Only club owners and admins can list members.')
+  return { club: { id: data.id, name: data.name, role }, members: await memberList(client, clubId) }
+}
+
+async function getSet(client, setId, userId) {
+  const { set, role } = await visibleSet(client, setId, userId)
+  const { data: rows, error } = await client.rpc('access_set_areas_geojson', { p_set_id: set.id })
+  dbCheck({ error })
+  const setEdit = canWriteSet(set, role, userId)
+  const features = (rows || []).map((a) => ({
+    type: 'Feature', id: a.id, geometry: a.geometry,
+    properties: {
+      id: a.id, name: a.name ?? '', fee_status: a.fee_status, collecting: a.collecting, notes: a.notes ?? '',
+      can_edit: canWriteArea(set, role, userId, a),
+    },
+  }))
+  let clubName = null, members
+  if (set.scope === 'club') {
+    const { data: c, error: ce } = await client.from('clubs').select('id, name').eq('id', set.club_id).maybeSingle()
+    dbCheck({ error: ce }); clubName = c?.name ?? null
+    if (isAdminRole(role)) members = await memberList(client, set.club_id)
+  }
+  return {
+    set: {
+      id: set.id, name: set.name, scope: set.scope, club_id: set.club_id ?? null, club_name: clubName,
+      area_count: features.length, role, can_edit: setEdit, ...(members ? { members } : {}),
+    },
+    areas: { type: 'FeatureCollection', features },
   }
 }
 
@@ -363,7 +432,12 @@ export async function handleAccessSets(request, client, auth) {
   if (!userId) return json({ ok: false, error: 'Sign in required.' }, 401)
   if (!client) return json({ ok: false, error: 'Supabase is not configured.' }, 503)
   try {
-    if (request.method === 'GET') return json({ ok: true, ...await listSets(client, userId) })
+    if (request.method === 'GET') {
+      const q = new URL(request.url).searchParams
+      if (q.has('set_id')) return json({ ok: true, ...await getSet(client, id(q.get('set_id'), 'set_id'), userId) })
+      if (q.has('club_id')) return json({ ok: true, ...await getClub(client, id(q.get('club_id'), 'club_id'), userId) })
+      return json({ ok: true, ...await listSets(client, userId) })
+    }
     if (request.method !== 'POST') return json({ ok: false, error: 'Use GET or POST.' }, 405)
     const raw = await request.text()
     if (raw.length > LIMITS.IMPORT_BYTES + 10_000) return json({ ok: false, error: 'Request too large.' }, 413)
