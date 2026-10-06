@@ -38,6 +38,7 @@ Explore existing data or add your own:
 | [Data and export](/guide/data) | Species list, table view, filters, and exporting |
 | [Charts](/guide/charts) | Chart gallery, builder, and styling |
 | [Analysis](/guide/analysis) | Correlations, species stats, and timing |
+| [Foray planner](/guide/foray) | Where to look, land access, and My areas |
 | [Pipeline jobs](/guide/jobs) | Running jobs, saving results, and chaining |
 | [Your own layers](/guide/layers) | Computing layers in Earth Engine |
 | [Learning](/guide/learning) | GIS, Earth Engine, and machine learning basics |

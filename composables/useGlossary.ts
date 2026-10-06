@@ -18,6 +18,8 @@ export const GLOSSARY: Record<string, string> = {
   'suitability surface': 'A raster where each pixel holds a predicted probability (0–1) that the environment at that location resembles the conditions where the species was observed.',
   enrichment: 'The process of sampling environmental data (elevation, climate, soil, vegetation) from Earth Engine at each observation\'s coordinates, adding those values as extra columns to the dataset.',
   'cross-validation': 'Model evaluation strategy that trains on a subset of data and tests on withheld points, repeated across multiple folds. Produces a less optimistic AUC than evaluating on the training data itself.',
+  'foray score': 'The share of a map cell\'s finds that are in-season species, weighted by how close each species\' fruiting is to the chosen day. Effort-neutral. Only cells that already have finds are scored.',
+  estimated: 'A value guessed from the type of land manager, not read from a regulation. Check the rules with the land manager.',
   'habitat suitability': 'A dimensionless score (0–1) expressing how similar the local environment is to conditions where the species was recorded. It is not a probability of occurrence.',
 }
 

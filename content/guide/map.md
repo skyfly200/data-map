@@ -95,6 +95,7 @@ shows you what is in an area.
 | Species richness | How many different species are in the cell | Effort again. More visits find more species. |
 | Seasonal activity | The share of *this cell's own* finds inside the date window | Effort-neutral. Needs 3 or more records in the cell. |
 | In-season hotspots | The same share, weighted by how well the cell is sampled | A record of past finds. Not a forecast. |
+| Foray score | The share of the cell's finds that are in-season species, weighted by phenology | Effort-neutral. Only cells with 3 or more finds. See [Foray planner](/guide/foray). |
 | Most common species | The species with the most records in the cell | The app breaks a tie arbitrarily. |
 | Land cover | The most common land-cover class across the cell's finds | Only the winner shows. A 50/50 cell looks pure. |
 | Wind and aspect vectors | Arrows for the wind, or for the direction slopes face | The key says which source it used. |
@@ -144,6 +145,13 @@ usual case.
 
 The heatmap gradient is set in **Style → Heatmap**. It uses the same editor as
 the point gradient, and holds the same 2 to 8 stops.
+
+## Access layer
+
+The **Access** section of the layer window draws land-access areas: public
+access, fee status and collecting. It is separate from the third-party land
+ownership tiles. See [Foray planner](/guide/foray#the-access-layer-on-the-map)
+for the controls and limits. The fee and collecting values are estimates.
 
 ## Wind and aspect vectors
 

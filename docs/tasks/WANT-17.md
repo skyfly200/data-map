@@ -22,6 +22,28 @@ Extend "Now Fruiting" from "what is fruiting" to "where to go look": score areas
 - Access source: decided — PAD-US + OSM roads and trails (replaces the gHM proxy). Open: ingest path (EE asset vs. preprocessed vector tiles) and OSM refresh cadence.
 - Under-sampled ranking: how to weight promise vs. effort, and the minimum training-envelope check.
 
-## Access data layer (implemented, unverified live)
+## Shipped (all unverified live)
 
-Migration 013, `netlify/lib/access-ingest.mjs` (estimates + RIDB overlay), `access-regions.mjs` (`access_ingest` job, region skip), `quotas.mjs` (access cost model), `netlify/functions/access.mjs` (read contract in file header), `scripts/load-access-region.mjs` (Colorado). Not run live: Colorado load, RIDB (needs RIDB_API_KEY), Overpass limits, PAD-US layer URL/field names (PADUS_FEATURE_URL default unverified), migration application. Member jobs are capped at 5000 km2 to fit the 300s worker; Colorado uses the script.
+Status: implemented and unit-tested on fixtures. **Not run:** migrations 012-015 applied, Colorado load, RIDB, Overpass limits, PAD-US URL/field names (`PADUS_FEATURE_URL` default and the `Mang_Name`/`Des_Tp`/`Pub_Access` pattern mapping), browser verification. Env vars and the load script: `docs/deploying.md` block 7. Sources to check rules against: `docs/access-sources.md`. User docs: `content/guide/foray.md`.
+
+### Planner (`pages/foray.vue`, phase 1)
+
+- Score (`composables/forayScore.ts`): per cell, sum over in-season species of `weight * in-window finds`, divided by all the cell's finds (after the land-cover filter). Weight = `1 / (1 + (dist + iqr/2) / 14)` from the species' median distance and IQR. Min 3 finds. Effort-neutral. Only cells with finds are scored.
+- Time: `Now` = today +/- 14 days; a month = mid-month +/- 15. Also a land-cover filter and cell size (0.01-0.1 deg).
+- Modes (`forayPlanner.ts`): Forager (8, bands), Researcher (25, components, sample, caveats), Foray leader (12, switches on, shortlist). Mode only changes defaults and panels. Persisted in `localStorage` (`foray-mode`; `?mode=` overrides).
+- Switches: free, public (open, non-private), collecting allowed, include likely (BLM/USFS), keep unknown (non-Forager). Unknown fails a switch unless kept. A cell takes the most restrictive value across covering areas. Switches force off when access status is not `loaded`/`partial`.
+- Shortlist: notes (`localStorage` `foray-notes`), CSV, copy text, print. Labels carry `estimated`/`verified`.
+- Entry points: `Plan a foray` on the dashboard Now Fruiting card, nav `Foray`, `Foray score` heatmap mode on `/map` (`useMapHeatmaps.ts`).
+- Limits: phase 1 only (no ensemble or habitat score); access is matched at the cell **centre point**; `/foray` loads Colorado access once as public PAD-US (no member sets); Colorado is the only region.
+
+### Access data
+
+- Ingest (`netlify/lib/access-ingest.mjs`, `access-regions.mjs`): PAD-US polygons (ArcGIS), OSM roads/trails (Overpass, 0.25 deg tiles), RIDB facility fees (needs `RIDB_API_KEY`). Tables: `access_areas`, `access_lines`, `access_regions` (`docs/schema.md`).
+- Estimates only: BLM/USFS fee `free` (estimated); NPS/state park `fee` (estimated); collecting `restricted` for NPS/state park/FWS/SP/WA/WSA, `prohibited` for closed land, `likely_allowed` for open BLM/USFS, else `unknown`. **Never plain `allowed`.** `*_source` is `estimated` (or `ridb` for fees). Owner-asserted values live only in `access_set_areas`.
+- Endpoint `netlify/functions/access.mjs` (contract in file header): `GET ?bbox=w,s,e,n` (max 3 deg per side, 400 areas), filters `free=1`, `public=1`, `collecting=<v>`, `lines=1` (bbox <= 0.5 deg, 3000 lines, else `lines_omitted`), `include_sets=1` with a bearer token (merges the caller's set areas, `Cache-Control: private`). Returns `loaded`, `regions`, `truncated`. Errors 400/405/503.
+- Job `access_ingest`: shares the EE queue; members capped at 5,000 km2 and 3 loads per month (`quotas.mjs`); admins bypass. `scripts/load-access-region.mjs` for Colorado.
+
+### Map layer and My areas
+
+- `components/AccessLayerPanel.vue` (layer window section; mobile layer sheet): enable, color by public/fee/collecting, free/public/collecting/likely filters, sources (Public lands, My areas, Club areas), legend, disclaimer. Zoom >= 8 for areas, >= 12 for lines; view tiled into 3 deg requests (max 9), clamped to Colorado.
+- `/areas` (members): sets (user or club), draw polygon or import GeoJSON, per-area fee/collecting/notes (owner-asserted), clubs with owner/admin/member roles. Contract and caps in `netlify/functions/access-sets.mjs` header.

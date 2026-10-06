@@ -17,6 +17,7 @@ import mapMd from '~/content/guide/map.md?raw'
 import dataMd from '~/content/guide/data.md?raw'
 import chartsMd from '~/content/guide/charts.md?raw'
 import analysisMd from '~/content/guide/analysis.md?raw'
+import forayMd from '~/content/guide/foray.md?raw'
 import jobsMd from '~/content/guide/jobs.md?raw'
 import layersMd from '~/content/guide/layers.md?raw'
 import learningMd from '~/content/guide/learning.md?raw'
@@ -30,6 +31,7 @@ export const GUIDE_SOURCES: Record<string, string> = {
   data: dataMd,
   charts: chartsMd,
   analysis: analysisMd,
+  foray: forayMd,
   jobs: jobsMd,
   layers: layersMd,
   learning: learningMd,

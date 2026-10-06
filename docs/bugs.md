@@ -17,4 +17,8 @@ _Fixed this session:_
 
 ## Verification Debt
 
-_None open. VDEBT-1 EE layer rendering was diagnosed and all confirmed breaks were fixed; TREEMAP private-path access requires live verification against a real EE deployment._
+- [ ] `VDEBT-2` **WANT-17 access and foray, nothing live-tested.** Migrations 011-015 unapplied. No Colorado load run. RIDB, Overpass and PAD-US URL/field names (`Mang_Name`, `Des_Tp`, `Pub_Access`) unverified. `/foray`, `/areas` and the map Access layer not checked in a browser against real data. Also `predictor_ranges` is not computed by the runner.
+- [ ] `VDEBT-3` **Member EE credentials (WANT-3)**: validation, encrypted storage and the `own_project` worker path never run against real Earth Engine; needs migration 011 and `EE_CREDENTIAL_KEY`; no settings UI.
+- [ ] `VDEBT-4` **Vercel adapter (WANT-8)** and the Supabase storage backend never deployed; GeoTIFF export (`model-tiles?download=1`) never run against real EE; observation uploads (WANT-16) and the 404 page not browser-checked.
+
+_None other open. VDEBT-1 EE layer rendering was diagnosed and all confirmed breaks were fixed; TREEMAP private-path access requires live verification against a real EE deployment._

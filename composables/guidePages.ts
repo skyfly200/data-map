@@ -53,6 +53,12 @@ export const GUIDE_PAGES: GuidePage[] = [
     blurb: 'Correlations, species statistics and fruiting timing.',
   },
   {
+    slug: 'foray',
+    file: 'foray.md',
+    title: 'Foray planner',
+    blurb: 'Where to look for what is in season, and land access.',
+  },
+  {
     slug: 'jobs',
     file: 'jobs.md',
     title: 'Pipeline jobs',

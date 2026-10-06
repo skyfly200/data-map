@@ -7,3 +7,5 @@ Open items:
 - GeoTIFF export (`V12-MOD-4`) is a follow-up tracked in `refactor.md`.
 
 Worth exercising once enrichment output is loaded as datasets often enough that "and then what" is a real question.
+
+GeoTIFF export: `GET model-tiles?job=<id>&download=1[&scale=<m>]` returns `{ok, url}`, an Earth Engine download URL (scale 30-10000 m, default 1000). Backend only: no UI button, never run against real EE.

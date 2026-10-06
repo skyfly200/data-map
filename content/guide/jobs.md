@@ -23,7 +23,7 @@ the charts and the analysis then all read it.
 
 ## Choose a source
 
-A job runs over one of two sources.
+A job runs over one of three sources.
 
 **Observations in an area** uses the iNaturalist records inside a bounding box.
 Enter the box, or use the current map view. You can also set a date range and a
@@ -32,6 +32,14 @@ taxon.
 **A saved dataset** uses the points of a dataset that you saved before. The app
 uses the points and the dates of that dataset as they are. The area, the dates
 and the taxon do not apply, because those chose the points in the first place.
+
+**Your own file** takes a CSV or GeoJSON file of your own observations, up to
+3 MB. A CSV needs latitude and longitude columns. The app detects the usual
+names (`lat`, `lon`, `decimalLatitude`, iNaturalist and GBIF headers). It also
+picks up species and date columns when they exist. A GeoJSON file can be a
+FeatureCollection, one Feature or a bare geometry. The upload becomes a private
+dataset, and the job then runs over that dataset. Rows without a usable
+coordinate are skipped.
 
 ## Save a result as a dataset
 
@@ -83,3 +91,15 @@ An administrator sets four limits for each member:
 - A maximum number of jobs that run at the same time.
 
 Your current limits are on the jobs page.
+
+### Your own Earth Engine project
+
+A member can store their own Google service-account key, so jobs run under their
+own Earth Engine project. The key is encrypted on the server, is never shown
+again and never appears in a job. While a key is stored, your jobs skip the
+shared monthly budget (Google meters you instead). The daily, point and
+concurrency limits still apply. If you remove the key before a queued job
+starts, the job fails. It does not fall back to the shared account.
+
+> **Note** This is built but untested against live Earth Engine. The server has
+> to set `EE_CREDENTIAL_KEY`, and there is no settings screen for it yet.

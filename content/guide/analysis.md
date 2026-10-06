@@ -74,7 +74,8 @@ a long way.
 
 ## Data quality
 
-This tab shows the field coverage overall and by year. It tells you how much
+This tab shows the field coverage overall and by year. The **Coverage** page
+(`/coverage`) shows the same table. It tells you how much
 weight the rest of the app can carry.
 
 A chart drawn from a column that is 23% complete looks exactly as confident as a

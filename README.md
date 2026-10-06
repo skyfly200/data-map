@@ -175,6 +175,24 @@ written to Supabase Storage → frontend + `observations` function read from
 Supabase; the scheduled `refresh-observations` function merges new sightings
 into the same bucket.
 
+### Foray planner and land access (WANT-17)
+
+`/foray` ranks map cells by the share of their finds that are in season
+(effort-neutral, 3+ finds), with switches for free, public and collecting-allowed
+land. `/map` has a *Foray score* heatmap and an Access layer. `/areas` lets
+members keep their own and their club's allowed areas. Access data (PAD-US, OSM,
+Recreation.gov) lives in Supabase (migrations 012-015) and is loaded with
+`node scripts/load-access-region.mjs`. Fee and collecting values are
+**estimates**: regulations must be checked with the land manager.
+
+Built and tested on fixtures only. Migrations unapplied, no Colorado load run,
+and the RIDB, Overpass and PAD-US paths unverified. Setup and env vars
+(`RIDB_API_KEY`, `PADUS_FEATURE_URL`, `EE_CREDENTIAL_KEY`, `STORAGE_BACKEND`,
+`SUPABASE_STORAGE_BUCKET`): [docs/deploying.md](docs/deploying.md) block 7.
+Sources: [docs/access-sources.md](docs/access-sources.md). Other additions this
+cycle: member EE credentials, CSV/GeoJSON uploads (3 MB), `/coverage`, GeoTIFF
+export URL, storage abstraction and a Vercel scaffold; status in `docs/bugs.md`.
+
 ### Membership from an automation
 
 `netlify/functions/membership.mjs` turns a payment into a member without anyone

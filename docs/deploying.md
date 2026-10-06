@@ -25,6 +25,16 @@ pick up changes to it.
 | 4 | `004_membership_api.sql` | The grants table and the signup trigger behind the membership API. See `membership-api.md`. |
 | 5 | `005_dataset_storage_access.sql` | Who can read the files behind a job result or a saved dataset. Needs the storage bucket below. |
 
+| 11 | `011_member_ee_credentials.sql` | Member-supplied Earth Engine keys (WANT-3). Block 7. |
+| 12 | `012_model_contributions_and_access.sql` | Persisted model contributions; first access tables. Needs PostGIS. |
+| 13 | `013_access_database.sql` | Access classification columns, `access_regions`, bbox functions. |
+| 14 | `014_collecting_likely_allowed.sql` | Adds `likely_allowed` to the collecting values. |
+| 15 | `015_access_area_sets.sql` | Clubs and member allowed-area sets (`/areas`). |
+
+006 to 010 exist in `supabase/migrations/` and are not listed above. **011 to 015 are written and tested against fixtures but not applied
+to any live database.** Until 012 to 015 are applied, `/foray` shows no access
+data and `/areas` reports it is unavailable. Run them in order, 013 before 014.
+
 Run them in that order. 003 checks that 002 applied in full and says so by name
 if it did not — if you see *"Migration 002 has not been applied in full"*,
 re-run 002 and read its output rather than skipping ahead.
@@ -256,6 +266,60 @@ Preferences that sync do come back on the first sign-in: appearance, chart
 layout and order, units, the map overlay settings, saved filters and saved
 charts. Everything on the account — membership, jobs, saved datasets — is
 untouched, because none of it is addressed by origin.
+
+---
+
+## 7. Foray planner, access data and other optional features
+
+Written this session and **not verified live**: nothing below has run against
+real Earth Engine, PAD-US, RIDB, Overpass or Vercel.
+
+| Variable | Where | What it does |
+|---|---|---|
+| `EE_CREDENTIAL_KEY` | functions | 32 random bytes, base64 (`openssl rand -base64 32`). Encrypts members' own Earth Engine keys (AES-256-GCM). Without it the `ee-credentials` endpoint answers 503 and reports storage unavailable. Losing it makes stored keys unreadable. |
+| `RIDB_API_KEY` | functions, script | Recreation.gov key. Enables the fee overlay (`fee_source = 'ridb'`). Without it a load skips RIDB and keeps estimates. |
+| `PADUS_FEATURE_URL` | functions, script | ArcGIS FeatureServer layer for PAD-US. The built-in default and the field names the parser reads are **unverified**. |
+| `OVERPASS_URL` | functions, script | Overpass endpoint for roads and trails (default `overpass-api.de`). |
+| `STORAGE_BACKEND` | functions | `supabase` or `netlify`. Default: `netlify` when running on Netlify, else `supabase`. |
+| `SUPABASE_STORAGE_BUCKET` | functions | Bucket for the key/value stores when the backend is Supabase. Default: the datasets bucket. |
+| `VERCEL` | build | Set by Vercel. Switches the Nitro preset to `vercel`. |
+
+### Loading Colorado's access data
+
+Migrations 012 to 015 first. Then, once, from a machine with the service role:
+
+```
+SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... [RIDB_API_KEY=...] \
+  node scripts/load-access-region.mjs            # colorado, all sources
+  node scripts/load-access-region.mjs --sources padus,osm
+  node scripts/load-access-region.mjs --bbox w,s,e,n --name my-region
+  node scripts/load-access-region.mjs --force    # reload
+```
+
+It skips a region that is already loaded, writes progress to the console, and is
+safe to re-run (upserts). It records the result in `access_regions`. The access
+endpoint reports `loaded: true` only for a bbox that a `loaded` region covers.
+
+A region can also be queued as an `access_ingest` job. Members are capped at
+5,000 km2 per job and 3 region loads per calendar month. Admins bypass both. The
+job runs through the same queue and quota check as Earth Engine jobs, but spends
+no Earth Engine units. Colorado is too big for the 300 s worker, so use the
+script.
+
+### Storage layout (Supabase backend)
+
+`netlify/lib/storage.mjs` replaces direct Netlify Blobs use. With the Supabase
+backend, one **private** bucket holds `<store>/<key>` objects through the
+service role: stores `ee-tiles` and `observations` (the new-observations overlay). TTLs live in the payload. On Netlify the same API wraps
+Blobs.
+
+### Vercel (scaffold)
+
+`nuxt.config.ts` selects the `vercel` preset when `VERCEL` is set.
+`server/adapters/vercel-function.ts` serves `netlify/functions/<name>.mjs` at
+`/api/fn/<name>`. `node scripts/gen-vercel-config.mjs` writes `vercel.json`
+(rewrite from `/.netlify/functions/*` plus a cron for each scheduled function).
+It has not been deployed, and CI builds only the Netlify target.
 
 ---
 

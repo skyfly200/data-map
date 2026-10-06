@@ -343,6 +343,44 @@ export const OPTION_DOCS: OptionDoc[] = [
     also: ['map-basemaps', 'map-layer-order'],
   },
   {
+    id: 'map-access-layer',
+    group: 'Map',
+    title: 'Access layer',
+    summary: 'Colors land by public access, fee or collecting status. Fee and collecting are estimates.',
+    detail: [
+      '**Color by** picks one attribute. **Show only** hides everything that is not free, public or collecting-allowed, and unknown areas are hidden too. **Sources** toggles public lands, your areas and your clubs\' areas.',
+      'Areas load from zoom 8 and roads and trails from zoom 12. Only Colorado is loaded, so outside it the layer says so.',
+      'Estimated values come from the type of land manager and draw with a dashed edge. Values from your own areas are owner-asserted.',
+    ],
+    caveat: 'Estimates are not regulations. *Likely allowed* is a guess for BLM and US Forest Service land only. Check rules, permits and closures with the land manager. No color does not mean no access.',
+    also: ['map-land-ownership', 'foray-score'],
+  },
+  // ── Foray planner ─────────────────────────────────────────────────────────
+  {
+    id: 'foray-score',
+    group: 'Foray planner',
+    title: 'Foray score',
+    summary: 'The share of a cell\'s finds that are in-season species, weighted by phenology.',
+    detail: [
+      'For each grid cell: its finds of species in season for the chosen time, each weighted by how close that species\' usual fruiting is to the day, divided by all the cell\'s finds. Dividing by the cell\'s own total makes it effort-neutral. A cell needs 3 or more finds.',
+      '**Now** means the 14 days around today. A month means about two weeks either side of mid-month.',
+    ],
+    caveat: 'It scores only cells that already have finds, from past iNaturalist records. A blank area is unsampled, not poor. It is not a forecast.',
+    also: ['foray-switches', 'map-access-layer', 'map-heatmap'],
+  },
+  {
+    id: 'foray-switches',
+    group: 'Foray planner',
+    title: 'Access switches',
+    summary: 'Keep only free, public or collecting-allowed places. Needs access data for the area.',
+    detail: [
+      '**Only free places**, **Only public lands** and **Collecting allowed only** remove cells that do not match. **Include likely** also counts BLM and US Forest Service land estimated as likely allowed. **Keep unknown** keeps cells whose value is unknown.',
+      'A cell takes the most restrictive value of the areas that cover it, judged at the cell\'s centre point. Where access data is not loaded, the switches are off.',
+    ],
+    caveat: 'Fee and collecting values are estimates from the type of land manager. Check regulations and permits locally.',
+    also: ['foray-score', 'map-access-layer'],
+  },
+  {
     id: 'appearance-palette',
     group: 'Appearance',
     title: 'Palette',

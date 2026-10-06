@@ -1,12 +1,14 @@
 # Access, fee & collecting sources (Colorado)
 
+**Regulations must be checked locally.** Nothing in the app is a legal statement. Estimates are labelled `estimated`; `likely_allowed` (BLM/USFS only) is a guess, and the app never shows plain `allowed` from an estimate. Only member-entered areas are `allowed`, owner-asserted.
+
 Where to look up land manager, fee and mushroom-collecting rules for the Foray planner (WANT-17). The app's `fee_status` / `collecting` values are **estimates** from manager type; these pages are the authority. Checked 2026-10; re-verify before relying on any rule. Pages marked (secondary) are blogs/news, not rule text.
 
 ## Boundaries & manager type (what we ingest)
 
 | Source | Covers | Notes |
 |---|---|---|
-| [USGS PAD-US](https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-overview) | Federal, state, local, some private conservation lands; manager, designation, public access | Primary ingest source (`access_areas`). State and many county/city parks appear as manager type STAT/LOC. |
+| [USGS PAD-US](https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-overview) | Federal, state, local, some private conservation lands; manager, designation, public access | Primary ingest source (`access_areas`; URL and field names unverified, see `docs/deploying.md` block 7). State and many county/city parks appear as manager type STAT/LOC. |
 | [COMaP, Colorado Ownership, Management & Protection](https://comap.cnhp.colostate.edu/) (CNHP) | ~28k protected-land polygons from 300+ sources, incl. county/city open space and conservation easements | Free, registration required. Best Colorado supplement to PAD-US for county/city parks. See [CNHP COMaP](https://cnhp.colostate.edu/projects/comap). |
 | [Colorado Geospatial Portal](https://geodata.colorado.gov/) | State GIS hub, incl. [CPW administrative boundaries](https://geodata.colorado.gov/content/0c363dc22a4a4d11b8c157015de8b704) | Authoritative for state parks/wildlife areas. |
 | [Boulder County open data](https://bouldercounty.gov/open-space/maps/) | Example county portal (open space, trails) | Counties publish their own; add per county as needed. |
@@ -15,7 +17,7 @@ Where to look up land manager, fee and mushroom-collecting rules for the Foray p
 ## Fees
 
 - **State parks:** all Colorado state parks charge entrance fees; vehicle pass required. [CPW parks passes](https://cpw.state.co.us/parks-passes), [specialty passes](https://cpw.state.co.us/park-specialty-passes). Fee levels change (non-resident surcharge: (secondary) [CPR, 2026-05](https://www.cpr.org/2026/05/04/colorado-state-parks-charge-out-of-state-visitors/)), so we store fee *status*, not amounts.
-- **Federal sites (USFS/BLM/NPS):** [Recreation.gov RIDB](https://ridb.recreation.gov/) API, planned `RIDB_API_KEY` overlay (`fee_source='ridb'`).
+- **Federal sites (USFS/BLM/NPS):** [Recreation.gov RIDB](https://ridb.recreation.gov/) API, `RIDB_API_KEY` overlay, implemented but not run live (`fee_source='ridb'`; field names unverified).
 - **County/city open space:** most are free to enter but vary; check the owning agency's site (no statewide dataset known). Left `unknown`.
 
 ## Collecting rules (what to check, by manager)
