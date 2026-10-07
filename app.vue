@@ -93,6 +93,11 @@ const OG_IMAGE = siteUrl ? `${siteUrl}/logo.svg` : '/logo.svg'
 useHead({
   title: 'Nexstrata · Mushroom Observations',
   meta: [
+    // viewport-fit=cover makes env(safe-area-inset-*) report the real notch and
+    // home-indicator insets on iOS; without it they are all 0 and the mobile
+    // layer sheet sits under the home indicator. Same key as Nuxt's default
+    // viewport meta, so this replaces it rather than adding a second one.
+    { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
     { name: 'description', content: DESCRIPTION },
     { name: 'theme-color', content: '#12181f' },
     { property: 'og:title', content: 'Nexstrata' },
@@ -284,7 +289,12 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
    have, and nudging it hides the top row of the header under the URL bar. `dvh`
    tracks the chrome as it comes and goes. The vh line stays as a fallback for
    browsers without dvh. */
-.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: var(--bg); }
+.app {
+  display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: var(--bg);
+  /* With viewport-fit=cover the page runs under a landscape notch; keep content out of it. */
+  padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
+  box-sizing: border-box;
+}
 
 .app-header {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
