@@ -33,7 +33,7 @@ import { getStore } from '../lib/storage.mjs'
 import { requireTier } from '../lib/auth.mjs'
 import {
   LayerError, EE_LAYER_CATALOGUE, EE_TILE_LAYERS,
-  cacheKey, describeLayer, resolveLayer, tierFor, visParams,
+  cacheKey, describeLayer, pickedSites, resolveLayer, tierFor, visParams,
 } from '../lib/ee-tile-layers.mjs'
 import {
   MATSUTAKE_GREAT_GROUPS, SOIL_ORDERS, SOIL_TAXONOMY_WIKI, describeGreatGroup,
@@ -379,8 +379,17 @@ export default async function handler(request) {
   // A layer computed from our own finds needs them before Earth Engine is
   // asked for anything: a taxon with no records is the reader's to fix, and
   // saying so beats an Earth Engine error about an empty geometry.
-  let points
-  if (layer.reference === 'observations') {
+  let points = pickedSites(layer, params)
+  if (points && !points.length) {
+    return json({
+      ok: false,
+      error: 'Tap the map to pick at least one spot to compare against.',
+      layer: key,
+      params,
+      empty: true,
+    }, 400)
+  }
+  if (!points && layer.reference === 'observations') {
     try {
       points = await referencePoints(params.taxon)
     } catch (err) {

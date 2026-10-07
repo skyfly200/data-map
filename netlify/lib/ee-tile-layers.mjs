@@ -459,6 +459,29 @@ export function codeList(value) {
   return String(value).split(',').filter(Boolean).map(Number)
 }
 
+/** The most spots a "compare to spots I picked" request may carry. */
+export const POINT_LIMIT = 10
+
+/**
+ * Parse a "lat,lng;lat,lng" list into [lon, lat] pairs, rounded to five
+ * decimals. Throws a LayerError on anything that is not a coordinate.
+ */
+export function pointList(value, max = POINT_LIMIT) {
+  const text = String(value ?? '').trim()
+  if (!text) return []
+  const parts = text.split(';').filter(Boolean)
+  if (parts.length > max) throw new LayerError(`At most ${max} spots can be compared at once.`)
+  return parts.map((part) => {
+    const bits = part.split(',')
+    const [lat, lng] = bits.map((b) => (/^\s*-?\d+(\.\d+)?\s*$/.test(b) ? Number(b) : NaN))
+    if (bits.length !== 2 || !Number.isFinite(lat) || !Number.isFinite(lng)
+      || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+      throw new LayerError(`"${part.slice(0, 40)}" is not a latitude,longitude pair.`)
+    }
+    return [Number(lng.toFixed(5)), Number(lat.toFixed(5))]
+  })
+}
+
 function readParams(schema, input = {}) {
   const out = {}
   for (const [key, spec] of Object.entries(schema)) {
@@ -501,6 +524,12 @@ function readParams(schema, input = {}) {
         throw new LayerError(`${spec.label} may only contain letters, spaces, hyphens and periods.`)
       }
       out[key] = text
+    } else if (spec.type === 'points') {
+      // "lat,lng;lat,lng" — spots picked on the map. Normalised to five
+      // decimals (about a metre) so one set of spots is one cache entry, and
+      // capped so a link cannot carry an arbitrarily large geometry to Earth
+      // Engine. Empty is allowed: it means nothing has been picked yet.
+      out[key] = pointList(raw, spec.max).map(([lon, lat]) => `${lat},${lon}`).join(';')
     } else if (spec.type === 'date') {
       // ISO date string (YYYY-MM-DD). Validate format and optional min/max bounds.
       const date = String(raw).trim()
@@ -2136,7 +2165,7 @@ export const EE_TILE_LAYERS = {
     },
   },
   'habitat-similarity': {
-    name: 'Habitat like your finds (AlphaEarth)',
+    name: 'Habitat similarity (AlphaEarth)',
     group: 'Species',
     // A fresh signature per taxon and year, over a 10 m, 64-band mosaic: real
     // compute per tile, so a members' layer.
@@ -2144,18 +2173,25 @@ export const EE_TILE_LAYERS = {
     attribution: 'AlphaEarth Foundations Satellite Embedding (Google, CC-BY 4.0) via Google Earth Engine',
     opacity: 0.65,
     slow: true,
-    // Built from our own observations of the taxon, which ee-tiles loads and
-    // passes to build() as plain [lon, lat] pairs. See reference-points.mjs.
+    // Compared against either our own observations of the taxon, which
+    // ee-tiles loads, or spots picked on the map. Either way build() gets
+    // plain [lon, lat] pairs. See referenceSites below and reference-points.mjs.
     reference: 'observations',
-    note: 'Where else looks like the places this taxon was found. Every 10 m pixel carries a '
-      + 'satellite "fingerprint" of its surface over a year (canopy, moisture, terrain, '
-      + 'seasonal change); the layer averages the fingerprints at your finds and shades each '
-      + 'pixel by how closely it matches. It sees what a satellite sees, not soil chemistry or a '
-      + 'host tree hidden under canopy, and a taxon found in several habitats blurs into their '
-      + 'average, so try a species before a genus. Raise "Hide below" to keep only the closest '
-      + 'matches. Uses all finds of the taxon against the chosen year\'s imagery.',
+    note: 'Where else looks like a set of places. Every 10 m pixel carries a satellite '
+      + '"fingerprint" of its surface over a year (canopy, moisture, terrain, seasonal change); '
+      + 'the layer averages the fingerprints at the reference places and shades each pixel by '
+      + 'how closely it matches. Compare to "finds" to use every record of a taxon, or to '
+      + '"spots" and tap the map to pick up to ten places yourself. It sees what a satellite '
+      + 'sees, not soil chemistry or a host tree hidden under canopy, and places in several '
+      + 'habitats blur into their average, so try a species, or one kind of spot, at a time. '
+      + 'Raise "Hide below" to keep only the closest matches.',
     params: {
-      taxon: { type: 'text', label: 'Taxon name', default: 'Morchella', maxLength: 60, suggest: 'taxa' },
+      compare: { type: 'enum', label: 'Compare to', default: 'finds', values: ['finds', 'spots'] },
+      points: { type: 'points', label: 'Picked spots', default: '', max: POINT_LIMIT, when: { compare: 'spots' } },
+      taxon: {
+        type: 'text', label: 'Taxon name', default: 'Morchella', maxLength: 60, suggest: 'taxa',
+        when: { compare: 'finds' },
+      },
       year: {
         type: 'yearSelect', label: 'Imagery year', default: () => THIS_YEAR() - EMBEDDING_LAG_YEARS,
         min: EMBEDDING_FIRST_YEAR, max: () => THIS_YEAR() - 1,
@@ -2163,7 +2199,7 @@ export const EE_TILE_LAYERS = {
       floor: { type: 'int', label: 'Hide below (% alike)', default: 70, min: 0, max: 99 },
     },
     legend: {
-      type: 'ramp', unit: 'similarity to finds', min: 'less', max: 'most alike',
+      type: 'ramp', unit: 'similarity', min: 'less', max: 'most alike',
       stops: SIMILARITY_PALETTE,
     },
     count: (ee, { year }) => embeddingYear(ee, year).size(),
@@ -2195,6 +2231,16 @@ export const EE_TILE_LAYERS = {
 }
 
 export const EE_LAYER_KEYS = Object.keys(EE_TILE_LAYERS)
+
+/**
+ * Where a reference layer's sites come from for these parameters: the picked
+ * spots as [lon, lat] pairs, or null when they are the taxon's finds (which
+ * only the server can load).
+ */
+export function pickedSites(layer, params) {
+  if (layer?.reference !== 'observations' || params.compare !== 'spots') return null
+  return pointList(params.points)
+}
 
 /** The tier a layer requires. Unknown layers are treated as the strictest. */
 export function tierFor(key) {
@@ -2289,6 +2335,8 @@ export function describeLayer(key) {
         values,
         ...(spec.labels ? { labels: spec.labels } : {}),
         ...(spec.suggest ? { suggest: spec.suggest } : {}),
+        // Only meaningful while other params hold these values; the UI hides it otherwise.
+        ...(spec.when ? { when: spec.when } : {}),
       }]
     })),
   }

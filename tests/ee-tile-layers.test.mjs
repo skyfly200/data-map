@@ -14,7 +14,7 @@ import {
   EE_LAYER_CATALOGUE, EE_LAYER_KEYS, EE_TILE_LAYERS, GAP_REMAP, LayerError,
   DEFAULT_TIER, EMBEDDING_BANDS, EMBEDDING_FIRST_YEAR, EMBEDDING_LAG_YEARS, MODIS_FIRST_YEAR, MODIS_LAG_YEARS, MTBS_LAG_YEARS,
   WORLDCOVER_CLASSES, WORLDCOVER_FROM, WORLDCOVER_TO,
-  cacheKey, describeLayer, resolveLayer, tierFor, visParams,
+  POINT_LIMIT, cacheKey, describeLayer, pickedSites, pointList, resolveLayer, tierFor, visParams,
 } from '../netlify/lib/ee-tile-layers.mjs'
 
 const YEAR = new Date().getUTCFullYear()
@@ -563,4 +563,32 @@ test('habitat similarity compares all 64 bands against the finds\' mean', () => 
   assert.equal(EMBEDDING_BANDS[63], 'A63')
   assert.equal(out.vis.min, 0.85)
   assert.equal(out.vis.max, 1)
+})
+
+test('picked spots are parsed to [lon, lat] and normalised for the cache', () => {
+  assert.deepEqual(pointList('39.7123456,-105.5'), [[-105.5, 39.71235]])
+  assert.deepEqual(pointList(''), [])
+  const { params } = resolveLayer('habitat-similarity', {
+    compare: 'spots', points: '39.7123456,-105.5;40,-106',
+  })
+  assert.equal(params.points, '39.71235,-105.5;40,-106')
+  assert.deepEqual(pickedSites(EE_TILE_LAYERS['habitat-similarity'], params),
+    [[-105.5, 39.71235], [-106, 40]])
+})
+
+test('a spot list that is not coordinates, or too long, is refused', () => {
+  for (const bad of ['abc', '39.7', '39.7,-105,3', '95,-105', '39,-190', '1e3,5', '39,-105);ee']) {
+    assert.throws(() => resolveLayer('habitat-similarity', { points: bad }), LayerError, bad)
+  }
+  const many = Array.from({ length: POINT_LIMIT + 1 }, (_, i) => `39.${i},-105`).join(';')
+  assert.throws(() => resolveLayer('habitat-similarity', { points: many }), LayerError)
+})
+
+test('comparing to finds ignores picked spots', () => {
+  const layer = EE_TILE_LAYERS['habitat-similarity']
+  const { params } = resolveLayer('habitat-similarity', { points: '39,-105' })
+  assert.equal(params.compare, 'finds')
+  assert.equal(pickedSites(layer, params), null)
+  // A layer not built from reference sites never has any.
+  assert.equal(pickedSites(EE_TILE_LAYERS.slope, { compare: 'spots', points: '39,-105' }), null)
 })

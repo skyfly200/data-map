@@ -168,7 +168,7 @@
 
       <AppearanceControls icon-only :field="colorBy" :field-label="coloring.title"
                           :values="legendValues" />
-      <ShareMenu icon-only :map-view="mapView" :color-by="colorBy" :size-by="sizeBy"
+      <ShareMenu icon-only :map-view="mapView" :color-by="colorBy" :size-by="sizeBy" :extra="shareExtra"
                  :title="shareTitle">
         <template #actions>
           <button :disabled="saving" :title="saveError || tip('Save the map, basemap and all, as a PNG', 'e')"
@@ -253,6 +253,7 @@
                                :codes="(eeParams[n.ee] || {}).codes ?? (n.eeParams?.codes?.default || '')"
                                @update:codes="setEeParam(n.ee, 'codes', $event)" />
               <template v-for="(p, name) in (n.eeParams || {})" :key="name">
+                <template v-if="paramShown(n, p)">
                 <div v-if="p.type === 'zones'" class="layer-zones">
                   <span class="layer-zones-label">{{ p.label }}</span>
                   <label v-for="(v, i) in (p.values || [])" :key="v" class="zone-check">
@@ -261,6 +262,21 @@
                            @change="setEeParam(n.ee, name, toggleZone((eeParams[n.ee] || {})[name] ?? p.default, v, $event.target.checked))" />
                     {{ (p.labels || p.values)[i] }}
                   </label>
+                </div>
+                <div v-else-if="p.type === 'points'" class="layer-spots">
+                  <div class="layer-spots-row">
+                    <span class="layer-zones-label">{{ p.label }} {{ spotsFor(n.ee).length }}/{{ p.max }}</span>
+                    <button type="button" class="spot-btn" :class="{ on: pickingFor === n.ee }"
+                            :aria-pressed="pickingFor === n.ee"
+                            @click="pickingFor === n.ee ? stopPicking() : startPicking(n.ee)">
+                      {{ pickingFor === n.ee ? 'Done' : 'Pick on map' }}
+                    </button>
+                    <button v-if="spotsFor(n.ee).length" type="button" class="spot-btn"
+                            @click="clearSpots(n.ee)">Clear</button>
+                  </div>
+                  <div v-if="pickingFor === n.ee" class="legend-note no-border">
+                    Tap the map to add a spot; tap a pin to remove it.
+                  </div>
                 </div>
                 <div v-else-if="p.type !== 'codes'" class="layer-date">
                   <label :for="`ee-${n.slug}-${name}`">{{ p.label }}</label>
@@ -293,6 +309,7 @@
                     <option v-for="t in taxonSuggestions" :key="t.name" :value="t.name">{{ t.count }} finds</option>
                   </datalist>
                 </div>
+                </template>
               </template>
               <div v-if="n.minZoom && mapView?.zoom < n.minZoom" class="legend-note zoom-in no-border">
                 Zoom in to level {{ n.minZoom }} to see this layer.
@@ -411,6 +428,7 @@ import { setupReferenceTileLayers } from '~/composables/useMapRefTileLayers'
 import { useMapAccessLayer } from '~/composables/useMapAccessLayer'
 import { setupElevBandLayer } from '~/composables/useMapElevBandLayer'
 import { taxaInFeatures } from '~/netlify/lib/dataset-taxa.mjs'
+import { useMapSpotPicker } from '~/composables/useMapSpotPicker'
 
 // Slow EE layers (Sentinel-2 composites) time out below this zoom — a single
 // tile covers ~600 km² at zoom 8. Leaflet skips tile requests; the legend notes
@@ -722,6 +740,42 @@ const {
   refreshEeLayer: _refreshEeLayer,
 } = useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeTiles, maxEnt })
 
+/** Whether a layer control applies at the layer's current settings (its `when`). */
+function paramShown(n, p) {
+  if (!p.when) return true
+  const held = eeParams.value[n.ee] || {}
+  return Object.entries(p.when).every(([k, v]) => (held[k] ?? n.eeParams?.[k]?.default) === v)
+}
+
+// Spots picked on the map for a layer that compares against chosen places.
+const {
+  pickingFor, spotsFor, startPicking, stopPicking, clearSpots, attach: attachSpotPicker,
+} = useMapSpotPicker({
+  mapRef, LRef, eeParams, setEeParam, activeOverlays,
+  maxFor: (key) => eeTiles.catalogue.value.find((l) => l.key === key)?.params?.points?.max || 10,
+})
+
+// A link carrying picked spots (`hs`) opens habitat similarity against them.
+// Applied to the params now; the layer itself is switched on when its
+// catalogue entry arrives in addEeLayers.
+const SPOTS_LAYER = 'habitat-similarity'
+const sharedSpots = (() => {
+  const raw = String(useRoute().query.hs || '')
+  return /^-?\d+(\.\d+)?,-?\d+(\.\d+)?(;-?\d+(\.\d+)?,-?\d+(\.\d+)?){0,9}$/.test(raw) ? raw : ''
+})()
+if (sharedSpots) {
+  eeParams.value = {
+    ...eeParams.value,
+    [SPOTS_LAYER]: { ...(eeParams.value[SPOTS_LAYER] || {}), compare: 'spots', points: sharedSpots },
+  }
+}
+const shareExtra = computed(() => {
+  const p = eeParams.value[SPOTS_LAYER]
+  return activeOverlays.value.has(SPOTS_LAYER) && p?.compare === 'spots' && p.points
+    ? { hs: p.points }
+    : {}
+})
+
 // Wrap the three functions that must also call syncActiveTemplates after running.
 function setBase(key) { _setBase(key); syncActiveTemplates() }
 function restoreBase() { _restoreBase(); syncActiveTemplates() }
@@ -826,6 +880,10 @@ async function addEeLayers() {
     // its catalogue entry exists. Static layers are restored in bulk after init;
     // EE layers arrive one at a time from the server and need per-layer recovery.
     restoreEeLayer(spec.key, layer)
+    // A shared link with picked spots switches habitat similarity on.
+    if (spec.key === SPOTS_LAYER && sharedSpots && !activeOverlays.value.has(spec.key)) {
+      toggleOverlay({ key: spec.key, layer })
+    }
   }
 }
 
@@ -1078,6 +1136,7 @@ onMounted(async () => {
     // opens an observation, and a mode button for something used this rarely was
     // a permanent icon paying for an occasional action.
     map.on('contextmenu', (e) => setPin(e.latlng.lat, e.latlng.lng))
+    attachSpotPicker(map)
 
     // Long press, done by hand. Leaflet maps a native contextmenu to its own
     // event, but which browsers synthesise one from a long press is uneven —
@@ -1527,6 +1586,16 @@ onBeforeUnmount(() => {
   width: 11px; height: 11px; border-radius: 50%; background: #2a78d6;
   border: 2px solid #fff; box-shadow: 0 0 0 1px #2a78d6;
 }
+
+/* Spots picked for a compare-to-spots layer */
+.layer-spots { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.layer-spots-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.layer-spots-row .layer-zones-label { flex: 1 1 auto; }
+.spot-btn {
+  min-height: 32px; padding: 4px 10px; border-radius: 6px; font: inherit; font-size: 0.85em;
+  border: 1px solid currentColor; background: transparent; color: inherit; cursor: pointer;
+}
+.spot-btn.on { background: #e65100; border-color: #e65100; color: #fff; }
 
 /* Dropped point */
 .map-shell :deep(.leaflet-container.picking) { cursor: crosshair; }
