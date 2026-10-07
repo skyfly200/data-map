@@ -2,27 +2,21 @@ import { shallowRef, watch } from 'vue'
 import { hasValue } from '~/composables/useObservations'
 import { fmtNum, FIELD_LABEL } from '~/composables/useMapPointStyle'
 
-// Progressive clustering: gradually transition from clusters to individual points
-// instead of a hard switch. At low zooms show large clusters, progressively
-// show more clusters as you zoom in, until individual points become visible.
-const CLUSTER_START_ZOOM = 4  // Start showing clusters below this zoom
-const CLUSTER_END_ZOOM = 11   // Show individual points above this zoom (always as individual points)
-const CLUSTER_TRANSITION_ZOOM = 8.5  // Zoom where we start showing more individual points
+// Clustering below CLUSTER_END_ZOOM, individual points from it up. Clusters
+// are queried at the map's own zoom, so the merge radius is a fixed distance on
+// screen at every zoom: clusters split steadily as you zoom in and never pile
+// on top of each other. (Mapping zoom 4–11 onto Supercluster's 0–13 used to
+// lump the whole dataset into one cluster at zoom 5–6 and over-split, with
+// overlapping circles, just before points took over.)
+const CLUSTER_START_ZOOM = 4  // Below this, points are always clustered
+const CLUSTER_END_ZOOM = 11   // Individual points from this zoom up
 
 function clusterRadius(count) {
   return Math.max(6, Math.min(22, 6 + Math.log2(Math.max(1, count)) * 1.6))
 }
 
-// Calculate the appropriate clustering zoom level based on map zoom.
-// Returns the zoom level to query Supercluster at for progressive clustering effect.
 function getClusteringZoom(mapZoom) {
-  if (mapZoom <= CLUSTER_START_ZOOM) return 0
-  if (mapZoom >= CLUSTER_END_ZOOM) return 13  // Show individual points
-
-  // Progressive transition: as you zoom in, request higher Supercluster zoom levels
-  // to see more granular clusters. Bias toward showing individual points earlier.
-  const progress = (mapZoom - CLUSTER_START_ZOOM) / (CLUSTER_END_ZOOM - CLUSTER_START_ZOOM)
-  return Math.floor(progress * 13)  // Reach the finest level before points take over
+  return Math.max(0, Math.min(13, Math.floor(mapZoom)))
 }
 
 export function useMapSelection({
@@ -104,9 +98,9 @@ export function useMapSelection({
   async function buildClusterIndex(geo) {
     if (!geo?.features?.length) { scIndex = null; return }
     const { default: Supercluster } = await import('supercluster')
-    // Smaller radius for less aggressive clustering, especially at higher zooms.
-    // Clusters still form at low zoom but break apart more readily as you zoom.
-    const sc = new Supercluster({ radius: 90, maxZoom: 13, minZoom: 0 })
+    // Radius is in Supercluster's 512px tile units, so 80 is ~40px on a
+    // Leaflet (256px tile) map: about one cluster circle's width apart.
+    const sc = new Supercluster({ radius: 80, maxZoom: 13, minZoom: 0 })
     sc.load(geo.features.filter((f) => f.geometry?.type === 'Point'))
     scIndex = sc
   }
@@ -121,7 +115,6 @@ export function useMapSelection({
     const zoom = map.getZoom()
     const b = map.getBounds()
     const bbox = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]
-    // Use progressive clustering zoom: gradually show finer clusters as you zoom
     const clusteringZoom = getClusteringZoom(zoom)
     const clusters = scIndex.getClusters(bbox, clusteringZoom)
 

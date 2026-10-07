@@ -319,6 +319,9 @@ Blobs.
 `server/adapters/vercel-function.ts` serves `netlify/functions/<name>.mjs` at
 `/api/fn/<name>`. `node scripts/gen-vercel-config.mjs` writes `vercel.json`
 (rewrite from `/.netlify/functions/*` plus a cron for each scheduled function).
+The Hobby plan rejects any cron that runs more than once a day, so the
+generator cuts every schedule to one daily run; set `VERCEL_PLAN=pro` when
+running it to keep the Netlify schedules.
 It has not been deployed, and CI builds only the Netlify target.
 
 ---
