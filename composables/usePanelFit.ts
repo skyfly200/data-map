@@ -46,7 +46,10 @@ export function usePanelFit(panel: Ref<HTMLElement | null>, isOpen: Ref<boolean>
     await nextTick()
     const el = panel.value
     if (!el) return
-    shift.value = fitOffset(el.getBoundingClientRect(), window.innerWidth)
+    // clientWidth, not innerWidth: on a phone an overflowing panel widens the
+    // layout and innerWidth grows with it, so the panel would be measured
+    // against the very overflow it caused.
+    shift.value = fitOffset(el.getBoundingClientRect(), document.documentElement.clientWidth)
   }
 
   watch(isOpen, measure)

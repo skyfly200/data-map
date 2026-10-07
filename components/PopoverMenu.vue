@@ -59,6 +59,10 @@ const props = defineProps({
   // A short current value, so the common case does not need opening at all.
   badge: { type: String, default: '' },
   btnClass: { type: String, default: '' },
+  // 'right' anchors the panel to the button's right edge so it opens leftward.
+  // The header menu sits at the right of a phone screen; left-anchored, its
+  // panel overflowed the page and the browser widened the layout to fit it.
+  align: { type: String, default: 'left' },
 })
 
 const open = ref(false)
@@ -145,9 +149,8 @@ defineExpose({ close, toggle, show: () => { open.value = true } })
      scroll rather than running off the bottom of a phone. */
   max-height: min(70vh, 520px); overflow-y: auto; overscroll-behavior: contain;
 }
-/* Always left-aligned under its button. There was an `align` prop offering
-   right, which nothing ever passed; usePanelFit is what actually keeps a panel
-   on screen near the right edge. */
+/* Left-aligned under its button unless align="right". usePanelFit still
+   nudges either one back inside the window. */
 .pop-panel { left: 0; }
 .pop-panel.align-right { left: auto; right: 0; }
 .pop-panel > :deep(*) { flex-shrink: 0; }
