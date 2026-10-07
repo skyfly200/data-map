@@ -15,6 +15,6 @@ Worth doing when there is a concrete reason to deploy on Vercel — cost compari
 
 Done (unverified on Vercel):
 - `netlify/lib/storage.mjs` replaces direct Blobs use; `STORAGE_BACKEND=supabase|netlify` (default by `NETLIFY`), private bucket objects at `<store>/<key>`.
-- `nuxt.config.ts` picks the `vercel` preset when `VERCEL` is set; `server/adapters/vercel-function.ts` serves `netlify/functions/<name>.mjs` at `/api/fn/<name>`; `scripts/gen-vercel-config.mjs` writes `vercel.json` (rewrite plus crons; sub-daily crons are relaxed to daily for the Hobby plan unless `VERCEL_CRON_PLAN=pro`).
+- `nuxt.config.ts` picks the `vercel` preset when `VERCEL` is set; `server/adapters/vercel-function.ts` serves `netlify/functions/<name>.mjs` at `/api/fn/<name>`; `scripts/gen-vercel-config.mjs` writes `vercel.json` (rewrite plus crons; sub-daily crons are relaxed to daily for the Hobby plan unless `VERCEL_PLAN=pro`, see `scripts/vercel-cron.mjs`).
 
 Not done: any deploy on Vercel, a CI build of both targets. Env vars: `docs/deploying.md` block 7.
