@@ -276,6 +276,7 @@
                   </select>
                   <input v-else-if="p.type === 'text'" :id="`ee-${n.slug}-${name}`" type="search"
                          :maxlength="p.maxLength || 60" :placeholder="p.default"
+                         :list="p.suggest === 'taxa' ? `ee-${n.slug}-${name}-taxa` : undefined"
                          :value="(eeParams[n.ee] || {})[name] ?? p.default"
                          @change="setEeParam(n.ee, name, $event.target.value)" />
                   <input v-else-if="p.type === 'date'" :id="`ee-${n.slug}-${name}`" type="date"
@@ -286,6 +287,11 @@
                   <input v-else :id="`ee-${n.slug}-${name}`" type="number" :min="p.min" :max="p.max"
                          :value="(eeParams[n.ee] || {})[name] ?? p.default"
                          @change="setEeParam(n.ee, name, Number($event.target.value))" />
+                  <!-- After the v-if chain above, not inside it: an element with
+                       its own v-if there would start a second chain. -->
+                  <datalist v-if="p.type === 'text' && p.suggest === 'taxa'" :id="`ee-${n.slug}-${name}-taxa`">
+                    <option v-for="t in taxonSuggestions" :key="t.name" :value="t.name">{{ t.count }} finds</option>
+                  </datalist>
                 </div>
               </template>
               <div v-if="n.minZoom && mapView?.zoom < n.minZoom" class="legend-note zoom-in no-border">
@@ -404,6 +410,7 @@ import { useMapLocate } from '~/composables/useMapLocate'
 import { setupReferenceTileLayers } from '~/composables/useMapRefTileLayers'
 import { useMapAccessLayer } from '~/composables/useMapAccessLayer'
 import { setupElevBandLayer } from '~/composables/useMapElevBandLayer'
+import { taxaInFeatures } from '~/netlify/lib/dataset-taxa.mjs'
 
 // Slow EE layers (Sentinel-2 composites) time out below this zoom — a single
 // tile covers ~600 km² at zoom 8. Leaflet skips tile requests; the legend notes
@@ -416,6 +423,13 @@ const {
   data, filteredData, load, loadProgressive, chunks, partial,
   speciesFilter, focusObservation, setFocusObservation, error: obsError,
 } = useObservations()
+// Genera and species that are actually loaded, for layers built from the finds
+// of a taxon: a name offered here is one the server will find records for.
+const taxonSuggestions = computed(() => {
+  const ranks = taxaInFeatures(data.value?.features || [], { min: 3 })
+  return ranks.filter((r) => r.key === 'genus' || r.key === 'species')
+    .flatMap((r) => r.taxa.slice(0, 150))
+})
 watch(obsError, (msg) => { if (msg) useAppAlerts().error('Could not load observations — ' + msg) })
 const { elevLabel, elevValue, tempValue, unit, tempUnit } = useUnits()
 const { filters, setFilter } = useFilters()

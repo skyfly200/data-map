@@ -158,6 +158,9 @@ export const ASSETS = {
   // satellite, so it is the long, consistent record of how much rain actually
   // fell — the `precipitation` band is the daily total in mm.
   NOAA_CPC_PRECIP: 'NOAA/CPC/Precipitation',
+  // AlphaEarth Foundations: one 64-band unit vector per 10 m pixel per year,
+  // summarising what the satellites saw there over that year. CC-BY 4.0.
+  SATELLITE_EMBEDDING: 'GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL',
 }
 
 /**
@@ -312,6 +315,20 @@ const SAND_PALETTE = ['#081d58', '#253494', '#225ea8', '#1d91c0', '#41b6c4', '#7
 const SOIL_MOISTURE_PALETTE = ['#8c6d3f', '#c7a76c', '#e8dfc0', '#96c8c0', '#3d8fb0', '#16407a']
 // Range richness: pale to deep violet, so more overlapping species ranges read
 // as a denser colour without colliding with the moisture blues or the fire reds.
+// Similarity: quiet where barely alike, hot where most like the finds, so the
+// places worth walking stand out against everything merely plausible.
+const SIMILARITY_PALETTE = ['#ffffcc', '#c2e699', '#78c679', '#31a354', '#006837']
+
+/** The embedding's first annual image, and its band names A00…A63. */
+export const EMBEDDING_FIRST_YEAR = 2017
+export const EMBEDDING_BANDS = Array.from({ length: 64 }, (_, i) => `A${String(i).padStart(2, '0')}`)
+// A year's embedding is published some months after it ends; two years back is
+// the newest one certain to exist. Later years stay selectable.
+export const EMBEDDING_LAG_YEARS = 2
+
+const embeddingYear = (ee, year) => ee.ImageCollection(ASSETS.SATELLITE_EMBEDDING)
+  .filterDate(`${year}-01-01`, `${year + 1}-01-01`)
+
 const INAT_RANGE_PALETTE = ['#f2e6f7', '#dcc2ec', '#c39bdd', '#a86fcb', '#8c3fb5', '#5c1f86']
 
 /**
@@ -2118,6 +2135,63 @@ export const EE_TILE_LAYERS = {
       }
     },
   },
+  'habitat-similarity': {
+    name: 'Habitat like your finds (AlphaEarth)',
+    group: 'Species',
+    // A fresh signature per taxon and year, over a 10 m, 64-band mosaic: real
+    // compute per tile, so a members' layer.
+    tier: DEFAULT_TIER,
+    attribution: 'AlphaEarth Foundations Satellite Embedding (Google, CC-BY 4.0) via Google Earth Engine',
+    opacity: 0.65,
+    slow: true,
+    // Built from our own observations of the taxon, which ee-tiles loads and
+    // passes to build() as plain [lon, lat] pairs. See reference-points.mjs.
+    reference: 'observations',
+    note: 'Where else looks like the places this taxon was found. Every 10 m pixel carries a '
+      + 'satellite "fingerprint" of its surface over a year (canopy, moisture, terrain, '
+      + 'seasonal change); the layer averages the fingerprints at your finds and shades each '
+      + 'pixel by how closely it matches. It sees what a satellite sees, not soil chemistry or a '
+      + 'host tree hidden under canopy, and a taxon found in several habitats blurs into their '
+      + 'average, so try a species before a genus. Raise "Hide below" to keep only the closest '
+      + 'matches. Uses all finds of the taxon against the chosen year\'s imagery.',
+    params: {
+      taxon: { type: 'text', label: 'Taxon name', default: 'Morchella', maxLength: 60, suggest: 'taxa' },
+      year: {
+        type: 'yearSelect', label: 'Imagery year', default: () => THIS_YEAR() - EMBEDDING_LAG_YEARS,
+        min: EMBEDDING_FIRST_YEAR, max: () => THIS_YEAR() - 1,
+      },
+      floor: { type: 'int', label: 'Hide below (% alike)', default: 70, min: 0, max: 99 },
+    },
+    legend: {
+      type: 'ramp', unit: 'similarity to finds', min: 'less', max: 'most alike',
+      stops: SIMILARITY_PALETTE,
+    },
+    count: (ee, { year }) => embeddingYear(ee, year).size(),
+    build(ee, { year, floor }, prepared, points = []) {
+      // Tiled in UTM zones; a mosaic joins them into one image to compare across.
+      const embedding = embeddingYear(ee, year).mosaic()
+      // The taxon's signature: the mean vector over its find sites. Means of
+      // unit vectors are shorter than one, so it is rescaled to unit length and
+      // the dot product below is a true cosine similarity in −1…1.
+      const mean = embedding.reduceRegion({
+        reducer: ee.Reducer.mean(),
+        geometry: ee.Geometry.MultiPoint(points),
+        scale: 10,
+        maxPixels: 1e6,
+      })
+      const signature = ee.Image.constant(mean.values(EMBEDDING_BANDS))
+      const unit = signature.divide(signature.pow(2).reduce(ee.Reducer.sum()).sqrt())
+      // Both sides have 64 bands, so multiply pairs them by position.
+      const similarity = embedding.multiply(unit).reduce(ee.Reducer.sum()).rename('similarity')
+      const lo = floor / 100
+      return {
+        // Below the floor is masked, not painted pale: blank reads as "not like
+        // your finds", which is what it is.
+        image: similarity.updateMask(similarity.gte(lo)),
+        vis: { min: lo, max: 1, palette: SIMILARITY_PALETTE },
+      }
+    },
+  },
 }
 
 export const EE_LAYER_KEYS = Object.keys(EE_TILE_LAYERS)
@@ -2199,6 +2273,7 @@ export function describeLayer(key) {
     // the layer is switched on.
     classes: layer.prepare ? 'great-groups' : undefined,
     legendInBrowser: layer.legendInBrowser || undefined,
+    reference: layer.reference || undefined,
     params: Object.fromEntries(Object.entries(layer.params || {}).map(([k, spec]) => {
       const min = typeof spec.min === 'function' ? spec.min() : spec.min
       const max = typeof spec.max === 'function' ? spec.max() : spec.max
@@ -2213,6 +2288,7 @@ export function describeLayer(key) {
         max,
         values,
         ...(spec.labels ? { labels: spec.labels } : {}),
+        ...(spec.suggest ? { suggest: spec.suggest } : {}),
       }]
     })),
   }
