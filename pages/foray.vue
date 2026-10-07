@@ -113,7 +113,8 @@
               <button @click="printList" :disabled="!rows.length">Print</button>
             </div>
           </div>
-          <table v-if="rows.length">
+          <div v-if="rows.length" class="table-wrap">
+          <table>
             <thead>
               <tr><th>#</th><th>Site</th><th>Score</th><th>Access</th><th>Fee</th><th>Collecting</th><th>Notes</th></tr>
             </thead>
@@ -133,6 +134,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
           <p v-else class="empty">Nothing to list yet.</p>
           <p class="print-disclaimer">{{ DISCLAIMER }}</p>
         </section>
@@ -259,7 +261,7 @@ const printList = () => window.print()
 </script>
 
 <style scoped>
-.foray-page { height: 100%; overflow-y: auto; padding: 0.8rem 1rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; color: var(--text); }
+.foray-page { box-sizing: border-box; height: 100%; overflow-y: auto; padding: 0.8rem 1rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; color: var(--text); }
 .foray-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 0.6rem; }
 h2 { margin: 0; font-size: 1.2rem; color: var(--text-strong); }
 .sub { margin: 0.1rem 0 0; font-size: 0.82rem; color: var(--muted); }
@@ -311,6 +313,7 @@ h2 { margin: 0; font-size: 1.2rem; color: var(--text-strong); }
 .sl-actions { display: flex; gap: 0.4rem; }
 .sl-actions button { font: inherit; font-size: 0.78rem; padding: 0.25rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); color: var(--text); cursor: pointer; }
 .sl-actions button:disabled { opacity: 0.5; cursor: default; }
+.table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 0.5rem; }
 th, td { text-align: left; padding: 0.25rem 0.3rem; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
 .coords { color: var(--muted); font-size: 0.68rem; }
