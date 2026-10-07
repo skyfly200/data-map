@@ -114,6 +114,10 @@ Two habits keep the cost low:
 - [Google Earth Engine 101: An Introduction for Complete
   Beginners](https://www.youtube.com/watch?v=oAElakLgCdA) — video. Start here if
   watching somebody work is easier than reading documentation.
+- [Google Earth Engine
+  101](https://storymaps.arcgis.com/stories/cdfc91d050634a5294ac897acc959d55)
+  — StoryMap by Stace Maples. The same beginner introduction as a page you
+  read at your own pace.
 - [*Cloud-Based Remote Sensing with Google Earth
   Engine*](https://www.eefabook.org/) — a free book of tutorials, from first
   script to applied work.
