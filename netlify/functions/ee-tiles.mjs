@@ -33,7 +33,7 @@ import { getStore } from '../lib/storage.mjs'
 import { requireTier } from '../lib/auth.mjs'
 import {
   LayerError, EE_LAYER_CATALOGUE, EE_TILE_LAYERS,
-  cacheKey, describeLayer, resolveLayer, tierFor, visParams,
+  cacheKey, describeLayer, pickedSites, resolveLayer, tierFor, visParams,
 } from '../lib/ee-tile-layers.mjs'
 import {
   MATSUTAKE_GREAT_GROUPS, SOIL_ORDERS, SOIL_TAXONOMY_WIKI, describeGreatGroup,
@@ -43,6 +43,7 @@ import {
   buildCustomLayer, describeCustomLayer, isCustomKey, slugFromKey,
 } from '../lib/ee-custom-layers.mjs'
 import { adminClient } from '../lib/auth.mjs'
+import { referencePoints } from '../lib/reference-points.mjs'
 
 /**
  * The layers an administrator has registered, for the catalogue and for
@@ -375,6 +376,38 @@ export default async function handler(request) {
     } catch { /* a cache that cannot be read is a cache miss */ }
   }
 
+  // A layer computed from our own finds needs them before Earth Engine is
+  // asked for anything: a taxon with no records is the reader's to fix, and
+  // saying so beats an Earth Engine error about an empty geometry.
+  let points = pickedSites(layer, params)
+  if (points && !points.length) {
+    return json({
+      ok: false,
+      error: 'Tap the map to pick at least one spot to compare against.',
+      layer: key,
+      params,
+      empty: true,
+    }, 400)
+  }
+  if (!points && layer.reference === 'observations') {
+    try {
+      points = await referencePoints(params.taxon)
+    } catch (err) {
+      const detail = String(err?.message || err).slice(0, 300)
+      return json({ ok: false, error: `Could not load observations for "${layer.name}": ${detail}`, layer: key, params }, 502)
+    }
+    if (!points.length) {
+      return json({
+        ok: false,
+        error: `No observations of "${params.taxon}" in the dataset, so there is nothing to compare against. `
+          + 'Try a genus or species name exactly as the map filters list it.',
+        layer: key,
+        params,
+        empty: true,
+      }, 404)
+    }
+  }
+
   try {
     const ee = await initEarthEngine()
 
@@ -412,7 +445,7 @@ export default async function handler(request) {
     }
 
     const prepared = await prepareLayer(ee, key, layer)
-    const { image, vis } = layer.build(ee, params, prepared)
+    const { image, vis } = layer.build(ee, params, prepared, points)
     const template = await getMapTemplate(ee, image, vis)
 
     if (blobs) {

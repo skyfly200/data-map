@@ -28,6 +28,8 @@ import {
   EE_LAYER_KEYS, EE_TILE_LAYERS, resolveLayer, visParams,
 } from '../netlify/lib/ee-tile-layers.mjs'
 
+const VERIFY_SITES = [[-105.55, 39.75], [-106.05, 39.6], [-107.6, 39.1]]
+
 /** The layers this run will check, honouring an optional name filter. */
 export function layersToCheck(filter = '') {
   const needle = String(filter || '').toLowerCase()
@@ -61,7 +63,10 @@ async function checkLayer(key) {
       const n = await evaluate(layer.count(ee, params))
       if (!n) return { key, ok: false, error: 'count is zero at default parameters' }
     }
-    const { image, vis } = layer.build(ee, params, prepared)
+    // Layers built from our finds get a few fixed Colorado sites: the check is
+    // that the recipe renders, not which observations happen to be loaded.
+    const points = layer.reference ? VERIFY_SITES : undefined
+    const { image, vis } = layer.build(ee, params, prepared, points)
     await mint(image, vis)
     return { key, ok: true }
   } catch (err) {

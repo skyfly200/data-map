@@ -301,11 +301,21 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
     const layer = eeLayers.get(spec.key)
     if (!layer || !map?.hasLayer(layer)) return
     eeErrors.value = eeErrors.value.filter((e) => e.key !== spec.key)
+    // A layer waiting for spots to be picked draws nothing yet, rather than
+    // asking the server for a render it can only refuse.
+    const params = paramsFor(spec)
+    const waiting = Object.entries(spec.params || {}).some(([name, p]) => p.type === 'points'
+      && !params[name]
+      && Object.entries(p.when || {}).every(([k, v]) => params[k] === v))
+    if (waiting) {
+      layer.setUrl('')
+      return
+    }
     const loadingNext = new Map(eeLoading.value)
     loadingNext.set(spec.key, spec.name)
     eeLoading.value = loadingNext
     try {
-      const minted = await eeTiles.template(spec.key, paramsFor(spec))
+      const minted = await eeTiles.template(spec.key, params)
       layer.setUrl(minted.template)
       offline.registerEeTemplate(spec.key, minted.template)
     } catch (err) {
@@ -343,6 +353,11 @@ export function useMapLayerManager({ mapRef, tileOpacity, heatmaps, offline, eeT
       const text = String(value).trim()
       if (!text) return
       next = text
+    } else if (p?.type === 'points') {
+      // "lat,lng;…", already rounded by whoever built it. Empty clears the picks.
+      const list = String(value || '').split(';').filter(Boolean)
+      if (list.length > (p.max || 10)) return
+      next = list.join(';')
     } else if (p?.type === 'date') {
       const date = String(value).trim()
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
