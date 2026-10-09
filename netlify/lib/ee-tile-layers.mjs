@@ -158,6 +158,9 @@ export const ASSETS = {
   // satellite, so it is the long, consistent record of how much rain actually
   // fell — the `precipitation` band is the daily total in mm.
   NOAA_CPC_PRECIP: 'NOAA/CPC/Precipitation',
+  // AlphaEarth Foundations: one 64-band unit vector per 10 m pixel per year,
+  // summarising what the satellites saw there over that year. CC-BY 4.0.
+  SATELLITE_EMBEDDING: 'GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL',
 }
 
 /**
@@ -312,6 +315,20 @@ const SAND_PALETTE = ['#081d58', '#253494', '#225ea8', '#1d91c0', '#41b6c4', '#7
 const SOIL_MOISTURE_PALETTE = ['#8c6d3f', '#c7a76c', '#e8dfc0', '#96c8c0', '#3d8fb0', '#16407a']
 // Range richness: pale to deep violet, so more overlapping species ranges read
 // as a denser colour without colliding with the moisture blues or the fire reds.
+// Similarity: quiet where barely alike, hot where most like the finds, so the
+// places worth walking stand out against everything merely plausible.
+const SIMILARITY_PALETTE = ['#ffffcc', '#c2e699', '#78c679', '#31a354', '#006837']
+
+/** The embedding's first annual image, and its band names A00…A63. */
+export const EMBEDDING_FIRST_YEAR = 2017
+export const EMBEDDING_BANDS = Array.from({ length: 64 }, (_, i) => `A${String(i).padStart(2, '0')}`)
+// A year's embedding is published some months after it ends; two years back is
+// the newest one certain to exist. Later years stay selectable.
+export const EMBEDDING_LAG_YEARS = 2
+
+const embeddingYear = (ee, year) => ee.ImageCollection(ASSETS.SATELLITE_EMBEDDING)
+  .filterDate(`${year}-01-01`, `${year + 1}-01-01`)
+
 const INAT_RANGE_PALETTE = ['#f2e6f7', '#dcc2ec', '#c39bdd', '#a86fcb', '#8c3fb5', '#5c1f86']
 
 /**
@@ -442,6 +459,29 @@ export function codeList(value) {
   return String(value).split(',').filter(Boolean).map(Number)
 }
 
+/** The most spots a "compare to spots I picked" request may carry. */
+export const POINT_LIMIT = 10
+
+/**
+ * Parse a "lat,lng;lat,lng" list into [lon, lat] pairs, rounded to five
+ * decimals. Throws a LayerError on anything that is not a coordinate.
+ */
+export function pointList(value, max = POINT_LIMIT) {
+  const text = String(value ?? '').trim()
+  if (!text) return []
+  const parts = text.split(';').filter(Boolean)
+  if (parts.length > max) throw new LayerError(`At most ${max} spots can be compared at once.`)
+  return parts.map((part) => {
+    const bits = part.split(',')
+    const [lat, lng] = bits.map((b) => (/^\s*-?\d+(\.\d+)?\s*$/.test(b) ? Number(b) : NaN))
+    if (bits.length !== 2 || !Number.isFinite(lat) || !Number.isFinite(lng)
+      || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+      throw new LayerError(`"${part.slice(0, 40)}" is not a latitude,longitude pair.`)
+    }
+    return [Number(lng.toFixed(5)), Number(lat.toFixed(5))]
+  })
+}
+
 function readParams(schema, input = {}) {
   const out = {}
   for (const [key, spec] of Object.entries(schema)) {
@@ -484,6 +524,12 @@ function readParams(schema, input = {}) {
         throw new LayerError(`${spec.label} may only contain letters, spaces, hyphens and periods.`)
       }
       out[key] = text
+    } else if (spec.type === 'points') {
+      // "lat,lng;lat,lng" — spots picked on the map. Normalised to five
+      // decimals (about a metre) so one set of spots is one cache entry, and
+      // capped so a link cannot carry an arbitrarily large geometry to Earth
+      // Engine. Empty is allowed: it means nothing has been picked yet.
+      out[key] = pointList(raw, spec.max).map(([lon, lat]) => `${lat},${lon}`).join(';')
     } else if (spec.type === 'date') {
       // ISO date string (YYYY-MM-DD). Validate format and optional min/max bounds.
       const date = String(raw).trim()
@@ -2118,9 +2164,83 @@ export const EE_TILE_LAYERS = {
       }
     },
   },
+  'habitat-similarity': {
+    name: 'Habitat similarity (AlphaEarth)',
+    group: 'Species',
+    // A fresh signature per taxon and year, over a 10 m, 64-band mosaic: real
+    // compute per tile, so a members' layer.
+    tier: DEFAULT_TIER,
+    attribution: 'AlphaEarth Foundations Satellite Embedding (Google, CC-BY 4.0) via Google Earth Engine',
+    opacity: 0.65,
+    slow: true,
+    // Compared against either our own observations of the taxon, which
+    // ee-tiles loads, or spots picked on the map. Either way build() gets
+    // plain [lon, lat] pairs. See referenceSites below and reference-points.mjs.
+    reference: 'observations',
+    note: 'Where else looks like a set of places. Every 10 m pixel carries a satellite '
+      + '"fingerprint" of its surface over a year (canopy, moisture, terrain, seasonal change); '
+      + 'the layer averages the fingerprints at the reference places and shades each pixel by '
+      + 'how closely it matches. Compare to "finds" to use every record of a taxon, or to '
+      + '"spots" and tap the map to pick up to ten places yourself. It sees what a satellite '
+      + 'sees, not soil chemistry or a host tree hidden under canopy, and places in several '
+      + 'habitats blur into their average, so try a species, or one kind of spot, at a time. '
+      + 'Raise "Hide below" to keep only the closest matches.',
+    params: {
+      compare: { type: 'enum', label: 'Compare to', default: 'finds', values: ['finds', 'spots'] },
+      points: { type: 'points', label: 'Picked spots', default: '', max: POINT_LIMIT, when: { compare: 'spots' } },
+      taxon: {
+        type: 'text', label: 'Taxon name', default: 'Morchella', maxLength: 60, suggest: 'taxa',
+        when: { compare: 'finds' },
+      },
+      year: {
+        type: 'yearSelect', label: 'Imagery year', default: () => THIS_YEAR() - EMBEDDING_LAG_YEARS,
+        min: EMBEDDING_FIRST_YEAR, max: () => THIS_YEAR() - 1,
+      },
+      floor: { type: 'int', label: 'Hide below (% alike)', default: 70, min: 0, max: 99 },
+    },
+    legend: {
+      type: 'ramp', unit: 'similarity', min: 'less', max: 'most alike',
+      stops: SIMILARITY_PALETTE,
+    },
+    count: (ee, { year }) => embeddingYear(ee, year).size(),
+    build(ee, { year, floor }, prepared, points = []) {
+      // Tiled in UTM zones; a mosaic joins them into one image to compare across.
+      const embedding = embeddingYear(ee, year).mosaic()
+      // The taxon's signature: the mean vector over its find sites. Means of
+      // unit vectors are shorter than one, so it is rescaled to unit length and
+      // the dot product below is a true cosine similarity in −1…1.
+      const mean = embedding.reduceRegion({
+        reducer: ee.Reducer.mean(),
+        geometry: ee.Geometry.MultiPoint(points),
+        scale: 10,
+        maxPixels: 1e6,
+      })
+      const signature = ee.Image.constant(mean.values(EMBEDDING_BANDS))
+      const unit = signature.divide(signature.pow(2).reduce(ee.Reducer.sum()).sqrt())
+      // Both sides have 64 bands, so multiply pairs them by position.
+      const similarity = embedding.multiply(unit).reduce(ee.Reducer.sum()).rename('similarity')
+      const lo = floor / 100
+      return {
+        // Below the floor is masked, not painted pale: blank reads as "not like
+        // your finds", which is what it is.
+        image: similarity.updateMask(similarity.gte(lo)),
+        vis: { min: lo, max: 1, palette: SIMILARITY_PALETTE },
+      }
+    },
+  },
 }
 
 export const EE_LAYER_KEYS = Object.keys(EE_TILE_LAYERS)
+
+/**
+ * Where a reference layer's sites come from for these parameters: the picked
+ * spots as [lon, lat] pairs, or null when they are the taxon's finds (which
+ * only the server can load).
+ */
+export function pickedSites(layer, params) {
+  if (layer?.reference !== 'observations' || params.compare !== 'spots') return null
+  return pointList(params.points)
+}
 
 /** The tier a layer requires. Unknown layers are treated as the strictest. */
 export function tierFor(key) {
@@ -2199,6 +2319,7 @@ export function describeLayer(key) {
     // the layer is switched on.
     classes: layer.prepare ? 'great-groups' : undefined,
     legendInBrowser: layer.legendInBrowser || undefined,
+    reference: layer.reference || undefined,
     params: Object.fromEntries(Object.entries(layer.params || {}).map(([k, spec]) => {
       const min = typeof spec.min === 'function' ? spec.min() : spec.min
       const max = typeof spec.max === 'function' ? spec.max() : spec.max
@@ -2213,6 +2334,9 @@ export function describeLayer(key) {
         max,
         values,
         ...(spec.labels ? { labels: spec.labels } : {}),
+        ...(spec.suggest ? { suggest: spec.suggest } : {}),
+        // Only meaningful while other params hold these values; the UI hides it otherwise.
+        ...(spec.when ? { when: spec.when } : {}),
       }]
     })),
   }

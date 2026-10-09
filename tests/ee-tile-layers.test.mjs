@@ -12,9 +12,9 @@ import assert from 'node:assert/strict'
 
 import {
   EE_LAYER_CATALOGUE, EE_LAYER_KEYS, EE_TILE_LAYERS, GAP_REMAP, LayerError,
-  DEFAULT_TIER, MODIS_FIRST_YEAR, MODIS_LAG_YEARS, MTBS_LAG_YEARS,
+  DEFAULT_TIER, EMBEDDING_BANDS, EMBEDDING_FIRST_YEAR, EMBEDDING_LAG_YEARS, MODIS_FIRST_YEAR, MODIS_LAG_YEARS, MTBS_LAG_YEARS,
   WORLDCOVER_CLASSES, WORLDCOVER_FROM, WORLDCOVER_TO,
-  cacheKey, describeLayer, resolveLayer, tierFor, visParams,
+  POINT_LIMIT, cacheKey, describeLayer, pickedSites, pointList, resolveLayer, tierFor, visParams,
 } from '../netlify/lib/ee-tile-layers.mjs'
 
 const YEAR = new Date().getUTCFullYear()
@@ -169,6 +169,9 @@ test('describing an unknown layer returns nothing rather than throwing', () => {
  * is wired up — masks its no-data, names a palette, produces an image — not
  * that Earth Engine agrees, which needs credentials.
  */
+/** The find sites ee-tiles would hand a layer built from observations. */
+const referenceFor = (layer) => (layer.reference ? [[-105.5, 39.7], [-106.1, 39.2]] : undefined)
+
 function stubEe() {
   const calls = []
   const chain = new Proxy(function stub() {}, {
@@ -209,7 +212,7 @@ test('every build runs against a stubbed Earth Engine and paints something', () 
   for (const key of EE_LAYER_KEYS) {
     calls.length = 0
     const { layer, params } = resolveLayer(key)
-    const out = layer.build(ee, params)
+    const out = layer.build(ee, params, null, referenceFor(layer))
     assert.ok(out.image, `${key} built no image`)
     assert.ok(out.vis, `${key} has no visualisation`)
 
@@ -482,7 +485,7 @@ test('every layer visualisation survives the client\'s own parser', () => {
   // natural way to write them and what the Code Editor accepts.
   for (const key of EE_LAYER_KEYS) {
     const { layer, params } = resolveLayer(key)
-    const vis = visParams(layer.build(stubEe().ee, params).vis)
+    const vis = visParams(layer.build(stubEe().ee, params, null, referenceFor(layer)).vis)
     for (const field of ['min', 'max', 'gamma']) {
       if (!(field in vis)) continue
       assert.doesNotThrow(() => csvToNumbers(vis[field]),
@@ -516,4 +519,76 @@ test('an absent bound stays absent rather than becoming "undefined"', () => {
   assert.deepEqual(visParams({ min: undefined, max: 5 }), { max: '5' })
   assert.deepEqual(visParams({ min: null }), {})
   assert.deepEqual(visParams({}), {})
+})
+
+// ── Habitat similarity (AlphaEarth embeddings) ──────────────────────────────
+
+test('habitat similarity defaults to an embedding year that is published', () => {
+  const { params } = resolveLayer('habitat-similarity')
+  assert.equal(params.year, YEAR - EMBEDDING_LAG_YEARS)
+  assert.equal(params.taxon, 'Morchella')
+  assert.equal(params.floor, 70)
+  // The dataset starts in 2017; earlier would be an empty mosaic.
+  assert.throws(() => resolveLayer('habitat-similarity', { year: EMBEDDING_FIRST_YEAR - 1 }), LayerError)
+  assert.throws(() => resolveLayer('habitat-similarity', { floor: 100 }), LayerError)
+  assert.throws(() => resolveLayer('habitat-similarity', { taxon: 'x"); ee.Execute(' }), LayerError)
+})
+
+test('habitat similarity tells the client it is built from finds and offers taxa', () => {
+  const described = describeLayer('habitat-similarity')
+  assert.equal(described.reference, 'observations')
+  assert.equal(described.params.taxon.suggest, 'taxa')
+  assert.equal(typeof EE_TILE_LAYERS['habitat-similarity'].count, 'function')
+})
+
+test('habitat similarity compares all 64 bands against the finds\' mean', () => {
+  const seen = {}
+  const chain = new Proxy(function stub() {}, {
+    get: (t, prop) => (prop === 'then' ? undefined : chain),
+    apply: () => chain,
+  })
+  const ee = {
+    ImageCollection: (id) => { seen.asset = id; return chain },
+    Reducer: { mean: () => 'mean', sum: () => 'sum' },
+    Geometry: { MultiPoint: (pts) => { seen.points = pts; return chain } },
+    Image: Object.assign(() => chain, { constant: () => chain }),
+  }
+  const pointsIn = [[-105.5, 39.7], [-106.1, 39.2]]
+  const { layer, params } = resolveLayer('habitat-similarity', { floor: 85 })
+  const out = layer.build(ee, params, null, pointsIn)
+  assert.equal(seen.asset, 'GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL')
+  assert.deepEqual(seen.points, pointsIn)
+  assert.equal(EMBEDDING_BANDS.length, 64)
+  assert.equal(EMBEDDING_BANDS[0], 'A00')
+  assert.equal(EMBEDDING_BANDS[63], 'A63')
+  assert.equal(out.vis.min, 0.85)
+  assert.equal(out.vis.max, 1)
+})
+
+test('picked spots are parsed to [lon, lat] and normalised for the cache', () => {
+  assert.deepEqual(pointList('39.7123456,-105.5'), [[-105.5, 39.71235]])
+  assert.deepEqual(pointList(''), [])
+  const { params } = resolveLayer('habitat-similarity', {
+    compare: 'spots', points: '39.7123456,-105.5;40,-106',
+  })
+  assert.equal(params.points, '39.71235,-105.5;40,-106')
+  assert.deepEqual(pickedSites(EE_TILE_LAYERS['habitat-similarity'], params),
+    [[-105.5, 39.71235], [-106, 40]])
+})
+
+test('a spot list that is not coordinates, or too long, is refused', () => {
+  for (const bad of ['abc', '39.7', '39.7,-105,3', '95,-105', '39,-190', '1e3,5', '39,-105);ee']) {
+    assert.throws(() => resolveLayer('habitat-similarity', { points: bad }), LayerError, bad)
+  }
+  const many = Array.from({ length: POINT_LIMIT + 1 }, (_, i) => `39.${i},-105`).join(';')
+  assert.throws(() => resolveLayer('habitat-similarity', { points: many }), LayerError)
+})
+
+test('comparing to finds ignores picked spots', () => {
+  const layer = EE_TILE_LAYERS['habitat-similarity']
+  const { params } = resolveLayer('habitat-similarity', { points: '39,-105' })
+  assert.equal(params.compare, 'finds')
+  assert.equal(pickedSites(layer, params), null)
+  // A layer not built from reference sites never has any.
+  assert.equal(pickedSites(EE_TILE_LAYERS.slope, { compare: 'spots', points: '39,-105' }), null)
 })
