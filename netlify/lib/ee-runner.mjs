@@ -35,7 +35,8 @@ import { derivedIndices } from './terrain-indices.mjs'
 import {
   DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, DEFAULT_CONTRIBUTION_THRESHOLD, MIN_CV_PRESENCES,
   backgroundPlan, buildSuitabilityImage, crossValidate, crossValidationSummary, foldPoints,
-  modelCacheKey, predictorStack, randomBackground, suitabilityLegend,
+  modelCacheKey, predictorRangesReducer, predictorStack, randomBackground, shapePredictorRanges,
+  suitabilityLegend,
 } from './maxent.mjs'
 
 // Where fitted model surfaces are cached, and for how long. The TTL is well
@@ -790,7 +791,28 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
   }
 
   onProgress({ fraction: 0.4, stage: 'fit', message: 'Fitting the model…' })
-  const { image, vis } = buildSuitabilityImage(ee, { presences, predictors, background, region, seed: 1 })
+  const { image, vis, classifier, presenceSamples } = buildSuitabilityImage(ee, { presences, predictors, background, region, seed: 1 })
+
+  // What the foray planner's habitat score needs from every model (WANT-17
+  // phase 3): each predictor's spread across the presences, and the fitted
+  // model's own contributions when the scout did not already give them. Both
+  // are best-effort; a model without them still has its surface.
+  let predictorRanges = null
+  try {
+    const raw = await withRetry(
+      () => evaluate(predictorRangesReducer(ee, presenceSamples, predictors)),
+      { label: 'predictor ranges' },
+    )
+    predictorRanges = shapePredictorRanges(raw, predictors)
+  } catch { predictorRanges = null }
+  if (!contributions) {
+    try {
+      contributions = await withRetry(
+        () => evaluate(ee.Dictionary(classifier.explain().get('Contributions'))),
+        { label: 'model explain' },
+      ) || null
+    } catch { contributions = null }
+  }
 
   // A spatially blocked cross-validation score, when there are enough presences
   // for it to mean anything. Held-out predictions come back from Earth Engine;
@@ -835,9 +857,11 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
     // vs a random background". Carries through to the legend so the surface is
     // always labelled with this confound.
     effortWeighted: backgroundPlan({ presenceCount: points.length, background }).weighted,
-    // Present when autoOptimize was on: maps each candidate predictor to its
-    // % contribution in the scout model.
+    // Each predictor's % contribution: from the scout model over every
+    // candidate when autoOptimize was on, otherwise from the fitted model.
     contributions,
+    // {predictor: {p25, p75, min, max}} over the presences (WANT-17 phase 3).
+    predictorRanges,
     // A minted template carries a map id, which expires; the member re-runs
     // the job to refresh it. Stamped so the UI can say how old the surface is.
     mintedAt: new Date().toISOString(),
