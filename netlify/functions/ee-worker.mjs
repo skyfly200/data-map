@@ -13,6 +13,7 @@
 // limit rather than being started and killed halfway.
 
 import { adminClient, requireAdmin } from '../lib/auth.mjs'
+import { isScheduledInvocation } from '../lib/cron-auth.mjs'
 import {
   claimNextJob, failJob, finishJob, isCancelled, ownerViewer, planFor, reportProgress,
 } from '../lib/job-queue.mjs'
@@ -59,8 +60,9 @@ export default async function handler(request) {
   // admin drive the queue, as before.
   const pokeSecret = process.env.WORKER_POKE_SECRET
   const poked = Boolean(pokeSecret) && request.headers.get('x-worker-secret') === pokeSecret
-  const scheduled = request.headers.get('x-netlify-event') === 'schedule'
-    || new URL(request.url).searchParams.get('scheduled') === '1'
+  // The scheduler is recognised by what the platform sends (see cron-auth), not
+  // by anything a visitor can put in the URL.
+  const scheduled = await isScheduledInvocation(request)
   if (!scheduled && !poked) {
     const auth = await requireAdmin(request)
     if (!auth.ok) return auth.response

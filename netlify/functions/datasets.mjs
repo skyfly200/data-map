@@ -25,13 +25,14 @@ import {
 import { readJson, uploadJson } from '../lib/datasets-store.mjs'
 import { loadEeAsset } from '../lib/ee-assets.mjs'
 import { UploadError, toFeatureCollection } from '../lib/observation-upload.mjs'
+import { MAX_DATASETS_PER_MEMBER, registerFetched } from '../lib/species-fetch.mjs'
 
 export const config = { timeout: 30 }
 
 /** As many datasets as one member may keep. Rows are cheap and these point at
  *  files that already exist, so this is a guard against runaway automation
  *  rather than a meaningful limit on anybody's work. */
-export const MAX_DATASETS_PER_MEMBER = 100
+export { MAX_DATASETS_PER_MEMBER }
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
@@ -158,46 +159,7 @@ async function save(client, viewer, body) {
  * The path must live under species/ in the datasets bucket (validated server-side).
  */
 async function saveFetched(client, viewer, body) {
-  const path = String(body.path || '').trim()
-  const incomingSlug = String(body.slug || '').trim()
-  if (!path) throw new DatasetAccessError('path is required.', { status: 400, code: 'no_path' })
-  if (!path.startsWith('species/')) {
-    throw new DatasetAccessError('Only species/ paths may be registered this way.', { status: 400, code: 'bad_path' })
-  }
-
-  const { count, error: countErr } = await client.from('saved_datasets')
-    .select('id', { count: 'exact', head: true }).eq('owner_id', viewer.userId)
-  if (countErr) throw new Error(countErr.message)
-  if ((count || 0) >= MAX_DATASETS_PER_MEMBER) {
-    throw new DatasetAccessError(
-      `You have ${count} saved datasets, which is the limit. Delete one to save another.`,
-      { status: 409, code: 'too_many' })
-  }
-
-  const title = String(body.title || incomingSlug || 'Fetched observations').trim().slice(0, 200)
-  const visibility = checkVisibility(body.visibility, viewer)
-
-  // If this path is already registered for this user, return the existing row.
-  const { data: existing } = await client.from('saved_datasets')
-    .select(FIELDS).eq('owner_id', viewer.userId).eq('path', path).maybeSingle()
-  if (existing) return json({ ok: true, dataset: existing, status: 'existing' })
-
-  const base = incomingSlug || slugify(title)
-  const { data: clashes } = await client.from('saved_datasets')
-    .select('slug').like('slug', `${base}%`)
-  const slug = nextFreeSlug(base, (clashes || []).map((r) => r.slug))
-
-  const { data, error } = await client.from('saved_datasets').insert({
-    owner_id: viewer.userId,
-    slug,
-    title,
-    description: String(body.description || '').slice(0, 2000) || null,
-    path,
-    visibility,
-    feature_count: body.feature_count ?? null,
-  }).select(FIELDS).single()
-  if (error) throw new Error(error.message)
-  return json({ ok: true, dataset: data, status: 'saved' })
+  return json({ ok: true, ...(await registerFetched(client, viewer, body)) })
 }
 
 async function update(client, viewer, body) {

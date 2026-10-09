@@ -9,6 +9,7 @@
 // a token's tier claim can be an hour behind a cancelled membership.
 
 import { adminClient, requireMemberFresh, requireUser } from '../lib/auth.mjs'
+import { pokeWorker } from '../lib/worker-poke.mjs'
 import { QueueError, listJobs, submitJob } from '../lib/job-queue.mjs'
 import { SpecError } from '../lib/ee-pipeline.mjs'
 import { DatasetAccessError, viewerFrom } from '../lib/dataset-access.mjs'
@@ -19,31 +20,6 @@ import { atLeast } from '../lib/tiers.mjs'
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json' },
 })
-
-/**
- * Nudge the worker so a freshly queued job starts now rather than waiting for
- * the next scheduled tick — the difference between a bar that moves in seconds
- * and one that looks stuck at 0%.
- *
- * Fire-and-forget: the request is started and then abandoned after a moment, so
- * submit returns immediately while the worker keeps running server-side (an
- * aborted client fetch does not stop the invocation it already triggered). It
- * needs WORKER_POKE_SECRET set; without it the worker only takes the cron and an
- * admin, so this is a no-op and the job still starts on the next minute.
- */
-function pokeWorker(request) {
-  const secret = process.env.WORKER_POKE_SECRET
-  if (!secret) return
-  try {
-    const url = new URL('/.netlify/functions/ee-worker', request.url)
-    const controller = new AbortController()
-    // Long enough to hand the request off, short enough not to hold up submit.
-    const timer = setTimeout(() => controller.abort(), 500)
-    fetch(url, { method: 'POST', headers: { 'x-worker-secret': secret }, signal: controller.signal })
-      .catch(() => { /* the cron backstop covers a dropped poke */ })
-      .finally(() => clearTimeout(timer))
-  } catch { /* a poke that cannot even be built is not worth failing submit over */ }
-}
 
 export default async function handler(request) {
   if (request.method === 'GET') {
