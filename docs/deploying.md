@@ -283,6 +283,7 @@ real Earth Engine, PAD-US, RIDB, Overpass or Vercel.
 | `STORAGE_BACKEND` | functions | `supabase` or `netlify`. Default: `netlify` when running on Netlify, else `supabase`. |
 | `SUPABASE_STORAGE_BUCKET` | functions | Bucket for the key/value stores when the backend is Supabase. Default: the datasets bucket. |
 | `VERCEL` | build | Set by Vercel. Switches the Nitro preset to `vercel`. |
+| `CRON_SECRET` | functions | **Required on Vercel.** Any long random string. Vercel's cron sends it as a bearer token, which is how `ee-worker` and `refresh-observations` tell the scheduler from a visitor. Without it the cron gets a 401 and only an admin (or a submit poke) runs the worker. **Server only.** |
 
 ### Loading Colorado's access data
 
@@ -321,7 +322,8 @@ Blobs.
 (rewrite from `/.netlify/functions/*` plus a cron for each scheduled function).
 The Hobby plan rejects any cron that runs more than once a day, so the
 generator cuts every schedule to one daily run; set `VERCEL_PLAN=pro` when
-running it to keep the Netlify schedules.
+running it to keep the Netlify schedules. Set `CRON_SECRET` in the project's
+environment so the crons are accepted.
 It has not been deployed, and CI builds only the Netlify target.
 
 ---

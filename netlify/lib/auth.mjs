@@ -103,7 +103,7 @@ export async function requireTier(request, required = 'member', { message = '' }
   return auth
 }
 
-export const requireMember = (request) => requireTier(request, 'member')
+export const requireMember = (request, opts) => requireTier(request, 'member', opts)
 export const requireAdmin = (request) => requireTier(request, 'admin')
 
 /** Service-role client, for reading rows the caller's own key must not reach. */
