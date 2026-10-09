@@ -49,6 +49,47 @@
       <p v-if="sw.includeLikely && sw.collecting" class="notice">{{ LIKELY_DISCLAIMER }}</p>
     </details>
 
+    <details class="filters" :open="layersOpen" @toggle="onLayersToggle($event.target.open)">
+      <summary>
+        <span class="f-title">Model layers</span>
+        <span class="f-sum">{{ layerSummary }}</span>
+      </summary>
+      <section class="foray-controls">
+        <label class="ctl">Layer
+          <select v-model="layerSel">
+            <option value="">None</option>
+            <option value="ensemble">Model blend for species in season</option>
+            <option value="habitat">Habitat match (species in season)</option>
+          </select>
+        </label>
+        <label v-if="layerSel" class="ctl">Opacity
+          <input v-model.number="layerOpacity" type="range" min="0.2" max="1" step="0.1" aria-label="Layer opacity">
+        </label>
+      </section>
+      <p v-if="layers.message.value" class="notice warn" role="status">{{ layers.message.value }}</p>
+      <p v-else-if="layers.listed.value && !layers.models.value.length" class="notice">
+        No finished models to use yet. Train one on the Models page; public models show here too.
+      </p>
+      <template v-if="layerSel && layers.models.value.length">
+        <p class="notice">{{ layerSel === 'habitat' ? HABITAT_EXPLAINER : ENSEMBLE_EXPLAINER }}</p>
+        <ul class="model-list">
+          <li v-for="m in layerChoices" :key="m.id">
+            <label>
+              <input type="checkbox" :checked="pickedIds.includes(m.id)" :disabled="!m.eligible || (!pickedIds.includes(m.id) && pickedIds.length >= MAX_LAYER_MODELS)"
+                     @change="togglePick(m.id)">
+              <span class="m-title">{{ m.title }}</span>
+              <span class="m-meta">{{ m.taxon || 'no taxon' }} · AUC {{ m.auc != null ? m.auc.toFixed(2) : 'not scored' }}<template v-if="!m.own"> · public</template></span>
+              <span v-if="m.inSeason" class="chip ok">in season</span>
+              <span v-if="!m.eligible" class="chip">{{ layerSel === 'habitat' ? 're-run to add ranges' : 'cannot rebuild' }}</span>
+            </label>
+          </li>
+        </ul>
+        <p v-if="layerMeta?.predictors?.length" class="notice">
+          Uses {{ layerMeta.predictors.map((p) => `${predictorLabel(p.key)} ${Math.round(p.weight * 100)}%`).join(', ') }}.
+        </p>
+      </template>
+    </details>
+
     <p v-if="error" class="notice warn">Could not load observations ({{ error }}).</p>
     <p v-else-if="pending && !features.length" class="notice">Loading observations…</p>
 
@@ -56,13 +97,16 @@
       <div ref="mapCol" class="map-col">
         <div class="map-box">
           <ClientOnly>
-            <ForayMap :cells="shown" :ranked="ranked" :selected-key="selectedKey" @select="selectedKey = $event" />
+            <ForayMap :cells="shown" :ranked="ranked" :selected-key="selectedKey" :overlay="overlayTemplate" :overlay-opacity="layerOpacity"
+                      :opportunities="oppCells" @select="selectedKey = $event" @view="view = $event" />
             <template #fallback><div class="map-fallback">Loading map…</div></template>
           </ClientOnly>
         </div>
         <div class="legend">
           <span v-for="b in LEGEND" :key="b.label" class="lg"><i :style="{ background: b.color }"></i>{{ b.label }}</span>
           <span class="lg"><i class="pin">1</i>Top places</span>
+          <span v-if="opps.ranked.length" class="lg"><i class="pin opp">A</i>Few finds, promising</span>
+          <span v-if="overlayTemplate" class="lg"><i class="ramp" :style="{ background: `linear-gradient(90deg, ${SUITABILITY_STOPS.join(',')})` }"></i>{{ layerSel === 'habitat' ? 'Habitat match' : 'Model blend' }} low → high</span>
         </div>
         <details class="howto">
           <summary>How to read this map</summary>
@@ -151,6 +195,43 @@
         </ol>
         <p class="notice">{{ DISCLAIMER }}</p>
 
+        <section class="under" aria-labelledby="under-h">
+          <div class="sl-head">
+            <h3 id="under-h">Where few have looked</h3>
+            <div class="sl-actions">
+              <button :disabled="!canSearchUnder || underBusy" @click="findUnder">{{ underBusy ? 'Searching…' : 'Search this map view' }}</button>
+            </div>
+          </div>
+          <p class="notice">
+            Places on screen with {{ MAX_FINDS }} or fewer past finds where the {{ layerSel === 'habitat' ? 'habitat match' : 'model blend' }} is
+            {{ Math.round(MIN_PROMISE * 100) }}% or more, ranked by promise ÷ (1 + finds). Your access filters apply.
+            <template v-if="!layerSel"> Pick a model layer above first.</template>
+          </p>
+          <p v-if="underMsg" class="notice warn" role="status">{{ underMsg }}</p>
+          <ol v-if="opps.ranked.length" class="ranked">
+            <li v-for="(o, i) in opps.ranked" :key="o.cell.key" :class="{ sel: o.cell.key === selectedKey }" @click="pick(o.cell.key)">
+              <div class="row1">
+                <span class="rk opp">{{ LETTERS[i] }}</span>
+                <strong class="site">{{ cellSiteName(o.cell) }}</strong>
+                <span class="band">{{ Math.round(o.promise * 100) }}%</span>
+              </div>
+              <div class="row2">
+                <span>{{ o.n === 0 ? 'No finds yet' : `${o.n} ${o.n === 1 ? 'find' : 'finds'}` }}</span>
+                <span class="acc">
+                  <span class="chip">{{ o.cell.access.covered ? o.cell.access.public_access : 'access unknown' }}</span>
+                  <span class="chip">collecting: {{ collectingLabel(o.cell.access) }}</span>
+                </span>
+                <a :href="directionsUrl(o.cell)" target="_blank" rel="noopener" @click.stop>Directions</a>
+              </div>
+            </li>
+          </ol>
+          <p v-if="underDone" class="caveat">
+            From {{ opps.considered }} under-sampled cells on screen.
+            <template v-if="opps.outside"> {{ opps.outside }} more were left out because their habitat is outside the range the models were trained on, so a high score there is a guess.</template>
+            Models used: {{ usedModelsText || 'none' }}. A high score is a prompt to look, not a forecast; an empty place may simply lack the habitat.
+          </p>
+        </section>
+
         <section v-if="cfg.showShortlist" class="shortlist" id="foray-shortlist">
           <div class="sl-head">
             <h3>Shortlist</h3>
@@ -203,6 +284,12 @@ import {
   COLORADO_BBOX, DISCLAIMER, LIKELY_DISCLAIMER, LIKELY_LABEL, FORAY_MODES, attachAccess, buildShortlist, cellSiteName, collectingLabel,
   effectiveSwitches, feeLabel, filterByAccess, shortlistToCsv, shortlistToText, UNKNOWN_ACCESS,
 } from '~/composables/forayPlanner'
+
+import {
+  MAX_FINDS, MAX_LAYER_MODELS, MIN_PROMISE, candidateCells, defaultPicks, findsPerCell, modelSpecies, modelsParam, rankUnderSampled,
+} from '~/composables/forayModels'
+import { useForayLayers } from '~/composables/useForayLayers'
+import { MAXENT_PREDICTORS, SUITABILITY_PALETTE } from '~/netlify/lib/maxent.mjs'
 
 useHead({ title: 'Plan a foray · Nexstrata' })
 
@@ -282,6 +369,107 @@ const shown = computed(() => scored.value.map((c) => ({
 })))
 const ranked = computed(() => rankCells(shown.value, cfg.value.listLimit, 'adj'))
 const rows = computed(() => buildShortlist(ranked.value, notes.value, cfg.value.listLimit))
+
+// ── Model layers (WANT-17 phases 2 and 3) ───────────────────────────────────
+const ENSEMBLE_EXPLAINER = 'A weighted blend of the suitability maps of your models for species in season, weighted by how close each species is to its peak. Each model is refit, so it can take a minute.'
+const HABITAT_EXPLAINER = 'Shades ground whose terrain, climate and cover sit in the range where the in-season models\' finds were made, using the variables that mattered most to them. Not species-specific, and only as good as those models.'
+const SUITABILITY_STOPS = SUITABILITY_PALETTE
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+const layers = useForayLayers()
+const layersOpen = ref(false)
+const layerSel = ref('')
+const layerOpacity = ref(0.6)
+const pickedIds = ref([])
+const overlayTemplate = ref(null)
+const layerMeta = ref(null)
+const predictorLabel = (k) => MAXENT_PREDICTORS[k]?.label || k
+
+function onLayersToggle(open) {
+  layersOpen.value = open
+  if (open && !layers.listed.value) layers.list()
+}
+watch(layerSel, (v) => { if (v && !layers.listed.value) layers.list() })
+
+const seasonWeightsMap = computed(() => base.value.weights || new Map())
+const defaults = computed(() => (layerSel.value ? defaultPicks(layers.models.value, seasonWeightsMap.value, layerSel.value) : []))
+const layerChoices = computed(() => {
+  const names = [...seasonWeightsMap.value.keys()]
+  return layers.models.value
+    .map((m) => ({
+      ...m,
+      inSeason: modelSpecies(m, names).length > 0,
+      eligible: layerSel.value === 'habitat' ? m.ranges && m.contributions : m.usable,
+    }))
+    .sort((a, b) => Number(b.inSeason) - Number(a.inSeason) || a.title.localeCompare(b.title))
+})
+// The picks follow the season and the layer until changed by hand.
+watch(defaults, (d) => { pickedIds.value = d.map((p) => p.id) }, { immediate: true })
+function togglePick(id) {
+  pickedIds.value = pickedIds.value.includes(id) ? pickedIds.value.filter((x) => x !== id) : [...pickedIds.value, id].slice(0, MAX_LAYER_MODELS)
+}
+// A hand-picked model outside the season gets a modest weight.
+const picks = computed(() => pickedIds.value.map((id) => defaults.value.find((p) => p.id === id) || { id, weight: 0.5, species: [] }))
+const picksParam = computed(() => modelsParam(picks.value))
+
+let mintSeq = 0
+watch([layerSel, picksParam], async ([layer, param]) => {
+  const seq = ++mintSeq
+  overlayTemplate.value = null
+  layerMeta.value = null
+  opps.value = { ranked: [], outside: 0, considered: 0 }
+  underDone.value = false
+  if (!layer || !param) return
+  const r = await layers.mint(layer, param)
+  if (seq !== mintSeq || !r) return
+  overlayTemplate.value = r.template
+  layerMeta.value = r.meta
+})
+
+const layerSummary = computed(() => {
+  if (!layerSel.value) return 'None'
+  const n = pickedIds.value.length
+  return `${layerSel.value === 'habitat' ? 'Habitat match' : 'Model blend'} · ${n} ${n === 1 ? 'model' : 'models'}`
+})
+
+// ── Where few have looked (WANT-17 phase 5) ─────────────────────────────────
+const view = ref(null)
+const underBusy = ref(false)
+const underMsg = ref('')
+const underDone = ref(false)
+const opps = ref({ ranked: [], outside: 0, considered: 0 })
+const oppCells = computed(() => opps.value.ranked.map((o) => o.cell))
+const canSearchUnder = computed(() => Boolean(layerSel.value && pickedIds.value.length && view.value))
+const usedModelsText = computed(() => {
+  const used = new Set(layerMeta.value?.used || pickedIds.value)
+  return layers.models.value.filter((m) => used.has(m.id))
+    .map((m) => `${m.title} (AUC ${m.auc != null ? m.auc.toFixed(2) : 'not scored'})`).join(', ')
+})
+
+async function findUnder() {
+  underMsg.value = ''
+  underDone.value = false
+  const shape = heat.cellShape.value
+  const { cells, tooMany } = candidateCells(view.value, cellSize.value, shape)
+  if (tooMany) { underMsg.value = 'Zoom in closer (or pick a bigger patch size) to search this view.'; return }
+  const finds = findsPerCell(features.value, cellSize.value, shape, landCover.value || undefined)
+  const few = cells.map((c) => ({ ...c, n: finds.get(c.key) || 0 })).filter((c) => c.n <= MAX_FINDS)
+  const withAccess = access.loaded.value || access.status.value === 'partial'
+    ? attachAccess(few, access.areas.value)
+    : few.map((c) => ({ ...c, access: { ...UNKNOWN_ACCESS } }))
+  const candidates = filterByAccess(withAccess, effective.value)
+  if (!candidates.length) { underMsg.value = 'No under-sampled cells on screen pass your filters.'; opps.value = { ranked: [], outside: 0, considered: 0 }; return }
+  underBusy.value = true
+  try {
+    const res = await layers.sample(layerSel.value, picksParam.value, candidates.map((c) => [c.lon, c.lat]))
+    if (!res) { underMsg.value = layers.message.value; return }
+    const merged = candidates.map((c, i) => ({ ...c, promise: res.samples[i]?.value ?? null, outside: res.samples[i]?.outside ?? null }))
+    opps.value = rankUnderSampled(merged, { limit: cfg.value.listLimit })
+    underDone.value = true
+    if (!opps.value.ranked.length) underMsg.value = 'Nothing on screen scores high enough. Try another view or layer.'
+  } finally {
+    underBusy.value = false
+  }
+}
 
 const sel = computed(() => shown.value.find((c) => c.key === selectedKey.value) || null)
 const selRank = computed(() => ranked.value.findIndex((c) => c.key === selectedKey.value) + 1)
@@ -427,7 +615,16 @@ h2 { margin: 0; font-size: 1.2rem; color: var(--text-strong); }
 .comp { font-size: 0.72rem; color: var(--muted); margin-top: 0.3rem; }
 .comp ul { margin: 0.2rem 0 0; padding-left: 1rem; }
 
-.shortlist { border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; background: var(--surface); }
+.shortlist, .under { border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; background: var(--surface); display: flex; flex-direction: column; gap: 0.4rem; }
+.rk.opp { color: #6a1b9a; font-weight: 700; }
+.lg i.pin.opp { color: #4a148c; border-color: #6a1b9a; border-style: dashed; }
+.lg i.ramp { width: 36px; height: 10px; border-radius: 3px; }
+.model-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; }
+.model-list label { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.5rem; min-height: 32px; }
+.model-list input { width: 18px; height: 18px; }
+.m-title { font-weight: 600; }
+.m-meta { font-size: 0.75rem; color: var(--muted); }
+.ctl input[type='range'] { width: 8rem; }
 .sl-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .sl-head h3 { margin: 0; font-size: 0.95rem; }
 .sl-actions { display: flex; gap: 0.4rem; }
@@ -455,6 +652,7 @@ th, td { text-align: left; padding: 0.25rem 0.3rem; border-bottom: 1px solid var
   body:has(.foray-page) .notice,
   body:has(.foray-page) .map-col,
   body:has(.foray-page) .ranked,
+  body:has(.foray-page) .under,
   body:has(.foray-page) .caveat,
   body:has(.foray-page) .empty,
   body:has(.foray-page) .sl-actions,
