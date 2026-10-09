@@ -2,6 +2,8 @@
 // rows for access_areas / access_lines. Pure; fetching is the caller's job so
 // this runs against fixtures.
 
+import { matchCollectingRule } from './collecting-rules.mjs'
+
 const TRAIL = new Set(['path', 'footway', 'track', 'bridleway', 'cycleway'])
 const ROAD = new Set(['residential', 'unclassified', 'tertiary', 'secondary', 'primary', 'service', 'living_street'])
 
@@ -67,13 +69,26 @@ export function estimateCollecting({ managerType: mt, designation, access }) {
   return { collecting: 'unknown', collecting_source: null }
 }
 
-/** All estimated classification columns for one area. */
-export function classifyArea({ mangName, mangType, designation, access }) {
+/**
+ * Collecting for one area: the estimate, then a local rule over it when one
+ * matches (collecting-rules.mjs). Closed land stays 'prohibited' whatever a
+ * rule says, and a rule never loosens a value.
+ */
+export function classifyCollecting({ managerType: mt, designation, access, managerText }) {
+  const est = estimateCollecting({ managerType: mt, designation, access })
+  const rule = matchCollectingRule({ managerType: mt, text: managerText })
+  if (!rule || est.collecting === 'prohibited') return { ...est, collecting_rule: null }
+  return { collecting: rule.collecting, collecting_source: 'rule', collecting_rule: rule.id }
+}
+
+/** All classification columns for one area: estimates, plus a local collecting rule where one applies. */
+export function classifyArea({ mangName, mangType, designation, access, locMang = null, unitName = null }) {
   const mt = managerType(mangName, mangType)
+  const managerText = [mangName, locMang, unitName].filter(Boolean).join(' | ')
   return {
     manager_type: mt,
     ...estimateFee({ managerType: mt, designation }),
-    ...estimateCollecting({ managerType: mt, designation, access }),
+    ...classifyCollecting({ managerType: mt, designation, access, managerText }),
   }
 }
 
@@ -91,7 +106,10 @@ export function parsePadUs(fc) {
       source: 'padus', source_id: String(p.OBJECTID ?? `${p.Unit_Nm}|${p.Des_Tp ?? ''}`),
       name: p.Unit_Nm, manager: p.Mang_Name ?? null, designation: p.Des_Tp ?? null,
       access_class: padusAccessClass(p.Pub_Access), public_access: padusAccessClass(p.Pub_Access), geom,
-      ...classifyArea({ mangName: p.Mang_Name, mangType: p.Mang_Type, designation: p.Des_Tp, access: padusAccessClass(p.Pub_Access) }),
+      ...classifyArea({
+        mangName: p.Mang_Name, mangType: p.Mang_Type, designation: p.Des_Tp,
+        access: padusAccessClass(p.Pub_Access), locMang: p.Loc_Mang ?? null, unitName: p.Unit_Nm,
+      }),
     })
   }
   return rows
@@ -249,7 +267,7 @@ export function overpassQuery([w, s, e, n]) {
 export function padusQueryUrl(base, [w, s, e, n], offset = 0) {
   const q = new URLSearchParams({
     where: '1=1', geometry: `${w},${s},${e},${n}`, geometryType: 'esriGeometryEnvelope', inSR: '4326',
-    spatialRel: 'esriSpatialRelIntersects', outFields: 'OBJECTID,Unit_Nm,Mang_Name,Mang_Type,Des_Tp,Pub_Access',
+    spatialRel: 'esriSpatialRelIntersects', outFields: 'OBJECTID,Unit_Nm,Mang_Name,Mang_Type,Loc_Mang,Des_Tp,Pub_Access',
     outSR: '4326', f: 'geojson', resultOffset: String(offset), resultRecordCount: '500',
   })
   return `${base}/query?${q}`
