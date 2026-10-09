@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { phenologyWeight, scoreCell, seasonWeights, resolveTimeSelection, monthMidDay, normaliseScores, rankCells, scoreBand } from '../composables/forayScore.ts'
+import { phenologyWeight, scoreCell, seasonWeights, resolveTimeSelection, monthMidDay, normaliseScores, rankCells, scoreBand, adjustForSample } from '../composables/forayScore.ts'
 import { inSeasonSpecies, inSeasonDayOfYear } from '../composables/useInSeason.ts'
 
 test('phenology weight: closer and tighter is heavier, bounded 0..1', () => {
@@ -66,4 +66,22 @@ test('inSeasonSpecies: windowing, ordering, topN (dashboard behaviour)', () => {
   assert.deepEqual(out[0].elevBand, { loM: 2500, hiM: 2500 })
   assert.equal(out[1].elevBand, null)
   assert.equal(inSeasonSpecies(rows, { day, topN: 1 }).length, 1)
+})
+
+test('normaliseScores: all-zero cells read as Low, not Good', () => {
+  const t = normaliseScores([{ score: 0 }, { score: 0 }]).map((c) => c.t)
+  assert.deepEqual(t, [0, 0])
+  assert.equal(scoreBand(t[0]), 'Low')
+})
+
+test('adjustForSample: a 3-find fluke ranks below a well-sampled good cell', () => {
+  const cells = [
+    { key: 'fluke', score: 1, n: 3 },
+    { key: 'solid', score: 0.8, n: 40 },
+    { key: 'poor', score: 0.05, n: 60 },
+  ]
+  const adj = adjustForSample(cells)
+  assert.deepEqual(rankCells(adj, Infinity, 'adj').map((c) => c.key), ['solid', 'fluke', 'poor'])
+  assert.equal(adj[0].score, 1, 'raw score is kept')
+  for (const c of adj) assert.ok(c.adj >= 0 && c.adj <= 1)
 })
