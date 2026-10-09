@@ -26,7 +26,7 @@ export function useForayLayers() {
     }
     const data = await res.json().catch(() => null)
     if (res.status === 401) throw new Error('Sign in to use your models here.')
-    if (!res.ok || !data?.ok) throw new Error(data?.error || `That request failed (${res.status}).`)
+    if (!res.ok || !data?.ok) throw new Error(typeof data?.error === 'string' ? data.error : `That request failed (${res.status}).`)
     return data
   }
 
