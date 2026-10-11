@@ -88,18 +88,33 @@ export function resolveTimeSelection(sel: 'now' | number, today: number, nowWind
   return { day: monthMidDay(m), window: 15, label: MONTH_LABELS[m - 1] }
 }
 
-/** Min-max normalise scores to a 0..1 `t` for colouring. */
-export function normaliseScores<T extends { score: number }>(cells: T[]): (T & { t: number })[] {
-  if (!cells.length) return []
-  let lo = Infinity, hi = -Infinity
-  for (const c of cells) { lo = Math.min(lo, c.score); hi = Math.max(hi, c.score) }
-  return cells.map((c) => ({ ...c, t: hi === lo ? 0.5 : (c.score - lo) / (hi - lo) }))
+/**
+ * Pull each cell's score toward the pooled mean by `priorFinds` pseudo-finds,
+ * so a cell with 3 finds that happen to be one in-season species does not
+ * outrank a 40-find cell with a slightly lower share. Adds `adj`; `score` is kept.
+ */
+export const FORAY_PRIOR_FINDS = 5
+export function adjustForSample<T extends { score: number, n: number }>(cells: T[], priorFinds = FORAY_PRIOR_FINDS): (T & { adj: number })[] {
+  let num = 0, den = 0
+  for (const c of cells) { num += c.score * c.n; den += c.n }
+  const mean = den ? num / den : 0
+  return cells.map((c) => ({ ...c, adj: (c.score * c.n + mean * priorFinds) / (c.n + priorFinds) }))
 }
 
-/** Highest score first; ties broken by larger sample then key for stability. */
-export function rankCells<T extends { score: number, n: number, key: string }>(cells: T[], limit = Infinity): T[] {
+/** Min-max normalise `key` (default `score`) to a 0..1 `t` for colouring. All-zero cells stay at 0. */
+export function normaliseScores<T extends { score: number }>(cells: T[], key: keyof T & string = 'score'): (T & { t: number })[] {
+  if (!cells.length) return []
+  const v = (c: T) => Number(c[key]) || 0
+  let lo = Infinity, hi = -Infinity
+  for (const c of cells) { lo = Math.min(lo, v(c)); hi = Math.max(hi, v(c)) }
+  return cells.map((c) => ({ ...c, t: hi === lo ? (hi > 0 ? 0.5 : 0) : (v(c) - lo) / (hi - lo) }))
+}
+
+/** Highest `key` (default `score`) first; ties broken by larger sample then key for stability. */
+export function rankCells<T extends { score: number, n: number, key: string }>(cells: T[], limit = Infinity, by: keyof T & string = 'score'): T[] {
+  const v = (c: T) => Number(c[by]) || 0
   return [...cells]
-    .sort((a, b) => b.score - a.score || b.n - a.n || (a.key < b.key ? -1 : 1))
+    .sort((a, b) => v(b) - v(a) || b.n - a.n || (a.key < b.key ? -1 : 1))
     .slice(0, limit)
 }
 
