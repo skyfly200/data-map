@@ -85,3 +85,68 @@ test('adjustForSample: a 3-find fluke ranks below a well-sampled good cell', () 
   assert.equal(adj[0].score, 1, 'raw score is kept')
   for (const c of adj) assert.ok(c.adj >= 0 && c.adj <= 1)
 })
+
+import {
+  ABSOLUTE_FULL, DEFAULT_PARAMS, absoluteT, blendScore, blendWeight, explainCell, gradeScores, paramsAreDefault, paramsToQuery,
+  parseParams, scoreUnits,
+} from '../composables/forayScore.ts'
+
+test('phenology half-scale is tunable', () => {
+  assert.ok(Math.abs(phenologyWeight(14, 0) - 0.5) < 1e-9)
+  assert.ok(Math.abs(phenologyWeight(7, 0, 7) - 0.5) < 1e-9)
+  assert.ok(seasonWeights([{ name: 'A', dist: 10, iqr: 0 }], 30).get('A') > seasonWeights([{ name: 'A', dist: 10, iqr: 0 }]).get('A'))
+})
+
+test('params: defaults, URL round trip, clamping and junk', () => {
+  assert.deepEqual(parseParams(''), DEFAULT_PARAMS)
+  assert.ok(paramsAreDefault(DEFAULT_PARAMS))
+  const p = { ...DEFAULT_PARAMS, halfScale: 21, grading: 'absolute', modelMix: 0.3 }
+  const q = paramsToQuery(p)
+  assert.deepEqual(q, { fh: '21', fg: 'absolute', fx: '0.3' })
+  assert.deepEqual(parseParams(new URLSearchParams(q)), p)
+  const c = parseParams('fh=999&fp=-4&fm=abc&fg=weird&fx=0.33')
+  assert.equal(c.halfScale, 45); assert.equal(c.priorFinds, 0); assert.equal(c.minSample, DEFAULT_PARAMS.minSample)
+  assert.equal(c.grading, 'relative'); assert.equal(c.modelMix, 0.35)
+})
+
+test('absolute grading: fixed cut-offs; relative: min-max', () => {
+  assert.equal(scoreUnits(ABSOLUTE_FULL), 1)
+  assert.equal(absoluteT(ABSOLUTE_FULL * 2), 1)
+  const cells = [{ score: 0, final: 0.1 }, { score: 0, final: 0.2 }]
+  assert.deepEqual(gradeScores(cells, 'final', 'absolute').map((c) => c.t), [0.1, 0.2])
+  assert.deepEqual(gradeScores(cells, 'final', 'relative').map((c) => c.t), [0, 1])
+  assert.equal(scoreBand(gradeScores([{ score: 0, final: 0.2 }], 'final', 'absolute')[0].t), 'Low')
+})
+
+test('model blend: finds lead with many finds, model leads with none; mix 0 is finds only', () => {
+  assert.equal(blendWeight(10, 0), 1)
+  assert.equal(blendWeight(0, 0.5), 0.5)
+  assert.equal(blendWeight(0, 1), 0)
+  assert.ok(blendWeight(40, 0.5) > blendWeight(4, 0.5))
+  assert.ok(blendWeight(10, 0.2) > blendWeight(10, 0.8))
+  const none = blendScore(0, 0, 0.8, 0.5)
+  assert.ok(Math.abs(none.blend - 0.4) < 1e-9)
+  const many = blendScore(0.25, 200, 0.0, 0.5)
+  assert.ok(many.blend > 0.45 && many.blend < 0.5)
+  assert.deepEqual(blendScore(0.25, 5, null, 0.5), { findsT: 0.5, model: null, findsWeight: 1, blend: 0.5 })
+  assert.equal(blendScore(0.25, 5, 0.9, 0).blend, 0.5)
+})
+
+test('explainCell: mean, rank, blend and per-species timing', () => {
+  const cell = {
+    key: 'b', n: 10, seasonalN: 6, score: 0.5, adj: 0.45, t: 0.8, final: 0.9,
+    components: [{ species: 'A', weight: 1, count: 4, contribution: 0.4 }],
+    blend: { findsT: 0.9, model: 0.7, findsWeight: 0.6, blend: 0.82 },
+  }
+  const e = explainCell(cell, {
+    cells: [{ key: 'a', score: 0.1, n: 10 }, { key: 'b', score: 0.5, n: 10 }],
+    ranked: [{ key: 'b' }, { key: 'a' }],
+    species: [{ name: 'A', dist: 3, iqr: 12 }],
+    params: { ...DEFAULT_PARAMS, grading: 'absolute' },
+  })
+  assert.equal(e.band, 'Great'); assert.equal(e.rank, 1); assert.equal(e.of, 2)
+  assert.ok(Math.abs(e.mean - 0.3) < 1e-9)
+  assert.equal(e.grading, 'absolute'); assert.equal(e.blend.model, 0.7); assert.equal(e.value, 0.9)
+  assert.deepEqual(e.species[0], { species: 'A', count: 4, weight: 1, contribution: 0.4, dist: 3, iqr: 12 })
+  assert.equal(explainCell({ ...cell, blend: { model: null } }, { cells: [], ranked: [], species: [], params: DEFAULT_PARAMS }).blend, null)
+})

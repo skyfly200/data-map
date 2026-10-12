@@ -94,7 +94,7 @@ function fakeClient({ regions = [], areaRows = [], lineRows = [] } = {}) {
     saved, rpcs,
     rpc: async (fn, args) => {
       rpcs.push([fn, args])
-      if (fn === 'access_upsert_areas' || fn === 'access_upsert_lines') return { data: args.p_rows.length, error: null }
+      if (fn === 'access_upsert_areas' || fn === 'access_upsert_lines' || fn === 'access_upsert_points') return { data: args.p_rows.length, error: null }
       if (fn === 'access_areas_in_bbox') return { data: areaRows, error: null }
       if (fn === 'access_lines_in_bbox') return { data: lineRows, error: null }
       return { data: null, error: { message: 'unknown rpc' } }
@@ -111,19 +111,23 @@ const jsonRes = (body, ok = true, status = 200) => ({ ok, status, json: async ()
 test('runAccessIngest: loads tiles, upserts, degrades without RIDB key, marks loaded', async () => {
   const client = fakeClient()
   const urls = []
-  const fetchImpl = async (url) => {
+  const fetchImpl = async (url, init) => {
     urls.push(String(url))
     if (String(url).includes('/query?')) return jsonRes({ features: [padus({ OBJECTID: 7, Unit_Nm: 'A', Mang_Name: 'BLM', Pub_Access: 'Open' })] })
+    if (decodeURIComponent(String(init?.body || '')).includes('amenity')) {
+      return jsonRes({ elements: [{ type: 'node', id: 9, lat: 40.05, lon: -105.3, tags: { amenity: 'parking', name: 'Lot' } }] })
+    }
     return jsonRes({ elements: [{ type: 'way', id: 5, tags: { highway: 'path' }, geometry: [{ lon: -105.3, lat: 40.05 }, { lon: -105.3, lat: 40.06 }] }] })
   }
   const spec = normaliseAccessSpec({ bbox: [-105.5, 40, -105.25, 40.25], region: 'test' })
   const out = await runAccessIngest({ client, spec, fetchImpl, env: {}, politeMs: 0 })
   assert.equal(out.status, 'loaded'); assert.equal(out.ridb, 'skipped_no_key')
-  assert.equal(out.areas, 1); assert.equal(out.lines, 1)
+  assert.equal(out.areas, 1); assert.equal(out.lines, 1); assert.equal(out.points, 1)
+  assert.ok(client.rpcs.some(([f, a]) => f === 'access_upsert_points' && a.p_rows[0].kind === 'parking'))
   assert.ok(!urls.some((u) => u.includes('ridb.recreation.gov')))
   assert.equal(client.rpcs[0][1].p_region, 'test')
   const last = client.saved.at(-1)[1]
-  assert.equal(last.status, 'loaded'); assert.ok(last.loaded_at)
+  assert.equal(last.status, 'loaded'); assert.ok(last.loaded_at); assert.equal(last.point_count, 1)
 })
 
 test('runAccessIngest: retries Overpass 429, fails region on persistent error, partial at deadline', async () => {

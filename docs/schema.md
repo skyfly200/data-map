@@ -117,6 +117,7 @@ User-authored saved chart configurations. Each row is one saved chart with an or
 - Migration 016: `collecting_source` also allows `rule` (a curated county/city/state rule from `netlify/lib/collecting-rules.mjs`, applied at ingest over the estimate), and `collecting_rule` (`text`) holds that rule's id. `access_upsert_areas` and `access_areas_in_bbox` carry it.
 - `access_regions` — `name` unique, `bbox` jsonb `[w,s,e,n]`, `status` queued/loading/loaded/partial/failed, `area_count`, `line_count`, `ridb_matched`, `sources`, `error`, `requested_by`, `loaded_at`. RLS select-all; writes service role only.
 - Functions: `access_upsert_areas/lines(rows jsonb, region)` (service role only; keep RIDB fee data over later estimates), `access_areas_in_bbox`, `access_lines_in_bbox` (simplified GeoJSON, used by `netlify/functions/access.mjs`).
+- Migration 017: `access_points` — OSM parking (`amenity=parking`, ways at their centre) and trailheads: `osm_type`+`osm_id` unique, `kind` parking/trailhead, `name`, `fee` (yes/no/null), `wheelchair` (yes/limited/no/null), `disabled_spaces`, `region`, `geom` Point 4326 (GiST). RLS select-all; writes via `access_upsert_points(rows jsonb, region)` (service role only). `access_regions.point_count` added. `access_nearest(points jsonb, max_m)` returns, per `[lon, lat]`, the nearest parking, accessible parking (wheelchair=yes or disabled spaces), trailhead and road distance within `max_m` (used by `netlify/functions/access-nearest.mjs`).
 
 ---
 

@@ -11,7 +11,9 @@
 // Optional: a model layer drawn under the cells (`overlay`, a tile template
 // from foray-layers), and lettered "where few have looked" places
 // (`opportunities`). The map reports its view as `view` so the page can lay
-// out candidate cells for exactly what is on screen.
+// out candidate cells for exactly what is on screen. A cell with
+// `predicted: true` (graded by the model blend, few or no finds) is drawn
+// with a dashed outline and a light fill so it reads as a guess.
 import { markRaw, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
@@ -63,8 +65,9 @@ function draw() {
   for (const c of props.cells) {
     const sel = c.key === props.selectedKey
     const style = {
-      color: sel ? '#111' : c.color, weight: sel ? 3 : 1,
-      fillColor: c.color, fillOpacity: opacity(c.t),
+      color: sel ? '#111' : c.color, weight: sel ? 3 : c.predicted ? 2 : 1,
+      fillColor: c.color, fillOpacity: c.predicted ? 0.15 : opacity(c.t),
+      ...(c.predicted ? { dashArray: '4 3' } : {}),
     }
     const shape = squares
       ? L.polygon(c.polygon, style)
