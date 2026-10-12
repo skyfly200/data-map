@@ -250,10 +250,16 @@ export interface ShortlistRow {
   lat: number
   lon: number
   score: number
+  /** Low/Fair/Good/Great, or '' when the caller did not grade the cells. */
+  grade: string
   access_class: string
   manager: string
   fee_status: string
   collecting_status: string
+  /** Walk-in tier and distance, e.g. "Short walk · 0.6 mi from parking"; '' when unknown. */
+  walk: string
+  /** Nearest parking as "lat, lon"; '' when unknown. */
+  parking: string
   finds: number
   top_species: string
   notes: string
@@ -284,7 +290,10 @@ export const cellSiteName = (c: { lat: number, lon: number, access?: CellAccess 
 
 /** Ranked cells -> shortlist rows. `notes` is keyed by cell key. */
 export function buildShortlist(
-  ranked: Array<{ key: string, lat: number, lon: number, score: number, n: number, components?: { species: string }[], access: CellAccess }>,
+  ranked: Array<{
+    key: string, lat: number, lon: number, score: number, n: number, components?: { species: string }[], access: CellAccess,
+    grade?: string, walk?: string, parking?: { lat: number, lon: number } | null,
+  }>,
   notes: Record<string, string> = {},
   limit = 12,
 ): ShortlistRow[] {
@@ -294,10 +303,13 @@ export function buildShortlist(
     lat: Number(c.lat.toFixed(4)),
     lon: Number(c.lon.toFixed(4)),
     score: Math.round(c.score * 100) / 100,
+    grade: c.grade || '',
     access_class: c.access.public_access,
     manager: c.access.manager_type || '',
     fee_status: feeLabel(c.access),
     collecting_status: collectingLabel(c.access),
+    walk: c.walk || '',
+    parking: c.parking ? `${c.parking.lat.toFixed(5)}, ${c.parking.lon.toFixed(5)}` : '',
     finds: c.n,
     top_species: (c.components || []).slice(0, 3).map((x) => x.species).join('; '),
     notes: notes[c.key] || '',
@@ -305,8 +317,8 @@ export function buildShortlist(
 }
 
 export const SHORTLIST_COLUMNS: (keyof ShortlistRow)[] = [
-  'rank', 'site', 'lat', 'lon', 'score', 'access_class', 'manager', 'fee_status',
-  'collecting_status', 'finds', 'top_species', 'notes',
+  'rank', 'site', 'lat', 'lon', 'score', 'grade', 'access_class', 'manager', 'fee_status',
+  'collecting_status', 'walk', 'parking', 'finds', 'top_species', 'notes',
 ]
 
 function csvCell(v: unknown): string {
@@ -326,8 +338,9 @@ export function shortlistToCsv(rows: ShortlistRow[]): string {
 export function shortlistToText(rows: ShortlistRow[], title = 'Foray shortlist'): string {
   const out = [title, '']
   for (const r of rows) {
-    out.push(`${r.rank}. ${r.site} (${r.lat}, ${r.lon}) score ${r.score}`)
+    out.push(`${r.rank}. ${r.site} (${r.lat}, ${r.lon}) ${r.grade ? `${r.grade}, ` : ''}score ${r.score}`)
     out.push(`   access: ${r.access_class}${r.manager ? ` / ${r.manager}` : ''}; fee: ${r.fee_status}; collecting: ${r.collecting_status}`)
+    if (r.walk) out.push(`   walk: ${r.walk}${r.parking ? `; park at ${r.parking}` : ''}`)
     if (r.notes) out.push(`   notes: ${r.notes}`)
   }
   out.push('', DISCLAIMER)

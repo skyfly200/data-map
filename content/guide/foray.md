@@ -17,9 +17,42 @@ window counts for a little less.
 
 - The score divides by the cell's own total, so a cell is not better for being
   visited more. It is effort-neutral, like the seasonal heatmap.
-- A cell needs **3 or more finds**. Fewer are not shown.
-- Only cells that already have finds are scored. A blank area is unsampled, not
-  poor. The score does not forecast, and it does not reach beyond sampled cells.
+- A cell needs **3 or more finds** by default. Fewer are not shown.
+- Only cells that already have finds are scored, unless you blend in a model
+  layer (below). A blank area is unsampled, not poor.
+- Ranking pulls cells with few finds toward the average, as if each had 5 extra
+  average finds, so a lucky 3-find cell does not beat a solid 40-find one.
+
+### Low, Fair, Good and Great
+
+By default places are graded **against each other**: the strongest place on the
+map is at the top of the colour bar and the weakest at the bottom. Great is the
+top quarter of that range, then Good, Fair and Low. Even in a quiet month some
+place is Great.
+
+Switch **Scoring → Grade places** to **On a fixed scale** to use fixed cut-offs
+instead: Great means about 38% or more of a place's finds are in-season species
+near their peak (after the small-sample adjustment). A quiet month then shows
+mostly Low.
+
+The bar under the map shows the full colour scale, with a ▲ for the selected
+place. Open **Why this grade?** on a place to see the working: its season score,
+the small-sample adjustment, any model blend, its rank, and each species' finds,
+timing and weight.
+
+### Tune the score
+
+Under **Scoring** you can change:
+
+- **Peak focus**: how many days off its peak a species counts half (default 14).
+  Lower favours species right at their peak.
+- **Time window**: how many days either side of the date a find counts.
+- **Small-sample caution**: the extra average finds each place is treated as
+  having (0 takes every place at face value).
+- **Fewest finds**: the minimum finds for a place to be scored.
+
+Your settings go into the page address, so **Copy link to this plan** shares the
+same scoring. **Reset** goes back to the defaults.
 
 ## Choose the time and place
 
@@ -129,6 +162,15 @@ change the mix (up to 6). Your own models and public ones are listed, with their
 AUC. Habitat match needs models trained after this feature shipped; older ones
 say *re-run to add ranges*.
 
+### Blend into grades
+
+With a layer on, **Blend into grades** mixes the model into each place's grade.
+Places with many finds stay led by their finds; places with few lean on the
+model, up to the share you set (50% by default). The planner also searches the
+map view once for promising places with almost no finds and adds them as
+**Predicted** places, drawn with a dashed outline. Set the slider to 0 to only
+draw the layer.
+
 ## Where few have looked
 
 Pick a model layer, zoom in, and press **Search this map view**. The planner
@@ -141,9 +183,28 @@ value there is a guess. The list says how many were left out and which models
 it used. A place with few finds may simply have no habitat, so treat these as
 leads to check, not predictions.
 
+## Parking and walking in
+
+The planner looks up the nearest parking (from OpenStreetMap), road and
+trailhead for the listed places and labels each one:
+
+- **Roadside**: parking or a road within a quarter mile.
+- **Short walk**: within a mile.
+- **Hike in**: within 3 miles. **Remote**: nothing within 3 miles.
+
+Under **Filters**, **Walk in** hides places beyond the walk you choose, and
+**Accessible parking nearby** keeps places with parking tagged wheelchair
+accessible (or with disabled spaces) within a quarter mile. Places without
+parking data are hidden while a walk filter is on, unless you keep unknown.
+**Directions** goes to the nearest parking when one is known, and the shortlist
+has a Walk column with the parking coordinates.
+
+OpenStreetMap parking and accessibility tags are incomplete, so treat
+"Remote" and missing accessible parking as "not mapped", not "not there".
+
 ## Not yet verified
 
-The access database, the planner, model layers and My areas are built and tested against
-fixtures. The access data has not been loaded and checked against live sources.
+The access database, the planner, model layers, the model blend, parking data
+and My areas are built and tested against fixtures. The access data has not been loaded and checked against live sources.
 Treat the first loaded results with caution, and report anything that looks
 wrong with [Report a bug](/guide/report-bug).

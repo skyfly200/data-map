@@ -7,25 +7,28 @@
 // is not better for having been visited more. Only cells with finds are scored.
 
 export const FORAY_MIN_SAMPLE = 3
+export const FORAY_HALF_SCALE = 14
 export const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 /**
  * Weight 0..1 for a species from the days its median find sits from the target
  * day and its fruiting-window width (IQR). Same shape as the dashboard ranking
- * (dist + iqr/2, lower is better), mapped to a weight with a 14-day half-scale.
+ * (dist + iqr/2, lower is better), mapped to a weight with a `halfScale`-day
+ * half-scale (14 by default): a species that far off its peak counts half.
  */
-export function phenologyWeight(dist: number, iqr: number): number {
+export function phenologyWeight(dist: number, iqr: number, halfScale = FORAY_HALF_SCALE): number {
   const d = Math.max(0, Number(dist) || 0)
   const w = Math.max(0, Number(iqr) || 0)
-  return 1 / (1 + (d + w * 0.5) / 14)
+  const h = Math.max(1, Number(halfScale) || FORAY_HALF_SCALE)
+  return 1 / (1 + (d + w * 0.5) / h)
 }
 
 export interface SeasonSpeciesLike { name: string, dist: number, iqr: number }
 
 /** Map of species -> weight for the in-season list. */
-export function seasonWeights(species: SeasonSpeciesLike[]): Map<string, number> {
+export function seasonWeights(species: SeasonSpeciesLike[], halfScale = FORAY_HALF_SCALE): Map<string, number> {
   const m = new Map<string, number>()
-  for (const s of species || []) m.set(s.name, phenologyWeight(s.dist, s.iqr))
+  for (const s of species || []) m.set(s.name, phenologyWeight(s.dist, s.iqr, halfScale))
   return m
 }
 
@@ -82,10 +85,10 @@ export function monthMidDay(month: number): number {
 export interface TimeSelection { day: number, window: number, label: string }
 
 /** The "now" / month selector. `today` is a day of the year. */
-export function resolveTimeSelection(sel: 'now' | number, today: number, nowWindow = 14): TimeSelection {
+export function resolveTimeSelection(sel: 'now' | number, today: number, nowWindow = 14, monthWindow = 15): TimeSelection {
   if (sel === 'now') return { day: today, window: nowWindow, label: 'Now' }
   const m = Math.min(12, Math.max(1, Math.round(Number(sel))))
-  return { day: monthMidDay(m), window: 15, label: MONTH_LABELS[m - 1] }
+  return { day: monthMidDay(m), window: monthWindow, label: MONTH_LABELS[m - 1] }
 }
 
 /**
@@ -128,4 +131,175 @@ export function modalKey(m: Map<string, number> | undefined): string | null {
   let best: string | null = null, bestN = 0
   for (const [k, n] of m || []) if (n > bestN) { best = k; bestN = n }
   return best
+}
+
+// ── Tunable scoring (user controls) ─────────────────────────────────────────
+
+export type Grading = 'relative' | 'absolute'
+
+export interface ForayParams {
+  /** Days off peak at which a species counts half (phenology half-scale). */
+  halfScale: number
+  /** Pseudo-finds that pull small samples toward the average. */
+  priorFinds: number
+  /** Fewest finds a place needs to be scored. */
+  minSample: number
+  /** Days either side of the chosen day that a find counts; 0 = the default for Now / a month. */
+  window: number
+  /** relative: graded against the other places on the map; absolute: fixed cut-offs. */
+  grading: Grading
+  /** 0..1, how far model suitability can lift places with few finds (0 = finds only). */
+  modelMix: number
+}
+
+export const DEFAULT_PARAMS: ForayParams = {
+  halfScale: FORAY_HALF_SCALE, priorFinds: FORAY_PRIOR_FINDS, minSample: FORAY_MIN_SAMPLE,
+  window: 0, grading: 'relative', modelMix: 0.5,
+}
+
+/** Allowed range and step per numeric param, shared by the sliders and the URL parser. */
+export const PARAM_LIMITS: Record<'halfScale' | 'priorFinds' | 'minSample' | 'window' | 'modelMix', { min: number, max: number, step: number }> = {
+  halfScale: { min: 3, max: 45, step: 1 },
+  priorFinds: { min: 0, max: 30, step: 1 },
+  minSample: { min: 1, max: 20, step: 1 },
+  window: { min: 0, max: 45, step: 1 },
+  modelMix: { min: 0, max: 1, step: 0.05 },
+}
+
+const URL_KEYS: Record<keyof ForayParams, string> = {
+  halfScale: 'fh', priorFinds: 'fp', minSample: 'fm', window: 'fw', grading: 'fg', modelMix: 'fx',
+}
+
+const clampParam = (k: keyof typeof PARAM_LIMITS, v: unknown): number => {
+  const { min, max, step } = PARAM_LIMITS[k]
+  const n = Number(v)
+  if (!Number.isFinite(n)) return DEFAULT_PARAMS[k]
+  return Number(Math.min(max, Math.max(min, Math.round(n / step) * step)).toFixed(6))
+}
+
+/** Params from a query string (or URLSearchParams); unknown or out-of-range values fall back or clamp. */
+export function parseParams(q: URLSearchParams | string | null | undefined): ForayParams {
+  const sp = q instanceof URLSearchParams ? q : new URLSearchParams(q || '')
+  const out = { ...DEFAULT_PARAMS }
+  for (const k of Object.keys(PARAM_LIMITS) as (keyof typeof PARAM_LIMITS)[]) {
+    const raw = sp.get(URL_KEYS[k])
+    if (raw !== null && raw !== '') out[k] = clampParam(k, raw)
+  }
+  const g = sp.get(URL_KEYS.grading)
+  if (g === 'relative' || g === 'absolute') out.grading = g
+  return out
+}
+
+/** Only the params that differ from the defaults, as query entries, so a default plan keeps a clean URL. */
+export function paramsToQuery(p: ForayParams): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const k of Object.keys(URL_KEYS) as (keyof ForayParams)[]) {
+    if (p[k] !== DEFAULT_PARAMS[k]) out[URL_KEYS[k]] = String(p[k])
+  }
+  return out
+}
+
+export const paramsAreDefault = (p: ForayParams) => !Object.keys(paramsToQuery(p)).length
+
+/**
+ * Adjusted score (or blend) that reads as a full-strength place under absolute
+ * grading. A sample-adjusted score is a weighted share of finds, and in practice
+ * even excellent places rarely pass ~0.5, so 0.5 maps to the top of the scale:
+ * Great from 0.375, Good from 0.25, Fair from 0.125.
+ */
+export const ABSOLUTE_FULL = 0.5
+
+/** An adjusted share on the absolute scale (1 = top mark); not capped, so ranking keeps its order above it. */
+export const scoreUnits = (adj: number) => Math.max(0, Number(adj) || 0) / ABSOLUTE_FULL
+
+/** Absolute-scale value as a 0..1 `t`, capped at 1. */
+export const absoluteT = (adj: number) => Math.min(1, scoreUnits(adj))
+
+/**
+ * Grade cells into `t` (0..1) by `key`, a value already on the absolute scale
+ * (see scoreUnits): min-max across the cells (relative) or capped as-is (absolute).
+ */
+export function gradeScores<T extends { score: number }>(cells: T[], key: keyof T & string, grading: Grading): (T & { t: number })[] {
+  if (grading === 'absolute') return cells.map((c) => ({ ...c, t: Math.min(1, Math.max(0, Number(c[key]) || 0)) }))
+  return normaliseScores(cells, key)
+}
+
+// ── Model blend (places with few or no finds) ───────────────────────────────
+
+/**
+ * Weight of the finds score when blending with a model's suitability (both on
+ * the absolute scale). Finds count at least `1 - mix`, and more as finds pile
+ * up (`n / (n + k)`, k rising with mix): a place with many finds stays
+ * finds-led, and an unvisited one gets at most `mix` of the model. mix 0 means
+ * finds only; mix 1 lets an unvisited place be graded by the model alone.
+ */
+export function blendWeight(n: number, mix: number): number {
+  const m = Math.min(1, Math.max(0, Number(mix) || 0))
+  if (m === 0) return 1
+  if (m === 1) return 0
+  const k = (m / (1 - m)) * 10
+  const finds = Math.max(0, Number(n) || 0)
+  return Math.max(1 - m, finds / (finds + k))
+}
+
+export interface BlendParts { findsT: number, model: number | null, findsWeight: number, blend: number }
+
+/** Blended score on the absolute scale; without a model value it is the finds score alone. */
+export function blendScore(adj: number, n: number, model: number | null | undefined, mix: number): BlendParts {
+  const findsT = scoreUnits(adj)
+  if (model == null || !Number.isFinite(Number(model))) return { findsT, model: null, findsWeight: 1, blend: findsT }
+  const m = Math.min(1, Math.max(0, Number(model)))
+  const a = blendWeight(n, mix)
+  return { findsT, model: m, findsWeight: a, blend: a * findsT + (1 - a) * m }
+}
+
+// ── Transparency ────────────────────────────────────────────────────────────
+
+export interface ExplainSpecies { species: string, count: number, weight: number, dist: number | null, iqr: number | null, contribution: number }
+
+export interface Explanation {
+  band: ReturnType<typeof scoreBand>
+  t: number
+  grading: Grading
+  n: number
+  seasonalN: number
+  raw: number
+  adj: number
+  mean: number
+  priorFinds: number
+  rank: number
+  of: number
+  blend: BlendParts | null
+  /** The value graded, on the absolute scale (blend when a model is mixed in). */
+  value: number
+  species: ExplainSpecies[]
+}
+
+/**
+ * Everything the "Why this grade?" card shows for one cell. `ctx.cells` are the
+ * finds-scored cells (for the mean), `ctx.ranked` every graded cell best-first
+ * (for the rank). Shows the raw score, the
+ * sample adjustment toward the mean, the optional model blend, the grade's
+ * position and the species behind it with their peak distance and weight.
+ */
+export function explainCell(
+  cell: { key: string, n: number, seasonalN: number, score: number, adj: number, t: number, final: number, components: ScoreComponent[], blend?: BlendParts | null },
+  ctx: { cells: { key: string, score: number, n: number }[], ranked: { key: string }[], species: SeasonSpeciesLike[], params: ForayParams },
+): Explanation {
+  let num = 0, den = 0
+  for (const c of ctx.cells) { num += c.score * c.n; den += c.n }
+  const info = new Map((ctx.species || []).map((s) => [s.name, s]))
+  const idx = ctx.ranked.findIndex((c) => c.key === cell.key)
+  return {
+    band: scoreBand(cell.t), t: cell.t, grading: ctx.params.grading,
+    n: cell.n, seasonalN: cell.seasonalN, raw: cell.score, adj: cell.adj,
+    mean: den ? num / den : 0, priorFinds: ctx.params.priorFinds,
+    rank: idx + 1, of: ctx.ranked.length,
+    blend: cell.blend && cell.blend.model != null ? cell.blend : null,
+    value: cell.final,
+    species: cell.components.map((x) => ({
+      species: x.species, count: x.count, weight: x.weight, contribution: x.contribution,
+      dist: info.get(x.species)?.dist ?? null, iqr: info.get(x.species)?.iqr ?? null,
+    })),
+  }
 }

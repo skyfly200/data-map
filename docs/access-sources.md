@@ -12,7 +12,7 @@ Where to look up land manager, fee and mushroom-collecting rules for the Foray p
 | [COMaP, Colorado Ownership, Management & Protection](https://comap.cnhp.colostate.edu/) (CNHP) | ~28k protected-land polygons from 300+ sources, incl. county/city open space and conservation easements | Free, registration required. Best Colorado supplement to PAD-US for county/city parks. See [CNHP COMaP](https://cnhp.colostate.edu/projects/comap). |
 | [Colorado Geospatial Portal](https://geodata.colorado.gov/) | State GIS hub, incl. [CPW administrative boundaries](https://geodata.colorado.gov/content/0c363dc22a4a4d11b8c157015de8b704) | Authoritative for state parks/wildlife areas. |
 | [Boulder County open data](https://bouldercounty.gov/open-space/maps/) | Example county portal (open space, trails) | Counties publish their own; add per county as needed. |
-| [OpenStreetMap / Overpass](https://overpass-turbo.eu/) | Roads, trails | Already ingested (`access_lines`). |
+| [OpenStreetMap / Overpass](https://overpass-turbo.eu/) | Roads, trails, parking, trailheads | Ingested (`access_lines`; parking and trailheads in `access_points`, migration 017). |
 
 ## Fees
 

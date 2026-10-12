@@ -49,6 +49,10 @@ export interface ForayOptions {
   /** In-season species considered, centred on `day`. */
   topN?: number
   modelSpecies?: Set<string>
+  /** Phenology half-scale in days (default 14). */
+  halfScale?: number
+  /** Fewest finds a cell needs to be scored (default FORAY_MIN_SAMPLE). */
+  minSample?: number
 }
 
 export interface CellSize {
@@ -546,12 +550,12 @@ export function useMapHeatmaps() {
   function computeForayCells(features: ObservationFeature[], o: ForayOptions) {
     const species = inSeasonSpecies((features || []).map((f) => f.properties),
       { day: o.day, window: IN_SEASON_WINDOW, topN: o.topN ?? 25, modelSpecies: o.modelSpecies })
-    const weights = seasonWeights(species)
+    const weights = seasonWeights(species, o.halfScale)
     const built = buildCells(features, o.size ?? cellSize.value, o.day, o.window,
       o.shape ?? cellShape.value, [], { landCover: o.landCover, seasonSpecies: new Set(weights.keys()) })
     const cells = []
     for (const c of built) {
-      const sc = scoreCell({ n: c.n, speciesInWindow: c.speciesWin || new Map() }, weights)
+      const sc = scoreCell({ n: c.n, speciesInWindow: c.speciesWin || new Map() }, weights, o.minSample)
       if (sc.thin) continue
       cells.push({ ...c, ...sc, landCover: modalKey(c.cover) })
     }

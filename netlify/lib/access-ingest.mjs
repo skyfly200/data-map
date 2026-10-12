@@ -132,6 +132,33 @@ export function parseOsmWays(overpass) {
   return rows
 }
 
+/**
+ * Overpass `out center tags` JSON -> access_points rows: amenity=parking (nodes,
+ * and ways/relations at their centre) and highway=trailhead. Private or no-access
+ * parking is skipped; customers-only parking is kept (often a trailhead lot).
+ */
+export function parseOsmPoints(overpass) {
+  const rows = []
+  for (const el of overpass?.elements || []) {
+    const t = el.tags || {}
+    const kind = t.amenity === 'parking' ? 'parking' : t.highway === 'trailhead' ? 'trailhead' : null
+    if (!kind || !['node', 'way', 'relation'].includes(el.type)) continue
+    if (t.access === 'private' || t.access === 'no') continue
+    const lat = Number(el.type === 'node' ? el.lat : el.center?.lat)
+    const lon = Number(el.type === 'node' ? el.lon : el.center?.lon)
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue
+    const disabled = Number.parseInt(t['capacity:disabled'], 10)
+    rows.push({
+      osm_type: el.type, osm_id: el.id, kind, name: t.name ?? null,
+      fee: t.fee === 'yes' || t.fee === 'no' ? t.fee : null,
+      wheelchair: ['yes', 'limited', 'no'].includes(t.wheelchair) ? t.wheelchair : null,
+      disabled_spaces: Number.isFinite(disabled) && disabled >= 0 ? disabled : (t['capacity:disabled'] === 'yes' ? 1 : null),
+      lon: Math.round(lon * 1e6) / 1e6, lat: Math.round(lat * 1e6) / 1e6,
+    })
+  }
+  return rows
+}
+
 const M_PER_DEG = 111_320
 /** Distance in metres from a point to a set of lines (equirectangular; fine at foray scale). */
 export function distanceToLinesM([lon, lat], lines) {
@@ -262,6 +289,12 @@ export const RIDB_URL = 'https://ridb.recreation.gov/api/v1/facilities'
 export function overpassQuery([w, s, e, n]) {
   const hw = [...TRAIL, ...ROAD].join('|')
   return `[out:json][timeout:60];way["highway"~"^(${hw})$"](${s},${w},${n},${e});out geom tags;`
+}
+
+/** Parking and trailheads in a tile; ways/relations come back at their centre. */
+export function overpassPointsQuery([w, s, e, n]) {
+  const bb = `(${s},${w},${n},${e})`
+  return `[out:json][timeout:60];(nwr["amenity"="parking"]${bb};node["highway"="trailhead"]${bb};);out center tags;`
 }
 
 export function padusQueryUrl(base, [w, s, e, n], offset = 0) {

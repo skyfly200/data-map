@@ -4,7 +4,7 @@
 // Network and DB are injected (fetchImpl, client) so this runs against fakes.
 
 import {
-  OVERPASS_URL, PADUS_FEATURE_URL, applyRidbFees, overpassQuery, padusQueryUrl, parseOsmWays,
+  OVERPASS_URL, PADUS_FEATURE_URL, applyRidbFees, overpassPointsQuery, overpassQuery, padusQueryUrl, parseOsmPoints, parseOsmWays,
   parsePadUs, parseRidbFacilities, ridbUrl, tileBbox,
 } from './access-ingest.mjs'
 import { ACCESS_OSM_TILE_DEG } from './quotas.mjs'
@@ -128,7 +128,7 @@ export async function runAccessIngest({
   const pTiles = sources.includes('padus') ? tileBbox(bbox, 1) : []
   const oTiles = sources.includes('osm') ? tileBbox(bbox, ACCESS_OSM_TILE_DEG) : []
   const total = pTiles.length + oTiles.length || 1
-  let done = 0, areas = 0, lines = 0, ridbMatched = 0, partial = false
+  let done = 0, areas = 0, lines = 0, points = 0, ridbMatched = 0, partial = false
   let ridb = sources.includes('ridb') ? (env.RIDB_API_KEY ? 'used' : 'skipped_no_key') : 'not_requested'
   const padusBase = env.PADUS_FEATURE_URL || PADUS_FEATURE_URL
   const overpass = env.OVERPASS_URL || OVERPASS_URL
@@ -151,17 +151,23 @@ export async function runAccessIngest({
         body: `data=${encodeURIComponent(overpassQuery(tile))}`,
       }, { wait })
       lines += await rpcChunks(client, 'access_upsert_lines', parseOsmWays(json), region, 500)
+      if (politeMs) await wait(politeMs)
+      const pts = await getJson(fetchImpl, overpass, {
+        method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: `data=${encodeURIComponent(overpassPointsQuery(tile))}`,
+      }, { wait })
+      points += await rpcChunks(client, 'access_upsert_points', parseOsmPoints(pts), region, 1000)
       await onProgress({ fraction: ++done / total, stage: 'osm', message: `OSM tile ${done - pTiles.length}/${oTiles.length}` })
       if (politeMs) await wait(politeMs)
     }
   } catch (err) {
-    await saveRegion(client, { ...base, status: 'failed', area_count: areas, line_count: lines, error: String(err.message).slice(0, 300) })
+    await saveRegion(client, { ...base, status: 'failed', area_count: areas, line_count: lines, point_count: points, error: String(err.message).slice(0, 300) })
     throw err
   }
   const status = partial ? 'partial' : 'loaded'
   await saveRegion(client, {
-    ...base, status, area_count: areas, line_count: lines, ridb_matched: ridbMatched,
+    ...base, status, area_count: areas, line_count: lines, point_count: points, ridb_matched: ridbMatched,
     loaded_at: new Date().toISOString(),
   })
-  return { status, areas, lines, ridbMatched, ridb }
+  return { status, areas, lines, points, ridbMatched, ridb }
 }
