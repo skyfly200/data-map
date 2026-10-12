@@ -252,9 +252,9 @@
             </div>
             <!-- Off-screen charts are built as they scroll into view, so a
                  gallery of many does not render them all at once (V12-PERF-3). -->
-            <LazyVisible min-height="260px">
+            <RenderWhenVisible min-height="260px">
               <ChartRenderer :config="chart" @select="selected = $event" />
-            </LazyVisible>
+            </RenderWhenVisible>
           </ChartCard>
         </div>
       </section>

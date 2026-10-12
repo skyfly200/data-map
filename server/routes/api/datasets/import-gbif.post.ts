@@ -1,8 +1,12 @@
 import { defineEventHandler, readMultipartFormData, getHeader, createError } from 'h3'
 import { parse as parseCsv } from 'csv-parse/sync'
-import { unzipSync, strFromU8 } from 'fflate'
-import { v4 as uuidv4 } from 'uuid'
-import { verifyToken } from '~/netlify/lib/auth.mjs'
+import { strFromU8 } from 'fflate'
+import { randomUUID } from 'node:crypto'
+import { requireMemberFresh } from '~/netlify/lib/auth.mjs'
+import {
+  GbifUploadError, MAX_RECORDS, MAX_UPLOAD_BYTES, entryMatches, safeUnzip,
+} from '~/netlify/lib/gbif-upload.mjs'
+import { MAX_DATASETS_PER_MEMBER } from '~/netlify/lib/species-fetch.mjs'
 import { uploadJson } from '~/netlify/lib/datasets-store.mjs'
 import { serviceClient } from '~/netlify/lib/supabase-storage.mjs'
 import { DEFAULT_VISIBILITY, slugify, nextFreeSlug } from '~/netlify/lib/dataset-access.mjs'
@@ -59,7 +63,7 @@ function parseDsv(text: string, delimiter: string): Record<string, string>[] {
 
 // Find a file inside a DwC-A zip by its declared name, trying root and one-level subdirs.
 function findEntry(files: Record<string, Uint8Array>, name: string): string | undefined {
-  return Object.keys(files).find(k => k === name || k.endsWith(`/${name}`))
+  return Object.keys(files).find(k => entryMatches(k, name))
 }
 
 function buildImagesMap(rows: Record<string, string>[]): Map<string, object[]> {
@@ -136,40 +140,61 @@ function rowToFeature(
 
 export default defineEventHandler(async (event) => {
   try {
-    const formData = await readMultipartFormData(event)
-    if (!formData) throw new Error('No file uploaded')
-
-    const filePart = formData.find(p =>
-      p.name === 'file' && (p.filename?.endsWith('.zip') || p.filename?.endsWith('.csv')))
-    if (!filePart) {
-      throw new Error('Please upload a GBIF Darwin Core Archive (.zip) or simple CSV export')
+    // Signed in and a member before anything is read: parsing an archive is the
+    // expensive part, and saving a dataset is a membership benefit, as it is
+    // for the CSV/GeoJSON upload in the datasets function.
+    const authHeader = getHeader(event, 'authorization') || ''
+    const auth: any = await requireMemberFresh({ headers: new Headers({ authorization: authHeader }) } as any)
+    if (!auth.ok) {
+      const body = await auth.response.json().catch(() => ({}))
+      throw new GbifUploadError(body.error || 'Sign in required.', auth.response.status)
     }
 
-    const isDwca = filePart.filename!.endsWith('.zip')
+    const declared = Number(getHeader(event, 'content-length') || 0)
+    if (declared > MAX_UPLOAD_BYTES) {
+      throw new GbifUploadError(`That file is over ${MAX_UPLOAD_BYTES / 1048576} MB. Narrow the GBIF download, or use "Import observations" to fetch from GBIF directly.`, 413)
+    }
+
+    const formData = await readMultipartFormData(event)
+    if (!formData) throw new GbifUploadError('No file uploaded')
+
+    const filePart = formData.find(p =>
+      p.name === 'file' && (p.filename?.toLowerCase().endsWith('.zip') || p.filename?.toLowerCase().endsWith('.csv')))
+    if (!filePart) {
+      throw new GbifUploadError('Please upload a GBIF Darwin Core Archive (.zip) or simple CSV export')
+    }
+    if (filePart.data.length > MAX_UPLOAD_BYTES) {
+      throw new GbifUploadError(`That file is over ${MAX_UPLOAD_BYTES / 1048576} MB. Narrow the GBIF download.`, 413)
+    }
+
+    const isDwca = filePart.filename!.toLowerCase().endsWith('.zip')
 
     let occurrenceRows: Record<string, string>[] = []
     let imagesMap = new Map<string, object[]>()
     let dnaMap = new Map<string, object[]>()
 
     if (isDwca) {
-      const files = unzipSync(filePart.data)
+      // Two passes, each extracting only what it needs: meta.xml names the
+      // files, then just those are inflated, within the size limits.
+      const metaFiles = safeUnzip(filePart.data, n => entryMatches(n, 'meta.xml'))
+      const metaEntry = findEntry(metaFiles, 'meta.xml')
+      const meta = metaEntry ? parseMetaXml(strFromU8(metaFiles[metaEntry])) : null
 
-      // Parse meta.xml to discover file names and delimiters.
-      const metaEntry = findEntry(files, 'meta.xml')
-      const meta = metaEntry ? parseMetaXml(strFromU8(files[metaEntry])) : null
-
-      // Core occurrence file.
       const coreFile = meta?.coreFile ?? 'occurrence.txt'
       const coreDelim = meta?.coreDelimiter ?? '\t'
+      const mmExt = meta?.extensions.find(e => e.rowType === MULTIMEDIA_ROW_TYPE)
+      const mmFile = mmExt?.file ?? 'multimedia.txt'
+      const dnaExt = meta?.extensions.find(e => DNA_ROW_TYPES.includes(e.rowType))
+      const names = [coreFile, 'occurrence.csv', 'occurrence.txt', mmFile, 'multimedia.csv', 'multimedia.txt']
+      if (dnaExt?.file) names.push(dnaExt.file)
+      const files = safeUnzip(filePart.data, n => names.some(name => entryMatches(n, name)))
+
       const coreEntry = findEntry(files, coreFile)
         ?? findEntry(files, 'occurrence.csv')
         ?? findEntry(files, 'occurrence.txt')
-      if (!coreEntry) throw new Error('No occurrence file found in the Darwin Core Archive')
+      if (!coreEntry) throw new GbifUploadError('No occurrence file found in the Darwin Core Archive')
       occurrenceRows = parseDsv(strFromU8(files[coreEntry]), coreDelim)
 
-      // Multimedia extension.
-      const mmExt = meta?.extensions.find(e => e.rowType === MULTIMEDIA_ROW_TYPE)
-      const mmFile = mmExt?.file ?? 'multimedia.txt'
       const mmEntry = findEntry(files, mmFile)
         ?? findEntry(files, 'multimedia.csv')
         ?? findEntry(files, 'multimedia.txt')
@@ -177,8 +202,6 @@ export default defineEventHandler(async (event) => {
         imagesMap = buildImagesMap(parseDsv(strFromU8(files[mmEntry]), mmExt?.delimiter ?? '\t'))
       }
 
-      // DNA extension (DNA derived data or GGBN amplification).
-      const dnaExt = meta?.extensions.find(e => DNA_ROW_TYPES.includes(e.rowType))
       if (dnaExt?.file) {
         const dnaEntry = findEntry(files, dnaExt.file)
         if (dnaEntry) {
@@ -186,16 +209,21 @@ export default defineEventHandler(async (event) => {
         }
       }
     } else {
-      // Plain GBIF simple CSV.
-      occurrenceRows = parseDsv(filePart.data.toString('utf-8'), ',')
+      // Plain GBIF simple CSV. GBIF's "simple" export is tab-separated despite
+      // the name; take whichever delimiter the header line uses.
+      const text = filePart.data.toString('utf-8')
+      const header = text.slice(0, text.indexOf('\n') >>> 0)
+      occurrenceRows = parseDsv(text, header.includes('\t') ? '\t' : ',')
     }
 
     const features: object[] = []
     let skippedCount = 0
     let mediaCount = 0
     let dnaCount = 0
+    let truncated = 0
 
     for (const row of occurrenceRows) {
+      if (features.length >= MAX_RECORDS) { truncated++; continue }
       const id = row.gbifID ?? row.id ?? ''
       const images = imagesMap.get(id) ?? []
       const dna = dnaMap.get(id) ?? []
@@ -206,21 +234,24 @@ export default defineEventHandler(async (event) => {
       features.push(feature)
     }
 
-    if (features.length === 0) throw new Error('No valid geographic records found in the file')
+    if (features.length === 0) throw new GbifUploadError('No valid geographic records found in the file')
 
     const validCount = features.length
-    const datasetId = `gbif_${uuidv4()}`
+    const datasetId = `gbif_${randomUUID()}`
     const geojson = { type: 'FeatureCollection', features }
     const previewGeojson = { type: 'FeatureCollection', features: features.slice(0, 100) }
 
     let savedDataset: any = null
-    const authHeader = getHeader(event, 'authorization') || ''
-    const tokenMatch = /^Bearer\s+(.+)$/i.exec(authHeader.trim())
-    const token = tokenMatch ? tokenMatch[1].trim() : null
-    const user = token ? await verifyToken(token) : null
+    const user = auth.user
     const client = serviceClient()
 
     if (user && client) {
+      const { count } = await client.from('saved_datasets')
+        .select('id', { count: 'exact', head: true }).eq('owner_id', user.id)
+      if ((count || 0) >= MAX_DATASETS_PER_MEMBER) {
+        throw new GbifUploadError(`You have ${count} saved datasets, which is the limit. Delete one to save another.`, 409)
+      }
+
       const titlePart = formData.find(p => p.name === 'title')
       const rawTitle = titlePart?.data.toString('utf-8').trim() || ''
       const title = (rawTitle || `GBIF Import (${validCount} records)`).slice(0, 200)
@@ -243,20 +274,24 @@ export default defineEventHandler(async (event) => {
       if (!error) savedDataset = data
     }
 
+    const capped = truncated ? ` Only the first ${MAX_RECORDS.toLocaleString()} were kept.` : ''
     return {
       success: true,
       datasetId,
       dataset: savedDataset,
-      assetPath: savedDataset ? null : `users/your-ee-project/gbif_imports/${datasetId}`,
-      stats: { totalRecords: occurrenceRows.length, validRecords: validCount, skippedRecords: skippedCount, mediaRecords: mediaCount, dnaRecords: dnaCount },
-      message: savedDataset
+      assetPath: null,
+      stats: { totalRecords: occurrenceRows.length, validRecords: validCount, skippedRecords: skippedCount, mediaRecords: mediaCount, dnaRecords: dnaCount, truncatedRecords: truncated },
+      message: (savedDataset
         ? `Saved ${validCount} records as "${savedDataset.title}".`
-        : `Processed ${validCount} occurrence records.`,
+        : `Processed ${validCount} occurrence records.`) + capped,
       preview: previewGeojson,
     }
 
   } catch (error: any) {
+    if (error instanceof GbifUploadError) {
+      throw createError({ statusCode: error.status, statusMessage: error.message })
+    }
     console.error('GBIF import error:', error)
-    throw createError({ statusCode: 400, statusMessage: error.message || 'Failed to process file' })
+    throw createError({ statusCode: 400, statusMessage: error?.message || 'Failed to process file' })
   }
 })

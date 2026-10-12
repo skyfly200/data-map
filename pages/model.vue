@@ -453,6 +453,9 @@
               <button v-if="trainedModel" class="btn primary" @click="openOnMap">
                 View on map →
               </button>
+              <ModelExportMenu v-if="trainJobId"
+                               :region="maxEnt.activeJob.value?.result_meta?.region || null"
+                               :get-url="(scale) => jobsApi.modelDownloadUrl({ id: trainJobId }, scale)" />
               <button class="btn secondary" @click="tab = 'models'">
                 All models
               </button>

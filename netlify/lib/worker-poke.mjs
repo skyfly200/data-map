@@ -11,7 +11,10 @@ export function pokeWorker(request) {
   const secret = process.env.WORKER_POKE_SECRET
   if (!secret) return
   try {
-    const url = new URL('/.netlify/functions/ee-worker', request.url)
+    // Netlify will not route a URL to a scheduled function, so there the poke
+    // goes to the background variant; on Vercel ee-worker is a plain route.
+    const name = process.env.VERCEL ? 'ee-worker' : 'ee-worker-background'
+    const url = new URL(`/.netlify/functions/${name}`, request.url)
     const controller = new AbortController()
     // Long enough to hand the request off, short enough not to hold up the caller.
     const timer = setTimeout(() => controller.abort(), 500)

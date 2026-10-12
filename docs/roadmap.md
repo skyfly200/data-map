@@ -8,7 +8,7 @@ See also: `@docs/refactor.md` for technical debt, `@docs/bugs.md` for known issu
 
 ## Wanted
 
-- `WANT-1` **Species distribution modeling** — ships but untested against the real EE API; GeoTIFF export backend added (`model-tiles?download=1`), UI button and live EE verification still open. See `tasks/WANT-1.md`.
+- `WANT-1` **Species distribution modeling** — ships but untested against the real EE API; GeoTIFF export added (`model-tiles?download=1`, Export menu on model jobs in `/jobs` and after training in `/model`); live EE verification still open, including whether the 12M-pixel ceiling in `composables/modelExport.ts` matches EE's download limit. See `tasks/WANT-1.md`.
 - `WANT-2` **Member-defined enrichment stages** — let members point custom EE layers at enrichment without EE code execution. See `tasks/WANT-2.md`.
 - `WANT-7` **MaxEnt observation bias correction** — bias grid or target-group background strategy. See `tasks/WANT-7.md`.
 - `WANT-3` **Member-supplied EE credentials** — service-account key storage (encrypted), validation, worker + quota wiring shipped; remaining: settings UI, live-EE verification, apply migration 011 + set `EE_CREDENTIAL_KEY`, OAuth option. See `tasks/WANT-3.md`.
