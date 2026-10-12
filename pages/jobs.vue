@@ -341,6 +341,8 @@
                   <button class="btn small primary" :disabled="opening === job.id" @click="openModelOnMap(job)">
                     {{ opening === job.id ? 'Loading…' : 'View suitability on map' }}
                   </button>
+                  <ModelExportMenu :region="job.result_meta?.region || job.params?.region || null"
+                                   :get-url="(scale) => jobsApi.modelDownloadUrl(job, scale)" />
                   <span v-if="modelAge(job)" class="saved-as">Fitted {{ modelAge(job) }}</span>
                 </template>
                 <template v-else-if="job.status === 'succeeded'">

@@ -453,6 +453,9 @@
               <button v-if="trainedModel" class="btn primary" @click="openOnMap">
                 View on map →
               </button>
+              <ModelExportMenu v-if="trainJobId"
+                               :region="maxEnt.activeJob.value?.result_meta?.region || null"
+                               :get-url="(scale) => jobsApi.modelDownloadUrl({ id: trainJobId }, scale)" />
               <button class="btn secondary" @click="tab = 'models'">
                 All models
               </button>
@@ -779,7 +782,7 @@ async function runFetch() {
     const data = await res.json().catch(() => ({}))
     if (!res.ok || !data.ok) throw new Error(data.error || `Fetch failed (${res.status})`)
     if (!data.count) throw new Error('No records found for that taxon.')
-    const storagePath = `species/${data.slug}.geojson`
+    const storagePath = data.storagePath || `species/${data.slug}.geojson`
     const title = `${fetchForm.taxon.trim()} (${src === 'gbif' ? 'GBIF' : 'iNat'}, ${data.count})`
     const saveRes = await fetch('/.netlify/functions/datasets', {
       method: 'POST',

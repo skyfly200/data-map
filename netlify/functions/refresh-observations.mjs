@@ -14,11 +14,20 @@ import { loadBaseline } from '../lib/baseline.mjs'
 import { supabaseConfigured, serviceClient } from '../lib/supabase-storage.mjs'
 import { uploadJson, readJson } from '../lib/datasets-store.mjs'
 import { logCronRun } from '../lib/cron-jobs.mjs'
+import { requireAdmin } from '../lib/auth.mjs'
+import { isScheduledInvocation } from '../lib/cron-auth.mjs'
 
 // Run every 6 hours. Adjust the cron as needed.
 export const config = { schedule: '0 */6 * * *' }
 
-export default async () => {
+export default async (request) => {
+  // Netlify never routes a URL to a scheduled function, but on Vercel this is a
+  // public route: anyone could make it page through iNaturalist and rewrite
+  // the dataset. Only the scheduler or an admin may run it.
+  if (request && !(await isScheduledInvocation(request))) {
+    const auth = await requireAdmin(request)
+    if (!auth.ok) return auth.response
+  }
   const t0 = Date.now()
   try {
     let baseline = null

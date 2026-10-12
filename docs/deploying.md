@@ -80,7 +80,7 @@ supabase_migrations/001_user_settings_and_charts.sql
 | Variable | Where | What it is |
 |---|---|---|
 | `SUPABASE_SERVICE_ROLE_KEY` | functions | Bypasses row-level security. **Server only.** |
-| `WORKER_POKE_SECRET` | functions | Optional. Any long random string. Lets the submit endpoint start the job worker the instant a job is queued, instead of waiting for the next scheduled run. Without it, jobs still start — on the worker's every-minute schedule. **Server only.** |
+| `WORKER_POKE_SECRET` | functions | **Required on Netlify for jobs over 30 seconds.** Any long random string. Netlify cuts scheduled functions off at 30 s and won't route a URL to them, so the scheduled `ee-worker` hands each run to `ee-worker-background` (15-minute limit) with this secret, and the submit endpoint uses it to start that function the moment a job is queued. Without it the job runs inside the scheduled function and stops at 30 s. **Server only.** |
 
 This one is the difference between a member being able to *read* their tier and
 the server being able to *set* it. Tier and quota columns are deliberately not
@@ -283,6 +283,7 @@ real Earth Engine, PAD-US, RIDB, Overpass or Vercel.
 | `STORAGE_BACKEND` | functions | `supabase` or `netlify`. Default: `netlify` when running on Netlify, else `supabase`. |
 | `SUPABASE_STORAGE_BUCKET` | functions | Bucket for the key/value stores when the backend is Supabase. Default: the datasets bucket. |
 | `VERCEL` | build | Set by Vercel. Switches the Nitro preset to `vercel`. |
+| `CRON_SECRET` | functions | **Required on Vercel.** Any long random string. Vercel's cron sends it as a bearer token, which is how `ee-worker` and `refresh-observations` tell the scheduler from a visitor. Without it the cron gets a 401 and only an admin (or a submit poke) runs the worker. **Server only.** |
 
 ### Loading Colorado's access data
 
@@ -303,7 +304,7 @@ endpoint reports `loaded: true` only for a bbox that a `loaded` region covers.
 A region can also be queued as an `access_ingest` job. Members are capped at
 5,000 km2 per job and 3 region loads per calendar month. Admins bypass both. The
 job runs through the same queue and quota check as Earth Engine jobs, but spends
-no Earth Engine units. Colorado is too big for the 300 s worker, so use the
+no Earth Engine units. Colorado is too big for one worker run, so use the
 script.
 
 ### Storage layout (Supabase backend)
@@ -321,7 +322,8 @@ Blobs.
 (rewrite from `/.netlify/functions/*` plus a cron for each scheduled function).
 The Hobby plan rejects any cron that runs more than once a day, so the
 generator cuts every schedule to one daily run; set `VERCEL_PLAN=pro` when
-running it to keep the Netlify schedules.
+running it to keep the Netlify schedules. Set `CRON_SECRET` in the project's
+environment so the crons are accepted.
 It has not been deployed, and CI builds only the Netlify target.
 
 ---

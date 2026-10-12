@@ -1,5 +1,5 @@
 <template>
-  <div ref="root" class="lazy-visible" :style="shown ? undefined : { minHeight }">
+  <div ref="root" class="render-when-visible" :style="shown ? undefined : { minHeight }">
     <slot v-if="shown" />
     <div v-else class="lazy-placeholder" aria-hidden="true"></div>
   </div>
@@ -47,6 +47,6 @@ onBeforeUnmount(() => { observer?.disconnect() })
 </script>
 
 <style scoped>
-.lazy-visible { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.render-when-visible { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .lazy-placeholder { flex: 1; width: 100%; }
 </style>

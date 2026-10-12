@@ -6,7 +6,7 @@ Open issues and unverified assumptions. When closed, delete the entry and its ta
 
 ## Known Issues
 
-- [ ] `ISSUE-2` Large GBIF exports (>10k records) may timeout during import. See `tasks/ISSUE-2.md`.
+- [ ] `ISSUE-2` Large GBIF exports (>10k records) may timeout during import. See `tasks/ISSUE-2.md`. The upload route now needs a member's sign-in and refuses files over 6 MB, zip entries over 60 MB expanded (120 MB total), and keeps at most 50,000 records (`netlify/lib/gbif-upload.mjs`); streaming is still the real fix. `components/GbifImporter.vue` is not mounted on any page.
 - [ ] `ISSUE-4` Earth Engine asset validation doesn't check geometry types comprehensively. See `tasks/ISSUE-4.md`.
 - [ ] `ISSUE-6` **Trained models never get a `model_results` row.** Only the register-asset path inserts one (`modeling-maxent.mjs`), and `model_runs.status` is never moved off `pending` by the worker. So the contributions/ranges write-back (`model-persist.mjs`) updates zero rows for trained models, and `model-tiles?model=<config>` only resolves registered ones. The foray layers work around it by reading `ee_jobs.result_meta` (`foray-layers.mjs`). Fix: have the worker mark the run succeeded and upsert a `model_results` row (needs `suitability_asset_path` relaxed to nullable, since trained surfaces are refit, not stored as assets).
 

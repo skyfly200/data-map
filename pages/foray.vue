@@ -11,6 +11,34 @@
       </div>
     </header>
 
+    <section class="near" aria-label="Distance from you">
+      <div class="near-row">
+        <span class="near-what">Near <strong>{{ origin ? origin.label : 'anywhere' }}</strong></span>
+        <label class="near-r">within
+          <select v-model.number="radiusMi" :disabled="!origin" aria-label="Distance">
+            <option v-for="r in RADIUS_OPTIONS_MI" :key="r" :value="r">{{ radiusLabel(r) }}</option>
+          </select>
+        </label>
+        <div v-if="origin" class="seg seg-sm" role="group" aria-label="Sort places">
+          <button :class="{ on: sortBy === 'score' }" :aria-pressed="sortBy === 'score'" @click="sortBy = 'score'">Best</button>
+          <button :class="{ on: sortBy === 'near' }" :aria-pressed="sortBy === 'near'" @click="sortBy = 'near'">Nearest</button>
+        </div>
+        <button v-if="origin && !changing && origin.source !== 'default'" class="link-btn" @click="changing = true">Change</button>
+      </div>
+      <div v-if="!origin || changing || origin.source === 'default'" class="near-actions">
+        <button class="near-btn primary" :disabled="locating" @click="locate()">{{ locating ? 'Locating…' : 'Use my location' }}</button>
+        <form class="near-search" @submit.prevent="searchPlace">
+          <input v-model="placeText" type="search" placeholder="Town or lat, lon" aria-label="Start from a town or coordinates" enterkeyhint="search">
+          <button class="near-btn" type="submit" :disabled="searching || !placeText.trim()">{{ searching ? '…' : 'Go' }}</button>
+        </form>
+        <button class="near-btn" @click="useMapCentre">Map centre</button>
+        <button class="near-btn" :class="{ on: picking }" :aria-pressed="picking" @click="picking = !picking">{{ picking ? 'Tap the map…' : 'Pick on map' }}</button>
+        <button v-if="origin" class="link-btn" @click="clearOrigin">Clear</button>
+        <button v-if="origin && origin.source !== 'default'" class="link-btn" @click="changing = false; picking = false">Done</button>
+      </div>
+      <p v-if="locMsg" class="notice warn" role="status">{{ locMsg }}</p>
+    </section>
+
     <details class="filters" :open="filtersOpen" @toggle="filtersOpen = $event.target.open">
       <summary>
         <span class="f-title">Filters</span>
@@ -97,8 +125,9 @@
       <div ref="mapCol" class="map-col">
         <div class="map-box">
           <ClientOnly>
-            <ForayMap :cells="shown" :ranked="ranked" :selected-key="selectedKey" :overlay="overlayTemplate" :overlay-opacity="layerOpacity"
-                      :opportunities="oppCells" @select="selectedKey = $event" @view="view = $event" />
+            <ForayMap ref="mapRef" :cells="shown" :ranked="ranked" :selected-key="selectedKey" :overlay="overlayTemplate" :overlay-opacity="layerOpacity"
+                      :opportunities="oppCells" :origin="origin" :radius-mi="radiusMi" :picking="picking"
+                      @select="selectedKey = $event" @view="view = $event" @pick="onPick" />
             <template #fallback><div class="map-fallback">Loading map…</div></template>
           </ClientOnly>
         </div>
@@ -107,6 +136,7 @@
           <span class="lg"><i class="pin">1</i>Top places</span>
           <span v-if="opps.ranked.length" class="lg"><i class="pin opp">A</i>Few finds, promising</span>
           <span v-if="overlayTemplate" class="lg"><i class="ramp" :style="{ background: `linear-gradient(90deg, ${SUITABILITY_STOPS.join(',')})` }"></i>{{ layerSel === 'habitat' ? 'Habitat match' : 'Model blend' }} low → high</span>
+        <span v-if="origin" class="lg"><i class="me"></i>Start</span>
         </div>
         <details class="howto">
           <summary>How to read this map</summary>
@@ -123,7 +153,7 @@
             <span v-if="selRank" class="p-rank">{{ selRank }}</span>
             <div class="p-title">
               <strong>{{ cellSiteName(sel) }}</strong>
-              <span class="p-sub">{{ sel.landCover || 'Land cover unknown' }}<template v-if="sel.access.areaName"> · {{ sel.lat.toFixed(3) }}, {{ sel.lon.toFixed(3) }}</template></span>
+              <span class="p-sub">{{ sel.landCover || 'Land cover unknown' }}<template v-if="sel.distMi != null"> · {{ formatDistance(sel.distMi) }} away</template><template v-if="sel.access.areaName"> · {{ sel.lat.toFixed(3) }}, {{ sel.lon.toFixed(3) }}</template></span>
             </div>
             <span class="band" :class="scoreBand(sel.t).toLowerCase()">{{ scoreBand(sel.t) }}</span>
           </div>
@@ -151,9 +181,10 @@
       </div>
 
       <div class="list-col">
-        <h3 v-if="ranked.length" class="list-h">Top {{ ranked.length }} places {{ whenText }}</h3>
+        <h3 v-if="ranked.length" class="list-h">Top {{ ranked.length }} places {{ whenText }}<template v-if="origin && radiusMi"> within {{ radiusMi }} mi</template><template v-if="origin && sortBy === 'near'">, nearest first</template></h3>
         <div v-if="!shown.length && !pending" class="empty">
           <template v-if="!base.cells.length">No places with enough finds for this time and land cover. Only places that already have finds can be scored.</template>
+          <template v-else-if="scored.length && origin">No scored places within {{ radiusMi }} mi of {{ origin.label }}. Try a wider distance.</template>
           <template v-else>No places pass the current filters. Turn a switch off{{ access.loaded.value && !sw.includeUnknown ? ' or keep unknown places' : '' }}.</template>
         </div>
 
@@ -169,6 +200,7 @@
             <div class="row1">
               <span class="rk">{{ i + 1 }}</span>
               <strong class="site">{{ cellSiteName(c) }}</strong>
+              <span v-if="c.distMi != null" class="dist">{{ formatDistance(c.distMi) }}</span>
               <span class="band" :class="scoreBand(c.t).toLowerCase()">{{ cfg.showComponents ? `${Math.round(c.adj * 100)}%` : scoreBand(c.t) }}</span>
             </div>
             <div class="row2">
@@ -284,6 +316,9 @@ import {
   COLORADO_BBOX, DISCLAIMER, LIKELY_DISCLAIMER, LIKELY_LABEL, FORAY_MODES, attachAccess, buildShortlist, cellSiteName, collectingLabel,
   effectiveSwitches, feeLabel, filterByAccess, shortlistToCsv, shortlistToText, UNKNOWN_ACCESS,
 } from '~/composables/forayPlanner'
+import {
+  DEFAULT_RADIUS_MI, NO_ORIGIN, RADIUS_OPTIONS_MI, filterByDistance, formatDistance, initialOrigin, parseLatLon, radiusLabel, sortByDistance,
+} from '~/composables/forayDistance'
 
 import {
   MAX_FINDS, MAX_LAYER_MODELS, MIN_PROMISE, candidateCells, defaultPicks, findsPerCell, modelSpecies, modelsParam, rankUnderSampled,
@@ -308,6 +343,18 @@ const notes = ref({})
 const copied = ref(false)
 const filtersOpen = ref(false)
 const mapCol = ref(null)
+const mapRef = ref(null)
+
+// Distance: where "near" is measured from, how far, and the list order.
+const origin = ref(null)  // set on mount: saved place, Boulder default, or null if cleared
+const radiusMi = ref(DEFAULT_RADIUS_MI)
+const sortBy = ref('score')
+const changing = ref(false)
+const picking = ref(false)
+const locating = ref(false)
+const searching = ref(false)
+const placeText = ref('')
+const locMsg = ref('')
 
 const SIZE_OPTIONS = CELL_SIZES.filter((x) => x.value >= 0.01 && x.value <= 0.1)
 // Readable on the light OSM base: the low end is a visible yellow-green, not near-white.
@@ -327,7 +374,14 @@ onMounted(async () => {
     const m = localStorage.getItem('foray-mode')
     if (m && FORAY_MODES[m]) mode.value = m
     notes.value = JSON.parse(localStorage.getItem('foray-notes') || '{}') || {}
-  } catch { /* defaults */ }
+    origin.value = initialOrigin(localStorage.getItem('foray-origin'))
+    const r = Number(localStorage.getItem('foray-radius'))
+    if (RADIUS_OPTIONS_MI.includes(r) && localStorage.getItem('foray-radius') !== null) radiusMi.value = r
+    if (localStorage.getItem('foray-sort') === 'near') sortBy.value = 'near'
+  } catch { origin.value = initialOrigin(null) }
+  // Ask for the user's location on load unless they picked a place or cleared it.
+  // If they decline, the Boulder default (or last GPS fix) stays, with no warning.
+  if (origin.value && (origin.value.source === 'default' || origin.value.source === 'gps')) locate({ quiet: true })
   const q = new URLSearchParams(location.search).get('mode')
   if (q && FORAY_MODES[q]) mode.value = q
   await load()
@@ -362,12 +416,19 @@ const scored = computed(() => {
     : base.value.cells.map((c) => ({ ...c, access: { ...UNKNOWN_ACCESS } }))
   return normaliseScores(adjustForSample(filterByAccess(withAccess, effective.value)), 'adj')
 })
-const shown = computed(() => scored.value.map((c) => ({
+// Scores and colours are normalised over the whole region before the distance
+// cut, so a "Great" nearby place is great statewide, not just the best of a few.
+const near = computed(() => filterByDistance(scored.value, origin.value, radiusMi.value))
+const shown = computed(() => near.value.map((c) => ({
   ...c,
   color: rampColor(ramp, c.t),
-  tip: `${scoreBand(c.t)} · ${c.n} finds${c.components.length ? ` · ${c.components[0].species}` : ''}`,
+  tip: `${scoreBand(c.t)} · ${c.n} finds${c.distMi != null ? ` · ${formatDistance(c.distMi)}` : ''}${c.components.length ? ` · ${c.components[0].species}` : ''}`,
 })))
-const ranked = computed(() => rankCells(shown.value, cfg.value.listLimit, 'adj'))
+// Nearest re-orders the best places in range; it does not promote poor ones.
+const ranked = computed(() => {
+  const top = rankCells(shown.value, cfg.value.listLimit, 'adj')
+  return origin.value && sortBy.value === 'near' ? sortByDistance(top) : top
+})
 const rows = computed(() => buildShortlist(ranked.value, notes.value, cfg.value.listLimit))
 
 // ── Model layers (WANT-17 phases 2 and 3) ───────────────────────────────────
@@ -478,6 +539,73 @@ watch(ranked, (r) => {
   if (!sel.value && r.length) selectedKey.value = r[0].key
 })
 
+function setOrigin(o) {
+  origin.value = o
+  changing.value = false
+  picking.value = false
+  locMsg.value = ''
+  try { localStorage.setItem('foray-origin', JSON.stringify(o)) } catch { /* ignore */ }
+}
+function clearOrigin() {
+  origin.value = null
+  changing.value = false
+  picking.value = false
+  try { localStorage.setItem('foray-origin', NO_ORIGIN) } catch { /* ignore */ }
+}
+watch(radiusMi, (r) => { try { localStorage.setItem('foray-radius', String(r)) } catch { /* ignore */ } })
+watch(sortBy, (v) => { try { localStorage.setItem('foray-sort', v) } catch { /* ignore */ } })
+
+function locate({ quiet = false } = {}) {
+  if (!('geolocation' in navigator)) {
+    if (!quiet) locMsg.value = 'This browser cannot share your location. Type a town, use the map centre or pick a spot on the map.'
+    return
+  }
+  locating.value = true
+  locMsg.value = ''
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      locating.value = false
+      setOrigin({ lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'your location', source: 'gps' })
+    },
+    (err) => {
+      locating.value = false
+      if (!quiet) locMsg.value = `${err.code === err.PERMISSION_DENIED ? 'Location permission denied.' : 'Could not get your location.'} Type a town, use the map centre or pick a spot on the map.`
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+  )
+}
+
+function useMapCentre() {
+  const c = mapRef.value?.getCenter?.()
+  if (c) setOrigin({ lat: c[0], lon: c[1], label: 'map centre', source: 'map' })
+}
+
+function onPick([lat, lon]) {
+  setOrigin({ lat, lon, label: `${lat.toFixed(3)}, ${lon.toFixed(3)}`, source: 'map' })
+}
+
+// Typed coordinates are used as-is; anything else goes to OpenStreetMap's geocoder, biased to Colorado.
+async function searchPlace() {
+  const q = placeText.value.trim()
+  if (!q) return
+  const ll = parseLatLon(q)
+  if (ll) { setOrigin({ ...ll, label: q, source: 'typed' }); return }
+  searching.value = true
+  locMsg.value = ''
+  try {
+    const [w, s, e, n] = COLORADO_BBOX
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=us&viewbox=${w},${n},${e},${s}&q=${encodeURIComponent(q)}`
+    const res = await fetch(url, { headers: { Accept: 'application/json' } })
+    const hit = res.ok ? (await res.json())?.[0] : null
+    if (hit) setOrigin({ lat: Number(hit.lat), lon: Number(hit.lon), label: hit.name || String(hit.display_name || q).split(',')[0], source: 'typed' })
+    else locMsg.value = `Could not find “${q}”. Try a nearby town or “lat, lon”.`
+  } catch {
+    locMsg.value = 'Place search is unavailable right now. Try “lat, lon”, the map centre or pick a spot on the map.'
+  } finally {
+    searching.value = false
+  }
+}
+
 const sizeLabel = computed(() => SIZE_OPTIONS.find((c) => c.value === cellSize.value)?.label || 'small')
 const whenText = computed(() => {
   if (timeSel.value !== 'now') return `around mid-${time.value.label}`
@@ -550,6 +678,22 @@ h2 { margin: 0; font-size: 1.2rem; color: var(--text-strong); }
 .seg button { font: inherit; font-size: 0.82rem; padding: 0.35rem 0.8rem; background: var(--surface); color: var(--text); border: 0; cursor: pointer; }
 .seg button + button { border-left: 1px solid var(--border); }
 .seg button.on { background: var(--accent); color: var(--accent-ink, #fff); font-weight: 600; }
+
+.near { border: 1px solid var(--border-soft); border-radius: 8px; padding: 0.45rem 0.7rem; background: var(--surface); display: flex; flex-direction: column; gap: 0.45rem; }
+.near-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; font-size: 0.88rem; }
+.near-what { min-width: 0; overflow-wrap: anywhere; }
+.near-r { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--muted); }
+.near-r select { font: inherit; font-size: 0.85rem; background: var(--input-bg, var(--surface)); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.4rem; }
+.seg-sm button { font-size: 0.78rem; padding: 0.25rem 0.6rem; }
+.near-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.near-btn { font: inherit; font-size: 0.8rem; padding: 0.35rem 0.7rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); color: var(--text); cursor: pointer; }
+.near-btn.primary, .near-btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink, #fff); font-weight: 600; }
+.near-btn:disabled { opacity: 0.6; cursor: default; }
+.near-search { display: flex; gap: 0.3rem; flex: 1 1 12rem; min-width: 0; }
+.near-search input { flex: 1; min-width: 0; font: inherit; font-size: 0.85rem; background: var(--input-bg, var(--surface)); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.5rem; }
+.link-btn { font: inherit; font-size: 0.8rem; background: none; border: 0; padding: 0.2rem; color: var(--accent); cursor: pointer; text-decoration: underline; }
+.dist { font-size: 0.72rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lg i.me { width: 10px; height: 10px; background: #2a78d6; border: 2px solid #fff; box-shadow: 0 0 0 1px #2a78d6; }
 
 .filters { border: 1px solid var(--border-soft); border-radius: 8px; padding: 0.4rem 0.7rem; background: var(--surface); }
 .filters > summary { cursor: pointer; display: flex; gap: 0.6rem; align-items: baseline; flex-wrap: wrap; list-style: none; }
@@ -648,6 +792,7 @@ th, td { text-align: left; padding: 0.25rem 0.3rem; border-bottom: 1px solid var
   body:has(.foray-page) .app-header,
   body:has(.foray-page) .foray-head,
   body:has(.foray-page) .filters,
+  body:has(.foray-page) .near,
   body:has(.foray-page) .list-h,
   body:has(.foray-page) .notice,
   body:has(.foray-page) .map-col,
