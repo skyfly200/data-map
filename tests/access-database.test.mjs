@@ -158,7 +158,7 @@ test('GET access: contract shape, filters, caps, errors', async () => {
   const body = await res.json()
   assert.equal(res.status, 200); assert.equal(body.ok, true); assert.equal(body.loaded, true)
   assert.deepEqual(Object.keys(body.areas.features[0].properties).sort(),
-    ['collecting', 'collecting_source', 'fee_source', 'fee_status', 'id', 'manager_type', 'name', 'public_access', 'source'])
+    ['collecting', 'collecting_rule', 'collecting_source', 'fee_source', 'fee_status', 'id', 'manager_type', 'name', 'public_access', 'source'])
   assert.equal(body.lines.features[0].properties.kind, 'trail')
   assert.deepEqual(body.truncated, { areas: false, lines: false })
   assert.equal(body.regions[0].name, 'colorado')

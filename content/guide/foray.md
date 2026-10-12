@@ -74,6 +74,7 @@ The dashboard's **Now fruiting** card has a **Plan a foray** link. On the map,
 | *estimated* | A rule of thumb from manager type. Not a regulation. |
 | *verified* (fee) | Matched to a Recreation.gov facility record. |
 | Owner-asserted | Typed by the member who owns the area, in **My areas**. |
+| *local rule* | A county or city rule we read and linked. Check the link for changes. |
 | **Likely allowed (estimated)** | Open BLM or US Forest Service land. An estimate, never *allowed*. |
 
 The planner never labels land *allowed* from an estimate. *Allowed* appears
@@ -113,9 +114,36 @@ Areas load from **zoom 8**. Roads and trails load from **zoom 12**, and only on
 a small view. Only Colorado is loaded. Outside it the layer says the data is not
 loaded, and no color does not mean no access.
 
+## Model layers
+
+Open **Model layers** and pick a layer. It shades the map from low to high.
+
+- **Model blend** averages the suitability maps of saved models for the species
+  in season, weighted by how close each species is to its fruiting peak.
+- **Habitat match** shades ground whose terrain, climate and cover sit in the
+  range where the models' finds were made, using the variables that mattered
+  most. It is not species-specific.
+
+The planner picks models whose species is in season. Tick or untick models to
+change the mix (up to 6). Your own models and public ones are listed, with their
+AUC. Habitat match needs models trained after this feature shipped; older ones
+say *re-run to add ranges*.
+
+## Where few have looked
+
+Pick a model layer, zoom in, and press **Search this map view**. The planner
+looks for places with 2 or fewer past finds where the layer is 50% or more, and
+ranks them by promise ÷ (1 + finds). Your access switches apply. Results show as
+lettered pins.
+
+Places outside the range the models were trained on are left out, because a high
+value there is a guess. The list says how many were left out and which models
+it used. A place with few finds may simply have no habitat, so treat these as
+leads to check, not predictions.
+
 ## Not yet verified
 
-The access database, the planner and My areas are built and tested against
+The access database, the planner, model layers and My areas are built and tested against
 fixtures. The access data has not been loaded and checked against live sources.
 Treat the first loaded results with caution, and report anything that looks
 wrong with [Report a bug](/guide/report-bug).

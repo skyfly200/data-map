@@ -754,5 +754,47 @@ export function buildSuitabilityImage(ee, {
   return {
     image: suitability,
     vis: { min: 0, max: 1, palette: SUITABILITY_PALETTE },
+    // For the foray planner's habitat score (WANT-17 phase 3): the fitted
+    // classifier's own variable contributions, and the presence samples the
+    // predictor ranges are read from.
+    classifier,
+    presenceSamples,
   }
+}
+
+/** The percentiles a predictor range is read at: min, quartiles, max. */
+const RANGE_PERCENTILES = [0, 25, 75, 100]
+
+/**
+ * An Earth Engine dictionary of each predictor's spread across the presences:
+ * lists `p0`, `p25`, `p75`, `p100`, one entry per predictor in `predictors`
+ * order. Shape it with shapePredictorRanges once evaluated.
+ */
+export function predictorRangesReducer(ee, presenceSamples, predictors) {
+  return presenceSamples.reduceColumns({
+    reducer: ee.Reducer.percentile(RANGE_PERCENTILES).repeat(predictors.length),
+    selectors: predictors,
+  })
+}
+
+/**
+ * Turn the evaluated reducer output into `{predictor: {p25, p75, min, max}}`,
+ * the shape `model_results.predictor_ranges` stores. Predictors with no finite
+ * value at any presence (all masked) are left out rather than stored as nulls.
+ */
+export function shapePredictorRanges(raw, predictors) {
+  if (!raw || typeof raw !== 'object') return null
+  const at = (key, i) => {
+    const list = raw[key]
+    const x = Array.isArray(list) ? list[i] : (predictors.length === 1 ? list : null)
+    if (x == null) return null
+    const v = Number(x)
+    return Number.isFinite(v) ? v : null
+  }
+  const out = {}
+  predictors.forEach((key, i) => {
+    const r = { p25: at('p25', i), p75: at('p75', i), min: at('p0', i), max: at('p100', i) }
+    if (Object.values(r).every((v) => v != null)) out[key] = r
+  })
+  return Object.keys(out).length ? out : null
 }

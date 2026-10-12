@@ -35,8 +35,13 @@ import { derivedIndices } from './terrain-indices.mjs'
 import {
   DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, DEFAULT_CONTRIBUTION_THRESHOLD, MIN_CV_PRESENCES,
   backgroundPlan, buildSuitabilityImage, crossValidate, crossValidationSummary, foldPoints,
-  modelCacheKey, predictorStack, randomBackground, suitabilityLegend,
+  modelCacheKey, predictorRangesReducer, predictorStack, randomBackground, shapePredictorRanges,
+  suitabilityLegend,
 } from './maxent.mjs'
+import {
+  FORAY_LAYER_VIS, buildEnsembleImage, buildHabitatImage, forayLayerLegend, habitatPredictors, normaliseWeights,
+  shapeSamples,
+} from './foray-layers.mjs'
 
 // Where fitted model surfaces are cached, and for how long. The TTL is well
 // inside the Earth Engine map id's own expiry, so a cached template is never
@@ -790,7 +795,28 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
   }
 
   onProgress({ fraction: 0.4, stage: 'fit', message: 'Fitting the model…' })
-  const { image, vis } = buildSuitabilityImage(ee, { presences, predictors, background, region, seed: 1 })
+  const { image, vis, classifier, presenceSamples } = buildSuitabilityImage(ee, { presences, predictors, background, region, seed: 1 })
+
+  // What the foray planner's habitat score needs from every model (WANT-17
+  // phase 3): each predictor's spread across the presences, and the fitted
+  // model's own contributions when the scout did not already give them. Both
+  // are best-effort; a model without them still has its surface.
+  let predictorRanges = null
+  try {
+    const raw = await withRetry(
+      () => evaluate(predictorRangesReducer(ee, presenceSamples, predictors)),
+      { label: 'predictor ranges' },
+    )
+    predictorRanges = shapePredictorRanges(raw, predictors)
+  } catch { predictorRanges = null }
+  if (!contributions) {
+    try {
+      contributions = await withRetry(
+        () => evaluate(ee.Dictionary(classifier.explain().get('Contributions'))),
+        { label: 'model explain' },
+      ) || null
+    } catch { contributions = null }
+  }
 
   // A spatially blocked cross-validation score, when there are enough presences
   // for it to mean anything. Held-out predictions come back from Earth Engine;
@@ -835,9 +861,11 @@ export async function runModel({ spec, features, onProgress = () => {} }) {
     // vs a random background". Carries through to the legend so the surface is
     // always labelled with this confound.
     effortWeighted: backgroundPlan({ presenceCount: points.length, background }).weighted,
-    // Present when autoOptimize was on: maps each candidate predictor to its
-    // % contribution in the scout model.
+    // Each predictor's % contribution: from the scout model over every
+    // candidate when autoOptimize was on, otherwise from the fitted model.
     contributions,
+    // {predictor: {p25, p75, min, max}} over the presences (WANT-17 phase 3).
+    predictorRanges,
     // A minted template carries a map id, which expires; the member re-runs
     // the job to refresh it. Stamped so the UI can say how old the surface is.
     mintedAt: new Date().toISOString(),
@@ -943,6 +971,94 @@ export async function suitabilityDownloadUrl({ spec, features, scale = 1000 }) {
       return resolve(url)
     })
   })
+}
+
+/**
+ * The image behind a foray planner layer (WANT-17 phases 2 and 3).
+ *
+ * `models`: [{id, weight, contributions, ranges, assetPath?, spec?, features?}],
+ * already checked by the caller as visible to the viewer. A registered model is
+ * read from its asset; any other is refit from its stored spec and presences
+ * (the same fit as remintSuitability). Returns { image, band, predictors,
+ * used: [ids], skipped: [ids] }, or throws when nothing usable is left.
+ */
+export function forayLayerImage({ layer, models }) {
+  const weighted = normaliseWeights(models)
+  const { predictors, skipped: noRanges } = habitatPredictors(weighted)
+  if (layer === 'habitat') {
+    if (!predictors.length) {
+      throw Object.assign(new Error('None of those models has stored predictor ranges yet. Re-run one to add them.'), { status: 409 })
+    }
+    const used = weighted.map((m) => m.id).filter((id) => !noRanges.includes(id))
+    return { image: buildHabitatImage(ee, predictors), band: 'habitat', predictors, used, skipped: noRanges }
+  }
+
+  const surfaces = []
+  const skipped = []
+  for (const m of weighted) {
+    if (m.assetPath) {
+      surfaces.push({ image: ee.Image(m.assetPath).select(0), weight: m.weight })
+      continue
+    }
+    const points = (m.features || [])
+      .map((f) => f?.geometry?.coordinates || [])
+      .map((co) => [Number(co[0]), Number(co[1])])
+      .filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat))
+    if (!points.length || !m.spec) { skipped.push(m.id); continue }
+    const presences = ee.FeatureCollection(points.map(([lon, lat]) => ee.Feature(ee.Geometry.Point([lon, lat]))))
+    const { image } = buildSuitabilityImage(ee, {
+      presences,
+      predictors: m.spec.predictors?.length ? m.spec.predictors : DEFAULT_PREDICTORS,
+      background: m.spec.background || DEFAULT_BACKGROUND,
+      region: m.spec.region || boundsOfPoints(points),
+      seed: 1,
+    })
+    surfaces.push({ image, weight: m.weight })
+  }
+  if (!surfaces.length) {
+    throw Object.assign(new Error('None of those models could be rebuilt (no presences left in their sources).'), { status: 409 })
+  }
+  const used = weighted.map((m) => m.id).filter((id) => !skipped.includes(id))
+  return { image: buildEnsembleImage(ee, surfaces, predictors), band: 'ensemble', predictors, used, skipped }
+}
+
+/** Mint a tile template for a foray layer, cached like model surfaces. */
+export async function mintForayLayer({ layer, models, cacheKey }) {
+  const blobs = modelStore()
+  const id = cacheKey ? `foray-${cacheKey}` : null
+  if (blobs && id) {
+    try {
+      const hit = await blobs.get(id, { type: 'json' })
+      if (hit && hit.expires > Date.now() && hit.template) return { template: hit.template, meta: { ...hit.meta, cached: true } }
+    } catch { /* a miss */ }
+  }
+  await initEarthEngine()
+  const { image, band, predictors, used, skipped } = forayLayerImage({ layer, models })
+  const template = await withRetry(() => mintTemplate(image.select(band), FORAY_LAYER_VIS), { label: `foray ${layer} tiles` })
+  const meta = {
+    kind: 'foray-layer', layer, used, skipped, legend: forayLayerLegend(layer),
+    predictors: predictors.map(({ key, weight, p25, p75 }) => ({ key, weight, p25, p75 })),
+    mintedAt: new Date().toISOString(),
+  }
+  if (blobs && id) {
+    try { await blobs.setJSON(id, { template, meta, expires: Date.now() + MODEL_TTL_MS }) } catch { /* not fatal */ }
+  }
+  return { template, meta }
+}
+
+/**
+ * Read a foray layer at points (phase 5: promise per candidate cell).
+ * Returns [{i, value, outside}] in point order; masked pixels come back null.
+ */
+export async function sampleForayLayer({ layer, models, points, scale = 250 }) {
+  await initEarthEngine()
+  const { image, band, used, skipped } = forayLayerImage({ layer, models })
+  const fc = ee.FeatureCollection(points.map(([lon, lat], i) => ee.Feature(ee.Geometry.Point([lon, lat]), { i })))
+  const sampled = image.select([band, 'outside']).reduceRegions({ collection: fc, reducer: ee.Reducer.first(), scale })
+  // With a multi-band image and a single-output reducer, each output is named
+  // after its band, so the properties are `<band>` and `outside`.
+  const raw = await withRetry(() => evaluate(sampled), { label: `foray ${layer} sample` })
+  return { samples: shapeSamples(raw, points.length, band), used, skipped }
 }
 
 /**

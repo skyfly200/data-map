@@ -3,7 +3,7 @@
 // tests on fixtures. Unknown is always neutral grey and never reads as free,
 // public or collectable.
 
-import { DISCLAIMER, LIKELY_DISCLAIMER, LIKELY_LABEL, COLORADO_BBOX, passesSwitches } from './forayPlanner'
+import { DISCLAIMER, LIKELY_DISCLAIMER, LIKELY_LABEL, COLORADO_BBOX, collectingRuleFor, passesSwitches } from './forayPlanner'
 import type { AccessArea, CellAccess, Switches } from './forayPlanner'
 
 export type AccessAttr = 'public' | 'fee' | 'collecting'
@@ -108,6 +108,7 @@ export function areaAsAccess(a: AccessArea): CellAccess {
   return {
     covered: true, areaName: a.name, manager_type: a.manager_type, public_access: a.public_access,
     fee_status: a.fee_status, fee_source: a.fee_source, collecting: a.collecting, collecting_source: a.collecting_source,
+    collecting_rule: a.collecting_rule ?? null,
   }
 }
 
@@ -134,7 +135,7 @@ export function areaTag(a: AccessArea): string | null {
 
 const ESC: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
 const esc = (v: unknown) => String(v ?? '').replace(/[&<>"']/g, (c) => ESC[c])
-const srcWord = (s: string | null) => (s === 'ridb' ? 'verified (RIDB)' : s === 'estimated' ? 'estimated' : '')
+const srcWord = (s: string | null) => (s === 'ridb' ? 'verified (RIDB)' : s === 'estimated' ? 'estimated' : s === 'rule' ? 'local rule' : '')
 
 export function feeText(a: AccessArea): string {
   if (a.fee_status === 'unknown') return 'Unknown'
@@ -161,11 +162,13 @@ export function popupHtml(a: AccessArea): string {
     ['Public access', classify(a, 'public').label], ['Fee', feeText(a)], ['Collecting', collectingText(a)],
   ]
   const asserted = isOwnerAsserted(a)
-  const est = !asserted && (a.fee_source === 'estimated' || a.collecting_source === 'estimated' || a.collecting === 'likely_allowed')
+  const rule = asserted ? null : collectingRuleFor({ collecting_source: a.collecting_source, collecting_rule: a.collecting_rule ?? null })
+  const est = !asserted && (a.fee_source === 'estimated' || a.collecting_source === 'estimated' || a.collecting === 'likely_allowed' || Boolean(rule))
   return `<div class="acc-pop"><strong>${esc(a.name || 'Unnamed area')}</strong>`
     + (tag ? `<div class="acc-pop-tag">${esc(tag)}</div>` : '')
     + `<dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`
     + (asserted ? '<p class="acc-pop-note">Fee and collecting were set by the area owner, not estimated.</p>' : '')
+    + (rule ? `<p class="acc-pop-note">${esc(rule.label)}: ${esc(rule.note)} <a href="${esc(rule.url)}" target="_blank" rel="noopener">Rules page</a> (read ${esc(rule.checkedOn)}).</p>` : '')
     + (est ? `<p class="acc-pop-note">${esc(DISCLAIMER)}</p>` : '')
     + (!asserted && a.collecting === 'likely_allowed' ? `<p class="acc-pop-note">${esc(LIKELY_DISCLAIMER)}</p>` : '')
     + '</div>'

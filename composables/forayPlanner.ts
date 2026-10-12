@@ -5,14 +5,16 @@
 // The access endpoint (netlify/functions/access.mjs) is built separately. The
 // contract assumed here: GET ?bbox=w,s,e,n returns area polygons with
 // {id, name, manager_type, public_access, fee_status, fee_source, collecting,
-// collecting_source} and a region-loaded flag. Nothing here ever treats an
+// collecting_source, collecting_rule} and a region-loaded flag. Nothing here ever treats an
 // unknown value as free, public or collectable.
 
 import { pointInArea } from '../netlify/lib/access-ingest.mjs'
+import { collectingRuleById } from '../netlify/lib/collecting-rules.mjs'
 
 export type PublicAccess = 'open' | 'restricted' | 'closed' | 'unknown'
 export type FeeStatus = 'free' | 'fee' | 'unknown'
-export type Collecting = 'allowed' | 'restricted' | 'prohibited' | 'unknown'
+export type Collecting = 'allowed' | 'likely_allowed' | 'restricted' | 'prohibited' | 'unknown'
+export type CollectingSource = 'estimated' | 'rule' | null
 
 export interface AccessArea {
   id: string
@@ -22,7 +24,9 @@ export interface AccessArea {
   fee_status: FeeStatus
   fee_source: 'estimated' | 'ridb' | null
   collecting: Collecting
-  collecting_source: 'estimated' | null
+  collecting_source: CollectingSource
+  /** Id of the local rule behind a 'rule' value (netlify/lib/collecting-rules.mjs). */
+  collecting_rule: string | null
   /** Optional (backend may not send them yet): where the area came from. Absent = PAD-US. */
   source?: 'padus' | 'user' | 'club'
   set_id?: string | null
@@ -69,7 +73,8 @@ export function normaliseArea(raw: any): AccessArea | null {
     fee_status: oneOf(p.fee_status, FEE, 'unknown'),
     fee_source: p.fee_source === 'ridb' || p.fee_source === 'estimated' ? p.fee_source : null,
     collecting: oneOf(p.collecting, COLLECTING, 'unknown'),
-    collecting_source: p.collecting_source === 'estimated' ? 'estimated' : null,
+    collecting_source: p.collecting_source === 'estimated' || p.collecting_source === 'rule' ? p.collecting_source : null,
+    collecting_rule: p.collecting_source === 'rule' && collectingRuleById(p.collecting_rule) ? String(p.collecting_rule) : null,
     ...(p.source === 'user' || p.source === 'club' || p.source === 'padus' ? { source: p.source } : {}),
     ...(p.set_id != null ? { set_id: String(p.set_id) } : {}),
     ...(p.set_name != null ? { set_name: String(p.set_name) } : {}),
@@ -129,12 +134,13 @@ export interface CellAccess {
   fee_status: FeeStatus
   fee_source: 'estimated' | 'ridb' | null
   collecting: Collecting
-  collecting_source: 'estimated' | null
+  collecting_source: CollectingSource
+  collecting_rule: string | null
 }
 
 export const UNKNOWN_ACCESS: CellAccess = {
   covered: false, areaName: null, manager_type: null, public_access: 'unknown',
-  fee_status: 'unknown', fee_source: null, collecting: 'unknown', collecting_source: null,
+  fee_status: 'unknown', fee_source: null, collecting: 'unknown', collecting_source: null, collecting_rule: null,
 }
 
 /** Access attributes at a cell centre [lon, lat]. No covering area means everything unknown. */
@@ -152,6 +158,7 @@ export function accessForCell(point: [number, number], areas: AccessArea[]): Cel
     public_access: worst(hits.map((h) => h.public_access), PA_RANK, 'unknown' as PublicAccess),
     fee_status: fee, fee_source: feeHit?.fee_source ?? null,
     collecting: col, collecting_source: colHit?.collecting_source ?? null,
+    collecting_rule: colHit?.collecting_rule ?? null,
   }
 }
 
@@ -252,7 +259,12 @@ export interface ShortlistRow {
   notes: string
 }
 
-const src = (s: string | null) => (s === 'ridb' ? 'verified' : s === 'estimated' ? 'estimated' : '')
+const src = (s: string | null) => (s === 'ridb' ? 'verified' : s === 'estimated' ? 'estimated' : s === 'rule' ? 'local rule' : '')
+
+/** The local rule behind a cell's collecting value, for a source link; null for estimates. */
+export function collectingRuleFor(a: { collecting_source: CollectingSource, collecting_rule: string | null }) {
+  return a.collecting_source === 'rule' ? collectingRuleById(a.collecting_rule) : null
+}
 
 export function feeLabel(a: CellAccess): string {
   if (a.fee_status === 'unknown') return 'unknown'

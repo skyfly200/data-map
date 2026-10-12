@@ -24,7 +24,7 @@ Extend "Now Fruiting" from "what is fruiting" to "where to go look": score areas
 
 ## Shipped (all unverified live)
 
-Status: implemented and unit-tested on fixtures. **Not run:** migrations 012-015 applied, Colorado load, RIDB, Overpass limits, PAD-US URL/field names (`PADUS_FEATURE_URL` default and the `Mang_Name`/`Des_Tp`/`Pub_Access` pattern mapping), browser verification. Env vars and the load script: `docs/deploying.md` block 7. Sources to check rules against: `docs/access-sources.md`. User docs: `content/guide/foray.md`.
+Status: implemented and unit-tested on fixtures. **Not run:** migrations 012-016 applied, any Earth Engine path of phases 2, 3 and 5, Colorado load, RIDB, Overpass limits, PAD-US URL/field names (`PADUS_FEATURE_URL` default and the `Mang_Name`/`Des_Tp`/`Pub_Access` pattern mapping), browser verification. Env vars and the load script: `docs/deploying.md` block 7. Sources to check rules against: `docs/access-sources.md`. User docs: `content/guide/foray.md`.
 
 ### Planner (`pages/foray.vue`, phase 1)
 
@@ -47,3 +47,20 @@ Status: implemented and unit-tested on fixtures. **Not run:** migrations 012-015
 
 - `components/AccessLayerPanel.vue` (layer window section; mobile layer sheet): enable, color by public/fee/collecting, free/public/collecting/likely filters, sources (Public lands, My areas, Club areas), legend, disclaimer. Zoom >= 8 for areas, >= 12 for lines; view tiled into 3 deg requests (max 9), clamped to Colorado.
 - `/areas` (members): sets (user or club), draw polygon or import GeoJSON, per-area fee/collecting/notes (owner-asserted), clubs with owner/admin/member roles. Contract and caps in `netlify/functions/access-sets.mjs` header.
+
+### Model layers (phases 2 and 3)
+
+- Runner (`netlify/lib/ee-runner.mjs` `runModel`): every run stores `predictorRanges` (`{p: {p25, p75, min, max}}` at the presences) and, without a scout, `contributions` from the fitted classifier. Both land in `ee_jobs.result_meta`; the write-back to `model_results` is blocked by ISSUE-6.
+- Endpoint `netlify/functions/foray-layers.mjs` (contract in header): lists the caller's and public models with a finished run; mints `ensemble` or `habitat` tiles for up to 6 `id:weight` models; samples a layer at up to 1,500 points.
+- `netlify/lib/foray-layers.mjs`: ensemble = weighted mean over the surfaces that cover a pixel (each model refit, or its registered asset). Habitat = weighted share of the top 6 predictors inside the union of the models' IQRs; contributions normalised per model over its own ranged predictors. Both carry an `outside` band: 1 where a habitat predictor is outside every model's min..max.
+- Model to species: `ee_jobs.params.source.taxon` (species or genus prefix), else a species named in the title. Defaults pick models covering an in-season species, weighted by that species' phenology weight; picks are editable (hand-picked weight 0.5). Habitat needs stored ranges and contributions, so older models need a re-run.
+- UI: `pages/foray.vue` "Model layers" panel, overlay in `components/ForayMap.vue`, logic in `composables/forayModels.ts`.
+
+### Under-sampled ranking (phase 5)
+
+- "Where few have looked" on `/foray`: every grid cell in the map view (max 1,200), finds per cell, access switches applied, the chosen layer sampled at cell centres, then `promise / (1 + finds)` among cells with <= 2 finds and promise >= 0.5. Cells outside the training envelope are dropped and counted. Each result lists the models used with AUC.
+- Decided: effort = observation count only. The OSM trail/road distance proxy is not used yet (access lines load only on small views).
+
+### Collecting rules
+
+- `netlify/lib/collecting-rules.mjs`: hand-checked rules (Boulder OSMP, Boulder County POS, Jefferson County Open Space, CPW state parks) matched on PAD-US `Loc_Mang`/unit name. A rule overrides the estimate unless the estimate is `prohibited`; source `rule`, with the rule id in `collecting_rule` (migration 016). Each rule carries its source URL and date read. The `Loc_Mang` match is unverified against live PAD-US.

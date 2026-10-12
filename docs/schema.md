@@ -105,7 +105,7 @@ User-authored saved chart configurations. Each row is one saved chart with an or
 
 ### Foray planner additions (migration `012_model_contributions_and_access.sql`, WANT-17)
 
-- `model_results.contributions` (`jsonb`, `{predictor: %}`) and `model_results.predictor_ranges` (`jsonb`, `{predictor: {p25,p75,min,max}}`). Written by `ee-worker` via `netlify/lib/model-persist.mjs` when a `model_runs` row exists for the job. Contributions exist only for `autoOptimize` runs; `predictor_ranges` is not yet computed by the runner.
+- `model_results.contributions` (`jsonb`, `{predictor: %}`) and `model_results.predictor_ranges` (`jsonb`, `{predictor: {p25,p75,min,max}}`). Written by `ee-worker` via `netlify/lib/model-persist.mjs` when a `model_runs` row exists for the job. Contributions come from the scout model on `autoOptimize` runs and from the fitted model otherwise; `predictor_ranges` are the 0/25/75/100th percentiles of each final predictor across the presences (`shapePredictorRanges` in `maxent.mjs`). Both are best-effort, so either can be null.
 - `access_areas` — PAD-US units (`source`, `source_id`, `name`, `manager`, `designation`, `access_class` open/restricted/closed/unknown, `geom` MultiPolygon 4326, GiST). Unique `(source, source_id)`.
 - `access_lines` — OSM roads/trails (`osm_id` unique, `kind` road/trail, `highway`, `name`, `geom` LineString 4326, GiST).
 - RLS: select-all on both; writes via service role only.
@@ -114,6 +114,7 @@ User-authored saved chart configurations. Each row is one saved chart with an or
 
 - `access_areas` adds: `manager_type` (blm/usfs/nps/fws/state_park/state/local/federal_other/private/tribal/other/unknown), `public_access` (open/restricted/closed/unknown, from PAD-US `Pub_Access`), `fee_status` (free/fee/unknown) + `fee_source` (`estimated`|`ridb`|null), `collecting` (allowed/likely_allowed/restricted/prohibited/unknown; `likely_allowed` is estimated only, for open BLM/USFS land not restricted by designation) + `collecting_source` (`estimated`|null), `region` (name of the load that wrote the row). **All `estimated` values are heuristics from manager type/designation, not regulations**; `ridb` fee values come from a matching Recreation.gov facility record. Collecting is never estimated as plain `allowed`. Migration 014 adds `likely_allowed` to the CHECK.
 - `access_lines.region` added.
+- Migration 016: `collecting_source` also allows `rule` (a curated county/city/state rule from `netlify/lib/collecting-rules.mjs`, applied at ingest over the estimate), and `collecting_rule` (`text`) holds that rule's id. `access_upsert_areas` and `access_areas_in_bbox` carry it.
 - `access_regions` — `name` unique, `bbox` jsonb `[w,s,e,n]`, `status` queued/loading/loaded/partial/failed, `area_count`, `line_count`, `ridb_matched`, `sources`, `error`, `requested_by`, `loaded_at`. RLS select-all; writes service role only.
 - Functions: `access_upsert_areas/lines(rows jsonb, region)` (service role only; keep RIDB fee data over later estimates), `access_areas_in_bbox`, `access_lines_in_bbox` (simplified GeoJSON, used by `netlify/functions/access.mjs`).
 

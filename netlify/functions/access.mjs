@@ -8,9 +8,10 @@
 //     bbox: [w, s, e, n],
 //     areas: GeoJSON FeatureCollection; geometry simplified (Polygon/MultiPolygon);
 //       feature.properties = { id, name, manager_type, public_access, fee_status,
-//         fee_source, collecting, collecting_source }
+//         fee_source, collecting, collecting_source, collecting_rule, source }
 //       fee_status 'free'|'fee'|'unknown'; fee_source 'estimated'|'ridb'|null
-//       collecting 'allowed'|'likely_allowed'|'restricted'|'prohibited'|'unknown'; collecting_source 'estimated'|null
+//       collecting 'allowed'|'likely_allowed'|'restricted'|'prohibited'|'unknown'; collecting_source 'estimated'|'rule'|null
+//       collecting_rule: id of the local rule behind a 'rule' value (netlify/lib/collecting-rules.mjs), else null
 //       public_access 'open'|'restricted'|'closed'|'unknown'
 //       'estimated' values are heuristics from manager type, not regulations: label them as such.
 //     lines: GeoJSON FeatureCollection | null; properties = { id, kind: 'road'|'trail', highway, name }.
@@ -121,14 +122,14 @@ export async function handleAccess(request, client = adminClient(), resolveUser 
       ...areaRows.slice(0, MAX_AREAS).map((r) => ({ ...r, source: 'padus' })),
       ...setRows.map((r) => ({
         ...r, id: `set:${r.id}`, source: r.scope === 'club' ? 'club' : 'user',
-        manager_type: null, public_access: 'unknown', fee_source: null, collecting_source: null,
+        manager_type: null, public_access: 'unknown', fee_source: null, collecting_source: null, collecting_rule: null,
       })),
     ], (r) => ({
       source: r.source,
       ...(r.set_id != null ? { set_id: r.set_id, set_name: r.set_name, notes: r.notes ?? null, owner_asserted: true } : {}),
       id: r.id, name: r.name, manager_type: r.manager_type, public_access: r.public_access,
       fee_status: r.fee_status, fee_source: r.fee_source, collecting: r.collecting,
-      collecting_source: r.collecting_source,
+      collecting_source: r.collecting_source, collecting_rule: r.collecting_rule ?? null,
     })),
     lines: linesOk ? features(lineRows, (r) => ({ id: r.id, kind: r.kind, highway: r.highway, name: r.name })) : null,
     lines_omitted: linesOk ? null : wantLines ? 'bbox_too_large' : 'not_requested',
