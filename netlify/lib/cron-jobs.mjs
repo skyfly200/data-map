@@ -12,7 +12,7 @@ export const CRON_JOBS = [
     id: 'ee-worker',
     name: 'Earth Engine worker',
     schedule: '* * * * *',
-    description: 'Claims and runs one queued Earth Engine enrichment or modeling job per invocation. Logs only when a job is claimed.',
+    description: 'Claims and runs one queued Earth Engine enrichment or modeling job per invocation. On Netlify it hands the run to ee-worker-background (15-minute limit) when WORKER_POKE_SECRET is set. Logs only when a job is claimed.',
   },
 ]
 

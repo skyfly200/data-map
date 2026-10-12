@@ -172,6 +172,22 @@ export function useEeJobs() {
     return { template: body.template, meta: body.meta }
   }
 
+  /**
+   * A one-off Earth Engine link to the model's suitability surface as a
+   * GeoTIFF, at `scale` metres per pixel. The link is minted per request and
+   * expires, so it is fetched when the member asks rather than stored.
+   */
+  async function modelDownloadUrl(job: EeJob, scale: number): Promise<string> {
+    const token = await accessToken()
+    const q = new URLSearchParams({ job: job.id, download: '1', scale: String(scale) })
+    const res = await fetch(`/.netlify/functions/model-tiles?${q}`, {
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    })
+    const body = await res.json().catch(() => ({}))
+    if (!res.ok || !body.ok || !body.url) throw new Error(body.error || 'Earth Engine could not prepare that download.')
+    return body.url
+  }
+
   async function patch(body: Record<string, unknown>) {
     const token = await accessToken()
     const res = await fetch('/.netlify/functions/ee-jobs', {
@@ -219,7 +235,7 @@ export function useEeJobs() {
 
   return {
     jobs, active, loading, error, submitting,
-    refresh, refreshArchive, submit, cancel, fetchResult, modelTiles,
+    refresh, refreshArchive, submit, cancel, fetchResult, modelTiles, modelDownloadUrl,
     archive, unarchive, archiveAll,
     startPolling, stopPolling,
   }

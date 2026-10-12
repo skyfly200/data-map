@@ -27,7 +27,7 @@ Technical debt and enhancement tasks. An item here is open work; when closed, de
 - [ ] `V12-MOD-1` **Ensemble Modeling**: Average predictions from multiple model runs
 - [ ] `V12-MOD-2` **Projection Tools**: Project models to future climate scenarios (CMIP6)
 - [ ] `V12-MOD-3` **Batch Processing**: Train models for multiple species simultaneously
-- [ ] `V12-MOD-4` **Model Export**: Download suitability rasters as GeoTIFF (backend `model-tiles?job=<id>&download=1` returns an EE download URL, unverified against real EE; no UI button yet)
+- [ ] `V12-MOD-4` **Model Export**: Download suitability rasters as GeoTIFF (`ModelExportMenu` on `/jobs` and `/model`, backed by `model-tiles?job=<id>&download=1`; unverified against real EE)
 - [ ] `V12-MOD-5` **Threshold Optimization**: Automatic threshold selection (MaxSSS, 10th percentile)
 
 ## Data Quality & Ethics
@@ -46,7 +46,7 @@ Technical debt and enhancement tasks. An item here is open work; when closed, de
 
 ## Performance
 
-_All PERF-1–5 items shipped: LazyVisible for gallery charts (PERF-1), single-pass bucketing for tempHighLowDist/elevationData (PERF-2), single-pass coverageData counter (PERF-3), 40 ms coloring debounce (PERF-4), debounced heatmap rebuild (PERF-5)._
+_All PERF-1–5 items shipped: RenderWhenVisible for gallery charts (PERF-1), single-pass bucketing for tempHighLowDist/elevationData (PERF-2), single-pass coverageData counter (PERF-3), 40 ms coloring debounce (PERF-4), debounced heatmap rebuild (PERF-5)._
 
 ## Documentation
 
