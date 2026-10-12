@@ -23,10 +23,10 @@
           <button :class="{ on: sortBy === 'score' }" :aria-pressed="sortBy === 'score'" @click="sortBy = 'score'">Best</button>
           <button :class="{ on: sortBy === 'near' }" :aria-pressed="sortBy === 'near'" @click="sortBy = 'near'">Nearest</button>
         </div>
-        <button v-if="origin && !changing" class="link-btn" @click="changing = true">Change</button>
+        <button v-if="origin && !changing && origin.source !== 'default'" class="link-btn" @click="changing = true">Change</button>
       </div>
-      <div v-if="!origin || changing" class="near-actions">
-        <button class="near-btn primary" :disabled="locating" @click="locate">{{ locating ? 'Locating…' : 'Use my location' }}</button>
+      <div v-if="!origin || changing || origin.source === 'default'" class="near-actions">
+        <button class="near-btn primary" :disabled="locating" @click="locate()">{{ locating ? 'Locating…' : 'Use my location' }}</button>
         <form class="near-search" @submit.prevent="searchPlace">
           <input v-model="placeText" type="search" placeholder="Town or lat, lon" aria-label="Start from a town or coordinates" enterkeyhint="search">
           <button class="near-btn" type="submit" :disabled="searching || !placeText.trim()">{{ searching ? '…' : 'Go' }}</button>
@@ -34,7 +34,7 @@
         <button class="near-btn" @click="useMapCentre">Map centre</button>
         <button class="near-btn" :class="{ on: picking }" :aria-pressed="picking" @click="picking = !picking">{{ picking ? 'Tap the map…' : 'Pick on map' }}</button>
         <button v-if="origin" class="link-btn" @click="clearOrigin">Clear</button>
-        <button v-if="origin" class="link-btn" @click="changing = false; picking = false">Done</button>
+        <button v-if="origin && origin.source !== 'default'" class="link-btn" @click="changing = false; picking = false">Done</button>
       </div>
       <p v-if="locMsg" class="notice warn" role="status">{{ locMsg }}</p>
     </section>
@@ -236,7 +236,7 @@ import {
   effectiveSwitches, feeLabel, filterByAccess, shortlistToCsv, shortlistToText, UNKNOWN_ACCESS,
 } from '~/composables/forayPlanner'
 import {
-  DEFAULT_RADIUS_MI, RADIUS_OPTIONS_MI, filterByDistance, formatDistance, parseLatLon, parseSavedOrigin, radiusLabel, sortByDistance,
+  DEFAULT_RADIUS_MI, NO_ORIGIN, RADIUS_OPTIONS_MI, filterByDistance, formatDistance, initialOrigin, parseLatLon, radiusLabel, sortByDistance,
 } from '~/composables/forayDistance'
 
 useHead({ title: 'Plan a foray · Nexstrata' })
@@ -259,7 +259,7 @@ const mapCol = ref(null)
 const mapRef = ref(null)
 
 // Distance: where "near" is measured from, how far, and the list order.
-const origin = ref(null)
+const origin = ref(null)  // set on mount: saved place, Boulder default, or null if cleared
 const radiusMi = ref(DEFAULT_RADIUS_MI)
 const sortBy = ref('score')
 const changing = ref(false)
@@ -287,18 +287,14 @@ onMounted(async () => {
     const m = localStorage.getItem('foray-mode')
     if (m && FORAY_MODES[m]) mode.value = m
     notes.value = JSON.parse(localStorage.getItem('foray-notes') || '{}') || {}
-    origin.value = parseSavedOrigin(localStorage.getItem('foray-origin'))
+    origin.value = initialOrigin(localStorage.getItem('foray-origin'))
     const r = Number(localStorage.getItem('foray-radius'))
     if (RADIUS_OPTIONS_MI.includes(r) && localStorage.getItem('foray-radius') !== null) radiusMi.value = r
     if (localStorage.getItem('foray-sort') === 'near') sortBy.value = 'near'
-  } catch { /* defaults */ }
-  // Refresh a saved GPS start, or take one if location was already allowed; never prompt on load.
-  if (!origin.value || origin.value.source === 'gps') {
-    try {
-      const perm = await navigator.permissions?.query({ name: 'geolocation' })
-      if (perm?.state === 'granted') locate()
-    } catch { /* no permissions API */ }
-  }
+  } catch { origin.value = initialOrigin(null) }
+  // Ask for the user's location on load unless they picked a place or cleared it.
+  // If they decline, the Boulder default (or last GPS fix) stays, with no warning.
+  if (origin.value && (origin.value.source === 'default' || origin.value.source === 'gps')) locate({ quiet: true })
   const q = new URLSearchParams(location.search).get('mode')
   if (q && FORAY_MODES[q]) mode.value = q
   await load()
@@ -366,14 +362,14 @@ function clearOrigin() {
   origin.value = null
   changing.value = false
   picking.value = false
-  try { localStorage.removeItem('foray-origin') } catch { /* ignore */ }
+  try { localStorage.setItem('foray-origin', NO_ORIGIN) } catch { /* ignore */ }
 }
 watch(radiusMi, (r) => { try { localStorage.setItem('foray-radius', String(r)) } catch { /* ignore */ } })
 watch(sortBy, (v) => { try { localStorage.setItem('foray-sort', v) } catch { /* ignore */ } })
 
-function locate() {
+function locate({ quiet = false } = {}) {
   if (!('geolocation' in navigator)) {
-    locMsg.value = 'This browser cannot share your location. Type a town, use the map centre or pick a spot on the map.'
+    if (!quiet) locMsg.value = 'This browser cannot share your location. Type a town, use the map centre or pick a spot on the map.'
     return
   }
   locating.value = true
@@ -385,7 +381,7 @@ function locate() {
     },
     (err) => {
       locating.value = false
-      locMsg.value = `${err.code === err.PERMISSION_DENIED ? 'Location permission denied.' : 'Could not get your location.'} Type a town, use the map centre or pick a spot on the map.`
+      if (!quiet) locMsg.value = `${err.code === err.PERMISSION_DENIED ? 'Location permission denied.' : 'Could not get your location.'} Type a town, use the map centre or pick a spot on the map.`
     },
     { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
   )

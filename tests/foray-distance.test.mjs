@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  distanceMi, filterByDistance, formatDistance, parseLatLon, parseSavedOrigin, radiusLabel, sortByDistance, RADIUS_OPTIONS_MI,
+  DEFAULT_ORIGIN, NO_ORIGIN, initialOrigin, distanceMi, filterByDistance, formatDistance, parseLatLon, parseSavedOrigin, radiusLabel, sortByDistance, RADIUS_OPTIONS_MI,
 } from '../composables/forayDistance.ts'
 
 const boulder = { lat: 40.015, lon: -105.27 }
@@ -51,6 +51,7 @@ test('formatDistance and radiusLabel', () => {
   assert.equal(formatDistance(42.6), '43 mi')
   assert.equal(formatDistance(null), '')
   assert.equal(radiusLabel(25), '25 mi')
+  assert.equal(radiusLabel(50), '50 mi (~1 hr drive)')
   assert.equal(radiusLabel(0), 'Any distance')
   assert.ok(RADIUS_OPTIONS_MI.includes(0))
 })
@@ -62,4 +63,12 @@ test('parseSavedOrigin: valid round-trip, junk rejected', () => {
   assert.equal(parseSavedOrigin('{bad'), null)
   assert.equal(parseSavedOrigin(null), null)
   assert.equal(parseSavedOrigin(JSON.stringify({ ...boulder, source: 'evil' })).source, 'typed')
+})
+
+test('initialOrigin: Boulder by default, saved place wins, cleared stays cleared', () => {
+  assert.deepEqual(initialOrigin(null), DEFAULT_ORIGIN)
+  assert.equal(initialOrigin(null).label, 'Boulder')
+  assert.equal(initialOrigin('{bad').label, 'Boulder')
+  assert.equal(initialOrigin(NO_ORIGIN), null)
+  assert.equal(initialOrigin(JSON.stringify({ ...denver, label: 'Denver', source: 'typed' })).label, 'Denver')
 })

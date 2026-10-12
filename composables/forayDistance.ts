@@ -10,7 +10,7 @@ export const KM_PER_MI = 1.609344
 export const RADIUS_OPTIONS_MI = [10, 25, 50, 100, 0]
 export const DEFAULT_RADIUS_MI = 50
 
-export type OriginSource = 'gps' | 'typed' | 'map'
+export type OriginSource = 'gps' | 'typed' | 'map' | 'default'
 
 export interface Origin {
   lat: number
@@ -18,6 +18,21 @@ export interface Origin {
   /** Short label for the summary line, e.g. "your location" or "Boulder". */
   label: string
   source: OriginSource
+}
+
+/** Start point before the user picks one: Boulder, with the 50 mi default (about an hour's drive). */
+export const DEFAULT_ORIGIN: Origin = { lat: 40.015, lon: -105.2705, label: 'Boulder', source: 'default' }
+
+/** Stored in place of an origin when the user cleared it, so the default does not come back. */
+export const NO_ORIGIN = 'none'
+
+/**
+ * Origin to start the page with, from the saved value: a saved place, nothing
+ * if the user cleared it, otherwise the Boulder default.
+ */
+export function initialOrigin(saved: string | null): Origin | null {
+  if (saved === NO_ORIGIN) return null
+  return parseSavedOrigin(saved) ?? { ...DEFAULT_ORIGIN }
 }
 
 export type ForaySort = 'score' | 'near'
@@ -68,7 +83,7 @@ export function formatDistance(mi: number | null | undefined): string {
   return `${mi < 10 ? mi.toFixed(1) : Math.round(mi)} mi`
 }
 
-export const radiusLabel = (mi: number) => (mi ? `${mi} mi` : 'Any distance')
+export const radiusLabel = (mi: number) => (!mi ? 'Any distance' : mi === 50 ? '50 mi (~1 hr drive)' : `${mi} mi`)
 
 /** Saved origin from localStorage JSON, or null if missing or malformed. */
 export function parseSavedOrigin(json: string | null): Origin | null {
