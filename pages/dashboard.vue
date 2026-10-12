@@ -71,9 +71,9 @@
         <div v-if="editing && dropTarget === w.id && dragFromPalette" class="drop-before-bar"></div>
         <!-- Widgets below the fold build as they scroll in, so opening the
              dashboard does not fetch and compute every one at once. -->
-        <LazyVisible min-height="140px">
+        <RenderWhenVisible min-height="140px">
           <component :is="componentFor(w.type)" :widget="w" :is-editing="editing" />
-        </LazyVisible>
+        </RenderWhenVisible>
       </section>
 
       <!-- Trailing drop zone: append after all existing widgets -->
@@ -280,8 +280,8 @@ onMounted(() => { load(DEFAULTS) })
   display: flex; flex-direction: column; min-width: 0; overflow: hidden;
   transition: box-shadow 0.15s;
 }
-/* LazyVisible wrapper and the .dash-widget inside both stretch to fill the cell */
-.dash-cell :deep(.lazy-visible) { flex: 1; min-height: 0; }
+/* RenderWhenVisible wrapper and the .dash-widget inside both stretch to fill the cell */
+.dash-cell :deep(.render-when-visible) { flex: 1; min-height: 0; }
 .dash-cell :deep(.dash-widget) { flex: 1; min-height: 0; }
 
 .dash-cell.editing { border-style: dashed; cursor: grab; }
