@@ -15,6 +15,7 @@ import { hasCredential } from './ee-credentials.mjs'
 import { estimateUnits, summariseUsage, checkQuota, checkAccessQuota } from './quotas.mjs'
 import { AccessSpecError, findCoveringRegion, listRegions, normaliseAccessSpec } from './access-regions.mjs'
 import { effectiveTier } from './tiers.mjs'
+import { normaliseGbifSpec } from './gbif-bulk.mjs'
 import { STAGES, normaliseSpec, progressPlan } from './ee-pipeline.mjs'
 import { estimateModelUnits, modelPlan } from './maxent.mjs'
 import { explainEmpty } from './job-source.mjs'
@@ -65,6 +66,7 @@ export async function measureSpec(spec, counter) {
  */
 export async function submitJob({ user, profile, spec: rawSpec, counter }) {
   if (rawSpec?.kind === 'access_ingest') return submitAccessJob({ user, profile, spec: rawSpec })
+  if (rawSpec?.kind === 'gbif_ingest') return submitGbifJob({ user, profile, spec: rawSpec })
   const spec = normaliseSpec(rawSpec)
   const client = db()
 
@@ -139,6 +141,22 @@ export async function submitAccessJob({ user, profile, spec: rawSpec, client = d
   }).select().single()
   if (error) throw new QueueError(`Could not queue that job: ${error.message}`, { status: 500 })
   return { job: data, estimate: verdict.estimate, remaining: verdict.remaining }
+}
+
+/**
+ * Queue a GBIF fungi load into observations.geojson (gbif_ingest). Admins only:
+ * it rewrites the shared dataset. No Earth Engine, so it costs no units.
+ */
+export async function submitGbifJob({ user, profile, spec: rawSpec, client = db() }) {
+  if (effectiveTier(profile) !== 'admin') throw new QueueError('That is an administrator action.', { status: 403 })
+  let spec
+  try { spec = normaliseGbifSpec(rawSpec) } catch (err) { throw new QueueError(err.message) }
+  const { data, error } = await client.from('ee_jobs').insert({
+    user_id: user.id, kind: 'gbif_ingest', params: spec, title: spec.title,
+    estimated_units: 0, status: 'queued',
+  }).select().single()
+  if (error) throw new QueueError(`Could not queue that job: ${error.message}`, { status: 500 })
+  return { job: data, estimate: 0 }
 }
 
 /**

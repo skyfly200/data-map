@@ -305,17 +305,22 @@ endpoint reports `loaded: true` only for a bbox that a `loaded` region covers.
 
 `observations.geojson` is iNaturalist only. GBIF adds herbarium specimens,
 Mushroom Observer and survey datasets (about 60k Colorado fungi records beyond
-GBIF's copy of iNaturalist, which the script skips). Load them with:
+GBIF's copy of iNaturalist, which is skipped).
+
+In the app: **Admin → Datasets → GBIF fungi**. *Preview* queues a `gbif_ingest`
+job that reports counts without writing; *Load* merges and uploads. The worker
+gives it the same ~250 s budget as a region load and writes nothing if it runs
+out. From a shell (no time limit):
 
 ```
 SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... \
-  node scripts/load-gbif-fungi.mjs --out /tmp/gbif.geojson   # dry run, prints counts
-  node scripts/load-gbif-fungi.mjs --write                    # merge and upload
+  node scripts/load-gbif-fungi.mjs                       # preview
+  node scripts/load-gbif-fungi.mjs --write               # merge and upload
   node scripts/load-gbif-fungi.mjs --min-year 1970 --max-uncertainty 2000 --write
 ```
 
-It uses GBIF's public search API (no account), drops records with coordinate
-uncertainty over 5 km by default, tags features `source: 'gbif'` and replaces
+Both use GBIF's public search API (no account), drop records with coordinate
+uncertainty over 5 km by default, tag features `source: 'gbif'` and replace
 earlier GBIF features on each run. A full pipeline upload (`upload_datasets.mjs`)
 overwrites `observations.geojson`, so re-run it afterwards.
 

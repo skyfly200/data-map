@@ -300,6 +300,30 @@
 
         <!-- ── Datasets ───────────────────────────────────────────────── -->
         <section v-if="tab === 'datasets' && !loading" class="panel">
+          <div class="gbif">
+            <strong>GBIF fungi</strong>
+            <p class="hint lead">
+              Adds Colorado fungi from GBIF (herbarium specimens, Mushroom Observer, surveys) to the
+              main observations dataset that Foray and the map read. GBIF's copy of iNaturalist is
+              skipped. Preview reports counts without writing; Load replaces any earlier GBIF records.
+            </p>
+            <div class="gbif-form">
+              <label class="stack">
+                <span>Max coordinate uncertainty (m)</span>
+                <input v-model="gbif.maxUncertaintyM" type="number" min="1" inputmode="numeric" placeholder="no limit">
+              </label>
+              <label class="stack">
+                <span>Earliest year</span>
+                <input v-model="gbif.minYear" type="number" min="1700" inputmode="numeric" placeholder="any">
+              </label>
+              <div class="gbif-buttons">
+                <button class="btn" :disabled="gbifRunning" @click="runGbif(true)">Preview</button>
+                <button class="btn primary" :disabled="gbifRunning" @click="runGbif(false)">Load</button>
+              </div>
+            </div>
+            <p v-if="gbif.job" class="msg" :class="{ error: gbif.job.status === 'failed' }">{{ gbifStatus }}</p>
+          </div>
+
           <p v-if="!datasets.length" class="msg">No saved datasets yet.</p>
 
           <ul v-else class="rows">
@@ -602,6 +626,53 @@ async function setVisibility(d, visibility) {
   }
 }
 
+// GBIF fungi load: queued as a gbif_ingest job and watched until it settles.
+const gbif = reactive({ maxUncertaintyM: 5000, minYear: '', job: null })
+const gbifRunning = computed(() => ['queued', 'running'].includes(gbif.job?.status))
+const gbifStatus = computed(() => {
+  const j = gbif.job
+  if (!j) return ''
+  if (j.status === 'queued') return 'Queued…'
+  if (j.status === 'running') return j.message || 'Running…'
+  if (j.status === 'failed') return `Failed: ${j.error || 'unknown error'}`
+  const r = j.result_meta || {}
+  const n = (v) => Number(v || 0).toLocaleString()
+  const head = `${n(r.gbifRecords)} GBIF records, ${n(r.kept)} kept, ${n(r.added)} new.`
+  return r.written
+    ? `${head} Dataset now has ${n(r.totalAfter)} observations.`
+    : `${head} Preview only: the dataset would have ${n(r.totalAfter)} observations (now ${n(r.existing)}).`
+})
+
+async function runGbif(dryRun) {
+  if (!dryRun && !confirm('Rewrite the shared observations dataset with GBIF fungi added?')) return
+  error.value = ''
+  try {
+    const data = await call('/.netlify/functions/ee-jobs', {
+      method: 'POST',
+      body: JSON.stringify({
+        kind: 'gbif_ingest', dryRun,
+        maxUncertaintyM: gbif.maxUncertaintyM === '' ? null : gbif.maxUncertaintyM,
+        minYear: gbif.minYear === '' ? null : gbif.minYear,
+      }),
+    })
+    gbif.job = data.job
+    watchGbif(data.job.id)
+  } catch (e) {
+    error.value = e.message
+  }
+}
+
+async function watchGbif(id) {
+  while (gbif.job?.id === id && gbifRunning.value) {
+    await new Promise((r) => setTimeout(r, 3000))
+    try {
+      const { jobs } = await call('/.netlify/functions/ee-jobs')
+      const j = (jobs || []).find((x) => x.id === id)
+      if (j && gbif.job?.id === id) gbif.job = j
+    } catch { /* keep polling */ }
+  }
+}
+
 async function removeDataset(d) {
   if (!confirm(`Remove "${d.title}" from the dataset list?`)) return
   error.value = ''
@@ -710,6 +781,11 @@ input, select, textarea { background: var(--bg); color: var(--text); border: 1px
 .msg { margin: 8px 0; font-size: 0.82rem; color: var(--muted); }
 .msg.error { color: #b3492f; }
 .msg.ok { color: #3d8b5f; }
+.gbif { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; }
+.gbif .hint.lead { margin: 4px 0 10px; }
+.gbif-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.gbif-form .stack { flex: 1 1 160px; }
+.gbif-buttons { display: flex; gap: 8px; }
 .hint { margin: 10px 0 0; font-size: 0.76rem; color: var(--muted); }
 .hint.lead { margin: 0 0 14px; font-size: 0.82rem; line-height: 1.5; max-width: 68ch; }
 .hint code, .row-top code {

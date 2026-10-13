@@ -2,8 +2,11 @@
 //
 // The app's observations come from iNaturalist, and GBIF already mirrors
 // iNaturalist research-grade records, so the useful part of GBIF is everything
-// else: herbarium specimens, Mushroom Observer and other survey datasets. Pure
-// helpers here; the script does the network and storage work.
+// else: herbarium specimens, Mushroom Observer and other survey datasets. Run
+// from the admin page as a `gbif_ingest` job (worker-run.mjs) or from
+// scripts/load-gbif-fungi.mjs.
+
+import { REGIONS } from './access-regions.mjs'
 
 /** GBIF backbone key for kingdom Fungi. */
 export const FUNGI_TAXON_KEY = 5
@@ -113,4 +116,110 @@ export function mergeGbif(baseline, gbifFeatures) {
     added: add.length,
     replaced: (baseline?.features?.length || 0) - kept.length,
   }
+}
+
+/** Normalise a gbif_ingest job spec. Colorado is the only region for now. */
+export function normaliseGbifSpec(raw = {}) {
+  const maxU = raw.maxUncertaintyM === null || raw.maxUncertaintyM === '' ? null : Number(raw.maxUncertaintyM ?? DEFAULT_MAX_UNCERTAINTY_M)
+  const minYear = raw.minYear == null || raw.minYear === '' ? null : Number(raw.minYear)
+  if (maxU != null && !(maxU > 0)) throw new Error('Max coordinate uncertainty must be a positive number of metres.')
+  if (minYear != null && !(minYear >= 1700 && minYear <= new Date().getUTCFullYear())) throw new Error('Earliest year is out of range.')
+  const dryRun = raw.dryRun !== false
+  return {
+    kind: 'gbif_ingest',
+    region: 'colorado',
+    bbox: REGIONS.colorado.bbox,
+    maxUncertaintyM: maxU,
+    minYear,
+    dryRun,
+    title: `GBIF fungi, Colorado (${dryRun ? 'preview' : 'load'})`,
+  }
+}
+
+async function getJson(url, fetchImpl, tries = 4) {
+  for (let i = 0; ; i++) {
+    try {
+      const res = await fetchImpl(url)
+      if (res.ok) return await res.json()
+      if (res.status < 500 && res.status !== 429) throw new Error(`GBIF ${res.status}`)
+    } catch (e) {
+      if (i >= tries) throw e
+    }
+    if (i >= tries) throw new Error(`GBIF failed after ${tries + 1} tries`)
+    await new Promise((r) => setTimeout(r, 1000 * 2 ** i))
+  }
+}
+
+/**
+ * Every kept GBIF fungi feature in a bbox. Pages run `concurrency` at a time so
+ * a state's worth (a few hundred pages) fits inside one worker run; past
+ * `deadlineMs` it throws rather than return a partial set that a write would
+ * then treat as complete.
+ */
+export async function fetchGbifFungi({
+  bbox, years = [1800, new Date().getUTCFullYear()], filters = {},
+  fetchImpl = fetch, concurrency = 4, deadlineMs = null, onProgress = null,
+}) {
+  const count = async (y) => {
+    const p = searchParams({ bbox, years: y })
+    p.set('limit', '0')
+    return (await getJson(`${GBIF_SEARCH}?${p}`, fetchImpl)).count ?? 0
+  }
+  const parts = await partitionYears(count, years)
+  const total = parts.reduce((a, p) => a + p.count, 0)
+  const pages = parts.flatMap(({ years: y, count: n }) =>
+    Array.from({ length: Math.ceil(Math.min(n, SEARCH_WINDOW) / PER_PAGE) }, (_, i) => ({ years: y, offset: i * PER_PAGE })))
+
+  const features = []
+  const dropped = {}
+  let read = 0
+  let next = 0
+  const worker = async () => {
+    while (next < pages.length) {
+      if (deadlineMs && Date.now() > deadlineMs) throw new Error(`Ran out of time after ${read} of ${total} GBIF records; nothing was written.`)
+      const { years: y, offset } = pages[next++]
+      const p = searchParams({ bbox, years: y })
+      p.set('limit', String(PER_PAGE))
+      p.set('offset', String(offset))
+      const data = await getJson(`${GBIF_SEARCH}?${p}`, fetchImpl)
+      for (const rec of data.results || []) {
+        const why = dropReason(rec, filters)
+        if (why) dropped[why] = (dropped[why] || 0) + 1
+        else features.push(gbifRecordToFeature(rec))
+      }
+      read += data.results?.length || 0
+      await onProgress?.({ read, total, kept: features.length })
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, pages.length) }, worker))
+  return { features, dropped, total, read }
+}
+
+/**
+ * Fetch, merge into observations.geojson and (unless dryRun) upload. Refuses to
+ * write when the live dataset could not be read, so a storage hiccup can never
+ * replace the iNaturalist data with GBIF alone.
+ */
+export async function runGbifIngest({ spec, readJson, uploadJson, fetchImpl, deadlineMs, onProgress }) {
+  const filters = { maxUncertaintyM: spec.maxUncertaintyM, minYear: spec.minYear }
+  const { features, dropped, total, read } = await fetchGbifFungi({
+    bbox: spec.bbox, filters, fetchImpl, deadlineMs,
+    onProgress: onProgress && (({ read: r, total: t, kept }) => onProgress({
+      fraction: t ? 0.9 * (r / t) : 0, stage: 'gbif', message: `${r.toLocaleString()} of ${t.toLocaleString()} GBIF records read, ${kept.toLocaleString()} kept`,
+    })),
+  })
+  const baseline = await readJson('observations.geojson')
+  const existing = baseline?.features?.length || 0
+  const { collection, added, replaced } = mergeGbif(baseline, features)
+  const result = {
+    gbifRecords: total, read, kept: features.length, dropped,
+    existing, replaced, added, totalAfter: collection.features.length, dryRun: spec.dryRun, written: false,
+  }
+  if (!spec.dryRun) {
+    if (!existing) throw new Error('Could not read the live observations dataset, so nothing was written.')
+    await onProgress?.({ fraction: 0.95, stage: 'write', message: 'Writing observations.geojson' })
+    await uploadJson('observations.geojson', collection)
+    result.written = true
+  }
+  return result
 }
