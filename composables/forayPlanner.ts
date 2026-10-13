@@ -11,6 +11,7 @@
 import { pointInArea } from '../netlify/lib/access-ingest.mjs'
 import { collectingRuleById } from '../netlify/lib/collecting-rules.mjs'
 import { encodePlusCode as plusCode } from './plusCode'
+import { COLORADO_TOWNS } from './coloradoTowns'
 
 export type PublicAccess = 'open' | 'restricted' | 'closed' | 'unknown'
 export type FeeStatus = 'free' | 'fee' | 'unknown'
@@ -354,9 +355,12 @@ export function shortlistToText(rows: ShortlistRow[], title = 'Foray shortlist')
 }
 
 // ── Built-up places ────────────────────────────────────────────────────────
-// A place counts as built up when a large share of its finds sit on ESA
-// WorldCover "Built-up" ground (lawns, verges, gardens in town). Leafy suburbs
-// can read as tree cover at 10 m, so the cut is deliberately low.
+// A place counts as built up when it is inside a town (a circle around each
+// Colorado city or town of 1,000+ people, sized by population), or when many
+// of its finds sit on ESA WorldCover "Built-up" ground. Finds alone miss most
+// towns: park and garden finds read as tree cover or grassland at 10 m, and new
+// finds often have no land cover at all. Federal and state land (forest, BLM,
+// parks) is never built up, even at a town's edge.
 
 export type BuiltUpMode = 'exclude' | 'all' | 'only'
 export const BUILT_UP_LABEL = 'Built-up'
@@ -367,6 +371,21 @@ export const BUILT_UP_OPTIONS: { value: BuiltUpMode, label: string, title: strin
   { value: 'all', label: 'Everywhere', title: 'Search everywhere' },
   { value: 'only', label: 'Towns only', title: 'Only built-up places' },
 ]
+const WILD_MANAGERS = new Set(['blm', 'usfs', 'nps', 'fws', 'state_park', 'state', 'federal_other'])
+
+/** Built-up radius of a town in km: grows with the square root of population, 1 to 12 km. */
+export const townRadiusKm = (pop: number) => Math.min(12, Math.max(1, 0.45 * Math.sqrt(Math.max(0, pop) / 1000)))
+
+/** The town whose built-up circle holds [lat, lon], or null. */
+export function townAt(lat: number, lon: number, towns: [string, number, number, number][] = COLORADO_TOWNS): string | null {
+  const kx = 111.32 * Math.cos((lat * Math.PI) / 180)
+  for (const [name, tl, tn, pop] of towns) {
+    const dy = (lat - tl) * 110.57, dx = (lon - tn) * kx
+    const r = townRadiusKm(pop)
+    if (dx * dx + dy * dy <= r * r) return name
+  }
+  return null
+}
 
 /** Share of a place's finds on built-up ground; null without land-cover data. */
 export function builtUpShare(cover: Map<string, number> | undefined | null): number | null {
@@ -375,11 +394,17 @@ export function builtUpShare(cover: Map<string, number> | undefined | null): num
   return all ? built / all : null
 }
 
-/** Does a place pass the built-up toggle? Places without land-cover data count as not built up. */
-export function passesBuiltUp(share: number | null, mode: BuiltUpMode): boolean {
-  if (mode === 'all') return true
-  const built = share != null && share >= BUILT_UP_SHARE
-  return mode === 'only' ? built : !built
+/** Is this place built up? (see the note above). */
+export function isBuiltUp(c: { lat: number, lon: number, cover?: Map<string, number> | null, access?: { manager_type: string | null } }): boolean {
+  if (WILD_MANAGERS.has(String(c.access?.manager_type || '').toLowerCase())) return false
+  if (townAt(c.lat, c.lon)) return true
+  const share = builtUpShare(c.cover)
+  return share != null && share >= BUILT_UP_SHARE
+}
+
+/** Does a place pass the built-up toggle? */
+export function passesBuiltUp(builtUp: boolean, mode: BuiltUpMode): boolean {
+  return mode === 'all' || (mode === 'only' ? builtUp : !builtUp)
 }
 
 export const parseBuiltUp = (v: unknown): BuiltUpMode => (v === 'all' || v === 'only' || v === 'exclude' ? v : DEFAULT_BUILT_UP)

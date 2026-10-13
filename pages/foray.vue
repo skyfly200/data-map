@@ -471,7 +471,7 @@ import {
 import { useForayWalk } from '~/composables/useForayWalk'
 import {
   BUILT_UP_OPTIONS, COLORADO_BBOX, DEFAULT_BUILT_UP, DISCLAIMER, LIKELY_DISCLAIMER, LIKELY_LABEL, FORAY_MODES, attachAccess, buildShortlist,
-  builtUpShare, collectingLabel, effectiveSwitches, feeLabel, filterByAccess, parseBuiltUp, passesBuiltUp, shortlistToCsv,
+  collectingLabel, isBuiltUp, effectiveSwitches, feeLabel, filterByAccess, parseBuiltUp, passesBuiltUp, shortlistToCsv,
   shortlistToText, UNKNOWN_ACCESS,
 } from '~/composables/forayPlanner'
 import {
@@ -754,7 +754,7 @@ const reachText = computed(() => [
   ...(driveArea.value ? [driveLabel(driveMin.value)] : []),
 ].join(' and ') || 'any distance')
 const withWalk = computed(() => near.value
-  .filter((c) => passesBuiltUp(c.predicted ? null : builtUpShare(c.cover), builtUp.value))
+  .filter((c) => passesBuiltUp(isBuiltUp(c), builtUp.value))
   .map((c) => {
   const info = walk.info.value.get(c.key) || null
   const tier = walkTier(info, access.loaded.value)

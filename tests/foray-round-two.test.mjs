@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { DEFAULT_DRIVE_MIN, DEFAULT_RADIUS_MI, driveLabel, filterByDrive } from '../composables/forayDistance.ts'
-import { BUILT_UP_SHARE, builtUpShare, parseBuiltUp, passesBuiltUp } from '../composables/forayPlanner.ts'
+import { builtUpShare, isBuiltUp, parseBuiltUp, passesBuiltUp, townAt, townRadiusKm } from '../composables/forayPlanner.ts'
 import { isEdible } from '../composables/edibles.ts'
 import { placeKey, placeLabel, reverseUrl } from '../composables/placeName.ts'
 import { parseDriveQuery, toMultiPolygon, valhallaUrl } from '../netlify/lib/drive-time.mjs'
@@ -58,14 +58,21 @@ test('drive-time function: ORS with a key, Valhalla without, 502 when neither an
   assert.equal((await handleDriveTime(new Request('http://x/?lat=1'), {}, ok)).status, 400)
 })
 
-test('built-up toggle: skip towns, everywhere, towns only', () => {
-  const town = builtUpShare(new Map([['Built-up', 6], ['Tree cover', 4]]))
-  const forest = builtUpShare(new Map([['Built-up', 1], ['Tree cover', 9]]))
-  assert.equal(town, 0.6); assert.ok(forest < BUILT_UP_SHARE)
+test('built-up: inside a town circle, or mostly built-up finds; federal and state land never', () => {
+  assert.equal(townAt(40.015, -105.27), 'Boulder')
+  assert.equal(townAt(40.06, -105.58), null) // Brainard Lake road, open country
+  assert.ok(townRadiusKm(700000) <= 12 && townRadiusKm(1500) === 1)
+  const boulder = { lat: 40.02, lon: -105.26, cover: new Map([['Tree cover', 9]]) }
+  const forest = { lat: 40.07, lon: -105.58, cover: new Map([['Tree cover', 9], ['Built-up', 1]]) }
+  const subdivision = { lat: 39.3, lon: -104.6, cover: new Map([['Built-up', 6], ['Grassland', 4]]) }
+  assert.ok(isBuiltUp(boulder), 'in Boulder despite tree-cover finds')
+  assert.ok(!isBuiltUp(forest))
+  assert.ok(isBuiltUp(subdivision), 'mostly built-up finds outside any listed town')
+  assert.ok(!isBuiltUp({ ...boulder, access: { manager_type: 'usfs' } }))
   assert.equal(builtUpShare(new Map()), null)
-  assert.ok(!passesBuiltUp(town, 'exclude') && passesBuiltUp(forest, 'exclude') && passesBuiltUp(null, 'exclude'))
-  assert.ok(passesBuiltUp(town, 'all') && passesBuiltUp(forest, 'all'))
-  assert.ok(passesBuiltUp(town, 'only') && !passesBuiltUp(forest, 'only') && !passesBuiltUp(null, 'only'))
+  assert.ok(!passesBuiltUp(true, 'exclude') && passesBuiltUp(false, 'exclude'))
+  assert.ok(passesBuiltUp(true, 'all') && passesBuiltUp(false, 'all'))
+  assert.ok(passesBuiltUp(true, 'only') && !passesBuiltUp(false, 'only'))
   assert.equal(parseBuiltUp('only'), 'only'); assert.equal(parseBuiltUp(null), 'exclude')
 })
 
