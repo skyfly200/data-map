@@ -29,6 +29,8 @@ const props = defineProps({
   /** Distance origin {lat, lon, label}; drawn as a blue dot with the radius ring. */
   origin: { type: Object, default: null },
   radiusMi: { type: Number, default: 0 },
+  /** Drive-time area from the origin (GeoJSON MultiPolygon), drawn as a shaded outline; null for none. */
+  driveArea: { type: Object, default: null },
   /** When true, the next map tap emits `pick` with its [lat, lon] instead of selecting. */
   picking: { type: Boolean, default: false },
 })
@@ -115,6 +117,11 @@ function drawOrigin() {
       radius: props.radiusMi * 1609.344, color: '#2a78d6', weight: 1.5, dashArray: '6 4', fill: false, interactive: false,
     }))
   }
+  if (props.driveArea?.coordinates?.length) {
+    originLayer.addLayer(L.geoJSON({ type: 'Feature', geometry: props.driveArea, properties: {} }, {
+      style: { color: '#7b4fd6', weight: 1.5, fillColor: '#7b4fd6', fillOpacity: 0.06 }, interactive: false,
+    }))
+  }
   originLayer.addLayer(L.circleMarker([o.lat, o.lon], { radius: 7, color: '#fff', weight: 2, fillColor: '#2a78d6', fillOpacity: 1 })
     .bindTooltip(o.label || 'Start', { direction: 'top' }))
   originLayer.addTo(map)
@@ -126,11 +133,15 @@ function fit() {
   if (!map || !L) return
   const pts = (props.ranked.length ? props.ranked : props.cells).map((c) => [c.lat, c.lon])
   const o = props.origin
-  const sig = pts.map((p) => p.join()).join('|') + (o ? `@${o.lat},${o.lon},${props.radiusMi}` : '')
+  const sig = pts.map((p) => p.join()).join('|') + (o ? `@${o.lat},${o.lon},${props.radiusMi},${props.driveArea ? 'd' : ''}` : '')
   if (sig === fittedFor) return
   fittedFor = sig
   if (o) pts.push([o.lat, o.lon])
-  // Nothing within reach: show the whole radius ring so the empty area is visible.
+  // Nothing within reach: show the drive-time area or radius ring so the empty area is visible.
+  if (o && props.driveArea && !props.ranked.length) {
+    const b = L.geoJSON(props.driveArea).getBounds()
+    if (b.isValid()) { map.fitBounds(b, { padding: [16, 16] }); return }
+  }
   if (o && props.radiusMi && !props.ranked.length) {
     map.fitBounds(L.latLng(o.lat, o.lon).toBounds(props.radiusMi * 1609.344 * 2), { padding: [16, 16] })
     return
@@ -173,7 +184,7 @@ watch(() => [props.overlay, props.overlayOpacity], drawOverlay)
 watch(() => props.opportunities, draw)
 
 watch(() => [props.cells, props.ranked], () => { fit(); draw() })
-watch(() => [props.origin, props.radiusMi], () => { drawOrigin(); fit() })
+watch(() => [props.origin, props.radiusMi, props.driveArea], () => { drawOrigin(); fit() })
 watch(() => props.picking, (on) => { if (el.value) el.value.classList.toggle('picking', on) })
 
 /** Current map centre as [lat, lon], or null before the map exists. */

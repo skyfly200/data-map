@@ -279,6 +279,7 @@ real Earth Engine, PAD-US, RIDB, Overpass or Vercel.
 | `EE_CREDENTIAL_KEY` | functions | 32 random bytes, base64 (`openssl rand -base64 32`). Encrypts members' own Earth Engine keys (AES-256-GCM). Without it the `ee-credentials` endpoint answers 503 and reports storage unavailable. Losing it makes stored keys unreadable. |
 | `RIDB_API_KEY` | functions, script | Recreation.gov key. Enables the fee overlay (`fee_source = 'ridb'`). Without it a load skips RIDB and keeps estimates. |
 | `PADUS_FEATURE_URL` | functions, script | ArcGIS FeatureServer layer for PAD-US. The built-in default and the field names the parser reads are **unverified**. |
+| `ORS_API_KEY` | functions | Optional OpenRouteService key for the planner's drive-time areas (`drive-time` endpoint, up to 60 min). Without it, or for longer drives, the keyless FOSSGIS Valhalla server is used; if neither answers, the planner uses straight-line distance only. |
 | `OVERPASS_URL` | functions, script | Overpass endpoint for roads and trails (default `overpass-api.de`). |
 | `STORAGE_BACKEND` | functions | `supabase` or `netlify`. Default: `netlify` when running on Netlify, else `supabase`. |
 | `SUPABASE_STORAGE_BUCKET` | functions | Bucket for the key/value stores when the backend is Supabase. Default: the datasets bucket. |

@@ -19,6 +19,11 @@
             <option v-for="r in RADIUS_OPTIONS_MI" :key="r" :value="r">{{ radiusLabel(r) }}</option>
           </select>
         </label>
+        <label class="near-r">and
+          <select v-model.number="driveMin" :disabled="!origin" aria-label="Drive time">
+            <option v-for="m in DRIVE_OPTIONS_MIN" :key="m" :value="m">{{ driveLabel(m) }}</option>
+          </select>
+        </label>
         <div v-if="origin" class="seg seg-sm" role="group" aria-label="Sort places">
           <button :class="{ on: sortBy === 'score' }" :aria-pressed="sortBy === 'score'" @click="sortBy = 'score'">Best</button>
           <button :class="{ on: sortBy === 'near' }" :aria-pressed="sortBy === 'near'" @click="sortBy = 'near'">Nearest</button>
@@ -37,6 +42,12 @@
         <button v-if="origin && origin.source !== 'default'" class="link-btn" @click="changing = false; picking = false">Done</button>
       </div>
       <p v-if="locMsg" class="notice warn" role="status">{{ locMsg }}</p>
+      <p v-if="origin && driveMin && drive.busy.value" class="notice" role="status">Working out where you can drive in {{ driveLabel(driveMin).replace(' drive', '') }}…</p>
+      <p v-else-if="origin && driveMin && drive.message.value" class="notice warn" role="status">{{ drive.message.value }}</p>
+      <div class="near-row">
+        <span class="near-what">Search</span>
+        <TriToggle v-model="builtUp" :options="BUILT_UP_OPTIONS" label="Built-up places" />
+      </div>
     </section>
 
     <details class="filters" :open="filtersOpen" @toggle="filtersOpen = $event.target.open">
@@ -48,8 +59,16 @@
         <label class="ctl">When
           <select v-model="timeSel">
             <option value="now">Now</option>
+            <option value="date">On a date</option>
+            <option value="range">Between dates</option>
             <option v-for="(m, i) in MONTH_LABELS" :key="m" :value="String(i + 1)">{{ m }}</option>
           </select>
+        </label>
+        <label v-if="timeSel === 'date' || timeSel === 'range'" class="ctl">{{ timeSel === 'range' ? 'From' : 'Date' }}
+          <input v-model="planDate" type="date" :aria-label="timeSel === 'range' ? 'First day' : 'Date to plan for'">
+        </label>
+        <label v-if="timeSel === 'range'" class="ctl">To
+          <input v-model="planEnd" type="date" :min="planDate" aria-label="Last day">
         </label>
         <label class="ctl">Land cover
           <select v-model="landCover">
@@ -75,7 +94,10 @@
           </select>
         </label>
         <label class="chk"><input v-model="walkSw.accessible" type="checkbox"> Accessible parking nearby</label>
+        <label class="chk"><input v-model="ediblesOnly" type="checkbox"> Edibles only</label>
       </section>
+      <p v-if="planNote" class="notice warn" role="status">{{ planNote }}</p>
+      <p v-if="ediblesOnly" class="notice">{{ EDIBLE_DISCLAIMER }}</p>
       <p v-if="walkNote" class="notice" :class="{ warn: walk.message.value }" role="status">{{ walkNote }}</p>
       <p v-if="access.message.value" class="notice warn" role="status">{{ access.message.value }}</p>
       <p v-else-if="anySwitch" class="notice" role="status">
@@ -87,19 +109,16 @@
     <details class="filters" :open="tuneOpen" @toggle="tuneOpen = $event.target.open">
       <summary>
         <span class="f-title">Scoring</span>
-        <span class="f-sum">{{ params.grading === 'absolute' ? 'Fixed scale' : 'Relative to the map' }}{{ paramsDefault ? '' : ' · tuned' }}</span>
+        <span class="f-sum">Against {{ GRADING_LABELS[params.grading].toLowerCase() }}{{ paramsDefault ? '' : ' · tuned' }}</span>
       </summary>
       <section class="tune">
         <div class="tune-row">
-          <span class="tune-l">Grade places</span>
-          <div class="seg seg-sm" role="group" aria-label="Grading">
-            <button :class="{ on: params.grading === 'relative' }" :aria-pressed="params.grading === 'relative'" @click="params.grading = 'relative'">Against each other</button>
-            <button :class="{ on: params.grading === 'absolute' }" :aria-pressed="params.grading === 'absolute'" @click="params.grading = 'absolute'">On a fixed scale</button>
+          <span class="tune-l">Grade against</span>
+          <div class="seg seg-sm" role="group" aria-label="Grade against">
+            <button v-for="g in GRADINGS" :key="g" :class="{ on: params.grading === g }" :aria-pressed="params.grading === g" @click="params.grading = g">{{ GRADING_LABELS[g] }}</button>
           </div>
         </div>
-        <p class="notice">{{ params.grading === 'absolute'
-          ? `Grades use fixed cut-offs, so a quiet month shows mostly Low. Great means at least ${Math.round(ABSOLUTE_FULL * 75)}% of a place's finds are in-season species near their peak.`
-          : 'The best place on the map is always Great and the weakest Low, whatever the month.' }}</p>
+        <p class="notice">{{ gradingText }}</p>
         <label class="tune-s">
           <span><strong>Peak focus</strong> · a species {{ params.halfScale }} days off its peak counts half</span>
           <input v-model.number="params.halfScale" type="range" :min="PARAM_LIMITS.halfScale.min" :max="PARAM_LIMITS.halfScale.max" :step="PARAM_LIMITS.halfScale.step">
@@ -182,25 +201,26 @@
         <div class="map-box">
           <ClientOnly>
             <ForayMap ref="mapRef" :cells="shown" :ranked="ranked" :selected-key="selectedKey" :overlay="overlayTemplate" :overlay-opacity="layerOpacity"
-                      :opportunities="blendOn ? [] : oppCells" :origin="origin" :radius-mi="radiusMi" :picking="picking"
+                      :opportunities="blendOn ? [] : oppCells" :origin="origin" :radius-mi="radiusMi" :drive-area="driveArea" :picking="picking"
                       @select="selectedKey = $event" @view="view = $event" @pick="onPick" />
             <template #fallback><div class="map-fallback">Loading map…</div></template>
           </ClientOnly>
         </div>
-        <div class="grad" role="img" :aria-label="`Colour scale from Low to Great, ${params.grading === 'absolute' ? 'fixed' : 'relative to the places on the map'}`">
+        <div class="grad" role="img" :aria-label="`Colour scale from Low to Great, graded against ${GRADING_LABELS[params.grading].toLowerCase()}`">
           <div class="grad-bar" :style="{ background: GRADIENT }">
             <i v-for="x in [25, 50, 75]" :key="x" class="grad-tick" :style="{ left: `${x}%` }"></i>
             <i v-if="sel" class="grad-sel" :style="{ left: `${sel.t * 100}%` }" :title="`Selected place: ${pct(sel.t)}`"></i>
           </div>
           <div class="grad-labels"><span v-for="b in BANDS" :key="b">{{ b }}</span></div>
-          <div class="grad-cap">{{ params.grading === 'absolute' ? 'Fixed scale' : 'Weakest → strongest place on the map' }}<template v-if="sel"> · ▲ selected</template></div>
+          <div class="grad-cap">{{ gradeCaption }}<template v-if="sel"> · ▲ selected</template></div>
         </div>
         <div class="legend">
           <span class="lg"><i class="pin">1</i>Top places</span>
           <span v-if="blendOn && scored.some((c) => c.predicted)" class="lg"><i class="pred"></i>Predicted</span>
           <span v-if="opps.ranked.length" class="lg"><i class="pin opp">A</i>Few finds, promising</span>
           <span v-if="overlayTemplate" class="lg"><i class="ramp" :style="{ background: `linear-gradient(90deg, ${SUITABILITY_STOPS.join(',')})` }"></i>{{ layerSel === 'habitat' ? 'Habitat match' : 'Model blend' }} low → high</span>
-        <span v-if="origin" class="lg"><i class="me"></i>Start</span>
+          <span v-if="origin" class="lg"><i class="me"></i>Start</span>
+          <span v-if="driveArea" class="lg"><i class="drive"></i>{{ driveLabel(driveMin) }}</span>
         </div>
         <details class="howto">
           <summary>How to read this map</summary>
@@ -217,8 +237,9 @@
           <div class="p-head">
             <span v-if="selRank" class="p-rank">{{ selRank }}</span>
             <div class="p-title">
-              <strong>{{ cellSiteName(sel) }}</strong>
-              <span class="p-sub">{{ sel.landCover || 'Land cover unknown' }}<template v-if="sel.distMi != null"> · {{ formatDistance(sel.distMi) }} away</template><template v-if="sel.access.areaName"> · {{ sel.lat.toFixed(3) }}, {{ sel.lon.toFixed(3) }}</template></span>
+              <strong>{{ titleFor(sel) }}</strong>
+              <span class="p-coords">{{ sel.lat.toFixed(5) }}, {{ sel.lon.toFixed(5) }} · {{ plusCode(sel.lat, sel.lon) }}</span>
+              <span class="p-sub"><template v-if="sel.access.areaName && titleFor(sel) !== sel.access.areaName">{{ sel.access.areaName }} · </template>{{ sel.landCover || 'Land cover unknown' }}<template v-if="sel.distMi != null"> · {{ formatDistance(sel.distMi) }} away</template></span>
             </div>
             <span v-if="sel.predicted" class="chip pred-chip">Predicted</span>
             <span class="band" :class="scoreBand(sel.t).toLowerCase()">{{ scoreBand(sel.t) }}</span>
@@ -234,6 +255,7 @@
           <ul v-if="sel.components.length" class="p-species">
             <li v-for="x in sel.components.slice(0, 5)" :key="x.species">
               <a :href="taxonUrl(x.species)" target="_blank" rel="noopener"><em>{{ x.species }}</em></a>
+              <span v-if="isEdible(x.species)" class="chip ok">edible</span>
               <span class="p-n">{{ x.count }} {{ x.count === 1 ? 'find' : 'finds' }}</span>
             </li>
           </ul>
@@ -257,8 +279,7 @@
               </li>
               <li>
                 <strong>{{ selWhy.band }}.</strong>{{ ' ' }}
-                <template v-if="selWhy.grading === 'absolute'">On the fixed scale it reaches {{ pct(selWhy.t) }} of the top mark ({{ pct(ABSOLUTE_FULL) }} adjusted score).</template>
-                <template v-else>It sits {{ pct(selWhy.t) }} of the way from the weakest to the strongest place on the map.</template>
+                It reaches {{ pct(selWhy.t) }} of the top mark, which is set by the strongest tenth of places {{ GRADING_REF[selWhy.grading] }}<template v-if="selWhy.top"> ({{ pct(selWhy.top * ABSOLUTE_FULL) }} adjusted score)</template>.
                 Ranked {{ selWhy.rank }} of {{ selWhy.of }}. Great is 75% and up, Good 50%, Fair 25%.
               </li>
             </ol>
@@ -295,15 +316,17 @@
           <div class="p-links">
             <a :href="directionsUrl(sel)" target="_blank" rel="noopener">{{ sel.walkInfo?.parking ? 'Directions to parking' : 'Directions' }}</a>
             <a :href="inatUrlFor(sel)" target="_blank" rel="noopener">Finds on iNaturalist</a>
+            <NuxtLink :to="mapUrlFor(sel)">Show on map page</NuxtLink>
           </div>
         </article>
       </div>
 
       <div class="list-col">
-        <h3 v-if="ranked.length" class="list-h">Top {{ ranked.length }} places {{ whenText }}<template v-if="origin && radiusMi"> within {{ radiusMi }} mi</template><template v-if="origin && sortBy === 'near'">, nearest first</template></h3>
+        <h3 v-if="ranked.length" class="list-h">Top {{ ranked.length }} {{ ediblesOnly ? 'places for edibles' : 'places' }} {{ whenText }}<template v-if="origin && reachText !== 'any distance'"> within {{ reachText }}</template><template v-if="origin && sortBy === 'near'">, nearest first</template></h3>
         <div v-if="!shown.length && !pending" class="empty">
-          <template v-if="!base.cells.length">No places with enough finds for this time and land cover. Only places that already have finds can be scored.</template>
-          <template v-else-if="scored.length && origin">No scored places within {{ radiusMi }} mi of {{ origin.label }}. Try a wider distance.</template>
+          <template v-if="!base.cells.length">No places with enough finds for this time and land cover{{ ediblesOnly ? ' with edibles in season' : '' }}. Only places that already have finds can be scored.</template>
+          <template v-else-if="scored.length && origin && !inReach.length">No scored places within {{ reachText }} of {{ origin.label }}. Try a wider distance or a longer drive.</template>
+          <template v-else-if="builtUp !== 'all' && !withWalk.length">No {{ builtUp === 'only' ? 'built-up' : 'non-built-up' }} places in reach. Switch Search to Everywhere.</template>
           <template v-else>No places pass the current filters. Turn a switch off{{ access.loaded.value && !sw.includeUnknown ? ' or keep unknown places' : '' }}.</template>
         </div>
 
@@ -318,7 +341,10 @@
           <li v-for="(c, i) in ranked" :key="c.key" :class="{ sel: c.key === selectedKey }" @click="pick(c.key)">
             <div class="row1">
               <span class="rk">{{ i + 1 }}</span>
-              <strong class="site">{{ cellSiteName(c) }}</strong>
+              <span class="site">
+                <strong>{{ titleFor(c) }}</strong>
+                <span class="coords">{{ c.lat.toFixed(4) }}, {{ c.lon.toFixed(4) }} · {{ plusCode(c.lat, c.lon) }}</span>
+              </span>
               <span v-if="c.distMi != null" class="dist">{{ formatDistance(c.distMi) }}</span>
               <span v-if="c.predicted" class="chip pred-chip">Predicted</span>
               <span class="band" :class="scoreBand(c.t).toLowerCase()">{{ cfg.showComponents ? pct(c.t) : scoreBand(c.t) }}</span>
@@ -330,6 +356,8 @@
               <span v-if="c.walkTier !== 'unknown'" class="chip" :class="{ ok: c.walkTier === 'roadside' }">{{ WALK_LABELS[c.walkTier] }}<template v-if="c.accessible"> · ♿</template></span>
               <span>{{ c.n }} finds<template v-if="cfg.showSample"> · {{ density(c) }}/km²</template></span>
               <span v-if="c.landCover && mode === 'forager'">{{ c.landCover }}</span>
+              <span v-if="c.access.areaName && titleFor(c) !== c.access.areaName">{{ c.access.areaName }}</span>
+              <NuxtLink class="map-link" :to="mapUrlFor(c)" @click.stop>Show on map</NuxtLink>
               <span v-if="cfg.showAccessCols" class="acc">
                 <span class="chip">{{ c.access.covered ? c.access.public_access : 'access unknown' }}</span>
                 <span class="chip" :class="{ ok: c.access.fee_status === 'free' }">fee: {{ feeLabel(c.access) }}</span>
@@ -366,7 +394,7 @@
             <li v-for="(o, i) in opps.ranked" :key="o.cell.key" :class="{ sel: o.cell.key === selectedKey }" @click="pick(o.cell.key)">
               <div class="row1">
                 <span class="rk opp">{{ LETTERS[i] }}</span>
-                <strong class="site">{{ cellSiteName(o.cell) }}</strong>
+                <strong class="site">{{ titleFor(o.cell) }}</strong>
                 <span class="band">{{ Math.round(o.promise * 100) }}%</span>
               </div>
               <div class="row2">
@@ -403,7 +431,7 @@
               <tbody>
                 <tr v-for="(r, i) in rows" :key="ranked[i].key">
                   <td>{{ r.rank }}</td>
-                  <td>{{ r.site }}<div v-if="ranked[i].access.areaName" class="coords">{{ r.lat }}, {{ r.lon }}</div></td>
+                  <td>{{ r.near || r.site }}<div class="coords">{{ r.lat }}, {{ r.lon }} · {{ r.plus_code }}</div><div v-if="r.near && ranked[i].access.areaName" class="coords">{{ r.site }}</div></td>
                   <td>{{ r.grade }}</td>
                   <td>{{ r.access_class }}</td>
                   <td>{{ r.fee_status }}</td>
@@ -433,20 +461,27 @@ import { useAccess } from '~/composables/useAccess'
 import { CELL_SIZES, todayOfYear, useMapHeatmaps } from '~/composables/useMapHeatmaps'
 import { rampColor } from '~/composables/ramps'
 import {
-  ABSOLUTE_FULL, DEFAULT_PARAMS, MONTH_LABELS, PARAM_LIMITS, adjustForSample, blendScore, explainCell, gradeScores, paramsAreDefault,
-  paramsToQuery, parseParams, rankCells, resolveTimeSelection, scoreBand, scoreUnits,
+  ABSOLUTE_FULL, DEFAULT_PARAMS, GRADINGS, GRADING_LABELS, MAX_RANGE_DAYS, MONTH_LABELS, PARAM_LIMITS, adjustForSample, blendScore, daysBetween,
+  explainCell, gradeScores, paramsAreDefault, paramsToQuery, parseParams, rankCells, referenceTop, resolvePlan, scoreBand, scoreUnits,
+  seasonSampleDays,
 } from '~/composables/forayScore'
 import {
   MAX_WALK_OPTIONS, WALK_LABELS, driveTarget, isAccessible, passesWalk, walkText, walkTier,
 } from '~/composables/forayWalk'
 import { useForayWalk } from '~/composables/useForayWalk'
 import {
-  COLORADO_BBOX, DISCLAIMER, LIKELY_DISCLAIMER, LIKELY_LABEL, FORAY_MODES, attachAccess, buildShortlist, cellSiteName, collectingLabel,
-  effectiveSwitches, feeLabel, filterByAccess, shortlistToCsv, shortlistToText, UNKNOWN_ACCESS,
+  BUILT_UP_OPTIONS, COLORADO_BBOX, DEFAULT_BUILT_UP, DISCLAIMER, LIKELY_DISCLAIMER, LIKELY_LABEL, FORAY_MODES, attachAccess, buildShortlist,
+  builtUpShare, collectingLabel, effectiveSwitches, feeLabel, filterByAccess, parseBuiltUp, passesBuiltUp, shortlistToCsv,
+  shortlistToText, UNKNOWN_ACCESS,
 } from '~/composables/forayPlanner'
 import {
-  DEFAULT_RADIUS_MI, NO_ORIGIN, RADIUS_OPTIONS_MI, filterByDistance, formatDistance, initialOrigin, parseLatLon, radiusLabel, sortByDistance,
+  DEFAULT_DRIVE_MIN, DEFAULT_RADIUS_MI, DRIVE_OPTIONS_MIN, NO_ORIGIN, RADIUS_OPTIONS_MI, driveLabel, filterByDistance, filterByDrive, formatDistance,
+  initialOrigin, parseLatLon, radiusLabel, sortByDistance,
 } from '~/composables/forayDistance'
+import { useDriveTime } from '~/composables/useDriveTime'
+import { EDIBLE_DISCLAIMER, isEdible } from '~/composables/edibles'
+import { encodePlusCode as plusCode } from '~/composables/plusCode'
+import { usePlaceNames } from '~/composables/usePlaceNames'
 
 import {
   MAX_FINDS, MAX_LAYER_MODELS, MIN_PROMISE, candidateCells, defaultPicks, findsPerCell, modelSpecies, modelsParam, rankUnderSampled,
@@ -483,6 +518,25 @@ const locating = ref(false)
 const searching = ref(false)
 const placeText = ref('')
 const locMsg = ref('')
+// Drive time: places must also be inside the drive-time area from the start
+// point, so close-but-roundabout places drop out and far ones are judged by road.
+const driveMin = ref(DEFAULT_DRIVE_MIN)
+const drive = useDriveTime()
+watch([origin, driveMin], ([o, m]) => drive.load(o, m))
+const driveArea = computed(() => (origin.value && driveMin.value ? drive.area.value : null))
+watch(driveMin, (m) => { try { localStorage.setItem('foray-drive', String(m)) } catch { /* ignore */ } })
+// Built-up places: skipped by default, or searched everywhere, or towns only.
+const builtUp = ref(DEFAULT_BUILT_UP)
+watch(builtUp, (v) => { try { localStorage.setItem('foray-built-up', v) } catch { /* ignore */ } })
+// Edibles: score only listed edible species.
+const ediblesOnly = ref(false)
+watch(ediblesOnly, (v) => { try { localStorage.setItem('foray-edibles', v ? '1' : '0') } catch { /* ignore */ } })
+// Planned date or range (for "On a date" / "Between dates").
+const isoDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const planDate = ref(isoDay())
+const planEnd = ref(isoDay(new Date(Date.now() + 2 * 86400000)))
+// Nearest place names for the listed places.
+const placeNames = usePlaceNames()
 
 // Scoring controls; shared through the URL so a tuned plan can be sent as a link.
 const params = reactive({ ...DEFAULT_PARAMS })
@@ -533,7 +587,12 @@ onMounted(async () => {
     const r = Number(localStorage.getItem('foray-radius'))
     if (RADIUS_OPTIONS_MI.includes(r) && localStorage.getItem('foray-radius') !== null) radiusMi.value = r
     if (localStorage.getItem('foray-sort') === 'near') sortBy.value = 'near'
+    const dm = localStorage.getItem('foray-drive')
+    if (dm !== null && DRIVE_OPTIONS_MIN.includes(Number(dm))) driveMin.value = Number(dm)
+    builtUp.value = parseBuiltUp(localStorage.getItem('foray-built-up'))
+    ediblesOnly.value = localStorage.getItem('foray-edibles') === '1'
   } catch { origin.value = initialOrigin(null) }
+  placeNames.restore()
   // Ask for the user's location on load unless they picked a place or cleared it.
   // If they decline, the Boulder default (or last GPS fix) stays, with no warning.
   if (origin.value && (origin.value.source === 'default' || origin.value.source === 'gps')) locate({ quiet: true })
@@ -557,14 +616,98 @@ const landCovers = computed(() => {
   return [...n.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k)
 })
 
-const time = computed(() => resolveTimeSelection(timeSel.value === 'now' ? 'now' : Number(timeSel.value), todayOfYear(),
-  params.window || 14, params.window || 15))
+const plan = computed(() => {
+  const t = timeSel.value
+  if (t === 'now' || t === 'date' || t === 'range') return { kind: t, date: planDate.value, end: planEnd.value }
+  return { kind: 'month', month: Number(t) }
+})
+const time = computed(() => resolvePlan(plan.value, todayOfYear(), params.window || 14, params.window || 15))
+const planNote = computed(() => {
+  if (timeSel.value !== 'range') return ''
+  const span = daysBetween(planDate.value, planEnd.value)
+  if (span != null && span > 0 && span <= MAX_RANGE_DAYS) return ''
+  return `Pick a last day after the first and within ${MAX_RANGE_DAYS} days. Planning on the first day for now.`
+})
 
+const speciesFilter = computed(() => (ediblesOnly.value ? isEdible : undefined))
 const base = computed(() => heat.computeForayCells(features.value, {
   day: time.value.day, window: time.value.window,
   landCover: landCover.value || undefined, size: cellSize.value,
-  halfScale: params.halfScale, minSample: params.minSample,
+  halfScale: params.halfScale, minSample: params.minSample, speciesFilter: speciesFilter.value,
 }))
+
+// ── Grade scale ────────────────────────────────────────────────────────────
+// A grade is a share of a top mark: the 90th percentile of reference scores.
+// "This date" uses the places on the planned date; "Whole season" samples the
+// fruiting season at ten days; "All past seasons" does the same for each past
+// year on its own finds. The latter two take a moment, so they run after paint.
+const GRADING_REF = {
+  now: 'in the region on this date',
+  season: 'across the whole fruiting season',
+  history: 'across every past season, year by year',
+}
+const refTop = shallowRef({ key: '', top: null })
+const refBusy = ref(false)
+const refKey = computed(() => (params.grading === 'now' || !features.value.length ? '' : JSON.stringify([
+  params.grading, time.value.window, landCover.value, cellSize.value, params.halfScale, params.minSample, params.priorFinds,
+  ediblesOnly.value, features.value.length,
+])))
+function yearOf(p) {
+  const y = Number(p?.year ?? String(p?.date || '').slice(0, 4))
+  return Number.isInteger(y) && y > 1900 ? y : null
+}
+function computeReference() {
+  const feats = features.value
+  const days = seasonSampleDays(feats.map((f) => Number(f.properties?.day_of_year)).filter(Number.isFinite), 10)
+  let groups = [feats]
+  if (params.grading === 'history') {
+    const thisYear = new Date().getFullYear()
+    const by = new Map()
+    for (const f of feats) {
+      const y = yearOf(f.properties)
+      if (y == null || y >= thisYear) continue
+      if (!by.has(y)) by.set(y, [])
+      by.get(y).push(f)
+    }
+    groups = [...by.values()].filter((g) => g.length >= 50)
+  }
+  const values = []
+  for (const day of days) {
+    for (const g of groups) {
+      const { cells } = heat.computeForayCells(g, {
+        day, window: time.value.window, landCover: landCover.value || undefined, size: cellSize.value,
+        halfScale: params.halfScale, minSample: params.minSample, speciesFilter: speciesFilter.value, seasonFrom: feats,
+      })
+      for (const c of adjustForSample(cells, params.priorFinds)) values.push(scoreUnits(c.adj))
+    }
+  }
+  return referenceTop(values)
+}
+let refTimer = null
+watch(refKey, (k) => {
+  clearTimeout(refTimer)
+  if (!k || refTop.value.key === k) { refBusy.value = false; return }
+  refBusy.value = true
+  refTimer = setTimeout(() => {
+    if (k !== refKey.value) return
+    try { refTop.value = { key: k, top: computeReference() } } finally { refBusy.value = false }
+  }, 30)
+}, { immediate: true })
+// null grades the places against themselves (This date, or while the scale is worked out).
+const gradeTop = computed(() => (params.grading !== 'now' && refTop.value.key === refKey.value ? refTop.value.top : null))
+const gradingText = computed(() => {
+  const g = params.grading
+  const text = g === 'now'
+    ? 'Graded against the other places in the region on the planned date, so the strongest that day read Great, even late in the season.'
+    : g === 'season'
+      ? 'Graded against how places score across the whole fruiting season, so late or early in the season most places read lower.'
+      : 'Graded against every past season, year by year, good years and poor ones.'
+  if (g === 'now') return text
+  if (refBusy.value) return `${text} Working out the scale…`
+  if (refTop.value.key === refKey.value && refTop.value.top == null) return `${text} Not enough finds to set this scale, so places are graded against this date instead.`
+  return text
+})
+const gradeCaption = computed(() => `Graded against ${GRADING_LABELS[params.grading].toLowerCase()}`)
 
 const effective = computed(() => effectiveSwitches({ ...sw }, access.status.value))
 const anySwitch = computed(() => effective.value.free || effective.value.public || effective.value.collecting)
@@ -597,15 +740,22 @@ const scored = computed(() => {
       })
     }
   }
-  return gradeScores(cells, 'final', params.grading)
+  return gradeScores(cells, 'final', gradeTop.value)
 })
 // Best-first over the whole region, for the rank in "Why this grade?".
 const graded = computed(() => rankCells(scored.value, Infinity, 'final'))
 // Scores and colours are graded over the whole region before the distance
 // cut, so a "Great" nearby place is great statewide, not just the best of a few.
 // The walk filter is applied after it for the same reason.
-const near = computed(() => filterByDistance(scored.value, origin.value, radiusMi.value))
-const withWalk = computed(() => near.value.map((c) => {
+const near = computed(() => filterByDrive(filterByDistance(scored.value, origin.value, radiusMi.value), driveArea.value))
+const inReach = near
+const reachText = computed(() => [
+  ...(origin.value && radiusMi.value ? [`${radiusMi.value} mi`] : []),
+  ...(driveArea.value ? [driveLabel(driveMin.value)] : []),
+].join(' and ') || 'any distance')
+const withWalk = computed(() => near.value
+  .filter((c) => passesBuiltUp(c.predicted ? null : builtUpShare(c.cover), builtUp.value))
+  .map((c) => {
   const info = walk.info.value.get(c.key) || null
   const tier = walkTier(info, access.loaded.value)
   return { ...c, walkInfo: info, walkTier: tier, accessible: isAccessible(info) }
@@ -624,6 +774,7 @@ const ranked = computed(() => {
 })
 const rows = computed(() => buildShortlist(ranked.value.map((c) => ({
   ...c,
+  placeName: placeNames.nameAt(c.lat, c.lon),
   grade: `${c.predicted ? 'Predicted ' : ''}${scoreBand(c.t)}`,
   walk: c.walkTier === 'unknown' ? '' : `${WALK_LABELS[c.walkTier]}${walkText(c.walkInfo, c.walkTier) ? ` · ${walkText(c.walkInfo, c.walkTier)}` : ''}`,
   parking: c.walkInfo?.parking || null,
@@ -726,7 +877,7 @@ async function sampleModel(cells) {
   }
 }
 const blendTargets = computed(() => (blendOn.value
-  ? rankCells(filterByDistance(adjusted.value, origin.value, radiusMi.value), Infinity, 'adj')
+  ? rankCells(filterByDrive(filterByDistance(adjusted.value, origin.value, radiusMi.value), driveArea.value), Infinity, 'adj')
   : []))
 watch(blendTargets, (cells) => { if (cells.length) sampleModel(cells) })
 // Turning the blend on also looks for promising unvisited places in view, once.
@@ -801,8 +952,15 @@ watch([near, ranked, walkActive], () => {
   walk.refresh(want.filter((c) => !c.predicted || walkActive.value))
 })
 const selWhy = computed(() => (sel.value && !sel.value.predicted
-  ? explainCell(sel.value, { cells: adjusted.value, ranked: graded.value, species: base.value.species || [], params })
+  ? explainCell(sel.value, { cells: adjusted.value, ranked: graded.value, species: base.value.species || [], params, top: gradeTop.value })
   : null))
+// Names for the listed places, best first, then the selected one and the "few have looked" ones.
+watch([ranked, sel, () => opps.value.ranked], () => {
+  placeNames.request([...ranked.value, ...(sel.value ? [sel.value] : []), ...opps.value.ranked.map((o) => o.cell)])
+})
+const coordText = (c) => `${c.lat.toFixed(4)}, ${c.lon.toFixed(4)}`
+const titleFor = (c) => placeNames.nameAt(c.lat, c.lon) || c.access?.areaName || coordText(c)
+const mapUrlFor = (c) => `/map?c=${c.lat.toFixed(5)},${c.lon.toFixed(5)}&z=14`
 const selGradedRank = computed(() => (sel.value ? graded.value.findIndex((c) => c.key === sel.value.key) + 1 : 0))
 const pct = (v) => `${Math.round((Number(v) || 0) * 100)}%`
 const peakText = (x) => (x.dist == null ? '' : x.dist === 0 ? 'at peak' : `${x.dist} days off peak`)
@@ -876,12 +1034,15 @@ async function searchPlace() {
 
 const sizeLabel = computed(() => SIZE_OPTIONS.find((c) => c.value === cellSize.value)?.label || 'small')
 const whenText = computed(() => {
+  if (timeSel.value === 'date') return `around ${time.value.label}`
+  if (timeSel.value === 'range') return time.value.label === 'Now' ? 'now' : `for ${time.value.label}`
   if (timeSel.value !== 'now') return `around mid-${time.value.label}`
   const d = new Date()
   return `within ${time.value.window} days of ${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
 })
 const filterSummary = computed(() => [
   timeSel.value === 'now' ? 'Now' : time.value.label,
+  ...(ediblesOnly.value ? ['edibles'] : []),
   landCover.value || 'All land cover',
   sizeLabel.value,
   ...(anySwitch.value ? ['access filters on'] : []),
@@ -966,6 +1127,7 @@ h2 { margin: 0; font-size: 1.2rem; color: var(--text-strong); }
 .near-search input { flex: 1; min-width: 0; font: inherit; font-size: 0.85rem; background: var(--input-bg, var(--surface)); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.5rem; }
 .link-btn { font: inherit; font-size: 0.8rem; background: none; border: 0; padding: 0.2rem; color: var(--accent); cursor: pointer; text-decoration: underline; }
 .dist { font-size: 0.72rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lg i.drive { width: 14px; height: 10px; border-radius: 2px; border: 1.5px solid #7b4fd6; background: rgba(123, 79, 214, 0.12); }
 .lg i.me { width: 10px; height: 10px; background: #2a78d6; border: 2px solid #fff; box-shadow: 0 0 0 1px #2a78d6; }
 
 .filters { border: 1px solid var(--border-soft); border-radius: 8px; padding: 0.4rem 0.7rem; background: var(--surface); }
@@ -978,6 +1140,7 @@ h2 { margin: 0; font-size: 1.2rem; color: var(--text-strong); }
 .filters[open] { display: flex; flex-direction: column; gap: 0.5rem; }
 .foray-controls { margin-top: 0.4rem; display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: flex-end; }
 .ctl { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.ctl input[type='date'] { font: inherit; font-size: 0.85rem; text-transform: none; letter-spacing: 0; background: var(--input-bg, var(--surface)); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.4rem; }
 .ctl select { font: inherit; font-size: 0.85rem; text-transform: none; letter-spacing: 0; background: var(--input-bg, var(--surface)); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.4rem; }
 .switches { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; border: 1px solid var(--border-soft); border-radius: 8px; padding: 0.4rem 0.7rem; margin: 0; font-size: 0.85rem; }
 .switches:disabled { opacity: 0.5; }
@@ -1003,6 +1166,7 @@ h2 { margin: 0; font-size: 1.2rem; color: var(--text-strong); }
 .p-title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .p-title strong { font-size: 0.95rem; overflow-wrap: anywhere; }
 .p-sub { font-size: 0.75rem; color: var(--muted); }
+.p-coords { font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .p-why { margin: 0; font-size: 0.82rem; }
 .p-species { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.82rem; }
 .p-species li { display: flex; justify-content: space-between; gap: 0.5rem; }
@@ -1021,6 +1185,10 @@ h2 { margin: 0; font-size: 1.2rem; color: var(--text-strong); }
 .row1 { display: flex; align-items: center; gap: 0.5rem; }
 .rk { font-variant-numeric: tabular-nums; color: var(--muted); width: 1.3rem; }
 .site { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9rem; }
+span.site { display: flex; flex-direction: column; }
+span.site strong { overflow: hidden; text-overflow: ellipsis; }
+.site .coords { font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; }
+.map-link { color: var(--accent); font-size: 0.75rem; }
 .xy { font-weight: 400; font-size: 0.72rem; color: var(--muted); }
 .band { font-size: 0.72rem; font-weight: 700; border-radius: 999px; padding: 0.05rem 0.55rem; background: var(--surface-3); }
 .band.great { background: var(--accent); color: var(--accent-ink, #fff); }

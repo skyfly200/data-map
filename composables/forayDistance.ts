@@ -3,12 +3,13 @@
 // optional nearest-first sort. Pure, so tests run without a browser.
 
 import { haversineKm } from './useFilters'
+import { pointInArea } from '../netlify/lib/access-ingest.mjs'
 
 export const KM_PER_MI = 1.609344
 
 /** Radius choices in miles; 0 means no limit. */
 export const RADIUS_OPTIONS_MI = [10, 25, 50, 100, 0]
-export const DEFAULT_RADIUS_MI = 50
+export const DEFAULT_RADIUS_MI = 25
 
 export type OriginSource = 'gps' | 'typed' | 'map' | 'default'
 
@@ -20,7 +21,7 @@ export interface Origin {
   source: OriginSource
 }
 
-/** Start point before the user picks one: Boulder, with the 50 mi default (about an hour's drive). */
+/** Start point before the user picks one: Boulder, with the 25 mi and 45 min drive defaults. */
 export const DEFAULT_ORIGIN: Origin = { lat: 40.015, lon: -105.2705, label: 'Boulder', source: 'default' }
 
 /** Stored in place of an origin when the user cleared it, so the default does not come back. */
@@ -83,7 +84,30 @@ export function formatDistance(mi: number | null | undefined): string {
   return `${mi < 10 ? mi.toFixed(1) : Math.round(mi)} mi`
 }
 
-export const radiusLabel = (mi: number) => (!mi ? 'Any distance' : mi === 50 ? '50 mi (~1 hr drive)' : `${mi} mi`)
+export const radiusLabel = (mi: number) => (!mi ? 'Any distance' : `${mi} mi`)
+
+// ── Drive time ─────────────────────────────────────────────────────────────
+// Straight-line distance alone suggests places that are close as the crow
+// flies but a long way round by road (over a pass, down a back road). A
+// drive-time area (isochrone) from a routing service cuts those. Without one
+// (service down, offline) only the straight-line radius applies.
+
+/** Drive-time choices in minutes; 0 means no drive-time limit. */
+export const DRIVE_OPTIONS_MIN = [30, 45, 60, 90, 120, 0]
+export const DEFAULT_DRIVE_MIN = 45
+
+export const driveLabel = (min: number) => (!min ? 'Any drive time' : min < 60 ? `${min} min drive` : `${String(min / 60).replace('.5', '½')} hr drive`)
+
+export interface DriveArea { type: 'MultiPolygon', coordinates: number[][][][] }
+
+/** Is [lon, lat] inside the drive-time area? */
+export const inDriveArea = (lon: number, lat: number, geom: DriveArea) => pointInArea([lon, lat], { geom })
+
+/** Keep cells inside the drive-time area; without one, everything passes. */
+export function filterByDrive<T extends { lat: number, lon: number }>(cells: T[], geom: DriveArea | null): T[] {
+  if (!geom?.coordinates?.length) return cells
+  return cells.filter((c) => inDriveArea(c.lon, c.lat, geom))
+}
 
 /** Saved origin from localStorage JSON, or null if missing or malformed. */
 export function parseSavedOrigin(json: string | null): Origin | null {

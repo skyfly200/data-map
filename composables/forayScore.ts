@@ -91,6 +91,64 @@ export function resolveTimeSelection(sel: 'now' | number, today: number, nowWind
   return { day: monthMidDay(m), window: monthWindow, label: MONTH_LABELS[m - 1] }
 }
 
+// ── Planned date or range ───────────────────────────────────────────────────
+
+/** 'YYYY-MM-DD' -> day of the year (1..366), or null when malformed. */
+export function dateToDoy(iso: string | null | undefined): number | null {
+  const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!m) return null
+  const y = Number(m[1]), mo = Number(m[2]), d = Number(m[3])
+  const t = Date.UTC(y, mo - 1, d)
+  const back = new Date(t)
+  if (back.getUTCMonth() !== mo - 1 || back.getUTCDate() !== d) return null
+  return Math.round((t - Date.UTC(y, 0, 0)) / 86400000)
+}
+
+/** Whole days from `a` to `b` ('YYYY-MM-DD'), or null. */
+export function daysBetween(a: string, b: string): number | null {
+  const pa = String(a || '').match(/^(\d{4})-(\d{2})-(\d{2})$/), pb = String(b || '').match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!pa || !pb || dateToDoy(a) == null || dateToDoy(b) == null) return null
+  return Math.round((Date.UTC(+pb[1], +pb[2] - 1, +pb[3]) - Date.UTC(+pa[1], +pa[2] - 1, +pa[3])) / 86400000)
+}
+
+const shortDate = (iso: string) => {
+  const [, mo, d] = iso.split('-').map(Number)
+  return `${MONTH_LABELS[mo - 1]} ${d}`
+}
+
+/** Longest range the planner accepts; a longer one is a season, not a trip. */
+export const MAX_RANGE_DAYS = 60
+
+export interface Plan {
+  kind: 'now' | 'date' | 'range' | 'month'
+  /** 'YYYY-MM-DD' for date and range. */
+  date?: string
+  /** 'YYYY-MM-DD' end of a range (inclusive). */
+  end?: string
+  month?: number
+}
+
+/**
+ * The planned day and how many days either side of it a find counts. A date
+ * works like Now on that day. A range is centred on its middle day, with the
+ * window widened by half its length so finds from its first and last days
+ * count fully. A malformed date falls back to Now.
+ */
+export function resolvePlan(plan: Plan, today: number, nowWindow = 14, monthWindow = 15): TimeSelection {
+  if (plan.kind === 'month' && plan.month) return resolveTimeSelection(plan.month, today, nowWindow, monthWindow)
+  const start = plan.kind === 'date' || plan.kind === 'range' ? dateToDoy(plan.date) : null
+  if (start == null) return resolveTimeSelection('now', today, nowWindow, monthWindow)
+  if (plan.kind === 'range' && plan.end) {
+    const span = daysBetween(plan.date!, plan.end)
+    if (span != null && span > 0 && span <= MAX_RANGE_DAYS) {
+      const half = span / 2
+      const mid = ((Math.round(start + half) - 1) % 365) + 1
+      return { day: mid, window: nowWindow + Math.ceil(half), label: `${shortDate(plan.date!)} – ${shortDate(plan.end)}` }
+    }
+  }
+  return { day: start, window: nowWindow, label: shortDate(plan.date!) }
+}
+
 /**
  * Pull each cell's score toward the pooled mean by `priorFinds` pseudo-finds,
  * so a cell with 3 finds that happen to be one in-season species does not
@@ -135,7 +193,18 @@ export function modalKey(m: Map<string, number> | undefined): string | null {
 
 // ── Tunable scoring (user controls) ─────────────────────────────────────────
 
-export type Grading = 'relative' | 'absolute'
+/**
+ * What a place is graded against:
+ * - now: the other places in the region on the planned date. The strongest
+ *   places that day read Great even late in the season.
+ * - season: places across the whole fruiting season (all years pooled), so a
+ *   late-season Great means as good as a typical place at the height of it.
+ * - history: places across every past season taken year by year, so the scale
+ *   includes the good years and the poor ones.
+ */
+export type Grading = 'now' | 'season' | 'history'
+export const GRADINGS: Grading[] = ['now', 'season', 'history']
+export const GRADING_LABELS: Record<Grading, string> = { now: 'This date', season: 'Whole season', history: 'All past seasons' }
 
 export interface ForayParams {
   /** Days off peak at which a species counts half (phenology half-scale). */
@@ -146,7 +215,7 @@ export interface ForayParams {
   minSample: number
   /** Days either side of the chosen day that a find counts; 0 = the default for Now / a month. */
   window: number
-  /** relative: graded against the other places on the map; absolute: fixed cut-offs. */
+  /** What a place is graded against (see Grading). */
   grading: Grading
   /** 0..1, how far model suitability can lift places with few finds (0 = finds only). */
   modelMix: number
@@ -154,7 +223,7 @@ export interface ForayParams {
 
 export const DEFAULT_PARAMS: ForayParams = {
   halfScale: FORAY_HALF_SCALE, priorFinds: FORAY_PRIOR_FINDS, minSample: FORAY_MIN_SAMPLE,
-  window: 0, grading: 'relative', modelMix: 0.5,
+  window: 0, grading: 'now', modelMix: 0.5,
 }
 
 /** Allowed range and step per numeric param, shared by the sliders and the URL parser. */
@@ -186,7 +255,10 @@ export function parseParams(q: URLSearchParams | string | null | undefined): For
     if (raw !== null && raw !== '') out[k] = clampParam(k, raw)
   }
   const g = sp.get(URL_KEYS.grading)
-  if (g === 'relative' || g === 'absolute') out.grading = g
+  if (g && (GRADINGS as string[]).includes(g)) out.grading = g as Grading
+  // Links from before the three grading modes: relative was this date, absolute a fixed scale.
+  else if (g === 'relative') out.grading = 'now'
+  else if (g === 'absolute') out.grading = 'season'
   return out
 }
 
@@ -215,13 +287,46 @@ export const scoreUnits = (adj: number) => Math.max(0, Number(adj) || 0) / ABSOL
 /** Absolute-scale value as a 0..1 `t`, capped at 1. */
 export const absoluteT = (adj: number) => Math.min(1, scoreUnits(adj))
 
+/** Linear-interpolated scoreQuantile of finite values (q in 0..1); null when empty. */
+export function scoreQuantile(values: number[], q: number): number | null {
+  const v = values.filter(Number.isFinite).sort((a, b) => a - b)
+  if (!v.length) return null
+  const i = (v.length - 1) * Math.min(1, Math.max(0, q)), lo = Math.floor(i)
+  return v[lo] + (v[Math.ceil(i)] - v[lo]) * (i - lo)
+}
+
 /**
- * Grade cells into `t` (0..1) by `key`, a value already on the absolute scale
- * (see scoreUnits): min-max across the cells (relative) or capped as-is (absolute).
+ * Share of the reference places that sit at or above the top mark. The top
+ * mark is the 90th percentile rather than the single best place, so one
+ * outlier does not push every other place down a grade.
  */
-export function gradeScores<T extends { score: number }>(cells: T[], key: keyof T & string, grading: Grading): (T & { t: number })[] {
-  if (grading === 'absolute') return cells.map((c) => ({ ...c, t: Math.min(1, Math.max(0, Number(c[key]) || 0)) }))
-  return normaliseScores(cells, key)
+export const GRADE_TOP_QUANTILE = 0.9
+
+/** The value that reads as the top of the scale for a set of reference values; null without any above 0. */
+export function referenceTop(values: number[], q = GRADE_TOP_QUANTILE): number | null {
+  const top = scoreQuantile(values.filter((x) => x > 0), q)
+  return top && top > 0 ? top : null
+}
+
+/**
+ * Grade cells into `t` (0..1) by `key`, a value on the absolute scale (see
+ * scoreUnits), as a share of `top`, the reference top mark (capped at 1).
+ * Without a top (no reference yet) the cells grade against themselves.
+ */
+export function gradeScores<T extends { score: number }>(cells: T[], key: keyof T & string, top?: number | null): (T & { t: number })[] {
+  const ref = top && top > 0 ? top : referenceTop(cells.map((c) => Number(c[key]) || 0))
+  return cells.map((c) => ({ ...c, t: ref ? Math.min(1, Math.max(0, Number(c[key]) || 0) / ref) : 0 }))
+}
+
+/**
+ * Days to sample a fruiting season at: `count` days evenly spread between the
+ * 5th and 95th percentile of the finds' days of the year.
+ */
+export function seasonSampleDays(doys: number[], count = 10): number[] {
+  const lo = scoreQuantile(doys, 0.05), hi = scoreQuantile(doys, 0.95)
+  if (lo == null || hi == null) return []
+  if (count <= 1 || hi - lo < 1) return [Math.round((lo + hi) / 2)]
+  return Array.from({ length: count }, (_, i) => Math.round(lo + ((hi - lo) * i) / (count - 1)))
 }
 
 // ── Model blend (places with few or no finds) ───────────────────────────────
@@ -269,6 +374,8 @@ export interface Explanation {
   priorFinds: number
   rank: number
   of: number
+  /** The reference top mark the grade is a share of (absolute scale). */
+  top: number | null
   blend: BlendParts | null
   /** The value graded, on the absolute scale (blend when a model is mixed in). */
   value: number
@@ -284,7 +391,7 @@ export interface Explanation {
  */
 export function explainCell(
   cell: { key: string, n: number, seasonalN: number, score: number, adj: number, t: number, final: number, components: ScoreComponent[], blend?: BlendParts | null },
-  ctx: { cells: { key: string, score: number, n: number }[], ranked: { key: string }[], species: SeasonSpeciesLike[], params: ForayParams },
+  ctx: { cells: { key: string, score: number, n: number }[], ranked: { key: string }[], species: SeasonSpeciesLike[], params: ForayParams, top?: number | null },
 ): Explanation {
   let num = 0, den = 0
   for (const c of ctx.cells) { num += c.score * c.n; den += c.n }
@@ -294,7 +401,7 @@ export function explainCell(
     band: scoreBand(cell.t), t: cell.t, grading: ctx.params.grading,
     n: cell.n, seasonalN: cell.seasonalN, raw: cell.score, adj: cell.adj,
     mean: den ? num / den : 0, priorFinds: ctx.params.priorFinds,
-    rank: idx + 1, of: ctx.ranked.length,
+    rank: idx + 1, of: ctx.ranked.length, top: ctx.top ?? null,
     blend: cell.blend && cell.blend.model != null ? cell.blend : null,
     value: cell.final,
     species: cell.components.map((x) => ({

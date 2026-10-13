@@ -51,7 +51,7 @@ test('formatDistance and radiusLabel', () => {
   assert.equal(formatDistance(42.6), '43 mi')
   assert.equal(formatDistance(null), '')
   assert.equal(radiusLabel(25), '25 mi')
-  assert.equal(radiusLabel(50), '50 mi (~1 hr drive)')
+  assert.equal(radiusLabel(50), '50 mi')
   assert.equal(radiusLabel(0), 'Any distance')
   assert.ok(RADIUS_OPTIONS_MI.includes(0))
 })

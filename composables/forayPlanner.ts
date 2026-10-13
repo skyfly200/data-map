@@ -10,6 +10,7 @@
 
 import { pointInArea } from '../netlify/lib/access-ingest.mjs'
 import { collectingRuleById } from '../netlify/lib/collecting-rules.mjs'
+import { encodePlusCode as plusCode } from './plusCode'
 
 export type PublicAccess = 'open' | 'restricted' | 'closed' | 'unknown'
 export type FeeStatus = 'free' | 'fee' | 'unknown'
@@ -247,8 +248,11 @@ export const FORAY_MODES: Record<ForayMode, ModeConfig> = {
 export interface ShortlistRow {
   rank: number
   site: string
+  /** Nearest named place (town, lake, peak), '' until looked up. */
+  near: string
   lat: number
   lon: number
+  plus_code: string
   score: number
   /** Low/Fair/Good/Great, or '' when the caller did not grade the cells. */
   grade: string
@@ -292,7 +296,7 @@ export const cellSiteName = (c: { lat: number, lon: number, access?: CellAccess 
 export function buildShortlist(
   ranked: Array<{
     key: string, lat: number, lon: number, score: number, n: number, components?: { species: string }[], access: CellAccess,
-    grade?: string, walk?: string, parking?: { lat: number, lon: number } | null,
+    grade?: string, walk?: string, parking?: { lat: number, lon: number } | null, placeName?: string | null,
   }>,
   notes: Record<string, string> = {},
   limit = 12,
@@ -300,8 +304,10 @@ export function buildShortlist(
   return ranked.slice(0, limit).map((c, i) => ({
     rank: i + 1,
     site: cellSiteName(c),
+    near: c.placeName || '',
     lat: Number(c.lat.toFixed(4)),
     lon: Number(c.lon.toFixed(4)),
+    plus_code: plusCode(c.lat, c.lon),
     score: Math.round(c.score * 100) / 100,
     grade: c.grade || '',
     access_class: c.access.public_access,
@@ -317,7 +323,7 @@ export function buildShortlist(
 }
 
 export const SHORTLIST_COLUMNS: (keyof ShortlistRow)[] = [
-  'rank', 'site', 'lat', 'lon', 'score', 'grade', 'access_class', 'manager', 'fee_status',
+  'rank', 'site', 'near', 'lat', 'lon', 'plus_code', 'score', 'grade', 'access_class', 'manager', 'fee_status',
   'collecting_status', 'walk', 'parking', 'finds', 'top_species', 'notes',
 ]
 
@@ -338,7 +344,7 @@ export function shortlistToCsv(rows: ShortlistRow[]): string {
 export function shortlistToText(rows: ShortlistRow[], title = 'Foray shortlist'): string {
   const out = [title, '']
   for (const r of rows) {
-    out.push(`${r.rank}. ${r.site} (${r.lat}, ${r.lon}) ${r.grade ? `${r.grade}, ` : ''}score ${r.score}`)
+    out.push(`${r.rank}. ${r.near ? `${r.near} · ` : ''}${r.site} (${r.lat}, ${r.lon} · ${r.plus_code}) ${r.grade ? `${r.grade}, ` : ''}score ${r.score}`)
     out.push(`   access: ${r.access_class}${r.manager ? ` / ${r.manager}` : ''}; fee: ${r.fee_status}; collecting: ${r.collecting_status}`)
     if (r.walk) out.push(`   walk: ${r.walk}${r.parking ? `; park at ${r.parking}` : ''}`)
     if (r.notes) out.push(`   notes: ${r.notes}`)
@@ -346,3 +352,34 @@ export function shortlistToText(rows: ShortlistRow[], title = 'Foray shortlist')
   out.push('', DISCLAIMER)
   return out.join('\n') + '\n'
 }
+
+// ── Built-up places ────────────────────────────────────────────────────────
+// A place counts as built up when a large share of its finds sit on ESA
+// WorldCover "Built-up" ground (lawns, verges, gardens in town). Leafy suburbs
+// can read as tree cover at 10 m, so the cut is deliberately low.
+
+export type BuiltUpMode = 'exclude' | 'all' | 'only'
+export const BUILT_UP_LABEL = 'Built-up'
+export const BUILT_UP_SHARE = 0.25
+export const DEFAULT_BUILT_UP: BuiltUpMode = 'exclude'
+export const BUILT_UP_OPTIONS: { value: BuiltUpMode, label: string, title: string }[] = [
+  { value: 'exclude', label: 'Skip towns', title: 'Leave out built-up places' },
+  { value: 'all', label: 'Everywhere', title: 'Search everywhere' },
+  { value: 'only', label: 'Towns only', title: 'Only built-up places' },
+]
+
+/** Share of a place's finds on built-up ground; null without land-cover data. */
+export function builtUpShare(cover: Map<string, number> | undefined | null): number | null {
+  let all = 0, built = 0
+  for (const [k, n] of cover || []) { all += n; if (k === BUILT_UP_LABEL) built += n }
+  return all ? built / all : null
+}
+
+/** Does a place pass the built-up toggle? Places without land-cover data count as not built up. */
+export function passesBuiltUp(share: number | null, mode: BuiltUpMode): boolean {
+  if (mode === 'all') return true
+  const built = share != null && share >= BUILT_UP_SHARE
+  return mode === 'only' ? built : !built
+}
+
+export const parseBuiltUp = (v: unknown): BuiltUpMode => (v === 'all' || v === 'only' || v === 'exclude' ? v : DEFAULT_BUILT_UP)
