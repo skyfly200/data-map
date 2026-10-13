@@ -179,16 +179,20 @@ export async function claimNextJob(workerId) {
       }).eq('id', candidate.id).eq('status', 'running').lt('locked_at', staleBefore)
       continue
     }
+    // A job continuing from a checkpoint keeps its bar where it was.
+    const continuing = Boolean(candidate.params?.checkpoint_path)
     const query = client.from('ee_jobs')
       .update({
         status: 'running',
         params: { ...(candidate.params || {}), attempts: decision.attempt },
         locked_by: workerId,
         locked_at: new Date().toISOString(),
-        started_at: new Date().toISOString(),
-        progress: 0,
-        stage: null,
-        message: 'Starting…',
+        ...(continuing ? { message: 'Continuing…' } : {
+          started_at: new Date().toISOString(),
+          progress: 0,
+          stage: null,
+          message: 'Starting…',
+        }),
       })
       .eq('id', candidate.id)
 
@@ -270,6 +274,49 @@ export async function failJob(jobId, error, { costUnits = 0 } = {}) {
     finished_at: new Date().toISOString(),
     locked_by: null,
   }).eq('id', jobId)
+}
+
+/** Continuations one job may have; past this it is failed, not requeued. */
+export const MAX_CONTINUATIONS = 40
+
+export const NO_PROGRESS_ERROR = 'This job could not finish a single step within one run of the worker, '
+  + 'so it was stopped rather than retried forever. Try fewer observations or fewer stages.'
+
+/** How much of the work a checkpoint covers: stages finished plus dates sampled. */
+export function checkpointProgress(checkpoint) {
+  if (!checkpoint) return 0
+  const dates = Object.values(checkpoint.datesDone || {})
+    .reduce((n, list) => n + (Array.isArray(list) ? list.length : 0), 0)
+  return (checkpoint.stagesDone || []).length + dates
+}
+
+/**
+ * After a run paused at its time budget: continue, or fail because the run
+ * made no headway (a single step bigger than a run would loop forever) or the
+ * job has already been continued too often.
+ */
+export function continuationDecision(params, checkpoint) {
+  const progress = checkpointProgress(checkpoint)
+  const before = Number(params?.checkpoint_progress) || 0
+  const continuations = (Number(params?.continuations) || 0) + 1
+  if (progress <= before) return { fail: NO_PROGRESS_ERROR }
+  if (continuations > MAX_CONTINUATIONS) return { fail: NO_PROGRESS_ERROR }
+  return { progress, continuations }
+}
+
+/**
+ * Put a running job back in the queue to continue from a checkpoint. Guarded
+ * on 'running', so a job cancelled meanwhile stays cancelled.
+ */
+export async function requeueJob(jobId, { params, message }) {
+  const client = db()
+  const { error } = await client.from('ee_jobs').update({
+    status: 'queued',
+    params,
+    message,
+    locked_by: null,
+  }).eq('id', jobId).eq('status', 'running')
+  if (error) throw new QueueError(error.message, { status: 500 })
 }
 
 /** Was this job cancelled while it was running? Checked between stages. */

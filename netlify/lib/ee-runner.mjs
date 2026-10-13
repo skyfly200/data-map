@@ -226,35 +226,76 @@ function shiftDays(isoDay, delta) {
 }
 
 /**
- * Sample one image at up to CHUNK_SIZE points. Returns rows aligned to input.
- *
- * A chunk that keeps failing after its retries is SKIPPED, not thrown: one
- * throttled 500-point chunk must not zero out the whole column for everyone
- * else in the job. The skipped points stay null and are reported, so the caller
- * can say how complete the result is.
+ * Thrown between requests when a run reaches its time budget. runPipeline
+ * catches it and hands back a checkpoint, so the job can carry on in a fresh
+ * invocation instead of being killed mid-request at the function's limit.
  */
-async function sampleChunk(image, points, scale, reducer = ee.Reducer.first(), skipped = { n: 0 }) {
-  const fc = ee.FeatureCollection(points.map((p, i) => ee.Feature(
-    ee.Geometry.Point([p.lon, p.lat]), { __i: i },
-  )))
-  // tileScale: 4 keeps peak memory inside EE's per-request limit for expensive
-  // images (S2 median composites, TPI reduceNeighborhood). It has no effect on
-  // lightweight static layers and prevents silent hangs on the heavy ones.
-  const sampled = image.reduceRegions({ collection: fc, reducer, scale, tileScale: 4 })
-  let info
+export class PipelinePaused extends Error {
+  constructor() {
+    super('Paused at the time budget; continuing in a new run.')
+    this.name = 'PipelinePaused'
+  }
+}
+
+// The current run's deadline (ms since epoch, 0 = none). Process-wide like the
+// active credential: a worker runs one job per invocation.
+let runDeadline = 0
+
+/**
+ * Sample several images, each at its own points, in ONE request. Returns one
+ * row array per part, aligned to that part's points.
+ *
+ * The dated stages need a different image per observation date, and a request
+ * per date made a dataset with a few hundred dates outlast the worker's time
+ * limit on its first dated stage. Merging the per-date reduceRegions into one
+ * collection keeps each date's sampling identical while paying one round trip
+ * for many dates.
+ *
+ * A batch that keeps failing after its retries is SKIPPED, not thrown: one
+ * throttled batch must not zero out the whole column for everyone else in the
+ * job. The skipped points stay null and are reported, so the caller can say
+ * how complete the result is.
+ */
+async function sampleBatch(parts, scale, reducer = ee.Reducer.first(), skipped = { n: 0 }) {
+  if (runDeadline && Date.now() > runDeadline) throw new PipelinePaused()
+  let offset = 0
+  const collections = parts.map(({ image, points }) => {
+    const base = offset
+    offset += points.length
+    const fc = ee.FeatureCollection(points.map((p, i) => ee.Feature(
+      ee.Geometry.Point([p.lon, p.lat]), { __i: base + i },
+    )))
+    // tileScale: 4 keeps peak memory inside EE's per-request limit for expensive
+    // images (S2 median composites, TPI reduceNeighborhood). It has no effect on
+    // lightweight static layers and prevents silent hangs on the heavy ones.
+    return image.reduceRegions({ collection: fc, reducer, scale, tileScale: 4 })
+  })
+  const sampled = collections.length === 1
+    ? collections[0]
+    : ee.FeatureCollection(collections).flatten()
+  const flat = new Array(offset).fill(null)
   try {
-    info = await withRetry(() => evaluate(sampled), { label: 'sampling' })
+    const info = await withRetry(() => evaluate(sampled), { label: 'sampling' })
+    for (const feature of info?.features || []) {
+      const props = feature.properties || {}
+      const i = props.__i
+      if (Number.isInteger(i) && i >= 0 && i < flat.length) flat[i] = props
+    }
   } catch {
-    skipped.n += points.length
-    return new Array(points.length).fill(null)
+    skipped.n += offset
   }
-  const out = new Array(points.length).fill(null)
-  for (const feature of info?.features || []) {
-    const props = feature.properties || {}
-    const i = props.__i
-    if (Number.isInteger(i) && i >= 0 && i < out.length) out[i] = props
-  }
-  return out
+  let at = 0
+  return parts.map(({ points }) => {
+    const rows = flat.slice(at, at + points.length)
+    at += points.length
+    return rows
+  })
+}
+
+/** Sample one image at up to CHUNK_SIZE points. Returns rows aligned to input. */
+async function sampleChunk(image, points, scale, reducer = ee.Reducer.first(), skipped = { n: 0 }) {
+  const [rows] = await sampleBatch([{ image, points }], scale, reducer, skipped)
+  return rows
 }
 
 /** Points grouped into chunks of CHUNK_SIZE, keeping their original indices. */
@@ -344,27 +385,69 @@ async function runLandcover(points, columns, tick, skipped) {
   }
 }
 
+/**
+ * Dates of each dated stage already sampled, by stage key. Filled as batches
+ * finish and carried in a checkpoint, so a continued run skips them.
+ */
+let datesDone = {}
+
+/**
+ * Pack (date, points) groups into requests: at most CHUNK_SIZE points and
+ * `datesPerRequest` dates each. A date with more points than a chunk is split
+ * across requests like any other chunk.
+ */
+export function packDated(byDate, { datesPerRequest, chunkSize = CHUNK_SIZE }) {
+  const batches = []
+  let current = { parts: [], points: 0, dates: new Set() }
+  const flush = () => {
+    if (current.parts.length) batches.push(current)
+    current = { parts: [], points: 0, dates: new Set() }
+  }
+  for (const [date, list] of byDate) {
+    for (let i = 0; i < list.length; i += chunkSize) {
+      const group = list.slice(i, i + chunkSize)
+      const full = current.points + group.length > chunkSize
+        || (!current.dates.has(date) && current.dates.size >= datesPerRequest)
+      if (full) flush()
+      current.parts.push({ date, points: group })
+      current.points += group.length
+      current.dates.add(date)
+    }
+  }
+  flush()
+  return batches
+}
+
 /** Shared shape for the stages that sample an image chosen by the record's date. */
-async function runDated(points, columns, tick, { scale, reducer, bands, imageFor, skipped }) {
+async function runDated(points, columns, tick, { stage, scale, reducer, bands, imageFor, skipped, datesPerRequest = 30 }) {
+  const done = new Set(datesDone[stage] || [])
   const byDate = new Map()
   for (const p of points) {
-    if (!p.date) continue
+    if (!p.date || done.has(p.date)) continue
     if (!byDate.has(p.date)) byDate.set(p.date, [])
     byDate.get(p.date).push(p)
   }
-  const dates = [...byDate.keys()].sort()
-  let done = 0
-  for (const date of dates) {
-    const image = imageFor(date)
-    for (const group of chunk(byDate.get(date))) {
-      const rows = await sampleChunk(image, group, scale, reducer, skipped)
-      rows.forEach((props, i) => {
+  const total = done.size + byDate.size
+  const batches = packDated(new Map([...byDate].sort(([a], [b]) => (a < b ? -1 : 1))), { datesPerRequest })
+  for (const batch of batches) {
+    const rows = await sampleBatch(
+      batch.parts.map(({ date, points: group }) => ({ image: imageFor(date), points: group })),
+      scale, reducer, skipped,
+    )
+    batch.parts.forEach(({ points: group }, k) => {
+      rows[k].forEach((props, i) => {
         const at = group[i].index
         for (const band of bands) columns.get(band)[at] = props?.[band] ?? null
       })
+    })
+    // A date split across batches is only done once its last part has run.
+    for (const date of batch.dates) {
+      const last = batch.parts.filter((part) => part.date === date).at(-1)
+      const list = byDate.get(date)
+      if (last && last.points.at(-1) === list.at(-1)) done.add(date)
     }
-    done += 1
-    tick(done / dates.length)
+    datesDone[stage] = [...done]
+    tick(total ? done.size / total : 1)
   }
 }
 
@@ -372,7 +455,7 @@ const DAYS = 7
 
 async function runSoilMoisture(points, columns, tick, skipped) {
   const era5 = ee.ImageCollection(ERA5_DAILY)
-  await runDated(points, columns, tick, { skipped,
+  await runDated(points, columns, tick, { skipped, stage: 'soil_moisture',
     scale: STAGES.soil_moisture.scale,
     reducer: ee.Reducer.mean(),
     bands: ['soil_moisture'],
@@ -382,7 +465,7 @@ async function runSoilMoisture(points, columns, tick, skipped) {
 
 async function runPrecip(points, columns, tick, skipped) {
   const chirps = ee.ImageCollection(CHIRPS_DAILY)
-  await runDated(points, columns, tick, { skipped,
+  await runDated(points, columns, tick, { skipped, stage: 'precip',
     scale: STAGES.precip.scale,
     reducer: ee.Reducer.mean(),
     bands: STAGES.precip.bands,
@@ -396,7 +479,7 @@ async function runPrecip(points, columns, tick, skipped) {
 
 async function runTemperature(points, columns, tick, skipped) {
   const era5 = ee.ImageCollection(ERA5_DAILY)
-  await runDated(points, columns, tick, { skipped,
+  await runDated(points, columns, tick, { skipped, stage: 'temperature',
     scale: STAGES.temperature.scale,
     reducer: ee.Reducer.mean(),
     bands: STAGES.temperature.bands,
@@ -418,7 +501,10 @@ async function runNdvi(points, columns, tick, skipped) {
     Math.max(...lons) + pad, Math.max(...lats) + pad,
   ])
   const s2 = ee.ImageCollection(S2_SR).filterBounds(aoi)
-  await runDated(points, columns, tick, { skipped,
+  await runDated(points, columns, tick, { skipped, stage: 'ndvi',
+    // Each date is a 30-day Sentinel-2 median, far heavier than a daily
+    // reanalysis band, so fewer of them share a request.
+    datesPerRequest: 4,
     scale: STAGES.ndvi.scale,
     reducer: ee.Reducer.mean(),
     bands: ['ndvi', 'ndmi'],
@@ -602,8 +688,14 @@ const RUNNERS = {
  * `onProgress({ fraction, stage, message })` is called as each stage advances,
  * so the queue can write it to the job row and the member watching sees it move.
  * Returns the features with the sampled properties merged in.
+ *
+ * With a `deadline` (ms since epoch) a run that reaches it stops between
+ * requests and returns `{ paused: true, checkpoint }` instead: the columns so
+ * far, the stages finished and the dates sampled. Passing that checkpoint back
+ * in carries on from there. A job bigger than one function invocation is
+ * finished across several rather than killed at the platform's limit.
  */
-export async function runPipeline({ spec, features, plan, onProgress = () => {} }) {
+export async function runPipeline({ spec, features, plan, onProgress = () => {}, deadline = 0, checkpoint = null }) {
   const _pipelineStart = Date.now()
   await initEarthEngine()
 
@@ -627,25 +719,63 @@ export async function runPipeline({ spec, features, plan, onProgress = () => {} 
   // the map offers.
   if (spec.stages.includes('terrain')) columns.set('upstream_area', new Array(features.length).fill(null))
 
+  // A checkpoint only applies to the same features it was taken over.
+  const resume = checkpoint && checkpoint.length === features.length ? checkpoint : null
+  if (resume) {
+    for (const [band, values] of Object.entries(resume.columns || {})) {
+      if (columns.has(band) && Array.isArray(values) && values.length === features.length) columns.set(band, values)
+    }
+  }
+  const stagesDone = new Set(resume?.stagesDone || [])
+
   // Counted per stage rather than once for the job, so a result can say which
   // layer is thin instead of only that something was.
-  const skippedByStage = {}
+  const skippedByStage = { ...(resume?.skipped || {}) }
 
-  for (const step of plan) {
-    const runner = RUNNERS[step.key]
-    if (!runner) continue
-    onProgress({ fraction: step.from, stage: step.key, message: `${step.label}…` })
-    const skipped = { n: 0 }
-    const _stageStart = Date.now()
-    await runner(points, columns, (within) => {
-      onProgress({
-        fraction: step.from + (step.to - step.from) * Math.min(1, Math.max(0, within)),
-        stage: step.key,
-        message: `${step.label}…`,
-      })
-    }, skipped)
-    console.log(`[ee] stage ${step.key} completed in ${Date.now() - _stageStart}ms (skipped: ${skipped.n})`)
-    if (skipped.n) skippedByStage[step.key] = skipped.n
+  runDeadline = deadline || 0
+  datesDone = { ...(resume?.datesDone || {}) }
+  try {
+    for (const step of plan) {
+      const runner = RUNNERS[step.key]
+      if (!runner || stagesDone.has(step.key)) continue
+      onProgress({ fraction: step.from, stage: step.key, message: `${step.label}…` })
+      const skipped = { n: 0 }
+      const _stageStart = Date.now()
+      try {
+        await runner(points, columns, (within) => {
+          onProgress({
+            fraction: step.from + (step.to - step.from) * Math.min(1, Math.max(0, within)),
+            stage: step.key,
+            message: `${step.label}…`,
+          })
+        }, skipped)
+      } catch (err) {
+        if (!(err instanceof PipelinePaused)) throw err
+        // A dated stage keeps the dates it finished, skipped ones included; a
+        // static stage starts over on the next run, so its count would repeat.
+        if (skipped.n && STAGES[step.key]?.perDate) {
+          skippedByStage[step.key] = (skippedByStage[step.key] || 0) + skipped.n
+        }
+        console.log(`[ee] paused in stage ${step.key} after ${Date.now() - _pipelineStart}ms`)
+        return {
+          paused: true,
+          checkpoint: {
+            length: features.length,
+            columns: Object.fromEntries(columns),
+            stagesDone: [...stagesDone],
+            datesDone,
+            skipped: skippedByStage,
+          },
+          stage: step.key,
+        }
+      }
+      console.log(`[ee] stage ${step.key} completed in ${Date.now() - _stageStart}ms (skipped: ${skipped.n})`)
+      if (skipped.n) skippedByStage[step.key] = (skippedByStage[step.key] || 0) + skipped.n
+      stagesDone.add(step.key)
+    }
+  } finally {
+    runDeadline = 0
+    datesDone = {}
   }
 
   columns.delete('upstream_area')

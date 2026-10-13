@@ -9,13 +9,15 @@
 
 import { adminClient } from './auth.mjs'
 import {
-  claimNextJob, failJob, finishJob, isCancelled, ownerViewer, planFor, reportProgress,
+  claimNextJob, continuationDecision, failJob, finishJob, isCancelled, ownerViewer, planFor,
+  reportProgress, requeueJob,
 } from './job-queue.mjs'
 import { explainEmpty, explainSelection, loadSource } from './job-source.mjs'
 import { loadBaseline } from './baseline.mjs'
 import { runModel, runPipeline, setActiveCredential } from './ee-runner.mjs'
 import { loadCredential } from './ee-credentials.mjs'
 import { uploadJson } from './datasets-store.mjs'
+import { DATASETS_BUCKET, serviceClient } from './supabase-storage.mjs'
 import { clusterFeatures } from './cluster.mjs'
 import { persistModelContributions } from './model-persist.mjs'
 import { notifyJobSettled } from './notify.mjs'
@@ -30,18 +32,52 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), {
 // Progress is written to the database, and a job over many dates would
 // otherwise write hundreds of times. Only report when the bar has visibly
 // moved, or when the stage changes.
+// A report at least once a minute regardless, so a slow stage still refreshes
+// locked_at and the page does not mistake it for a dead worker.
 function throttled(jobId) {
   let lastFraction = -1
   let lastStage = null
+  let lastAt = 0
   return async ({ fraction, stage, message }) => {
-    if (stage === lastStage && fraction - lastFraction < 0.01 && fraction < 1) return
+    const quiet = Date.now() - lastAt < 60_000
+    if (stage === lastStage && fraction - lastFraction < 0.01 && fraction < 1 && quiet) return
     lastFraction = fraction
     lastStage = stage
+    lastAt = Date.now()
     await reportProgress(jobId, { fraction, stage, message })
   }
 }
 
-export async function runOneJob() {
+/** Where a paused enrich job keeps its progress between runs. */
+const checkpointPath = (job) => `jobs/${job.user_id}/${job.id}.checkpoint.json`
+
+async function readCheckpoint(path) {
+  const client = serviceClient()
+  if (!client || !path) return null
+  try {
+    const { data, error } = await client.storage.from(DATASETS_BUCKET).download(path)
+    if (error || !data) return null
+    return JSON.parse(await data.text())
+  } catch {
+    return null
+  }
+}
+
+async function removeCheckpoint(path) {
+  const client = serviceClient()
+  if (!client || !path) return
+  try { await client.storage.from(DATASETS_BUCKET).remove([path]) } catch { /* best-effort */ }
+}
+
+/**
+ * Run one queued job.
+ *
+ * `budgetMs` is how long this invocation may start new Earth Engine requests
+ * for an enrich job, leaving headroom under the platform's own limit for the
+ * request in flight and the write-back. A job that is not done by then saves a
+ * checkpoint and goes back in the queue, and the next tick continues it.
+ */
+export async function runOneJob({ budgetMs = 9 * 60 * 1000 } = {}) {
   const workerId = `${process.env.AWS_LAMBDA_LOG_STREAM_NAME || 'worker'}-${Date.now()}`
   const t0 = Date.now()
   const job = await claimNextJob(workerId)
@@ -133,7 +169,28 @@ export async function runOneJob() {
     }
 
     const plan = planFor(job)
-    const result = await runPipeline({ spec, features, plan, onProgress })
+    const checkpoint = await readCheckpoint(spec.checkpoint_path)
+    const result = await runPipeline({
+      spec, features, plan, onProgress, checkpoint, deadline: _jobStart + budgetMs,
+    })
+
+    if (result.paused) {
+      const decision = continuationDecision(spec, result.checkpoint)
+      if (decision.fail) throw new Error(decision.fail)
+      const path = checkpointPath(job)
+      await uploadJson(path, result.checkpoint, 'application/json')
+      await requeueJob(job.id, {
+        params: {
+          ...spec,
+          checkpoint_path: path,
+          checkpoint_progress: decision.progress,
+          continuations: decision.continuations,
+        },
+        message: 'Continuing in the next run…',
+      })
+      console.log(`[ee-worker] job ${job.id} paused in ${result.stage} after ${Date.now() - _jobStart}ms; requeued`)
+      return json({ ok: true, claimed: job.id, paused: true, stage: result.stage })
+    }
     spent = job.estimated_units || 0
 
     // Re-cluster using enriched columns so spatial groups reflect environmental
@@ -171,6 +228,7 @@ export async function runOneJob() {
       skipped: result.skipped,
     }
     await finishJob(job.id, { resultPath, costUnits: spent, meta })
+    await removeCheckpoint(spec.checkpoint_path)
     await notifyJobSettled({ ...job, status: 'succeeded', result_meta: meta })
     console.log(`[ee-worker] job ${job.id} succeeded in ${Date.now() - _jobStart}ms (features: ${result.features.length})`)
     await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'ok', durationMs: Date.now() - t0, details: { jobId: job.id, kind: 'enrich', features: result.features.length } })
@@ -180,6 +238,7 @@ export async function runOneJob() {
     // requests whether or not anything came back.
     console.error(`[ee-worker] job ${job.id} failed after ${Date.now() - _jobStart}ms:`, err?.message || err)
     await failJob(job.id, err, { costUnits: spent })
+    await removeCheckpoint(spec.checkpoint_path)
     await notifyJobSettled({ ...job, status: 'failed', error: String(err?.message || err) })
     await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'error', durationMs: Date.now() - t0, details: { jobId: job.id, error: String(err?.message || err) } })
     return json({ ok: false, claimed: job.id, error: String(err.message || err) }, 200)

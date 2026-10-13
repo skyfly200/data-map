@@ -34,3 +34,12 @@ test('a stale running job is retried once, then failed', () => {
   assert.deepEqual(reclaimDecision({ status: 'running', params: {} }), { attempt: 2 })
   assert.deepEqual(reclaimDecision({ status: 'running', params: { attempts: MAX_ATTEMPTS } }), { fail: STALLED_JOB_ERROR })
 })
+
+test('a paused run continues only when it got further than the last one', async () => {
+  const { continuationDecision, checkpointProgress, NO_PROGRESS_ERROR, MAX_CONTINUATIONS } = await import('../netlify/lib/job-queue.mjs')
+  const cp = { stagesDone: ['terrain', 'landcover'], datesDone: { soil_moisture: ['2024-01-01', '2024-01-02'] } }
+  assert.equal(checkpointProgress(cp), 4)
+  assert.deepEqual(continuationDecision({}, cp), { progress: 4, continuations: 1 })
+  assert.deepEqual(continuationDecision({ checkpoint_progress: 4, continuations: 1 }, cp), { fail: NO_PROGRESS_ERROR })
+  assert.deepEqual(continuationDecision({ checkpoint_progress: 2, continuations: MAX_CONTINUATIONS }, cp), { fail: NO_PROGRESS_ERROR })
+})

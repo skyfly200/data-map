@@ -13,5 +13,7 @@ export default async function handler(request) {
     const auth = await requireAdmin(request)
     if (!auth.ok) return auth.response
   }
-  return runOneJob()
+  // Background functions stop at 15 minutes; new requests stop at 9 so one in
+  // flight still has time to return before the job checkpoints.
+  return runOneJob({ budgetMs: 9 * 60 * 1000 })
 }

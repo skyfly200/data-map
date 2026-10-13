@@ -757,6 +757,8 @@ const enrichStatusLabel = computed(() => {
   if (s === 'failed') return 'Enrichment failed'
   if (s === 'cancelled') return 'Enrichment cancelled'
   if (s === 'running') return enrichStalled.value ? 'No word from the worker' : `Running (${jobPercent(enrichJob.value)}%)…`
+  // A large job is split across worker runs and waits in the queue between them.
+  if (jobPercent(enrichJob.value) > 0) return `Continuing (${jobPercent(enrichJob.value)}%)…`
   return 'Queued…'
 })
 // Re-evaluated every few seconds so a run whose worker went quiet is called out
