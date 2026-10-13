@@ -150,7 +150,10 @@ export async function submitAccessJob({ user, profile, spec: rawSpec, client = d
  * this as a read followed by a write would let both think they had won.
  *
  * A job whose lock has gone stale is reclaimed the same way: a worker that died
- * mid-job would otherwise leave it running forever.
+ * mid-job would otherwise leave it running forever. It is retried once. A run
+ * that dies twice is almost always one that cannot finish inside the function's
+ * time limit, and re-running it again would only leave it showing "running"
+ * forever while spending quota each time, so it is failed with that reason.
  */
 export async function claimNextJob(workerId) {
   const client = db()
@@ -158,15 +161,28 @@ export async function claimNextJob(workerId) {
 
   const { data: candidates } = await client
     .from('ee_jobs')
-    .select('id, status, locked_at')
+    .select('id, status, locked_at, params')
     .or(`status.eq.queued,and(status.eq.running,locked_at.lt.${staleBefore})`)
     .order('created_at', { ascending: true })
     .limit(5)
 
   for (const candidate of candidates || []) {
+    const decision = reclaimDecision(candidate)
+    if (decision.fail) {
+      // Guarded like a claim, so a worker that is in fact still alive and has
+      // just reported is not failed underneath itself.
+      await client.from('ee_jobs').update({
+        status: 'failed',
+        error: decision.fail,
+        finished_at: new Date().toISOString(),
+        locked_by: null,
+      }).eq('id', candidate.id).eq('status', 'running').lt('locked_at', staleBefore)
+      continue
+    }
     const query = client.from('ee_jobs')
       .update({
         status: 'running',
+        params: { ...(candidate.params || {}), attempts: decision.attempt },
         locked_by: workerId,
         locked_at: new Date().toISOString(),
         started_at: new Date().toISOString(),
@@ -187,6 +203,27 @@ export async function claimNextJob(workerId) {
     // Lost the race for this one; try the next candidate.
   }
   return null
+}
+
+/** Runs a job may have before a stalled one is failed rather than retried. */
+export const MAX_ATTEMPTS = 2
+
+export const STALLED_JOB_ERROR = 'The worker stopped before this job finished, twice. '
+  + 'That usually means it ran past the time limit for one run. '
+  + 'Try fewer observations or fewer stages, or split the area.'
+
+/**
+ * What to do with a claim candidate: claim it as attempt N, or fail it.
+ * A queued job starts at attempt 1; a stale running job is the next attempt,
+ * unless it has already had MAX_ATTEMPTS.
+ */
+export function reclaimDecision(candidate) {
+  const prior = Math.max(0, Number(candidate?.params?.attempts) || 0)
+  if (candidate?.status !== 'running') return { attempt: 1 }
+  // A job claimed before attempts were counted has had at least one run.
+  const runs = Math.max(1, prior)
+  if (runs >= MAX_ATTEMPTS) return { fail: STALLED_JOB_ERROR }
+  return { attempt: runs + 1 }
 }
 
 /** Write progress back to the row the member is watching. */

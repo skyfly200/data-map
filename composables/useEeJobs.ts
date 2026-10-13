@@ -31,6 +31,7 @@ export interface EeJob {
   error: string | null
   created_at: string
   started_at: string | null
+  locked_at: string | null
   finished_at: string | null
   archived_at: string | null
 }
@@ -52,7 +53,7 @@ export function useEeJobs() {
 
   const FIELDS = 'id, user_id, kind, title, params, status, progress, stage, message, '
     + 'estimated_units, cost_units, result_path, result_meta, error, '
-    + 'created_at, started_at, finished_at, archived_at'
+    + 'created_at, started_at, locked_at, finished_at, archived_at'
 
   async function refresh({ all = false } = {}): Promise<EeJob[]> {
     if (!$supabase) return []

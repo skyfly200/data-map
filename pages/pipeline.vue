@@ -232,8 +232,8 @@
 
           <!-- Live job progress -->
           <div v-if="enrichJob" class="job-progress">
-            <div class="prog-bar"><div class="prog-fill" :style="{ width: (enrichJob.progress || 0) + '%' }"></div></div>
-            <p class="prog-msg">{{ enrichJob.message || enrichJob.stage || enrichStatusLabel }}</p>
+            <div class="prog-bar"><div class="prog-fill" :style="{ width: jobPercent(enrichJob) + '%' }"></div></div>
+            <p class="prog-msg">{{ enrichProgressMessage }}</p>
           </div>
         </section>
 
@@ -525,6 +525,7 @@
 <script setup>
 definePageMeta({ middleware: () => navigateTo('/model', { redirectCode: 301 }) })
 import { useEeJobs } from '~/composables/useEeJobs'
+import { jobPercent, jobStalled } from '~/composables/jobProgress'
 import { useDatasets } from '~/composables/useDatasets'
 import { useMaxEnt } from '~/composables/useMaxEnt'
 
@@ -754,8 +755,23 @@ const enrichStatusLabel = computed(() => {
   const s = enrichJobStatus.value
   if (s === 'succeeded') return 'Enrichment complete ✓'
   if (s === 'failed') return 'Enrichment failed'
-  if (s === 'running') return `Running (${enrichJob.value?.progress || 0}%)…`
+  if (s === 'cancelled') return 'Enrichment cancelled'
+  if (s === 'running') return enrichStalled.value ? 'No word from the worker' : `Running (${jobPercent(enrichJob.value)}%)…`
   return 'Queued…'
+})
+// Re-evaluated every few seconds so a run whose worker went quiet is called out
+// rather than sitting on the same percentage indefinitely.
+const enrichNow = ref(Date.now())
+const enrichStalled = computed(() => jobStalled(enrichJob.value, enrichNow.value))
+const enrichProgressMessage = computed(() => {
+  const job = enrichJob.value
+  if (!job) return ''
+  if (job.status === 'failed') return job.error || 'The job failed without a message.'
+  if (enrichStalled.value) {
+    return 'The worker has not reported progress for a few minutes and may have been stopped. '
+      + 'It is retried once automatically; you can leave this page and check Jobs later.'
+  }
+  return job.message || job.stage || enrichStatusLabel.value
 })
 
 watch(enrichJobStatus, async (s) => {
@@ -813,6 +829,7 @@ function pollEnrichJob() {
   if (enrichPollTimer) clearInterval(enrichPollTimer)
   enrichPollTimer = setInterval(async () => {
     await jobsApi.refresh()
+    enrichNow.value = Date.now()
     const job = jobsApi.jobs.value.find(j => j.id === enrichJobId.value)
     if (job && (job.status === 'succeeded' || job.status === 'failed' || job.status === 'cancelled')) {
       clearInterval(enrichPollTimer)
