@@ -103,8 +103,8 @@ export default async function handler(request) {
     return json({ ok: false, error: 'Send the job spec as JSON.' }, 400)
   }
 
-  // Region loads (access_ingest) do not use Earth Engine.
-  if (body?.kind !== 'access_ingest' && !earthEngineConfigured()) {
+  // Region and GBIF loads do not use Earth Engine.
+  if (body?.kind !== 'access_ingest' && body?.kind !== 'gbif_ingest' && !earthEngineConfigured()) {
     return json({
       ok: false,
       error: 'Earth Engine is not configured on this deployment. '

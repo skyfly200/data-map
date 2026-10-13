@@ -302,6 +302,29 @@ It skips a region that is already loaded, writes progress to the console, and is
 safe to re-run (upserts). It records the result in `access_regions`. The access
 endpoint reports `loaded: true` only for a bbox that a `loaded` region covers.
 
+### GBIF fungi in the observations dataset
+
+`observations.geojson` is iNaturalist only. GBIF adds herbarium specimens,
+Mushroom Observer and survey datasets (about 60k Colorado fungi records beyond
+GBIF's copy of iNaturalist, which is skipped).
+
+In the app: **Admin → Datasets → GBIF fungi**. *Preview* queues a `gbif_ingest`
+job that reports counts without writing; *Load* merges and uploads. The worker
+gives it the same ~250 s budget as a region load and writes nothing if it runs
+out. From a shell (no time limit):
+
+```
+SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... \
+  node scripts/load-gbif-fungi.mjs                       # preview
+  node scripts/load-gbif-fungi.mjs --write               # merge and upload
+  node scripts/load-gbif-fungi.mjs --min-year 1970 --max-uncertainty 2000 --write
+```
+
+Both use GBIF's public search API (no account), drop records with coordinate
+uncertainty over 5 km by default, tag features `source: 'gbif'` and replace
+earlier GBIF features on each run. A full pipeline upload (`upload_datasets.mjs`)
+overwrites `observations.geojson`, so re-run it afterwards.
+
 A region can also be queued as an `access_ingest` job. Members are capped at
 5,000 km2 per job and 3 region loads per calendar month. Admins bypass both. The
 job runs through the same queue and quota check as Earth Engine jobs, but spends

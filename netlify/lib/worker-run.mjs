@@ -15,12 +15,13 @@ import { explainEmpty, explainSelection, loadSource } from './job-source.mjs'
 import { loadBaseline } from './baseline.mjs'
 import { runModel, runPipeline, setActiveCredential } from './ee-runner.mjs'
 import { loadCredential } from './ee-credentials.mjs'
-import { uploadJson } from './datasets-store.mjs'
+import { readJson, uploadJson } from './datasets-store.mjs'
 import { clusterFeatures } from './cluster.mjs'
 import { persistModelContributions } from './model-persist.mjs'
 import { notifyJobSettled } from './notify.mjs'
 import { logCronRun } from './cron-jobs.mjs'
 import { runAccessIngest } from './access-regions.mjs'
+import { runGbifIngest } from './gbif-bulk.mjs'
 import { resolveDataset } from './dataset-access.mjs'
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
@@ -65,6 +66,18 @@ export async function runOneJob() {
       await notifyJobSettled({ ...job, status: 'succeeded', result_meta: result })
       await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'ok', durationMs: Date.now() - t0, details: { jobId: job.id, kind: 'access_ingest', ...result } })
       return json({ ok: true, claimed: job.id, access: result })
+    }
+
+    // GBIF fungi into observations.geojson: no Earth Engine either. Same
+    // deadline as a region load; past it nothing is written.
+    if (spec.kind === 'gbif_ingest') {
+      const result = await runGbifIngest({
+        spec, readJson, uploadJson, fetchImpl: fetch, deadlineMs: _jobStart + 250_000, onProgress: throttled(job.id),
+      })
+      await finishJob(job.id, { resultPath: null, costUnits: 0, meta: result })
+      await notifyJobSettled({ ...job, status: 'succeeded', result_meta: result })
+      await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'ok', durationMs: Date.now() - t0, details: { jobId: job.id, kind: 'gbif_ingest', added: result.added, written: result.written } })
+      return json({ ok: true, claimed: job.id, gbif: result })
     }
 
     // A job queued on the member's own project must run there. If the credential
