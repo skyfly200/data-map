@@ -53,6 +53,10 @@ export interface ForayOptions {
   halfScale?: number
   /** Fewest finds a cell needs to be scored (default FORAY_MIN_SAMPLE). */
   minSample?: number
+  /** Only score these species (e.g. edibles); the in-season list is drawn from them alone. */
+  speciesFilter?: (name: string) => boolean
+  /** Finds to pick the in-season species from, when not `features` (e.g. all years for one year's cells). */
+  seasonFrom?: ObservationFeature[]
 }
 
 export interface CellSize {
@@ -548,8 +552,10 @@ export function useMapHeatmaps() {
    * at least the minimum sample. Scoring lives in forayScore.ts.
    */
   function computeForayCells(features: ObservationFeature[], o: ForayOptions) {
-    const species = inSeasonSpecies((features || []).map((f) => f.properties),
-      { day: o.day, window: IN_SEASON_WINDOW, topN: o.topN ?? 25, modelSpecies: o.modelSpecies })
+    const topN = o.topN ?? 25
+    const all = inSeasonSpecies((o.seasonFrom || features || []).map((f) => f.properties),
+      { day: o.day, window: IN_SEASON_WINDOW, topN: o.speciesFilter ? Infinity : topN, modelSpecies: o.modelSpecies })
+    const species = o.speciesFilter ? all.filter((s) => o.speciesFilter!(s.name)).slice(0, topN) : all
     const weights = seasonWeights(species, o.halfScale)
     const built = buildCells(features, o.size ?? cellSize.value, o.day, o.window,
       o.shape ?? cellShape.value, [], { landCover: o.landCover, seasonSpecies: new Set(weights.keys()) })

@@ -141,10 +141,10 @@ test('shortlist CSV: header, quoting, disclaimer row', () => {
   const rows = buildShortlist(ranked, { c1: 'Bring "boots", maps\nand water' })
   const csv = shortlistToCsv(rows)
   const lines = csv.split('\n')
-  assert.equal(lines[0], 'rank,site,lat,lon,score,grade,access_class,manager,fee_status,collecting_status,walk,parking,finds,top_species,notes')
+  assert.equal(lines[0], 'rank,site,near,lat,lon,plus_code,score,grade,access_class,manager,fee_status,collecting_status,walk,parking,finds,top_species,notes')
   assert.ok(csv.includes('"Bring ""boots"", maps\nand water"'))
   assert.ok(csv.includes(DISCLAIMER))
-  assert.ok(lines[1].startsWith('1,Area 1,40.1,-105.3,0.9,,open,federal,free (verified),allowed (estimated),,,10,'))
+  assert.ok(lines[1].startsWith('1,Area 1,,40.1,-105.3,85GP4P22+22,0.9,,open,federal,free (verified),allowed (estimated),,,10,'))
 })
 
 test('shortlist text and empty export', () => {
