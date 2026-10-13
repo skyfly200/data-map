@@ -140,10 +140,25 @@ export function checkQuota({ profile, usage = {}, running = 0, estimate = 0, poi
   return { ok: true, tier, estimate, remaining: monthlyQuota - spent - estimate }
 }
 
+/**
+ * When the member's quota windows start: the calendar month and day, unless an
+ * admin reset the quota more recently, in which case jobs before the reset no
+ * longer count. Unparseable or missing resets are ignored.
+ */
+export function usageWindows(now = new Date(), resetAt = null) {
+  let monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+  let dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+  const reset = resetAt ? new Date(resetAt) : null
+  if (reset && Number.isFinite(reset.getTime())) {
+    if (reset > monthStart) monthStart = reset
+    if (reset > dayStart) dayStart = reset
+  }
+  return { monthStart, dayStart }
+}
+
 /** Usage rolled up the way checkQuota wants it, from a member's job rows. */
-export function summariseUsage(jobs = [], now = new Date()) {
-  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
-  const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+export function summariseUsage(jobs = [], now = new Date(), resetAt = null) {
+  const { monthStart, dayStart } = usageWindows(now, resetAt)
   let unitsThisMonth = 0
   let jobsThisMonth = 0
   let jobsToday = 0
@@ -209,7 +224,7 @@ export function estimateAccessUnits(bbox) {
 /** Same verdict shape as checkQuota. `history` rows need { kind, status, created_at, cost_units, estimated_units }. */
 export function checkAccessQuota({ profile, history = [], bbox, now = new Date() }) {
   const estimate = estimateAccessUnits(bbox)
-  const usage = summariseUsage(history, now)
+  const usage = summariseUsage(history, now, profile?.quota_reset_at)
   const tier = effectiveTier(profile, now)
   if (tier !== 'admin' && tier !== 'free') {
     const area = bboxAreaKm2(bbox)
@@ -220,7 +235,7 @@ export function checkAccessQuota({ profile, history = [], bbox, now = new Date()
           + `${ACCESS_MAX_AREA_KM2.toLocaleString()} km2. Split it into smaller regions.`,
       }
     }
-    const monthStart = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
+    const monthStart = usageWindows(now, profile?.quota_reset_at).monthStart.getTime()
     const used = history.filter((j) => j.kind === 'access_ingest' && j.status !== 'failed' && j.status !== 'cancelled'
       && new Date(j.created_at).getTime() >= monthStart).length
     if (used >= ACCESS_JOBS_PER_MONTH) {

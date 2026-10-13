@@ -141,7 +141,15 @@
                     {{ saving ? 'Saving…' : 'Save' }}
                   </button>
                   <button class="btn" @click="editing = ''">Cancel</button>
+                  <!-- Starts the member's usage afresh: jobs before now stop
+                       counting toward units, monthly and daily job counts. -->
+                  <button class="btn danger push-right" :disabled="saving" @click="resetQuota(m)">
+                    Reset quota
+                  </button>
                 </div>
+                <small v-if="m.quota_reset_at" class="field-note">
+                  Quota last reset {{ fmtTs(m.quota_reset_at) }}.
+                </small>
               </div>
             </li>
           </ul>
@@ -589,6 +597,26 @@ async function saveMember(m) {
   }
 }
 
+async function resetQuota(m) {
+  if (!confirm(`Reset ${nameFor(m)}'s quota? Jobs run before now will stop counting against it.`)) return
+  saving.value = true
+  error.value = ''
+  note.value = ''
+  try {
+    const data = await call('/.netlify/functions/admin-members', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'reset-quota', user_id: m.user_id }),
+    })
+    note.value = data.note || 'Quota reset.'
+    editing.value = ''
+    await show('members')
+  } catch (e) {
+    error.value = e.message
+  } finally {
+    saving.value = false
+  }
+}
+
 async function setVisibility(d, visibility) {
   error.value = ''
   try {
@@ -698,7 +726,8 @@ onMounted(async () => {
 input, select, textarea { background: var(--bg); color: var(--text); border: 1px solid var(--border);
   border-radius: 6px; padding: 5px 8px; font: inherit; font-size: 0.82rem; width: 100%; }
 
-.actions { display: flex; align-items: flex-end; gap: 10px; margin-top: 12px; }
+.actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; margin-top: 12px; }
+.actions .push-right { margin-left: auto; }
 .btn { background: var(--bg); color: var(--text); border: 1px solid var(--border);
   border-radius: 6px; padding: 6px 12px; font: inherit; font-size: 0.82rem; cursor: pointer; }
 .btn:disabled { opacity: 0.55; cursor: default; }

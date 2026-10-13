@@ -88,7 +88,7 @@ export async function submitJob({ user, profile, spec: rawSpec, counter }) {
     // A calendar month back covers every window the quota rules look at.
     .gte('created_at', new Date(Date.now() - 32 * 86400000).toISOString())
 
-  const usage = summariseUsage(history || [])
+  const usage = summariseUsage(history || [], new Date(), profile?.quota_reset_at)
   const ownProject = await hasCredential(client, user.id)
   const verdict = checkQuota({ profile, usage, running: usage.running, estimate, points, ownProject })
   if (!verdict.ok) throw new QueueError(verdict.message, { status: 403, code: verdict.code })
