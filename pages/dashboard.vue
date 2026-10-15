@@ -110,6 +110,7 @@ import DashboardDatasets from '~/components/DashboardDatasets.vue'
 import DashboardQuota from '~/components/DashboardQuota.vue'
 import DashboardWeatherForecast from '~/components/DashboardWeatherForecast.vue'
 import DashboardRecentRainTemp from '~/components/DashboardRecentRainTemp.vue'
+import DashboardSeasonOutlook from '~/components/DashboardSeasonOutlook.vue'
 
 const { isAuthed } = useAuth()
 const { orderedWidgets, load, add, addBefore, remove, reorder, reset, updateSettings } = useDashboardState()
@@ -124,6 +125,7 @@ const WIDGET_TYPES = [
   { type: 'quick-filters', label: 'Quick filters', icon: '🔍', component: DashboardQuickFilters },
   { type: 'now-fruiting', label: 'Now fruiting', icon: '🍄', component: DashboardNowFruiting },
   { type: 'phenology', label: 'Phenology calendar', icon: '📅', component: DashboardPhenology },
+  { type: 'season-outlook', label: 'Season outlook', icon: '📆', component: DashboardSeasonOutlook },
   { type: 'model-leaderboard', label: 'Model leaderboard', icon: '🏆', component: DashboardModelLeaderboard },
   { type: 'map-preview', label: 'Map preview', icon: '🗺️', component: DashboardMapPreview },
   { type: 'data-quality', label: 'Data quality', icon: '🔬', component: DashboardDataQuality },
