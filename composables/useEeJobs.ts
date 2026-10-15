@@ -125,6 +125,28 @@ export function useEeJobs() {
   }
 
   /**
+   * Ask the server whether a spec's source would be accepted, without queueing
+   * it. Resolves to { points, dates }; rejects with the refusal, carrying its
+   * HTTP status so a caller can tell "that area is wrong" (4xx) from "could
+   * not ask" (5xx, offline).
+   */
+  async function check(spec: any, signal?: AbortSignal) {
+    const token = await accessToken()
+    const res = await fetch('/.netlify/functions/ee-jobs', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ ...spec, dryRun: true }),
+      signal,
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok || !data.ok) throw Object.assign(new Error(messageFrom(data, res.status)), { status: res.status, code: data?.code })
+    return data as { points: number, dates: number }
+  }
+
+  /**
    * Cancel a job of your own.
    *
    * Written straight to the row: the RLS policy allows exactly this transition
@@ -236,7 +258,7 @@ export function useEeJobs() {
 
   return {
     jobs, active, loading, error, submitting,
-    refresh, refreshArchive, submit, cancel, fetchResult, modelTiles, modelDownloadUrl,
+    refresh, refreshArchive, submit, check, cancel, fetchResult, modelTiles, modelDownloadUrl,
     archive, unarchive, archiveAll,
     startPolling, stopPolling,
   }

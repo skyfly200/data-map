@@ -3,6 +3,7 @@
 //   GET  /.netlify/functions/ee-jobs          the caller's jobs, newest first
 //   GET  /.netlify/functions/ee-jobs?all=1    every job (admins only)
 //   POST /.netlify/functions/ee-jobs          submit one; body is the spec
+//   POST ...ee-jobs with { dryRun: true }     check its source only; nothing is queued
 //
 // Submitting is gated on membership read FRESH from the database rather than
 // from the token, because this is the path that spends Earth Engine quota and
@@ -10,7 +11,7 @@
 
 import { adminClient, requireMemberFresh, requireUser } from '../lib/auth.mjs'
 import { pokeWorker } from '../lib/worker-poke.mjs'
-import { QueueError, listJobs, submitJob } from '../lib/job-queue.mjs'
+import { QueueError, checkSource, listJobs, submitJob } from '../lib/job-queue.mjs'
 import { SpecError } from '../lib/ee-pipeline.mjs'
 import { DatasetAccessError, viewerFrom } from '../lib/dataset-access.mjs'
 import { BaselineError, measureSource } from '../lib/job-source.mjs'
@@ -104,7 +105,7 @@ export default async function handler(request) {
   }
 
   // Region and GBIF loads do not use Earth Engine.
-  if (body?.kind !== 'access_ingest' && body?.kind !== 'gbif_ingest' && !earthEngineConfigured()) {
+  if (!body?.dryRun && body?.kind !== 'access_ingest' && body?.kind !== 'gbif_ingest' && !earthEngineConfigured()) {
     return json({
       ok: false,
       error: 'Earth Engine is not configured on this deployment. '
@@ -113,17 +114,19 @@ export default async function handler(request) {
   }
 
   try {
+    // Priced as the submitter, not as the server. A spec naming a dataset
+    // they may not read is refused here, before it costs anything and before
+    // it becomes a queued job that would read it later.
+    const counter = (spec) => measureSource(spec, { client: adminClient(), viewer: viewerFrom(auth) })
+    if (body?.dryRun) {
+      const { dryRun, ...spec } = body
+      return json({ ok: true, ...(await checkSource({ profile: auth.profile, spec, counter })) })
+    }
     const result = await submitJob({
       user: auth.user,
       profile: auth.profile,
       spec: body,
-      // Priced as the submitter, not as the server. A spec naming a dataset
-      // they may not read is refused here, before it costs anything and before
-      // it becomes a queued job that would read it later.
-      counter: (spec) => measureSource(spec, {
-        client: adminClient(),
-        viewer: viewerFrom(auth),
-      }),
+      counter,
     })
     // Only worth poking for a job that actually queued; a spec that resolved to
     // nothing to do has no worker to start.
