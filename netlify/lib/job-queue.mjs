@@ -168,7 +168,10 @@ export async function submitGbifJob({ user, profile, spec: rawSpec, client = db(
  * this as a read followed by a write would let both think they had won.
  *
  * A job whose lock has gone stale is reclaimed the same way: a worker that died
- * mid-job would otherwise leave it running forever.
+ * mid-job would otherwise leave it running forever. It is retried once. A run
+ * that dies twice is almost always one that cannot finish inside the function's
+ * time limit, and re-running it again would only leave it showing "running"
+ * forever while spending quota each time, so it is failed with that reason.
  */
 export async function claimNextJob(workerId) {
   const client = db()
@@ -176,21 +179,38 @@ export async function claimNextJob(workerId) {
 
   const { data: candidates } = await client
     .from('ee_jobs')
-    .select('id, status, locked_at')
+    .select('id, status, locked_at, params')
     .or(`status.eq.queued,and(status.eq.running,locked_at.lt.${staleBefore})`)
     .order('created_at', { ascending: true })
     .limit(5)
 
   for (const candidate of candidates || []) {
+    const decision = reclaimDecision(candidate)
+    if (decision.fail) {
+      // Guarded like a claim, so a worker that is in fact still alive and has
+      // just reported is not failed underneath itself.
+      await client.from('ee_jobs').update({
+        status: 'failed',
+        error: decision.fail,
+        finished_at: new Date().toISOString(),
+        locked_by: null,
+      }).eq('id', candidate.id).eq('status', 'running').lt('locked_at', staleBefore)
+      continue
+    }
+    // A job continuing from a checkpoint keeps its bar where it was.
+    const continuing = Boolean(candidate.params?.checkpoint_path)
     const query = client.from('ee_jobs')
       .update({
         status: 'running',
+        params: { ...(candidate.params || {}), attempts: decision.attempt },
         locked_by: workerId,
         locked_at: new Date().toISOString(),
-        started_at: new Date().toISOString(),
-        progress: 0,
-        stage: null,
-        message: 'Starting…',
+        ...(continuing ? { message: 'Continuing…' } : {
+          started_at: new Date().toISOString(),
+          progress: 0,
+          stage: null,
+          message: 'Starting…',
+        }),
       })
       .eq('id', candidate.id)
 
@@ -205,6 +225,27 @@ export async function claimNextJob(workerId) {
     // Lost the race for this one; try the next candidate.
   }
   return null
+}
+
+/** Runs a job may have before a stalled one is failed rather than retried. */
+export const MAX_ATTEMPTS = 2
+
+export const STALLED_JOB_ERROR = 'The worker stopped before this job finished, twice. '
+  + 'That usually means it ran past the time limit for one run. '
+  + 'Try fewer observations or fewer stages, or split the area.'
+
+/**
+ * What to do with a claim candidate: claim it as attempt N, or fail it.
+ * A queued job starts at attempt 1; a stale running job is the next attempt,
+ * unless it has already had MAX_ATTEMPTS.
+ */
+export function reclaimDecision(candidate) {
+  const prior = Math.max(0, Number(candidate?.params?.attempts) || 0)
+  if (candidate?.status !== 'running') return { attempt: 1 }
+  // A job claimed before attempts were counted has had at least one run.
+  const runs = Math.max(1, prior)
+  if (runs >= MAX_ATTEMPTS) return { fail: STALLED_JOB_ERROR }
+  return { attempt: runs + 1 }
 }
 
 /** Write progress back to the row the member is watching. */
@@ -251,6 +292,49 @@ export async function failJob(jobId, error, { costUnits = 0 } = {}) {
     finished_at: new Date().toISOString(),
     locked_by: null,
   }).eq('id', jobId)
+}
+
+/** Continuations one job may have; past this it is failed, not requeued. */
+export const MAX_CONTINUATIONS = 40
+
+export const NO_PROGRESS_ERROR = 'This job could not finish a single step within one run of the worker, '
+  + 'so it was stopped rather than retried forever. Try fewer observations or fewer stages.'
+
+/** How much of the work a checkpoint covers: stages finished plus dates sampled. */
+export function checkpointProgress(checkpoint) {
+  if (!checkpoint) return 0
+  const dates = Object.values(checkpoint.datesDone || {})
+    .reduce((n, list) => n + (Array.isArray(list) ? list.length : 0), 0)
+  return (checkpoint.stagesDone || []).length + dates
+}
+
+/**
+ * After a run paused at its time budget: continue, or fail because the run
+ * made no headway (a single step bigger than a run would loop forever) or the
+ * job has already been continued too often.
+ */
+export function continuationDecision(params, checkpoint) {
+  const progress = checkpointProgress(checkpoint)
+  const before = Number(params?.checkpoint_progress) || 0
+  const continuations = (Number(params?.continuations) || 0) + 1
+  if (progress <= before) return { fail: NO_PROGRESS_ERROR }
+  if (continuations > MAX_CONTINUATIONS) return { fail: NO_PROGRESS_ERROR }
+  return { progress, continuations }
+}
+
+/**
+ * Put a running job back in the queue to continue from a checkpoint. Guarded
+ * on 'running', so a job cancelled meanwhile stays cancelled.
+ */
+export async function requeueJob(jobId, { params, message }) {
+  const client = db()
+  const { error } = await client.from('ee_jobs').update({
+    status: 'queued',
+    params,
+    message,
+    locked_by: null,
+  }).eq('id', jobId).eq('status', 'running')
+  if (error) throw new QueueError(error.message, { status: 500 })
 }
 
 /** Was this job cancelled while it was running? Checked between stages. */

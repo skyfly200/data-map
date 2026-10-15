@@ -49,5 +49,7 @@ export default async function handler(request) {
     }
   }
 
-  return runOneJob()
+  // Under the platform's limit with room for the request in flight: Vercel's
+  // 300 s, or Netlify's 30 s when there is no background function to hand to.
+  return runOneJob({ budgetMs: process.env.VERCEL ? 200_000 : 18_000 })
 }
