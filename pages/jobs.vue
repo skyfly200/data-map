@@ -948,6 +948,15 @@ function useAsSource(dataset) {
 // before this page was opened.
 watch(jobsApi.jobs, (curr, prev) => {
   for (const job of curr) {
+    // The enrich half of an enrich-and-model run ended without a result, so
+    // there is nothing to model; drop the pending hint rather than show it forever.
+    if ((job.status === 'failed' || job.status === 'cancelled')
+        && job.id === pendingAutoModel.enrichJobId) {
+      pendingAutoModel.enrichJobId = ''
+      pendingAutoModel.modelSpec = null
+      submitNote.value = ''
+      submitError.value = `Enrichment ${job.status}, so no model was started.`
+    }
     if (job.status !== 'succeeded' || isModel(job) || !job.title?.trim()) continue
     if (savedFrom(job)) continue
     const was = prev?.find((j) => j.id === job.id)
