@@ -49,8 +49,8 @@
         <div v-for="day in forecast" :key="day.date" class="forecast-day">
           <span class="fc-dow">{{ day.dow }}</span>
           <span class="fc-icon" :title="day.description">{{ day.icon }}</span>
-          <span class="fc-hi">{{ day.hi }}°</span>
-          <span class="fc-lo">{{ day.lo }}°</span>
+          <span class="fc-hi">{{ tempLabel(day.hiC) }}</span>
+          <span class="fc-lo">{{ tempLabel(day.loC) }}</span>
           <div class="fc-precip-bar" :title="`${day.precipMm}mm precip`">
             <div class="fc-precip-fill" :style="{ height: `${Math.min(100, day.precipMm * 10)}%` }"></div>
           </div>
@@ -63,6 +63,9 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useUnits } from '~/composables/useUnits'
+
+const { tempLabel } = useUnits()
 
 const view = ref('forecast')
 const lat = ref(null)
@@ -123,8 +126,9 @@ async function fetchForecast() {
       dow: DAYS[new Date(date).getDay()],
       icon: WMO_ICON[daily.weathercode[i]] || '❓',
       description: WMO_DESC[daily.weathercode[i]] || '',
-      hi: Math.round(daily.temperature_2m_max[i]),
-      lo: Math.round(daily.temperature_2m_min[i]),
+      // Open-Meteo returns °C; tempLabel converts to the chosen unit.
+      hiC: daily.temperature_2m_max[i],
+      loC: daily.temperature_2m_min[i],
       precipMm: +(daily.precipitation_sum[i] || 0).toFixed(1),
     }))
   } catch (e) {
