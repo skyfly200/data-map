@@ -223,6 +223,11 @@
                 <button v-if="enrichJobStatus === 'succeeded'" class="btn primary" @click="goStep(advancedMode ? 'explore' : 'train')">
                   {{ advancedMode ? 'Analyse predictors →' : 'Configure training →' }}
                 </button>
+                <!-- A failed or cancelled run otherwise holds this step until a reload. -->
+                <button v-if="enrichJobStatus === 'failed' || enrichJobStatus === 'cancelled'"
+                        class="btn secondary" @click="clearEnrichJob">
+                  Clear
+                </button>
               </template>
             </div>
 
@@ -933,6 +938,14 @@ async function submitEnrich() {
   } catch (e) {
     enrichError.value = e?.message || 'Submission failed.'
   }
+}
+
+// Forgets the finished run so the form can be submitted again. The job itself
+// stays in the Jobs list.
+function clearEnrichJob() {
+  if (enrichPollTimer) { clearInterval(enrichPollTimer); enrichPollTimer = null }
+  enrichJobId.value = null; enrichDatasetSlug.value = null
+  enrichError.value = ''; enrichNote.value = ''
 }
 
 let enrichPollTimer = null
