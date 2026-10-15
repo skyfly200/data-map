@@ -36,6 +36,15 @@ export default async function handler(request) {
     if (!auth.ok) return auth.response
   }
 
+  let inlineNote = ''
+  if (!process.env.VERCEL) {
+    // Said on a job that fails for want of time, because the fix is a site
+    // setting and nothing about the job: the same job runs fine in the
+    // background worker.
+    inlineNote = 'It ran in the 30-second scheduled worker because the 15-minute background worker '
+      + (pokeSecret ? 'did not accept the hand-off' : 'is not set up (WORKER_POKE_SECRET is not set)')
+      + '; see docs/deploying.md.'
+  }
   if (scheduled && pokeSecret && !process.env.VERCEL) {
     try {
       const status = await handOff(request, pokeSecret)
@@ -51,5 +60,7 @@ export default async function handler(request) {
 
   // Under the platform's limit with room for the request in flight: Vercel's
   // 300 s, or Netlify's 30 s when there is no background function to hand to.
-  return runOneJob({ budgetMs: process.env.VERCEL ? 200_000 : 18_000 })
+  return process.env.VERCEL
+    ? runOneJob({ budgetMs: 200_000, limitMs: 300_000 })
+    : runOneJob({ budgetMs: 18_000, limitMs: 30_000, inlineNote })
 }

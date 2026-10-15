@@ -170,11 +170,29 @@ function requestDeadlineMs() {
   return 10 * 60 * 1000   // 10 minutes
 }
 
-/** getInfo as a promise. Deadline off unless one is configured; see above. */
+/**
+ * How long to wait on one request: its own deadline (0 = none), or less when
+ * the run's hard deadline comes first, in which case `cut` is set.
+ */
+export function requestWait(timeoutMs, hardDeadline, now = Date.now()) {
+  const left = hardDeadline ? hardDeadline - now : Infinity
+  const cut = left < (timeoutMs > 0 ? timeoutMs : Infinity)
+  return { wait: cut ? Math.max(0, left) : timeoutMs, cut }
+}
+
+/**
+ * getInfo as a promise, with the per-request deadline above.
+ *
+ * Inside a pipeline run the wait is also cut at the run's hard deadline: the
+ * platform kills the function there without running any of our code, which
+ * leaves the job 'running' with no word until the stale-lock sweep, so it is
+ * better to stop waiting just before and pause the job with what it has.
+ */
 export function evaluate(obj, { timeoutMs = requestDeadlineMs() } = {}) {
+  const { wait, cut } = requestWait(timeoutMs, runHardDeadline)
   return new Promise((resolve, reject) => {
-    const timer = timeoutMs > 0
-      ? setTimeout(() => reject(new Error('Earth Engine request timed out.')), timeoutMs)
+    const timer = wait > 0 || cut
+      ? setTimeout(() => reject(cut ? new PipelinePaused() : new Error('Earth Engine request timed out.')), wait)
       : null
     obj.evaluate((value, err) => {
       if (timer) clearTimeout(timer)
@@ -198,6 +216,7 @@ async function withRetry(fn, { retries = 3, baseDelay = 2000, label = '' } = {})
     try {
       return await fn()
     } catch (err) {
+      if (err instanceof PipelinePaused) throw err
       last = err
       const message = String(err?.message || err)
       const transient = /too many|rate limit|timed out|backend error|internal error|unavailable|deadline/i
@@ -240,6 +259,9 @@ export class PipelinePaused extends Error {
 // The current run's deadline (ms since epoch, 0 = none). Process-wide like the
 // active credential: a worker runs one job per invocation.
 let runDeadline = 0
+// When the platform will kill this run (ms since epoch, 0 = none). No request
+// is waited on past it; see evaluate.
+let runHardDeadline = 0
 
 /**
  * Sample several images, each at its own points, in ONE request. Returns one
@@ -281,7 +303,9 @@ async function sampleBatch(parts, scale, reducer = ee.Reducer.first(), skipped =
       const i = props.__i
       if (Number.isInteger(i) && i >= 0 && i < flat.length) flat[i] = props
     }
-  } catch {
+  } catch (err) {
+    // Out of time is not a failed batch: the job pauses and samples it again.
+    if (err instanceof PipelinePaused) throw err
     skipped.n += offset
   }
   let at = 0
@@ -695,7 +719,7 @@ const RUNNERS = {
  * in carries on from there. A job bigger than one function invocation is
  * finished across several rather than killed at the platform's limit.
  */
-export async function runPipeline({ spec, features, plan, onProgress = () => {}, deadline = 0, checkpoint = null }) {
+export async function runPipeline({ spec, features, plan, onProgress = () => {}, deadline = 0, hardDeadline = 0, checkpoint = null }) {
   const _pipelineStart = Date.now()
   await initEarthEngine()
 
@@ -733,6 +757,7 @@ export async function runPipeline({ spec, features, plan, onProgress = () => {},
   const skippedByStage = { ...(resume?.skipped || {}) }
 
   runDeadline = deadline || 0
+  runHardDeadline = hardDeadline || 0
   datesDone = { ...(resume?.datesDone || {}) }
   try {
     for (const step of plan) {
@@ -775,6 +800,7 @@ export async function runPipeline({ spec, features, plan, onProgress = () => {},
     }
   } finally {
     runDeadline = 0
+    runHardDeadline = 0
     datesDone = {}
   }
 

@@ -15,5 +15,5 @@ export default async function handler(request) {
   }
   // Background functions stop at 15 minutes; new requests stop at 9 so one in
   // flight still has time to return before the job checkpoints.
-  return runOneJob({ budgetMs: 9 * 60 * 1000 })
+  return runOneJob({ budgetMs: 9 * 60 * 1000, limitMs: 15 * 60 * 1000 })
 }
