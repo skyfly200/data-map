@@ -171,6 +171,7 @@ function cellClass(w, isEditing) {
     'span-full': span === 'full',
     tall:       tall === true || tall === 1,
     'tall-2':   tall === 2,
+    'is-map':   w.type === 'map-preview',
   }
 }
 
@@ -290,6 +291,11 @@ onMounted(() => { load(DEFAULTS) })
 .dash-cell.span-full { grid-column: 1 / -1; }
 .dash-cell.tall { height: 520px; min-height: unset; }
 .dash-cell.tall-2 { height: 760px; min-height: unset; }
+/* The map preview is only useful with room to see the Front Range, so it gets
+   its own, taller steps. Classes apply to saved layouts too, not just new ones. */
+.dash-cell.is-map { height: 440px; min-height: unset; }
+.dash-cell.is-map.tall { height: 680px; }
+.dash-cell.is-map.tall-2 { height: 900px; }
 
 .cell-bar { display: flex; justify-content: space-between; align-items: center; margin: -0.3rem -0.3rem 0.4rem; gap: 0.3rem; }
 .drag { color: var(--muted, #aaa); cursor: grab; user-select: none; }
@@ -340,6 +346,8 @@ onMounted(() => { load(DEFAULTS) })
   .dashboard { padding: 0.75rem 0.75rem 2rem; }
   .dash-grid { grid-template-columns: 1fr; gap: 0.75rem; }
   .dash-cell.span-2, .dash-cell.span-full { grid-column: 1; }
+  /* Leave a strip of the next widget in sight so the page still reads as scrollable. */
+  .dash-cell.is-map { max-height: 75svh; }
 }
 @media (min-width: 601px) and (max-width: 960px) {
   .dash-grid { grid-template-columns: repeat(2, 1fr); }
