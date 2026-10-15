@@ -33,6 +33,12 @@ const mapEl = ref(null)
 let map = null
 let markers = null
 
+// Fixed view on Colorado's Front Range (Colorado Springs to Fort Collins,
+// foothills to the plains edge). Fitting to the data zoomed out to everything
+// loaded. zoomSnap below lets a short phone-width tile land between whole zoom
+// levels instead of dropping back to the whole state.
+const FRONT_RANGE = [[38.8, -105.5], [40.6, -104.7]]
+
 const dotCount = computed(() => filteredData.value?.features?.length || 0)
 
 const latestModel = computed(() =>
@@ -76,6 +82,7 @@ async function initMap() {
     boxZoom: false,
     keyboard: false,
     tap: false,
+    zoomSnap: 0.25,
   })
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -84,34 +91,31 @@ async function initMap() {
   }).addTo(map)
 
   markers = L.layerGroup().addTo(map)
-  // Default view: Colorado. Guard against zero-size container on first mount.
+  // Guard against zero-size container on first mount.
   try {
     map.invalidateSize({ animate: false })
-    map.fitBounds([[36.9, -109.3], [41.1, -101.8]], { padding: [0, 0] })
-  } catch { map.setView([39.5, -105.7], 6) }
+    map.fitBounds(FRONT_RANGE, { padding: [0, 0] })
+  } catch { map.setView([39.7, -105.1], 8) }
   renderDots(L)
 }
 
 function renderDots(L) {
   if (!markers || !map) return
   markers.clearLayers()
-  const features = filteredData.value?.features || []
-  if (!features.length) {
-    map.setView([40, -100], 3)
-    return
+  // Sample only what falls in the fixed view, so the cap isn't spent off-screen.
+  const view = map.getBounds()
+  const inView = []
+  for (const f of filteredData.value?.features || []) {
+    const [lng, lat] = f.geometry?.coordinates || []
+    if (lat != null && lng != null && view.contains([lat, lng])) inView.push([lat, lng])
   }
+  if (!inView.length) return
 
   const MAX_DOTS = 2000
-  const step = features.length > MAX_DOTS ? Math.ceil(features.length / MAX_DOTS) : 1
-  const bounds = L.latLngBounds([])
+  const step = inView.length > MAX_DOTS ? Math.ceil(inView.length / MAX_DOTS) : 1
 
-  for (let i = 0; i < features.length; i += step) {
-    const f = features[i]
-    const [lng, lat] = f.geometry?.coordinates || []
-    if (lat == null || lng == null) continue
-    const ll = L.latLng(lat, lng)
-    bounds.extend(ll)
-    L.circleMarker(ll, {
+  for (let i = 0; i < inView.length; i += step) {
+    L.circleMarker(inView[i], {
       radius: 3,
       color: '#2a78d6',
       fillColor: '#2a78d6',
@@ -119,11 +123,6 @@ function renderDots(L) {
       weight: 0,
     }).addTo(markers)
   }
-
-  try {
-    if (bounds.isValid()) map.fitBounds(bounds, { padding: [10, 10], maxZoom: 10 })
-    else map.fitBounds([[36.9, -109.3], [41.1, -101.8]], { padding: [0, 0] })
-  } catch { /* container not yet measured */ }
 }
 
 onMounted(async () => {
