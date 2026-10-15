@@ -57,6 +57,24 @@ export async function measureSpec(spec, counter) {
 }
 
 /**
+ * Check a spec's source without queueing anything: the dry run behind the
+ * source step's live check. The refusals here are the ones submitJob would
+ * give about the area itself (malformed, empty, more points than the member
+ * may sample), so the page can show them before the member moves on. Quota
+ * that depends on what else they have running is left to submission.
+ */
+export async function checkSource({ profile, spec: rawSpec, counter }) {
+  const spec = normaliseSpec(rawSpec)
+  const { points, dates, breakdown } = await measureSpec(spec, counter)
+  if (!points) throw new QueueError(explainEmpty(spec.source, breakdown), { code: 'empty_source' })
+  const verdict = checkQuota({ profile, points })
+  if (!verdict.ok && verdict.code === 'too_many_points') {
+    throw new QueueError(verdict.message, { status: 403, code: verdict.code })
+  }
+  return { points, dates }
+}
+
+/**
  * Submit a job, or explain why not.
  *
  * The order matters: normalise first so a malformed spec is refused before it

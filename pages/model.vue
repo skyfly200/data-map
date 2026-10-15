@@ -91,13 +91,18 @@
                   <span class="field-label">Region</span>
                   <div class="bbox-group">
                     <button class="btn secondary small" type="button" @click="useMapView">Use current map view</button>
-                    <div class="bbox">
-                      <label class="mini">N <input v-model.number="sourceForm.north" type="number" step="0.1" /></label>
-                      <label class="mini">S <input v-model.number="sourceForm.south" type="number" step="0.1" /></label>
-                      <label class="mini">W <input v-model.number="sourceForm.west" type="number" step="0.1" /></label>
-                      <label class="mini">E <input v-model.number="sourceForm.east" type="number" step="0.1" /></label>
+                    <div class="bbox" :class="{ invalid: !!boundsIssue }">
+                      <label class="mini">N <input v-model.number="sourceForm.north" type="number" step="0.1" :aria-invalid="!!boundsIssue" /></label>
+                      <label class="mini">S <input v-model.number="sourceForm.south" type="number" step="0.1" :aria-invalid="!!boundsIssue" /></label>
+                      <label class="mini">W <input v-model.number="sourceForm.west" type="number" step="0.1" :aria-invalid="!!boundsIssue" /></label>
+                      <label class="mini">E <input v-model.number="sourceForm.east" type="number" step="0.1" :aria-invalid="!!boundsIssue" /></label>
                     </div>
                   </div>
+                </div>
+                <div class="source-check">
+                  <p v-if="sourceProblem" class="msg error" role="alert">{{ sourceProblem }}</p>
+                  <p v-else-if="sourceCheck.state === 'checking'" class="hint" aria-live="polite">Checking that area…</p>
+                  <p v-else-if="sourceCheck.state === 'ok'" class="hint" aria-live="polite">{{ sourceCheckSummary }}</p>
                 </div>
                 <div class="field-row">
                   <span class="field-label">Date filter</span>
@@ -163,6 +168,13 @@
                 {{ fetchForm.result.count }} records fetched as "{{ fetchForm.result.title }}" — ready to continue.
               </p>
             </template>
+
+            <!-- Under the box it is about, so it is in view on a phone while editing. -->
+            <div v-if="sourceForm.type !== 'bbox'" class="source-check">
+              <p v-if="sourceProblem" class="msg error" role="alert">{{ sourceProblem }}</p>
+              <p v-else-if="sourceCheck.state === 'checking'" class="hint" aria-live="polite">Checking that dataset…</p>
+              <p v-else-if="sourceCheck.state === 'ok'" class="hint" aria-live="polite">{{ sourceCheckSummary }}</p>
+            </div>
 
             <div class="actions">
               <button class="btn primary" :disabled="!canAdvanceSource" @click="advanceSource">
@@ -602,6 +614,7 @@
 <script setup>
 import { useEeJobs } from '~/composables/useEeJobs'
 import { jobPercent, jobStalled } from '~/composables/jobProgress'
+import { bboxIssue, bboxSource } from '~/composables/sourceCheck'
 import { useDatasets, VISIBILITY_LABELS } from '~/composables/useDatasets'
 import { useMaxEnt } from '~/composables/useMaxEnt'
 import MaxEntTutorial from '~/components/MaxEntTutorial.vue'
@@ -749,9 +762,57 @@ function useMapView() {
   } catch (_) {}
 }
 
+// Checked as it is picked rather than when enrichment is submitted. The shape
+// of the box is checked here with the server's own rules; whether it holds any
+// observations, and not more than the member may sample, is a dry run against
+// the server, debounced so typing a coordinate is not a request per keystroke.
+const sourceCheck = reactive({ state: '', message: '', points: 0 })
+const sourceCheckSummary = computed(() =>
+  `${sourceCheck.points.toLocaleString()} observation${sourceCheck.points === 1 ? '' : 's'} to enrich.`)
+const localSourceIssue = computed(() => sourceForm.type === 'bbox' ? bboxIssue(sourceForm) : '')
+// Only the box's own faults outline the edges; a bad date range is not theirs.
+const boundsIssue = computed(() => sourceForm.type === 'bbox' ? bboxIssue({ ...sourceForm, noDateFilter: true }) : '')
+const sourceProblem = computed(() => localSourceIssue.value || (sourceCheck.state === 'issue' ? sourceCheck.message : ''))
+
+let sourceCheckTimer = null
+let sourceCheckAbort = null
+function scheduleSourceCheck() {
+  clearTimeout(sourceCheckTimer)
+  sourceCheckAbort?.abort()
+  sourceCheck.state = ''; sourceCheck.message = ''
+  const slug = sourceForm.datasetSlug
+  if (localSourceIssue.value) return
+  if (sourceForm.type !== 'bbox' && !slug) return
+  sourceCheck.state = 'checking'
+  sourceCheckTimer = setTimeout(async () => {
+    const abort = new AbortController()
+    sourceCheckAbort = abort
+    try {
+      const { points } = await jobsApi.check({ kind: 'enrich', stages: enrichForm.stages, source: buildSource() }, abort.signal)
+      if (abort.signal.aborted) return
+      sourceCheck.state = 'ok'; sourceCheck.points = points
+    } catch (e) {
+      if (abort.signal.aborted) return
+      // A 4xx is the server refusing this source, which is the point of asking.
+      // Anything else (signed out, offline, a server fault) says nothing about
+      // the area, so it neither blocks Continue nor alarms anyone; submission
+      // will still check.
+      const refused = e?.status >= 400 && e?.status < 500 && e.status !== 401 && e?.code !== 'not_a_member'
+      sourceCheck.state = refused ? 'issue' : ''
+      sourceCheck.message = refused ? e.message : ''
+    }
+  }, 600)
+}
+watch(() => [sourceForm.type, sourceForm.datasetSlug, sourceForm.north, sourceForm.south, sourceForm.east,
+  sourceForm.west, sourceForm.dateFrom, sourceForm.dateTo, sourceForm.noDateFilter, sourceForm.taxon],
+scheduleSourceCheck)
+onMounted(scheduleSourceCheck)
+onUnmounted(() => { clearTimeout(sourceCheckTimer); sourceCheckAbort?.abort() })
+
 const canAdvanceSource = computed(() => {
+  if (sourceProblem.value) return false
   if (sourceForm.type === 'dataset') return !!sourceForm.datasetSlug
-  if (sourceForm.type === 'bbox') return sourceForm.north != null && sourceForm.south != null && sourceForm.east != null && sourceForm.west != null
+  if (sourceForm.type === 'bbox') return true
   if (sourceForm.type === 'fetch') return !!sourceForm.datasetSlug
   return false
 })
@@ -855,14 +916,10 @@ watch(enrichJobStatus, async (s) => {
 })
 
 function buildSource() {
-  if (sourceForm.type === 'dataset') return { type: 'dataset', slug: sourceForm.datasetSlug }
-  return {
-    type: 'bbox',
-    bounds: { north: sourceForm.north, south: sourceForm.south, east: sourceForm.east, west: sourceForm.west },
-    dateFrom: sourceForm.noDateFilter ? undefined : (sourceForm.dateFrom || undefined),
-    dateTo: sourceForm.noDateFilter ? undefined : (sourceForm.dateTo || undefined),
-    taxon: sourceForm.taxon || undefined,
-  }
+  // A fetch is saved as a dataset, so it is enriched as one rather than as
+  // whatever box the area form was last left on.
+  if (sourceForm.type === 'dataset' || sourceForm.type === 'fetch') return { type: 'dataset', slug: sourceForm.datasetSlug }
+  return bboxSource(sourceForm)
 }
 
 async function submitEnrich() {
@@ -1306,6 +1363,9 @@ function fmtWhen(dateStr) {
 .msg { padding: 10px 14px; border-radius: 7px; font-size: 0.88rem; }
 .msg.error { background: #fee2e2; color: #dc2626; }
 .msg.ok    { background: #dcfce7; color: #16a34a; }
+.bbox.invalid input { border-color: #dc2626; }
+.source-check:empty { display: none; }
+.source-check .msg, .source-check .hint { margin: 0; }
 
 /* ── Gate ── */
 .gate { padding: 32px; text-align: center; }
