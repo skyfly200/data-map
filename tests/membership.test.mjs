@@ -255,6 +255,26 @@ test('a job that broke does not cost the member their day', () => {
   assert.equal(checkQuota({ profile: member, usage: summariseUsage(jobs, now), estimate: 1 }).ok, true)
 })
 
+test('an admin quota reset stops earlier jobs counting, but not running ones', () => {
+  const now = new Date('2026-09-09T12:00:00Z')
+  const resetAt = '2026-09-09T10:00:00Z'
+  const jobs = [
+    { status: 'succeeded', created_at: '2026-09-02T09:00:00Z', cost_units: 400 }, // before reset
+    { status: 'succeeded', created_at: '2026-09-09T09:00:00Z', cost_units: 90 },  // today, before reset
+    { status: 'running', created_at: '2026-09-09T09:30:00Z', estimated_units: 4 }, // still in flight
+    { status: 'succeeded', created_at: '2026-09-09T11:00:00Z', cost_units: 6 },   // after reset
+  ]
+  const got = summariseUsage(jobs, now, resetAt)
+  assert.equal(got.unitsThisMonth, 6)
+  assert.equal(got.jobsThisMonth, 1)
+  assert.equal(got.jobsToday, 1)
+  assert.equal(got.running, 1)
+  assert.equal(checkQuota({ profile: member, usage: got, estimate: 400 }).ok, true)
+  // A reset from a previous month changes nothing, and a garbage value is ignored.
+  assert.equal(summariseUsage(jobs, now, '2026-08-01T00:00:00Z').unitsThisMonth, 500)
+  assert.equal(summariseUsage(jobs, now, 'nonsense').unitsThisMonth, 500)
+})
+
 test('a job with an unreadable timestamp is skipped, not counted as now', () => {
   const got = summariseUsage([{ status: 'succeeded', created_at: 'nonsense', cost_units: 500 }])
   assert.equal(got.unitsThisMonth, 0)

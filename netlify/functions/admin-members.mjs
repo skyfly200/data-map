@@ -3,6 +3,7 @@
 //   GET  ?what=members    every profile, with this month's usage alongside
 //   GET  ?what=datasets   every saved dataset
 //   POST { action: 'set-member', user_id, tier?, member_until?, limits… }
+//   POST { action: 'reset-quota', user_id }   start the member's usage afresh
 //   POST { action: 'set-dataset', id, visibility?, title?, description? }
 //   POST { action: 'delete-dataset', id }
 //
@@ -68,8 +69,9 @@ async function authIdentities(client) {
 async function listMembers(client) {
   const { data: profiles, error } = await client
     .from('profiles')
-    .select('user_id, tier, display_name, member_until, notes, created_at, '
-      + LIMIT_FIELDS.join(', '))
+    // Every column rather than a list, so a database that has not had migration
+    // 018 yet (quota_reset_at) still lists its members.
+    .select('*')
     .order('tier', { ascending: false })
   if (error) throw new Error(error.message)
 
@@ -101,7 +103,7 @@ async function listMembers(client) {
       // The name to show: what the member set on their profile, then their
       // sign-up name, and only then the UUID stub the page fell back to before.
       display_name: p.display_name || who.metaName || '',
-      usage: summariseUsage(byUser.get(p.user_id) || []),
+      usage: summariseUsage(byUser.get(p.user_id) || [], new Date(), p.quota_reset_at),
     }
   })
 }
@@ -200,6 +202,21 @@ export default async function handler(request) {
         // the old tier until their token refreshes.
         note: patch.tier ? 'The new tier reaches that member when their session next refreshes, within about an hour.' : '',
       })
+    }
+
+    if (body.action === 'reset-quota') {
+      if (!body.user_id) throw new Error('Which member?')
+      // The job rows stay as the record of what ran; only the window that counts
+      // them against the quota moves.
+      const { data, error } = await client.from('profiles')
+        .update({ quota_reset_at: new Date().toISOString() })
+        .eq('user_id', body.user_id).select().single()
+      if (error) {
+        throw new Error(/quota_reset_at/.test(error.message)
+          ? 'Quota reset needs migration 018_quota_reset.sql applied to the database.'
+          : error.message)
+      }
+      return json({ ok: true, member: data, note: 'Quota reset. Earlier jobs no longer count against it.' })
     }
 
     if (body.action === 'set-dataset') {
