@@ -9,13 +9,13 @@
     </div>
 
     <!-- Location status -->
-    <div v-if="!locationGranted && !locationError" class="loc-prompt">
+    <div v-if="view === 'forecast' && !locationGranted && !locationError" class="loc-prompt">
       <button class="loc-btn" @click="requestLocation">📍 Use my location</button>
     </div>
     <p v-if="locationError" class="widget-note error">{{ locationError }}</p>
 
     <!-- Radar view -->
-    <div v-if="view === 'radar' && locationGranted" class="radar-wrap">
+    <div v-if="view === 'radar'" class="radar-wrap">
       <div class="radar-map" ref="radarEl">
         <!-- Animated radar overlay via RainViewer public tiles -->
         <iframe
@@ -134,11 +134,11 @@ async function fetchForecast() {
   }
 }
 
-// RainViewer embed URL — centers on user location
+// RainViewer embed URL — fixed on Boulder, CO, close enough to see the Front Range
+const RADAR_CENTER = { lat: 40.015, lon: -105.2705, zoom: 9 }
 const radarUrl = computed(() => {
-  if (!lat.value || !lon.value) return null
-  const z = 7
-  return `https://www.rainviewer.com/map.html?loc=${lat.value},${lon.value},${z}&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=1&rmt=4&referendum=1&c=3&o=83&lm=1&layer=radar&sm=1&sn=1`
+  const { lat: rLat, lon: rLon, zoom } = RADAR_CENTER
+  return `https://www.rainviewer.com/map.html?loc=${rLat},${rLon},${zoom}&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=1&rmt=4&referendum=1&c=3&o=83&lm=1&layer=radar&sm=1&sn=1`
 })
 
 const radarAttrib = 'https://www.rainviewer.com'
