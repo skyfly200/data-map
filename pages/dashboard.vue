@@ -20,6 +20,37 @@
       </div>
     </header>
 
+    <!-- Pages: tabs that each hold their own widgets. Shown once there is more
+         than one, or while customising so a second can be added. Dropping a
+         widget onto a tab moves it to that page. -->
+    <nav v-if="pages.length > 1 || editing" class="page-tabs" role="tablist" aria-label="Dashboard pages">
+      <button v-for="p in pages" :key="p.id"
+              type="button" role="tab" class="page-tab"
+              :aria-selected="p.id === activePageId"
+              :class="{ active: p.id === activePageId, 'drop-into': tabDrop === p.id }"
+              @click="setActivePage(p.id)"
+              @dragover.prevent="onTabDragOver(p.id)"
+              @dragleave="onTabDragLeave(p.id)"
+              @drop="onTabDrop(p.id)">
+        {{ p.name }}<span v-if="editing" class="tab-count">{{ p.order.length }}</span>
+      </button>
+      <button v-if="editing" type="button" class="page-tab add" @click="addPage()">＋ Page</button>
+    </nav>
+
+    <div v-if="editing && activePage" class="page-tools">
+      <label class="page-name">
+        <span>Page name</span>
+        <input :value="activePage.name" maxlength="40"
+               @change="renamePage(activePage.id, $event.target.value); $event.target.value = activePage.name"
+               @keydown.enter="$event.target.blur()" />
+      </label>
+      <div class="page-tool-btns">
+        <button class="btn sm" :disabled="pageIndex <= 0" title="Move page left" @click="movePage(activePage.id, -1)">◀</button>
+        <button class="btn sm" :disabled="pageIndex >= pages.length - 1" title="Move page right" @click="movePage(activePage.id, 1)">▶</button>
+        <button class="btn sm danger" :disabled="pages.length <= 1" @click="deletePage">Delete page</button>
+      </div>
+    </div>
+
     <!-- The palette of widgets to add, only while editing. -->
     <div v-if="editing" class="palette"
          @dragover.prevent="onPaletteDragOver" @drop="onPaletteDrop">
@@ -39,7 +70,7 @@
     <p v-if="!orderedWidgets.length" class="dash-empty"
        :class="{ 'drop-target': editing && dragFromPalette }"
        @dragover.prevent @drop="onGridEndDrop">
-      Nothing on the dashboard yet. {{ editing ? 'Drag or click a widget above to add it.' : 'Press Customise to add widgets.' }}
+      Nothing on {{ pages.length > 1 ? 'this page' : 'the dashboard' }} yet. {{ editing ? 'Drag or click a widget above to add it.' : 'Press Customise to add widgets.' }}
     </p>
 
     <div v-else class="dash-grid">
@@ -65,6 +96,11 @@
             <button :class="{ on: w.settings.tall === 2 }"
                     title="Extra tall (2×)" @click="updateSettings(w.id, { tall: w.settings.tall === 2 ? false : 2 })">⤢</button>
           </div>
+          <select v-if="pages.length > 1" class="move-page" title="Move to another page" aria-label="Move to another page"
+                  @change="moveWidgetToPage(w.id, $event.target.value); $event.target.value = ''">
+            <option value="">Move…</option>
+            <option v-for="p in pages.filter((x) => x.id !== activePageId)" :key="p.id" :value="p.id">{{ p.name }}</option>
+          </select>
           <button class="remove" title="Remove" @click="remove(w.id)">×</button>
         </div>
         <!-- Insert-before drop indicator -->
@@ -89,7 +125,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useDashboardState } from '~/composables/useDashboardState'
 import DashboardOverview from '~/components/DashboardOverview.vue'
@@ -113,7 +149,11 @@ import DashboardRecentRainTemp from '~/components/DashboardRecentRainTemp.vue'
 import DashboardSeasonOutlook from '~/components/DashboardSeasonOutlook.vue'
 
 const { isAuthed } = useAuth()
-const { orderedWidgets, load, add, addBefore, remove, reorder, reset, updateSettings } = useDashboardState()
+const {
+  orderedWidgets, load, add, addBefore, remove, reorder, reset, updateSettings,
+  pages, activePage, activePageId, addPage, renamePage, removePage, movePage, setActivePage, moveWidgetToPage,
+} = useDashboardState()
+const pageIndex = computed(() => pages.value.findIndex((p) => p.id === activePageId.value))
 
 // The widget catalogue: what a member can put on the dashboard, and what draws it.
 const WIDGET_TYPES = [
@@ -140,28 +180,41 @@ const WIDGET_TYPES = [
 const COMPONENTS = Object.fromEntries(WIDGET_TYPES.map((w) => [w.type, w.component]))
 function componentFor(type) { return COMPONENTS[type] || DashboardOverview }
 
-// The layout a new member lands on. Sizes chosen so the default grid reads well
-// at common viewport widths without wasted space.
-// Default layout: 3-col grid
-// Row 1: overview (1), now-fruiting (1), map-preview (1, tall)
-// Row 2: species-list (1), recent-rain-temp (1), weather-forecast (1)
-// Row 3: phenology (full)
-// Row 4: env-stats (2), recent-jobs (1)
+// The layout a new member lands on: three pages, each sized to read well on a
+// 3-column grid and to stack in a sensible order on a phone.
+//   Today   — what to go out for, and where: fruiting now, weather, then the
+//             map across the full width so its height never strands a short cell.
+//   Seasons — the longer view: the outlook, the phenology calendar, favourites.
+//   Data    — the collection and the models built on it.
+const DEFAULT_PAGES = [
+  { id: 'page-today', name: 'Today', widgets: [
+    ['now-fruiting', {}],
+    ['weather-forecast', {}],
+    ['recent-rain-temp', {}],
+    ['map-preview', { colspan: 'full', tall: 1 }],
+    ['species-list', {}],
+  ] },
+  { id: 'page-seasons', name: 'Seasons', widgets: [
+    ['season-outlook', {}],
+    ['favorites', {}],
+    ['quick-filters', {}],
+    ['phenology', { colspan: 'full' }],
+  ] },
+  { id: 'page-data', name: 'Data', widgets: [
+    ['overview', {}],
+    ['datasets', { colspan: 2 }],
+    ['env-stats', { colspan: 2 }],
+    ['data-quality', {}],
+    ['model-leaderboard', {}],
+    ['recent-jobs', {}],
+    ['quota', {}],
+  ] },
+]
 const DEFAULTS = {
-  widgets: [
-    { id: 'def-overview',        type: 'overview',          settings: {},                   order: 0 },
-    { id: 'def-now-fruiting',    type: 'now-fruiting',      settings: {},                   order: 1 },
-    { id: 'def-map-preview',     type: 'map-preview',       settings: { tall: 1 },          order: 2 },
-    { id: 'def-species-list',    type: 'species-list',      settings: {},                   order: 3 },
-    { id: 'def-recent-rain',     type: 'recent-rain-temp',  settings: {},                   order: 4 },
-    { id: 'def-weather',         type: 'weather-forecast',  settings: {},                   order: 5 },
-    { id: 'def-phenology',       type: 'phenology',         settings: { colspan: 'full' },  order: 6 },
-    { id: 'def-env-stats',       type: 'env-stats',         settings: { colspan: 2 },       order: 7 },
-    { id: 'def-recent-jobs',     type: 'recent-jobs',       settings: {},                   order: 8 },
-  ],
-  order: ['def-overview', 'def-now-fruiting', 'def-map-preview',
-          'def-species-list', 'def-recent-rain', 'def-weather',
-          'def-phenology', 'def-env-stats', 'def-recent-jobs'],
+  widgets: DEFAULT_PAGES.flatMap((p) => p.widgets.map(([type, settings]) => ({ id: `def-${type}`, type, settings }))),
+  order: DEFAULT_PAGES.flatMap((p) => p.widgets.map(([type]) => `def-${type}`)),
+  pages: DEFAULT_PAGES.map((p) => ({ id: p.id, name: p.name, order: p.widgets.map(([type]) => `def-${type}`) })),
+  activePage: 'page-today',
 }
 
 function cellClass(w, isEditing) {
@@ -180,12 +233,33 @@ function cellClass(w, isEditing) {
 const editing = ref(false)
 
 function hasType(type) { return orderedWidgets.value.some((w) => w.type === type) }
-function addDefaults() { reset(structuredClone(DEFAULTS)) }
+function addDefaults() {
+  if (window.confirm('Replace every page with the default layout?')) reset(structuredClone(DEFAULTS))
+}
+function deletePage() {
+  const page = activePage.value
+  if (!page || pages.value.length <= 1) return
+  const n = page.order.length
+  if (n && !window.confirm(`Delete “${page.name}” and its ${n} widget${n === 1 ? '' : 's'}?`)) return
+  removePage(page.id)
+}
 
 // ── Drag state ────────────────────────────────────────────────────────────────
 const dragging = ref('')          // id of an existing widget being reordered
 const dragFromPalette = ref(null) // { type, label } when dragging from palette
 const dropTarget = ref('')        // id of cell showing the drop-before indicator
+
+// Dropping an existing widget onto a page tab moves it to that page.
+const tabDrop = ref('')
+function onTabDragOver(pageId) {
+  if (dragging.value && pageId !== activePageId.value) tabDrop.value = pageId
+}
+function onTabDragLeave(pageId) { if (tabDrop.value === pageId) tabDrop.value = '' }
+function onTabDrop(pageId) {
+  if (dragging.value) moveWidgetToPage(dragging.value, pageId)
+  dragging.value = ''
+  tabDrop.value = ''
+}
 
 // Existing widget reorder
 function onDragStart(id) {
@@ -251,6 +325,36 @@ onMounted(() => { load(DEFAULTS) })
 }
 .btn.primary { background: var(--accent, #2a78d6); border-color: var(--accent, #2a78d6); color: #fff; }
 .btn:hover { filter: brightness(0.98); }
+.btn.sm { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+.btn.danger { color: #b3492f; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+
+.page-tabs {
+  display: flex; gap: 0.25rem; margin: 0 0 1rem; border-bottom: 1px solid var(--border, #e5e5e5);
+  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.page-tabs::-webkit-scrollbar { display: none; }
+.page-tab {
+  flex: none; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted, #777);
+  font: inherit; font-size: 0.92rem; padding: 0.5rem 0.9rem; margin-bottom: -1px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 6px 6px 0 0;
+}
+.page-tab:hover { color: var(--text, #222); }
+.page-tab.active { color: var(--text, #222); border-bottom-color: var(--accent, #2a78d6); font-weight: 600; }
+.page-tab.drop-into { background: color-mix(in srgb, var(--accent, #2a78d6) 12%, transparent); color: var(--accent, #2a78d6); }
+.page-tab.add { color: var(--accent, #2a78d6); }
+.tab-count {
+  font-size: 0.68rem; font-weight: 500; background: var(--surface-2, #eee); color: var(--muted, #777);
+  border-radius: 999px; padding: 0 0.4rem; line-height: 1.5;
+}
+
+.page-tools { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem 0.8rem; margin-bottom: 0.8rem; }
+.page-name { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.75rem; color: var(--muted, #777); flex: 1 1 180px; max-width: 280px; }
+.page-name input {
+  border: 1px solid var(--border, #ddd); background: var(--surface, #fff); color: var(--text, #222);
+  border-radius: 6px; padding: 0.35rem 0.5rem; font: inherit; font-size: 0.88rem;
+}
+.page-tool-btns { display: flex; gap: 0.35rem; }
 
 .palette { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; padding: 0.8rem; background: var(--surface-2, #f6f6f6); border-radius: 10px; }
 .palette-item {
@@ -310,6 +414,10 @@ onMounted(() => { load(DEFAULTS) })
 .size-btns button:hover { background: var(--surface-3, #eee); color: var(--text, #222); }
 .size-btns button.on { background: var(--accent, #2a78d6); border-color: var(--accent, #2a78d6); color: #fff; }
 
+.move-page {
+  border: 1px solid var(--border, #ddd); background: var(--surface-2, #f5f5f5); color: var(--muted, #888);
+  border-radius: 4px; font: inherit; font-size: 0.7rem; padding: 1px 2px; max-width: 6.5rem; cursor: pointer;
+}
 .remove {
   border: 0; background: none; color: var(--muted, #999); font-size: 1.2rem; line-height: 1; cursor: pointer;
 }
