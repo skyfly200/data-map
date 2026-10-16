@@ -77,8 +77,14 @@ async function removeCheckpoint(path) {
  * for an enrich job, leaving headroom under the platform's own limit for the
  * request in flight and the write-back. A job that is not done by then saves a
  * checkpoint and goes back in the queue, and the next tick continues it.
+ *
+ * `limitMs` is when the platform kills the invocation. No Earth Engine request
+ * is waited on past a few seconds before it, so a slow request pauses the job
+ * instead of the function dying silently with the job still 'running'.
+ * `inlineNote`, when set, says this run is in the 30-second scheduled function
+ * rather than the background worker, and is added to a no-progress failure.
  */
-export async function runOneJob({ budgetMs = 9 * 60 * 1000 } = {}) {
+export async function runOneJob({ budgetMs = 9 * 60 * 1000, limitMs = 0, inlineNote = '' } = {}) {
   const workerId = `${process.env.AWS_LAMBDA_LOG_STREAM_NAME || 'worker'}-${Date.now()}`
   const t0 = Date.now()
   const job = await claimNextJob(workerId)
@@ -185,11 +191,13 @@ export async function runOneJob({ budgetMs = 9 * 60 * 1000 } = {}) {
     const checkpoint = await readCheckpoint(spec.checkpoint_path)
     const result = await runPipeline({
       spec, features, plan, onProgress, checkpoint, deadline: _jobStart + budgetMs,
+      // Room under the kill for the checkpoint upload and the requeue.
+      hardDeadline: limitMs ? t0 + limitMs - 5_000 : 0,
     })
 
     if (result.paused) {
       const decision = continuationDecision(spec, result.checkpoint)
-      if (decision.fail) throw new Error(decision.fail)
+      if (decision.fail) throw new Error(inlineNote ? `${decision.fail} ${inlineNote}` : decision.fail)
       const path = checkpointPath(job)
       await uploadJson(path, result.checkpoint, 'application/json')
       await requeueJob(job.id, {
@@ -244,7 +252,7 @@ export async function runOneJob({ budgetMs = 9 * 60 * 1000 } = {}) {
     await removeCheckpoint(spec.checkpoint_path)
     await notifyJobSettled({ ...job, status: 'succeeded', result_meta: meta })
     console.log(`[ee-worker] job ${job.id} succeeded in ${Date.now() - _jobStart}ms (features: ${result.features.length})`)
-    await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'ok', durationMs: Date.now() - t0, details: { jobId: job.id, kind: 'enrich', features: result.features.length } })
+    await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'ok', durationMs: Date.now() - t0, details: { jobId: job.id, kind: 'enrich', features: result.features.length, inline: Boolean(inlineNote) } })
     return json({ ok: true, claimed: job.id, features: result.features.length })
   } catch (err) {
     // Charged for what it spent before breaking: Earth Engine billed those
@@ -253,7 +261,7 @@ export async function runOneJob({ budgetMs = 9 * 60 * 1000 } = {}) {
     await failJob(job.id, err, { costUnits: spent })
     await removeCheckpoint(spec.checkpoint_path)
     await notifyJobSettled({ ...job, status: 'failed', error: String(err?.message || err) })
-    await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'error', durationMs: Date.now() - t0, details: { jobId: job.id, error: String(err?.message || err) } })
+    await logCronRun(adminClient(), { jobId: 'ee-worker', status: 'error', durationMs: Date.now() - t0, details: { jobId: job.id, error: String(err?.message || err), inline: Boolean(inlineNote) } })
     return json({ ok: false, claimed: job.id, error: String(err.message || err) }, 200)
   } finally {
     setActiveCredential(null)
