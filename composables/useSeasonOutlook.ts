@@ -4,10 +4,10 @@
 
 import { ref } from 'vue'
 import {
-  MIN_YEARS, buildScenarios, correct, currentToDate, dayOfYear, describeTrigger, fitTrigger, forecastBias, forecastSeason,
+  MIN_FINDS_PER_YEAR, MIN_YEARS, buildScenarios, correct, currentToDate, dayOfYear, describeTrigger, fitTrigger, forecastBias, forecastSeason,
   indicators, localSeasons,
 } from './seasonForecast'
-import type { Bias, DaySeries, SeasonOutlook, Trigger } from './seasonForecast'
+import type { Bias, DaySeries, SeasonOutlook, SeasonYear, Trigger } from './seasonForecast'
 
 /** Most past years fetched; also the most analog years per scenario set. */
 export const MAX_YEARS = 12
@@ -21,6 +21,8 @@ export interface SpeciesOutlook {
   trigger: Trigger
   basis: string
   years: number
+  /** The past seasons the trigger was fitted on. */
+  past: SeasonYear[]
 }
 
 export interface OutlookMeta {
@@ -34,22 +36,32 @@ export interface OutlookMeta {
 const DAY_MS = 86400000
 const doyOfIso = (iso: string) => dayOfYear(new Date(`${iso}T00:00:00Z`))
 
-/** The species worth an outlook: enough past seasons, not long over, most finds first. */
+/**
+ * The species worth an outlook: enough past seasons, not long over, most finds
+ * first. Naming `species` asks for that one alone, whatever its dates.
+ */
 export function outlookCandidates(
   seasons: ReturnType<typeof localSeasons>,
   today: number,
-  { minYears = MIN_YEARS, limit = MAX_SPECIES } = {},
+  { minYears = MIN_YEARS, limit = MAX_SPECIES, species = '' }: { minYears?: number, limit?: number, species?: string } = {},
 ) {
   return [...seasons.entries()]
+    .filter(([name]) => !species || name === species)
     .filter(([, s]) => s.past.length >= minYears)
     // Keep seasons whose usual end has not long passed: the outlook is for the rest of this year.
     .filter(([, s]) => {
+      if (species) return true
       const ends = s.past.map((y) => y.end).sort((a, b) => a - b)
       return ends[ends.length - 1] >= today - 7
     })
     .map(([name, s]) => ({ name, ...s, finds: s.past.reduce((a, y) => a + y.n, 0) }))
     .sort((a, b) => b.finds - a.finds)
     .slice(0, limit)
+}
+
+/** Species with enough past seasons near a place for an outlook, by name. */
+export function outlookSpecies(seasons: ReturnType<typeof localSeasons>, { minYears = MIN_YEARS } = {}): string[] {
+  return [...seasons.entries()].filter(([, s]) => s.past.length >= minYears).map(([name]) => name).sort()
 }
 
 export function useSeasonOutlook() {
@@ -76,7 +88,7 @@ export function useSeasonOutlook() {
     return data
   }
 
-  async function run(rows: any[], { lat, lon, radiusKm = 50 }: { lat: number, lon: number, radiusKm?: number }) {
+  async function run(rows: any[], { lat, lon, radiusKm = 50, species = '', distance = '' }: { lat: number, lon: number, radiusKm?: number, species?: string, distance?: string }) {
     loading.value = true
     message.value = ''
     outlooks.value = []
@@ -86,9 +98,15 @@ export function useSeasonOutlook() {
       const year = now.getUTCFullYear()
       const today = dayOfYear(now)
       const seasons = localSeasons(rows, { lat, lon, radiusKm, year })
-      const picked = outlookCandidates(seasons, today)
+      const picked = outlookCandidates(seasons, today, { species })
       if (!picked.length) {
-        message.value = `No species has ${MIN_YEARS}+ past seasons within ${radiusKm} km with a season still to come.`
+        const within = distance || `${Math.round(radiusKm)} km`
+        if (species) {
+          const n = seasons.get(species)?.past.length ?? 0
+          message.value = `${species} has ${n} past season${n === 1 ? '' : 's'} within ${within} with ${MIN_FINDS_PER_YEAR}+ finds; an outlook needs ${MIN_YEARS}. Try a wider distance.`
+        } else {
+          message.value = `No species has ${MIN_YEARS}+ past seasons within ${within} with a season still to come.`
+        }
         return
       }
 
@@ -144,12 +162,14 @@ export function useSeasonOutlook() {
       for (const s of picked) {
         const trigger = fitTrigger(s.past.filter((y) => past.has(y.year)).map((season) => ({ season, series: past.get(season.year)! })))
         if (!trigger) continue
+        const fitted = s.past.filter((y) => past.has(y.year))
         out.push({
           name: s.name,
           outlook: forecastSeason(trigger, scenarios, today, s.current),
           trigger,
           basis: describeTrigger(trigger),
           years: trigger.years,
+          past: fitted,
         })
       }
       const rank = { in: 0, upcoming: 1, over: 2, unlikely: 3 }

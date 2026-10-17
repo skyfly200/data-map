@@ -248,3 +248,16 @@ test('season-weather handler: validates, caches past years, and passes forecast 
   assert.equal((await get('lat=40&lon=-105&part=nope')).status, 400)
   assert.equal((await handleSeasonWeather(new Request('http://x/f?lat=40&lon=-105&part=forecast'), { ...deps, eeReady: () => false })).status, 503)
 })
+
+test('outlookCandidates: a named species is kept whatever its dates; outlookSpecies lists the forecastable ones', async () => {
+  const { outlookCandidates, outlookSpecies } = await import('../composables/useSeasonOutlook.js')
+  const seasons = new Map([
+    ['Early', { past: [1, 2, 3].map((i) => ({ year: 2020 + i, onset: 100, end: 120, n: 5 })), current: null }],
+    ['Late', { past: [1, 2, 3].map((i) => ({ year: 2020 + i, onset: 280, end: 310, n: 9 })), current: null }],
+    ['Sparse', { past: [{ year: 2022, onset: 280, end: 300, n: 5 }], current: null }],
+  ])
+  assert.deepEqual(outlookCandidates(seasons, 288).map((s) => s.name), ['Late'])
+  assert.deepEqual(outlookCandidates(seasons, 288, { species: 'Early' }).map((s) => s.name), ['Early'])
+  assert.deepEqual(outlookCandidates(seasons, 288, { species: 'Sparse' }), [])
+  assert.deepEqual(outlookSpecies(seasons), ['Early', 'Late'])
+})
