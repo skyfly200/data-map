@@ -16,7 +16,7 @@
         </div>
         <p v-if="ds.description" class="desc">{{ ds.description }}</p>
         <div class="actions">
-          <NuxtLink :to="`/map?dataset=${encodeURIComponent(ds.slug)}`" class="btn small">Open on map</NuxtLink>
+          <NuxtLink :to="`/map?dataset=${encodeURIComponent(ds.slug)}`" class="btn small primary">Open on map</NuxtLink>
           <NuxtLink :to="`/jobs?dataset=${encodeURIComponent(ds.slug)}`" class="btn small">Run a job on it</NuxtLink>
           <ExportMenu :source="() => datasetsApi.fetchGeojson(ds.slug)" :total="ds.feature_count || 0" :name="ds.title" />
         </div>
@@ -340,6 +340,7 @@ function fmtBounds(b) {
 .btn { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px;
   padding: 4px 9px; font: inherit; font-size: 0.78rem; cursor: pointer; text-decoration: none; display: inline-block; }
 .btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent, #3d8b5f); color: #fff; border-color: transparent; }
 .msg { margin: 8px 0 0; font-size: 0.82rem; color: var(--muted); }
 .msg.error { color: #b3492f; }
 

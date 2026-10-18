@@ -151,6 +151,12 @@ onMounted(() => {
 .fav-map-btn:hover { text-decoration: underline; }
 .fav-remove { border: 0; background: none; color: var(--muted, #bbb); font-size: 1rem; line-height: 1; cursor: pointer; padding: 0; }
 .fav-remove:hover { color: #b3492f; }
+/* With a mouse, remove shows on the row being pointed at, so the list reads as
+   names and counts. A touch screen has no hover, so it keeps the button. */
+@media (hover: hover) {
+  .fav-remove { opacity: 0; transition: opacity 0.12s; }
+  .fav-item:hover .fav-remove, .fav-remove:focus-visible { opacity: 1; }
+}
 
 .fav-add-form { display: flex; gap: 0.4rem; margin-top: auto; }
 .fav-input {

@@ -357,7 +357,9 @@
               <span>{{ c.n }} finds<template v-if="cfg.showSample"> · {{ density(c) }}/km²</template></span>
               <span v-if="c.landCover && mode === 'forager'">{{ c.landCover }}</span>
               <span v-if="c.access.areaName && titleFor(c) !== c.access.areaName">{{ c.access.areaName }}</span>
-              <NuxtLink class="map-link" :to="mapUrlFor(c)" @click.stop>Show on map</NuxtLink>
+              <!-- Only on the picked row: tapping a row is how you ask for more
+                   about it, and the same link on all twenty was noise. -->
+              <NuxtLink v-if="c.key === selectedKey" class="map-link" :to="mapUrlFor(c)" @click.stop>Show on map</NuxtLink>
               <span v-if="cfg.showAccessCols" class="acc">
                 <span class="chip">{{ c.access.covered ? c.access.public_access : 'access unknown' }}</span>
                 <span class="chip" :class="{ ok: c.access.fee_status === 'free' }">fee: {{ feeLabel(c.access) }}</span>
@@ -418,9 +420,11 @@
           <div class="sl-head">
             <h3>Shortlist</h3>
             <div class="sl-actions">
-              <button @click="exportCsv" :disabled="!rows.length">Export CSV</button>
-              <button @click="copyText" :disabled="!rows.length">{{ copied ? 'Copied' : 'Copy text' }}</button>
-              <button @click="printList" :disabled="!rows.length">Print</button>
+              <ActionMenu title="Take the shortlist with you">
+                <button class="mi" :disabled="!rows.length" @click="exportCsv">Export CSV</button>
+                <button class="mi" :disabled="!rows.length" @click="copyText">{{ copied ? 'Copied' : 'Copy as text' }}</button>
+                <button class="mi" :disabled="!rows.length" @click="printList">Print</button>
+              </ActionMenu>
             </div>
           </div>
           <div v-if="rows.length" class="table-wrap">
@@ -1235,8 +1239,8 @@ span.site strong { overflow: hidden; text-overflow: ellipsis; }
 .sl-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .sl-head h3 { margin: 0; font-size: 0.95rem; }
 .sl-actions { display: flex; gap: 0.4rem; }
-.sl-actions button { font: inherit; font-size: 0.78rem; padding: 0.25rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); color: var(--text); cursor: pointer; }
-.sl-actions button:disabled { opacity: 0.5; cursor: default; }
+.sl-actions > button { font: inherit; font-size: 0.78rem; padding: 0.25rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); color: var(--text); cursor: pointer; }
+.sl-actions > button:disabled { opacity: 0.5; cursor: default; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 0.5rem; }
 th, td { text-align: left; padding: 0.25rem 0.3rem; border-bottom: 1px solid var(--border-soft); vertical-align: top; }

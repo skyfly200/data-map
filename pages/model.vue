@@ -564,7 +564,11 @@
                   <span class="card-date">{{ fmtWhen(m.created_at) }}</span>
                   <div class="card-actions">
                     <button class="btn small primary" @click="openModelOnMap(m)">View on Map</button>
-                    <button class="btn small danger" @click="confirmDelete(m)">Delete</button>
+                    <ActionMenu :title="`More for ${m.title}`">
+                      <button class="mi" @click="m.selected = !m.selected">{{ m.selected ? 'Remove from comparison' : 'Add to comparison' }}</button>
+                      <hr class="mi-sep" />
+                      <button class="mi danger" @click="confirmDelete(m)">Delete…</button>
+                    </ActionMenu>
                   </div>
                 </div>
               </div>
@@ -1421,7 +1425,7 @@ function fmtWhen(dateStr) {
 .auc-val.weak { color: #b3492f; }
 .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 4px; }
 .card-date { font-size: 0.74rem; color: var(--muted); }
-.card-actions { display: flex; gap: 6px; }
+.card-actions { display: flex; gap: 4px; align-items: center; }
 
 /* ── Advanced panel (link asset) ── */
 .adv-panel { border: 1px solid var(--border); border-radius: 10px; margin-top: 12px; overflow: hidden; }

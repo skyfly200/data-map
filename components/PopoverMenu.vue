@@ -22,14 +22,15 @@
       <!-- The label is for screens with room and for screen readers always. On a
            phone the icon carries it, which is the whole point of this component:
            six labelled dropdowns is three rows of chrome before any map. -->
-      <span class="pop-label">{{ label }}</span>
+      <span v-if="!iconOnly" class="pop-label">{{ label }}</span>
       <span v-if="badge" class="pop-badge">{{ badge }}</span>
     </button>
 
     <div v-if="open" ref="panel" class="pop-panel" :class="{ 'align-right': align === 'right' }"
          :style="shift ? { transform: `translateX(${shift}px)` } : null"
-         role="dialog" :aria-label="title || label">
-      <div v-if="label" class="pop-head">{{ label }}</div>
+         :role="menu ? 'menu' : 'dialog'" :aria-label="title || label"
+         @click="onPanelClick">
+      <div v-if="label && !iconOnly" class="pop-head">{{ label }}</div>
       <slot />
     </div>
   </div>
@@ -63,6 +64,11 @@ const props = defineProps({
   // The header menu sits at the right of a phone screen; left-anchored, its
   // panel overflowed the page and the browser widened the layout to fit it.
   align: { type: String, default: 'left' },
+  // No label on any screen, for a control whose icon is universal (⋯).
+  iconOnly: { type: Boolean, default: false },
+  // A list of actions rather than a form: picking one closes the panel.
+  // Anything marked data-keep-open (a select, a group of choices) does not.
+  menu: { type: Boolean, default: false },
 })
 
 const open = ref(false)
@@ -74,6 +80,12 @@ const { shift } = usePanelFit(panel, open)
 
 function toggle() { open.value = !open.value }
 function close() { open.value = false }
+
+function onPanelClick(e) {
+  if (!props.menu) return
+  const hit = e.target.closest?.('button, a')
+  if (hit && !hit.closest('[data-keep-open]') && !hit.disabled) close()
+}
 
 function onDocPointer(e) {
   if (!open.value) return
