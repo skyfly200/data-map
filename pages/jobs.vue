@@ -214,17 +214,9 @@
           </div>
 
           <template v-else-if="form.jobKind === 'enrich_model'">
-            <div class="row">
-              <label>Environment layers</label>
-              <div class="stages">
-                <label v-for="s in stageList" :key="s.key" class="stage">
-                  <input type="checkbox" :value="s.key" v-model="form.stages" />
-                  <span>
-                    <strong>{{ s.label }}</strong>
-                    <em>{{ s.description }}</em>
-                  </span>
-                </label>
-              </div>
+            <div class="row steps">
+              <label>Enrichment steps</label>
+              <EnrichStepPicker v-model="form.stages" />
             </div>
             <div class="row">
               <label>Region</label>
@@ -241,17 +233,9 @@
             </p>
           </template>
 
-          <div v-else class="row">
-            <label>Environment layers</label>
-            <div class="stages">
-              <label v-for="s in stageList" :key="s.key" class="stage">
-                <input type="checkbox" :value="s.key" v-model="form.stages" />
-                <span>
-                  <strong>{{ s.label }}</strong>
-                  <em>{{ s.description }}</em>
-                </span>
-              </label>
-            </div>
+          <div v-else class="row steps">
+            <label>Enrichment steps</label>
+            <EnrichStepPicker v-model="form.stages" />
           </div>
 
           <div v-if="form.jobKind === 'model'" class="row">
@@ -273,7 +257,7 @@
             <span v-if="form.jobKind === 'model' && form.predictors.length < MIN_PREDICTORS" class="hint">
               Pick at least {{ MIN_PREDICTORS }} environment variables.
             </span>
-            <span v-else-if="form.jobKind !== 'model' && !form.stages.length" class="hint">Pick at least one environment layer.</span>
+            <span v-else-if="form.jobKind !== 'model' && !form.stages.length" class="hint">Pick at least one enrichment step.</span>
             <span v-if="pendingAutoModel.enrichJobId" class="hint ok">
               Enrichment queued — model will submit automatically when it completes.
             </span>
@@ -517,7 +501,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch, onMounted } from 'vue'
-import { STAGES, DEFAULT_STAGES } from '~/netlify/lib/ee-pipeline.mjs'
+import { STAGES } from '~/netlify/lib/ee-pipeline.mjs'
 import {
   MAXENT_PREDICTORS, PREDICTOR_KEYS, DEFAULT_PREDICTORS, MIN_PREDICTORS,
 } from '~/netlify/lib/maxent.mjs'
@@ -551,7 +535,7 @@ const modelOverlay = useModelOverlay()
 const notify = usePushNotifications()
 const router = useRouter()
 
-const stageList = Object.entries(STAGES).map(([key, s]) => ({ key, ...s }))
+const enrichSteps = useEnrichSteps()
 // The predictors a suitability model may use — the registry's labels, no Earth
 // Engine builders, so this is safe on the client.
 const predictorList = PREDICTOR_KEYS.map((key) => ({ key, label: MAXENT_PREDICTORS[key].label }))
@@ -648,7 +632,8 @@ const form = reactive({
   // Separate region bounds for the model surface in enrich_model mode.
   modelNorth: 40.5, modelSouth: 39.2, modelWest: -106.2, modelEast: -104.8,
   dateFrom: '', dateTo: '', taxon: '',
-  stages: [...DEFAULT_STAGES],
+  // The member's own default set, or the standard one.
+  stages: [...enrichSteps.myDefault.value],
   predictors: [...DEFAULT_PREDICTORS],
   autoOptimize: true,
 })
@@ -1110,6 +1095,9 @@ onMounted(() => {
 .msg.muted { color: var(--muted); }
 
 .row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+/* A long list reads better under its label than beside it, at any width. */
+.row.steps { flex-direction: column; align-items: stretch; }
+.row.steps > label:first-child { flex: none; }
 .row > label:first-child { flex: 0 0 70px; font-size: 0.82rem; color: var(--muted); }
 .row input[type="text"] { flex: 1; }
 .row.two { gap: 16px; }

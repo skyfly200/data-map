@@ -25,6 +25,7 @@ const SETTINGS_KEYS = [
   'explore-config',             // the chart builder's last configuration
   'inat-taxa',                  // which taxa to ask iNaturalist for
   'dashboard-config',           // the dashboard's widgets and their order
+  'enrich-steps',               // the member's default enrichment steps
 ]
 
 const CHARTS_KEY = 'saved-charts'
