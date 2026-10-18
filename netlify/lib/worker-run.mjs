@@ -25,6 +25,7 @@ import { logCronRun } from './cron-jobs.mjs'
 import { runAccessIngest } from './access-regions.mjs'
 import { runGbifIngest } from './gbif-bulk.mjs'
 import { resolveDataset } from './dataset-access.mjs'
+import { describeStages } from './ee-pipeline.mjs'
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json' },
@@ -246,6 +247,9 @@ export async function runOneJob({ budgetMs = 9 * 60 * 1000, limitMs = 0, inlineN
       sampled: result.sampled,
       bands: result.bands,
       stages: spec.stages,
+      // Each step's name, source and columns, so a dataset saved from this job
+      // can show how it was enriched without knowing the current catalogue.
+      steps: describeStages(spec.stages),
       skipped: result.skipped,
     }
     await finishJob(job.id, { resultPath, costUnits: spent, meta })

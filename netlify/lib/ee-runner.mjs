@@ -25,11 +25,11 @@ import { getStore as getModelStore } from './storage.mjs'
 import { CHUNK_SIZE } from './quotas.mjs'
 import {
   CHIRPS_DAILY, ERA5_DAILY, GAP_LANDCOVER, MODIS_BURN, OPENLANDMAP_GRTGROUP,
-  OPENLANDMAP_TEXTURE, S2_SR, SOLUS100, SRTM, STAGES, TREEMAP, WORLDCOVER,
+  OPENLANDMAP_TEXTURE, S2_SR, SOLUS100, SRTM, STAGE_KEYS, STAGES, TREEMAP, WORLDCOVER,
 } from './ee-pipeline.mjs'
 // The class tables the map's keys are drawn from, so a sampled column and the
 // tiles under it name a class the same way.
-import { GAP_REMAP, TEXTURE_CLASSES, visParams } from './ee-tile-layers.mjs'
+import { GAP_REMAP, TEXTURE_CLASSES, resolveLayer, visParams } from './ee-tile-layers.mjs'
 import { orderForGreatGroup } from './soil-taxonomy.mjs'
 import { derivedIndices } from './terrain-indices.mjs'
 import {
@@ -693,6 +693,39 @@ async function runForest(points, columns, tick, skipped) {
   })
 }
 
+/**
+ * A step drawn from a map layer: the image that layer's build() draws, at the
+ * step's fixed parameters, sampled into one column.
+ *
+ * The layer's mask is kept, so ground the map leaves unpainted comes back
+ * null. reduceRegions names a single-band result after the reducer rather than
+ * the band, so both names are read.
+ */
+export function mapLayerValue(props, band, reducerName, classes = null) {
+  const v = props?.[band] ?? props?.[reducerName] ?? null
+  if (v === null || !classes) return v
+  return classes[Number(v) - 1]?.label ?? null
+}
+
+async function runMapLayer(key, points, columns, tick, skipped) {
+  const stage = STAGES[key]
+  const { layer, params } = resolveLayer(stage.layer, stage.layerParams || {})
+  const band = stage.bands[0]
+  const { image } = layer.build(ee, params)
+  const reducerName = stage.classes ? 'mode' : 'first'
+  const classes = stage.classes ? layer.legend?.items || [] : null
+  await runStatic(points, columns, tick, skipped, {
+    image: ee.Image(image).select([0], [band]),
+    scale: stage.scale,
+    // mode for a class, as with soil taxonomy: the commonest class over the
+    // pixel, not the nearest cell centre.
+    reducer: stage.classes ? ee.Reducer.mode() : ee.Reducer.first(),
+    write(props, at) {
+      columns.get(band)[at] = mapLayerValue(props, band, reducerName, classes)
+    },
+  })
+}
+
 const RUNNERS = {
   terrain: runTerrain,
   landcover: runLandcover,
@@ -704,6 +737,9 @@ const RUNNERS = {
   soil_taxonomy: runSoilTaxonomy,
   fire: runFire,
   forest: runForest,
+}
+for (const key of STAGE_KEYS) {
+  if (STAGES[key].layer && !RUNNERS[key]) RUNNERS[key] = (...args) => runMapLayer(key, ...args)
 }
 
 /**

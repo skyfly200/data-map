@@ -47,6 +47,7 @@ export const {
  */
 export const STAGES = {
   terrain: {
+    group: 'Terrain',
     label: 'Terrain',
     asset: SRTM,
     scale: 30,
@@ -57,6 +58,7 @@ export const STAGES = {
     description: 'Elevation, slope, aspect and the exposure indices derived from them.',
   },
   landcover: {
+    group: 'Vegetation',
     label: 'Land cover',
     asset: WORLDCOVER,
     scale: 10,
@@ -66,6 +68,7 @@ export const STAGES = {
     description: 'ESA WorldCover class at each point, at 10m.',
   },
   soil_moisture: {
+    group: 'Weather',
     label: 'Soil moisture',
     asset: ERA5_DAILY,
     scale: 11132,
@@ -75,6 +78,7 @@ export const STAGES = {
     description: 'ERA5-Land volumetric soil water on the day of the record.',
   },
   precip: {
+    group: 'Weather',
     label: 'Rainfall lead-up',
     asset: CHIRPS_DAILY,
     scale: 5566,
@@ -84,6 +88,7 @@ export const STAGES = {
     description: 'CHIRPS daily rainfall for the seven days up to each record.',
   },
   temperature: {
+    group: 'Weather',
     label: 'Temperature lead-up',
     asset: ERA5_DAILY,
     scale: 11132,
@@ -94,6 +99,7 @@ export const STAGES = {
     description: 'ERA5-Land daily maximum and minimum for the seven days up to each record.',
   },
   ndvi: {
+    group: 'Vegetation',
     label: 'Vegetation',
     asset: S2_SR,
     scale: 10,
@@ -110,6 +116,7 @@ export const STAGES = {
   // is why they were the obvious gap between what the map draws and what the
   // pipeline samples.
   soil: {
+    group: 'Soil',
     label: 'Soil',
     asset: OPENLANDMAP_TEXTURE,
     scale: 100,
@@ -120,6 +127,7 @@ export const STAGES = {
       + 'Texture decides how long the ground holds water after rain.',
   },
   soil_taxonomy: {
+    group: 'Soil',
     label: 'Soil taxonomy',
     asset: OPENLANDMAP_GRTGROUP,
     scale: 250,
@@ -130,6 +138,7 @@ export const STAGES = {
       + 'Names rather than codes, so the column reads on its own.',
   },
   fire: {
+    group: 'Fire & disturbance',
     label: 'Fire history',
     asset: MODIS_BURN,
     scale: 500,
@@ -140,6 +149,7 @@ export const STAGES = {
       + 'and how long before the observation that was.',
   },
   forest: {
+    group: 'Vegetation',
     label: 'Forest type and structure',
     asset: GAP_LANDCOVER,
     scale: 30,
@@ -149,12 +159,138 @@ export const STAGES = {
     description: 'GAP ecological system grouped into forest types, with USFS TreeMap '
       + 'canopy cover and stand height. Conterminous US only.',
   },
+
+  // ── Steps drawn straight from the map's layers ───────────────────────────
+  // Each samples the image a map layer draws, at the layer's own defaults, so
+  // a column and the tiles under it come from one build() and cannot drift.
+  // Only static, single-band layers whose pixel is a real value (not a
+  // palette index or a rolling "last N days" window) belong here: those are
+  // the ones that mean the same thing at any observation date.
+  //
+  //   layer        the EE_TILE_LAYERS key whose build() is sampled
+  //   layerParams  fixed parameters for that build; never taken from input
+  //   classes      the pixel is a 1-based class code; write the legend label
+  hand: {
+    group: 'Hydrology',
+    label: 'Height above drainage',
+    layer: 'merit-hand',
+    asset: ASSETS.MERIT_HYDRO,
+    scale: 90,
+    passes: 1,
+    perDate: false,
+    bands: ['hand_m'],
+    description: 'Metres above the nearest stream, from MERIT Hydro. Low ground stays wet longest.',
+  },
+  mtpi: {
+    group: 'Terrain',
+    label: 'Topographic position (mTPI)',
+    layer: 'srtm-mtpi',
+    asset: ASSETS.CSP_SRTM_MTPI,
+    scale: 90,
+    passes: 1,
+    perDate: false,
+    bands: ['mtpi'],
+    description: 'Valley floor (negative) to ridge (positive) across several scales, from CSP ERGo.',
+  },
+  chili: {
+    group: 'Terrain',
+    label: 'Heat load (CHILI)',
+    layer: 'srtm-chili',
+    asset: ASSETS.CSP_SRTM_CHILI,
+    scale: 90,
+    passes: 1,
+    perDate: false,
+    bands: ['chili'],
+    description: 'Heat-insolation load with terrain shading, 0 (cold) to 255 (hot), from CSP ERGo.',
+  },
+  field_capacity: {
+    group: 'Soil',
+    label: 'Soil water capacity',
+    layer: 'field-capacity',
+    layerParams: { depth: '0' },
+    asset: ASSETS.OPENLANDMAP_WATER_33KPA,
+    scale: 250,
+    passes: 1,
+    perDate: false,
+    bands: ['field_capacity_pct'],
+    description: 'Surface soil water at field capacity (% volume), from OpenLandMap.',
+  },
+  human_modification: {
+    group: 'Human influence',
+    label: 'Human modification',
+    layer: 'human-modification',
+    asset: ASSETS.CSP_HM,
+    scale: 90,
+    passes: 1,
+    perDate: false,
+    bands: ['human_modification'],
+    description: 'TNC Global Human Modification index, 0 (wild) to 1 (fully modified).',
+  },
+  forest_loss: {
+    group: 'Fire & disturbance',
+    label: 'Forest loss year',
+    layer: 'forest-loss',
+    // The whole record, not the map's recent window: a column is read later
+    // against the observation's own year.
+    layerParams: { window: 23 },
+    asset: ASSETS.HANSEN,
+    scale: 30,
+    passes: 1,
+    perDate: false,
+    bands: ['forest_loss_year'],
+    description: 'Year of stand-replacing canopy loss since 2001 (cut, blowdown or fire), from Hansen. Empty where none.',
+  },
+  stand_size: {
+    group: 'Vegetation',
+    label: 'Stand-size class',
+    layer: 'stand-size',
+    classes: true,
+    asset: ASSETS.TREEMAP,
+    scale: 30,
+    passes: 1,
+    perDate: false,
+    bands: ['stand_size'],
+    description: 'USFS TreeMap diameter class, large-diameter to seedling. Conterminous US only.',
+  },
 }
 
 export const STAGE_KEYS = Object.keys(STAGES)
 
-/** The default set: everything the shipped dataset carries. */
+/** The standard set: everything the shipped dataset carries. */
 export const DEFAULT_STAGES = ['terrain', 'landcover', 'soil_moisture', 'precip', 'temperature', 'ndvi']
+
+/** Group order for pickers, so related steps sit together. */
+export const STAGE_GROUPS = ['Terrain', 'Weather', 'Vegetation', 'Soil', 'Hydrology', 'Fire & disturbance', 'Human influence']
+
+/**
+ * A list of step keys made safe: known keys only, catalogue order, no repeats.
+ * For anything read back from storage, where a step may have been renamed or
+ * removed since it was saved. Empty in, empty out.
+ */
+export function cleanStages(list) {
+  if (!Array.isArray(list)) return []
+  const wanted = new Set(list.map(String))
+  return STAGE_KEYS.filter((k) => wanted.has(k))
+}
+
+/**
+ * What a job ran, in a shape a provenance view can show without the catalogue:
+ * each step's name, the source it sampled and the columns it wrote.
+ */
+export function describeStages(keys = []) {
+  return keys.filter((k) => STAGES[k]).map((key) => {
+    const s = STAGES[key]
+    return {
+      key,
+      label: s.label,
+      group: s.group,
+      asset: s.asset,
+      ...(s.layer ? { layer: s.layer } : {}),
+      ...(s.layerParams ? { layerParams: s.layerParams } : {}),
+      bands: s.bands,
+    }
+  })
+}
 
 // Bounds on the shape of one job: how wide an area and how long a span the
 // pipeline can cover at all without an Earth Engine export task. These are not

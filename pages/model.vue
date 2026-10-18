@@ -196,14 +196,9 @@
               <input v-model="enrichForm.title" type="text" placeholder="Autumn foray enrichment" />
             </div>
 
-            <div class="row">
-              <label>Environment layers</label>
-              <div class="stages">
-                <label v-for="s in stageList" :key="s.key" class="stage">
-                  <input type="checkbox" :value="s.key" v-model="enrichForm.stages" />
-                  <span><strong>{{ s.label }}</strong><em>{{ s.description }}</em></span>
-                </label>
-              </div>
+            <div class="row steps">
+              <label>Enrichment steps</label>
+              <EnrichStepPicker v-model="enrichForm.stages" />
             </div>
 
             <p v-if="enrichError" class="msg error">{{ enrichError }}</p>
@@ -706,18 +701,6 @@ onMounted(async () => {
 })
 
 // ── Predictor / stage metadata ─────────────────────────────────────────────────
-const stageList = [
-  { key: 'terrain',       label: 'Terrain',                description: 'Elevation, slope, aspect and exposure indices.' },
-  { key: 'landcover',     label: 'Land cover',             description: 'ESA WorldCover class at each point (10 m).' },
-  { key: 'soil_moisture', label: 'Soil moisture',          description: 'ERA5-Land volumetric soil water on the day of the record.' },
-  { key: 'precip',        label: 'Rainfall lead-up',       description: 'CHIRPS daily rainfall for the 7 days up to each record.' },
-  { key: 'temperature',   label: 'Temperature lead-up',    description: 'ERA5-Land daily max/min for the 7 days up to each record.' },
-  { key: 'ndvi',          label: 'Vegetation (NDVI)',      description: 'Sentinel-2 NDVI and moisture index, cloud-screened.' },
-  { key: 'soil',          label: 'Soil properties',        description: 'USDA texture class, percent sand, depth to bedrock.' },
-  { key: 'soil_taxonomy', label: 'Soil taxonomy',          description: 'USDA great group and order at each point.' },
-  { key: 'fire',          label: 'Fire history',           description: 'Most recent burn year and years since fire (MODIS, 2001+).' },
-  { key: 'forest',        label: 'Forest type & structure', description: 'GAP forest type, canopy cover and stand height (CONUS).' },
-]
 
 const predictorList = [
   { key: 'elevation',     label: 'Elevation' },
@@ -875,7 +858,7 @@ function advanceSource() {
 }
 
 // ── Step 2: Enrich ─────────────────────────────────────────────────────────────
-const enrichForm = reactive({ title: '', stages: ['terrain', 'landcover', 'soil_moisture', 'precip', 'temperature', 'ndvi'] })
+const enrichForm = reactive({ title: '', stages: [...useEnrichSteps().myDefault.value] })
 const enrichError = ref(''); const enrichNote = ref('')
 const enrichJobId = ref(null); const enrichDatasetSlug = ref(null)
 
@@ -1261,6 +1244,8 @@ function fmtWhen(dateStr) {
 
 /* ── Form rows ── */
 .row { display: grid; grid-template-columns: 160px 1fr; gap: 8px 14px; align-items: start; margin-bottom: 14px; }
+/* A long list reads better under its label than beside it, at any width. */
+.row.steps { grid-template-columns: 1fr; }
 .row > label:first-child { padding-top: 6px; font-size: 0.84rem; font-weight: 600; color: var(--muted); }
 .row input[type="text"], .row input[type="number"], .row select {
   border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px;
