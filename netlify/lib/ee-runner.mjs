@@ -228,14 +228,30 @@ async function withRetry(fn, { retries = 3, baseDelay = 2000, label = '' } = {})
   throw new Error(label ? `${label}: ${last?.message || last}` : String(last?.message || last))
 }
 
+/** A fully masked image with the given bands: samples as null everywhere. */
+function emptyImage(bands) {
+  return ee.Image.constant(bands.map(() => 0)).rename(bands).toFloat().updateMask(0)
+}
+
+/**
+ * Reduce a collection, or fall back to an all-masked image when it is empty.
+ *
+ * Reducing an empty collection gives an image with NO bands, and the first
+ * select, rename or normalizedDifference on it fails the whole request, taking
+ * every other date in the batch down with it. That is what happens to a date
+ * outside a dataset's record: Sentinel-2 before 2017 (North America before late
+ * 2018), or CHIRPS for the last few weeks, which it has not published yet. Such
+ * a point has no value to sample; it should come back null, not fail.
+ */
+function reduceOrEmpty(collection, reduce, bands) {
+  return ee.Image(ee.Algorithms.If(collection.size(), reduce(collection), emptyImage(bands)))
+}
+
 /** One day of an image collection, as a single named band. */
 function dailyBand(collection, band, isoDay, outName) {
   const start = ee.Date(isoDay)
-  // mean() over a one-day window yields an image even when the collection is
-  // empty for that day, which comes back as a masked (null) sample rather than
-  // an error that would fail the whole date group.
-  return ee.Image(collection.filterDate(start, start.advance(1, 'day')).select(band).mean())
-    .rename(outName)
+  const day = collection.filterDate(start, start.advance(1, 'day')).select(band)
+  return reduceOrEmpty(day, (c) => c.mean(), [band]).rename(outName)
 }
 
 function shiftDays(isoDay, delta) {
@@ -280,40 +296,69 @@ let runHardDeadline = 0
  */
 async function sampleBatch(parts, scale, reducer = ee.Reducer.first(), skipped = { n: 0 }) {
   if (runDeadline && Date.now() > runDeadline) throw new PipelinePaused()
-  let offset = 0
-  const collections = parts.map(({ image, points }) => {
-    const base = offset
-    offset += points.length
-    const fc = ee.FeatureCollection(points.map((p, i) => ee.Feature(
-      ee.Geometry.Point([p.lon, p.lat]), { __i: base + i },
-    )))
-    // tileScale: 4 keeps peak memory inside EE's per-request limit for expensive
-    // images (S2 median composites, TPI reduceNeighborhood). It has no effect on
-    // lightweight static layers and prevents silent hangs on the heavy ones.
-    return image.reduceRegions({ collection: fc, reducer, scale, tileScale: 4 })
-  })
-  const sampled = collections.length === 1
-    ? collections[0]
-    : ee.FeatureCollection(collections).flatten()
-  const flat = new Array(offset).fill(null)
-  try {
+  return sampleParts(parts, async (subset) => {
+    let offset = 0
+    const collections = subset.map(({ image, points }) => {
+      const base = offset
+      offset += points.length
+      const fc = ee.FeatureCollection(points.map((p, i) => ee.Feature(
+        ee.Geometry.Point([p.lon, p.lat]), { __i: base + i },
+      )))
+      // tileScale: 4 keeps peak memory inside EE's per-request limit for expensive
+      // images (S2 median composites, TPI reduceNeighborhood). It has no effect on
+      // lightweight static layers and prevents silent hangs on the heavy ones.
+      return image.reduceRegions({ collection: fc, reducer, scale, tileScale: 4 })
+    })
+    const sampled = collections.length === 1
+      ? collections[0]
+      : ee.FeatureCollection(collections).flatten()
+    const flat = new Array(offset).fill(null)
     const info = await withRetry(() => evaluate(sampled), { label: 'sampling' })
     for (const feature of info?.features || []) {
       const props = feature.properties || {}
       const i = props.__i
       if (Number.isInteger(i) && i >= 0 && i < flat.length) flat[i] = props
     }
+    return flat
+  }, skipped)
+}
+
+/**
+ * Run `request` over the parts, splitting the batch in half when it fails so
+ * one bad part (one date whose image Earth Engine rejects) costs only its own
+ * points rather than every date it happened to share a request with. Returns
+ * one row array per part; a part that fails on its own is skipped, counted,
+ * and logged with Earth Engine's message so the cause is in the function log.
+ *
+ * `request(parts)` resolves to the rows of those parts, concatenated in order.
+ */
+export async function sampleParts(parts, request, skipped = { n: 0 }, log = console.warn) {
+  const split = (flat) => {
+    let at = 0
+    return parts.map(({ points }) => {
+      const rows = flat.slice(at, at + points.length)
+      at += points.length
+      return rows
+    })
+  }
+  try {
+    return split(await request(parts))
   } catch (err) {
     // Out of time is not a failed batch: the job pauses and samples it again.
     if (err instanceof PipelinePaused) throw err
-    skipped.n += offset
+    if (parts.length > 1) {
+      const mid = Math.ceil(parts.length / 2)
+      return [
+        ...await sampleParts(parts.slice(0, mid), request, skipped, log),
+        ...await sampleParts(parts.slice(mid), request, skipped, log),
+      ]
+    }
+    const n = parts[0]?.points.length || 0
+    const date = parts[0]?.date ? ` for ${parts[0].date}` : ''
+    log(`[ee] skipped ${n} point${n === 1 ? '' : 's'}${date}: ${err?.message || err}`)
+    skipped.n += n
+    return [new Array(n).fill(null)]
   }
-  let at = 0
-  return parts.map(({ points }) => {
-    const rows = flat.slice(at, at + points.length)
-    at += points.length
-    return rows
-  })
 }
 
 /** Sample one image at up to CHUNK_SIZE points. Returns rows aligned to input. */
@@ -455,7 +500,7 @@ async function runDated(points, columns, tick, { stage, scale, reducer, bands, i
   const batches = packDated(new Map([...byDate].sort(([a], [b]) => (a < b ? -1 : 1))), { datesPerRequest })
   for (const batch of batches) {
     const rows = await sampleBatch(
-      batch.parts.map(({ date, points: group }) => ({ image: imageFor(date), points: group })),
+      batch.parts.map(({ date, points: group }) => ({ image: imageFor(date), points: group, date })),
       scale, reducer, skipped,
     )
     batch.parts.forEach(({ points: group }, k) => {
@@ -536,10 +581,11 @@ async function runNdvi(points, columns, tick, skipped) {
       // A window either side of the date, because a single day is often cloudy
       // or simply has no overpass.
       const centre = ee.Date(date)
-      const scene = s2
+      const scenes = s2
         .filterDate(centre.advance(-15, 'day'), centre.advance(15, 'day'))
         .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 60))
-        .median()
+        .select(['B4', 'B8', 'B11'])
+      const scene = reduceOrEmpty(scenes, (c) => c.median(), ['B4', 'B8', 'B11'])
       return ee.Image.cat([
         scene.normalizedDifference(['B8', 'B4']).rename('ndvi'),
         scene.normalizedDifference(['B8', 'B11']).rename('ndmi'),
