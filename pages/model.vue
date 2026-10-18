@@ -854,7 +854,7 @@ async function runFetch() {
     const saveRes = await fetch('/.netlify/functions/datasets', {
       method: 'POST',
       headers: { 'content-type': 'application/json', ...headers },
-      body: JSON.stringify({ action: 'save_fetched', path: storagePath, slug: data.slug, title, feature_count: data.count }),
+      body: JSON.stringify({ action: 'save_fetched', path: storagePath, slug: data.slug, title, feature_count: data.count, provenance: data.provenance }),
     })
     const saved = await saveRes.json().catch(() => ({}))
     if (!saveRes.ok || !saved.ok) throw new Error(saved.error || 'Could not register the fetched dataset.')

@@ -715,6 +715,7 @@ async function runFetch() {
         slug: data.slug,
         title,
         feature_count: data.count,
+        provenance: data.provenance,
       }),
     })
     const saved = await saveRes.json().catch(() => ({}))

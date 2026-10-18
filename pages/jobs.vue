@@ -460,7 +460,7 @@
           <ul v-else class="ds-list">
             <li v-for="d in datasetsApi.datasets.value" :key="d.id" class="ds">
               <div class="ds-top">
-                <strong>{{ d.title }}</strong>
+                <NuxtLink :to="`/datasets/${encodeURIComponent(d.slug)}`" class="ds-title">{{ d.title }}</NuxtLink>
                 <span class="vis-badge" :class="d.visibility">{{ VISIBILITY_LABELS[d.visibility] }}</span>
                 <span class="when">{{ fmtWhen(d.created_at) }}</span>
               </div>
@@ -474,6 +474,7 @@
                     {{ VISIBILITY_LABELS[v] }}
                   </option>
                 </select>
+                <NuxtLink :to="`/datasets/${encodeURIComponent(d.slug)}`" class="btn small">Details</NuxtLink>
                 <button class="btn small" @click="useAsSource(d)">Run a job on it</button>
                 <button class="btn small" @click="openDatasetOnCharts(d)">Open on charts</button>
                 <button class="btn small" @click="router.push(`/map?dataset=${encodeURIComponent(d.slug)}`)">Open on map</button>
@@ -550,6 +551,7 @@ const { addInlineDataset } = useObservations()
 const modelOverlay = useModelOverlay()
 const notify = usePushNotifications()
 const router = useRouter()
+const route = useRoute()
 
 const stageList = Object.entries(STAGES).map(([key, s]) => ({ key, ...s }))
 // The predictors a suitability model may use — the registry's labels, no Earth
@@ -1057,6 +1059,9 @@ onMounted(() => {
   datasetsApi.refresh()
   datasetsApi.refreshAvailable()
   notify.load()
+  // From a dataset's detail page: "Run a job on it".
+  const fromDetail = route.query.dataset
+  if (typeof fromDetail === 'string' && fromDetail) useAsSource({ slug: fromDetail })
 })
 </script>
 
@@ -1202,6 +1207,9 @@ input[type="text"], input[type="number"], input[type="date"] {
   border: 1px solid var(--border); color: var(--muted); }
 /* Private is the default and the quiet one; sharing is what stands out, since
    that is the state worth noticing at a glance. */
+.ds-title { font-weight: 600; color: var(--text); text-decoration: none; }
+.ds-title:hover { text-decoration: underline; }
+a.btn { text-decoration: none; display: inline-block; }
 .vis-badge.members { border-color: #3d8b5f; color: #3d8b5f; }
 .vis-badge.public { border-color: #8b5f3d; color: #8b5f3d; }
 

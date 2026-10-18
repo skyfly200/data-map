@@ -119,6 +119,11 @@ User-authored saved chart configurations. Each row is one saved chart with an or
 - Functions: `access_upsert_areas/lines(rows jsonb, region)` (service role only; keep RIDB fee data over later estimates), `access_areas_in_bbox`, `access_lines_in_bbox` (simplified GeoJSON, used by `netlify/functions/access.mjs`).
 - Migration 017: `access_points` — OSM parking (`amenity=parking`, ways at their centre) and trailheads: `osm_type`+`osm_id` unique, `kind` parking/trailhead, `name`, `fee` (yes/no/null), `wheelchair` (yes/limited/no/null), `disabled_spaces`, `region`, `geom` Point 4326 (GiST). RLS select-all; writes via `access_upsert_points(rows jsonb, region)` (service role only). `access_regions.point_count` added. `access_nearest(points jsonb, max_m)` returns, per `[lon, lat]`, the nearest parking, accessible parking (wheelchair=yes or disabled spaces), trailhead and road distance within `max_m` (used by `netlify/functions/access-nearest.mjs`).
 
+### Dataset provenance (migration `019_dataset_provenance.sql`)
+
+- `saved_datasets.provenance` (`jsonb`, nullable): how a dataset no job produced was made. `origin` is `inat`/`gbif` (fetch: `taxon`, `date_from`, `date_to`, `lat`, `lng`, `radius_km`, `quality`, `records`, `fetched_at`), `upload` (`file_name`, `format`, `records`, `skipped`), `gbif_archive` (also `media`, `dna`), `ee_asset` (`asset_path`), or `job` (settings live on the `ee_jobs` row via `job_id`). Written server-side through `cleanProvenance` in `netlify/lib/dataset-detail.mjs`, a whitelist; descriptive only, nothing reads it for access. Rows from before 019 are null and the detail view infers `origin` from the path.
+- Read by `GET /.netlify/functions/datasets?detail=<slug>` for `/datasets/<slug>`, alongside the producing job's spec and `result_meta` and the viewer's own `ee_jobs` whose `params.source.slug` is that dataset.
+
 ---
 
 ## Shared Functions

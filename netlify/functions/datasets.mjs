@@ -3,6 +3,7 @@
 //   GET  /.netlify/functions/datasets              the caller's datasets
 //   GET  /.netlify/functions/datasets?available=1  everything they may read
 //   GET  /.netlify/functions/datasets?slug=x       download the GeoJSON
+//   GET  /.netlify/functions/datasets?detail=x     how it was made, what it carries
 //   POST { action: 'save',   job_id, title, description?, visibility? }
 //   POST { action: 'update', id, title?, description?, visibility? }
 //   POST { action: 'delete', id }
@@ -22,6 +23,7 @@ import {
   DEFAULT_VISIBILITY, DatasetAccessError,
   canWrite, checkVisibility, nextFreeSlug, resolveDataset, slugify, viewerFrom,
 } from '../lib/dataset-access.mjs'
+import { buildDetail, cleanProvenance } from '../lib/dataset-detail.mjs'
 import { readJson, uploadJson } from '../lib/datasets-store.mjs'
 import { loadEeAsset } from '../lib/ee-assets.mjs'
 import { UploadError, toFeatureCollection } from '../lib/observation-upload.mjs'
@@ -39,7 +41,7 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), {
 })
 
 const FIELDS = 'id, owner_id, job_id, slug, title, description, path, visibility, '
-  + 'feature_count, bytes, created_at, updated_at'
+  + 'feature_count, bytes, provenance, created_at, updated_at'
 
 function fail(err) {
   if (err instanceof DatasetAccessError) {
@@ -95,6 +97,53 @@ async function download(client, viewer, slug) {
   return json({ ok: true, dataset: row, geojson: data })
 }
 
+const JOB_FIELDS = 'id, user_id, kind, status, title, params, result_meta, cost_units, '
+  + 'created_at, started_at, finished_at'
+
+/**
+ * Everything about one dataset but its points: the settings that made it,
+ * the dataset it was made from, and the enrichment jobs run over it since.
+ *
+ * Enrichments are the viewer's own jobs only. A shared dataset can have been
+ * enriched by any member who reads it, and those jobs are theirs.
+ */
+async function detail(client, viewer, slug) {
+  const row = await resolveDataset({ client, slug, viewer })
+
+  let job = null
+  if (row.job_id) {
+    const { data, error } = await client.from('ee_jobs').select(JOB_FIELDS).eq('id', row.job_id).maybeSingle()
+    if (error) throw new Error(error.message)
+    job = data
+  }
+
+  let parent = null
+  const parentSlug = job?.params?.source?.type === 'dataset' ? job.params.source.slug : null
+  if (parentSlug) {
+    const { data } = await client.from('saved_datasets')
+      .select('id, owner_id, slug, title, visibility').eq('slug', parentSlug).maybeSingle()
+    parent = data
+  }
+
+  let enrichments = []
+  let derived = []
+  if (viewer.userId) {
+    let q = client.from('ee_jobs').select(JOB_FIELDS)
+      .eq('params->source->>slug', row.slug).order('created_at', { ascending: false }).limit(25)
+    if (viewer.tier !== 'admin') q = q.eq('user_id', viewer.userId)
+    const { data, error } = await q
+    if (error) throw new Error(error.message)
+    enrichments = data || []
+    if (enrichments.length) {
+      const { data: rows } = await client.from('saved_datasets')
+        .select('id, owner_id, job_id, slug, title, visibility').in('job_id', enrichments.map((j) => j.id))
+      derived = rows || []
+    }
+  }
+
+  return json({ ok: true, ...buildDetail({ row, job, parent, enrichments, derived, viewer }) })
+}
+
 /** Name a finished job of the caller's, so other jobs can use it. */
 async function save(client, viewer, body) {
   const jobId = String(body.job_id || '').trim()
@@ -147,6 +196,7 @@ async function save(client, viewer, body) {
     path: job.result_path,
     visibility,
     feature_count: job.result_meta?.features ?? null,
+    provenance: { origin: 'job' },
   }).select(FIELDS).single()
   if (error) throw new Error(error.message)
 
@@ -263,6 +313,10 @@ async function importUpload(client, viewer, body, forced) {
     visibility,
     feature_count: features.length,
     bytes: JSON.stringify(geojson).length,
+    provenance: cleanProvenance({
+      origin: 'upload', file_name: body.file_name, format,
+      records: features.length, skipped,
+    }),
   }).select(FIELDS).single()
   if (error) throw new Error(error.message)
 
@@ -335,6 +389,7 @@ async function importAsset(client, viewer, body) {
     visibility,
     feature_count: featureCount,
     bytes,
+    provenance: cleanProvenance({ origin: 'ee_asset', asset_path: assetPath, records: featureCount }),
   }).select(FIELDS).single()
   if (error) throw new Error(error.message)
 
@@ -361,6 +416,7 @@ export default async function handler(request) {
       const params = new URL(request.url).searchParams
 
       if (params.get('slug')) return await download(client, viewer, params.get('slug'))
+      if (params.get('detail')) return await detail(client, viewer, params.get('detail'))
       if (params.get('available') === '1') return await listAvailable(client, viewer)
       return await listMine(client, viewer)
     }

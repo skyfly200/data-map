@@ -13,6 +13,7 @@ import { submitJob } from '../lib/job-queue.mjs'
 import { measureSource } from '../lib/job-source.mjs'
 import { viewerFrom } from '../lib/dataset-access.mjs'
 import { earthEngineConfigured } from '../lib/ee-runner.mjs'
+import { fetchProvenance } from '../lib/dataset-detail.mjs'
 import { fetchedPath, isNarrowedFetch, registerAndEnrich } from '../lib/species-fetch.mjs'
 import { pokeWorker } from '../lib/worker-poke.mjs'
 
@@ -125,6 +126,10 @@ export default async (request) => {
     const storagePath = fetchedPath({ slug, userId: auth.user?.id, narrowed })
     const title = `${species} (GBIF, ${clustered.length})`
     let path = null
+    const provenance = fetchProvenance({
+      origin: 'gbif', taxon: species, d1, d2, lat, lng, radius, quality: 'human observation',
+      records: clustered.length,
+    })
 
     if (supabaseConfigured() && clustered.length) {
       try {
@@ -148,7 +153,7 @@ export default async (request) => {
       try {
         const done = await registerAndEnrich({
           auth, profile: await loadProfile(auth.user.id), client: adminClient(),
-          storagePath, slug, title, count: clustered.length,
+          storagePath, slug, title, count: clustered.length, provenance,
           submitJob, measureSource, viewerFrom, poke: () => pokeWorker(request),
         })
         dataset = done?.dataset || null
@@ -159,7 +164,7 @@ export default async (request) => {
 
     return json({
       ok: true, count: clustered.length, species, slug, path,
-      storagePath: path ? storagePath : null, dataset,
+      storagePath: path ? storagePath : null, dataset, provenance,
       geojson: path ? undefined : geojson,
     })
   } catch (e) {
