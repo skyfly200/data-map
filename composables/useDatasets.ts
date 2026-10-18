@@ -14,6 +14,10 @@ export interface Dataset {
   title: string
   description: string
   visibility: string
+  job_id?: string | null
+  feature_count?: number | null
+  bytes?: number | null
+  provenance?: Record<string, any> | null
   created_at: string
 }
 
@@ -122,6 +126,11 @@ export function useDatasets() {
     return data.geojson
   }
 
+  /** How one was made and what it has been enriched with. See dataset-detail.mjs. */
+  async function fetchDetail(slug: string): Promise<any> {
+    return await call<any>(`?detail=${encodeURIComponent(slug)}`)
+  }
+
   /** Import an Earth Engine asset by its asset path (e.g., "users/username/project/dataset") */
   async function importAsset(assetPath: string, { title = '', description = '', visibility = 'private' }: { title?: string, description?: string, visibility?: string } = {}) {
     error.value = ''
@@ -156,6 +165,7 @@ export function useDatasets() {
       body: JSON.stringify({
         action: format === 'geojson' ? 'import_geojson' : 'import_csv',
         content,
+        file_name: file.name,
         title: title || file.name.replace(/\.[^.]+$/, '') || 'Uploaded observations',
         description,
         visibility,
@@ -196,7 +206,7 @@ export function useDatasets() {
     datasets, available, loading, error,
     activeDataset, activeGeojson,
     visibilities: MEMBER_VISIBILITIES,
-    refresh, refreshAvailable, saveJob, update, remove, fetchGeojson, importAsset, importFile,
+    refresh, refreshAvailable, saveJob, update, remove, fetchGeojson, fetchDetail, importAsset, importFile,
     activate, loadActiveGeojson,
   }
 }

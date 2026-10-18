@@ -12,13 +12,13 @@
     <ul v-else class="ds-list">
       <li v-for="ds in datasets" :key="ds.id" class="ds-item">
         <div class="ds-info">
-          <span class="ds-title">{{ ds.title || ds.slug }}</span>
+          <NuxtLink :to="`/datasets/${encodeURIComponent(ds.slug)}`" class="ds-title">{{ ds.title || ds.slug }}</NuxtLink>
           <span class="ds-meta">
             <span class="ds-vis" :class="`vis-${ds.visibility}`">{{ VISIBILITY_LABELS[ds.visibility] || ds.visibility }}</span>
             <span class="ds-date">{{ formatDate(ds.created_at) }}</span>
           </span>
         </div>
-        <NuxtLink :to="`/data?dataset=${ds.slug}`" class="ds-link" title="Open">›</NuxtLink>
+        <NuxtLink :to="`/datasets/${encodeURIComponent(ds.slug)}`" class="ds-link" title="Details">›</NuxtLink>
       </li>
     </ul>
 
@@ -61,7 +61,7 @@ onMounted(() => { refresh() })
   border: 1px solid var(--border-soft, #eee); border-radius: 6px; gap: 0.5rem;
 }
 .ds-info { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
-.ds-title { font-size: 0.85rem; font-weight: 600; color: var(--text, #222); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-title { font-size: 0.85rem; font-weight: 600; color: var(--text, #222); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ds-meta { display: flex; gap: 0.5rem; align-items: center; }
 .ds-vis {
   font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em;

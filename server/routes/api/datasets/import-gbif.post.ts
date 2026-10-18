@@ -10,8 +10,9 @@ import { MAX_DATASETS_PER_MEMBER } from '~/netlify/lib/species-fetch.mjs'
 import { uploadJson } from '~/netlify/lib/datasets-store.mjs'
 import { serviceClient } from '~/netlify/lib/supabase-storage.mjs'
 import { DEFAULT_VISIBILITY, slugify, nextFreeSlug } from '~/netlify/lib/dataset-access.mjs'
+import { cleanProvenance } from '~/netlify/lib/dataset-detail.mjs'
 
-const FIELDS = 'id, owner_id, slug, title, description, path, visibility, feature_count, bytes, created_at, updated_at'
+const FIELDS = 'id, owner_id, slug, title, description, path, visibility, feature_count, bytes, provenance, created_at, updated_at'
 
 // Extra DwC fields to carry forward verbatim if present.
 const EXTRA_FIELDS = [
@@ -270,6 +271,10 @@ export default defineEventHandler(async (event) => {
       const { data, error } = await client.from('saved_datasets').insert({
         owner_id: user.id, job_id: null, slug, title, description, path,
         visibility: DEFAULT_VISIBILITY, feature_count: validCount, bytes,
+        provenance: cleanProvenance({
+          origin: 'gbif_archive', file_name: filePart.filename, format: isDwca ? 'dwca' : 'csv',
+          records: validCount, skipped: skippedCount, media: mediaCount, dna: dnaCount,
+        }),
       }).select(FIELDS).single()
       if (!error) savedDataset = data
     }

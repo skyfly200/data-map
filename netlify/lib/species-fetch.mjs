@@ -8,6 +8,7 @@
 // the contents of every dataset row pointing at it.
 
 import { DatasetAccessError, checkVisibility, nextFreeSlug, slugify } from './dataset-access.mjs'
+import { cleanProvenance } from './dataset-detail.mjs'
 import { atLeast, effectiveTier } from './tiers.mjs'
 
 /** Params that narrow a fetch to one caller's selection. */
@@ -45,15 +46,25 @@ export async function registerFetched(client, viewer, body) {
   }
 
   const FIELDS = 'id, owner_id, job_id, slug, title, description, path, visibility, '
-    + 'feature_count, bytes, created_at, updated_at'
+    + 'feature_count, bytes, provenance, created_at, updated_at'
+  const provenance = cleanProvenance(body.provenance)
   const title = String(body.title || incomingSlug || 'Fetched observations').trim().slice(0, 200)
 
   const { data: existing } = await client.from('saved_datasets')
     .select(FIELDS).eq('owner_id', viewer.userId).eq('path', path).maybeSingle()
   if (existing) {
+    // A shared file re-fetched is a new query over the same path, so its
+    // provenance moves with the count. One registered without any (the
+    // browser's save_fetched after the function already registered it with
+    // one) keeps what it has.
+    const patch = {}
     if (body.feature_count != null && body.feature_count !== existing.feature_count) {
+      Object.assign(patch, { feature_count: body.feature_count, title })
+    }
+    if (provenance && (patch.feature_count != null || !existing.provenance)) patch.provenance = provenance
+    if (Object.keys(patch).length) {
       const { data: updated } = await client.from('saved_datasets')
-        .update({ feature_count: body.feature_count, title }).eq('id', existing.id).select(FIELDS).single()
+        .update(patch).eq('id', existing.id).select(FIELDS).single()
       if (updated) return { dataset: updated, status: 'existing' }
     }
     return { dataset: existing, status: 'existing' }
@@ -82,6 +93,7 @@ export async function registerFetched(client, viewer, body) {
     path,
     visibility,
     feature_count: body.feature_count ?? null,
+    provenance,
   }).select(FIELDS).single()
   if (error) throw new Error(error.message)
   return { dataset: data, status: 'saved' }
@@ -96,14 +108,14 @@ export async function registerFetched(client, viewer, body) {
  * the name. Free accounts get neither; registering is a membership benefit.
  */
 export async function registerAndEnrich({
-  auth, profile, client, storagePath, slug, title, count,
+  auth, profile, client, storagePath, slug, title, count, provenance = null,
   submitJob, measureSource, viewerFrom, poke,
 }) {
   if (!auth?.user || !client) return null
   if (!atLeast(effectiveTier(profile), 'member')) return null
   const viewer = { ...viewerFrom(auth), tier: effectiveTier(profile) }
   const { dataset } = await registerFetched(client, viewer, {
-    path: storagePath, slug, title, feature_count: count,
+    path: storagePath, slug, title, feature_count: count, provenance,
   })
   const { job } = await submitJob({
     user: auth.user,

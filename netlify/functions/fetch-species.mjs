@@ -14,6 +14,7 @@ import { submitJob } from '../lib/job-queue.mjs'
 import { measureSource } from '../lib/job-source.mjs'
 import { viewerFrom } from '../lib/dataset-access.mjs'
 import { earthEngineConfigured } from '../lib/ee-runner.mjs'
+import { fetchProvenance } from '../lib/dataset-detail.mjs'
 import { fetchedPath, isNarrowedFetch, registerAndEnrich } from '../lib/species-fetch.mjs'
 import { pokeWorker } from '../lib/worker-poke.mjs'
 
@@ -59,6 +60,11 @@ export default async (request) => {
     const storagePath = fetchedPath({ slug, userId: auth.user?.id, narrowed })
     const title = `${species.trim()} (iNat, ${features.length})`
     let path = null
+    const provenance = fetchProvenance({
+      origin: 'inat', taxon: species.trim(), d1: opts.d1, d2: opts.d2,
+      lat: opts.lat, lng: opts.lng, radius: opts.radius, quality: opts.qualityGrade,
+      records: features.length,
+    })
 
     // Persist to Supabase Storage (best effort) when configured. Only an
     // unnarrowed fetch is the shared copy listed in the public manifest.
@@ -84,7 +90,7 @@ export default async (request) => {
       try {
         const done = await registerAndEnrich({
           auth, profile: await loadProfile(auth.user.id), client: adminClient(),
-          storagePath, slug, title, count: features.length,
+          storagePath, slug, title, count: features.length, provenance,
           submitJob, measureSource, viewerFrom, poke: () => pokeWorker(request),
         })
         dataset = done?.dataset || null
@@ -95,7 +101,7 @@ export default async (request) => {
 
     return json({
       ok: true, species: species.trim(), slug, count: features.length, path,
-      storagePath: path ? storagePath : null, dataset, geojson,
+      storagePath: path ? storagePath : null, dataset, provenance, geojson,
     })
   } catch (err) {
     return json({ ok: false, error: String(err) }, 500)
