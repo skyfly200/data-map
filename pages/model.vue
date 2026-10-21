@@ -14,7 +14,7 @@
         <div class="stepper-title-row">
           <div>
             <h2>Model Pipeline</h2>
-            <p class="sub">Import observations → enrich with environment data<template v-if="advancedMode"> → analyse predictors</template> → train a habitat model → evaluate results.</p>
+            <p class="sub">Pick observations<template v-if="advancedMode"> → scout the layers</template> → train a habitat model → evaluate results.</p>
           </div>
           <button class="mode-toggle" @click="advancedMode = !advancedMode" type="button">
             {{ advancedMode ? 'Advanced mode' : 'Quick mode' }}
@@ -183,179 +183,63 @@
             </div>
           </section>
 
-          <!-- ═══════════ STEP 2 — ENRICH ══════════════════════════════════ -->
-          <section v-else-if="step === 'enrich'" class="panel">
-            <h3>Enrich with environment data</h3>
+          <!-- ═══════════ STEP 2 — SCOUT (advanced mode only) ══════════════ -->
+          <section v-else-if="step === 'explore'" class="panel">
+            <h3>Scout the layers</h3>
             <p class="hint">
-              Sample terrain, climate, and vegetation values at each observation point.
-              These become the predictors for the habitat model.
+              A quick, small model over the layers you pick, to see how much each one explains
+              before the full run. Layers that add little can be left out, which makes training cheaper.
             </p>
 
-            <div class="row">
-              <label>Job name</label>
-              <input v-model="enrichForm.title" type="text" placeholder="Autumn foray enrichment" />
-            </div>
-
             <div class="row steps">
-              <label>Enrichment steps</label>
-              <EnrichStepPicker v-model="enrichForm.stages" />
+              <label>Layers</label>
+              <PredictorPicker v-model="trainForm.predictors" :scores="scoutScores" />
             </div>
 
-            <p v-if="enrichError" class="msg error">{{ enrichError }}</p>
-            <p v-if="enrichNote" class="msg ok">{{ enrichNote }}</p>
+            <div class="actions scout-actions">
+              <button class="btn secondary" :disabled="scoutRunning || trainForm.predictors.length < 2" @click="runScout">
+                {{ scoutRunning ? `Scouting… ${scoutProgress ? scoutProgress + '%' : ''}` : scoutContributions.length ? 'Scout again' : 'Run scout' }}
+              </button>
+              <button v-if="scoutContributions.length" class="btn secondary" @click="keepStrongest">
+                Keep layers above {{ SCOUT_THRESHOLD }}%
+              </button>
+            </div>
+            <p v-if="scoutError" class="msg error">{{ scoutError }}</p>
+
+            <div v-if="scoutContributions.length" class="contrib-list">
+              <div v-for="c in scoutContributions" :key="c.variable" class="contrib-row">
+                <span class="contrib-label">{{ c.label }}</span>
+                <span class="contrib-bar-wrap">
+                  <span class="contrib-bar" :style="{ width: c.pct + '%' }"></span>
+                </span>
+                <span class="contrib-pct">{{ c.pct.toFixed(1) }}%</span>
+              </div>
+            </div>
 
             <div class="actions">
               <button class="btn secondary" @click="goStep('source')">← Back</button>
-              <template v-if="!enrichJobId">
-                <button class="btn primary"
-                        :disabled="!enrichForm.stages.length || jobsApi.submitting.value"
-                        @click="submitEnrich">
-                  {{ jobsApi.submitting.value ? 'Queuing…' : 'Start enrichment' }}
-                </button>
-              </template>
-              <template v-else>
-                <span class="job-status" :class="enrichJobStatus">{{ enrichStatusLabel }}</span>
-                <button v-if="enrichJobStatus === 'succeeded'" class="btn primary" @click="goStep(advancedMode ? 'explore' : 'train')">
-                  {{ advancedMode ? 'Analyse predictors →' : 'Configure training →' }}
-                </button>
-                <!-- A failed or cancelled run otherwise holds this step until a reload. -->
-                <button v-if="enrichJobStatus === 'failed' || enrichJobStatus === 'cancelled'"
-                        class="btn secondary" @click="clearEnrichJob">
-                  Clear
-                </button>
-              </template>
-            </div>
-
-            <div v-if="enrichJob" class="job-progress">
-              <div class="prog-bar"><div class="prog-fill" :style="{ width: jobPercent(enrichJob) + '%' }"></div></div>
-              <p class="prog-msg">{{ enrichProgressMessage }}</p>
-            </div>
-          </section>
-
-          <!-- ═══════════ STEP 3 — EXPLORE (advanced mode only) ════════════ -->
-          <section v-else-if="step === 'explore'" class="panel">
-            <h3>Analyse predictors</h3>
-            <p class="hint">
-              Review which environment variables have good coverage and are not highly correlated
-              before committing to a full training run.
-            </p>
-
-            <div v-if="!exploreData" class="explore-section">
-              <h4>Load a dataset</h4>
-              <div class="field-row" style="gap:0.5rem;align-items:center">
-                <select v-model="exploreSlug" style="flex:1">
-                  <option value="" disabled>Choose dataset…</option>
-                  <option v-for="d in datasetsApi.datasets.value" :key="d.id" :value="d.slug">{{ d.title }}</option>
-                </select>
-                <button class="btn primary" :disabled="!exploreSlug || exploreLoading" @click="loadExploreData(exploreSlug)">
-                  {{ exploreLoading ? 'Loading…' : 'Load' }}
-                </button>
-              </div>
-              <p v-if="exploreError" class="msg error">{{ exploreError }}</p>
-            </div>
-
-            <template v-if="exploreData">
-              <div class="explore-section">
-                <h4>Variable coverage</h4>
-                <table class="cov-table">
-                  <thead><tr><th>Variable</th><th>Coverage</th><th>Recommend</th></tr></thead>
-                  <tbody>
-                    <tr v-for="v in exploreData.coverage" :key="v.key" :class="{ low: v.pct < 60 }">
-                      <td>{{ v.label }}</td>
-                      <td>
-                        <span class="cov-bar-wrap">
-                          <span class="cov-bar" :style="{ width: v.pct + '%', background: v.pct >= 80 ? '#22c55e' : v.pct >= 60 ? '#f59e0b' : '#ef4444' }"></span>
-                          <span class="cov-pct">{{ v.pct.toFixed(0) }}%</span>
-                        </span>
-                      </td>
-                      <td>
-                        <span v-if="v.pct >= 80" class="badge ok">✓ Use</span>
-                        <span v-else-if="v.pct >= 60" class="badge warn">Consider</span>
-                        <span v-else class="badge bad">Skip</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div class="explore-section">
-                <h4>Variable importance <span class="badge-sub">(MaxEnt scout)</span></h4>
-                <div v-if="!scoutContributions.length && !scoutRunning" class="actions" style="padding:0;margin-bottom:0.5rem">
-                  <button class="btn secondary" @click="runScout">Run scout analysis</button>
-                </div>
-                <p v-if="scoutRunning" class="msg">Scout running… {{ scoutProgress ? scoutProgress + '%' : '' }}</p>
-                <p v-if="scoutError" class="msg error">{{ scoutError }}</p>
-                <div v-if="scoutContributions.length" class="contrib-list">
-                  <div v-for="c in scoutContributions" :key="c.variable" class="contrib-row">
-                    <span class="contrib-label">{{ c.variable }}</span>
-                    <span class="contrib-bar-wrap">
-                      <span class="contrib-bar" :style="{ width: c.pct + '%' }"></span>
-                    </span>
-                    <span class="contrib-pct">{{ c.pct.toFixed(1) }}%</span>
-                  </div>
-                </div>
-              </div>
-
-              <div v-if="exploreData.correlations.length && !scoutContributions.length" class="explore-section">
-                <h4>Correlation between predictors</h4>
-                <table class="corr-table">
-                  <thead>
-                    <tr>
-                      <th></th>
-                      <th v-for="v in exploreData.coverage" :key="v.key">{{ v.shortLabel }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(row, ri) in exploreData.correlations" :key="ri">
-                      <td class="row-label">{{ exploreData.coverage[ri]?.shortLabel }}</td>
-                      <td v-for="(val, ci) in row" :key="ci"
-                          class="corr-cell"
-                          :class="{ high: Math.abs(val) > 0.7 && ri !== ci }"
-                          :style="{ background: corrColor(val, ri === ci) }">
-                        {{ ri === ci ? '—' : val.toFixed(2) }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div class="explore-section">
-                <h4>Recommended predictors</h4>
-                <div class="stages">
-                  <label v-for="p in predictorList" :key="p.key" class="stage">
-                    <input type="checkbox" :value="p.key" v-model="trainForm.predictors" />
-                    <span><strong>{{ p.label }}</strong></span>
-                  </label>
-                </div>
-              </div>
-            </template>
-
-            <div class="actions">
-              <button class="btn secondary" @click="goStep('enrich')">← Back</button>
-              <button class="btn primary" :disabled="trainForm.predictors.length < 2" @click="goStep('train')">
+              <button class="btn primary" :disabled="trainForm.predictors.length < 2" @click="advanceExplore">
                 Configure training →
               </button>
             </div>
           </section>
 
-          <!-- ═══════════ STEP 4 — TRAIN ════════════════════════════════════ -->
+          <!-- ═══════════ STEP 3 — TRAIN ════════════════════════════════════ -->
           <section v-else-if="step === 'train'" class="panel">
             <h3>Train habitat model</h3>
-            <p class="hint">Configure and start the MaxEnt training run.</p>
+            <p class="hint">
+              Training samples each layer below at your observations and at the background points
+              itself, so there is no separate enrichment job to run first.
+            </p>
 
             <div class="row">
               <label for="train-title">Model name</label>
               <input id="train-title" v-model="trainForm.title" type="text" placeholder="Front Range fungi – autumn 2024" />
             </div>
 
-            <div class="row">
-              <label>Predictors</label>
-              <div class="stages">
-                <label v-for="p in predictorList" :key="p.key" class="stage">
-                  <input type="checkbox" :value="p.key" v-model="trainForm.predictors" />
-                  <span><strong>{{ p.label }}</strong></span>
-                </label>
-              </div>
+            <div class="row steps">
+              <label>Layers</label>
+              <PredictorPicker v-model="trainForm.predictors" :scores="scoutScores" />
             </div>
 
             <div class="row">
@@ -368,7 +252,7 @@
               <label>Options</label>
               <label class="pick">
                 <input type="checkbox" v-model="trainForm.autoOptimize" />
-                <span>Auto-select best predictors (scout run)</span>
+                <span>Auto-select the strongest layers (adds a scout pass, so it costs more)</span>
               </label>
               <label class="pick">
                 <input type="checkbox" v-model="trainForm.preciseOnly" />
@@ -389,7 +273,7 @@
             <p v-if="trainError" class="msg error">{{ trainError }}</p>
 
             <div class="actions">
-              <button class="btn secondary" @click="goStep(advancedMode ? 'explore' : 'enrich')">← Back</button>
+              <button class="btn secondary" @click="goStep(advancedMode ? 'explore' : 'source')">← Back</button>
               <template v-if="!trainJobId">
                 <button class="btn primary"
                         :disabled="trainForm.predictors.length < 2 || !trainForm.title || maxEnt.pending.value"
@@ -411,7 +295,7 @@
             </div>
           </section>
 
-          <!-- ═══════════ STEP 5 — EVALUATE ═════════════════════════════════ -->
+          <!-- ═══════════ STEP 4 — EVALUATE ═════════════════════════════════ -->
           <section v-else-if="step === 'evaluate'" class="panel">
             <h3>Evaluate model</h3>
             <p class="hint">
@@ -613,10 +497,10 @@
 
 <script setup>
 import { useEeJobs } from '~/composables/useEeJobs'
-import { jobPercent, jobStalled } from '~/composables/jobProgress'
 import { bboxIssue, bboxSource } from '~/composables/sourceCheck'
 import { useDatasets, VISIBILITY_LABELS } from '~/composables/useDatasets'
 import { useMaxEnt } from '~/composables/useMaxEnt'
+import { MAXENT_PREDICTORS, DEFAULT_PREDICTORS, DEFAULT_CONTRIBUTION_THRESHOLD } from '~/netlify/lib/maxent.mjs'
 import MaxEntTutorial from '~/components/MaxEntTutorial.vue'
 import ModelComparison from '~/components/ModelComparison.vue'
 
@@ -632,10 +516,12 @@ const tab = computed({
 const advancedMode = ref(false)
 
 // ── Steps ─────────────────────────────────────────────────────────────────────
+// No enrich step: a model samples its own layers at the observations and the
+// background, so an enrichment job before it was a second bill for data the
+// model never read.
 const ALL_STEPS = [
   { key: 'source',   label: 'Source' },
-  { key: 'enrich',   label: 'Enrich' },
-  { key: 'explore',  label: 'Explore' },
+  { key: 'explore',  label: 'Scout' },
   { key: 'train',    label: 'Train' },
   { key: 'evaluate', label: 'Evaluate' },
 ]
@@ -660,18 +546,11 @@ function canReach(key) {
   const idx = STEP_ORDER.value.indexOf(key)
   if (idx === 0) return true
   const prev = STEP_ORDER.value[idx - 1]
-  if (completedSteps.value.has(prev)) return true
-  if (key === 'explore') return !!(enrichDatasetSlug.value || sourceForm.datasetSlug)
-  return false
+  return completedSteps.value.has(prev)
 }
 
 function goStep(key) {
   if (!canReach(key)) return
-  if (key === 'explore') {
-    const slug = enrichDatasetSlug.value || sourceForm.datasetSlug || ''
-    if (slug && !exploreData.value) { exploreSlug.value = slug; loadExploreData(slug) }
-    else if (!exploreSlug.value) { exploreSlug.value = slug }
-  }
   step.value = key
 }
 
@@ -700,27 +579,7 @@ onMounted(async () => {
   try { await maxEnt.fetchModels() } finally { modelsLoading.value = false }
 })
 
-// ── Predictor / stage metadata ─────────────────────────────────────────────────
-
-const predictorList = [
-  { key: 'elevation',     label: 'Elevation' },
-  { key: 'slope',         label: 'Slope' },
-  { key: 'aspect',        label: 'Aspect' },
-  { key: 'ndvi',          label: 'Vegetation (NDVI)' },
-  { key: 'soil_moisture', label: 'Soil moisture' },
-  { key: 'precip_normal', label: 'Precipitation' },
-  { key: 'temp_normal',   label: 'Temperature' },
-]
-
-const PREDICTOR_META = {
-  elevation:     { label: 'Elevation',     shortLabel: 'Elev' },
-  slope:         { label: 'Slope',         shortLabel: 'Slope' },
-  aspect:        { label: 'Aspect',        shortLabel: 'Asp' },
-  ndvi:          { label: 'NDVI',          shortLabel: 'NDVI' },
-  soil_moisture: { label: 'Soil moisture', shortLabel: 'Soil' },
-  precip_normal: { label: 'Precipitation', shortLabel: 'Prec' },
-  temp_normal:   { label: 'Temperature',   shortLabel: 'Temp' },
-}
+const predictorLabel = (key) => MAXENT_PREDICTORS[key]?.label || key
 
 // ── Step 1: Source ─────────────────────────────────────────────────────────────
 function defaultDateFrom() {
@@ -750,13 +609,13 @@ function useMapView() {
   } catch (_) {}
 }
 
-// Checked as it is picked rather than when enrichment is submitted. The shape
+// Checked as it is picked rather than when the model is submitted. The shape
 // of the box is checked here with the server's own rules; whether it holds any
 // observations, and not more than the member may sample, is a dry run against
 // the server, debounced so typing a coordinate is not a request per keystroke.
 const sourceCheck = reactive({ state: '', message: '', points: 0 })
 const sourceCheckSummary = computed(() =>
-  `${sourceCheck.points.toLocaleString()} observation${sourceCheck.points === 1 ? '' : 's'} to enrich.`)
+  `${sourceCheck.points.toLocaleString()} observation${sourceCheck.points === 1 ? '' : 's'} to model.`)
 const localSourceIssue = computed(() => sourceForm.type === 'bbox' ? bboxIssue(sourceForm) : '')
 // Only the box's own faults outline the edges; a bad date range is not theirs.
 const boundsIssue = computed(() => sourceForm.type === 'bbox' ? bboxIssue({ ...sourceForm, noDateFilter: true }) : '')
@@ -776,7 +635,9 @@ function scheduleSourceCheck() {
     const abort = new AbortController()
     sourceCheckAbort = abort
     try {
-      const { points } = await jobsApi.check({ kind: 'enrich', stages: enrichForm.stages, source: buildSource() }, abort.signal)
+      // Checked as a model source, which is what it feeds; the default layers
+      // stand in for the picks, which do not change the point count.
+      const { points } = await jobsApi.check({ kind: 'model', source: buildSource() }, abort.signal)
       if (abort.signal.aborted) return
       sourceCheck.state = 'ok'; sourceCheck.points = points
     } catch (e) {
@@ -854,135 +715,56 @@ async function runFetch() {
 function advanceSource() {
   if (!canAdvanceSource.value) return
   completedSteps.value = new Set([...completedSteps.value, 'source'])
-  goStep('enrich')
+  goStep(advancedMode.value ? 'explore' : 'train')
 }
 
-// ── Step 2: Enrich ─────────────────────────────────────────────────────────────
-const enrichForm = reactive({ title: '', stages: [...useEnrichSteps().myDefault.value] })
-const enrichError = ref(''); const enrichNote = ref('')
-const enrichJobId = ref(null); const enrichDatasetSlug = ref(null)
-
-const enrichJob = computed(() => enrichJobId.value ? jobsApi.jobs.value.find(j => j.id === enrichJobId.value) : null)
-const enrichJobStatus = computed(() => enrichJob.value?.status || (enrichJobId.value ? 'pending' : null))
-const enrichStatusLabel = computed(() => {
-  const s = enrichJobStatus.value
-  if (s === 'succeeded') return 'Enrichment complete ✓'
-  if (s === 'failed') return 'Enrichment failed'
-  if (s === 'cancelled') return 'Enrichment cancelled'
-  if (s === 'running') return enrichStalled.value ? 'No word from the worker' : `Running (${jobPercent(enrichJob.value)}%)…`
-  // A large job is split across worker runs and waits in the queue between them.
-  if (jobPercent(enrichJob.value) > 0) return `Continuing (${jobPercent(enrichJob.value)}%)…`
-  return 'Queued…'
-})
-// Re-evaluated every few seconds so a run whose worker went quiet is called out
-// rather than sitting on the same percentage indefinitely.
-const enrichNow = ref(Date.now())
-const enrichStalled = computed(() => jobStalled(enrichJob.value, enrichNow.value))
-const enrichProgressMessage = computed(() => {
-  const job = enrichJob.value
-  if (!job) return ''
-  if (job.status === 'failed') return job.error || 'The job failed without a message.'
-  if (enrichStalled.value) {
-    return 'The worker has not reported progress for a few minutes and may have been stopped. '
-      + 'It is retried once automatically; you can leave this page and check Jobs later.'
-  }
-  return job.message || job.stage || enrichStatusLabel.value
-})
-
-watch(enrichJobStatus, async (s) => {
-  if (s === 'succeeded') {
-    completedSteps.value = new Set([...completedSteps.value, 'enrich'])
-    loadExploreData()
-    try {
-      const saved = await datasetsApi.saveJob(
-        { id: enrichJobId.value, title: enrichForm.title || 'Pipeline enrichment' },
-        { title: enrichForm.title || 'Pipeline enrichment' },
-      )
-      enrichDatasetSlug.value = saved.slug
-    } catch (_) {}
-  }
-})
-
 function buildSource() {
-  // A fetch is saved as a dataset, so it is enriched as one rather than as
+  // A fetch is saved as a dataset, so it is modelled as one rather than as
   // whatever box the area form was last left on.
   if (sourceForm.type === 'dataset' || sourceForm.type === 'fetch') return { type: 'dataset', slug: sourceForm.datasetSlug }
   return bboxSource(sourceForm)
 }
 
-async function submitEnrich() {
-  enrichError.value = ''; enrichNote.value = ''
-  const spec = { kind: 'enrich', title: enrichForm.title || 'Pipeline enrichment', stages: enrichForm.stages, source: buildSource() }
-  try {
-    const result = await jobsApi.submit(spec)
-    enrichJobId.value = result.job?.id || result.id
-    enrichNote.value = 'Job queued — enrichment will run on the server.'
-    pollEnrichJob()
-  } catch (e) {
-    enrichError.value = e?.message || 'Submission failed.'
-  }
-}
-
-// Forgets the finished run so the form can be submitted again. The job itself
-// stays in the Jobs list.
-function clearEnrichJob() {
-  if (enrichPollTimer) { clearInterval(enrichPollTimer); enrichPollTimer = null }
-  enrichJobId.value = null; enrichDatasetSlug.value = null
-  enrichError.value = ''; enrichNote.value = ''
-}
-
-let enrichPollTimer = null
-function pollEnrichJob() {
-  if (enrichPollTimer) clearInterval(enrichPollTimer)
-  enrichPollTimer = setInterval(async () => {
-    await jobsApi.refresh()
-    enrichNow.value = Date.now()
-    const job = jobsApi.jobs.value.find(j => j.id === enrichJobId.value)
-    if (job && ['succeeded', 'failed', 'cancelled'].includes(job.status)) {
-      clearInterval(enrichPollTimer); enrichPollTimer = null
-    }
-  }, 4000)
-}
-onUnmounted(() => { if (enrichPollTimer) clearInterval(enrichPollTimer) })
-
-// ── Step 3: Explore ────────────────────────────────────────────────────────────
-const exploreData = ref(null); const exploreSlug = ref(''); const exploreLoading = ref(false); const exploreError = ref('')
+// ── Step 2: Scout ──────────────────────────────────────────────────────────────
+const SCOUT_THRESHOLD = DEFAULT_CONTRIBUTION_THRESHOLD
 const scoutRunning = ref(false); const scoutProgress = ref(0); const scoutContributions = ref([]); const scoutError = ref('')
 let scoutPollTimer = null
+const scoutScores = computed(() => scoutContributions.value.length
+  ? Object.fromEntries(scoutContributions.value.map(c => [c.variable, c.pct]))
+  : null)
 
-async function loadExploreData(slugOverride) {
-  const slug = slugOverride || enrichDatasetSlug.value || (sourceForm.type === 'dataset' ? sourceForm.datasetSlug : null)
-  if (!slug) return
-  exploreLoading.value = true; exploreError.value = ''
-  try {
-    const { accessToken } = useAuth()
-    const token = await accessToken()
-    const headers = token ? { authorization: `Bearer ${token}` } : {}
-    const res = await fetch(`/.netlify/functions/datasets?slug=${encodeURIComponent(slug)}`, { headers })
-    if (!res.ok) { exploreError.value = `Failed to load dataset (${res.status})`; return }
-    const data = await res.json()
-    const features = data.geojson?.features || data.features || []
-    if (!features.length) { exploreError.value = 'Dataset is empty.'; return }
-    exploreData.value = computeExploreStats(features)
-    scoutContributions.value = []
-    const recommended = exploreData.value.coverage.filter(v => v.pct >= 80).map(v => v.key)
-    trainForm.predictors = recommended.length >= 2 ? recommended : predictorList.map(p => p.key)
-  } catch (e) {
-    exploreError.value = e?.message || 'Failed to load dataset.'
-  } finally {
-    exploreLoading.value = false
-  }
+function keepStrongest() {
+  const strong = scoutContributions.value.filter(c => c.pct >= SCOUT_THRESHOLD).map(c => c.variable)
+  if (strong.length >= 2) trainForm.predictors = strong
+}
+
+function advanceExplore() {
+  if (trainForm.predictors.length < 2) return
+  completedSteps.value = new Set([...completedSteps.value, 'explore'])
+  goStep('train')
+}
+
+// Contributions as stored ({ key: percent }) or as a list, as rows summing to 100.
+function scoutRows(raw) {
+  const list = Array.isArray(raw)
+    ? raw.map(c => ({ variable: c.variable || c.name || c.predictor || '', value: Number(c.contribution ?? c.pct ?? 0) }))
+    : Object.entries(raw || {}).map(([variable, value]) => ({ variable, value: Number(value) || 0 }))
+  const total = list.reduce((s, c) => s + c.value, 0) || 1
+  return list
+    .map(c => ({ variable: c.variable, label: predictorLabel(c.variable), pct: (c.value / total) * 100 }))
+    .sort((a, b) => b.pct - a.pct)
 }
 
 async function runScout() {
   if (scoutRunning.value) return
   scoutRunning.value = true; scoutError.value = ''; scoutProgress.value = 0; scoutContributions.value = []
   if (scoutPollTimer) { clearInterval(scoutPollTimer); scoutPollTimer = null }
+  let scoutWaits = 0
   const spec = {
     kind: 'model', title: 'Scout pre-train',
-    predictors: trainForm.predictors.length >= 2 ? trainForm.predictors : predictorList.map(p => p.key),
+    predictors: trainForm.predictors,
     background: 200, autoOptimize: false,
-    source: enrichDatasetSlug.value ? { type: 'dataset', slug: enrichDatasetSlug.value } : buildSource(),
+    source: buildSource(),
   }
   try {
     const result = await maxEnt.trainModel(spec)
@@ -992,16 +774,14 @@ async function runScout() {
       if (!job) return
       scoutProgress.value = job.progress || 0
       if (job.status === 'succeeded') {
+        // The contributions land on the model's result row, which the model
+        // list carries once it has refreshed after the run; give it a few ticks.
+        const model = maxEnt.models.value.find(m => m.id === job.model_configs?.id)
+        const contribs = scoutRows(model?.results?.[0]?.contributions)
+        if (!contribs.length && ++scoutWaits < 4) return
         clearInterval(scoutPollTimer); scoutPollTimer = null; scoutRunning.value = false
-        const contribs = job.eval_data?.contributions || job.contributions || []
-        if (contribs.length) {
-          const total = contribs.reduce((s, c) => s + (c.contribution ?? c.pct ?? 0), 0) || 1
-          scoutContributions.value = contribs
-            .map(c => ({ variable: c.variable || c.name || c.predictor || '', pct: ((c.contribution ?? c.pct ?? 0) / total) * 100 }))
-            .sort((a, b) => b.pct - a.pct)
-        } else {
-          scoutError.value = 'Scout completed but returned no contributions.'
-        }
+        if (contribs.length) scoutContributions.value = contribs
+        else scoutError.value = 'Scout completed but returned no contributions.'
       } else if (job.status === 'failed') {
         clearInterval(scoutPollTimer); scoutPollTimer = null; scoutRunning.value = false
         scoutError.value = job.error_message || 'Scout run failed.'
@@ -1013,48 +793,11 @@ async function runScout() {
 }
 onUnmounted(() => { if (scoutPollTimer) clearInterval(scoutPollTimer) })
 
-function computeExploreStats(features) {
-  const total = features.length
-  const keys = Object.keys(PREDICTOR_META)
-  const coverage = keys.map(key => {
-    const present = features.filter(f => f.properties?.[key] != null && !isNaN(f.properties[key])).length
-    return { key, label: PREDICTOR_META[key].label, shortLabel: PREDICTOR_META[key].shortLabel, pct: total ? (present / total) * 100 : 0 }
-  }).filter(v => v.pct > 0)
-  const correlations = computeCorrelationMatrix(features, coverage.map(v => v.key))
-  return { total, coverage, correlations }
-}
-
-function computeCorrelationMatrix(features, keys) {
-  const cols = keys.map(k => features.map(f => f.properties?.[k] ?? null).filter(v => v != null))
-  const n = keys.length
-  const matrix = Array.from({ length: n }, () => new Array(n).fill(0))
-  for (let i = 0; i < n; i++) {
-    for (let j = i; j < n; j++) {
-      if (i === j) { matrix[i][j] = 1; continue }
-      const xi = cols[i], xj = cols[j], len = Math.min(xi.length, xj.length)
-      if (len < 3) { matrix[i][j] = matrix[j][i] = 0; continue }
-      const mx = xi.slice(0, len).reduce((a, b) => a + b, 0) / len
-      const my = xj.slice(0, len).reduce((a, b) => a + b, 0) / len
-      let num = 0, dx = 0, dy = 0
-      for (let k = 0; k < len; k++) { const a = xi[k] - mx, b = xj[k] - my; num += a * b; dx += a * a; dy += b * b }
-      matrix[i][j] = matrix[j][i] = (dx && dy) ? parseFloat((num / Math.sqrt(dx * dy)).toFixed(3)) : 0
-    }
-  }
-  return matrix
-}
-
-function corrColor(val, isDiag) {
-  if (isDiag) return 'transparent'
-  const a = Math.abs(val)
-  if (a > 0.7) return `rgba(239,68,68,${0.3 + a * 0.4})`
-  if (a > 0.4) return `rgba(251,191,36,${0.2 + a * 0.3})`
-  return `rgba(34,197,94,${0.1 + a * 0.2})`
-}
-
-// ── Step 4: Train ──────────────────────────────────────────────────────────────
+// ── Step 3: Train ──────────────────────────────────────────────────────────────
 const trainForm = reactive({
-  title: '', predictors: predictorList.map(p => p.key),
-  background: 1000, autoOptimize: true, preciseOnly: false,
+  title: '', predictors: [...DEFAULT_PREDICTORS],
+  // Off by default: the scout pass samples every layer a second time.
+  background: 1000, autoOptimize: false, preciseOnly: false,
   regionNorth: null, regionSouth: null, regionEast: null, regionWest: null,
 })
 const trainError = ref(''); const trainJobId = ref(null)
@@ -1083,7 +826,7 @@ async function submitTrain() {
   const spec = {
     title: trainForm.title, predictors: trainForm.predictors, background: trainForm.background,
     autoOptimize: trainForm.autoOptimize, preciseOnly: trainForm.preciseOnly, region,
-    source_dataset_id: enrichDatasetSlug.value || (sourceForm.type === 'dataset' ? sourceForm.datasetSlug : undefined),
+    // The server links a dataset source to the model by its row id.
     source: buildSource(),
   }
   const result = await maxEnt.trainModel(spec)
@@ -1091,7 +834,7 @@ async function submitTrain() {
   trainJobId.value = maxEnt.activeJob.value?.job_id
 }
 
-// ── Step 5: Evaluate ───────────────────────────────────────────────────────────
+// ── Step 4: Evaluate ───────────────────────────────────────────────────────────
 const evalData = ref(null); const evalLoading = ref(false); const evalError = ref('')
 
 async function loadEval() {
@@ -1132,7 +875,7 @@ const contributions = computed(() => {
   const c = evalData.value?.contributions || trainedModel.value?.results?.[0]?.contributions
   if (!c) return []
   return Object.entries(c).map(([key, value]) => ({
-    label: PREDICTOR_META[key]?.label || key,
+    label: predictorLabel(key),
     value: typeof value === 'number' ? value : parseFloat(value),
   })).sort((a, b) => b.value - a.value)
 })
@@ -1257,16 +1000,13 @@ function fmtWhen(dateStr) {
 .stack input { border: 1px solid var(--border); border-radius: 7px; padding: 6px 9px; font-size: 0.88rem; background: var(--input-bg); color: var(--text); }
 @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
 
-/* ── Source / stage pickers ── */
-.sources, .stages { display: flex; flex-direction: column; gap: 6px; }
+/* ── Source picker ── */
+.sources { display: flex; flex-direction: column; gap: 6px; }
 .pick { display: flex; align-items: flex-start; gap: 8px; font-size: 0.88rem; cursor: pointer; padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--input-bg); }
 .pick:hover { background: var(--surface-2); }
 .pick-inline { border: none; background: none; padding: 4px 0; }
 .pick-inline:hover { background: none; }
 .pick input { margin-top: 2px; }
-.stage { padding: 7px 10px; }
-.stage span { display: flex; flex-direction: column; }
-.stage em { font-size: 0.78rem; color: var(--muted); font-style: normal; }
 
 /* ── Field stack ── */
 .field-stack { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
@@ -1316,24 +1056,10 @@ function fmtWhen(dateStr) {
 @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
 .prog-msg { font-size: 0.82rem; color: var(--muted); margin: 0; }
 
-/* ── Explore ── */
+/* ── Scout / evaluation sections ── */
 .explore-section { margin-bottom: 22px; }
 .explore-section h4 { margin: 0 0 8px; font-size: 0.92rem; }
-.cov-table, .corr-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
-.cov-table th, .corr-table th { text-align: left; padding: 6px 8px; background: var(--surface-2); border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 600; }
-.cov-table td, .corr-table td { padding: 6px 8px; border-bottom: 1px solid var(--border-soft); }
-.cov-table tr.low td { color: var(--muted); }
-.cov-bar-wrap { display: flex; align-items: center; gap: 8px; }
-.cov-bar { display: inline-block; height: 10px; border-radius: 5px; min-width: 2px; }
-.cov-pct { font-size: 0.8rem; color: var(--muted); }
-.badge { font-size: 0.75rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
-.badge.ok   { background: #dcfce7; color: #16a34a; }
-.badge.warn { background: #fef3c7; color: #d97706; }
-.badge.bad  { background: #fee2e2; color: #dc2626; }
-.badge-sub { font-size: 0.7rem; font-weight: normal; color: var(--muted); margin-left: 6px; }
-.corr-cell { text-align: center; font-size: 0.8rem; min-width: 42px; }
-.corr-cell.high { font-weight: 700; }
-.row-label { font-weight: 600; font-size: 0.8rem; color: var(--muted); }
+.scout-actions { margin-top: 4px; }
 .contrib-list { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
 .contrib-row { display: flex; align-items: center; gap: 8px; }
 .contrib-label { width: 130px; font-size: 0.8rem; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

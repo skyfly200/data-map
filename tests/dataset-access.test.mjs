@@ -10,7 +10,7 @@ import assert from 'node:assert/strict'
 
 import {
   DEFAULT_VISIBILITY, DatasetAccessError, MEMBER_VISIBILITIES, VISIBILITIES,
-  canRead, canWrite, checkVisibility, nextFreeSlug, resolveDataset, slugify, viewerFrom,
+  canRead, canWrite, checkVisibility, isUuid, nextFreeSlug, resolveDataset, slugify, viewerFrom,
 } from '../netlify/lib/dataset-access.mjs'
 
 const OWNER = 'user-1'
@@ -186,4 +186,33 @@ test('a taken slug gets the next free suffix rather than an error', () => {
 test('a viewer without a session is free and has no id', () => {
   assert.deepEqual(viewerFrom({}), { userId: null, tier: 'free' })
   assert.deepEqual(viewerFrom({ user: { id: 'u' }, tier: 'member' }), { userId: 'u', tier: 'member' })
+})
+
+// ── Resolving a row id ───────────────────────────────────────────────────────
+
+test('a dataset can be resolved by its row id, looked up on the id column', async () => {
+  const id = '3f2b6c1e-8a4d-4c2e-9b7a-1d2e3f4a5b6c'
+  let column = null
+  const client = {
+    from: () => ({
+      select: () => ({
+        eq: (col) => { column = col; return { maybeSingle: async () => ({ data: { ...mine(), id, slug: 'pipeline-enrichment-3' }, error: null }) } },
+      }),
+    }),
+  }
+  const got = await resolveDataset({ client, id, viewer: asOwner })
+  assert.equal(column, 'id')
+  assert.equal(got.slug, 'pipeline-enrichment-3')
+})
+
+test('a slug passed as an id is refused before it reaches the uuid column', async () => {
+  // The bug behind "invalid input syntax for type uuid": Postgres refuses the
+  // comparison outright, so it has to be caught here.
+  let touched = false
+  const client = { from: () => { touched = true; return clientReturning(null).from() } }
+  await assert.rejects(() => resolveDataset({ client, id: 'pipeline-enrichment-3', viewer: asAdmin }),
+    DatasetAccessError)
+  assert.equal(touched, false)
+  assert.ok(isUuid('3F2B6C1E-8A4D-4C2E-9B7A-1D2E3F4A5B6C'))
+  assert.ok(!isUuid('pipeline-enrichment-3'))
 })

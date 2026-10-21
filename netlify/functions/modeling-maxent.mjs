@@ -12,7 +12,7 @@
 
 import { adminClient, requireMemberFresh, requireUser } from '../lib/auth.mjs'
 import { normaliseModelSpec, estimateModelUnits } from '../lib/maxent.mjs'
-import { checkVisibility, viewerFrom } from '../lib/dataset-access.mjs'
+import { checkVisibility, isUuid, resolveDataset, viewerFrom } from '../lib/dataset-access.mjs'
 import { runEvaluation, earthEngineConfigured } from '../lib/ee-runner.mjs'
 import { loadSource, measureSource } from '../lib/job-source.mjs'
 import { submitJob } from '../lib/job-queue.mjs'
@@ -25,12 +25,29 @@ function fail(err) {
   return json({ ok: false, error: String(err?.message || err) }, err.status || 500)
 }
 
+/**
+ * The saved dataset a model trains on, if any.
+ *
+ * The page names a dataset by slug (in `source`, or in `source_dataset_id` from
+ * older clients), but model_configs.source_dataset_id is a uuid foreign key, so
+ * the slug is resolved to its row here — through the same access check a job
+ * source gets — and the row's id is what gets stored.
+ */
+export async function linkedDataset(client, viewer, body = {}) {
+  const ref = String(body.source_dataset_id
+    || (body.source?.type === 'dataset' ? body.source.slug : '')
+    || '').trim()
+  if (!ref) return null
+  return resolveDataset(isUuid(ref) ? { client, id: ref, viewer } : { client, slug: ref, viewer })
+}
+
 /** Submit a training job to Earth Engine. */
 async function train(client, auth, body) {
   const viewer = viewerFrom(auth)
 
   // 1. Validate and Normalise
   const spec = normaliseModelSpec(body)
+  const dataset = await linkedDataset(client, viewer, body)
 
   // 2. Create Configuration
   const visibility = checkVisibility(body.visibility, viewer)
@@ -42,7 +59,7 @@ async function train(client, auth, body) {
     background_count: spec.background,
     effort_weighted: true,
     projection_region: spec.region,
-    source_dataset_id: body.source_dataset_id,
+    source_dataset_id: dataset?.id || null,
     precise_only: spec.preciseOnly,
     visibility,
   }).select().single()
@@ -52,9 +69,7 @@ async function train(client, auth, body) {
   // 3. Submit via the standard job queue (same path as ee-jobs.mjs).
   // Provide a normalised source so normaliseSpec (called inside submitJob) does
   // not fall back to an empty bbox and throw "An area is required."
-  const jobSource = body.source_dataset_id
-    ? { type: 'dataset', slug: body.source_dataset_id }
-    : spec.source
+  const jobSource = dataset ? { type: 'dataset', slug: dataset.slug } : spec.source
   const result = await submitJob({
     user: auth.user,
     profile: auth.profile,
@@ -183,10 +198,9 @@ async function evaluate(client, viewer, jobId) {
   }
 
   const config = run.model_configs
-  const source = config.source_dataset_id
-    ? { type: 'dataset', slug: config.source_dataset_id }
-    : null
-  if (!source) return json({ ok: false, error: 'This model has no linked source dataset.' }, 400)
+  if (!config.source_dataset_id) return json({ ok: false, error: 'This model has no linked source dataset.' }, 400)
+  const dataset = await resolveDataset({ client, id: config.source_dataset_id, viewer })
+  const source = { type: 'dataset', slug: dataset.slug }
   const spec = { predictors: config.predictors, background: config.background_count, region: config.projection_region }
   const allFeatures = await loadSource(source, { client, viewer })
   const features = config.precise_only

@@ -12,7 +12,7 @@ import {
   CV_FOLDS, DEFAULT_BACKGROUND, DEFAULT_PREDICTORS, MAX_BACKGROUND, MIN_BACKGROUND, MIN_PREDICTORS,
   assignFold, backgroundPlan, buildSuitabilityImage, crossValidate, crossValidationSummary,
   estimateModelUnits, foldPoints, modelCacheKey, modelPlan, normaliseModelSpec, predictorStack,
-  PREDICTOR_KEYS, randomBackground, rocAuc, suitabilityLegend,
+  PREDICTOR_GROUPS, PREDICTOR_KEYS, randomBackground, rocAuc, suitabilityLegend,
 } from '../netlify/lib/maxent.mjs'
 import { normaliseSpec, SpecError } from '../netlify/lib/ee-pipeline.mjs'
 
@@ -321,4 +321,10 @@ test('the builder trains MaxEnt on presences plus random background and classifi
   assert.equal(out.vis.min, 0)
   assert.equal(out.vis.max, 1)
   assert.ok(Array.isArray(out.vis.palette))
+})
+
+test('every predictor sits in exactly one picker group', () => {
+  const grouped = PREDICTOR_GROUPS.flatMap((g) => g.keys)
+  assert.deepEqual([...grouped].sort(), [...PREDICTOR_KEYS].sort())
+  assert.equal(new Set(grouped).size, grouped.length)
 })
