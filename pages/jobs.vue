@@ -318,9 +318,11 @@
                 {{ skippedNote(job) }}
               </p>
 
+              <!-- One main action per state, shown; the rest wait behind ⋯ so a
+                   page of finished jobs is not a wall of buttons. Export stays
+                   out because its panel is itself a menu, and a menu inside a
+                   menu is one you cannot close on a phone. -->
               <div class="job-actions">
-                <!-- A model job draws a suitability surface; an enrichment job
-                     loads its points, saves as a dataset, and exports. -->
                 <template v-if="job.status === 'succeeded' && isModel(job)">
                   <button class="btn small primary" :disabled="opening === job.id" @click="openModelOnMap(job)">
                     {{ opening === job.id ? 'Loading…' : 'View suitability on map' }}
@@ -334,13 +336,6 @@
                           :disabled="opening === job.id" @click="openOnMap(job)">
                     {{ opening === job.id ? 'Loading…' : 'Open on map' }}
                   </button>
-                  <button class="btn small"
-                          :disabled="opening === job.id" @click="openOnCharts(job)">
-                    Open on charts
-                  </button>
-                  <button v-if="!savedFrom(job)" class="btn small" @click="startSave(job)">
-                    Save as dataset
-                  </button>
                   <!-- Fetched on demand, so opening the menu on a page of
                        finished jobs does not download every one of them. -->
                   <ExportMenu :source="() => jobsApi.fetchResult(job)"
@@ -352,7 +347,14 @@
                   </span>
                 </template>
                 <button v-if="running(job)" class="btn small" @click="jobsApi.cancel(job.id)">Cancel</button>
-                <button v-if="!running(job)" class="btn small muted" @click="onArchiveJob(job)">Archive</button>
+                <ActionMenu v-if="!running(job)" class="end" :title="`More for ${job.title || 'this job'}`">
+                  <template v-if="job.status === 'succeeded' && !isModel(job)">
+                    <button class="mi" :disabled="opening === job.id" @click="openOnCharts(job)">Open on charts</button>
+                    <button v-if="!savedFrom(job)" class="mi" @click="startSave(job)">Save as dataset…</button>
+                    <hr class="mi-sep" />
+                  </template>
+                  <button class="mi" @click="onArchiveJob(job)">Archive</button>
+                </ActionMenu>
               </div>
 
               <!-- Naming it is the whole step, so it is one field and a button
@@ -453,21 +455,26 @@
                 <template v-if="d.feature_count"> · {{ d.feature_count.toLocaleString() }} points</template>
               </p>
               <div class="job-actions">
-                <select :value="d.visibility" @change="setVisibility(d, $event.target.value)">
-                  <option v-for="v in datasetsApi.visibilities" :key="v" :value="v">
-                    {{ VISIBILITY_LABELS[v] }}
-                  </option>
-                </select>
-                <NuxtLink :to="`/datasets/${encodeURIComponent(d.slug)}`" class="btn small">Details</NuxtLink>
-                <button class="btn small" @click="useAsSource(d)">Run a job on it</button>
-                <button class="btn small" @click="openDatasetOnCharts(d)">Open on charts</button>
-                <button class="btn small" @click="router.push(`/map?dataset=${encodeURIComponent(d.slug)}`)">Open on map</button>
+                <button class="btn small primary" @click="router.push(`/map?dataset=${encodeURIComponent(d.slug)}`)">Open on map</button>
                 <!-- Read through the datasets function rather than from
                      storage, so a dataset shared with this member exports the
                      same way one of their own does. -->
                 <ExportMenu :source="() => datasetsApi.fetchGeojson(d.slug)"
                             :total="d.feature_count || 0" :name="d.title" />
-                <button class="btn small danger" @click="removeDataset(d)">Delete</button>
+                <ActionMenu class="end" :title="`More for ${d.title}`">
+                  <button class="mi" @click="useAsSource(d)">Run a job on it</button>
+                  <button class="mi" @click="openDatasetOnCharts(d)">Open on charts</button>
+                  <NuxtLink :to="`/datasets/${encodeURIComponent(d.slug)}`" class="mi">Details</NuxtLink>
+                  <hr class="mi-sep" />
+                  <div class="mi-label">Who can use it</div>
+                  <button v-for="v in datasetsApi.visibilities" :key="v" class="mi"
+                          :class="{ on: d.visibility === v }" :aria-pressed="d.visibility === v"
+                          @click="d.visibility !== v && setVisibility(d, v)">
+                    {{ VISIBILITY_LABELS[v] }}
+                  </button>
+                  <hr class="mi-sep" />
+                  <button class="mi danger" @click="removeDataset(d)">Delete…</button>
+                </ActionMenu>
               </div>
             </li>
           </ul>
@@ -1171,6 +1178,8 @@ input[type="text"], input[type="number"], input[type="date"] {
 
 .job-actions { display: flex; gap: 8px; margin-top: 8px; align-items: center; flex-wrap: wrap; }
 .job-actions:empty { display: none; }
+/* The ⋯ sits at the card's right edge, apart from the main action. */
+.job-actions .end { margin-left: auto; }
 .btn.danger { color: #b3492f; }
 .btn.danger:hover:not(:disabled) { border-color: #b3492f; }
 .saved-as { font-size: 0.78rem; color: var(--muted); }

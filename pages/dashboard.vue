@@ -84,24 +84,33 @@
                @drop="onDrop(w.id)">
         <div v-if="editing" class="cell-bar">
           <span class="drag" title="Drag to reorder">⋮⋮</span>
-          <div class="size-btns" title="Resize widget">
-            <button :class="{ on: !w.settings.colspan || w.settings.colspan === 1 }"
-                    title="1 column" @click="updateSettings(w.id, { colspan: 1 })">▪</button>
-            <button :class="{ on: w.settings.colspan === 2 }"
-                    title="2 columns" @click="updateSettings(w.id, { colspan: 2 })">▪▪</button>
-            <button :class="{ on: w.settings.colspan === 'full' }"
-                    title="Full width" @click="updateSettings(w.id, { colspan: 'full' })">▬</button>
-            <button :class="{ on: w.settings.tall === 1 }"
-                    title="Tall (1.5×)" @click="updateSettings(w.id, { tall: w.settings.tall === 1 ? false : 1 })">↕</button>
-            <button :class="{ on: w.settings.tall === 2 }"
-                    title="Extra tall (2×)" @click="updateSettings(w.id, { tall: w.settings.tall === 2 ? false : 2 })">⤢</button>
-          </div>
-          <select v-if="pages.length > 1" class="move-page" title="Move to another page" aria-label="Move to another page"
-                  @change="moveWidgetToPage(w.id, $event.target.value); $event.target.value = ''">
-            <option value="">Move…</option>
-            <option v-for="p in pages.filter((x) => x.id !== activePageId)" :key="p.id" :value="p.id">{{ p.name }}</option>
-          </select>
-          <button class="remove" title="Remove" @click="remove(w.id)">×</button>
+          <!-- Size, page and remove live behind one ⋯ rather than seven
+               small buttons on every widget, which on a phone was a toolbar
+               wider than the widget it sat on. -->
+          <span class="size-note">{{ sizeNote(w) }}</span>
+          <ActionMenu :title="'Widget options'">
+            <div class="mi-label">Width</div>
+            <button class="mi" :class="{ on: !w.settings.colspan || w.settings.colspan === 1 }"
+                    @click="updateSettings(w.id, { colspan: 1 })">One column</button>
+            <button class="mi" :class="{ on: w.settings.colspan === 2 }"
+                    @click="updateSettings(w.id, { colspan: 2 })">Two columns</button>
+            <button class="mi" :class="{ on: w.settings.colspan === 'full' }"
+                    @click="updateSettings(w.id, { colspan: 'full' })">Full width</button>
+            <div class="mi-label">Height</div>
+            <button class="mi" :class="{ on: !w.settings.tall }"
+                    @click="updateSettings(w.id, { tall: false })">Normal</button>
+            <button class="mi" :class="{ on: w.settings.tall === 1 }"
+                    @click="updateSettings(w.id, { tall: 1 })">Tall</button>
+            <button class="mi" :class="{ on: w.settings.tall === 2 }"
+                    @click="updateSettings(w.id, { tall: 2 })">Extra tall</button>
+            <template v-if="pages.length > 1">
+              <div class="mi-label">Move to page</div>
+              <button v-for="p in pages.filter((x) => x.id !== activePageId)" :key="p.id" class="mi"
+                      @click="moveWidgetToPage(w.id, p.id)">{{ p.name }}</button>
+            </template>
+            <hr class="mi-sep" />
+            <button class="mi danger" @click="remove(w.id)">Remove widget</button>
+          </ActionMenu>
         </div>
         <!-- Insert-before drop indicator -->
         <div v-if="editing && dropTarget === w.id && dragFromPalette" class="drop-before-bar"></div>
@@ -309,6 +318,13 @@ function onGridEndDrop() {
   }
 }
 
+/** What the ⋯ menu has set, so the size is legible without opening it. */
+function sizeNote(w) {
+  const width = w.settings.colspan === 'full' ? 'Full width' : w.settings.colspan === 2 ? '2 columns' : '1 column'
+  const height = w.settings.tall === 2 ? ' · extra tall' : w.settings.tall === 1 ? ' · tall' : ''
+  return width + height
+}
+
 onMounted(() => { load(DEFAULTS) })
 </script>
 
@@ -392,6 +408,10 @@ onMounted(() => { load(DEFAULTS) })
 .dash-cell :deep(.dash-widget) { flex: 1; min-height: 0; }
 
 .dash-cell.editing { border-style: dashed; cursor: grab; }
+/* The ⋯ panel hangs below the cell bar, so while customising the cell lets it
+   out and the widget inside does the clipping instead. */
+.dash-cell.editing { overflow: visible; }
+.dash-cell.editing :deep(.render-when-visible) { overflow: hidden; }
 .dash-cell.editing:hover { box-shadow: 0 0 0 2px var(--accent, #2a78d6); }
 .dash-cell.span-2 { grid-column: span 2; }
 .dash-cell.span-full { grid-column: 1 / -1; }
@@ -406,22 +426,7 @@ onMounted(() => { load(DEFAULTS) })
 .cell-bar { display: flex; justify-content: space-between; align-items: center; margin: -0.3rem -0.3rem 0.4rem; gap: 0.3rem; }
 .drag { color: var(--muted, #aaa); cursor: grab; user-select: none; }
 
-.size-btns { display: flex; gap: 2px; margin: 0 auto 0 0.5rem; }
-.size-btns button {
-  border: 1px solid var(--border, #ddd); background: var(--surface-2, #f5f5f5); color: var(--muted, #888);
-  border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; cursor: pointer; line-height: 1.4;
-}
-.size-btns button:hover { background: var(--surface-3, #eee); color: var(--text, #222); }
-.size-btns button.on { background: var(--accent, #2a78d6); border-color: var(--accent, #2a78d6); color: #fff; }
-
-.move-page {
-  border: 1px solid var(--border, #ddd); background: var(--surface-2, #f5f5f5); color: var(--muted, #888);
-  border-radius: 4px; font: inherit; font-size: 0.7rem; padding: 1px 2px; max-width: 6.5rem; cursor: pointer;
-}
-.remove {
-  border: 0; background: none; color: var(--muted, #999); font-size: 1.2rem; line-height: 1; cursor: pointer;
-}
-.remove:hover { color: #b3492f; }
+.size-note { margin: 0 auto 0 0.5rem; font-size: 0.7rem; color: var(--muted, #888); }
 
 /* Drop-before indicator on a cell */
 .dash-cell.drop-before { box-shadow: -4px 0 0 var(--accent, #2a78d6), 0 0 0 2px color-mix(in srgb, var(--accent, #2a78d6) 25%, transparent); }
