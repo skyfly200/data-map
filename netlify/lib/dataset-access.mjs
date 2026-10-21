@@ -99,11 +99,12 @@ export function checkVisibility(visibility, viewer = {}) {
  * worker has no session to be scoped by, and the job pipeline has to answer
  * for the member who submitted the job rather than for itself.
  */
-export async function resolveDataset({ client, slug, viewer }) {
+export async function resolveDataset({ client, slug, id, viewer }) {
   // Same error for absent and forbidden. See the note at the top of the file:
   // telling them apart is a way to enumerate other members' dataset names.
   const refuse = () => {
-    throw new DatasetAccessError(`No dataset named "${slug}" is available to you.`,
+    throw new DatasetAccessError(
+      id ? 'That dataset is not available to you.' : `No dataset named "${slug}" is available to you.`,
       { status: 404, code: 'no_dataset' })
   }
 
@@ -111,17 +112,29 @@ export async function resolveDataset({ client, slug, viewer }) {
     throw new DatasetAccessError('Datasets need Supabase to be configured.',
       { status: 503, code: 'unconfigured' })
   }
-  const clean = String(slug || '').trim()
+  // By id when a caller holds a foreign key (model_configs.source_dataset_id),
+  // by slug otherwise. A slug is never looked up as an id: the column is a uuid
+  // and Postgres refuses the comparison outright.
+  const column = id ? 'id' : 'slug'
+  const clean = String((id ? id : slug) || '').trim()
   if (!clean) refuse()
+  if (id && !isUuid(clean)) refuse()
 
   const { data, error } = await client
-    .from('saved_datasets').select('*').eq('slug', clean).maybeSingle()
+    .from('saved_datasets').select('*').eq(column, clean).maybeSingle()
   if (error) {
     throw new DatasetAccessError(`Could not look that dataset up: ${error.message}`,
       { status: 500, code: 'lookup_failed' })
   }
   if (!canRead(data, viewer)) refuse()
   return data
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/** Does this look like a row id rather than a slug? */
+export function isUuid(value) {
+  return UUID.test(String(value || '').trim())
 }
 
 /**

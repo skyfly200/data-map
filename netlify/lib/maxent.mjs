@@ -360,6 +360,21 @@ export const ALL_PREDICTORS = [
   'human_modification', 'population_density',
 ]
 
+/**
+ * The predictors grouped for a picker. Same group names as the enrichment
+ * steps (STAGE_GROUPS), so the two lists read as one catalogue; climate normals
+ * sit under "Climate" because a model has no per-date weather.
+ */
+export const PREDICTOR_GROUPS = [
+  { group: 'Terrain', keys: ['elevation', 'slope', 'aspect', 'northness', 'tpi', 'twi', 'mtpi', 'chili', 'solar_exposure', 'wind_exposure'] },
+  { group: 'Climate', keys: ['annual_temp', 'annual_precip', 'temp_normal', 'precip_normal', 'soil_temp_normal'] },
+  { group: 'Vegetation', keys: ['ndvi', 'ndmi', 'canopy', 'canopy_pct', 'stand_height_ft'] },
+  { group: 'Soil', keys: ['soil_moisture', 'field_capacity', 'sand_percent', 'clay_percent', 'soil_depth_cm'] },
+  { group: 'Hydrology', keys: ['hand'] },
+  { group: 'Fire & disturbance', keys: ['forest_loss', 'last_burn_year'] },
+  { group: 'Human influence', keys: ['human_modification', 'population_density'] },
+]
+
 /** Minimum % contribution a predictor must contribute to survive the scout filter. */
 export const DEFAULT_CONTRIBUTION_THRESHOLD = 2.0
 
