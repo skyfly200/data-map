@@ -32,3 +32,40 @@ See also: `@docs/refactor.md` for technical debt, `@docs/bugs.md` for known issu
 - Use FRMS Google for GEE scripts backend and update to nonprofit status
 - Add FRMS users to app atomatically
 - Setup Emails
+
+---
+
+## Planned (document only, not started)
+
+Plan from Skyler, grouped. Order runs top to bottom: quick wins and shared layout work first, then the features that build on them. Scope: S under a few days, M a week or so, L longer or needs live EE checks.
+
+**Order at a glance:** `WANT-20` → `WANT-21` → (`WANT-22`, `WANT-23`) in parallel → `WANT-24` → `WANT-25` → `WANT-26`, then `WANT-27` once the rest settles.
+
+- `WANT-20` **Skip towns rename and filtering** (S, do first). Rename "Skip towns" to something that says what it does, e.g. "Exclude built-up areas". Today it only drops towns from the round-two toggle in `/foray` (`WANT-17`). Make it remove cities and built-up cells too, not just named places. Likely needs a built-up source (GHSL settlement layer or OSM place polygons) sampled per cell, so the filter works in the cell grid and not only by name. Depends on: nothing. Blocks: nothing, but `WANT-22` and `WANT-23` use the same copy.
+
+- `WANT-21` **Visual polish, mobile, and balance** (M, shared foundation). Covers three asks that touch the same components:
+  - UI polish across the app and better phone support. Check every change at a phone viewport.
+  - Less wordy, more visual, better balanced layouts. Move detail into tooltips or expandable sections and use icons, color, and small charts where text is doing the work.
+  - Dashboard widgets fill the space available. Switch the grid to flexible sizing so widgets stretch to the container instead of fixed heights.
+  Depends on: nothing. Do before `WANT-22` and `WANT-23` so new screens use the same tokens and grid. Relates to `WANT-15` (pipeline UX) for the layout decisions already open there.
+
+- `WANT-22` **Streamlined training flow** (M). Four parts:
+  - Better defaults so most users never open advanced settings.
+  - Hide advanced settings behind one collapsed section.
+  - Auto-name models, and carry the name through the steps (Source → Scout → Train → Evaluate) so a name entered once is reused.
+  - Keep the grouped predictor picker from PR #205.
+  Depends on: `WANT-21` for the layout. Relates to `WANT-15` and `WANT-7` (bias correction adds a new advanced option, so keep it in the hidden section). Known gap to settle first: the /jobs "Enrich & model" path still runs a separate enrich job before training.
+
+- `WANT-23` **Expanding runs and datasets in place** (L, data model). Let a user add new sources or a wider area to an existing enrichment run or dataset instead of starting fresh. Needs:
+  - A stable record key per observation (source + source id) so reruns dedupe instead of double counting.
+  - A per-dataset watermark or query window so only new records are fetched.
+  - Migration and schema notes in `docs/schema.md`.
+  Depends on: `WANT-16` (uploads share the same key rules). Blocks: `WANT-24` (auto enrichment reruns use the same append path).
+
+- `WANT-24` **Automatic enrichment for admin-defined taxa** (L). Admins set a list of taxa to scan and keep up to date, on a schedule. Needs an admin-only taxa table, a scheduled job that runs the append path from `WANT-23` per taxon, and a status view showing last run and counts. Depends on: `WANT-23`, and jobs running reliably in the background worker. Check that before scheduling, since scheduled runs are only as good as the worker path.
+
+- `WANT-25` **Charts: more types and a stronger creator** (M). Add Violin, Trend line, and 3D plot, and make the chart creator handle series, grouping, and axis choices in one place. Use the dataviz palette rules for color. Depends on: `WANT-21` for layout. 3D plot is the riskiest part on mobile, so ship it last and fall back to a 2D view under phone width.
+
+- `WANT-26` **Pattern search in enriched data** (L). Tools to find patterns across enriched records, such as "finds that look like this one" and grouped comparisons over predictors. Could reuse the pgvector idea in `WANT-18` for similarity search, so decide that before building. Depends on: `WANT-23` for consistent records, and `WANT-25` for the charts the results show.
+
+- `WANT-27` **Docs and modeling-flow visuals** (S to M, rolling). Update the docs as each item above lands, and add diagrams of the modeling flow (Source → Scout → Train → Evaluate, and how enrichment feeds it). Start with the flow diagram once `WANT-22` ships, so it shows the final steps. Keep `docs/` in sync with the change in the same PR, not in a batch at the end.
