@@ -47,17 +47,17 @@ jobs:
           fi
 
       - name: Fetch observations
-        run: python iNat.py
+        run: python scripts/iNat.py
 
       - name: Download environmental layers (best effort)
         continue-on-error: true
-        run: python fetch.py
+        run: python scripts/fetch.py
 
       - name: Enrich, cluster, export GeoJSON
         run: |
-          python enrich_with_rasters.py
-          python cluster.py
-          python export_geojson.py
+          python scripts/enrich_with_rasters.py
+          python scripts/cluster.py
+          python scripts/export_geojson.py
 
       - name: Publish terrain rasters for the Netlify functions (if produced)
         run: |
