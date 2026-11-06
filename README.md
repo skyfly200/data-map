@@ -72,9 +72,9 @@ attaches a Cloud project to Earth Engine (free for noncommercial use).
 ### Legacy Python pipeline
 
 > **Obsolete.** The Python scripts (`iNat.py`, `enrich_with_rasters.py`,
-> `ee_enrich.py`, `cluster.py`, `export_geojson.py`, `run_pipeline.py`) and the
-> GitHub Action (`refresh-data.yml`) that ran them are no longer the primary
-> data path. They are retained for reference until the JS pipeline covers all
+> `ee_enrich.py`, `cluster.py`, `export_geojson.py`, `run_pipeline.py`) are no
+> longer the primary data path. The daily GitHub Action that ran them has been
+> retired (`refresh-data.yml` was removed). They are retained for reference until the JS pipeline covers all
 > stages end-to-end in production (see `WANT-10` in the roadmap). Do not add new
 > enrichment columns to the Python scripts; add them to `STAGES` in
 > `netlify/lib/ee-pipeline.mjs`.
@@ -140,10 +140,9 @@ pipeline.
   job from the Jobs page to populate the EE columns. Automatic post-import
   enrichment is tracked in `WANT-10`.
 
-> **Note:** The GitHub Action (`refresh-data.yml`) that ran the Python
-> enrichment pipeline daily is no longer the primary refresh path. It is
-> retained for reference but should not be relied on for new deployments. See
-> the [Legacy Python pipeline](#legacy-python-pipeline) note above.
+> **Note:** The GitHub Action that ran the Python enrichment pipeline daily has
+> been retired, so nothing refreshes the data automatically. See the
+> [Legacy Python pipeline](#legacy-python-pipeline) note above.
 
 ### Serving datasets from Supabase Storage (optional)
 
@@ -158,9 +157,9 @@ Setup:
 1. Pick (or create) a Supabase project and a **public** Storage bucket, e.g.
    `datasets`.
 2. Set env vars:
-   - GitHub Actions secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
-     (and optionally `SUPABASE_DATASETS_BUCKET`). The `refresh-data` workflow
-     runs `node scripts/upload_datasets.mjs` after export to push
+   - Local env for the upload: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+     (and optionally `SUPABASE_DATASETS_BUCKET`). Run
+     `node scripts/upload_datasets.mjs` by hand after export to push
      `observations.geojson`, `species/*.geojson`, and a rewritten
      `datasets.json` (with Supabase public URLs) to the bucket.
    - Netlify env: `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (so the
